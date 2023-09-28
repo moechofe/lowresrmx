@@ -1,0 +1,518 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+<title>LowResRMX Manual</title>
+<style>
+body { font-family: 'Baskerville', 'Libre Baskerville', serif; font-size: 1.3em; margin: 0; }
+h1, h2, h3 { margin: 2.5em 0 1em 0; background: #444; color: #fff; padding: 0.6em 1em 0.4em 1em; }
+body h1 { margin-top: 0; }
+p { margin: 1em; }
+blockquote { margin: 1em 0; border-left: solid 1em #ecc; padding: 0.2em 0.4em; background-color: #fee; }
+code { background-color: #ccc; padding: 0.2em 0.3em; margin: -0.2em -0.1em; }
+code+code { display: inline-block; }
+pre { white-space: pre-wrap; font-family: 'Menlon-Regular', monospace; margin: 0; background-color: #ccc; padding: 0.5em 1em; display: inline-block }
+pre>code { padding: 0; margin: 0; }
+table { border-collapse: collapse; margin: 0 1em; display: inline-block; }
+table+table { margin-left: 2em; vertical-align:top; }
+td, th { padding: 0.2em 0.8em; }
+tbody>tr, tr+tr { border-top: solid 0.1em #ddd; }
+hr { border: none; border-top: solid 0.15em #ccc; margin: 1em; }
+td:first-child { text-al
+</style>
+</head>
+<body>
+
+
+
+<h1 id="lowresrmx-manual">LowResRMX manual</h1>
+<blockquote>
+<p>This is a fork of the excellent fantasy console Lowres NX by Timo &quot;Inutilis&quot; Kloss.<br />
+This is a heavily modified version and way more complicated to use, I recommend you to stay on the original app:
+<a href="https://apps.apple.com/app/lowres-nx-coder/id1318884577">LowRes NX Coder on App Store</a>.</p>
+</blockquote>
+<p>Create your games and play it on the go using an iPhone or iPad. LowResRMX is a virtual game console and a game development environment that include all the tools to start and finish a project.</p>
+<p>It <strong>will</strong> includes a project manager, a code editor and some tools to edit game assets: sprites, palettes, backgrounds, instruments and musics.</p>
+<blockquote>
+<p><strong>The documentation and the included tools are still in development.</strong></p>
+</blockquote>
+<h2 id="difference-with-the-original-lowres-nx">Difference with the original Lowres NX</h2>
+<p>The goal 🥅 of the app is to provide a development environment to work with during my commutes in the subway, and later, being able to publish a real App on the Apple Store.</p>
+<p>The original LowRes NX, despite being an excellent development environment, lacks some capabilities to publish an App that looks credible.</p>
+<p>My main concern is the limited screen size unable to cover the whole devices screen and the landscape orientation. </p>
+<h3 id="background-layers">Background layers</h3>
+<p>4 background layers instead of 2 with 64x64 cells instead of 32x32.</p>
+<p>Support for big cells of 16x16 pixels has been removed.</p>
+<h3 id="screen">Screen</h3>
+<p>A fantasy screen of 216x384 pixels.</p>
+<p>With perfect squared pixels, a fixed portrait orientation, and it always fill the entire device screen.</p>
+<p>Depending on the device screen ratio, the number of visible virtual pixels may vary from 216x288 for 4:3 devices to 177x384 for 19.5:9 devices.</p>
+<p>To detect the visible virtual pixels, use the new functions <code>=SHOWN.W</code> and <code>=SHOWN.H</code>.</p>
+<hr />
+<p>New functions to recover the visible fantasy display size:</p>
+<p><code>=SHOWN.W</code><br />
+<code>=SHOWN.H</code></p>
+<p>Returns the number of visible pixels in width and height respectivly.</p>
+<hr />
+<p>New functions to query the safe area offset:</p>
+<p><code>=SAFE.L</code><br />
+<code>=SAFE.T</code><br />
+<code>=SAFE.R</code><br />
+<code>=SAFE.B</code></p>
+<p>Returns the offset in virtual pixels to apply from the boundary of the fantasy device screen to reach the inner safe area specified by the device operating system.</p>
+<p>It can be used to avoid the top camera notch or the bottom inset full-width buttons.</p>
+<h3 id="colors">Colors</h3>
+<p>The 64 available colors do not respect the original EGA style of Lowres NX. Instead it use the FAMICUBE palette created by Arne.</p>
+<blockquote>
+<p>This make the usage of the color chooser of the original &quot;Gfx Designer&quot; from Lowres NX a bit difficult to use.</p>
+</blockquote>
+<p>TODO: Provide a simple tool to visualize the colors and theirs indices.</p>
+<h3 id="sprites">Sprites</h3>
+<p>172 sprites instead of 64.</p>
+<p>And theirs position support sub-pixels with a 1/16 pixel precisions.</p>
+<h3 id="input">Input</h3>
+<p>Touchscreen only, with a float precision.</p>
+<p>Virtual controller and the posibility to use Bluetooth controller has been removed.</p>
+<hr />
+<p>New alternative to <code>WAIT</code> command:</p>
+<p><code>WAIT TAP</code></p>
+<p>Will wait for a device tap before continue execution.</p>
+<h3 id="flow-control">Flow control</h3>
+<p>New program flow control:</p>
+<p><code>ON value GOTO label,..</code><br />
+<code>ON value GOSUB label,..</code><br />
+<code>ON value RESTORE label,..</code></p>
+<p>Will <code>GOTO</code>, <code>GOSUB</code> or <code>RESTORE</code> to one of the <code>label</code> listed according to the <code>value</code>.</p>
+<p>e.g.:</p>
+<pre><code>ON I GOTO ZERO,ONE,TWO
+</code></pre>
+<h3 id="data">Data</h3>
+<p>New keyword to skip readed data:</p>
+<p><code>SKIP number</code></p>
+<p>Will skip a <code>number</code> of data to not read.</p>
+<p>e.g.:</p>
+<pre><code>DATA 0,1,2
+SKIP 2
+READ A
+PRINT A
+&#39;WILL PRINT &quot;2&quot;
+</code></pre>
+<h3 id="math">Math</h3>
+<p>New function to clamp numerical value:</p>
+<p><code>=CLAMP(value,min,max)</code></p>
+<p>Returns the <code>value</code> clamped between <code>min</code> and <code>max</code>.</p>
+<hr />
+<p>New random generator and feature:</p>
+<p><code>=RND</code></p>
+<p>Same as before but with a different generator, it use <a href="https://www.pcg-random.org/">PCG</a>.</p>
+<p><code>RANDOMIZE seed,address</code>
+<code>=RND address</code>
+<code>=RND(max,address)</code></p>
+<p>Can specify an <code>address</code> where the internal state will be stored. It will consume 16 bytes.</p>
+<p>This allow to use multiple generator at the same times.</p>
+<hr />
+<p>New function that interpolates values between 0 and 1 using easing mathematical functions.</p>
+<p><code>=EASE(function,mode,value)</code></p>
+<p>Returns the interpolation of the <code>value</code> between 0.0 and 1.0 using the easing <code>function</code> and the <code>mode</code>.</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>function</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0</td>
+<td>linear</td>
+</tr>
+<tr>
+<td>1</td>
+<td>sine</td>
+</tr>
+<tr>
+<td>2</td>
+<td>quad</td>
+</tr>
+<tr>
+<td>3</td>
+<td>cubic</td>
+</tr>
+<tr>
+<td>4</td>
+<td>quart</td>
+</tr>
+<tr>
+<td>5</td>
+<td>quint</td>
+</tr>
+<tr>
+<td>6</td>
+<td>circ</td>
+</tr>
+<tr>
+<td>7</td>
+<td>back</td>
+</tr>
+<tr>
+<td>8</td>
+<td>elastic</td>
+</tr>
+<tr>
+<td>9</td>
+<td>bounce</td>
+</tr>
+</tbody></table>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>mode</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>-1</td>
+<td>in</td>
+</tr>
+<tr>
+<td>0</td>
+<td>inout</td>
+</tr>
+<tr>
+<td>+1</td>
+<td>out</td>
+</tr>
+</tbody></table>
+<h3 id="text">Text</h3>
+<p>New command to expose the existing overlay message API:</p>
+<p><code>MESSAGE text</code></p>
+<hr />
+<p>Alternative usage for <code>PRINT</code> where it can now use label literal:</p>
+<p><code>PRINT label</code></p>
+<p>It allow to store a string using the <code>DATA</code> keyword and reference it in the <code>PRINT</code> command.</p>
+<p>e.g.:</p>
+<pre><code>PRINT GA
+GA:
+DATA &quot;GABUZOMEU&quot;
+</code></pre>
+<p>TODO: Do it for <code>=LEFT$</code>, <code>=MID$</code>, <code>=RIGHT$</code>.</p>
+<h3 id="other">Other</h3>
+<p>New command to help support program from the original Lowres NX:</p>
+<p><code>COMPAT</code></p>
+<p>Enable the compatibility mode:</p>
+<ul>
+<li>It will force the rendering process to keep the original device screen.</li>
+<li>It will reverse the <code>RND</code> and <code>=RND()</code> to it&#39;s original behavior</li>
+</ul>
+<p>It do not fix everything and make the program 100% compatible but it can help.</p>
+<p>For instance, the commands and functions that has been removed will still be unavailable.</p>
+<h3 id="memory">Memory</h3>
+<p>An almost compatible memory mapping.</p>
+<p>The total addressable memory grow from 64 Kibi to 128 Kibi.</p>
+<p>Lowres NX:</p>
+<table>
+<thead>
+<tr>
+<th>addr</th>
+<th>size</th>
+<th>purpose</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>$0000</td>
+<td>32 Kibi</td>
+<td>Cartridge ROM</td>
+</tr>
+<tr>
+<td>$8000</td>
+<td>4 Kibi</td>
+<td>Character Data</td>
+</tr>
+<tr>
+<td>$9000</td>
+<td>2 Kibi</td>
+<td>BG0 Data</td>
+</tr>
+<tr>
+<td>$9800</td>
+<td>2 Kibi</td>
+<td>BG1 Data</td>
+</tr>
+<tr>
+<td>$A000</td>
+<td>16 Kibi</td>
+<td>Working RAM</td>
+</tr>
+<tr>
+<td>$E000</td>
+<td>4 Kibi</td>
+<td>Persistent RAM</td>
+</tr>
+<tr>
+<td>$FE00</td>
+<td>256 Bytes</td>
+<td>Sprite Registers</td>
+</tr>
+<tr>
+<td>$FF00</td>
+<td>32 Bytes</td>
+<td>Color Registers</td>
+</tr>
+<tr>
+<td>$FF20</td>
+<td></td>
+<td>Video Registers</td>
+</tr>
+<tr>
+<td>$FF40</td>
+<td></td>
+<td>Audio Registers</td>
+</tr>
+<tr>
+<td>$FF70</td>
+<td></td>
+<td>I/O Registers</td>
+</tr>
+</tbody></table>
+<p>LowResRMX:</p>
+<table>
+<thead>
+<tr>
+<th>addr</th>
+<th>size</th>
+<th>purpose</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>$0000</td>
+<td>8 Kibi</td>
+<td>BG0 data</td>
+</tr>
+<tr>
+<td>$2000</td>
+<td>8 Kibi</td>
+<td>BG1 data</td>
+</tr>
+<tr>
+<td>$4000</td>
+<td>8 Kibi</td>
+<td>BG2 data</td>
+</tr>
+<tr>
+<td>$6000</td>
+<td>8 Kibi</td>
+<td>BG3 data</td>
+</tr>
+<tr>
+<td>$8000</td>
+<td>20 Kibi</td>
+<td>Working RAM</td>
+</tr>
+<tr>
+<td>$E000</td>
+<td>6 Kibi</td>
+<td>Persisent RAM</td>
+</tr>
+<tr>
+<td>$FB00</td>
+<td>1020 Bytes</td>
+<td>Sprite registers</td>
+</tr>
+<tr>
+<td>$FF00</td>
+<td>32 Bytes</td>
+<td>Color registers</td>
+</tr>
+<tr>
+<td>$FF20</td>
+<td>10 Bytes</td>
+<td>Video registers</td>
+</tr>
+<tr>
+<td>$FF40</td>
+<td>48 Bytes</td>
+<td>Audio registers</td>
+</tr>
+<tr>
+<td>$FF70</td>
+<td>40 Bytes</td>
+<td>I/O registers</td>
+</tr>
+<tr>
+<td>$FFA0</td>
+<td>6 Bytes</td>
+<td>DMA registers</td>
+</tr>
+<tr>
+<td>$10000</td>
+<td>64 Kibi</td>
+<td>Cartridge ROM</td>
+</tr>
+</tbody></table>
+<p>TODO: Add particle/emitter registers</p>
+<hr />
+<p>New command and registers for a fast memory copy.</p>
+<p><code>DMA COPY</code><br />
+<code>DMA COPY ROM</code></p>
+<p>Perform a fast memory copy that can be done only during interrupt calls.</p>
+<p>It uses the following registers as data:</p>
+<table>
+<thead>
+<tr>
+<th>addr</th>
+<th>purpose</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>$FFA0</td>
+<td>Source address</td>
+</tr>
+<tr>
+<td>$FFA2</td>
+<td>Bytes count</td>
+</tr>
+<tr>
+<td>$FFA4</td>
+<td>Destination address</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>Will only works in a subprogram that has been called during an interrupts, including: <code>RASTER</code>, <code>VBL</code> and <code>PARTICLE</code>.</p>
+</blockquote>
+<hr />
+<p>The <code>COPY</code> command is slightly faster.</p>
+<h3 id="particles">Particles</h3>
+<p>The particles library reused the sprites to make them appear, dissapear, change theirs characters data and move them accross the screen.</p>
+<hr />
+<p><code>PARTICLE first,count AT address</code></p>
+<p>Declare to use <code>count</code> sprites starting from the <code>first</code> and store the internal data at <code>address</code>.</p>
+<p>It will consume 6 bytes per sprite in memory. For each sprite:</p>
+<table>
+<thead>
+<tr>
+<th>addr</th>
+<th>size</th>
+<th>purpose</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>+0</td>
+<td>2 Bytes</td>
+<td>Speed on x axis</td>
+</tr>
+<tr>
+<td>+2</td>
+<td>2 Bytes</td>
+<td>Speed on y axis</td>
+</tr>
+<tr>
+<td>+4</td>
+<td>1 Byte</td>
+<td>Appearence</td>
+</tr>
+<tr>
+<td>+5</td>
+<td>1 Byte</td>
+<td>Current frame</td>
+</tr>
+</tbody></table>
+<p>e.g.:</p>
+<pre><code>PARTICLE 1,20 AT $9000
+&#39;Will use sprite 1 to 20 included.
+&#39;Store internal data from $9000 to $9078 excluded.
+</code></pre>
+<hr />
+<p><code>PARTICLE appearence DATA label</code></p>
+<p>Declare a <code>label</code> that contains DATA for the particle <code>appearence</code>.</p>
+<p><code>appearence</code> is a number between 0 and 23.</p>
+<p>The associated DATA must contains a list of character number that will be used to draw the particle. Using a negative number will loop to the previous DATA value.</p>
+<p>A typical example is to put zero <code>0</code> and minus one <code>-1</code> for the two last data values, as it will allow to make the particle dissapear until the sprite is reused.</p>
+<p>e.g.:</p>
+<pre><code>MY_APPEARANCE:
+DATA 1,2,3,4,0,-1
+&#39;Will show the character 1 to 4, each per frame.
+&#39;And loop with the character 0.
+</code></pre>
+<hr />
+<p><code>PARTICLE OFF</code></p>
+<p>Clear each sprite position and each particle appearence.</p>
+<hr />
+<p><code>ON PARTICLE CALL subprogram</code></p>
+<p>For each particle, will call the subprogram using an interrupt.</p>
+<p>The target <code>subprogram</code> will receive two arguments:</p>
+<ol>
+<li>the <code>sprite</code> number,</li>
+<li>and the particle <code>address</code>.</li>
+</ol>
+<p>e.g.:</p>
+<pre><code>SUB MYPART(SPR,ADDR)
+    SY=PEEKW(ADDR+2)
+    POKEW ADDR+2,SY-5
+    &#39;Change the speed in y axis
+END SUB
+</code></pre>
+<p>TODO: specify the number of cycles available.</p>
+<hr />
+<p><code>EMITTER count AT address</code></p>
+<p>Declare to use <code>count</code> emitter and store the internal data at <code>address</code>.</p>
+<p><code>count</code> is a number between 0 and 15.</p>
+<p>It will consume 6 bytes per emitter in memory. For each emitter:</p>
+<table>
+<thead>
+<tr>
+<th>addr</th>
+<th>size</th>
+<th>purpose</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>+0</td>
+<td>2 Bytes</td>
+<td>Position on x axis</td>
+</tr>
+<tr>
+<td>+2</td>
+<td>2 Bytes</td>
+<td>Position on y axis</td>
+</tr>
+<tr>
+<td>+4</td>
+<td>1 Byte</td>
+<td>Delay before emit</td>
+</tr>
+<tr>
+<td>+5</td>
+<td>1 Byte</td>
+<td>Number of time to emit</td>
+</tr>
+</tbody></table>
+<hr />
+<p><code>EMITTER emitter DATA label</code></p>
+<p>Declare a <code>label</code> that contains DATA for the <code>emitter</code>.</p>
+<p>The associated data must follow this list:</p>
+<ol>
+<li><code>appearence</code>,</li>
+<li><code>outer</code> ring radius,</li>
+<li><code>inner</code> ring radius,</li>
+<li>initial particle <code>speed</code> on x axis,</li>
+<li>initial particle <code>speed</code> on y axis,</li>
+<li><code>count</code> of the number of particle to spawn at this frame,</li>
+<li>number of frame to <code>delay</code> the re-emittion,</li>
+<li>how many times to <code>repeat</code> the emittion.</li>
+</ol>
+<p>When a particle get spawn, a random position is computed between the <code>outer</code> and <code>inner</code> ring.</p>
+<hr />
+<p><code>EMITTER emitter ON x,y</code></p>
+<p>Tell the <code>emitter</code> to emit particle staring at position <code>x</code> and <code>y</code>.</p>
+<p>It will automaticly end when <code>repeat</code> reach 0.</p>
+<hr />
+<p><code>EMITTER emitter OFF</code></p>
+<p>Manually stop the <code>emitter</code>.</p>
+  
+
+
+
+
+</body>
+</html>

@@ -1,0 +1,5 @@
+- [ ] finish the vscode-extension additions
+- [ ] fix the dev menu when running the desktop version
+- [ ] delete fnc_BUTTON
+- [ ] move pcg to a directory
+- [ ] redo the project architecture

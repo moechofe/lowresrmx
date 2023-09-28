@@ -1,0 +1,5 @@
+/.stversions
+*.bc
+.DS_Store
+/linux-app/build
+xcuserdata/

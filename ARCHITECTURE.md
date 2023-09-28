@@ -1,0 +1,11 @@
+- 📂 `comminuty-website`
+- 📂 `dev-assets`
+- 📂 `dev-programs`
+- 📂 `engine-backend`
+- 📂 `ios-app`
+- 📂 `linux-app`
+- 📂 `manual`
+- 📂 `programs`
+- 📂 `sdl-frontend`
+- 📂 `vscode-extension`
+- 📂 `web-player`
