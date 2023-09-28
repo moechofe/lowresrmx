@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="21701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="eHk-P2-FSa">
+    <device id="retina5_5" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21679"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Low ResRMX View Controller-->
+        <scene sceneID="C7U-AN-NoM">
+            <objects>
+                <viewController extendedLayoutIncludesOpaqueBars="YES" modalTransitionStyle="crossDissolve" modalPresentationStyle="fullScreen" id="eHk-P2-FSa" customClass="LowResRMXViewController" customModule="LowResRMX" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" autoresizesSubviews="NO" contentMode="scaleToFill" id="g0A-yH-wBi">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="736"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <view contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Daq-lQ-abv" customClass="LowResRMXView" customModule="LowResRMX" customModuleProvider="target">
+                                <rect key="frame" x="47" y="44" width="320" height="256"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            </view>
+                            <button opaque="NO" alpha="0.25" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="UGT-qu-6MS" userLabel="Exit Button">
+                                <rect key="frame" x="10" y="10" width="33" height="33"/>
+                                <state key="normal" image="exit">
+                                    <color key="titleShadowColor" red="0.5" green="0.5" blue="0.5" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                </state>
+                                <connections>
+                                    <action selector="onExitTapped:" destination="eHk-P2-FSa" eventType="touchUpInside" id="7Te-qH-bwp"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" alpha="0.25" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="xvW-7I-abI">
+                                <rect key="frame" x="371" y="10" width="33" height="33"/>
+                                <state key="normal" image="more"/>
+                                <connections>
+                                    <action selector="settingsTapped:" destination="eHk-P2-FSa" eventType="touchUpInside" id="mrF-YT-Ibg"/>
+                                </connections>
+                            </button>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="wrQ-sh-Squ"/>
+                        <color key="backgroundColor" white="0.0" alpha="1" colorSpace="calibratedWhite"/>
+                        <constraints>
+                            <constraint firstItem="xvW-7I-abI" firstAttribute="top" secondItem="g0A-yH-wBi" secondAttribute="top" constant="10" id="Nmy-uz-CdQ"/>
+                            <constraint firstItem="UGT-qu-6MS" firstAttribute="top" secondItem="g0A-yH-wBi" secondAttribute="top" constant="10" id="b2M-VL-HPv"/>
+                            <constraint firstItem="wrQ-sh-Squ" firstAttribute="leading" secondItem="UGT-qu-6MS" secondAttribute="leading" constant="-10" id="hDd-Tx-vW1" userLabel="Safe Area.leading = Exit Button.trailing + 10"/>
+                            <constraint firstItem="wrQ-sh-Squ" firstAttribute="trailing" secondItem="xvW-7I-abI" secondAttribute="trailing" constant="10" id="sPm-Pi-w7i"/>
+                        </constraints>
+                    </view>
+                    <nil key="simulatedStatusBarMetrics"/>
+                    <connections>
+                        <outlet property="exitButton" destination="UGT-qu-6MS" id="1Fs-QI-Poo"/>
+                        <outlet property="menuButton" destination="xvW-7I-abI" id="Bet-kw-MTW"/>
+                        <outlet property="nxView" destination="Daq-lQ-abv" id="2Us-a8-YRb"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="SZR-fL-aKI" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="2445.6521739130435" y="1147.8260869565217"/>
+        </scene>
+    </scenes>
+    <resources>
+        <image name="exit" width="33" height="33"/>
+        <image name="more" width="33" height="33"/>
+    </resources>
+</document>

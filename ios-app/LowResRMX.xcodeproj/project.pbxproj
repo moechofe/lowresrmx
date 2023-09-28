@@ -230,11 +230,11 @@
 		9276994C1F7D649800211D15 /* ExplorerItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9276994B1F7D649800211D15 /* ExplorerItem.swift */; };
 		9276994E1F7D678900211D15 /* ProjectDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9276994D1F7D678900211D15 /* ProjectDocument.swift */; };
 		927D00392529C8D8004ACA03 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 927D002F2529C78B004ACA03 /* Preview Assets.xcassets */; };
-		927F2C6F1FC4C1030041883C /* LowResNX.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 927F2C6E1FC4C1030041883C /* LowResNX.storyboard */; };
+		927F2C6F1FC4C1030041883C /* LowResRMX.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 927F2C6E1FC4C1030041883C /* LowResRMX.storyboard */; };
 		92817749221FDA72005B7A24 /* AppController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92817748221FDA72005B7A24 /* AppController.swift */; };
-		9289C40C2128A46E009BE093 /* LowResNXAudioPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9289C40B2128A46E009BE093 /* LowResNXAudioPlayer.swift */; };
+		9289C40C2128A46E009BE093 /* LowResRMXAudioPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9289C40B2128A46E009BE093 /* LowResRMXAudioPlayer.swift */; };
 		92930E4C203377DF00DE18B9 /* RoundHitBoxButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92930E4B203377DF00DE18B9 /* RoundHitBoxButton.swift */; };
-		9294F2E01FC4B9A600A90487 /* LowResNXViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9294F2DF1FC4B9A600A90487 /* LowResNXViewController.swift */; };
+		9294F2E01FC4B9A600A90487 /* LowResRMXViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9294F2DF1FC4B9A600A90487 /* LowResRMXViewController.swift */; };
 		9294F2E21FC4BA1100A90487 /* CoreWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9294F2E11FC4BA1100A90487 /* CoreWrapper.swift */; };
 		92A001CF243780DD007AE953 /* ActionButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A001CE243780DD007AE953 /* ActionButton.swift */; };
 		92A1C9322297E12C00364F80 /* CommunityViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A1C9312297E12C00364F80 /* CommunityViewController.swift */; };
@@ -248,7 +248,7 @@
 		92DA4C99202CECE000129302 /* Dpad.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92DA4C98202CECE000129302 /* Dpad.swift */; };
 		92EA93BE1F744572007BEFB1 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92EA93BD1F744572007BEFB1 /* AppDelegate.swift */; };
 		92EA93C51F744573007BEFB1 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 92EA93C41F744573007BEFB1 /* Assets.xcassets */; };
-		92FAB24D1FC07D1C002E45FB /* LowResNXView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92FAB24C1FC07D1B002E45FB /* LowResNXView.swift */; };
+		92FAB24D1FC07D1C002E45FB /* LowResRMXView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92FAB24C1FC07D1B002E45FB /* LowResRMXView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -431,7 +431,7 @@
 		9227DC211FC8C17A00BC89FD /* SplashViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashViewController.swift; sourceTree = "<group>"; };
 		9234247422C3FACC002431CD /* ClearRamActivity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClearRamActivity.swift; sourceTree = "<group>"; };
 		923C310F20587965003C89AC /* ToolsMenuConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolsMenuConfiguration.swift; sourceTree = "<group>"; };
-		92483F7C1F7C2A4300E6D476 /* LowRes NX Coder.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "LowRes NX Coder.entitlements"; sourceTree = "<group>"; };
+		92483F7C1F7C2A4300E6D476 /* LowResRMX.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "LowResRMX.entitlements"; sourceTree = "<group>"; };
 		924AB3F1205D986B00BCF977 /* IndexSideBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IndexSideBar.swift; sourceTree = "<group>"; };
 		925CC52E1F7588950059C230 /* BackgroundView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BackgroundView.m; sourceTree = "<group>"; };
 		925CC5331F7588960059C230 /* EditorTextView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = EditorTextView.h; sourceTree = "<group>"; };
@@ -476,12 +476,12 @@
 		9276994B1F7D649800211D15 /* ExplorerItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExplorerItem.swift; sourceTree = "<group>"; };
 		9276994D1F7D678900211D15 /* ProjectDocument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectDocument.swift; sourceTree = "<group>"; };
 		927D002F2529C78B004ACA03 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
-		927F2C6E1FC4C1030041883C /* LowResNX.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LowResNX.storyboard; sourceTree = "<group>"; };
+		927F2C6E1FC4C1030041883C /* LowResRMX.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LowResRMX.storyboard; sourceTree = "<group>"; };
 		92817748221FDA72005B7A24 /* AppController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppController.swift; sourceTree = "<group>"; };
-		928402351F7448E000AC1466 /* LowResNX-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "LowResNX-Bridging-Header.h"; sourceTree = "<group>"; };
-		9289C40B2128A46E009BE093 /* LowResNXAudioPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LowResNXAudioPlayer.swift; sourceTree = "<group>"; };
+		928402351F7448E000AC1466 /* LowResRMX-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "LowResRMX-Bridging-Header.h"; sourceTree = "<group>"; };
+		9289C40B2128A46E009BE093 /* LowResRMXAudioPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LowResRMXAudioPlayer.swift; sourceTree = "<group>"; };
 		92930E4B203377DF00DE18B9 /* RoundHitBoxButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundHitBoxButton.swift; sourceTree = "<group>"; };
-		9294F2DF1FC4B9A600A90487 /* LowResNXViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LowResNXViewController.swift; sourceTree = "<group>"; };
+		9294F2DF1FC4B9A600A90487 /* LowResRMXViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LowResRMXViewController.swift; sourceTree = "<group>"; };
 		9294F2E11FC4BA1100A90487 /* CoreWrapper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CoreWrapper.swift; sourceTree = "<group>"; };
 		92A001CE243780DD007AE953 /* ActionButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActionButton.swift; sourceTree = "<group>"; };
 		92A1C9312297E12C00364F80 /* CommunityViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommunityViewController.swift; sourceTree = "<group>"; };
@@ -497,7 +497,7 @@
 		92EA93BD1F744572007BEFB1 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		92EA93C41F744573007BEFB1 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		92EA93C91F744573007BEFB1 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		92FAB24C1FC07D1B002E45FB /* LowResNXView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LowResNXView.swift; sourceTree = "<group>"; };
+		92FAB24C1FC07D1B002E45FB /* LowResRMXView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LowResRMXView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -792,7 +792,7 @@
 			isa = PBXGroup;
 			children = (
 				926EB1DD1F757FC90048A6CF /* Main */,
-				9294F2E31FC4BA7300A90487 /* LowResNX */,
+				9294F2E31FC4BA7300A90487 /* LowResRMX */,
 				926EB1F11F7582660048A6CF /* Help */,
 				926EB1D81F757FAD0048A6CF /* UIViewController+LowResCoder.h */,
 				920FC8672204C25A004707E7 /* LaunchScreen.storyboard */,
@@ -836,15 +836,15 @@
 			path = Help;
 			sourceTree = "<group>";
 		};
-		9294F2E31FC4BA7300A90487 /* LowResNX */ = {
+		9294F2E31FC4BA7300A90487 /* LowResRMX */ = {
 			isa = PBXGroup;
 			children = (
-				927F2C6E1FC4C1030041883C /* LowResNX.storyboard */,
-				9294F2DF1FC4B9A600A90487 /* LowResNXViewController.swift */,
-				92FAB24C1FC07D1B002E45FB /* LowResNXView.swift */,
-				9289C40B2128A46E009BE093 /* LowResNXAudioPlayer.swift */,
+				927F2C6E1FC4C1030041883C /* LowResRMX.storyboard */,
+				9294F2DF1FC4B9A600A90487 /* LowResRMXViewController.swift */,
+				92FAB24C1FC07D1B002E45FB /* LowResRMXView.swift */,
+				9289C40B2128A46E009BE093 /* LowResRMXAudioPlayer.swift */,
 			);
-			path = LowResNX;
+			path = LowResRMX;
 			sourceTree = "<group>";
 		};
 		92A524862069771100EDE7AF /* Cells */ = {
@@ -881,7 +881,7 @@
 				5B34EC562AC5835600220A80 /* engine-backend */,
 				5B34EC542AC5796000220A80 /* programs */,
 				5B34EC522AC5795600220A80 /* manual */,
-				92EA93BC1F744572007BEFB1 /* LowRes NX Coder */,
+				92EA93BC1F744572007BEFB1 /* LowResRMX */,
 				922798962527251F004F6E1A /* Widgets */,
 				92EA93BB1F744572007BEFB1 /* Products */,
 				925CC6B61F758A120059C230 /* Frameworks */,
@@ -897,10 +897,10 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		92EA93BC1F744572007BEFB1 /* LowRes NX Coder */ = {
+		92EA93BC1F744572007BEFB1 /* LowResRMX */ = {
 			isa = PBXGroup;
 			children = (
-				92483F7C1F7C2A4300E6D476 /* LowRes NX Coder.entitlements */,
+				92483F7C1F7C2A4300E6D476 /* LowResRMX.entitlements */,
 				92EA93C41F744573007BEFB1 /* Assets.xcassets */,
 				9227DA8F2204302F0035615C /* Boot Intro.nx */,
 				925CC6931F75896F0059C230 /* Extensions */,
@@ -910,11 +910,11 @@
 				925CC52D1F7587C40059C230 /* Views */,
 				92A7E146223B8E8600ED2487 /* Activities */,
 				926EB1D01F757D5B0048A6CF /* Scenes */,
-				928402351F7448E000AC1466 /* LowResNX-Bridging-Header.h */,
+				928402351F7448E000AC1466 /* LowResRMX-Bridging-Header.h */,
 				92EA93BD1F744572007BEFB1 /* AppDelegate.swift */,
 				92EA93C91F744573007BEFB1 /* Info.plist */,
 			);
-			path = "LowRes NX Coder";
+			path = "LowResRMX";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -952,7 +952,7 @@
 				9227989D25272523004F6E1A /* PBXTargetDependency */,
 			);
 			name = App;
-			productName = "LowRes Coder NX";
+			productName = "LowRes CoderRMX";
 			productReference = 92EA93BA1F744572007BEFB1 /* App.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -1102,7 +1102,7 @@
 				5B34ED802AC5835700220A80 /* video_chip.bc in Resources */,
 				92EA93C51F744573007BEFB1 /* Assets.xcassets in Resources */,
 				5B34ED4E2AC5835600220A80 /* cmd_text.bc in Resources */,
-				927F2C6F1FC4C1030041883C /* LowResNX.storyboard in Resources */,
+				927F2C6F1FC4C1030041883C /* LowResRMX.storyboard in Resources */,
 				5B34ECE62AC5835600220A80 /* token.bc in Resources */,
 				5B34ED1E2AC5835600220A80 /* cmd_files.bc in Resources */,
 				5B34ED5A2AC5835600220A80 /* data_manager.bc in Resources */,
@@ -1198,11 +1198,11 @@
 				5B34ECF62AC5835600220A80 /* cmd_background.c in Sources */,
 				5B34ED322AC5835600220A80 /* string_utils.c in Sources */,
 				5B34ED5E2AC5835600220A80 /* sprites_lib.c in Sources */,
-				9294F2E01FC4B9A600A90487 /* LowResNXViewController.swift in Sources */,
+				9294F2E01FC4B9A600A90487 /* LowResRMXViewController.swift in Sources */,
 				5B34ED582AC5835600220A80 /* data_manager.c in Sources */,
 				920E1B531F7816FA00664382 /* SearchToolbar.m in Sources */,
-				92FAB24D1FC07D1C002E45FB /* LowResNXView.swift in Sources */,
-				9289C40C2128A46E009BE093 /* LowResNXAudioPlayer.swift in Sources */,
+				92FAB24D1FC07D1C002E45FB /* LowResRMXView.swift in Sources */,
+				9289C40C2128A46E009BE093 /* LowResRMXAudioPlayer.swift in Sources */,
 				5B34ECF02AC5835600220A80 /* cmd_data.c in Sources */,
 				5B34ED882AC5835700220A80 /* machine.c in Sources */,
 				923C311020587965003C89AC /* ToolsMenuConfiguration.swift in Sources */,
@@ -1465,15 +1465,15 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_ENTITLEMENTS = "LowRes NX Coder/LowRes NX Coder.entitlements";
+				CODE_SIGN_ENTITLEMENTS = "LowResRMX/LowResRMX.entitlements";
 				CURRENT_PROJECT_VERSION = 200;
 				DEVELOPMENT_TEAM = YWZ55H4QT9;
-				INFOPLIST_FILE = "$(SRCROOT)/LowRes NX Coder/Info.plist";
+				INFOPLIST_FILE = "$(SRCROOT)/LowResRMX/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				MARKETING_VERSION = 2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.moechofe.ios.LowResRMX;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_OBJC_BRIDGING_HEADER = "LowRes NX Coder/LowResNX-Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "LowResRMX/LowResRMX-Bridging-Header.h";
 				SWIFT_PRECOMPILE_BRIDGING_HEADER = YES;
 				SWIFT_SWIFT3_OBJC_INFERENCE = Default;
 				SWIFT_VERSION = 5.0;
@@ -1485,15 +1485,15 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_ENTITLEMENTS = "LowRes NX Coder/LowRes NX Coder.entitlements";
+				CODE_SIGN_ENTITLEMENTS = "LowResRMX/LowResRMX.entitlements";
 				CURRENT_PROJECT_VERSION = 200;
 				DEVELOPMENT_TEAM = YWZ55H4QT9;
-				INFOPLIST_FILE = "$(SRCROOT)/LowRes NX Coder/Info.plist";
+				INFOPLIST_FILE = "$(SRCROOT)/LowResRMX/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				MARKETING_VERSION = 2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.moechofe.ios.LowResRMX;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_OBJC_BRIDGING_HEADER = "LowRes NX Coder/LowResNX-Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "LowResRMX/LowResRMX-Bridging-Header.h";
 				SWIFT_PRECOMPILE_BRIDGING_HEADER = YES;
 				SWIFT_SWIFT3_OBJC_INFERENCE = Default;
 				SWIFT_VERSION = 5.0;
