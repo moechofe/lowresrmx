@@ -1,0 +1,4 @@
+DO
+trace timer
+wait vbl
+loop

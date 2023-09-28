@@ -1,0 +1,5 @@
+RANDOMIZE TIMER,$9000
+do
+PRINT RND(,$9000)
+wait tap
+loop

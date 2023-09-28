@@ -91,7 +91,7 @@ import WebKit
     }
     
     private override init() {
-        let url = Bundle.main.url(forResource: "manual", withExtension: "html", subdirectory:"manual")!
+        let url = Bundle.main.url(forResource: "manual", withExtension: "html", subdirectory:"asset.manual")!
         helpContent = HelpContent(url: url)
         
         bootTime = CFAbsoluteTimeGetCurrent()

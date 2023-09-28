@@ -276,8 +276,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		5B34EC522AC5795600220A80 /* manual */ = {isa = PBXFileReference; lastKnownFileType = folder; name = manual; path = ../manual; sourceTree = "<group>"; };
-		5B34EC542AC5796000220A80 /* programs */ = {isa = PBXFileReference; lastKnownFileType = folder; name = programs; path = ../programs; sourceTree = "<group>"; };
+		5B34EC522AC5795600220A80 /* manual */ = {isa = PBXFileReference; lastKnownFileType = folder; name = manual; path = ../asset.manual; sourceTree = "<group>"; };
+		5B34EC542AC5796000220A80 /* programs */ = {isa = PBXFileReference; lastKnownFileType = folder; name = programs; path = ../asset.programs; sourceTree = "<group>"; };
 		5B34EC582AC5835600220A80 /* token.bc */ = {isa = PBXFileReference; lastKnownFileType = file; path = token.bc; sourceTree = "<group>"; };
 		5B34EC592AC5835600220A80 /* cmd_particle.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = cmd_particle.c; sourceTree = "<group>"; };
 		5B34EC5A2AC5835600220A80 /* cmd_memory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cmd_memory.h; sourceTree = "<group>"; };
@@ -520,7 +520,7 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		5B34EC562AC5835600220A80 /* engine-backend */ = {
+		5B34EC562AC5835600220A80 /* backend.core */ = {
 			isa = PBXGroup;
 			children = (
 				5B34EC572AC5835600220A80 /* interpreter */,
@@ -545,8 +545,8 @@
 				5B34ECE42AC5835600220A80 /* core_delegate.c */,
 				5B34ECE52AC5835600220A80 /* core_stats.h */,
 			);
-			name = "engine-backend";
-			path = "../engine-backend";
+			name = "backend.core";
+			path = "../backend.core";
 			sourceTree = "<group>";
 		};
 		5B34EC572AC5835600220A80 /* interpreter */ = {
@@ -878,7 +878,7 @@
 		92EA93B11F744572007BEFB1 = {
 			isa = PBXGroup;
 			children = (
-				5B34EC562AC5835600220A80 /* engine-backend */,
+				5B34EC562AC5835600220A80 /* backend.core */,
 				5B34EC542AC5796000220A80 /* programs */,
 				5B34EC522AC5795600220A80 /* manual */,
 				92EA93BC1F744572007BEFB1 /* LowResRMX */,

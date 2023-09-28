@@ -1,0 +1,9 @@
+for i=$9000 to $e000-1
+r=RND(255)
+poke i,r
+if peek(i)<>r then goto failure
+next I
+print "success"
+end
+failure:
+print "failure"

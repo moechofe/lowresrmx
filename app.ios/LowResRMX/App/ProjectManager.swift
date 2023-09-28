@@ -342,7 +342,7 @@ class ProjectManager: NSObject {
     
     private func copyBundleProgramsIfNeeded(overwrite: Bool) {
         do {
-            let programsUrl = Bundle.main.bundleURL.appendingPathComponent("programs", isDirectory: true)
+            let programsUrl = Bundle.main.bundleURL.appendingPathComponent("asset.programs", isDirectory: true)
             let urls = try FileManager.default.contentsOfDirectory(at: programsUrl, includingPropertiesForKeys: nil, options: [])
             
             for url in urls {
