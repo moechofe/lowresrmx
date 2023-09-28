@@ -7,8 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		5B34EC532AC5795600220A80 /* manual in Resources */ = {isa = PBXBuildFile; fileRef = 5B34EC522AC5795600220A80 /* manual */; };
-		5B34EC552AC5796000220A80 /* programs in Resources */ = {isa = PBXBuildFile; fileRef = 5B34EC542AC5796000220A80 /* programs */; };
+		5B34EC532AC5795600220A80 /* asset.manual in Resources */ = {isa = PBXBuildFile; fileRef = 5B34EC522AC5795600220A80 /* asset.manual */; };
+		5B34EC552AC5796000220A80 /* asset.programs in Resources */ = {isa = PBXBuildFile; fileRef = 5B34EC542AC5796000220A80 /* asset.programs */; };
 		5B34ECE62AC5835600220A80 /* token.bc in Resources */ = {isa = PBXBuildFile; fileRef = 5B34EC582AC5835600220A80 /* token.bc */; };
 		5B34ECE72AC5835600220A80 /* token.bc in Resources */ = {isa = PBXBuildFile; fileRef = 5B34EC582AC5835600220A80 /* token.bc */; };
 		5B34ECE82AC5835600220A80 /* cmd_particle.c in Sources */ = {isa = PBXBuildFile; fileRef = 5B34EC592AC5835600220A80 /* cmd_particle.c */; };
@@ -276,8 +276,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		5B34EC522AC5795600220A80 /* manual */ = {isa = PBXFileReference; lastKnownFileType = folder; name = manual; path = ../asset.manual; sourceTree = "<group>"; };
-		5B34EC542AC5796000220A80 /* programs */ = {isa = PBXFileReference; lastKnownFileType = folder; name = programs; path = ../asset.programs; sourceTree = "<group>"; };
+		5B34EC522AC5795600220A80 /* asset.manual */ = {isa = PBXFileReference; lastKnownFileType = folder; name = asset.manual; path = ../asset.manual; sourceTree = "<group>"; };
+		5B34EC542AC5796000220A80 /* asset.programs */ = {isa = PBXFileReference; lastKnownFileType = folder; name = asset.programs; path = ../asset.programs; sourceTree = "<group>"; };
 		5B34EC582AC5835600220A80 /* token.bc */ = {isa = PBXFileReference; lastKnownFileType = file; path = token.bc; sourceTree = "<group>"; };
 		5B34EC592AC5835600220A80 /* cmd_particle.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = cmd_particle.c; sourceTree = "<group>"; };
 		5B34EC5A2AC5835600220A80 /* cmd_memory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cmd_memory.h; sourceTree = "<group>"; };
@@ -431,7 +431,7 @@
 		9227DC211FC8C17A00BC89FD /* SplashViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashViewController.swift; sourceTree = "<group>"; };
 		9234247422C3FACC002431CD /* ClearRamActivity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClearRamActivity.swift; sourceTree = "<group>"; };
 		923C310F20587965003C89AC /* ToolsMenuConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolsMenuConfiguration.swift; sourceTree = "<group>"; };
-		92483F7C1F7C2A4300E6D476 /* LowResRMX.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "LowResRMX.entitlements"; sourceTree = "<group>"; };
+		92483F7C1F7C2A4300E6D476 /* LowResRMX.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = LowResRMX.entitlements; sourceTree = "<group>"; };
 		924AB3F1205D986B00BCF977 /* IndexSideBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IndexSideBar.swift; sourceTree = "<group>"; };
 		925CC52E1F7588950059C230 /* BackgroundView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BackgroundView.m; sourceTree = "<group>"; };
 		925CC5331F7588960059C230 /* EditorTextView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = EditorTextView.h; sourceTree = "<group>"; };
@@ -545,8 +545,8 @@
 				5B34ECE42AC5835600220A80 /* core_delegate.c */,
 				5B34ECE52AC5835600220A80 /* core_stats.h */,
 			);
-			name = "backend.core";
-			path = "../backend.core";
+			name = backend.core;
+			path = ../backend.core;
 			sourceTree = "<group>";
 		};
 		5B34EC572AC5835600220A80 /* interpreter */ = {
@@ -879,8 +879,8 @@
 			isa = PBXGroup;
 			children = (
 				5B34EC562AC5835600220A80 /* backend.core */,
-				5B34EC542AC5796000220A80 /* programs */,
-				5B34EC522AC5795600220A80 /* manual */,
+				5B34EC542AC5796000220A80 /* asset.programs */,
+				5B34EC522AC5795600220A80 /* asset.manual */,
 				92EA93BC1F744572007BEFB1 /* LowResRMX */,
 				922798962527251F004F6E1A /* Widgets */,
 				92EA93BB1F744572007BEFB1 /* Products */,
@@ -914,7 +914,7 @@
 				92EA93BD1F744572007BEFB1 /* AppDelegate.swift */,
 				92EA93C91F744573007BEFB1 /* Info.plist */,
 			);
-			path = "LowResRMX";
+			path = LowResRMX;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -1095,7 +1095,7 @@
 				5B34ED782AC5835600220A80 /* core_stats.bc in Resources */,
 				5B34ED942AC5835700220A80 /* overlay_data.bc in Resources */,
 				5B34ECEA2AC5835600220A80 /* error.bc in Resources */,
-				5B34EC552AC5796000220A80 /* programs in Resources */,
+				5B34EC552AC5796000220A80 /* asset.programs in Resources */,
 				5B34ED0C2AC5835600220A80 /* cmd_background.bc in Resources */,
 				5B34ED262AC5835600220A80 /* cmd_data.bc in Resources */,
 				5B34ED762AC5835600220A80 /* pcg_basic.bc in Resources */,
@@ -1117,7 +1117,7 @@
 				5B34ED442AC5835600220A80 /* value.bc in Resources */,
 				5B34ED2E2AC5835600220A80 /* string_utils.bc in Resources */,
 				5B34ED3C2AC5835600220A80 /* data.bc in Resources */,
-				5B34EC532AC5795600220A80 /* manual in Resources */,
+				5B34EC532AC5795600220A80 /* asset.manual in Resources */,
 				5B34ED062AC5835600220A80 /* interpreter_utils.bc in Resources */,
 				5B34ED602AC5835600220A80 /* text_lib.bc in Resources */,
 			);
@@ -1465,7 +1465,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_ENTITLEMENTS = "LowResRMX/LowResRMX.entitlements";
+				CODE_SIGN_ENTITLEMENTS = LowResRMX/LowResRMX.entitlements;
 				CURRENT_PROJECT_VERSION = 200;
 				DEVELOPMENT_TEAM = YWZ55H4QT9;
 				INFOPLIST_FILE = "$(SRCROOT)/LowResRMX/Info.plist";
@@ -1485,7 +1485,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_ENTITLEMENTS = "LowResRMX/LowResRMX.entitlements";
+				CODE_SIGN_ENTITLEMENTS = LowResRMX/LowResRMX.entitlements;
 				CURRENT_PROJECT_VERSION = 200;
 				DEVELOPMENT_TEAM = YWZ55H4QT9;
 				INFOPLIST_FILE = "$(SRCROOT)/LowResRMX/Info.plist";

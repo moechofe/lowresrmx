@@ -2,4 +2,7 @@
 - [ ] fix the dev menu when running the desktop version
 - [ ] delete fnc_BUTTON
 - [ ] move pcg to a directory
-- [ ] redo the project architecture
+- [x] redo the project architecture
+- [ ] rename file extension `.nx` to `.rmx`
+- [ ] plugin for popular code editor
+- [ ]
