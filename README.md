@@ -5,7 +5,7 @@ Create your games and play it on the go using an iPhone or iPad. LowResRMX is a 
 
 It _will_ includes a project manager, a code editor and some tools to edit game assets: sprites, palettes, backgrounds, instruments and musics.
 
-# Tested environment
+### Tested environment
 
 1. Ubuntu 💚
 
