@@ -39,14 +39,14 @@
 struct TypedValue fnc_math0(struct Core *core)
 {
     struct Interpreter *interpreter = core->interpreter;
-    
+
     // function
     enum TokenType type = interpreter->pc->type;
     ++interpreter->pc;
-    
+
     struct TypedValue value;
     value.type = ValueTypeFloat;
-    
+
     if (interpreter->pass == PassRun)
     {
         switch (type)
@@ -54,7 +54,7 @@ struct TypedValue fnc_math0(struct Core *core)
             case TokenPI:
                 value.v.floatValue = 3.14159265358979323846264338327950288;
                 break;
-                
+
             default:
                 assert(0);
                 break;
@@ -66,26 +66,26 @@ struct TypedValue fnc_math0(struct Core *core)
 struct TypedValue fnc_math1(struct Core *core)
 {
     struct Interpreter *interpreter = core->interpreter;
-    
+
     // function
     enum TokenType type = interpreter->pc->type;
     ++interpreter->pc;
-    
+
     // bracket open
     if (interpreter->pc->type != TokenBracketOpen) return val_makeError(ErrorSyntax);
     ++interpreter->pc;
-    
+
     // expression
     struct TypedValue xValue = itp_evaluateExpression(core, TypeClassNumeric);
     if (xValue.type == ValueTypeError) return xValue;
-    
+
     // bracket close
     if (interpreter->pc->type != TokenBracketClose) return val_makeError(ErrorSyntax);
     ++interpreter->pc;
-    
+
     struct TypedValue value;
     value.type = ValueTypeFloat;
-    
+
     if (interpreter->pass == PassRun)
     {
         switch (type)
@@ -93,67 +93,71 @@ struct TypedValue fnc_math1(struct Core *core)
             case TokenABS:
                 value.v.floatValue = fabsf(xValue.v.floatValue);
                 break;
-                
+
             case TokenACOS:
                 if (xValue.v.floatValue < -1.0 || xValue.v.floatValue > 1.0) return val_makeError(ErrorInvalidParameter);
                 value.v.floatValue = acosf(xValue.v.floatValue);
                 break;
-                
+
             case TokenASIN:
                 if (xValue.v.floatValue < -1.0 || xValue.v.floatValue > 1.0) return val_makeError(ErrorInvalidParameter);
                 value.v.floatValue = asinf(xValue.v.floatValue);
                 break;
-                
+
             case TokenATAN:
                 value.v.floatValue = atanf(xValue.v.floatValue);
                 break;
-                
+
             case TokenCOS:
                 value.v.floatValue = cosf(xValue.v.floatValue * M_PI * 2);
                 break;
-                
+
             case TokenEXP:
                 value.v.floatValue = expf(xValue.v.floatValue);
                 break;
-                
+
             case TokenHCOS:
                 value.v.floatValue = coshf(xValue.v.floatValue);
                 break;
-                
+
             case TokenHSIN:
                 value.v.floatValue = sinhf(xValue.v.floatValue);
                 break;
-                
+
             case TokenHTAN:
                 value.v.floatValue = tanhf(xValue.v.floatValue);
                 break;
-                
+
             case TokenINT:
                 value.v.floatValue = floorf(xValue.v.floatValue);
                 break;
-                
+
             case TokenLOG:
                 if (xValue.v.floatValue <= 0) return val_makeError(ErrorInvalidParameter);
                 value.v.floatValue = logf(xValue.v.floatValue);
                 break;
-                
+
             case TokenSGN:
                 value.v.floatValue = (xValue.v.floatValue > 0) ? 1 : (xValue.v.floatValue < 0) ? BAS_TRUE : BAS_FALSE;
                 break;
-                
+
             case TokenSIN:
                 value.v.floatValue = sinf(xValue.v.floatValue * M_PI * 2);
                 break;
-                
+
             case TokenSQR:
                 if (xValue.v.floatValue < 0) return val_makeError(ErrorInvalidParameter);
                 value.v.floatValue = sqrtf(xValue.v.floatValue);
                 break;
-                
+
             case TokenTAN:
                 value.v.floatValue = tanf(xValue.v.floatValue * M_PI * 2);
                 break;
-                                
+
+						case TokenCEIL:
+								value.v.floatValue = ceilf(xValue.v.floatValue);
+								break;
+
             default:
                 assert(0);
                 break;
@@ -165,19 +169,19 @@ struct TypedValue fnc_math1(struct Core *core)
 struct TypedValue fnc_math2(struct Core *core)
 {
     struct Interpreter *interpreter = core->interpreter;
-    
+
     // function
     enum TokenType type = interpreter->pc->type;
     ++interpreter->pc;
-    
+
     // bracket open
     if (interpreter->pc->type != TokenBracketOpen) return val_makeError(ErrorSyntax);
         ++interpreter->pc;
-    
+
     // x expression
     struct TypedValue xValue = itp_evaluateExpression(core, TypeClassNumeric);
     if (xValue.type == ValueTypeError) return xValue;
-    
+
     // comma
     if (interpreter->pc->type != TokenComma) return val_makeError(ErrorSyntax);
     ++interpreter->pc;
@@ -189,25 +193,25 @@ struct TypedValue fnc_math2(struct Core *core)
     // bracket close
     if (interpreter->pc->type != TokenBracketClose) return val_makeError(ErrorSyntax);
     ++interpreter->pc;
-    
+
     struct TypedValue value;
     value.type = ValueTypeFloat;
-    
+
     if (interpreter->pass == PassRun)
     {
         float x = xValue.v.floatValue;
         float y = yValue.v.floatValue;
-        
+
         switch (type)
         {
             case TokenMAX:
                 value.v.floatValue = (x > y) ? x : y;
                 break;
-                
+
             case TokenMIN:
                 value.v.floatValue = (x < y) ? x : y;
                 break;
-                
+
             default:
                 assert(0);
                 break;
@@ -231,7 +235,7 @@ struct TypedValue fnc_math3(struct Core *core)
     // x expression
     struct TypedValue xValue = itp_evaluateExpression(core, TypeClassNumeric);
     if (xValue.type == ValueTypeError) return xValue;
-    
+
     // comma
     if (interpreter->pc->type != TokenComma) return val_makeError(ErrorSyntax);
     ++interpreter->pc;
@@ -251,7 +255,7 @@ struct TypedValue fnc_math3(struct Core *core)
     // bracket close
     if (interpreter->pc->type != TokenBracketClose) return val_makeError(ErrorSyntax);
     ++interpreter->pc;
-    
+
     struct TypedValue value;
     value.type = ValueTypeFloat;
 
@@ -307,7 +311,7 @@ struct TypedValue fnc_EASE(struct Core *core)
     // function
     enum TokenType type = interpreter->pc->type;
     ++interpreter->pc;
-       
+
     // bracket open
     if (interpreter->pc->type != TokenBracketOpen) return val_makeError(ErrorSyntax);
         ++interpreter->pc;
@@ -327,7 +331,7 @@ struct TypedValue fnc_EASE(struct Core *core)
     // comma
     if (interpreter->pc->type != TokenComma) return val_makeError(ErrorSyntax);
     ++interpreter->pc;
-    
+
     // x expression
     struct TypedValue xValue = itp_evaluateExpression(core, TypeClassNumeric);
     if (xValue.type == ValueTypeError) return xValue;
@@ -366,22 +370,22 @@ struct TypedValue fnc_EASE(struct Core *core)
     else if(e==3 && io<0) v = x * x * x;
     else if(e==3 && io==0) v = x < 0.5 ? 4 * x * x * x : 1 - pow(-2 * x + 2, 3) / 2;
     else if(e==3 && io>0) v = 1 - pow(1 - x, 3);
-    
+
     // quart
     else if(e==4 && io<0) v = x * x * x * x;
     else if(e==4 && io==0) v = x < 0.5 ? 8 * x * x * x * x : 1 - pow(-2 * x + 2, 4) / 2;
     else if(e==4 && io>0) v = 1 - pow(1 - x, 4);
-    
+
     // quint
     else if(e==5 && io<0) v =  x * x * x * x * x;
     else if(e==5 && io==0) v = x < 0.5 ? 16 * x * x * x * x * x : 1 - pow(-2 * x + 2, 5) / 2;
     else if(e==5 && io>0) v = 1 - pow(1 - x, 5);
-    
+
     // circ
     else if(e==6 && io<0) v = 1 - sqrt(1 - pow(x, 2));
     else if(e==6 && io==0) v = x < 0.5 ? (1 - sqrt(1 - pow(2 * x, 2))) / 2 : (sqrt(1 - pow(-2 * x + 2, 2)) + 1) / 2;
     else if(e==6 && io>0) v = sqrt(1 - pow(x - 1, 2));
-    
+
     // back
     else if(e==7 && io<0) v = c3 * x * x * x - c1 * x * x;
     else if(e==7 && io==0) v = x < 0.5 ? (pow(2 * x, 2) * ((c2 + 1) * 2 * x - c2)) / 2 : (pow(2 * x - 2, 2) * ((c2 + 1) * (x * 2 - 2) + c2) + 2) / 2;
@@ -391,12 +395,12 @@ struct TypedValue fnc_EASE(struct Core *core)
     else if(e==8 && io<0) v = x == 0 ? 0 : x == 1 ? 1 : -pow(2, 10 * x - 10) * sinf((x * 10 - 10.75) * c4);
     else if(e==8 && io==0) v = x == 0 ? 0 : x == 1 ? 1 : x < 0.5 ? -(pow(2, 20 * x - 10) * sinf((20 * x - 11.125) * c5)) / 2 : (pow(2, -20 * x + 10) * sinf((20 * x - 11.125) * c5)) / 2 + 1;
     else if(e==8 && io>0) v = x == 0 ? 0 : x == 1 ? 1 : pow(2, -10 * x) * sinf((x * 10 - 0.75) * c4) + 1;
-    
+
     // bounce
     else if(e==9 && io<0) v = easeInBounce(x);
     else if(e==9 && io==0) v = easeInOutBounce(x);
     else if(e==9 && io>0) v = easeOutBounce(x);
-            
+
     struct TypedValue value;
     value.type = ValueTypeFloat;
     value.v.floatValue = v;
@@ -407,7 +411,7 @@ struct TypedValue fnc_EASE(struct Core *core)
 enum ErrorCode cmd_RANDOMIZE(struct Core *core)
 {
     struct Interpreter *interpreter = core->interpreter;
-    
+
     // RANDOMIZE
     ++interpreter->pc;
 
@@ -415,7 +419,7 @@ enum ErrorCode cmd_RANDOMIZE(struct Core *core)
     yValue.type = ValueTypeNull;
 
     pcg32_random_t *rng = &interpreter->defaultRng;
-    
+
     // RANDOMIZE seed
     struct TypedValue xValue = itp_evaluateExpression(core, TypeClassNumeric);
     if (xValue.type == ValueTypeError) return xValue.v.errorCode;
@@ -432,10 +436,10 @@ enum ErrorCode cmd_RANDOMIZE(struct Core *core)
       if (interpreter->pass == PassRun)
       {
           int addr = yValue.v.floatValue;
-          rng = (pcg32_random_t *)(((void*)core->machine)+addr);
+          rng = (pcg32_random_t *)(((uint8_t*)core->machine)+addr);
       }
     }
-    
+
     if (interpreter->pass == PassRun)
     {
         if(interpreter->compat) interpreter->seed = xValue.v.floatValue;
@@ -443,17 +447,17 @@ enum ErrorCode cmd_RANDOMIZE(struct Core *core)
           pcg32_srandom_r(rng, (uint32_t)xValue.v.floatValue, (intptr_t)rng);
         }
     }
-    
+
     return itp_endOfCommand(interpreter);
 }
 
 struct TypedValue fnc_RND(struct Core *core)
 {
     struct Interpreter *interpreter = core->interpreter;
-    
+
     // RND
     ++interpreter->pc;
-    
+
     struct TypedValue xValue;
     xValue.type=ValueTypeNull;
     pcg32_random_t *rng = &interpreter->defaultRng;
@@ -461,7 +465,7 @@ struct TypedValue fnc_RND(struct Core *core)
     {
         // RND(
         ++interpreter->pc;
-    
+
         // RND(bound
         xValue = itp_evaluateOptionalExpression(core, TypeClassNumeric);
         if (xValue.type == ValueTypeError) return xValue;
@@ -476,26 +480,26 @@ struct TypedValue fnc_RND(struct Core *core)
 
           if (interpreter->pass == PassRun) {
               int addr = yValue.v.floatValue;
-              rng = (pcg32_random_t *)((void*)(core->machine)+addr);
+              rng = (pcg32_random_t *)((uint8_t*)(core->machine)+addr);
           }
         }
-        
+
         // RND(bound)
         // RND(bound [, addr])
         if (interpreter->pc->type != TokenBracketClose) return val_makeError(ErrorSyntax);
         ++interpreter->pc;
     }
-    
+
     struct TypedValue value;
     value.type = ValueTypeFloat;
-    
+
     if (interpreter->pass == PassRun)
     {
         if(core->interpreter->compat) {
             int seed = (1140671485 * interpreter->seed + 12820163) & 0xFFFFFF;
             interpreter->seed = seed;
             float rnd = seed / (float)0x1000000;
-            
+
             if (xValue.type!=ValueTypeNull && xValue.v.floatValue >= 0)
             {
                 // integer 0...x
@@ -507,7 +511,7 @@ struct TypedValue fnc_RND(struct Core *core)
                 value.v.floatValue = rnd;
             }
         } else {
-            
+
             if (xValue.type==ValueTypeNull) {
                 value.v.floatValue = (float)ldexp(pcg32_random_r(rng), -32);
             } else {
@@ -521,51 +525,51 @@ struct TypedValue fnc_RND(struct Core *core)
 enum ErrorCode cmd_ADD(struct Core *core)
 {
     struct Interpreter *interpreter = core->interpreter;
-    
+
     // ADD
     ++interpreter->pc;
-    
+
     enum ErrorCode errorCode = ErrorNone;
-    
+
     // Variable
     enum ValueType valueType = ValueTypeNull;
     union Value *varValue = itp_readVariable(core, &valueType, &errorCode, false);
     if (!varValue) return errorCode;
     if (valueType != ValueTypeFloat) return ErrorTypeMismatch;
-    
+
     if (interpreter->pc->type != TokenComma) return ErrorSyntax;
     ++interpreter->pc;
-    
+
     // n vale
     struct TypedValue nValue = itp_evaluateExpression(core, TypeClassNumeric);
     if (nValue.type == ValueTypeError) return nValue.v.errorCode;
-    
+
     bool hasRange = false;
     float base = 0;
     float top = 0;
-    
+
     if (interpreter->pc->type == TokenComma)
     {
         // comma
         ++interpreter->pc;
-        
+
         // base value
         struct TypedValue baseValue = itp_evaluateExpression(core, TypeClassNumeric);
         if (baseValue.type == ValueTypeError) return baseValue.v.errorCode;
         base = baseValue.v.floatValue;
-        
+
         // TO
         if (interpreter->pc->type != TokenTO) return ErrorSyntax;
         ++interpreter->pc;
-        
+
         // top value
         struct TypedValue topValue = itp_evaluateExpression(core, TypeClassNumeric);
         if (topValue.type == ValueTypeError) return topValue.v.errorCode;
         top = topValue.v.floatValue;
-        
+
         hasRange = true;
     }
-    
+
     if (interpreter->pass == PassRun)
     {
         varValue->floatValue += nValue.v.floatValue;
@@ -575,26 +579,26 @@ enum ErrorCode cmd_ADD(struct Core *core)
             if (varValue->floatValue > top) varValue->floatValue = base;
         }
     }
-    
+
     return itp_endOfCommand(interpreter);
 }
 
 enum ErrorCode cmd_INC_DEC(struct Core *core)
 {
     struct Interpreter *interpreter = core->interpreter;
-    
+
     // INC/DEC
     enum TokenType type = interpreter->pc->type;
     ++interpreter->pc;
-    
+
     enum ErrorCode errorCode = ErrorNone;
-    
+
     // Variable
     enum ValueType valueType = ValueTypeNull;
     union Value *varValue = itp_readVariable(core, &valueType, &errorCode, false);
     if (!varValue) return errorCode;
     if (valueType != ValueTypeFloat) return ErrorTypeMismatch;
-    
+
     if (interpreter->pass == PassRun)
     {
         switch (type)
@@ -602,16 +606,16 @@ enum ErrorCode cmd_INC_DEC(struct Core *core)
             case TokenINC:
                 ++varValue->floatValue;
                 break;
-                
+
             case TokenDEC:
                 --varValue->floatValue;
                 break;
-                
+
             default:
                 assert(0);
                 break;
         }
     }
-    
+
     return itp_endOfCommand(interpreter);
 }

@@ -1,0 +1,45 @@
+
+'reserve all the sprite
+PARTICLE 0,170 AT $9000
+
+'define the list of characters to use
+PARTICLE 0 DATA spark
+spark: data 1,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5,0,-1
+
+'reserve one emitter
+EMITTER 2 AT $A000
+
+'define the list of settings
+EMITTER 1 DATA test
+test:
+'appearance
+data 0
+'shape
+data 1.5
+'outer,inner
+data 90,80
+'arc+rotation
+data 0
+'initial speed x,y
+data 0,0
+'count,delay,repeat
+data 20,0,100
+
+do
+emitter 1 on shown.w/2,shown.h/2
+wait tap
+loop
+
+
+#1:MAIN PALETTES
+0502012200000000003C0C00003F3C00
+003F2A15003F2A15003F2A15003F2A15
+
+#2:MAIN CHARACTERS
+00000000000000000000000000000000
+826C7C387C6C82000000000000000000
+82443838384482000000000000000000
+00442810284400000000000000000000
+00002810280000000000000000000000
+00000010000000000000000000000000
+

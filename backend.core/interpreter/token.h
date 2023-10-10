@@ -26,20 +26,20 @@
 
 enum TokenType {
     TokenUndefined,
-    
+
     TokenIdentifier,
     TokenStringIdentifier,
     TokenLabel,
     TokenFloat,
     TokenString,
-    
+
     // Signs
     TokenColon,
     TokenComma,
     TokenSemicolon,
     TokenApostrophe,
     TokenEol,
-    
+
     // Operators
     TokenEq,
     TokenGrEq,
@@ -60,7 +60,7 @@ enum TokenType {
     TokenOR,
     TokenXOR,
     TokenMOD,
-    
+
     // Commands/Functions
     TokenABS,
     TokenACOS,
@@ -215,7 +215,7 @@ enum TokenType {
     TokenWEND,
     TokenWHILE,
     TokenWINDOW,
-    
+
     TokenSHOWNW,
     TokenSHOWNH,
     TokenSAFEL,
@@ -230,6 +230,7 @@ enum TokenType {
     TokenEASE,
     TokenMESSAGE,
     TokenDMA,
+		TokenCEIL,
 
     // Reserved Keywords
     Token_reserved,
@@ -248,7 +249,7 @@ enum TokenType {
     // TokenTEMPO,
     // TokenVOICE,
     // TokenWRITE,
-    
+
     Token_count
 };
 

@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <title>LowResRMX</title>
+        <style>:root
+        {
+            --screen: #999;
+        }
+        html {
+            height: 100%;
+        }
+        body {
+            background-color: #fff;
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            height: 80vh;
+            aspect-ratio: 216 / 384;
+        }
+        .case {
+            width: calc(100% + 8vh);
+            height: calc(100% + 8vh);
+            position: absolute;
+            pointer-events: none;
+            margin: -4vh;
+            border-radius: 5vh;
+            border: solid 3vh black;
+            box-sizing: border-box;
+            top: 0;
+            left: 0;
+        }
+        .case::after {
+            content: " ";
+            background-color: black;
+            display: block;
+            position: absolute;
+            width: 4vh;
+            height: 17vh;
+            top: 12vh;
+            right: -4vh;
+            border-radius: 1vh;
+        }
+        .case::before {
+            content: " ";
+            background-color: black;
+            display: block;
+            position: absolute;
+            width: 4vh;
+            height: 10vh;
+            top: 7vh;
+            left: -4vh;
+            border-radius: 1vh;
+        }
+        .device {
+            position: relative;
+            height: 100%;
+        }
+        .screen {
+            height: 100%;
+        }
+        #canvas {
+            display: block;
+            image-rendering: pixelated;
+            width: 216px;
+            height: 384px;
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+        .corner {
+            position: absolute;
+            top: -8px;
+            left: -8px;
+            border: solid 9px black;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="device">
+            <div class="case"></div>
+            <div class="screen">
+                <canvas id="canvas" oncontextmenu="event.preventDefault()" onmousedown="window.focus()"></canvas>
+            </div>
+            <div class="corner"></div>
+        </div>
+    </div>
+    <script type='text/javascript'>
+        var Module = {
+            canvas: document.getElementById('canvas'),
+            arguments: [window.location.href.replace(/\.(nx|rmx)$/,'.prg')],
+            print: console.log.bind(console),
+            printErr: console.warn.bind(console),
+        };
+        // (function () {
+        //     function onKeyDown_blocker(event) {
+        //         event = event || window.event;
+        //         if (event.keyCode == 37 || event.keyCode == 38 || event.keyCode == 39 || event.keyCode == 40)
+        //             if (event.preventDefault)
+        //                 event.preventDefault();
+        //     }
+        //     document.addEventListener('keydown', onKeyDown_blocker, false);
+        // })();
+    </script>
+    <script async type="text/javascript" src="player.js"></script>
+</body></html>

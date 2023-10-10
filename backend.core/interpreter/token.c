@@ -22,20 +22,20 @@
 
 const char *TokenStrings[] = {
     NULL,
-    
+
     NULL,
     NULL,
     NULL,
     NULL,
     NULL,
-    
+
     // Signs
     ":",
     ",",
     ";",
     "'",
     NULL,
-    
+
     // Operators
     "=",
     ">=",
@@ -56,7 +56,7 @@ const char *TokenStrings[] = {
     "OR",
     "XOR",
     "MOD",
-    
+
     // Commands/Functions
     "ABS",
     "ACOS",
@@ -226,7 +226,8 @@ const char *TokenStrings[] = {
     "EASE",
     "MESSAGE",
     "DMA",
-    
+		"CEIL",
+
     // Reserved Keywords
     NULL,
     // "ANIM",

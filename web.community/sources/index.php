@@ -1,7 +1,25 @@
 <?php
 
-include __DIR__.'/redis.php';
+require_once __DIR__.'/common.php';
 
-$client=new Client('tcp://127.0.0.1:6379');
+// order is important
+require_once __DIR__.'/google2.php';
+require_once __DIR__.'/google1.php';
 
-include __DIR__.'/index.html';
+require_once __DIR__.'/signed.php';
+
+require_once __DIR__.'/token.php';
+require_once __DIR__.'/upload.php';
+require_once __DIR__.'/publish.php';
+
+require_once __DIR__.'/download.php';
+require_once __DIR__.'/player.php';
+
+require_once __DIR__.'/trends.php';
+require_once __DIR__.'/my_programs.php';
+
+require_once __DIR__.'/static.php';
+
+header("Status: 301 Moved Permanently",true,301);
+header("Location: community.html");
+exit();

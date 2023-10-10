@@ -67,12 +67,13 @@ enum Mode {
 enum InterruptType {
     InterruptTypeRaster,
     InterruptTypeVBL,
-    InterruptTypeParticle
+    InterruptTypeParticle,
+		InterruptTypeEmitter,
 };
 
 struct Interpreter {
     const char *sourceCode;
-    
+
     enum Pass pass;
     enum State state;
     enum Mode mode;
@@ -87,31 +88,32 @@ struct Interpreter {
     int cpuLoadTimer;
 
     bool compat;
-    
+
     struct Tokenizer tokenizer;
-    
+
     struct DataManager romDataManager;
-    
+
     struct LabelStackItem labelStackItems[MAX_LABEL_STACK_ITEMS];
     int numLabelStackItems;
-    
+
     bool isSingleLineIf;
-    
+
     struct SimpleVariable simpleVariables[MAX_SIMPLE_VARIABLES];
     int numSimpleVariables;
     struct ArrayVariable arrayVariables[MAX_ARRAY_VARIABLES];
     int numArrayVariables;
     struct RCString *nullString;
-    
+
     struct Token *firstData;
     struct Token *lastData;
     struct Token *currentDataToken;
     struct Token *currentDataValueToken;
-    
+
     struct Token *currentOnRasterToken;
     struct Token *currentOnVBLToken;
     struct Token *currentOnParticleToken;
-    
+		struct Token *currentOnEmitterToken;
+
     int waitCount;
     bool waitTap;
     bool exitEvaluation;
@@ -121,7 +123,7 @@ struct Interpreter {
     int seed;
     bool isKeyboardOptional;
     union Value *lastVariableValue;
-    
+
     struct TextLib textLib;
     struct SpritesLib spritesLib;
     struct AudioLib audioLib;

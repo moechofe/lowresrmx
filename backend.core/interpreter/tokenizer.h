@@ -45,7 +45,7 @@ struct Tokenizer
     int numTokens;
     struct Symbol symbols[MAX_SYMBOLS];
     int numSymbols;
-    
+
     struct JumpLabelItem jumpLabelItems[MAX_JUMP_LABEL_ITEMS];
     int numJumpLabelItems;
     struct SubItem subItems[MAX_SUB_ITEMS];

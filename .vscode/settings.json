@@ -1,4 +1,8 @@
 {
-    "cmake.sourceDirectory": "${workspaceFolder}/app.desktop",
-    "cmake.buildDirectory": "${workspaceFolder}/app.desktop/build"
+    "cmake.sourceDirectory": "${workspaceFolder}/project.cmake",
+    "cmake.buildDirectory": "${workspaceFolder}/project.cmake/build",
+    "files.associations": {
+        "*.tcc": "c",
+        "compare": "c"
+    }
 }

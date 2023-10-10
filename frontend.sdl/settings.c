@@ -36,11 +36,11 @@ void settings_saveAs(struct Settings *settings, const char *filename);
 void settings_init(struct Settings *settings, char *filenameOut, int argc, const char * argv[])
 {
     memset(settings, 0, sizeof(struct Settings));
-    
+
 #if SETTINGS_FILE
-    
+
     // load settings file
-    
+
     char filename[FILENAME_MAX];
     if (settings_filename(filename))
     {
@@ -57,7 +57,7 @@ void settings_init(struct Settings *settings, char *filenameOut, int argc, const
                     {
                         *space = 0; // separate into two strings
                         char *value = space + 1;
-                        
+
                         // remove EOL characters
                         char *eolChar = strchr(value, '\n');
                         if (eolChar)
@@ -69,7 +69,7 @@ void settings_init(struct Settings *settings, char *filenameOut, int argc, const
                         {
                             *eolChar = 0;
                         }
-                        
+
                         if (strcmp(line, "tool") == 0)
                         {
                             settings_addTool(settings, value);
@@ -81,7 +81,7 @@ void settings_init(struct Settings *settings, char *filenameOut, int argc, const
                     }
                 }
             }
-            
+
             fclose(file);
         }
         else
@@ -89,15 +89,15 @@ void settings_init(struct Settings *settings, char *filenameOut, int argc, const
             // write default settings file
             settings_saveAs(settings, filename);
         }
-        
+
         // copy file parameters to session parameters
         memcpy(&settings->session, &settings->file, sizeof(struct Parameters));
     }
-    
+
 #endif
-    
+
     // parse arguments
-    
+
     for (int i = 1; i < argc; i++)
     {
         const char *arg = argv[i];
@@ -115,12 +115,16 @@ void settings_init(struct Settings *settings, char *filenameOut, int argc, const
             strncpy(filenameOut, arg, FILENAME_MAX - 1);
         }
     }
+
+#ifdef __EMSCRIPTEN__
+		settings->session.zoom = 1;
+#endif
 }
 
 bool settings_filename(char *destination)
 {
 #if SETTINGS_FILE
-    char *prefPath = SDL_GetPrefPath("Inutilis Software", "LowRes NX");
+    char *prefPath = SDL_GetPrefPath("martin_mauchauffee", "LowResRMX");
     if (prefPath)
     {
         strncpy(destination, prefPath, FILENAME_MAX - 1);
@@ -179,7 +183,11 @@ void settings_setParameter(struct Parameters *parameters, const char *key, const
         int i = atoi(value);
         if (i >= 0 && i <= 3)
         {
+#ifdef __EMSCRIPTEN__
+						parameters->zoom = 1;
+#else
             parameters->zoom = i;
+#endif
         }
     }
     else
@@ -209,23 +217,23 @@ void settings_saveAs(struct Settings *settings, const char *filename)
         fputs("fullscreen ", file);
         fputs(settings->file.fullscreen ? optionYes : optionNo, file);
         fputs("\n\n", file);
-        
+
         fputs("# Start the application in zoom mode: 0 = pixel perfect, 1 = large, 2 = overscan, 3 = squeeze.\n# zoom 0-3\n", file);
         fprintf(file, "zoom %d\n\n", settings->file.zoom);
-        
+
         fputs("# Disable the Development Menu, Esc key quits LowRes NX.\n# disabledev yes/no\n", file);
         fputs("disabledev ", file);
         fputs(settings->file.disabledev ? optionYes : optionNo, file);
         fputs("\n\n", file);
-        
+
         fputs("# Set the key mapping. 0 = standard, 1 = GameShell.\n# mapping 0-1\n", file);
         fprintf(file, "mapping %d\n\n", settings->file.mapping);
-        
+
         fputs("# Disable the delay for too short frames.\n# disabledelay yes/no\n", file);
         fputs("disabledelay ", file);
         fputs(settings->file.disabledelay ? optionYes : optionNo, file);
         fputs("\n\n", file);
-        
+
         fputs("# Add tools for the Edit ROM menu (max 4).\n# tool My Tool.nx\n", file);
         for (int i = 0; i < settings->numTools; i++)
         {
@@ -233,7 +241,7 @@ void settings_saveAs(struct Settings *settings, const char *filename)
             fputs(settings->tools[i], file);
             fputs("\n", file);
         }
-        
+
         fclose(file);
     }
 #endif

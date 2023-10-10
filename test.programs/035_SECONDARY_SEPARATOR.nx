@@ -1,0 +1,6 @@
+
+LABEL: DATA "SUCCESS"
+MAIN: DO: PRINT LABEL : WAIT VBL: LOOP
+
+test:a=1:b=2
+if a=1 and b=2 then print "success":wait tap:goto test

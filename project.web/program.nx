@@ -1,0 +1,6 @@
+palette 0,3,2,2,6
+do
+WAIT tap
+print touch.x,touch.y
+LOOP
+

@@ -5,4 +5,12 @@
 - [x] redo the project architecture
 - [ ] rename file extension `.nx` to `.rmx`
 - [ ] plugin for popular code editor
+- [ ] add a text tool to the bg editor
+- [ ] stoping clear overlay on pause
+- [ ] run and loop an interrupt during pause, and allow to unpause
+- [ ] allow multiple instructions per line
+- [x] add an interrupt for emitter
+- [ ] remove LET
+- [ ] allow to create line shape with emitter or rect
 - [ ]
+

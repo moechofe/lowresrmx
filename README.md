@@ -17,10 +17,19 @@ It _will_ includes a project manager, a code editor and some tools to edit game 
 
 2. WSL on Windows 10 💚
 
-    - WSL 1.2.5
     - Windows 10.0.19045
+    - WSL 1.2.5
 
-3. iPad mini 4 💚
+3. Windows 10 💚
+
+    - Windows 10 Home 22H2 19045
+    - Visual Studio Community 2019 x86
+    - Cmake 3.27
+    - Visual Studio Code 1.82
+        - CMake Tools extension 1.15
+
+4. iPad mini 4 💚
 
     - Ventura 13.4
     - Xcode 14.3
+

@@ -33,13 +33,17 @@ struct ParticlesLib
     // for PARTICLE sub token during interrupt
     int interrupt_sprite_id;
     int interrupt_particle_addr;
+
+		// for EMITTER sub token during interrupt
+		int interrupt_emitter_id;
+		int interrupt_emitter_addr;
 };
 
 void prtclib_setupPool(struct ParticlesLib *lib,int firstSprite,int poolCount,int particleAddr);
 void prtclib_setApperanceLabel(struct ParticlesLib *lib,int apperanceId,struct Token *label);
 
 void prtclib_setupEmitter(struct ParticlesLib *lib,int poolCount,int particleAddr);
-void prtclib_setSpawnerLabel(struct ParticlesLib *lib,int emitterId,struct Token *label); 
+void prtclib_setSpawnerLabel(struct ParticlesLib *lib,int emitterId,struct Token *label);
 
 void prtclib_spawn(struct ParticlesLib *lib,int emitterId,float posX,float posY);
 void prtclib_stop(struct ParticlesLib *lib,int emitterId);

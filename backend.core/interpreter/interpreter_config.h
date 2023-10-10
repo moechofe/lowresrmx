@@ -37,7 +37,8 @@
 #define MAX_CYCLES_TOTAL_PER_FRAME 35112 // ??
 #define MAX_CYCLES_PER_VBL 3420 // 1140*3 ??
 #define MAX_CYCLES_PER_RASTER 204 // 51*4 OK
-#define MAX_CYCLES_PER_PARTICLE 204 // ??
+#define MAX_CYCLES_PER_PARTICLE 51 // ??
+#define MAX_CYCLES_PER_EMITTER 102 // ??
 #define TIMER_WRAP_VALUE 5184000
 
 #endif /* interpreter_config_h */

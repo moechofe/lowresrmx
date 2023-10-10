@@ -52,9 +52,9 @@ enum ErrorCode itp_evaluateCommand(struct Core *core);
 void itp_init(struct Core *core)
 {
     struct Interpreter *interpreter = core->interpreter;
-    
+
     interpreter->romDataManager.data = core->machine->cartridgeRom;
-    
+
     // global null string
     interpreter->nullString = rcstring_new(NULL, 0);
     if (!interpreter->nullString) exit(EXIT_FAILURE);
@@ -63,9 +63,9 @@ void itp_init(struct Core *core)
 void itp_deinit(struct Core *core)
 {
     struct Interpreter *interpreter = core->interpreter;
-    
+
     itp_freeProgram(core);
-    
+
     // Free null string
     if (interpreter->nullString)
     {
@@ -77,20 +77,20 @@ void itp_deinit(struct Core *core)
 struct CoreError itp_compileProgram(struct Core *core, const char *sourceCode)
 {
     struct Interpreter *interpreter = core->interpreter;
-    
+
     itp_freeProgram(core);
-    
+
     // Parse source code
-    
+
     interpreter->sourceCode = uppercaseString(sourceCode);
     if (!interpreter->sourceCode) return err_makeCoreError(ErrorOutOfMemory, -1);
-    
+
     struct CoreError error = tok_tokenizeUppercaseProgram(&interpreter->tokenizer, interpreter->sourceCode);
     if (error.code != ErrorNone)
     {
         return error;
     }
-    
+
     struct DataManager *romDataManager = &interpreter->romDataManager;
     error = data_uppercaseImport(romDataManager, interpreter->sourceCode, false);
     if (error.code != ErrorNone) return error;
@@ -101,9 +101,9 @@ struct CoreError itp_compileProgram(struct Core *core, const char *sourceCode)
     {
         data_setEntry(romDataManager, 0, "FONT", (uint8_t *)DefaultCharacters, 1024);
     }
-    
+
     // Prepare commands
-    
+
     interpreter->pc = interpreter->tokenizer.tokens;
     interpreter->pass = PassPrepare;
     interpreter->exitEvaluation = false;
@@ -111,16 +111,16 @@ struct CoreError itp_compileProgram(struct Core *core, const char *sourceCode)
     interpreter->numLabelStackItems = 0;
     interpreter->isSingleLineIf = false;
     interpreter->compat = false;
-    
+
     enum ErrorCode errorCode;
     do
     {
         errorCode = itp_evaluateCommand(core);
     }
     while (errorCode == ErrorNone && interpreter->pc->type != TokenUndefined);
-    
+
     if (errorCode != ErrorNone) return err_makeCoreError(errorCode, interpreter->pc->sourcePosition);
-    
+
     if (interpreter->numLabelStackItems > 0)
     {
         struct LabelStackItem *item = &interpreter->labelStackItems[interpreter->numLabelStackItems - 1];
@@ -130,9 +130,9 @@ struct CoreError itp_compileProgram(struct Core *core, const char *sourceCode)
             return err_makeCoreError(errorCode, item->token->sourcePosition);
         }
     }
-    
+
     // prepare for run
-    
+
     interpreter->pc = interpreter->tokenizer.tokens;
     interpreter->cycles = 0;
     interpreter->interruptOverCycles = 0;
@@ -147,7 +147,7 @@ struct CoreError itp_compileProgram(struct Core *core, const char *sourceCode)
     interpreter->lastFrameIOStatus.value = 0;
     interpreter->seed = 0;
     interpreter->isKeyboardOptional = false;
-    
+
     memset(&interpreter->textLib, 0, sizeof(struct TextLib));
     memset(&interpreter->spritesLib, 0, sizeof(struct SpritesLib));
     memset(&interpreter->audioLib, 0, sizeof(struct AudioLib));
@@ -158,14 +158,14 @@ struct CoreError itp_compileProgram(struct Core *core, const char *sourceCode)
     interpreter->particlesLib.core = core;
 
     pcg32_srandom_r(&(interpreter->defaultRng), 4715711917271117164, (intptr_t)&interpreter->defaultRng);
-    
+
     return err_noCoreError();
 }
 
 void itp_runProgram(struct Core *core)
 {
     struct Interpreter *interpreter = core->interpreter;
-    
+
     switch (interpreter->state)
     {
         case StateEvaluate:
@@ -184,11 +184,11 @@ void itp_runProgram(struct Core *core)
                 --interpreter->waitCount;
                 break;
             }
-            
+
             interpreter->mode = ModeMain;
             interpreter->exitEvaluation = false;
             enum ErrorCode errorCode = ErrorNone;
-            
+
             while (   errorCode == ErrorNone
                    && interpreter->cycles < MAX_CYCLES_TOTAL_PER_FRAME
                    && interpreter->state == StateEvaluate
@@ -201,7 +201,7 @@ void itp_runProgram(struct Core *core)
             {
                 machine_suspendEnergySaving(core, 2);
             }
-            
+
             interpreter->mode = ModeNone;
             if (errorCode != ErrorNone)
             {
@@ -210,7 +210,7 @@ void itp_runProgram(struct Core *core)
             }
             break;
         }
-            
+
         case StateInput:
         {
             if (txtlib_inputUpdate(&interpreter->textLib))
@@ -220,7 +220,7 @@ void itp_runProgram(struct Core *core)
             }
             break;
         }
-            
+
         case StateNoProgram:
         case StatePaused:
         case StateEnd:
@@ -232,7 +232,7 @@ void itp_runProgram(struct Core *core)
 void itp_runInterrupt(struct Core *core, enum InterruptType type)
 {
     struct Interpreter *interpreter = core->interpreter;
-    
+
     switch (interpreter->state)
     {
         case StateEvaluate:
@@ -242,30 +242,35 @@ void itp_runInterrupt(struct Core *core, enum InterruptType type)
         {
             struct Token *startToken = NULL;
             int maxCycles;
-            
+
             int mainCycles = interpreter->cycles;
             interpreter->cycles = 0;
-            
+
             switch (type)
             {
                 case InterruptTypeRaster:
                     startToken = interpreter->currentOnRasterToken;
                     maxCycles = MAX_CYCLES_PER_RASTER;
                     break;
-                    
+
                 case InterruptTypeVBL:
                     startToken = interpreter->currentOnVBLToken;
                     maxCycles = MAX_CYCLES_PER_VBL;
                     // update audio player
                     audlib_update(&interpreter->audioLib);
                     break;
-                
+
                 case InterruptTypeParticle:
                     startToken = interpreter->currentOnParticleToken;
                     maxCycles = MAX_CYCLES_PER_PARTICLE;
                     break;
+
+								case InterruptTypeEmitter:
+                    startToken = interpreter->currentOnEmitterToken;
+                    maxCycles = MAX_CYCLES_PER_EMITTER;
+                    break;
             }
-            
+
             if (startToken)
             {
                 interpreter->mode = ModeInterrupt;
@@ -326,14 +331,64 @@ void itp_runInterrupt(struct Core *core, enum InterruptType type)
                     else errorCode = ErrorArgumentCountMismatch;
                 }
 
+								else if(type == InterruptTypeEmitter)
+								{
+										if (interpreter->pc->type == TokenBracketOpen)
+										{
+												// SUB gnagna (
+                        ++interpreter->pc;
+
+                        // SUB gnagna ( emitter_id
+                        struct Token *tokenIdentifier = interpreter->pc;
+                        if (tokenIdentifier->type != TokenIdentifier && tokenIdentifier->type != TokenStringIdentifier) errorCode = ErrorSyntax;
+                        enum ValueType varType = itp_getIdentifierTokenValueType(tokenIdentifier);
+                        if(varType == ValueTypeFloat)
+                        {
+                            // pass by value
+                            struct SimpleVariable *variable = var_createSimpleVariable(interpreter, &errorCode, 1, 1, varType, NULL);
+                            if (variable) {
+                                if (interpreter->pass == PassRun) variable->v.floatValue = (float)interpreter->particlesLib.interrupt_emitter_id;
+                                variable->symbolIndex = tokenIdentifier->symbolIndex;
+                            }
+                            ++interpreter->pc;
+                        }
+                        else errorCode = ErrorTypeMismatch;
+
+                        // SUB gnagna ( emitter_id, )
+                        if (interpreter->pc->type != TokenComma) errorCode = ErrorArgumentCountMismatch;
+                        ++interpreter->pc;
+
+                        // SUB gnagna ( emitter_id, emitter_addr
+                        tokenIdentifier = interpreter->pc;
+                        if (tokenIdentifier->type != TokenIdentifier && tokenIdentifier->type != TokenStringIdentifier) errorCode = ErrorSyntax;
+                        varType = itp_getIdentifierTokenValueType(tokenIdentifier);
+                        if(varType == ValueTypeFloat)
+                        {
+                            // pass by value
+                            struct SimpleVariable *variable = var_createSimpleVariable(interpreter, &errorCode, 1, 1, varType, NULL);
+                            if (variable) {
+                                if (interpreter->pass == PassRun) variable->v.floatValue = (float)interpreter->particlesLib.interrupt_emitter_addr;
+                                variable->symbolIndex = tokenIdentifier->symbolIndex;
+                            }
+                            ++interpreter->pc;
+                        }
+                        else errorCode = ErrorTypeMismatch;
+
+                        // SUB gnagna ( emitter_id, emitter_addr )
+                        if (interpreter->pc->type != TokenBracketClose) errorCode =  ErrorSyntax;
+                        ++interpreter->pc;
+                    }
+                    else errorCode = ErrorArgumentCountMismatch;
+								}
+
                 if (errorCode != ErrorNone)
                 {
                     itp_endProgram(core);
                     delegate_interpreterDidFail(core, err_makeCoreError(errorCode, interpreter->pc->sourcePosition));
                 }
-                
+
                 errorCode = lab_pushLabelStackItem(interpreter, LabelTypeONCALL, NULL);
-                
+
                 while (   errorCode == ErrorNone
                        // cycles can exceed interrupt limit (see interruptOverCycles), but there is still a hard limit for extreme cases
                        && interpreter->cycles < MAX_CYCLES_TOTAL_PER_FRAME
@@ -341,9 +396,9 @@ void itp_runInterrupt(struct Core *core, enum InterruptType type)
                 {
                     errorCode = itp_evaluateCommand(core);
                 }
-                
+
                 interpreter->mode = ModeNone;
-                
+
                 if (interpreter->cycles >= MAX_CYCLES_TOTAL_PER_FRAME)
                 {
                     itp_endProgram(core);
@@ -359,20 +414,20 @@ void itp_runInterrupt(struct Core *core, enum InterruptType type)
                     interpreter->pc = pc;
                 }
             }
-            
+
             // calculate cycles exceeding limit
             interpreter->interruptOverCycles += interpreter->cycles - maxCycles;
             if (interpreter->interruptOverCycles < 0)
             {
                 interpreter->interruptOverCycles = 0;
             }
-            
+
             // sum of interrupt's and main cycle count
             interpreter->cycles += mainCycles;
-            
+
             break;
         }
-            
+
         case StateNoProgram:
         case StateEnd:
             break;
@@ -383,21 +438,21 @@ void itp_runInterrupt(struct Core *core, enum InterruptType type)
 void itp_didFinishVBL(struct Core *core)
 {
     struct Interpreter *interpreter = core->interpreter;
-    
+
     // remember this frame's IO
     for (int i = 0; i < NUM_GAMEPADS; i++)
     {
         interpreter->lastFrameGamepads[i] = core->machine->ioRegisters.gamepads[i];
     }
     interpreter->lastFrameIOStatus = core->machine->ioRegisters.status;
-    
+
     // timer
     interpreter->timer++;
     if (interpreter->timer >= TIMER_WRAP_VALUE)
     {
         interpreter->timer = 0;
     }
-    
+
     // pause
     if (core->machine->ioRegisters.status.pause)
     {
@@ -414,7 +469,7 @@ void itp_didFinishVBL(struct Core *core)
             core->machine->ioRegisters.status.pause = 0;
         }
     }
-    
+
     // CPU load (rounded up)
     int currentCpuLoad = (interpreter->cycles * 100 + MAX_CYCLES_TOTAL_PER_FRAME - 1) / MAX_CYCLES_TOTAL_PER_FRAME;
     if (currentCpuLoad > interpreter->cpuLoadMax)
@@ -428,7 +483,7 @@ void itp_didFinishVBL(struct Core *core)
         interpreter->cpuLoadDisplay = interpreter->cpuLoadMax;
         interpreter->cpuLoadMax = currentCpuLoad;
     }
-    
+
     // reset CPU cycles
     interpreter->cycles = interpreter->cycles - MAX_CYCLES_TOTAL_PER_FRAME;
     if (interpreter->cycles < 0)
@@ -447,7 +502,7 @@ void itp_endProgram(struct Core *core)
 void itp_freeProgram(struct Core *core)
 {
     struct Interpreter *interpreter = core->interpreter;
-    
+
     interpreter->state = StateNoProgram;
     interpreter->firstData = NULL;
     interpreter->lastData = NULL;
@@ -456,11 +511,11 @@ void itp_freeProgram(struct Core *core)
     interpreter->currentOnRasterToken = NULL;
     interpreter->currentOnVBLToken = NULL;
     interpreter->lastVariableValue = NULL;
-    
+
     var_freeSimpleVariables(interpreter, SUB_LEVEL_GLOBAL);
     var_freeArrayVariables(interpreter, SUB_LEVEL_GLOBAL);
     tok_freeTokens(&interpreter->tokenizer);
-    
+
     if (interpreter->sourceCode)
     {
         free((void *)interpreter->sourceCode);
@@ -484,30 +539,30 @@ enum ValueType itp_getIdentifierTokenValueType(struct Token *token)
 union Value *itp_readVariable(struct Core *core, enum ValueType *type, enum ErrorCode *errorCode, bool forWriting)
 {
     struct Interpreter *interpreter = core->interpreter;
-    
+
     struct Token *tokenIdentifier = interpreter->pc;
-    
+
     if (tokenIdentifier->type != TokenIdentifier && tokenIdentifier->type != TokenStringIdentifier)
     {
         *errorCode = ErrorSyntax;
         return NULL;
     }
-    
+
     enum ValueType varType = itp_getIdentifierTokenValueType(tokenIdentifier);
     if (type)
     {
         *type = varType;
     }
-    
+
     int symbolIndex = tokenIdentifier->symbolIndex;
     ++interpreter->pc;
     ++interpreter->cycles;
-    
+
     if (interpreter->pc->type == TokenBracketOpen)
     {
         // array
         ++interpreter->pc;
-        
+
         struct ArrayVariable *variable = NULL;
         if (interpreter->pass == PassRun)
         {
@@ -518,10 +573,10 @@ union Value *itp_readVariable(struct Core *core, enum ValueType *type, enum Erro
                 return NULL;
             }
         }
-        
+
         int indices[MAX_ARRAY_DIMENSIONS];
         int numDimensions = 0;
-        
+
         for (int i = 0; i < MAX_ARRAY_DIMENSIONS; i++)
         {
             struct TypedValue indexValue = itp_evaluateExpression(core, TypeClassNumeric);
@@ -530,9 +585,9 @@ union Value *itp_readVariable(struct Core *core, enum ValueType *type, enum Erro
                 *errorCode = indexValue.v.errorCode;
                 return NULL;
             }
-            
+
             numDimensions++;
-            
+
             if (interpreter->pass == PassRun)
             {
                 if (numDimensions <= variable->numDimensions && (indexValue.v.floatValue < 0 || indexValue.v.floatValue >= variable->dimensionSizes[i]))
@@ -540,10 +595,10 @@ union Value *itp_readVariable(struct Core *core, enum ValueType *type, enum Erro
                     *errorCode = ErrorIndexOutOfBounds;
                     return NULL;
                 }
-                
+
                 indices[i] = indexValue.v.floatValue;
             }
-            
+
             if (interpreter->pc->type == TokenComma)
             {
                 ++interpreter->pc;
@@ -553,14 +608,14 @@ union Value *itp_readVariable(struct Core *core, enum ValueType *type, enum Erro
                 break;
             }
         }
-        
+
         if (interpreter->pc->type != TokenBracketClose)
         {
             *errorCode = ErrorSyntax;
             return NULL;
         }
         ++interpreter->pc;
-        
+
         if (interpreter->pass == PassRun)
         {
             if (numDimensions != variable->numDimensions)
@@ -715,7 +770,7 @@ struct TypedValue itp_evaluateExpressionLevel(struct Core *core, int level)
 {
     struct Interpreter *interpreter = core->interpreter;
     enum TokenType type = interpreter->pc->type;
-    
+
     if (level == 2 && type == TokenNOT)
     {
         ++interpreter->pc;
@@ -758,10 +813,10 @@ struct TypedValue itp_evaluateExpressionLevel(struct Core *core, int level)
     {
         return itp_evaluatePrimaryExpression(core);
     }
-    
+
     struct TypedValue value = itp_evaluateExpressionLevel(core, level + 1);
     if (value.type == ValueTypeError) return value;
-    
+
     while (itp_isTokenLevel(interpreter->pc->type, level))
     {
         enum TokenType type = interpreter->pc->type;
@@ -769,7 +824,7 @@ struct TypedValue itp_evaluateExpressionLevel(struct Core *core, int level)
         ++interpreter->cycles;
         struct TypedValue rightValue = itp_evaluateExpressionLevel(core, level + 1);
         if (rightValue.type == ValueTypeError) return rightValue;
-        
+
         struct TypedValue newValue;
         if (value.type != rightValue.type)
         {
@@ -777,7 +832,7 @@ struct TypedValue itp_evaluateExpressionLevel(struct Core *core, int level)
             newValue.v.errorCode = ErrorTypeMismatch;
             return newValue;
         }
-        
+
         if (value.type == ValueTypeFloat)
         {
             newValue.type = ValueTypeFloat;
@@ -988,7 +1043,7 @@ struct TypedValue itp_evaluateExpressionLevel(struct Core *core, int level)
             assert(0);
             newValue.v.floatValue = 0;
         }
-        
+
         value = newValue;
         interpreter->lastVariableValue = NULL;
         if (value.type == ValueTypeError) break;
@@ -999,7 +1054,7 @@ struct TypedValue itp_evaluateExpressionLevel(struct Core *core, int level)
 struct TypedValue itp_evaluatePrimaryExpression(struct Core *core)
 {
     struct Interpreter *interpreter = core->interpreter;
-    
+
     // check for function
     struct TypedValue value = itp_evaluateFunction(core);
     if (value.type != ValueTypeNull)
@@ -1008,9 +1063,9 @@ struct TypedValue itp_evaluatePrimaryExpression(struct Core *core)
         interpreter->lastVariableValue = NULL;
         return value;
     }
-    
+
     interpreter->lastVariableValue = NULL;
-    
+
     // native types
     switch (interpreter->pc->type)
     {
@@ -1108,30 +1163,30 @@ struct TypedValue itp_evaluateFunction(struct Core *core)
     {
         case TokenASC:
             return fnc_ASC(core);
-            
+
         case TokenBIN:
         case TokenHEX:
             return fnc_BIN_HEX(core);
-            
+
         case TokenCHR:
             return fnc_CHR(core);
-            
+
         case TokenINSTR:
             return fnc_INSTR(core);
-            
+
         case TokenLEFTStr:
         case TokenRIGHTStr:
             return fnc_LEFTStr_RIGHTStr(core);
-            
+
         case TokenLEN:
             return fnc_LEN(core);
-            
+
         case TokenMID:
             return fnc_MID(core);
-            
+
         case TokenSTR:
             return fnc_STR(core);
-            
+
         case TokenVAL:
             return fnc_VAL(core);
 
@@ -1139,7 +1194,7 @@ struct TypedValue itp_evaluateFunction(struct Core *core)
         case TokenPEEKW:
         case TokenPEEKL:
             return fnc_PEEK(core);
-            
+
         case TokenPI:
             return fnc_math0(core);
 
@@ -1166,71 +1221,71 @@ struct TypedValue itp_evaluateFunction(struct Core *core)
 
         case TokenCLAMP:
             return fnc_math3(core);
-            
+
         case TokenRND:
             return fnc_RND(core);
-            
+
         case TokenINKEY:
             return fnc_INKEY(core);
-            
+
         case TokenUBOUND:
             return fnc_UBOUND(core);
-            
+
         case TokenROM:
         case TokenSIZE:
             return fnc_ROM_SIZE(core);
-            
+
         case TokenCOLOR:
             return fnc_COLOR(core);
-            
+
         case TokenTIMER:
         case TokenRASTER:
         case TokenDISPLAY:
             return fnc_screen0(core);
-            
+
         case TokenSCROLLX:
         case TokenSCROLLY:
             return fnc_SCROLL_X_Y(core);
-            
+
         case TokenCELLA:
         case TokenCELLC:
             return fnc_CELL(core);
-            
+
         case TokenMCELLA:
         case TokenMCELLC:
             return fnc_MCELL(core);
-            
+
         case TokenCURSORX:
         case TokenCURSORY:
             return fnc_CURSOR(core);
-            
+
         // case TokenUP:
         // case TokenDOWN:
         // case TokenLEFT:
         // case TokenRIGHT:
         //     return fnc_UP_DOWN_LEFT_RIGHT(core);
-            
+
         case TokenBUTTON:
             return fnc_BUTTON(core);
-            
+
         case TokenSPRITEX:
         case TokenSPRITEY:
         case TokenSPRITEC:
         case TokenSPRITEA:
             return fnc_SPRITE(core);
-            
+
         case TokenSPRITE:
             return fnc_SPRITE_HIT(core);
-            
+
         case TokenHIT:
             return fnc_HIT(core);
-            
+
         case TokenTOUCH:
             return fnc_TOUCH(core);
 
         case TokenTAP:
             return fnc_TAP(core);
-            
+
         case TokenTOUCHX:
         case TokenTOUCHY:
             return fnc_TOUCH_X_Y(core);
@@ -1247,19 +1302,22 @@ struct TypedValue itp_evaluateFunction(struct Core *core)
 
         case TokenFILE:
             return fnc_FILE(core);
-            
+
         case TokenFSIZE:
             return fnc_FSIZE(core);
-            
+
         case TokenPAUSE:
             return fnc_PAUSE(core);
-            
+
         case TokenMUSIC:
             return fnc_MUSIC(core);
-        
+
         case TokenEASE:
             return fnc_EASE(core);
-            
+
+				case TokenCEIL:
+						return fnc_math1(core);
+
         default:
             break;
     }
@@ -1284,57 +1342,57 @@ enum ErrorCode itp_evaluateCommand(struct Core *core)
                 itp_endProgram(core);
             }
             break;
-            
+
         case TokenREM:
         case TokenApostrophe:
             ++interpreter->pc;
             break;
-            
+
         case TokenLabel:
             ++interpreter->pc;
             if (interpreter->pc->type != TokenEol) return ErrorSyntax;
             ++interpreter->pc;
             break;
-        
+
         case TokenEol:
             interpreter->isSingleLineIf = false;
             ++interpreter->pc;
             break;
-            
+
         case TokenEND:
             switch (itp_getNextTokenType(interpreter))
             {
                 case TokenIF:
                     return cmd_END_IF(core);
-                    
+
                 case TokenSUB:
                     return cmd_END_SUB(core);
-                    
+
                 default:
                     return cmd_END(core);
             }
             break;
-            
+
         case TokenLET:
         case TokenIdentifier:
         case TokenStringIdentifier:
             return cmd_LET(core);
-            
+
         case TokenDIM:
             return cmd_DIM(core);
-        
+
         case TokenPRINT:
             return cmd_PRINT(core);
-            
+
         case TokenCLS:
             return cmd_CLS(core);
-            
+
         case TokenINPUT:
             return cmd_INPUT(core);
-        
+
         case TokenIF:
             return cmd_IF(core, false);
-        
+
         case TokenELSE:
             return cmd_ELSE(core);
 
@@ -1349,10 +1407,10 @@ enum ErrorCode itp_evaluateCommand(struct Core *core)
 
         case TokenGOSUB:
             return cmd_GOSUB(core);
-            
+
         case TokenRETURN:
             return cmd_RETURN(core);
-            
+
         case TokenDATA:
             return cmd_DATA(core);
 
@@ -1369,50 +1427,50 @@ enum ErrorCode itp_evaluateCommand(struct Core *core)
         case TokenPOKEW:
         case TokenPOKEL:
             return cmd_POKE(core);
-            
+
         case TokenFILL:
             return cmd_FILL(core);
-            
+
         case TokenCOPY:
             return cmd_COPY(core);
-            
+
         case TokenROL:
         case TokenROR:
             return cmd_ROL_ROR(core);
-            
+
         case TokenWAIT:
             return cmd_WAIT(core);
-            
+
         case TokenON:
             return cmd_ON(core);
-            
+
         case TokenSWAP:
             return cmd_SWAP(core);
-            
+
         case TokenTEXT:
             return cmd_TEXT(core);
 
         case TokenNUMBER:
             return cmd_NUMBER(core);
-            
+
         case TokenDO:
             return cmd_DO(core);
-            
+
         case TokenLOOP:
             return cmd_LOOP(core);
-        
+
         case TokenREPEAT:
             return cmd_REPEAT(core);
-            
+
         case TokenUNTIL:
             return cmd_UNTIL(core);
-            
+
         case TokenWHILE:
             return cmd_WHILE(core);
-            
+
         case TokenWEND:
             return cmd_WEND(core);
-            
+
         case TokenSYSTEM:
             return cmd_SYSTEM(core);
 
@@ -1421,147 +1479,147 @@ enum ErrorCode itp_evaluateCommand(struct Core *core)
 
         case TokenRANDOMIZE:
             return cmd_RANDOMIZE(core);
-            
+
         case TokenADD:
             return cmd_ADD(core);
-            
+
         case TokenINC:
         case TokenDEC:
             return cmd_INC_DEC(core);
-            
+
         case TokenLEFTStr:
         case TokenRIGHTStr:
             return cmd_LEFT_RIGHT(core);
-            
+
         case TokenMID:
             return cmd_MID(core);
-            
+
         case TokenWINDOW:
             return cmd_WINDOW(core);
-            
+
         case TokenFONT:
             return cmd_FONT(core);
-            
+
         case TokenLOCATE:
             return cmd_LOCATE(core);
-            
+
         case TokenCLW:
             return cmd_CLW(core);
-            
+
         case TokenBG:
             switch (itp_getNextTokenType(interpreter))
             {
                 case TokenSOURCE:
                     return cmd_BG_SOURCE(core);
-                    
+
                 case TokenCOPY:
                     return cmd_BG_COPY(core);
-                    
+
                 case TokenSCROLL:
                     return cmd_BG_SCROLL(core);
-                    
+
                 case TokenFILL:
                     return cmd_BG_FILL(core);
-                    
+
                 case TokenTINT:
                     return cmd_BG_TINT(core);
-                    
+
                 case TokenVIEW:
                     return cmd_BG_VIEW(core);
-                    
+
                 default:
                     return cmd_BG(core);
             }
             break;
-            
+
         case TokenATTR:
             return cmd_ATTR(core);
-            
+
         case TokenPAL:
             return cmd_PAL(core);
-            
+
         case TokenFLIP:
             return cmd_FLIP(core);
-            
+
         case TokenPRIO:
             return cmd_PRIO(core);
-            
+
         case TokenCELL:
             switch (itp_getNextTokenType(interpreter))
             {
                 case TokenSIZE:
                     return cmd_CELL_SIZE(core);
-                    
+
                 default:
                     return cmd_CELL(core);
             }
             break;
-            
+
         case TokenTINT:
             return cmd_TINT(core);
-            
+
         case TokenMCELL:
             return cmd_MCELL(core);
-            
+
         case TokenPALETTE:
             return cmd_PALETTE(core);
-            
+
         case TokenSCROLL:
             return cmd_SCROLL(core);
 
         // case TokenDISPLAY:
         //     return cmd_DISPLAY(core);
-            
+
         case TokenSPRITEA:
             return cmd_SPRITE_A(core);
-            
+
         case TokenSPRITE:
             switch (itp_getNextTokenType(interpreter))
             {
                 case TokenOFF:
                     return cmd_SPRITE_OFF(core);
-                    
+
                 case TokenVIEW:
                     return cmd_SPRITE_VIEW(core);
-                    
+
                 default:
                     return cmd_SPRITE(core);
             }
             break;
-            
+
         case TokenSAVE:
             return cmd_SAVE(core);
-            
+
         case TokenLOAD:
             return cmd_LOAD(core);
-            
+
         case TokenFILES:
             return cmd_FILES(core);
-            
+
         // case TokenGAMEPAD:
         //     return cmd_GAMEPAD(core);
-            
+
         case TokenKEYBOARD:
             return cmd_KEYBOARD(core);
-            
+
         // case TokenTOUCHSCREEN:
         //     return cmd_TOUCHSCREEN(core);
-            
+
         case TokenTRACE:
             return cmd_TRACE(core);
-            
+
         case TokenCALL:
             return cmd_CALL(core);
-            
+
         case TokenSUB:
             return cmd_SUB(core);
-            
+
 //        case TokenSHARED:
 //            return cmd_SHARED(core);
-            
+
         case TokenGLOBAL:
             return cmd_GLOBAL(core);
-            
+
         case TokenEXIT:
             switch (itp_getNextTokenType(interpreter))
             {
@@ -1571,53 +1629,53 @@ enum ErrorCode itp_evaluateCommand(struct Core *core)
                     return cmd_EXIT(core);
             }
             break;
-            
+
         case TokenPAUSE:
             return cmd_PAUSE(core);
-            
+
         case TokenSOUND:
             switch (itp_getNextTokenType(interpreter))
             {
 //                case TokenCOPY:
 //                    return cmd_SOUND_COPY(core);
-                    
+
                 case TokenSOURCE:
                     return cmd_SOUND_SOURCE(core);
-                    
+
                 default:
                     return cmd_SOUND(core);
             }
             break;
-            
+
         case TokenVOLUME:
             return cmd_VOLUME(core);
-            
+
         case TokenENVELOPE:
             return cmd_ENVELOPE(core);
-            
+
         case TokenLFO:
             switch (itp_getNextTokenType(interpreter))
             {
                 case TokenWAVE:
                     return cmd_LFO_WAVE(core);
-                    
+
                 default:
                     return cmd_LFO(core);
             }
             break;
-            
+
         case TokenLFOA:
             return cmd_LFO_A(core);
-            
+
         case TokenPLAY:
             return cmd_PLAY(core);
-            
+
         case TokenSTOP:
             return cmd_STOP(core);
-            
+
         case TokenMUSIC:
             return cmd_MUSIC(core);
-            
+
         case TokenTRACK:
             return cmd_TRACK(core);
 
@@ -1632,7 +1690,7 @@ enum ErrorCode itp_evaluateCommand(struct Core *core)
 
         case TokenDMA:
             return cmd_DMA_COPY(core);
-            
+
         default:
             printf("Command not implemented: %s\n", TokenStrings[interpreter->pc->type]);
             return ErrorSyntax;
@@ -1648,22 +1706,22 @@ enum ErrorCode itp_labelStackError(struct LabelStackItem *item)
         case LabelTypeELSEIF:
         case LabelTypeELSE:
             return ErrorIfWithoutEndIf;
-            
+
         case LabelTypeFOR:
             return  ErrorForWithoutNext;
-            
+
         case LabelTypeDO:
             return ErrorDoWithoutLoop;
-            
+
         case LabelTypeREPEAT:
             return ErrorRepeatWithoutUntil;
-            
+
         case LabelTypeWHILE:
             return ErrorWhileWithoutWend;
-            
+
         case LabelTypeSUB:
             return ErrorSubWithoutEndSub;
-            
+
         case LabelTypeFORVar:
         case LabelTypeFORLimit:
         case LabelTypeGOSUB:

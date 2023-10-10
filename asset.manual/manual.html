@@ -27,6 +27,8 @@ td:first-child { text-al
 
 
 
+<!-- Tool: https://markdowntohtml.com/ -->
+
 <h1 id="lowresrmx-manual">LowResRMX manual</h1>
 <blockquote>
 <p>This is a fork of the excellent fantasy console Lowres NX by Timo &quot;Inutilis&quot; Kloss.<br />
@@ -86,20 +88,35 @@ This is a heavily modified version and way more complicated to use, I recommend 
 <code>ON value RESTORE label,..</code></p>
 <p>Will <code>GOTO</code>, <code>GOSUB</code> or <code>RESTORE</code> to one of the <code>label</code> listed according to the <code>value</code>.</p>
 <p>e.g.:</p>
-<pre><code>ON I GOTO ZERO,ONE,TWO
-</code></pre>
+<pre><code>ON I GOTO <span class="hljs-literal">ZERO</span>,<span class="hljs-literal">ONE</span>,<span class="hljs-literal">TWO</span>
+</code></pre><hr />
+<p>Support for multiple statements on one line:</p>
+<p><code>statement : statement</code></p>
+<p>e.g.:</p>
+<p>  LABEL: DATA &quot;SUCCESS&quot;
+  MAIN: DO : PRINT LABEL : WAIT VBL : LOOP
+  &#39;/!\ KEEP THE SPACE --^</p>
+<blockquote>
+<p>An identifier followed by a colon <code>:</code> will be understand as a label unless their is a space <code> </code> between them.</p>
+</blockquote>
 <h3 id="data">Data</h3>
 <p>New keyword to skip readed data:</p>
 <p><code>SKIP number</code></p>
 <p>Will skip a <code>number</code> of data to not read.</p>
 <p>e.g.:</p>
 <pre><code>DATA 0,1,2
-SKIP 2
+<span class="hljs-keyword">SKIP </span>2
 READ A
 PRINT A
-&#39;WILL PRINT &quot;2&quot;
-</code></pre>
-<h3 id="math">Math</h3>
+'WILL PRINT "2"
+</code></pre><h3 id="math">Math</h3>
+<p>New function to rounds up:</p>
+<p><code>=CEIL(value)</code></p>
+<p>Returns the smallest integer greater than or equal to a given number</p>
+<blockquote>
+<p>Use <code>=INT(value)</code> to round down.</p>
+</blockquote>
+<hr />
 <p>New function to clamp numerical value:</p>
 <p><code>=CLAMP(value,min,max)</code></p>
 <p>Returns the <code>value</code> clamped between <code>min</code> and <code>max</code>.</p>
@@ -123,7 +140,8 @@ PRINT A
 <th>function</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td>0</td>
 <td>linear</td>
 </tr>
@@ -163,7 +181,8 @@ PRINT A
 <td>9</td>
 <td>bounce</td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
 <table>
 <thead>
 <tr>
@@ -171,7 +190,8 @@ PRINT A
 <th>mode</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td>-1</td>
 <td>in</td>
 </tr>
@@ -183,7 +203,8 @@ PRINT A
 <td>+1</td>
 <td>out</td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
 <h3 id="text">Text</h3>
 <p>New command to expose the existing overlay message API:</p>
 <p><code>MESSAGE text</code></p>
@@ -193,10 +214,9 @@ PRINT A
 <p>It allow to store a string using the <code>DATA</code> keyword and reference it in the <code>PRINT</code> command.</p>
 <p>e.g.:</p>
 <pre><code>PRINT GA
-GA:
-DATA &quot;GABUZOMEU&quot;
-</code></pre>
-<p>TODO: Do it for <code>=LEFT$</code>, <code>=MID$</code>, <code>=RIGHT$</code>.</p>
+<span class="hljs-symbol">GA:</span>
+DATA <span class="hljs-string">"GABUZOMEU"</span>
+</code></pre><p>TODO: Do it for <code>=LEFT$</code>, <code>=MID$</code>, <code>=RIGHT$</code>.</p>
 <h3 id="other">Other</h3>
 <p>New command to help support program from the original Lowres NX:</p>
 <p><code>COMPAT</code></p>
@@ -219,7 +239,8 @@ DATA &quot;GABUZOMEU&quot;
 <th>purpose</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td>$0000</td>
 <td>32 Kibi</td>
 <td>Cartridge ROM</td>
@@ -274,7 +295,8 @@ DATA &quot;GABUZOMEU&quot;
 <td></td>
 <td>I/O Registers</td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
 <p>LowResRMX:</p>
 <table>
 <thead>
@@ -284,7 +306,8 @@ DATA &quot;GABUZOMEU&quot;
 <th>purpose</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td>$0000</td>
 <td>8 Kibi</td>
 <td>BG0 data</td>
@@ -306,6 +329,11 @@ DATA &quot;GABUZOMEU&quot;
 </tr>
 <tr>
 <td>$8000</td>
+<td>20 Kibi</td>
+<td>Character Data</td>
+</tr>
+<tr>
+<td>$9000</td>
 <td>20 Kibi</td>
 <td>Working RAM</td>
 </tr>
@@ -349,7 +377,8 @@ DATA &quot;GABUZOMEU&quot;
 <td>64 Kibi</td>
 <td>Cartridge ROM</td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
 <p>TODO: Add particle/emitter registers</p>
 <hr />
 <p>New command and registers for a fast memory copy.</p>
@@ -364,7 +393,8 @@ DATA &quot;GABUZOMEU&quot;
 <th>purpose</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td>$FFA0</td>
 <td>Source address</td>
 </tr>
@@ -376,7 +406,8 @@ DATA &quot;GABUZOMEU&quot;
 <td>$FFA4</td>
 <td>Destination address</td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
 <blockquote>
 <p>Will only works in a subprogram that has been called during an interrupts, including: <code>RASTER</code>, <code>VBL</code> and <code>PARTICLE</code>.</p>
 </blockquote>
@@ -396,7 +427,8 @@ DATA &quot;GABUZOMEU&quot;
 <th>purpose</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td>+0</td>
 <td>2 Bytes</td>
 <td>Speed on x axis</td>
@@ -416,13 +448,13 @@ DATA &quot;GABUZOMEU&quot;
 <td>1 Byte</td>
 <td>Current frame</td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
 <p>e.g.:</p>
-<pre><code>PARTICLE 1,20 AT $9000
-&#39;Will use sprite 1 to 20 included.
-&#39;Store internal data from $9000 to $9078 excluded.
-</code></pre>
-<hr />
+<pre><code>PARTICLE <span class="hljs-number">1</span>,<span class="hljs-number">20</span> AT $<span class="hljs-number">9000</span>
+'Will use sprite <span class="hljs-number">1</span> to <span class="hljs-number">20</span> included.
+'Store internal data from $<span class="hljs-number">9000</span> to $<span class="hljs-number">9078</span> excluded.
+</code></pre><hr />
 <p><code>PARTICLE appearence DATA label</code></p>
 <p>Declare a <code>label</code> that contains DATA for the particle <code>appearence</code>.</p>
 <p><code>appearence</code> is a number between 0 and 23.</p>
@@ -430,11 +462,10 @@ DATA &quot;GABUZOMEU&quot;
 <p>A typical example is to put zero <code>0</code> and minus one <code>-1</code> for the two last data values, as it will allow to make the particle dissapear until the sprite is reused.</p>
 <p>e.g.:</p>
 <pre><code>MY_APPEARANCE:
-DATA 1,2,3,4,0,-1
-&#39;Will show the character 1 to 4, each per frame.
-&#39;And loop with the character 0.
-</code></pre>
-<hr />
+DATA <span class="hljs-number">1</span>,<span class="hljs-number">2</span>,<span class="hljs-number">3</span>,<span class="hljs-number">4</span>,<span class="hljs-number">0</span>,-<span class="hljs-number">1</span>
+<span class="hljs-symbol">'Will</span> show the <span class="hljs-built_in">character</span> <span class="hljs-number">1</span> <span class="hljs-keyword">to</span> <span class="hljs-number">4</span>, each per frame.
+<span class="hljs-symbol">'And</span> <span class="hljs-keyword">loop</span> <span class="hljs-keyword">with</span> the <span class="hljs-built_in">character</span> <span class="hljs-number">0</span>.
+</code></pre><hr />
 <p><code>PARTICLE OFF</code></p>
 <p>Clear each sprite position and each particle appearence.</p>
 <hr />
@@ -446,13 +477,17 @@ DATA 1,2,3,4,0,-1
 <li>and the particle <code>address</code>.</li>
 </ol>
 <p>e.g.:</p>
-<pre><code>SUB MYPART(SPR,ADDR)
-    SY=PEEKW(ADDR+2)
-    POKEW ADDR+2,SY-5
-    &#39;Change the speed in y axis
-END SUB
-</code></pre>
-<p>TODO: specify the number of cycles available.</p>
+<pre><code><span class="hljs-keyword">SUB</span> MYPART(SPR,ADDR)
+    SY=PEEKW(ADDR+<span class="hljs-number">2</span>)
+    POKEW ADDR+<span class="hljs-number">2</span>,SY<span class="hljs-number">-5</span>
+    <span class="hljs-comment">'Change the speed in y axis</span>
+<span class="hljs-keyword">END</span> <span class="hljs-keyword">SUB</span>
+</code></pre><blockquote>
+<p>51 cycles max per call</p>
+</blockquote>
+<hr />
+<p><code>ON PARTICLE OFF</code></p>
+<p>Will stop the interrupt.</p>
 <hr />
 <p><code>EMITTER count AT address</code></p>
 <p>Declare to use <code>count</code> emitter and store the internal data at <code>address</code>.</p>
@@ -466,7 +501,8 @@ END SUB
 <th>purpose</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td>+0</td>
 <td>2 Bytes</td>
 <td>Position on x axis</td>
@@ -486,7 +522,8 @@ END SUB
 <td>1 Byte</td>
 <td>Number of time to emit</td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
 <hr />
 <p><code>EMITTER emitter DATA label</code></p>
 <p>Declare a <code>label</code> that contains DATA for the <code>emitter</code>.</p>
@@ -509,7 +546,22 @@ END SUB
 <hr />
 <p><code>EMITTER emitter OFF</code></p>
 <p>Manually stop the <code>emitter</code>.</p>
-  
+<hr />
+<p><code>ON EMITTER CALL subprogram</code></p>
+<p>For each emitter, at the end of the frame, if the emitter as spawn some particles, will call the subprogram using an interrupt.</p>
+<p>The target <code>subprogram</code> will receive two arguments:</p>
+<ol>
+<li>the <code>emitter</code> number,</li>
+<li>and the emitter <code>address</code>.</li>
+</ol>
+<blockquote>
+<p>102 cycles max per call</p>
+</blockquote>
+<hr />
+<p><code>ON EMITTER OFF</code></p>
+<p>Will stop the interrupt.</p>
+
+
 
 
 

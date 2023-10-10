@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>hm</title>
+<link rel="stylesheet" href="pico.classless.min.css">
+<link rel="stylesheet" href="community.css">
+<script src="community.js"></script>
+</head>
+
+<body>
+<header>
+
+	<hgroup>
+		<h1>-</h1>
+		<h2>Just a pure semantic HTML markup, without <code>.classes</code></h2>
+	</hgroup>
+
+	<nav>
+		<ul>
+			<li><button class="home">&nbsp;</button></li>
+			<li><strong>Community programs</strong></li>
+		</ul>
+		<ul class="is-signed" hidden>
+			<li><a href="#" aria-busy="true">My programs</a></li>
+			<li><button id="share-program">Share program</button></li>
+		</ul>
+		<ul class="is-not-signed" hidden>
+			<li><button id="google-sign-in">Sign in with Google</button></li>
+		</ul>
+	</nav>
+
+	<section id="upload-card" hidden>
+	<article>
+		<h3>Upload program</h3>
+		<form>
+			<label for="file">Select program file
+				<input type="file" accept=".nx" />
+			</label>
+
+			<label for="file">Select icon file
+				<input type="file" accept=".png" />
+			</label>
+
+			<button>Upload</button>
+		</form>
+	</article>
+	<div class="blocker">
+		<article aria-busy="true"></article>
+	</div>
+	</section>
+
+</header>
+<main>
+
+</main>
+
+<template id="program-item-nav">
+<ul>
+	<li><button>Post</button></li>
+	<li><button>Edit</button></li>
+	<li><button>Run</button></li>
+</ul>
+</template>
+<template id="program-item">
+<div class="program">
+	<div class="name"></div>
+	<nav>
+	</nav>
+</div>
+</template>
+
+<template id="program-list">
+<section>
+	list
+</section>
+</template>
+
+</body>
+
+</html>
