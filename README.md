@@ -15,7 +15,7 @@ It _will_ includes a project manager, a code editor and some tools to edit game 
     - Visual Studio Code 1.82
         - CMake Tools extension 1.15
 
-2. WSL on Windows 10 💚
+2. WSL on Windows 10 🤦‍♂️
 
     - Windows 10.0.19045
     - WSL 1.2.5
