@@ -455,9 +455,9 @@ DATA <span class="hljs-string">"GABUZOMEU"</span>
 'Will use sprite <span class="hljs-number">1</span> to <span class="hljs-number">20</span> included.
 'Store internal data from $<span class="hljs-number">9000</span> to $<span class="hljs-number">9078</span> excluded.
 </code></pre><hr />
-<p><code>PARTICLE appearence DATA label</code></p>
-<p>Declare a <code>label</code> that contains DATA for the particle <code>appearence</code>.</p>
-<p><code>appearence</code> is a number between 0 and 23.</p>
+<p><code>PARTICLE appearance DATA label</code></p>
+<p>Declare a <code>label</code> that contains DATA for the particle <code>appearance</code>.</p>
+<p><code>appearance</code> is a number between 0 and 23.</p>
 <p>The associated DATA must contains a list of character number that will be used to draw the particle. Using a negative number will loop to the previous DATA value.</p>
 <p>A typical example is to put zero <code>0</code> and minus one <code>-1</code> for the two last data values, as it will allow to make the particle dissapear until the sprite is reused.</p>
 <p>e.g.:</p>
@@ -467,7 +467,7 @@ DATA <span class="hljs-number">1</span>,<span class="hljs-number">2</span>,<span
 <span class="hljs-symbol">'And</span> <span class="hljs-keyword">loop</span> <span class="hljs-keyword">with</span> the <span class="hljs-built_in">character</span> <span class="hljs-number">0</span>.
 </code></pre><hr />
 <p><code>PARTICLE OFF</code></p>
-<p>Clear each sprite position and each particle appearence.</p>
+<p>Clear each sprite position and each particle appearance.</p>
 <hr />
 <p><code>ON PARTICLE CALL subprogram</code></p>
 <p>For each particle, will call the subprogram using an interrupt.</p>
@@ -529,7 +529,7 @@ DATA <span class="hljs-number">1</span>,<span class="hljs-number">2</span>,<span
 <p>Declare a <code>label</code> that contains DATA for the <code>emitter</code>.</p>
 <p>The associated data must follow this list:</p>
 <ol>
-<li><code>appearence</code>,</li>
+<li><code>appearance</code>,</li>
 <li><code>outer</code> ring radius,</li>
 <li><code>inner</code> ring radius,</li>
 <li>initial particle <code>speed</code> on x axis,</li>

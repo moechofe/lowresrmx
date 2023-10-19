@@ -849,7 +849,6 @@ void saveScreenshot(void *pixels, int scale)
 #ifdef __EMSCRIPTEN__
 
 EM_JS(void, ready, (), {
-	console.log('ready 123');
 	document.querySelector('body').classList.add("app-ready");
 });
 

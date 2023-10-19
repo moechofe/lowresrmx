@@ -1,4 +1,4 @@
-- [ ] finish the vscode-extension additions
+- [ ] finish the vscode-extension
 - [ ] fix the dev menu when running the desktop version
 - [ ] delete fnc_BUTTON
 - [ ] move pcg to a directory
@@ -12,5 +12,13 @@
 - [x] add an interrupt for emitter
 - [ ] remove LET
 - [ ] allow to create line shape with emitter or rect
-- [ ]
+- [x] allow to login with google account
+- [x] allow to upload program
+- [x] allow to publish programs
+- [ ] allow to list own programs
+- [ ] allow to create posts from program
+- [ ] allow to upload update version of a program
+- [ ] allow to give a score to each post
+- [ ] allow to list community posts
+- [ ] Fix singleLine if with multiple statement per line, Check: `interpreter->isSingleLineIf`
 

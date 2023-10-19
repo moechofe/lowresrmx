@@ -11,10 +11,12 @@ Install libsodium-dev
 
 Install https://github.com/jedisct1/libsodium-php
 
+Install libzstd-dev
+
 Install https://github.com/kjdev/php-ext-zstd
 
     cd sources
-    php -S localhost:8080
+    php -S localhost:8080 index.php
 
 Sauce: https://silverhammermba.github.io/password/
 

@@ -294,11 +294,11 @@ e.g.:
 
 ---
 
-`PARTICLE appearence DATA label`
+`PARTICLE appearance DATA label`
 
-Declare a `label` that contains DATA for the particle `appearence`.
+Declare a `label` that contains DATA for the particle `appearance`.
 
-`appearence` is a number between 0 and 23.
+`appearance` is a number between 0 and 23.
 
 The associated DATA must contains a list of character number that will be used to draw the particle. Using a negative number will loop to the previous DATA value.
 
@@ -315,7 +315,7 @@ e.g.:
 
 `PARTICLE OFF`
 
-Clear each sprite position and each particle appearence.
+Clear each sprite position and each particle appearance.
 
 ---
 
@@ -361,7 +361,7 @@ It will consume 6 bytes per emitter in memory. For each emitter:
 Declare a `label` that contains DATA for the `emitter`.
 
 The associated data must follow this list:
-1. `appearence`,
+1. `appearance`,
 2. `outer` ring radius,
 3. `inner` ring radius,
 4. initial particle `speed` on x axis,

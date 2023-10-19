@@ -131,6 +131,15 @@ const setupProgramList=()=>{
 		const main=query('main');
 
 		const nav=instanciate(program_item_nav);
+		click(find(nav,'li:nth-child(1)'),(event)=>{
+			log("post");
+		});
+		click(find(nav,'li:nth-child(2)'),(event)=>{
+			log("edit");
+		});
+		click(find(nav,'li:nth-child(3)'),(event)=>{
+			log("run");
+		});
 		/** @type {function(!Event):void} */
 		const setupNav=(event)=>{
 			find(event.target,'nav').append(nav);
