@@ -17,6 +17,12 @@ I want to be able to create games on the go using my iPad and eventually, put th
 - [ ] Integrated graphics editor
 - [ ] Integrated sound editor
 
+
+![Programs list of the iOs App](.github/screenshot/ios_programs_01.jpg)
+![Famicube color palette](.github/screenshot/colors_01.jpg)
+![WIP Kaboom remake](.github/screenshot/revasion_01.jpg)
+
+
 ### Tested environment
 
 1. Ubuntu 💚
