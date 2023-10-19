@@ -1,9 +1,21 @@
-> This is a fork of the excellent fantasy console Lowres NX by Timo "Inutilis" Kloss.
+> This is a fork of the excellent fantasy console LowRes NX by Timo "Inutilis" Kloss.
 > This is a heavily modified version and way more complicated to use, I recommend you to stay on the original app: [LowRes NX Coder on App Store](https://apps.apple.com/app/lowres-nx-coder/id1318884577).
 
 Create your games and play it on the go using an iPhone or iPad. LowResRMX is a virtual game console and a game development environment that include all the tools to start and finish a project.
 
-It _will_ includes a project manager, a code editor and some tools to edit game assets: sprites, palettes, backgrounds, instruments and musics.
+It _will_ include a project manager, a code editor and some tools to edit game assets: sprites, palettes, backgrounds, instruments and musics.
+
+### Goal
+
+I want to be able to create games on the go using my iPad and eventually, put them on the App Store for free. LowRes NX can do that but come with limitation that remove appealing, like no fullscreen, and no fine touch detection.
+
+- [x] Bigger draw surface
+- [x] Not EGA color palette
+- [ ] Usable iOS app
+- [ ] Documentation
+- [ ] Good enough compatibility mode
+- [ ] Integrated graphics editor
+- [ ] Integrated sound editor
 
 ### Tested environment
 
