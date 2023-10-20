@@ -887,7 +887,6 @@ end sub
   NEXT I
   SCROLL 1,LEF+23-48-24,-BOTS-32
 
-
   'WHEN REFRESHING THE CHARA editor, to reduce CPU consumption. refresh only 2 lines per chara per frame. it tooks 4 frame to completelly refresh the whole editable surface. r will vary from 0 to 4 and stop there. the refresh will continue when something reset r to 0.
   r=0
 
@@ -925,6 +924,8 @@ CE_DETECT:
   CALL BTN(T,3)
   'CHARA LIST TOUCHED
   IF CY>=4 AND CY<=7 AND CX>=9 AND CX<=24 THEN T=-3
+  'color list touched
+  if cy>=1 and cy<=2 then t=-4
   RETURN
 
 CE_NOTHING:
@@ -1049,9 +1050,15 @@ ce_refresh:
   return
 
 ce_usercolor:
+  if ((cx-3)mod 6)<4 then
+  colo=(cx-2)\6
+  gosub CE_colorcursor
+  end if
+  wait vbl
+  goto ce_waituser
 
 CE_colorcursor:
-  CALL CURSOR5x2(Colo*7+2,1)
+  CALL CURSOR5x2(Colo*6+3,1)
   return
 
 
