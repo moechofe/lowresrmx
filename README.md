@@ -19,8 +19,7 @@ I want to be able to create games on the go using my iPad and eventually, put th
 
 <img alt="Programs list of the iOs App" src=".github/screenshot/01_my_programs.jpg" width="33%" height="auto"><img alt="Famicube color palette" src=".github/screenshot/02_colors.jpg" width="33%" height="auto"><img alt="WIP Kaboom remake" src=".github/screenshot/03_revasion.jpg" width="33%" height="auto">
 
-[![WIP in video](https://img.youtube.com/vi/uN3giq2XUQo/default.jpg)](https://www.youtube.com/playlist?list=PLtmKVaz_2Cxe6pG7VbQfw5drkJsSpV3C6)
-
+<img src="https://github.com/moechofe/LowResRMX/assets/79093/59453f11-9f97-4883-8c18-e16069ebfd65" height="14rem" width="auto"> [Youtube playlist](https://www.youtube.com/playlist?list=PLtmKVaz_2Cxe6pG7VbQfw5drkJsSpV3C6)
 
 ### Tested environment
 
