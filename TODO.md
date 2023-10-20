@@ -21,4 +21,5 @@
 - [ ] allow to give a score to each post
 - [ ] allow to list community posts
 - [ ] Fix singleLine if with multiple statement per line, Check: `interpreter->isSingleLineIf`
+- [ ] Trigo function should use 0..1 instead of 0..2PI
 
