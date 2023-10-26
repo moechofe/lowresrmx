@@ -1,4 +1,5 @@
-'GFX VERSION: 0.23
+'GFX VERSION: 0.25
+
 
 'BECAUSE OF DIFFERENCE IN DEVICE RATIO, ONLY 177X288 PIXELS WILL BE USED TO DRAW CONTENT.
 'USABLE BG CELL: 22X36.
@@ -386,9 +387,11 @@ TRACE "BOT",BOTS,BOTE
 'KEEP EDITOR CHARA FOR UI INTO RAM FOR COPY IT BACK DURING RASTER
 COPY ROM(2)+$0,$400 TO $9000
 
-GLOBAL CHARA,COLO
+GLOBAL CHARA,list,COLO
 'THE CURRENT SELECTED CHARA, OR THE FIRST ONE
 CHARA=1
+'the chara num shown at the top left corner of the chara list
+list=0
 'THE CURRENT SELECTED COLOR
 COLO=1
 
@@ -416,6 +419,9 @@ GOSUB MO_LOAD
 'LOAD 2,$FF00,$4
 CALL LOADPALETTES(1)
 
+'when using chara editor, panning allow to scroll out of the charasheet by 3 cells in each boundaries (left,top,right,bottom)
+'those value can help computing the limit of the pan: limit for left,top,right and bottom
+CE_LL=-3:ce_lt=-3:ce_lr=128-ceil(shown.w/8)+3:ce_lb=128-ceil(shown.h/8)+3
 
 'THE CURRENT EDITING TOOL FOR THE MAP
 '0 PAN THE MAP
@@ -749,8 +755,8 @@ ME_USERCHARA:
   IF TAP THEN
     BX=TOUCH.X
     BY=TOUCH.Y
-    SPRITE 0,BX,BY,29
-    SPRITE 0 PAL 6 SIZE 0
+    'SPRITE 0,BX,BY,29
+    'SPRITE 0 PAL 6 SIZE 0
     CY=(BY-BOTS)\8
     CX=(BX+LEF+23)\8
     'TRACE CX
@@ -825,7 +831,7 @@ CHAREDITOR:
 
 SUB CE_VBL
   'COPY 64 USER'S CHARAS FOR THE CHARA LIST.
-  POKEW $FFA0,$9400
+  POKEW $FFA0,$9400+list*16
   POKEW $FFA2,$400
   POKEW $FFA4,$8400
   DMA COPY
@@ -982,6 +988,8 @@ TRACE "PAN"
   'USED TO DETECT IF SOMETHING AS CHANGE
   GX=CE_X
   GY=CE_Y
+  'limit right
+  lr=128-ceil(shown.w/8)+3
 
   DO
   IF TOUCH THEN
@@ -992,10 +1000,16 @@ TRACE "PAN"
       PX=TOUCH.X
       CE_X=-3
       OX=-3
+    'limit right
+    else if ce_x>lr THEN
+      px=touch.X
+      ce_x=lr
+      ox=lr
     END IF
     'CE_X=CLAMP(CE_X,0,100)
     CE_Y=CLAMP(CE_Y,0,100)
     SCROLL 3,CE_X*8,CE_Y*8
+    ' trace ce_x,lr
     'TRACE CE_X,CE_Y
     IF GX<>CE_X OR GY<>CE_Y THEN
       R=0
@@ -1011,6 +1025,7 @@ TRACE "PAN"
   LOOP
 
 CE_REFRESH:
+
   IF R>3 THEN RETURN
 
   BG 3
@@ -1026,6 +1041,9 @@ CE_REFRESH:
   'CLEAR LEFT EDGE WHEN OUT-OF-BOUNDS
   IF CE_X<0 THEN BG FILL CE_X+64,0 TO 63,63 CHAR 0
 
+  'clear right edge when out-of-bounds
+  if ce_x>ce_lr-3 then bg fill (ce_x+ceil(shown.w/8)-1)mod 64,0 to (ce_lr+ceil(shown.w/8))mod 64,63 char 0
+
   'DRAW GRID
   S=32
   FOR I=0 TO 256 STEP 64
@@ -1038,39 +1056,63 @@ CE_REFRESH:
   CALL PIXELTOCELL($9400,F,M,N,R)
   CALL PIXELTOCELL($9400,F+1,M+8,N,R)
   CALL PIXELTOCELL($9400,F+2,M+16,N,R)
-  CALL PIXELTOCELL($9400,F+3,M+24,N,R)
-
-  ' SPRITE 33,U+64,V,30
-  ' SPRITE 34,U,V+64,30
-  ' SPRITE 35,U+64,V+64,30
+  if ce_x<ce_lr then CALL PIXELTOCELL($9400,F+3,M+24,N,R)
 
   CALL PIXELTOCELL($9400,F+16,M,N+8,R)
   CALL PIXELTOCELL($9400,F+17,M+8,N+8,R)
   CALL PIXELTOCELL($9400,F+18,M+16,N+8,R)
-  CALL PIXELTOCELL($9400,F+19,M+24,N+8,R)
-
-  ' SPRITE 36,U+128,V,30
-  ' SPRITE 37,U,V+128,30
-  ' SPRITE 38,U+128,V+64,30
+  if ce_x<ce_lr then CALL PIXELTOCELL($9400,F+19,M+24,N+8,R)
 
   CALL PIXELTOCELL($9400,F+32,M,N+16,R)
   CALL PIXELTOCELL($9400,F+33,M+8,N+16,R)
   CALL PIXELTOCELL($9400,F+34,M+16,N+16,R)
-  CALL PIXELTOCELL($9400,F+35,M+24,N+16,R)
+  if ce_x<ce_lr then CALL PIXELTOCELL($9400,F+35,M+24,N+16,R)
 
   CALL PIXELTOCELL($9400,F+48,M,N+24,R)
   CALL PIXELTOCELL($9400,F+49,M+8,N+24,R)
   CALL PIXELTOCELL($9400,F+50,M+16,N+24,R)
-  CALL PIXELTOCELL($9400,F+51,M+24,N+24,R)
+  if ce_x<ce_lr then CALL PIXELTOCELL($9400,F+51,M+24,N+24,R)
 
   'TODO: I SHOULD BE ABLE TO REMOVE SOME WHEN SHOWN.H IS SHORTER
   CALL PIXELTOCELL($9400,F+64,M,N+32,R)
   CALL PIXELTOCELL($9400,F+65,M+8,N+32,R)
   CALL PIXELTOCELL($9400,F+66,M+16,N+32,R)
-  CALL PIXELTOCELL($9400,F+67,M+24,N+32,R)
+  if ce_x<ce_lr then CALL PIXELTOCELL($9400,F+67,M+24,N+32,R)
 
   INC R
   RETURN
+
+'chara selection
+CE_USERCHARA:
+trace "chara"
+  'used to detect scroll change in the chara list
+  ol=list
+  DO
+  if tap then
+    bx=touch.X
+    by=touch.y
+    'SPRITE 0,BX,BY,29
+    'SPRITE 0 PAL 6 SIZE 0
+    CY=(BY-BOTS)\8
+    CX=(BX+LEF+23)\8
+    'trace cy
+    IF CX>=9 AND CY>=4 AND CX<=24 AND CY<=7 THEN
+      CHARA=CX-9+(CY-4)*16
+      gosub ce_characursor
+      gosub ce_charanum
+    end if
+  else if touch then
+    dy=(touch.y-by)\8
+    list=clamp(ol-dy*16,0,192)
+    if ol<>list then
+      gosub ce_charanum
+    end if
+  else
+    wait VBL
+    goto ce_waituser
+  end if
+  wait VBL
+  loop
 
 CE_USERCOLOR:
   IF ((CX-3)MOD 6)<4 THEN
@@ -1084,6 +1126,17 @@ CE_COLORCURSOR:
   CALL CURSOR5X2(COLO*6+3,1)
   RETURN
 
+CE_CHARANUM:
+'update the num of the selected chara in the bottom panel
+  BG 0
+  BG SOURCE ROM(4)
+  BG COPY 0,0,5,4 TO 3,4
+  TEXT 4,6,RIGHT$("000"+STR$(CHARA),4)
+  RETURN
+
+ce_charalist:
+'update the chara list
+  return
 
 
 
