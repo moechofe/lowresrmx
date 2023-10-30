@@ -154,9 +154,9 @@ struct TypedValue fnc_math1(struct Core *core)
                 value.v.floatValue = tanf(xValue.v.floatValue * M_PI * 2);
                 break;
 
-						case TokenCEIL:
-								value.v.floatValue = ceilf(xValue.v.floatValue);
-								break;
+            case TokenCEIL:
+                    value.v.floatValue = ceilf(xValue.v.floatValue);
+                    break;
 
             default:
                 assert(0);

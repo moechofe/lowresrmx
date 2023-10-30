@@ -20,6 +20,12 @@ require_once __DIR__.'/my_programs.php';
 
 require_once __DIR__.'/static.php';
 
-header("Status: 301 Moved Permanently",true,301);
-header("Location: community.html");
+if($url['path']==='/')
+{
+	header("Status: 301 Moved Permanently",true,301);
+	header("Location: community.html");
+	exit();
+}
+
+header("Status: 404 Not Found",true,404);
 exit();

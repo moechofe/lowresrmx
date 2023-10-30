@@ -1,4 +1,4 @@
-'GFX VERSION: 0.25
+'GFX VERSION: 0.30
 
 
 'BECAUSE OF DIFFERENCE IN DEVICE RATIO, ONLY 177X288 PIXELS WILL BE USED TO DRAW CONTENT.
@@ -27,7 +27,7 @@
 '(X) DESIGN A GENERIC FILE SAVE/LOAD
 '( ) ALLOW TO PAN THE USER'S CHARA LIST
 '(X) CAN I REUSE THE USER CHARA FROM $9400? YES, CONTINUE PLEASE, I HAVE TO MOVE THE MEMORY MAPPING NOW, CONTINUE AT A400..$DFC0
-'( ) IMPLEMENT A VIRTUAL BG AND SHOW BLACK BORDER
+'(x) IMPLEMENT A VIRTUAL BG AND SHOW BLACK BORDER
 '( ) SECOND BTN BAR FOR MAP EDITOR: SWITCH FOR CHAR,PAL,FLIP AND PRIO, SHOW/HIDE PRIO, COPY/PASTE
 '( ) CAN SAVE LOAD BG
 '( ) CAN PAN USER BG
@@ -77,7 +77,7 @@
 
 
 
-'=====================DATA_MANIPULATION:
+'=============DATA_MANIPULATION:
 
 SUB SETPALETTE(P)
 'START USING A DIFFERENT USER PALETTE
@@ -145,7 +145,7 @@ R=R+4
 NEXT I
 END SUB
 
-'============================UI_RELATED:
+'====================UI_RELATED:
 
 SUB ICON(I,C,P)
 'TAKE THE ASSET FROM THE ROM, AND COPY IT TO SHOW AN ICON BTN USING SPRITE
@@ -162,10 +162,11 @@ S=I*2+1
 X=5+24*I-LEF
 IF I THEN ADD X,8
 Y=BOTE-17
+trace "ICON",s,x,y,n
 SPRITE S,X,Y,N
 SPRITE S+1,X+8,Y,N+1
-SPRITE S PAL P
-SPRITE S+1 PAL P
+SPRITE S PAL P PRIO 1
+SPRITE S+1 PAL P PRIO 1
 END SUB
 
 SUB CLEARICON(I)
@@ -230,7 +231,7 @@ SPRITE 31 PAL 6 FLIP 0,1
 
 FOR S=32 TO 62:SPRITE S PAL 6:NEXT S
 
-'==================FILE_SELECTOR:
+'=================FILE_SELECTOR:
 
 GLOBAL SAVING,LOADING
 
@@ -353,7 +354,7 @@ END SUB
 
 
 
-'====================FILE_RELATED:
+'==================FILE_RELATED:
 
 SUB LOADPALETTES(F)
 LOAD F,$DFC0,32
@@ -368,7 +369,7 @@ END SUB
 
 
 
-'============================MAIN:
+'==========================MAIN:
 
 SYSTEM 0,1
 GLOBAL TOP,LEF
@@ -381,8 +382,6 @@ TRACE "LEF,TOP",LEF,TOP
 'WHERE TO PLACE THE BOTTOM PANEL ON Y AXIS AND WHERE IT STOP
 GLOBAL BOTS,BOTE
 BOTE=SHOWN.H-SAFE.B
-'BOTS=BOTE-64
-TRACE "BOT",BOTS,BOTE
 
 'KEEP EDITOR CHARA FOR UI INTO RAM FOR COPY IT BACK DURING RASTER
 COPY ROM(2)+$0,$400 TO $9000
@@ -419,9 +418,6 @@ GOSUB MO_LOAD
 'LOAD 2,$FF00,$4
 CALL LOADPALETTES(1)
 
-'when using chara editor, panning allow to scroll out of the charasheet by 3 cells in each boundaries (left,top,right,bottom)
-'those value can help computing the limit of the pan: limit for left,top,right and bottom
-CE_LL=-3:ce_lt=-3:ce_lr=128-ceil(shown.w/8)+3:ce_lb=128-ceil(shown.h/8)+3
 
 'THE CURRENT EDITING TOOL FOR THE MAP
 '0 PAN THE MAP
@@ -450,12 +446,13 @@ CHARTOOL=0
 CHARTOOLCHARA:
 DATA 66,64
 
-GOTO CHAREDITOR
+goto mapeditor
+'GOTO CHAREDITOR
 
 
 
 
-'======================MAP_EDITOR:
+'====================MAP_EDITOR:
 
 MAPEDITOR:
 'SHOW A BIG SPACE FOR THE USER'S EDITABLE BG, A LIST OF USER'S CHARA DO CHOOSE TO PAINT WITH, AND A BUNCH OF EDITOR UI GADGETS.
@@ -791,7 +788,7 @@ ME_CHARANUM:
 
 
 
-'=====================MAP_OPERTOR:
+'===================MAP_OPERTOR:
 
 MAPOPERATOR:
   CALL FILESELECTOR(MAPF)
@@ -824,7 +821,7 @@ MO_LOAD:
 
 
 
-'=====================CHAR_EDITOR:
+'===================CHAR_EDITOR:
 
 CHAREDITOR:
 'SHOW A BIG SPACE FOR THE USER'S EDITABLE CHARA, A LIST OF USER'S CHARA
@@ -988,8 +985,9 @@ TRACE "PAN"
   'USED TO DETECT IF SOMETHING AS CHANGE
   GX=CE_X
   GY=CE_Y
-  'limit right
+  'limit right and bottom
   lr=128-ceil(shown.w/8)+3
+  lb=128-ceil(shown.h/8)+3+11
 
   DO
   IF TOUCH THEN
@@ -1006,8 +1004,16 @@ TRACE "PAN"
       ce_x=lr
       ox=lr
     END IF
-    'CE_X=CLAMP(CE_X,0,100)
-    CE_Y=CLAMP(CE_Y,0,100)
+    if ce_y<-3 then
+      py=touch.Y
+      ce_y=-3
+      oy=-3
+    else if ce_y>lb then
+      py=touch.y
+      ce_y=lb
+      oy=lb
+    end if
+    'CE_Y=CLAMP(CE_Y,0,100)
     SCROLL 3,CE_X*8,CE_Y*8
     ' trace ce_x,lr
     'TRACE CE_X,CE_Y
@@ -1038,11 +1044,21 @@ CE_REFRESH:
   U=(M-CE_X)*8-2
   V=(N-CE_Y)*8-2
 
+  'limit right and bottom
+  lr=128-ceil(shown.w/8)+3
+  lb=128-ceil(shown.h/8)+3+11
+
   'CLEAR LEFT EDGE WHEN OUT-OF-BOUNDS
-  IF CE_X<0 THEN BG FILL CE_X+64,0 TO 63,63 CHAR 0
+  IF CE_X<0 THEN BG FILL 60,0 TO 63,63 CHAR 0
 
   'clear right edge when out-of-bounds
-  if ce_x>ce_lr-3 then bg fill (ce_x+ceil(shown.w/8)-1)mod 64,0 to (ce_lr+ceil(shown.w/8))mod 64,63 char 0
+  if ce_x>lr-3 then bg fill 0,0 to 3,63 char 0
+
+  'clear top edge when out-of-bounds
+  if ce_y<0 then bg fill 0,60 to 63,63 char 0
+
+  'clear bottom edge when out-of-bounds
+  if ce_y>lb-3 then bg fill 0,0 to 63,3 char 0
 
   'DRAW GRID
   S=32
@@ -1056,28 +1072,28 @@ CE_REFRESH:
   CALL PIXELTOCELL($9400,F,M,N,R)
   CALL PIXELTOCELL($9400,F+1,M+8,N,R)
   CALL PIXELTOCELL($9400,F+2,M+16,N,R)
-  if ce_x<ce_lr then CALL PIXELTOCELL($9400,F+3,M+24,N,R)
+  if ce_x<lr then CALL PIXELTOCELL($9400,F+3,M+24,N,R)
 
   CALL PIXELTOCELL($9400,F+16,M,N+8,R)
   CALL PIXELTOCELL($9400,F+17,M+8,N+8,R)
   CALL PIXELTOCELL($9400,F+18,M+16,N+8,R)
-  if ce_x<ce_lr then CALL PIXELTOCELL($9400,F+19,M+24,N+8,R)
+  if ce_x<lr then CALL PIXELTOCELL($9400,F+19,M+24,N+8,R)
 
   CALL PIXELTOCELL($9400,F+32,M,N+16,R)
   CALL PIXELTOCELL($9400,F+33,M+8,N+16,R)
   CALL PIXELTOCELL($9400,F+34,M+16,N+16,R)
-  if ce_x<ce_lr then CALL PIXELTOCELL($9400,F+35,M+24,N+16,R)
+  if ce_x<lr then CALL PIXELTOCELL($9400,F+35,M+24,N+16,R)
 
   CALL PIXELTOCELL($9400,F+48,M,N+24,R)
   CALL PIXELTOCELL($9400,F+49,M+8,N+24,R)
   CALL PIXELTOCELL($9400,F+50,M+16,N+24,R)
-  if ce_x<ce_lr then CALL PIXELTOCELL($9400,F+51,M+24,N+24,R)
+  if ce_x<lr then CALL PIXELTOCELL($9400,F+51,M+24,N+24,R)
 
   'TODO: I SHOULD BE ABLE TO REMOVE SOME WHEN SHOWN.H IS SHORTER
   CALL PIXELTOCELL($9400,F+64,M,N+32,R)
   CALL PIXELTOCELL($9400,F+65,M+8,N+32,R)
   CALL PIXELTOCELL($9400,F+66,M+16,N+32,R)
-  if ce_x<ce_lr then CALL PIXELTOCELL($9400,F+67,M+24,N+32,R)
+  if ce_x<lr then CALL PIXELTOCELL($9400,F+67,M+24,N+32,R)
 
   INC R
   RETURN
@@ -1141,7 +1157,7 @@ ce_charalist:
 
 
 
-'====================CHAR_OPERTOR:
+'==================CHAR_OPERTOR:
 
 'TODO: CHAROPERATOR:
   'CALL FILESELECTOR(MAPF)
@@ -1161,13 +1177,14 @@ CO_LOAD:
 
 
 
-'=====================PAL_OPERTOR:
+'===================PAL_OPERTOR:
 
 PO_LOAD:
   'TODO: ADD DEFAULT PALETTE
   FILL $DFC0,32
   LOAD PALF,$DFC0,32
   RETURN
+
 
 
 #1:MAIN PALETTES

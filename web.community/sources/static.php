@@ -7,6 +7,7 @@ if(in_array($url['path'],[
 	'/community.html',
 	'/community.js',
 	'/community.css',
+	'/post.html',
 	'/pico.classless.min.css',
 	'/player.js',
 	'/player.wasm',
