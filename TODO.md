@@ -22,4 +22,5 @@
 - [ ] allow to list community posts
 - [ ] Fix singleLine if with multiple statement per line, Check: `interpreter->isSingleLineIf`
 - [ ] Trigo function should use 0..1 instead of 0..2PI
-
+- [-] Auto color transition
+- [ ] Provide an export dedicated for web mobile, that handle ratio and open the window accordingly, test fullscreen, test input.

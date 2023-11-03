@@ -17,6 +17,7 @@ require_once __DIR__.'/player.php';
 
 require_once __DIR__.'/trends.php';
 require_once __DIR__.'/my_programs.php';
+require_once __DIR__.'/program.php';
 
 require_once __DIR__.'/static.php';
 

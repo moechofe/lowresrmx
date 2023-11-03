@@ -102,3 +102,4 @@ function validateSessionAndGetUserId():string
 $request=$_SERVER['REQUEST_URI'];
 $url=parse_url($request);
 $info=pathinfo($url['path']);
+$query=$_SERVER['QUERY_STRING'];
