@@ -29,9 +29,23 @@ target_include_directories(${PROJECT_NAME} PUBLIC "${BACKEND_SOURCE_DIR}" "${BAC
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/sdl2)
 
-find_package(SDL2 REQUIRED)
-target_include_directories(${PROJECT_NAME} PRIVATE ${SDL2_INCLUDE_DIRS})
-target_link_libraries(${PROJECT_NAME} SDL2::Main)
+if(SDL2_PATH)
+	find_package(SDL2 REQUIRED)
+	target_include_directories(${PROJECT_NAME} PRIVATE ${SDL2_INCLUDE_DIRS})
+else()
+	add_subdirectory("SDL" EXCLUDE_FROM_ALL)
+endif()
+
+if(SDL2_PATH)
+	target_link_libraries(${PROJECT_NAME} SDL2::Main)
+else()
+	if(TARGET SDL2::SDL2main)
+    target_link_libraries(${PROJECT_NAME} PRIVATE SDL2::SDL2main)
+  endif()
+  target_link_libraries(${PROJECT_NAME} PRIVATE SDL2::SDL2)
+
+  #install(FILES $<TARGET_RUNTIME_DLLS:SDL2> TYPE BIN)
+endif()
 
 if(APPLE)
 	target_include_directories(${PROJECT_NAME} PRIVATE /opt/homebrew/Cellar/sdl2/2.28.1/include/)

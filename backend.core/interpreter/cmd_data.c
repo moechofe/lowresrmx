@@ -24,7 +24,7 @@
 enum ErrorCode cmd_DATA(struct Core *core)
 {
     struct Interpreter *interpreter = core->interpreter;
-    
+
     if (interpreter->pass == PassPrepare)
     {
         if (!interpreter->firstData)
@@ -37,11 +37,11 @@ enum ErrorCode cmd_DATA(struct Core *core)
         }
         interpreter->lastData = interpreter->pc;
     }
-    
+
     do
     {
         ++interpreter->pc; // DATA at first, then comma
-        
+
         if (interpreter->pc->type == TokenString)
         {
             ++interpreter->pc;
@@ -62,33 +62,33 @@ enum ErrorCode cmd_DATA(struct Core *core)
         }
     }
     while (interpreter->pc->type == TokenComma);
-    
+
     // Eol
     if (interpreter->pc->type != TokenEol) return ErrorSyntax;
     ++interpreter->pc;
-    
+
     return ErrorNone;
 }
 
 enum ErrorCode cmd_READ(struct Core *core)
 {
     struct Interpreter *interpreter = core->interpreter;
-    
+
     do
     {
          // READ at first, then comma
         ++interpreter->pc;
-        
+
         // variable
         enum ValueType varType = ValueTypeNull;
         enum ErrorCode errorCode = ErrorNone;
         union Value *varValue = itp_readVariable(core, &varType, &errorCode, true);
         if (!varValue) return errorCode;
-            
+
         if (interpreter->pass == PassRun)
         {
             if (!interpreter->currentDataValueToken) return ErrorOutOfData;
-            
+
             struct Token *dataValueToken = interpreter->currentDataValueToken;
             if (dataValueToken->type == TokenFloat)
             {
@@ -111,12 +111,12 @@ enum ErrorCode cmd_READ(struct Core *core)
                 varValue->stringValue = dataValueToken->stringValue;
                 rcstring_retain(varValue->stringValue);
             }
-            
+
             dat_nextData(interpreter);
         }
     }
     while (interpreter->pc->type == TokenComma);
-    
+
     return itp_endOfCommand(interpreter);
 }
 
@@ -135,20 +135,21 @@ enum ErrorCode cmd_SKIP(struct Core *core)
 
     if (interpreter->pass == PassRun)
     {
+				// TODO: must check if there is enough data
         while(skip-->0) dat_nextData(interpreter);
     }
-    
+
     return itp_endOfCommand(interpreter);
 }
 
 enum ErrorCode cmd_RESTORE(struct Core *core)
 {
     struct Interpreter *interpreter = core->interpreter;
-    
+
     // RESTORE
     struct Token *tokenRESTORE = interpreter->pc;
     ++interpreter->pc;
-    
+
     // optional jump label
     if (interpreter->pc->type == TokenIdentifier)
     {
@@ -170,6 +171,6 @@ enum ErrorCode cmd_RESTORE(struct Core *core)
         // restore to first DATA
         dat_restoreData(interpreter, NULL);
     }
-    
+
     return itp_endOfCommand(interpreter);
 }
