@@ -42,11 +42,6 @@
 - [ ] protect unmapped memory access
 - [x] try to make the 0nth color non transparent
 - [x] expose message api to user
-- [ ] find an better API to create picture
-
-    1. rerun the interpreter while reseting the shown.w/shown.h during one frame
-    2. call a dedicated sub
-    3. register a dedicated sub
-    4. store the image in virtual file with a bg of 27x48 cells
-    5. generate a smaller image like icons size 180x180 22.5/22.5 cells
+- [x] create smaller program picture
+- [ ]
 

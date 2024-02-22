@@ -365,14 +365,15 @@ class ExplorerViewController: UIViewController, UICollectionViewDelegateFlowLayo
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        let traits = collectionView.traitCollection
+        //let traits = collectionView.traitCollection
         var cellSize: CGSize
 //        if traits.horizontalSizeClass == .regular && traits.verticalSizeClass == .regular {
 //            cellSize = CGSize(width: 180, height: 170)
 //        } else {
 //            cellSize = CGSize(width: 110, height: 105)
 //        }
-        cellSize = CGSize(width:110, height: 185)
+        // cellSize = CGSize(width:110, height: 185)
+        cellSize = CGSize(width:110, height: 140)
         let layout = collectionViewLayout as! UICollectionViewFlowLayout
         let width = collectionView.bounds.size.width - layout.sectionInset.left - layout.sectionInset.right
         let numItemsPerLine = floor(width / cellSize.width)

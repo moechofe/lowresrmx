@@ -337,10 +337,10 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
         if let cgImage = nxView.layer.contents as! CGImage? {
             let uiImage = UIImage(cgImage: cgImage)
             let cropRect = CGRect(
-                x: (uiImage.size.width-216)/2,
-                y: (uiImage.size.height-384)/2,
-                width: 216,
-                height: 384
+                x: 0, //(uiImage.size.width-216)/2,
+                y: 0, //(uiImage.size.height-384)/2,
+                width: 180, //216,
+                height: 180 // 384
             ).integral
             let croppedImage = UIImage(cgImage: cgImage.cropping(
                 to: cropRect
@@ -352,6 +352,10 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
     @objc func shareScreenshot() {
         if let cgImage = nxView.layer.contents as! CGImage? {
             let uiImage = UIImage(cgImage: cgImage)
+            
+            // crop
+            let crop = CGRect(x:0,y:0,width:180,height:180).integral
+            let croppedImage = cgImage.cropping(to: crop)
 
             // rescale
             let size = CGSize(width: CGFloat(216) * screenshotScaleFactor, height: CGFloat(384) * screenshotScaleFactor)
@@ -468,7 +472,7 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
     }
 
     override func pressesBegan(_ presses: Set<UIPress>, with event: UIPressesEvent?) {
-        var handled = false
+        let handled = false
         for press in presses {
             if let key = press.key {
 

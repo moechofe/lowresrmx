@@ -8,7 +8,7 @@
 
 import UIKit
 
-protocol ExplorerItemCellDelegate: class {
+protocol ExplorerItemCellDelegate: AnyObject {
     func explorerItemCell(_ cell: ExplorerItemCell, didSelectRename item: ExplorerItem)
     func explorerItemCell(_ cell: ExplorerItemCell, didSelectDelete item: ExplorerItem)
     func explorerItemCell(_ cell: ExplorerItemCell, didSelectDuplicate item: ExplorerItem)
