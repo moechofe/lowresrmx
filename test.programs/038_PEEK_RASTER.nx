@@ -1,0 +1,13 @@
+sub test
+if raster mod 32=0 then
+  trace "raster=",raster,peekw($Ff30)
+  exit sub
+end if
+end sub
+
+on raster call test
+
+do
+wait 5
+loop
+

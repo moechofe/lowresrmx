@@ -1,0 +1,2 @@
+PRINT "shown=",shown.w,shown.h
+print "keepw=",peekw($ff78),peekw($ff7a)

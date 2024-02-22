@@ -27,51 +27,60 @@
 
 // ================ Gamepad ================
 
-union Gamepad {
-    struct {
-        uint8_t up:1;
-        uint8_t down:1;
-        uint8_t left:1;
-        uint8_t right:1;
-        uint8_t buttonA:1;
-        uint8_t buttonB:1;
-    };
-    uint8_t value;
-};
+// union Gamepad {
+//     struct {
+//         uint8_t up:1;
+//         uint8_t down:1;
+//         uint8_t left:1;
+//         uint8_t right:1;
+//         uint8_t buttonA:1;
+//         uint8_t buttonB:1;
+//     };
+//     uint8_t value;
+// };
 
 // ================ Status ================
 
-union IOStatus {
-    struct {
-        uint8_t pause:1;
-        uint8_t touch:1;
-    };
-    uint8_t value;
+union IOStatus
+{
+	struct
+	{
+		uint8_t pause : 1;
+		uint8_t touch : 1;
+		uint8_t keyboardEnabled : 1;
+	};
+	uint8_t value;
 };
 
 // ================ Attributes ================
 
-union IOAttributes {
-    struct {
-        uint8_t keyboardEnabled:1;
-    };
-    uint8_t value;
-};
+// union IOAttributes {
+//     struct {
+//     };
+//     uint8_t value;
+// };
 
 // ===============================================
 // ================ I/O Registers ================
 // ===============================================
 
-struct IORegisters {
-    // TODO: remove gamepad
-    union Gamepad gamepads[NUM_GAMEPADS]; // 2 bytes
-    float touchX;
-    float touchY;
-    char key;
-    union IOStatus status;
-    union IOAttributes attr;
-    struct {int width,height;} shown;
-    struct {int left,top,right,bottom;} safe;
+struct IORegisters
+{
+	// TODO: remove gamepad
+	// union Gamepad gamepads[NUM_GAMEPADS]; // 2 bytes
+	float touchX;
+	float touchY;
+	struct
+	{
+		uint16_t width, height;
+	} shown;
+	struct
+	{
+		uint16_t left, top, right, bottom;
+	} safe;
+	char key;
+	union IOStatus status;
+	// union IOAttributes attr;
 };
 
 #endif /* io_chip_h */

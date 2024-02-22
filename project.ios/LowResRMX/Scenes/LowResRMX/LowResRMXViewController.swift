@@ -35,13 +35,13 @@ struct WebSource {
 }
 
 class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate, RPPreviewViewControllerDelegate {
-    
+
     let screenshotScaleFactor: CGFloat = 4.0
-    
+
     @IBOutlet weak var exitButton: UIButton!
     @IBOutlet weak var menuButton: UIButton!
     @IBOutlet weak var nxView: LowResRMXView!
-    
+
     weak var delegate: LowResRMXViewControllerDelegate?
     weak var toolDelegate: LowResRMXViewControllerToolDelegate?
     var webSource: WebSource?
@@ -49,7 +49,7 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
     var diskDocument: ProjectDocument?
     var coreWrapper: CoreWrapper?
     var imageData: Data?
-    
+
     var isDebugEnabled = false {
         didSet {
             if let coreWrapper = coreWrapper {
@@ -57,9 +57,9 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
             }
         }
     }
-    
+
     var isSafeScaleEnabled = false
-    
+
     private var controlsInfo: ControlsInfo = ControlsInfo()
     private var displayLink: CADisplayLink?
     private var errorToShow: Error?
@@ -68,32 +68,32 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
     private var audioPlayer: LowResRMXAudioPlayer!
     private var numOnscreenGamepads = 0
     private var keyboardTop: CGFloat?
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         addKeyCommand(UIKeyCommand(input: "e", modifierFlags: .command, action: #selector(onExitTapped), discoverabilityTitle: "Exit Program"))
         addKeyCommand(UIKeyCommand(input: "d", modifierFlags: .command, action: #selector(toggleDebugMode), discoverabilityTitle: "Debug Mode"))
         addKeyCommand(UIKeyCommand(input: "s", modifierFlags: .command, action: #selector(shareScreenshot), discoverabilityTitle: "Share Screenshot"))
         addKeyCommand(UIKeyCommand(input: "i", modifierFlags: .command, action: #selector(captureProgramIcon), discoverabilityTitle: "Capture Icon"))
-        
+
         startDate = Date()
-        
+
         isSafeScaleEnabled = AppController.shared.isSafeScaleEnabled
-        
+
         if let coreWrapper = coreWrapper {
             // program already compiled
             core_willRunProgram(&coreWrapper.core, Int(CFAbsoluteTimeGetCurrent() - AppController.shared.bootTime))
             core_setDebug(&coreWrapper.core, isDebugEnabled)
-            
+
         } else if let webSource = webSource {
             // load program from web
             coreWrapper = CoreWrapper()
-            
+
             let group = DispatchGroup()
             var sourceCode: String?
             var groupError: Error?
-            
+
             group.enter()
             DispatchQueue.global().async {
                 do {
@@ -103,7 +103,7 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
                 }
                 group.leave()
             }
-            
+
             if let imageUrl = webSource.imageUrl {
                 group.enter()
                 DispatchQueue.global().async {
@@ -111,7 +111,7 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
                     group.leave()
                 }
             }
-            
+
             group.notify(queue: .main) {
                 if let sourceCode = sourceCode {
                     if let topicId = webSource.topicId {
@@ -125,15 +125,15 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
                     self.showError(error)
                 }
             }
-            
+
         } else {
             // program not yet compiled, open document and compile...
             coreWrapper = CoreWrapper()
-            
+
             guard let document = document else {
                 fatalError("CoreWrapper or Document required")
             }
-            
+
             if document.documentState == .closed {
                 document.open(completionHandler: { [weak self] (success) in
                     guard let strongSelf = self else {
@@ -155,25 +155,25 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
                 }
             }
         }
-        
+
         guard let coreWrapper = coreWrapper else {
             assertionFailure()
             return
         }
-        
+
         nxView.coreWrapper = coreWrapper
         audioPlayer = LowResRMXAudioPlayer(coreWrapper: coreWrapper)
-        
+
         coreWrapper.delegate = self
-        
+
         inputAssistantItem.leadingBarButtonGroups = []
         inputAssistantItem.trailingBarButtonGroups = []
-        
+
         let recognizer = UITapGestureRecognizer(target: self, action: #selector(handleTap))
         recognizer.isEnabled = false
         view.addGestureRecognizer(recognizer)
         self.recognizer = recognizer
-        
+
         let displayLink = CADisplayLink(target: self, selector: #selector(update))
         if #available(iOS 10.0, *) {
             displayLink.preferredFramesPerSecond = 60
@@ -181,10 +181,10 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
             displayLink.frameInterval = 1
         }
         self.displayLink = displayLink
-        
+
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
-        
+
         // Sauce: https://developer.apple.com/forums/thread/110064
         let value = UIInterfaceOrientation.portraitUpsideDown.rawValue
         UIDevice.current.setValue(value, forKey: "orientation")
@@ -194,38 +194,38 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
         return .portrait
     }
-    
+
     // Saurce: https://developer.apple.com/forums/thread/110064
     override var shouldAutorotate: Bool {
         return true
     }
-    
+
     deinit {
         NotificationCenter.default.removeObserver(self)
     }
-        
+
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         displayLink?.add(to: .current, forMode: .default)
         checkShowError()
     }
-    
+
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         view.endEditing(true)
-        
+
         displayLink?.invalidate()
-        
+
         audioPlayer.stop()
-        
+
         diskDocument?.close(completionHandler: nil)
         diskDocument = nil
-        
+
         if let coreWrapper = coreWrapper {
             core_willSuspendProgram(&coreWrapper.core)
         }
     }
-    
+
     override var prefersStatusBarHidden: Bool {
 //        if #available(iOS 11.0, *) {
 //            if let window = UIApplication.shared.delegate?.window {
@@ -236,23 +236,23 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
 //        }
         return true
     }
-    
+
 //    override var preferredStatusBarStyle: UIStatusBarStyle {
 //        return .lightContent
 //    }
-    
+
     override var preferredScreenEdgesDeferringSystemGestures: UIRectEdge {
         return .all
     }
-    
+
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        
+
         let top: CGFloat
         let left: CGFloat
         let right: CGFloat
         let bottom: CGFloat
-        
+
         if #available(iOS 11.0, *) {
             top = view.safeAreaInsets.top
             left = view.safeAreaInsets.left
@@ -304,13 +304,13 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
             coreWrapper.input.bottom = Int32(bottom/s)
         }
     }
-    
+
     func compileAndStartProgram(sourceCode: String) -> LowResRMXError? {
         guard let coreWrapper = coreWrapper else {
             assertionFailure()
             return nil
         }
-        
+
         let error = coreWrapper.compileProgram(sourceCode: sourceCode)
         if error == nil {
             core_willRunProgram(&coreWrapper.core, Int(CFAbsoluteTimeGetCurrent() - AppController.shared.bootTime))
@@ -318,7 +318,7 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
         }
         return error
     }
-    
+
     @objc func toggleDebugMode() {
         if isDebugEnabled {
             isDebugEnabled = false
@@ -328,7 +328,7 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
             delegate?.didChangeDebugMode(enabled: true)
         }
     }
-    
+
     @objc func captureProgramIcon() {
         guard let document = document else {
             assertionFailure()
@@ -348,11 +348,11 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
             ProjectManager.shared.saveProjectIcon(programUrl: document.fileURL, image: croppedImage)
         }
     }
-    
+
     @objc func shareScreenshot() {
         if let cgImage = nxView.layer.contents as! CGImage? {
             let uiImage = UIImage(cgImage: cgImage)
-            
+
             // rescale
             let size = CGSize(width: CGFloat(216) * screenshotScaleFactor, height: CGFloat(384) * screenshotScaleFactor)
             UIGraphicsBeginImageContextWithOptions(size, true, 1.0)
@@ -361,7 +361,7 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
             uiImage.draw(in: CGRect(origin: CGPoint(), size: size))
             let scaledImage = UIGraphicsGetImageFromCurrentImageContext()!
             UIGraphicsEndImageContext()
-            
+
             // share
             let activityVC = UIActivityViewController(activityItems: [scaledImage], applicationActivities: nil)
             activityVC.popoverPresentationController?.sourceView = menuButton
@@ -369,7 +369,7 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
             self.present(activityVC, animated: true, completion: nil)
         }
     }
-    
+
     func recordVideo() {
         guard RPScreenRecorder.shared().isAvailable else {
             showAlert(withTitle: "Video Recording Currently Not Available", message: nil, block: nil)
@@ -383,7 +383,7 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
             }
         }
     }
-    
+
     func stopVideoRecording() {
         RPScreenRecorder.shared().stopRecording { (vc, error) in
             if let vc = vc {
@@ -397,7 +397,7 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
             }
         }
     }
-    
+
     func saveProgramFromWeb() {
         guard
             let webSource = webSource,
@@ -413,7 +413,7 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
             self.exit()
         }
     }
-    
+
     func countPlay(topicId: String) {
         var urlRequest = URLRequest(url: URL(string: "\(ShareViewController.baseUrl)ajax/count_play.php")!)
         urlRequest.httpMethod = "POST"
@@ -423,24 +423,24 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
         }
         task.resume()
     }
-    
+
     @objc func update(displaylink: CADisplayLink) {
         guard let coreWrapper = coreWrapper else {
             return
         }
-        
+
         // pause when any alerts are visible
         if presentedViewController != nil {
             return
         }
-        
+
         core_update(&coreWrapper.core, &coreWrapper.input)
-        
+
         if core_shouldRender(&coreWrapper.core) {
             nxView.render()
         }
     }
-    
+
     func exit() {
         if RPScreenRecorder.shared().isRecording {
             stopVideoRecording()
@@ -448,30 +448,30 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
             presentingViewController?.dismiss(animated: true, completion: nil)
         }
     }
-    
+
     @objc func handleTap(sender: UITapGestureRecognizer) {
         if sender.state == .ended {
             becomeFirstResponder()
         }
     }
-    
+
     @IBAction func pauseTapped(_ sender: Any) {
         guard let coreWrapper = coreWrapper else {
             return
         }
-        
+
         coreWrapper.input.pause = true
     }
-    
+
     override var canBecomeFirstResponder: Bool {
         return controlsInfo.keyboardMode == KeyboardModeOn
     }
-    
+
     override func pressesBegan(_ presses: Set<UIPress>, with event: UIPressesEvent?) {
         var handled = false
         for press in presses {
             if let key = press.key {
-                
+
                 // key strings
                 switch key.charactersIgnoringModifiers {
                 case "p", "\r":
@@ -487,16 +487,16 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
             super.pressesBegan(presses, with: event)
         }
     }
-    
+
     private func showError(_ error: Error) {
         errorToShow = error
         checkShowError()
     }
-    
+
     private func checkShowError() {
         guard let error = errorToShow else { return }
         errorToShow = nil
-        
+
         if let nxError = error as? LowResRMXError {
             //RMX Error
             let alert = UIAlertController(title: nxError.message, message: nxError.line, preferredStyle: .alert)
@@ -510,7 +510,7 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
                 }))
             }
             present(alert, animated: true, completion: nil)
-            
+
         } else {
             // System Error
             let alert = UIAlertController(title: error.localizedDescription, message: nil, preferredStyle: .alert)
@@ -520,16 +520,20 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
             present(alert, animated: true, completion: nil)
         }
     }
-    
+
     @objc func keyboardWillShow(_ notification: NSNotification) {
         if let frameValue = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue {
             let frame = frameValue.cgRectValue
             keyboardTop = frame.origin.y
             view.setNeedsLayout()
-            UIView.animate(withDuration: 0.3, animations: { 
+            UIView.animate(withDuration: 0.3, animations: {
                 self.view.layoutIfNeeded()
             })
-        }
+						NSLog("Keyboard ON");
+						if let coreWrapper = coreWrapper {
+								core_setKeybordEnabled(&coreWrapper.core, true);
+						}
+				}
     }
 
     @objc func keyboardWillHide(_ notification: NSNotification) {
@@ -538,15 +542,19 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
         UIView.animate(withDuration: 0.3, animations: {
             self.view.layoutIfNeeded()
         })
+				NSLog("Keyboard OFF");
+					if let coreWrapper = coreWrapper {
+							core_setKeybordEnabled(&coreWrapper.core, false);
+					}
     }
-    
+
     @IBAction func onExitTapped(_ sender: Any?) {
         if sender is UIKeyCommand {
             delegate?.didEndWithKeyCommand()
         }
-        
+
         let timeSinceStart = Date().timeIntervalSince(startDate)
-        
+
         if timeSinceStart >= 60 {
             let alert = UIAlertController(title: "Do you really want to exit this program?", message: nil, preferredStyle: .alert)
             alert.addAction(UIAlertAction(title: "Exit", style: .default, handler: { [unowned self] (action) in
@@ -558,10 +566,10 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
             exit()
         }
     }
-    
+
     @IBAction func settingsTapped(_ sender: Any) {
         let alert = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
-        
+
         if isSafeScaleEnabled {
             alert.addAction(UIAlertAction(title: "Zoom In", style: .default, handler: { [unowned self] (action) in
                 self.isSafeScaleEnabled = false
@@ -579,24 +587,24 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
                 self.captureProgramIcon()
             }))
         }
-        
+
         alert.addAction(UIAlertAction(title: "Share Screenshot", style: .default, handler: { [unowned self] (action) in
             self.shareScreenshot()
         }))
-        
-        
+
+
         if !RPScreenRecorder.shared().isRecording {
             alert.addAction(UIAlertAction(title: "Record Video", style: .default, handler: { [unowned self] (action) in
                 self.recordVideo()
             }))
         }
-        
+
         if webSource != nil {
             alert.addAction(UIAlertAction(title: "Save to My Programs", style: .default, handler: { [unowned self] (action) in
                 self.saveProgramFromWeb()
             }))
         }
-        
+
         if isDebugEnabled {
             alert.addAction(UIAlertAction(title: "Disable Debug Mode", style: .default, handler: { [unowned self] (action) in
                 self.isDebugEnabled = false
@@ -608,9 +616,9 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
                 self.delegate?.didChangeDebugMode(enabled: true)
             }))
         }
-        
+
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
-        
+
         if let pop = alert.popoverPresentationController {
             let button = sender as! UIView
             pop.sourceView = button
@@ -618,9 +626,9 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
         }
         present(alert, animated: true, completion: nil)
     }
-    
+
     // MARK: - Core Wrapper Delegate
-    
+
     func coreInterpreterDidFail(coreError: CoreError) {
         guard let coreWrapper = coreWrapper else {
             assertionFailure()
@@ -629,7 +637,7 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
         let interpreterError = LowResRMXError(error: coreError, sourceCode: coreWrapper.sourceCode!)
         showError(interpreterError)
     }
-    
+
     func coreDiskDriveWillAccess(diskDataManager: UnsafeMutablePointer<DataManager>?) -> Bool {
         if let delegate = toolDelegate {
             // tool editing current program
@@ -663,7 +671,7 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
         }
         return true
     }
-    
+
     func coreDiskDriveDidSave(diskDataManager: UnsafeMutablePointer<DataManager>?) {
         let output = data_export(diskDataManager)
         if let output = output, let diskSourceCode = String(cString: output, encoding: .utf8) {
@@ -682,11 +690,11 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
         }
         free(output)
     }
-    
+
     func coreDiskDriveIsFull(diskDataManager: UnsafeMutablePointer<DataManager>?) {
         showAlert(withTitle: "Not Enough Space on Virtual Disk", message: nil) {}
     }
-    
+
     func coreControlsDidChange(controlsInfo: ControlsInfo) {
         DispatchQueue.main.async {
             self.controlsInfo = controlsInfo
@@ -702,39 +710,39 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
             }
         }
     }
-    
+
     func persistentRamWillAccess(destination: UnsafeMutablePointer<UInt8>?, size: Int32) {
         guard let document = document else { return }
         guard let destination = destination else {
             assertionFailure()
             return
         }
-        
+
         if let data = ProjectManager.shared.loadPersistentRam(programUrl: document.fileURL) {
             data.copyBytes(to: destination, count: min(data.count, Int(size)))
         }
     }
-    
+
     func persistentRamDidChange(_ data: Data) {
         guard let document = document else { return }
         ProjectManager.shared.savePersistentRam(programUrl: document.fileURL, data: data)
     }
 
     // MARK: - UIKeyInput
-    
+
     var autocorrectionType: UITextAutocorrectionType = .no
     var spellCheckingType: UITextSpellCheckingType = .no
     var keyboardAppearance: UIKeyboardAppearance = .dark
-    
+
     var hasText: Bool {
         return true
     }
-    
+
     func insertText(_ text: String) {
         guard let coreWrapper = coreWrapper else {
             return
         }
-        
+
         if text == "\n" {
             coreWrapper.input.key = CoreInputKeyReturn
         } else if let key = text.uppercased().unicodeScalars.first?.value {
@@ -743,24 +751,24 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
             }
         }
     }
-    
+
     func deleteBackward() {
         guard let coreWrapper = coreWrapper else {
             return
         }
-        
+
         coreWrapper.input.key = CoreInputKeyBackspace
     }
-    
+
     // this is from UITextInput, needed because of crash on iPhone 6 keyboard (left/right arrows)
     var selectedTextRange: UITextRange? {
         return nil
     }
-    
+
     var keyboardType: UIKeyboardType = .asciiCapable
-    
+
     // MARK: - RPPreviewViewControllerDelegate
-    
+
     func previewControllerDidFinish(_ previewController: RPPreviewViewController) {
         DispatchQueue.main.async {
             self.dismiss(animated: true) {
@@ -768,6 +776,6 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
             }
         }
     }
-    
+
 }
 

@@ -9,7 +9,7 @@
 import UIKit
 
 class EditorViewController: UIViewController, UITextViewDelegate, EditorTextViewDelegate, SearchToolbarDelegate, ProjectDocumentDelegate, LowResRMXViewControllerDelegate, LowResRMXViewControllerToolDelegate {
-    
+
     @IBOutlet weak var sourceCodeTextView: EditorTextView!
     @IBOutlet weak var searchToolbar: SearchToolbar!
     @IBOutlet weak var indexSideBar: IndexSideBar!
@@ -18,7 +18,7 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
     @IBOutlet weak var activityIndicatorView: UIActivityIndicatorView!
     @IBOutlet weak var tokensLabel: UILabel!
     @IBOutlet weak var romLabel: UILabel!
-    
+
     var didAppearAlready = false
     var didOpen = false
     var wasInConflictBefore = false
@@ -30,31 +30,31 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
     var runtimeError: LowResRMXError?
     var wasEditingActive = false
     var shouldActivateEditing = false
-    
+
     private var documentStateChangedObserver: Any?
     var document: ProjectDocument!
     var keyboardRect = CGRect()
-    
+
     let statsWrapper = CoreStatsWrapper()
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         let startItem = UIBarButtonItem(barButtonSystemItem: .play, target: self, action: #selector(onRunTapped))
         let searchItem = UIBarButtonItem(image: UIImage(named:"search"), style: .plain, target: self, action: #selector(onSearchTapped))
         let toolsItem = UIBarButtonItem(image: UIImage(named:"tools"), style: .plain, target: self, action: #selector(onToolsTapped))
         let projectItem = UIBarButtonItem(barButtonSystemItem: .action, target: self, action: #selector(onProjectTapped))
-        
+
         navigationItem.rightBarButtonItems = [startItem, searchItem, toolsItem, projectItem]
-        
+
         navigationItem.title = document.localizedName
-        
+
 //        view.backgroundColor = AppStyle.darkGrayColor()
 //        sourceCodeTextView.backgroundColor = AppStyle.darkGrayColor()
 //        sourceCodeTextView.textColor = AppStyle.brightTintColor()
 //        sourceCodeTextView.tintColor = AppStyle.whiteColor()
 //        sourceCodeTextView.indicatorStyle = .white
-        
+
         sourceCodeTextView.layoutManager.allowsNonContiguousLayout = false
         sourceCodeTextView.delegate = self
         sourceCodeTextView.editorDelegate = self
@@ -64,9 +64,9 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
 //            keyboardToolbar.isTranslucent = true
 //            keyboardToolbar.barStyle = .black
         }
-        
+
         sourceCodeTextView.text = document.sourceCode ?? ""
-        
+
         searchToolbar.searchDelegate = self
 
         indexSideBar.textView = sourceCodeTextView
@@ -75,13 +75,13 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
 
         activityIndicatorView.isHidden = true
         sourceCodeTextView.isEditable = false
-        
+
         document.delegate = self
-        
+
         documentStateChangedObserver = NotificationCenter.default.addObserver(forName: UIDocument.stateChangedNotification, object: document, queue: nil) { [weak self] (notification) in
             self?.documentStateChanged()
         }
-        
+
         if document.documentState.contains(.closed) {
             activityIndicatorView.startAnimating()
             setBarButtonsEnabled(false)
@@ -94,7 +94,7 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
         } else {
             fatalError("unexpected document state")
         }
-        
+
         addKeyCommand(UIKeyCommand(input: "r", modifierFlags: .command, action: #selector(onRunTapped(_:)), discoverabilityTitle: "Run Program"))
         addKeyCommand(UIKeyCommand(input: "f", modifierFlags: .command, action: #selector(onSearchTapped(_:)), discoverabilityTitle: "Find"))
         addKeyCommand(UIKeyCommand(input: UIKeyCommand.inputUpArrow, modifierFlags: [.command, .alternate], action: #selector(onSubPrev), discoverabilityTitle: "Previous SUB"))
@@ -106,27 +106,27 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
         NotificationCenter.default.addObserver(self, selector: #selector(projectManagerDidAddProgram), name: .ProjectManagerDidAddProgram, object: nil)
 
     }
-    
+
     deinit {
         removeDocumentStateChangedObserver()
         NotificationCenter.default.removeObserver(self)
         updateDocument()
         document.close(completionHandler: nil)
     }
-    
+
     func removeDocumentStateChangedObserver() {
         if let observer = documentStateChangedObserver {
             NotificationCenter.default.removeObserver(observer)
             documentStateChangedObserver = nil
         }
     }
-    
+
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        
+
         if !didAppearAlready {
             didAppearAlready = true
-            
+
             // hide search bar
             view.layoutIfNeeded()
             searchToolbarConstraint.constant = -searchToolbar.bounds.size.height
@@ -134,16 +134,16 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
         }
         updateEditorInsets()
     }
-    
+
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        
+
         if document.documentState == .normal {
             updateStats()
         }
         indexSideBar.update()
         sourceCodeTextView.flashScrollIndicators()
-        
+
         if didAddProject {
             navigationController?.popViewController(animated: true)
             didAddProject = false
@@ -157,24 +157,24 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
         shouldActivateEditing = false
         runtimeError = nil
     }
-    
+
     private func setBarButtonsEnabled(_ enabled: Bool) {
         for item in navigationItem.rightBarButtonItems! {
             item.isEnabled = enabled
         }
     }
-    
+
     @objc func keyboardWillShow(_ notification: Notification) {
         keyboardRect = (notification.userInfo![UIResponder.keyboardFrameEndUserInfoKey] as! NSValue).cgRectValue
         updateEditorInsets()
     }
-    
+
     @objc func keyboardWillHide(_ notification: Notification) {
         keyboardRect = (notification.userInfo![UIResponder.keyboardFrameEndUserInfoKey] as! NSValue).cgRectValue
         updateEditorInsets()
         updateStats()
     }
-    
+
     func updateEditorInsets() {
         var insets = UIEdgeInsets()
         if keyboardRect.size.height > 0.0 {
@@ -190,27 +190,27 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
         sourceCodeTextView.scrollIndicatorInsets = insets
         indexSideBarConstraint.constant = -insets.bottom
     }
-    
+
     @objc func applicationWillResignActive(_ notification: Notification) {
         let app = UIApplication.shared
         var bgTask = UIBackgroundTaskIdentifier.invalid
-        
+
         bgTask = app.beginBackgroundTask {
             app.endBackgroundTask(bgTask)
             bgTask = UIBackgroundTaskIdentifier.invalid
         }
-        
+
         updateDocument()
         document.autosave(completionHandler: { (succeeded) in
             app.endBackgroundTask(bgTask)
             bgTask = UIBackgroundTaskIdentifier.invalid
         })
     }
-    
+
     @objc func projectManagerDidAddProgram(_ notification: Notification) {
         didAddProject = true
     }
-    
+
     func updateDocument() {
         let state = document.documentState
         if !state.contains(.closed) && sourceCodeTextView.text != document.sourceCode {
@@ -218,17 +218,17 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
             document.updateChangeCount(.done)
         }
     }
-    
+
     func documentStateChanged() {
         let state = document.documentState
-        
+
         if state.contains(.editingDisabled) || state.contains(.closed) {
             sourceCodeTextView.resignFirstResponder()
             sourceCodeTextView.isEditable = false
         } else {
             sourceCodeTextView.isEditable = true
         }
-        
+
         if (didOpen) {
             if state.contains(.inConflict) {
                 if !wasInConflictBefore {
@@ -240,7 +240,7 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
             wasInConflictBefore = state.contains(.inConflict)
         }
     }
-    
+
     func requestFileVersions() {
         guard let versions = NSFileVersion.otherVersionsOfItem(at: document.fileURL) else {
             assertionFailure()
@@ -248,7 +248,7 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
         }
 
         let alert = UIAlertController(title: "There is a conflict between different file versions. Which one should be used?", message: nil, preferredStyle: .actionSheet)
-        
+
         var title = "Local file"
         if let date = document.fileModificationDate {
             title += " (\(DateFormatter.localizedString(from: date, dateStyle: .short, timeStyle: .short)))"
@@ -256,7 +256,7 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
         alert.addAction(UIAlertAction(title: title, style: .default, handler: { [weak self] (action) in
             self?.resolveConflict(nil)
         }))
-        
+
         for version in versions {
             var title = version.localizedNameOfSavingComputer ?? "?"
             if let date = version.modificationDate {
@@ -266,14 +266,14 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
                 self?.resolveConflict(version)
             }))
         }
-        
+
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { (action) in
             self.navigationController?.popViewController(animated: true)
         }))
-        
+
         present(alert, animated: true, completion: nil)
     }
-    
+
     func resolveConflict(_ selectedVersion: NSFileVersion?) {
         do {
             if let selectedVersion = selectedVersion {
@@ -292,10 +292,10 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
             }
         }
     }
-    
+
     func updateStats() {
         guard let text = sourceCodeTextView.text else { return }
-        
+
         DispatchQueue.global().async {
             let error = self.statsWrapper.update(sourceCode: text)
             DispatchQueue.main.async {
@@ -309,11 +309,11 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
             }
         }
     }
-    
+
     @objc func onRunTapped(_ sender: Any?) {
         runProject()
     }
-    
+
     @objc func onSearchTapped(_ sender: Any?) {
         view.layoutIfNeeded()
         let wasVisible = (searchToolbarConstraint.constant == 0.0)
@@ -336,54 +336,54 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
             }
         }
     }
-    
+
     @objc func onToolsTapped(_ sender: Any) {
         view.endEditing(true)
-        
+
         let config = ToolsMenuConfiguration()
-        
+
         let alert = UIAlertController(title: "Edit ROM Entries with Tool...", message: nil, preferredStyle: .actionSheet)
-        
+
         for programUrl in config.programUrls {
             let title = programUrl.deletingPathExtension().lastPathComponent
             alert.addAction(UIAlertAction(title: title, style: .default, handler: { [unowned self] (action) in
                 self.editUsingTool(url: programUrl)
             }))
         }
-        
+
         alert.addAction(UIAlertAction(title: "More...", style: .default, handler: { [unowned self] (action) in
             self.onToolsMoreTapped(sender, config: config)
         }))
-        
+
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
-        
+
         alert.popoverPresentationController?.barButtonItem = sender as? UIBarButtonItem;
         present(alert, animated: true, completion: nil)
     }
-    
+
     func onToolsMoreTapped(_ sender: Any, config: ToolsMenuConfiguration) {
         let alert = UIAlertController(title: "Tools Menu Configuration",
                                       message: "When you run a program from the tools menu, it uses the current program as a virtual disk and can edit its ROM entries.",
                                       preferredStyle: .actionSheet)
-        
+
         let addTitle = "Add \"\(document.localizedName)\""
         alert.addAction(UIAlertAction(title: addTitle, style: .default, handler: { [unowned self] (action) in
             config.addProgram(url: self.document.fileURL)
         }))
-        
+
         alert.addAction(UIAlertAction(title: "Reset Menu", style: .destructive, handler: { (action) in
             config.reset()
         }))
-        
+
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
-        
+
         alert.popoverPresentationController?.barButtonItem = sender as? UIBarButtonItem;
         present(alert, animated: true, completion: nil)
     }
-    
+
     @objc func onProjectTapped(_ sender: Any) {
         view.endEditing(true)
-        
+
         if sourceCodeTextView.text.isEmpty {
             showAlert(withTitle: "Cannot Share this Program", message: "This program is empty. Please write something!", block: nil)
         } else {
@@ -406,30 +406,30 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
             })
         }
     }
-    
+
     func editUsingTool(url: URL) {
         view.endEditing(true)
         updateDocument()
-        
+
         let storyboard = UIStoryboard(name: "LowResRMX", bundle: nil)
         let vc = storyboard.instantiateInitialViewController() as! LowResRMXViewController
         vc.document = ProjectDocument(fileURL: url)
         vc.toolDelegate = self
         present(vc, animated: true, completion: nil)
     }
-    
+
     func runProject() {
         wasEditingActive = sourceCodeTextView.isFirstResponder
-        
+
         updateDocument()
-        
+
         guard let sourceCode = document.sourceCode else {
             return
         }
-        
+
         let coreWrapper = CoreWrapper()
         let error = coreWrapper.compileProgram(sourceCode: sourceCode)
-        
+
         if let error = error {
             // show error
             let alert = UIAlertController(title: error.message, message: error.line, preferredStyle: .alert)
@@ -438,7 +438,7 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
                 self?.goToError(error)
             }))
             present(alert, animated: true, completion: nil)
-            
+
         } else {
             // start
             view.endEditing(true)
@@ -449,39 +449,39 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
             vc.isDebugEnabled = isDebugEnabled
             vc.delegate = self
             present(vc, animated: true, completion: nil)
-            
+
             AppController.shared.numRunProgramsThisVersion += 1
             didRunProgramAlready = true
         }
     }
-    
+
     func goToError(_ error: LowResRMXError) {
         let range = NSMakeRange(Int(error.coreError.sourcePosition), 0)
         sourceCodeTextView.selectedRange = range
         sourceCodeTextView.becomeFirstResponder()
     }
-    
+
     @objc func onSubNext() {
         searchToolbar(searchToolbar, didSearch: "SUB ", backwards: false)
     }
-    
+
     @objc func onSubPrev() {
         searchToolbar(searchToolbar, didSearch: "SUB ", backwards: true)
     }
-    
+
     //MARK: - ProjectDocumentDelegate
-    
+
     func projectDocumentContentDidUpdate(_ projectDocument: ProjectDocument) {
         sourceCodeTextView.text = projectDocument.sourceCode ?? ""
         indexSideBar.update()
         updateStats()
     }
-    
+
     //MARK: - UITextViewDelegate
-    
+
     func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {
         let oldText = (textView.text as NSString).substring(with: range)
-        
+
         // check for indent
         spacesToInsert = nil
         if text == "\n" {
@@ -494,7 +494,7 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
                 }
             }
         }
-        
+
         // check for new or deleted label
         if text.range(of: ":") != nil || (range.length > 0 && oldText.range(of: ":") != nil)
         {
@@ -502,14 +502,14 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
         }
         return true
     }
-    
+
     func textViewDidChange(_ textView: UITextView) {
         // indent
         if let spaces = spacesToInsert {
             spacesToInsert = nil
             textView.insertText(spaces)
         }
-        
+
         // side bar
         if shouldUpdateSideBar {
             // immediate update
@@ -520,14 +520,14 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
             indexSideBar.shouldUpdateOnTouch = true
         }
     }
-    
+
     //MARK: - EditorTextViewDelegate
-    
+
     func editorTextView(_ editorTextView: EditorTextView, didSelectHelpWith range: NSRange) {
         let text = editorTextView.text!
         let selectedRange = Range(range, in: text)!
         var selectedText = String(text[selectedRange])
-        
+
         var index = selectedRange.upperBound
         if index < text.endIndex {
             if text[index] == "$" {
@@ -543,14 +543,14 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
                 }
             }
         }
-        
+
         let helpContent = AppController.shared.helpContent
         let results = helpContent.chapters(forSearchText: selectedText)
 
         if results.count == 1 {
             let chapter = results.first!
             AppController.shared.tabBarController.showHelp(chapter: chapter.htmlChapter)
-        
+
         } else if results.count > 1 {
             let alert = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
             for chapter in results {
@@ -559,24 +559,24 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
                 }))
             }
             alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
-            
+
             if let ppc = alert.popoverPresentationController {
                 ppc.sourceView = sourceCodeTextView;
                 ppc.sourceRect = sourceCodeTextView.layoutManager.boundingRect(forGlyphRange: range, in: sourceCodeTextView.textContainer)
                 ppc.permittedArrowDirections = [.up, .down]
             }
             present(alert, animated: true, completion: nil)
-            
+
         } else {
             showAlert(withTitle: "\(selectedText) Is not a Keyword", message: nil, block: nil)
         }
     }
-    
+
     //MARK: - SearchToolbarDelegate
-    
+
     func searchToolbar(_ toolbar: SearchToolbar!, didSearch findText: String!, backwards: Bool) {
         let sourceText = sourceCodeTextView.text as NSString
-        
+
         let selectedRange = sourceCodeTextView.selectedRange
         var startIndex = 0
         var didRestart = false
@@ -599,10 +599,10 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
             _ = find(findText, backwards: backwards, startIndex: startIndex)
         }
     }
-    
+
     func searchToolbar(_ toolbar: SearchToolbar!, didReplace findText: String!, with replaceText: String!) {
         let sourceText = sourceCodeTextView.text as NSString
-        
+
         let selectedRange = sourceCodeTextView.selectedRange
         if sourceText.substring(with: selectedRange) == findText {
             if !sourceCodeTextView.isFirstResponder {
@@ -617,17 +617,17 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
             sourceCodeTextView.selectedRange = NSMakeRange(selectedRange.location + replaceText.count, 0)
             sourceCodeTextView.scrollSelectedRangeToVisible()
         }
-        
+
         // find next
         searchToolbar(toolbar, didSearch: findText, backwards: false)
     }
-    
+
     func find(_ findText: String, backwards: Bool, startIndex: Int) -> Bool {
         let sourceText = sourceCodeTextView.text as NSString
-        
+
         let searchRange = backwards ? NSMakeRange(0, startIndex) : NSMakeRange(startIndex, sourceText.length - startIndex)
         let resultRange = sourceText.range(of: findText, options: backwards ? [.caseInsensitive, .backwards] : [.caseInsensitive], range: searchRange)
-        
+
         if resultRange.location != NSNotFound {
             sourceCodeTextView.selectedRange = resultRange
             sourceCodeTextView.becomeFirstResponder()
@@ -636,13 +636,13 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
         }
         return false
     }
-    
+
     //MARK: - LowResRMXViewControllerToolDelegate
-    
+
     func nxSourceCodeForVirtualDisk() -> String {
         return document.sourceCode ?? ""
     }
-    
+
     func nxDidSaveVirtualDisk(sourceCode: String) {
         if sourceCode != document.sourceCode {
             document.sourceCode = sourceCode
@@ -650,21 +650,21 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
             projectDocumentContentDidUpdate(document)
         }
     }
-    
+
     //MARK: - LowResRMXViewControllerDelegate
-    
+
     func didChangeDebugMode(enabled: Bool) {
         isDebugEnabled = enabled
     }
-    
+
     func didEndWithError(_ error: LowResRMXError) {
         runtimeError = error
     }
-    
+
     func didEndWithKeyCommand() {
         if wasEditingActive {
             shouldActivateEditing = true
         }
     }
-    
+
 }

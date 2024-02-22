@@ -13,14 +13,15 @@ p { margin: 1em; }
 blockquote { margin: 1em 0; border-left: solid 1em #ecc; padding: 0.2em 0.4em; background-color: #fee; }
 code { background-color: #ccc; padding: 0.2em 0.3em; margin: -0.2em -0.1em; }
 code+code { display: inline-block; }
-pre { white-space: pre-wrap; font-family: 'Menlon-Regular', monospace; margin: 0; background-color: #ccc; padding: 0.5em 1em; display: inline-block }
+pre { white-space: pre-wrap; font-family: 'Menlon-Regular', monospace; margin: 0; background-color: #ccc; padding: 0.5em 1em; display: inline-block; -moz-tab-size:2; -o-tab-size:2; tab-size:2; }
 pre>code { padding: 0; margin: 0; }
+blockquote>pre { margin-left: 1em; }
+blockquote pre,blockquote code { background-color: #ecc; }
 table { border-collapse: collapse; margin: 0 1em; display: inline-block; }
 table+table { margin-left: 2em; vertical-align:top; }
-td, th { padding: 0.2em 0.8em; }
+td, th { padding: 0.2em 0.8em; text-align: left; }
 tbody>tr, tr+tr { border-top: solid 0.1em #ddd; }
 hr { border: none; border-top: solid 0.15em #ccc; margin: 1em; }
-td:first-child { text-al
 </style>
 </head>
 <body>
@@ -28,6 +29,7 @@ td:first-child { text-al
 
 
 <!-- Tool: https://markdowntohtml.com/ -->
+<!-- and replace <br /> by <br /> and <hr /> by <hr /> -->
 
 <h1 id="lowresrmx-manual">LowResRMX manual</h1>
 <blockquote>
@@ -40,10 +42,10 @@ This is a heavily modified version and way more complicated to use, I recommend 
 <blockquote>
 <p><strong>The documentation and the included tools are still in development.</strong></p>
 </blockquote>
-<h2 id="difference-with-the-original-lowres-nx">Difference with the original Lowres NX</h2>
+<h2 id="difference-with-lowres-nx">Difference with Lowres NX</h2>
 <p>The goal 🥅 of the app is to provide a development environment to work with during my commutes in the subway, and later, being able to publish a real App on the Apple Store.</p>
 <p>The original LowRes NX, despite being an excellent development environment, lacks some capabilities to publish an App that looks credible.</p>
-<p>My main concern is the limited screen size unable to cover the whole devices screen and the landscape orientation. </p>
+<p>My main concern is the limited screen size unable to cover the whole devices screen and the landscape orientation.</p>
 <h3 id="background-layers">Background layers</h3>
 <p>4 background layers instead of 2 with 64x64 cells instead of 32x32.</p>
 <p>Support for big cells of 16x16 pixels has been removed.</p>
@@ -70,13 +72,18 @@ This is a heavily modified version and way more complicated to use, I recommend 
 <blockquote>
 <p>This make the usage of the color chooser of the original &quot;Gfx Designer&quot; from Lowres NX a bit difficult to use.</p>
 </blockquote>
-<p>TODO: Provide a simple tool to visualize the colors and theirs indices.</p>
+<hr />
+<p>New settings with the <code>SYSTEM</code> command:</p>
+<p><code>SYSTEM setting,opacity</code>
+<br />with <code>setting</code> goes from 1 to 4.</p>
+<p>Allow to make the color 0 of the background layer opaque instead of transparent.</p>
 <h3 id="sprites">Sprites</h3>
 <p>172 sprites instead of 64.</p>
 <p>And theirs position support sub-pixels with a 1/16 pixel precisions.</p>
 <h3 id="input">Input</h3>
 <p>Touchscreen only, with a float precision.</p>
 <p>Virtual controller and the posibility to use Bluetooth controller has been removed.</p>
+<p>Virtual keyboard are still present.</p>
 <hr />
 <p>New alternative to <code>WAIT</code> command:</p>
 <p><code>WAIT TAP</code></p>
@@ -89,17 +96,7 @@ This is a heavily modified version and way more complicated to use, I recommend 
 <p>Will <code>GOTO</code>, <code>GOSUB</code> or <code>RESTORE</code> to one of the <code>label</code> listed according to the <code>value</code>.</p>
 <p>e.g.:</p>
 <pre><code>ON I GOTO <span class="hljs-literal">ZERO</span>,<span class="hljs-literal">ONE</span>,<span class="hljs-literal">TWO</span>
-</code></pre><hr />
-<p>Support for multiple statements on one line:</p>
-<p><code>statement : statement</code></p>
-<p>e.g.:</p>
-<p>  LABEL: DATA &quot;SUCCESS&quot;
-  MAIN: DO : PRINT LABEL : WAIT VBL : LOOP
-  &#39;/!\ KEEP THE SPACE --^</p>
-<blockquote>
-<p>An identifier followed by a colon <code>:</code> will be understand as a label unless their is a space <code> </code> between them.</p>
-</blockquote>
-<h3 id="data">Data</h3>
+</code></pre><h3 id="data">Data</h3>
 <p>New keyword to skip readed data:</p>
 <p><code>SKIP number</code></p>
 <p>Will skip a <code>number</code> of data to not read.</p>
@@ -109,14 +106,21 @@ This is a heavily modified version and way more complicated to use, I recommend 
 READ A
 PRINT A
 'WILL PRINT "2"
+</code></pre><hr />
+<p>It&#39;s now possible to access data directly using their label:</p>
+<p><code>PRINT label</code></p>
+<p>It allow to store a string using the <code>DATA</code> keyword and reference it in the <code>PRINT</code> command.</p>
+<p>e.g.:</p>
+<pre><code>PRINT TEST
+<span class="hljs-keyword">TEST:
+</span>DATA "GABUZOMEU"
+</code></pre><p>It also work in variables, functions and commands:</p>
+<pre><code>A<span class="hljs-variable">$=</span>TEST+LEFT<span class="hljs-variable">$(</span>TEST,<span class="hljs-number">2</span>)
+</code></pre><p>And it support numeric values as well:</p>
+<pre><code>TEST2:
+<span class="hljs-keyword">DATA</span> <span class="hljs-number">123.4</span>
+<span class="hljs-built_in">PRINT</span> TEST2*<span class="hljs-number">3</span>
 </code></pre><h3 id="math">Math</h3>
-<p>New function to rounds up:</p>
-<p><code>=CEIL(value)</code></p>
-<p>Returns the smallest integer greater than or equal to a given number</p>
-<blockquote>
-<p>Use <code>=INT(value)</code> to round down.</p>
-</blockquote>
-<hr />
 <p>New function to clamp numerical value:</p>
 <p><code>=CLAMP(value,min,max)</code></p>
 <p>Returns the <code>value</code> clamped between <code>min</code> and <code>max</code>.</p>
@@ -208,18 +212,12 @@ PRINT A
 <h3 id="text">Text</h3>
 <p>New command to expose the existing overlay message API:</p>
 <p><code>MESSAGE text</code></p>
-<hr />
-<p>Alternative usage for <code>PRINT</code> where it can now use label literal:</p>
-<p><code>PRINT label</code></p>
-<p>It allow to store a string using the <code>DATA</code> keyword and reference it in the <code>PRINT</code> command.</p>
-<p>e.g.:</p>
-<pre><code>PRINT GA
-<span class="hljs-symbol">GA:</span>
-DATA <span class="hljs-string">"GABUZOMEU"</span>
-</code></pre><p>TODO: Do it for <code>=LEFT$</code>, <code>=MID$</code>, <code>=RIGHT$</code>.</p>
-<h3 id="other">Other</h3>
+<h3 id="compatibily">Compatibily</h3>
 <p>New command to help support program from the original Lowres NX:</p>
 <p><code>COMPAT</code></p>
+<blockquote>
+<p>Will be removed at some point. Some commands from Lowres NX are already not available.</p>
+</blockquote>
 <p>Enable the compatibility mode:</p>
 <ul>
 <li>It will force the rendering process to keep the original device screen.</li>
@@ -329,7 +327,7 @@ DATA <span class="hljs-string">"GABUZOMEU"</span>
 </tr>
 <tr>
 <td>$8000</td>
-<td>20 Kibi</td>
+<td>4 Kibi</td>
 <td>Character Data</td>
 </tr>
 <tr>
@@ -482,12 +480,7 @@ DATA <span class="hljs-number">1</span>,<span class="hljs-number">2</span>,<span
     POKEW ADDR+<span class="hljs-number">2</span>,SY<span class="hljs-number">-5</span>
     <span class="hljs-comment">'Change the speed in y axis</span>
 <span class="hljs-keyword">END</span> <span class="hljs-keyword">SUB</span>
-</code></pre><blockquote>
-<p>51 cycles max per call</p>
-</blockquote>
-<hr />
-<p><code>ON PARTICLE OFF</code></p>
-<p>Will stop the interrupt.</p>
+</code></pre><p>TODO: specify the number of cycles available.</p>
 <hr />
 <p><code>EMITTER count AT address</code></p>
 <p>Declare to use <code>count</code> emitter and store the internal data at <code>address</code>.</p>
@@ -546,20 +539,476 @@ DATA <span class="hljs-number">1</span>,<span class="hljs-number">2</span>,<span
 <hr />
 <p><code>EMITTER emitter OFF</code></p>
 <p>Manually stop the <code>emitter</code>.</p>
-<hr />
-<p><code>ON EMITTER CALL subprogram</code></p>
-<p>For each emitter, at the end of the frame, if the emitter as spawn some particles, will call the subprogram using an interrupt.</p>
-<p>The target <code>subprogram</code> will receive two arguments:</p>
-<ol>
-<li>the <code>emitter</code> number,</li>
-<li>and the emitter <code>address</code>.</li>
-</ol>
+<h1 id="how-does-it-works">How does it works</h1>
+<h2 id="rendering-process">Rendering process</h2>
+<p>LowResRMX does not have a framebuffer where user will paint pixels. Instead, it simulates a NES/Gameboy PPU chip, which traverses its memory to generates output pixels based on register information.</p>
+<p>The 256 characters available in the dedicated memory are 8x8 pixels each and are assigned a number from 0 to 255.
+Whenever this number is encountered in the background or sprite, the rendering process will draw the corresponding block of 8x8 pixels.</p>
+<p>Characters:</p>
+<table>
+<thead>
+<tr>
+<th>addr</th>
+<th>size</th>
+<th>purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$8000</td>
+<td>4 Kibi</td>
+<td>Character Data</td>
+</tr>
+</tbody>
+</table>
+<p>A character is a block of 8x8 pixels and take 16 bytes.
+Each pixels as 2 bits to store the color information: 0 to 3.</p>
+<p>The first 8 bytes contain the low bits of all its pixels, followed by 8 more bytes containing the high bits of all pixels.</p>
 <blockquote>
-<p>102 cycles max per call</p>
+<p>For expert🔥 user, here&#39;s a function that allow to set one pixel of a character anywhere in the memory: <pre><code>SUB CHARAPSET(A,C,X,Y,V)
+&#39;SET A PIXEL OF A CHARA AT A MEMORY LOCATION
+&#39;IN A BASE ADDRESS
+&#39;IN C DEST CHAR INDEX
+&#39;IN X,Y SOURCE CELL COORDS
+&#39;IN V COLOR VALUE
+&#39;LOCAL R CHAR ADDRESS
+&#39;LOCAL B LOW OR HIGH COLOR BIT
+&#39;LOCAL I ITERATOR
+&#09;R=A+C*16+(Y AND 7)
+&#09;B=V AND 1
+&#09;FOR I=0 TO 1
+&#09;&#09;ROL R,1+X
+&#09;&#09;POKE R,(PEEK(R) AND 254) OR B
+&#09;&#09;ROR R,1+X
+&#09;&#09;R=R+8
+&#09;&#09;B=(V AND 2)\2
+&#09;NEXT I
+END SUB
+</code></pre></p>
 </blockquote>
+<h2 id="backgrounds">Backgrounds</h2>
+<p>LowResRMX has 4 background layers, each have independent:</p>
+<ul>
+<li>X and Y position,</li>
+<li>and 64x64 character cells.</li>
+</ul>
+<p>The 4 layers are drawn in order from 3 to 0. Layer 0 will be visible above the other, unless the priority flag is used.</p>
+<p>Each cells can have it&#39;s own:</p>
+<ul>
+<li>character number 0..255,</li>
+<li>a palette 0..7,</li>
+<li>an horizontal and vertical flip,</li>
+<li>a priority to alter which layer is drawn on top of other.</li>
+</ul>
+<p>Layers are not framebuffer, You CANNOT easily paint pixels directly. Instead, every cells reference a characters number and those last hold the pixel color informations.</p>
+<p>A Character is a block of 8x8 pixels, and each pixel can hold one of 4 colors.
+It means, one character can only have 4 colors. Less than that, because the 1st color is means to be transparent ; one character can only have 3 distinct colors from 1 to 3.</p>
+<p>TODO: continue</p>
+<p>TODO: a word on the background color</p>
+<h2 id="registers">Registers</h2>
+<p>Sprite Registers:</p>
+<p>There are 170 sprites, each occupies 6 bytes:</p>
+<table>
+<thead>
+<tr>
+<th>addr</th>
+<th>size</th>
+<th>purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$FB00</td>
+<td>1020 Bytes</td>
+<td>Sprite registers</td>
+</tr>
+<tr>
+<td>$FEFC</td>
+<td>4 Bytes</td>
+<td>Not used</td>
+</tr>
+</tbody>
+</table>
+<p>For each sprite:</p>
+<table>
+<thead>
+<tr>
+<th>offset</th>
+<th>size</th>
+<th>purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>+0</td>
+<td>2 Bytes</td>
+<td>Position on X axis</td>
+</tr>
+<tr>
+<td>+2</td>
+<td>2 Bytes</td>
+<td>Position on Y axis</td>
+</tr>
+<tr>
+<td>+4</td>
+<td>1 Byte</td>
+<td>Character number</td>
+</tr>
+<tr>
+<td>+5</td>
+<td>1 Byte</td>
+<td>Character attributes</td>
+</tr>
+</tbody>
+</table>
+<p>Both position on x and y axis use sub-pixels values. To advance by 1 pixel, the values should get increased by 16.
+Also, they are both offseted by 32 pixels. To place a sprite in the 0x0 coordinates, the values should be 512x512.</p>
+<p>Attributes bits:</p>
+<table>
+<thead>
+<tr>
+<th>bits</th>
+<th>purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0..2</td>
+<td>Palette number</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Horizontal flip</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Vertical flip</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Priority</td>
+</tr>
+<tr>
+<td>6..7</td>
+<td>Size</td>
+</tr>
+</tbody>
+</table>
+<p>Sprite size:</p>
+<table>
+<thead>
+<tr>
+<th>binary</th>
+<th>purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>%00</td>
+<td>8x8 pixels or 1x1 character</td>
+</tr>
+<tr>
+<td>%01</td>
+<td>16x16 pixels or 2x2 characters</td>
+</tr>
+<tr>
+<td>%10</td>
+<td>24x24 pixels or 3x3 characters</td>
+</tr>
+<tr>
+<td>%11</td>
+<td>32x32 pixels or 4x4 characters</td>
+</tr>
+</tbody>
+</table>
 <hr />
-<p><code>ON EMITTER OFF</code></p>
-<p>Will stop the interrupt.</p>
+<p>Color registers:</p>
+<p>There are 8 palettes with 4 colors each:</p>
+<table>
+<thead>
+<tr>
+<th>addr</th>
+<th>size</th>
+<th>purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$FF00</td>
+<td>32 Bytes</td>
+<td>Color registers</td>
+</tr>
+</tbody>
+</table>
+<p>For each palette:</p>
+<table>
+<thead>
+<tr>
+<th>offset</th>
+<th>size</th>
+<th>purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>+0</td>
+<td>1 Byte</td>
+<td>1st color value</td>
+</tr>
+<tr>
+<td>+1</td>
+<td>1 Byte</td>
+<td>2nd color value</td>
+</tr>
+<tr>
+<td>+2</td>
+<td>1 Byte</td>
+<td>3rd color value</td>
+</tr>
+<tr>
+<td>+3</td>
+<td>1 Byte</td>
+<td>4th color value</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<p>Video registers:</p>
+<table>
+<thead>
+<tr>
+<th>addr</th>
+<th>size</th>
+<th>purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$FF20</td>
+<td>2 Bytes</td>
+<td>Background layer 0 scroll X</td>
+</tr>
+<tr>
+<td>$FF22</td>
+<td>2 Bytes</td>
+<td>Background layer 0 scroll Y</td>
+</tr>
+<tr>
+<td>$FF24</td>
+<td>2 Bytes</td>
+<td>Background layer 1 scroll X</td>
+</tr>
+<tr>
+<td>$FF26</td>
+<td>2 Bytes</td>
+<td>Background layer 1 scroll Y</td>
+</tr>
+<tr>
+<td>$FF28</td>
+<td>2 Bytes</td>
+<td>Background layer 2 scroll X</td>
+</tr>
+<tr>
+<td>$FF2A</td>
+<td>2 Bytes</td>
+<td>Background layer 2 scroll Y</td>
+</tr>
+<tr>
+<td>$FF2C</td>
+<td>2 Bytes</td>
+<td>Background layer 3 scroll X</td>
+</tr>
+<tr>
+<td>$FF2E</td>
+<td>2 Bytes</td>
+<td>Background layer 3 scroll Y</td>
+</tr>
+<tr>
+<td>$FF30</td>
+<td>2 Bytes</td>
+<td>Raster line number</td>
+</tr>
+<tr>
+<td>$FF32</td>
+<td>1 Byte</td>
+<td>Display attributes</td>
+</tr>
+<tr>
+<td>$FF33</td>
+<td>12 Bytes</td>
+<td>Not used</td>
+</tr>
+</tbody>
+</table>
+<p>Display attributes:</p>
+<table>
+<thead>
+<tr>
+<th>bits</th>
+<th>purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>Sprites enabled</td>
+</tr>
+<tr>
+<td>1</td>
+<td>Background layer 0 enabled</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Background layer 1 enabled</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Background layer 2 enabled</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Background layer 3 enabled</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<p>TODO: Audio registers:</p>
+<table>
+<thead>
+<tr>
+<th>addr</th>
+<th>size</th>
+<th>purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$FF40</td>
+<td>48 Bytes</td>
+<td>Audio registers</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<p>I/O registers:</p>
+<table>
+<thead>
+<tr>
+<th>addr</th>
+<th>size</th>
+<th>purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$FF70</td>
+<td>4 Bytes</td>
+<td>Last touch position X</td>
+</tr>
+<tr>
+<td>$FF74</td>
+<td>4 Bytes</td>
+<td>Last touch position Y</td>
+</tr>
+<tr>
+<td>$FF78</td>
+<td>2 Bytes</td>
+<td>Pixels shown in width</td>
+</tr>
+<tr>
+<td>$FF7a</td>
+<td>2 Bytes</td>
+<td>Pixels shown in height</td>
+</tr>
+<tr>
+<td>$FF7c</td>
+<td>2 Bytes</td>
+<td>Pixels outside the safe zone</td>
+</tr>
+<tr>
+<td>$FF7e</td>
+<td>2 Bytes</td>
+<td>Pixels outside the safe zone</td>
+</tr>
+<tr>
+<td>$FF80</td>
+<td>2 Bytes</td>
+<td>Pixels outside the safe zone</td>
+</tr>
+<tr>
+<td>$FF82</td>
+<td>2 Bytes</td>
+<td>Pixels outside the safe zone</td>
+</tr>
+<tr>
+<td>$FF84</td>
+<td>1 Byte</td>
+<td>ASCII code of last pressed key</td>
+</tr>
+<tr>
+<td>$FF85</td>
+<td>1 Byte</td>
+<td>Other I/O status bits</td>
+</tr>
+</tbody>
+</table>
+<p>Last touch position X and Y are stored as float and currently LowResRMX do not have a way to peek float from memory, use TOUCH.X and TOUCH.Y function instead.</p>
+<p>Pixels shown represent the number of fantasy pixels that is visible by the user according to their device screen ratio. TODO: link See: SHOWN.W/H</p>
+<p>Pixels outsied the safe zone represent the number of fantasy pixels that are visible but should be considered unsafe for touch input as they are outside the safe area. TODO: link See: SAFE.L/T/R/B</p>
+<p>Other I/O status bits:</p>
+<table>
+<thead>
+<tr>
+<th>bits</th>
+<th>purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>Pause currently active</td>
+</tr>
+<tr>
+<td>1</td>
+<td>Fantasy screen currently touched</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Device virtual keyboard currently visible</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<p>DMA registers:</p>
+<table>
+<thead>
+<tr>
+<th>addr</th>
+<th>size</th>
+<th>purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$FFA0</td>
+<td>2 Bytes</td>
+<td>Source address</td>
+</tr>
+<tr>
+<td>$FFA2</td>
+<td>2 Bytes</td>
+<td>Number of bytes to copy</td>
+</tr>
+<tr>
+<td>$FFA4</td>
+<td>2 Bytes</td>
+<td>Destination address</td>
+</tr>
+</tbody>
+</table>
+
+
+
 
 
 

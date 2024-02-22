@@ -123,30 +123,29 @@ union DisplayAttributes {
         uint8_t planeBEnabled:1;
         uint8_t planeCEnabled:1;
         uint8_t planeDEnabled:1;
-        uint8_t planeACellSize:1;
-        uint8_t planeBCellSize:1;
-        uint8_t planeCCellSize:1;
-        uint8_t planeDCellSize:1;
+        // uint8_t planeACellSize:1;
+        // uint8_t planeBCellSize:1;
+        // uint8_t planeCCellSize:1;
+        // uint8_t planeDCellSize:1;
     };
     uint8_t value;
 };
 
-union ScrollMSB {
-    struct {
-        uint8_t aX:1;
-        uint8_t aY:1;
-        uint8_t bX:1;
-        uint8_t bY:1;
-        uint8_t cX:1;
-        uint8_t cY:1;
-        uint8_t dX:1;
-        uint8_t dY:1;
-    };
-    uint8_t value;
-};
+// union ScrollMSB {
+//     struct {
+//         uint8_t aX:1;
+//         uint8_t aY:1;
+//         uint8_t bX:1;
+//         uint8_t bY:1;
+//         uint8_t cX:1;
+//         uint8_t cY:1;
+//         uint8_t dX:1;
+//         uint8_t dY:1;
+//     };
+//     uint8_t value;
+// };
 
 struct VideoRegisters {
-    union DisplayAttributes attr;
     uint16_t scrollAX;
     uint16_t scrollAY;
     uint16_t scrollBX;
@@ -155,8 +154,9 @@ struct VideoRegisters {
     uint16_t scrollCY;
     uint16_t scrollDX;
     uint16_t scrollDY;
-    union ScrollMSB scrollMSB;
+    // union ScrollMSB scrollMSB;
     uint16_t rasterLine;
+    union DisplayAttributes attr;
 };
 
 // ===========================================

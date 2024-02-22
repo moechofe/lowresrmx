@@ -117,7 +117,7 @@ struct Interpreter {
     int waitCount;
     bool waitTap;
     bool exitEvaluation;
-    union Gamepad lastFrameGamepads[NUM_GAMEPADS];
+    // union Gamepad lastFrameGamepads[NUM_GAMEPADS];
     union IOStatus lastFrameIOStatus;
     float timer;
     int seed;

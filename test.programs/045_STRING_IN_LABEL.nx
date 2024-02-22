@@ -1,0 +1,20 @@
+DAT_STR:
+DATA "success"
+
+DAT_VAL:
+DATA 123.4
+
+print "<",DAT_STR,">"
+
+a$=DAT_STR
+print a$
+
+print left$(DAT_STR,4)+right$(DAT_STR,3)
+
+print DAT_VAL
+
+b=DAT_VAL
+print b
+
+print b+111.1
+

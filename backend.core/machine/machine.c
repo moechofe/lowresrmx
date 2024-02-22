@@ -36,7 +36,7 @@ void machine_reset(struct Core *core, bool resetPersistent)
 {
     // video ram, working ram
     memset(core->machine, 0, 0xE000);
-    
+
     if (resetPersistent)
     {
         // persistent ram
@@ -55,7 +55,7 @@ void machine_reset(struct Core *core, bool resetPersistent)
 
     // // rom
     // memset(core->machine->cartridgeRom, 0, 0x10000);
-    
+
     memset(core->machineInternals, 0, sizeof(struct MachineInternals));
     audio_reset(core);
 }
@@ -74,7 +74,7 @@ int machine_peek(struct Core *core, int address)
             core->machineInternals->hasAccessedPersistent = true;
         }
     }
-    
+
     // read byte
     return *(uint8_t *)((uint8_t *)core->machine + address);
 }
@@ -107,14 +107,15 @@ bool machine_poke(struct Core *core, int address, int value)
     //     // reserved registers
     //     return false;
     // }
-    if (address == 0xFF76) // IO attributes
-    {
-        // check for illegal input change (gamepad <-> touch)
-        union IOAttributes currAttr = core->machine->ioRegisters.attr;
-        union IOAttributes newAttr;
-        newAttr.value = value;
-    }
-    else if (address >= 0x0E000 && address < 0x0F800) // persistent
+    // if (address == 0xFF76) // IO attributes
+    // {
+    //     // check for illegal input change (gamepad <-> touch)
+    //     union IOAttributes currAttr = core->machine->ioRegisters.attr;
+    //     union IOAttributes newAttr;
+    //     newAttr.value = value;
+    // }
+    // else
+		if (address >= 0x0E000 && address < 0x0F800) // persistent
     {
         if (!core->machineInternals->hasAccessedPersistent)
         {
@@ -123,10 +124,10 @@ bool machine_poke(struct Core *core, int address, int value)
         }
         core->machineInternals->hasChangedPersistent = true;
     }
-    
+
     // write byte
     *(uint8_t *)((uint8_t *)core->machine + address) = value & 0xFF;
-    
+
     if (address == 0xFF76) // IO attributes
     {
         delegate_controlsDidChange(core);

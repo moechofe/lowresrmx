@@ -1,6 +1,6 @@
 - [ ] finish the vscode-extension
 - [ ] fix the dev menu when running the desktop version
-- [ ] delete fnc_BUTTON
+- [x] delete fnc_BUTTON
 - [ ] move pcg to a directory
 - [x] redo the project architecture
 - [ ] rename file extension `.nx` to `.rmx`
@@ -10,7 +10,7 @@
 - [ ] run and loop an interrupt during pause, and allow to unpause
 - [ ] allow multiple instructions per line
 - [x] add an interrupt for emitter
-- [ ] remove LET
+- [ ] remove LET, REM
 - [ ] allow to create line shape with emitter or rect
 - [x] allow to login with google account
 - [x] allow to upload program
@@ -24,3 +24,29 @@
 - [ ] Trigo function should use 0..1 instead of 0..2PI
 - [-] Auto color transition
 - [ ] Provide an export dedicated for web mobile, that handle ratio and open the window accordingly, test fullscreen, test input.
+- [-] try this easing func:
+
+	1/(1+c*((1/x)-1)^k)
+
+	and it's derivated
+
+	(c*k*((1/x)-1)^k-1) / ((c*x*((1/x)-1)^k+x)^2)
+
+- [ ] use 2 bytes with 1/16 precision number for particle animation progress
+- [ ] rename particle data and reserve a new keyword, one should talk about the character num and one for the palette num: CHAR and PALETTE
+- [ ] provide another hard coded palette with system command to switch it
+- [x] I removed CELL SIZE cmd, update the doc
+- [x] remove the TokenDISPLAY and command
+- [x] Remove GAMEPAD
+- [ ] Allow to update shown.w/h during runtime
+- [ ] protect unmapped memory access
+- [x] try to make the 0nth color non transparent
+- [x] expose message api to user
+- [ ] find an better API to create picture
+
+    1. rerun the interpreter while reseting the shown.w/shown.h during one frame
+    2. call a dedicated sub
+    3. register a dedicated sub
+    4. store the image in virtual file with a bg of 27x48 cells
+    5. generate a smaller image like icons size 180x180 22.5/22.5 cells
+

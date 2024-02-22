@@ -34,22 +34,22 @@ int video_getCharacterPixel(struct Character *character, int x, int y)
     return b0 | (b1 << 1);
 }
 
-void video_renderPlane(struct Character *characters, struct Plane *plane, int sizeMode, int y, int scrollX, int scrollY, int pixelFlag, uint8_t *scanlineBuffer)
+void video_renderPlane(struct Character *characters, struct Plane *plane, int sizeMode, int y, int scrollX, int scrollY, int pixelFlag, uint8_t *scanlineBuffer, bool opaque)
 {
     int divShift = sizeMode ? 4 : 3;
     int planeY = y + scrollY;
     int row = (planeY >> divShift) & ROWS_MASK;
     int cellY = planeY & 7;
-    
+
     int x = 0;
     int b = 0;
     uint8_t d0 = 0;
     uint8_t d1 = 0;
     uint8_t pal = 0;
     uint8_t pri = 0;
-    
+
     int pre = scrollX & 7;
-    
+
     while (x < SCREEN_WIDTH)
     {
         if (!b)
@@ -57,18 +57,18 @@ void video_renderPlane(struct Character *characters, struct Plane *plane, int si
             int planeX = x + scrollX;
             int column = (planeX >> divShift) & COLS_MASK;
             struct Cell *cell = &plane->cells[row][column];
-            
+
             int index = cell->character;
             if (sizeMode)
             {
                 index += (cell->attr.flipX ? (planeX >> 3) + 1 : planeX >> 3) & 1;
                 index += ((cell->attr.flipY ? (planeY >> 3) + 1 : planeY >> 3) & 1) << 4;
             }
-            
+
             struct Character *character = &characters[index];
             pal = cell->attr.palette << 2;
             pri = cell->attr.priority << 7;
-            
+
             int fcy = cell->attr.flipY ? (7 - cellY) : cellY;
             d0 = character->data[fcy];
             d1 = character->data[fcy | 8];
@@ -79,7 +79,7 @@ void video_renderPlane(struct Character *characters, struct Plane *plane, int si
                 d1 = ((d1 * 0x0802LU & 0x22110LU) | (d1 * 0x8020LU & 0x88440LU)) * 0x10101LU >> 16;
             }
         }
-        
+
         if (pre)
         {
             --pre;
@@ -89,7 +89,8 @@ void video_renderPlane(struct Character *characters, struct Plane *plane, int si
             if (pri >= (*scanlineBuffer >> 7))
             {
                 int pixel = ((d0 >> 7) & 1) | ((d1 >> 6) & 2);
-                if (pixel)
+								// if color is not zero, replace it by the new color, I guess
+								if (pixel || (pixel==0 && opaque))
                 {
                     *scanlineBuffer = pixel | pal | pri | pixelFlag;
                 }
@@ -192,12 +193,13 @@ void video_renderScreen(struct Core *core, uint32_t *outputRGB)
     uint8_t scanlineBuffer[SCREEN_WIDTH];
     uint8_t scanlineSpriteBuffer[SCREEN_WIDTH];
     uint32_t *outputPixel = outputRGB;
-    
+
     struct VideoRam *ram = &core->machine->videoRam;
     struct VideoRegisters *reg = &core->machine->videoRegisters;
     struct SpriteRegisters *sreg = &core->machine->spriteRegisters;
     struct ColorRegisters *creg = &core->machine->colorRegisters;
     struct IORegisters *io = &core->machine->ioRegisters;
+		struct MachineInternals *mi = core->machineInternals;
 
     int width=SCREEN_WIDTH;
     int height=SCREEN_HEIGHT;
@@ -225,7 +227,7 @@ void video_renderScreen(struct Core *core, uint32_t *outputRGB)
             itp_runInterrupt(core, InterruptTypeRaster);
         }
         memset(scanlineBuffer, 0, sizeof(scanlineBuffer));
-        
+
         bool skip = (core->interpreter->interruptOverCycles > 0);
         if (!skip)
         {
@@ -233,25 +235,37 @@ void video_renderScreen(struct Core *core, uint32_t *outputRGB)
             {
                 int scrollX = reg->scrollDX; // | (reg->scrollMSB.dX << 8);
                 int scrollY = reg->scrollDY; // | (reg->scrollMSB.dY << 8);
-                video_renderPlane(ram->characters, &ram->planeD, reg->attr.planeDCellSize, y, scrollX, scrollY, 0, scanlineBuffer);
+                video_renderPlane(ram->characters, &ram->planeD,
+								0, //reg->attr.planeDCellSize,
+								y, scrollX, scrollY, 0, scanlineBuffer,
+								mi->planeColor0IsOpaque[3]);
             }
             if (reg->attr.planeCEnabled)
             {
                 int scrollX = reg->scrollCX; // | (reg->scrollMSB.cX << 8);
                 int scrollY = reg->scrollCY; // | (reg->scrollMSB.cY << 8);
-                video_renderPlane(ram->characters, &ram->planeC, reg->attr.planeCCellSize, y, scrollX, scrollY, 0, scanlineBuffer);
+                video_renderPlane(ram->characters, &ram->planeC,
+								0, //reg->attr.planeCCellSize,
+								y, scrollX, scrollY, 0, scanlineBuffer,
+								mi->planeColor0IsOpaque[2]);
             }
             if (reg->attr.planeBEnabled)
             {
                 int scrollX = reg->scrollBX; // | (reg->scrollMSB.bX << 8);
                 int scrollY = reg->scrollBY; // | (reg->scrollMSB.bY << 8);
-                video_renderPlane(ram->characters, &ram->planeB, reg->attr.planeBCellSize, y, scrollX, scrollY, 0, scanlineBuffer);
+                video_renderPlane(ram->characters, &ram->planeB,
+								0, //reg->attr.planeBCellSize,
+								y, scrollX, scrollY, 0, scanlineBuffer,
+								mi->planeColor0IsOpaque[1]);
             }
             if (reg->attr.planeAEnabled)
             {
                 int scrollX = reg->scrollAX; // | (reg->scrollMSB.aX << 8);
                 int scrollY = reg->scrollAY; // | (reg->scrollMSB.aY << 8);
-                video_renderPlane(ram->characters, &ram->planeA, reg->attr.planeACellSize, y, scrollX, scrollY, 0, scanlineBuffer);
+                video_renderPlane(ram->characters, &ram->planeA,
+								0, //reg->attr.planeACellSize,
+								y, scrollX, scrollY, 0, scanlineBuffer,
+								mi->planeColor0IsOpaque[0]);
             }
             if (reg->attr.spritesEnabled)
             {
@@ -259,10 +273,10 @@ void video_renderScreen(struct Core *core, uint32_t *outputRGB)
                 video_renderSprites(sreg, ram, y, scanlineBuffer, scanlineSpriteBuffer);
             }
         }
-        
+
         // overlay
-        video_renderPlane((struct Character *)overlayCharacters, &core->overlay->plane, 0, y, 0, 0, OVERLAY_FLAG, scanlineBuffer);
-        
+        video_renderPlane((struct Character *)overlayCharacters, &core->overlay->plane, 0, y, 0, 0, OVERLAY_FLAG, scanlineBuffer, 0);
+
         outputPixel+=skip_before;
 
         for (int x = 0; x < width; x++)

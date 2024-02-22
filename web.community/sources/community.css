@@ -19,4 +19,10 @@ button#google-sign-in::before {content: "";width: 56px;background-color: white;b
 
 button.home { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' height='34' viewBox='0 -960 960 960' width='34'><path fill='%23fff' d='M240-200h120v-240h240v240h120v-360L480-740 240-560v360Zm-80 80v-480l320-240 320 240v480H520v-240h-80v240H160Zm320-350Z'/></svg>"); background-position: center; width: 60px; }
 
+.program {display: grid;grid-template-columns: 0fr 1fr;grid-template-rows: 1fr;grid-column-gap: 1em;}
+.program+.program { margin-top:1em; }
+.program>.visual { grid-area: 1/1/2/2; }
+.program>.info { grid-area: 1/2/2/3; }
+.program .picture { width:calc(216px / 2); height:calc(384px / 2); background-color: antiquewhite; }
 .program .name::after { content: ".rmx"; }
+

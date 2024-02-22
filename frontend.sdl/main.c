@@ -675,8 +675,9 @@ void update(void *arg)
                 else if (!coreInput.out_hasUsedInput && !hasUsedInputLastUpdate)
                 {
                     // user hints for controls
-                    union IOAttributes attr = runner.core->machine->ioRegisters.attr;
-                    if (attr.keyboardEnabled)
+                    // union IOAttributes attr = runner.core->machine->ioRegisters.attr;
+										if (runner.core->machine->ioRegisters.status.keyboardEnabled)
+                    // if (attr.keyboardEnabled)
                     {
                         overlay_message(runner.core, "KEYBOARD");
                     }

@@ -42,38 +42,38 @@ struct Core;
 
 // 128Kibi
 struct Machine {
-    
+
     // 0x00000..0x09000
     struct VideoRam videoRam; // 36Kibi
 
     // 0x09000..0x0E000
     uint8_t workingRam[0x05000]; // 20Kibi
-    
+
     // 0x0E000..0x0F800
     uint8_t persistentRam[PERSISTENT_RAM_SIZE]; // 6Kibi
 
     // TODO: absorbe nothing1 into persidentRam
-    
+
     // 0x0F800..0x0FB00
     uint8_t nothing1[0x0FB00-0x0F800]; // 768 Bytes
-    
+
     // 0x0FB00..0x0FF00
     struct SpriteRegisters spriteRegisters; // 1Kibi
     uint8_t nothing2[0x400 - sizeof(struct SpriteRegisters)]; // 4 bytes
-    
+
     // 0x0FF00
     struct ColorRegisters colorRegisters; // 32Bytes
-    
+
     // 0xFF20
     struct VideoRegisters videoRegisters;
-    uint8_t nothing3[0x20 - sizeof(struct VideoRegisters)]; // 10 Bytes
+    uint8_t nothing3[0x20 - sizeof(struct VideoRegisters)]; // 12 Bytes
 
     // 0xFF40
     struct AudioRegisters audioRegisters;
-    
+
     // 0xFF70
     struct IORegisters ioRegisters;
-    uint8_t nothing5[0x30 - sizeof(struct IORegisters)]; // 8 Bytes
+    uint8_t nothing5[0x30 - sizeof(struct IORegisters)]; // 18 Bytes
 
     // 0xFFA0
     struct DmaRegisters dmaRegisters;
@@ -92,6 +92,7 @@ struct MachineInternals {
     bool hasChangedPersistent;
     bool isEnergySaving;
     int energySavingTimer;
+		bool planeColor0IsOpaque[4];
 };
 
 void machine_init(struct Core *core);

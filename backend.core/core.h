@@ -31,24 +31,26 @@
 #include "disk_drive.h"
 #include "core_delegate.h"
 
-struct Core {
-    struct Machine *machine;
-    struct MachineInternals *machineInternals;
-    struct Interpreter *interpreter;
-    struct DiskDrive *diskDrive;
-    struct Overlay *overlay;
-    struct CoreDelegate *delegate;
+struct Core
+{
+	struct Machine *machine;
+	struct MachineInternals *machineInternals;
+	struct Interpreter *interpreter;
+	struct DiskDrive *diskDrive;
+	struct Overlay *overlay;
+	struct CoreDelegate *delegate;
 };
 
-struct CoreInput {
-    // For SHOWN and SAFE
-    int width,height,left,top,right,bottom;
-    bool pause;
-    float touchX;
-    float touchY;
-    bool touch;
-    char key;
-    bool out_hasUsedInput;
+struct CoreInput
+{
+	// For SHOWN and SAFE
+	int width, height, left, top, right, bottom;
+	bool pause;
+	float touchX;
+	float touchY;
+	bool touch;
+	char key;
+	bool out_hasUsedInput;
 };
 
 extern const char CoreInputKeyReturn;
@@ -69,6 +71,7 @@ void core_willSuspendProgram(struct Core *core);
 void core_setDebug(struct Core *core, bool enabled);
 bool core_getDebug(struct Core *core);
 bool core_isKeyboardEnabled(struct Core *core);
+void core_setKeybordEnabled(struct Core *core, bool enabled);
 bool core_shouldRender(struct Core *core);
 
 void core_setInputGamepad(struct CoreInput *input, int player, bool up, bool down, bool left, bool right, bool buttonA, bool buttonB);

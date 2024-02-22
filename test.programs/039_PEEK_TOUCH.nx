@@ -1,0 +1,7 @@
+do
+  cls
+  print "touch",touch.x,touch.y
+  print "peekw",hex$(peekl($FF70)),hex$(peekl($FF74))
+  wait vbl
+loop
+

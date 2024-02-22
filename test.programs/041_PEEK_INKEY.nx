@@ -1,0 +1,9 @@
+keyboard on
+do
+  if peek($ff84)<>0 then print "peek($ff84)=",peek($ff84)
+  k$=inkey$
+  if k$<>"" then
+    print "inkey$=",asc(k$)
+  end if
+  wait vbl
+loop

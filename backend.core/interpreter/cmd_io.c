@@ -24,68 +24,70 @@
 
 enum ErrorCode cmd_KEYBOARD(struct Core *core)
 {
-    struct Interpreter *interpreter = core->interpreter;
-    
-    // KEYBOARD
-    ++interpreter->pc;
-    
-    // ON/OFF/OPTIONAL
-    enum TokenType type = interpreter->pc->type;
-    if (type != TokenON && type != TokenOFF && type != TokenOPTIONAL) return ErrorSyntax;
-    ++interpreter->pc;
-    
-    if (interpreter->pass == PassRun)
-    {
-        core->machine->ioRegisters.attr.keyboardEnabled = (type == TokenON || type == TokenOPTIONAL);
-        interpreter->isKeyboardOptional = (type == TokenOPTIONAL);
-        delegate_controlsDidChange(core);
-    }
-    
-    return itp_endOfCommand(interpreter);
+	struct Interpreter *interpreter = core->interpreter;
+
+	// KEYBOARD
+	++interpreter->pc;
+
+	// ON/OFF/OPTIONAL
+	enum TokenType type = interpreter->pc->type;
+	if (type != TokenON && type != TokenOFF && type != TokenOPTIONAL)
+		return ErrorSyntax;
+	++interpreter->pc;
+
+	if (interpreter->pass == PassRun)
+	{
+		core->machine->ioRegisters.status.keyboardEnabled = (type == TokenON || type == TokenOPTIONAL);
+		// core->machine->ioRegisters.attr.keyboardEnabled = (type == TokenON || type == TokenOPTIONAL);
+		interpreter->isKeyboardOptional = (type == TokenOPTIONAL);
+		delegate_controlsDidChange(core);
+	}
+
+	return itp_endOfCommand(interpreter);
 }
 
 enum ErrorCode cmd_PAUSE(struct Core *core)
 {
-    struct Interpreter *interpreter = core->interpreter;
-    
-    // PAUSE
-    ++interpreter->pc;
-    
-    // ON/OFF?
-    enum TokenType type = interpreter->pc->type;
-    if (type == TokenON || type == TokenOFF)
-    {
-        ++interpreter->pc;
-    }
-    
-    if (interpreter->pass == PassRun)
-    {
-        if (type == TokenON)
-        {
-            core->machine->ioRegisters.status.pause = 0;
-            interpreter->handlesPause = true;
-        }
-        else if (type == TokenOFF)
-        {
-            interpreter->handlesPause = false;
-        }
-        else
-        {
-            interpreter->state = StatePaused;
-            overlay_updateState(core);
-        }
-    }
-    return itp_endOfCommand(interpreter);
+	struct Interpreter *interpreter = core->interpreter;
+
+	// PAUSE
+	++interpreter->pc;
+
+	// ON/OFF?
+	enum TokenType type = interpreter->pc->type;
+	if (type == TokenON || type == TokenOFF)
+	{
+		++interpreter->pc;
+	}
+
+	if (interpreter->pass == PassRun)
+	{
+		if (type == TokenON)
+		{
+			core->machine->ioRegisters.status.pause = 0;
+			interpreter->handlesPause = true;
+		}
+		else if (type == TokenOFF)
+		{
+			interpreter->handlesPause = false;
+		}
+		else
+		{
+			interpreter->state = StatePaused;
+			overlay_updateState(core);
+		}
+	}
+	return itp_endOfCommand(interpreter);
 }
 
 // struct TypedValue fnc_UP_DOWN_LEFT_RIGHT(struct Core *core)
 // {
 //     struct Interpreter *interpreter = core->interpreter;
-    
+
 //     // UP/DOWN/LEFT/RIGHT
 //     enum TokenType type = interpreter->pc->type;
 //     ++interpreter->pc;
-    
+
 //     // TAP
 //     bool tap = false;
 //     if (interpreter->pc->type == TokenTAP)
@@ -93,26 +95,26 @@ enum ErrorCode cmd_PAUSE(struct Core *core)
 //         ++interpreter->pc;
 //         tap = true;
 //     }
-    
+
 //     // bracket open
 //     if (interpreter->pc->type != TokenBracketOpen) return val_makeError(ErrorSyntax);
 //     ++interpreter->pc;
-    
+
 //     // p expression
 //     struct TypedValue pValue = itp_evaluateNumericExpression(core, 0, 1);
 //     if (pValue.type == ValueTypeError) return pValue;
-    
+
 //     // bracket close
 //     if (interpreter->pc->type != TokenBracketClose) return val_makeError(ErrorSyntax);
 //     ++interpreter->pc;
-    
+
 //     struct TypedValue value;
 //     value.type = ValueTypeFloat;
-    
+
 //     if (interpreter->pass == PassRun)
 //     {
 //         if (core->machine->ioRegisters.attr.gamepadsEnabled == 0) return val_makeError(ErrorGamepadNotEnabled);
-        
+
 //         int p = pValue.v.floatValue;
 //         int active = 0;
 //         int lastFrameActive = 0;
@@ -124,7 +126,7 @@ enum ErrorCode cmd_PAUSE(struct Core *core)
 //                 active = gamepad->up;
 //                 lastFrameActive = lastFrameGamepad->up;
 //                 break;
-                
+
 //             case TokenDOWN:
 //                 active = gamepad->down;
 //                 lastFrameActive = lastFrameGamepad->down;
@@ -139,7 +141,7 @@ enum ErrorCode cmd_PAUSE(struct Core *core)
 //                 active = gamepad->right;
 //                 lastFrameActive = lastFrameGamepad->right;
 //                 break;
-                
+
 //             default:
 //                 assert(0);
 //                 break;
@@ -151,217 +153,217 @@ enum ErrorCode cmd_PAUSE(struct Core *core)
 
 // TODO: deleteme
 
-struct TypedValue fnc_BUTTON(struct Core *core)
-{
-    struct Interpreter *interpreter = core->interpreter;
-    
-    // BUTTON
-    ++interpreter->pc;
-    
-    // TAP
-    bool tap = false;
-    if (interpreter->pc->type == TokenTAP)
-    {
-        ++interpreter->pc;
-        tap = true;
-    }
-    
-    // bracket open
-    if (interpreter->pc->type != TokenBracketOpen) return val_makeError(ErrorSyntax);
-    ++interpreter->pc;
-    
-    // p expression
-    struct TypedValue pValue = itp_evaluateNumericExpression(core, 0, 1);
-    if (pValue.type == ValueTypeError) return pValue;
-    
-    int n = -1;
-    if (interpreter->pc->type == TokenComma)
-    {
-        // comma
-        ++interpreter->pc;
-    
-        // n expression
-        struct TypedValue nValue = itp_evaluateNumericExpression(core, 0, 1);
-        if (nValue.type == ValueTypeError) return nValue;
-        
-        n = nValue.v.floatValue;
-    }
-    
-    // bracket close
-    if (interpreter->pc->type != TokenBracketClose) return val_makeError(ErrorSyntax);
-    ++interpreter->pc;
-    
-    struct TypedValue value;
-    value.type = ValueTypeFloat;
-    
-    if (interpreter->pass == PassRun)
-    {        
-        int p = pValue.v.floatValue;
-        union Gamepad *gamepad = &core->machine->ioRegisters.gamepads[p];
+// struct TypedValue fnc_BUTTON(struct Core *core)
+// {
+//     struct Interpreter *interpreter = core->interpreter;
 
-        int active = (n == -1) ? (gamepad->buttonA || gamepad->buttonB) : (n == 0) ? gamepad->buttonA : gamepad->buttonB;
-        
-        if (active && tap)
-        {
-            // invalidate button if it was already pressed last frame
-            union Gamepad *lastFrameGamepad = &core->interpreter->lastFrameGamepads[p];
-            if ((n == -1) ? (lastFrameGamepad->buttonA || lastFrameGamepad->buttonB) : (n == 0) ? lastFrameGamepad->buttonA : lastFrameGamepad->buttonB)
-            {
-                active = 0;
-            }
-        }
-        
-        value.v.floatValue = active ? BAS_TRUE : BAS_FALSE;
-    }
-    return value;
-}
+//     // BUTTON
+//     ++interpreter->pc;
+
+//     // TAP
+//     bool tap = false;
+//     if (interpreter->pc->type == TokenTAP)
+//     {
+//         ++interpreter->pc;
+//         tap = true;
+//     }
+
+//     // bracket open
+//     if (interpreter->pc->type != TokenBracketOpen) return val_makeError(ErrorSyntax);
+//     ++interpreter->pc;
+
+//     // p expression
+//     struct TypedValue pValue = itp_evaluateNumericExpression(core, 0, 1);
+//     if (pValue.type == ValueTypeError) return pValue;
+
+//     int n = -1;
+//     if (interpreter->pc->type == TokenComma)
+//     {
+//         // comma
+//         ++interpreter->pc;
+
+//         // n expression
+//         struct TypedValue nValue = itp_evaluateNumericExpression(core, 0, 1);
+//         if (nValue.type == ValueTypeError) return nValue;
+
+//         n = nValue.v.floatValue;
+//     }
+
+//     // bracket close
+//     if (interpreter->pc->type != TokenBracketClose) return val_makeError(ErrorSyntax);
+//     ++interpreter->pc;
+
+//     struct TypedValue value;
+//     value.type = ValueTypeFloat;
+
+//     if (interpreter->pass == PassRun)
+//     {
+//         int p = pValue.v.floatValue;
+//         union Gamepad *gamepad = &core->machine->ioRegisters.gamepads[p];
+
+//         int active = (n == -1) ? (gamepad->buttonA || gamepad->buttonB) : (n == 0) ? gamepad->buttonA : gamepad->buttonB;
+
+//         if (active && tap)
+//         {
+//             // invalidate button if it was already pressed last frame
+//             union Gamepad *lastFrameGamepad = &core->interpreter->lastFrameGamepads[p];
+//             if ((n == -1) ? (lastFrameGamepad->buttonA || lastFrameGamepad->buttonB) : (n == 0) ? lastFrameGamepad->buttonA : lastFrameGamepad->buttonB)
+//             {
+//                 active = 0;
+//             }
+//         }
+
+//         value.v.floatValue = active ? BAS_TRUE : BAS_FALSE;
+//     }
+//     return value;
+// }
 
 struct TypedValue fnc_TOUCH(struct Core *core)
 {
-    struct Interpreter *interpreter = core->interpreter;
-    
-    // TOUCH
-    ++interpreter->pc;
-    
-    struct TypedValue value;
-    value.type = ValueTypeFloat;
-    
-    if (interpreter->pass == PassRun)
-    {
-        value.v.floatValue = core->machine->ioRegisters.status.touch ? BAS_TRUE : BAS_FALSE;
-    }
-    return value;
+	struct Interpreter *interpreter = core->interpreter;
+
+	// TOUCH
+	++interpreter->pc;
+
+	struct TypedValue value;
+	value.type = ValueTypeFloat;
+
+	if (interpreter->pass == PassRun)
+	{
+		value.v.floatValue = core->machine->ioRegisters.status.touch ? BAS_TRUE : BAS_FALSE;
+	}
+	return value;
 }
 
 struct TypedValue fnc_TAP(struct Core *core)
 {
-    struct Interpreter *interpreter = core->interpreter;
-    
-    // TAP
-    ++interpreter->pc;
-    
-    struct TypedValue value;
-    value.type = ValueTypeFloat;
-    
-    if (interpreter->pass == PassRun)
-    {      
-        value.v.floatValue = (core->machine->ioRegisters.status.touch && !core->interpreter->lastFrameIOStatus.touch) ? BAS_TRUE : BAS_FALSE;
-    }
-    return value;
+	struct Interpreter *interpreter = core->interpreter;
+
+	// TAP
+	++interpreter->pc;
+
+	struct TypedValue value;
+	value.type = ValueTypeFloat;
+
+	if (interpreter->pass == PassRun)
+	{
+		value.v.floatValue = (core->machine->ioRegisters.status.touch && !core->interpreter->lastFrameIOStatus.touch) ? BAS_TRUE : BAS_FALSE;
+	}
+	return value;
 }
 
 struct TypedValue fnc_TOUCH_X_Y(struct Core *core)
 {
-    struct Interpreter *interpreter = core->interpreter;
-    
-    // TOUCH.?
-    enum TokenType type = interpreter->pc->type;
-    ++interpreter->pc;
-    
-    struct TypedValue value;
-    value.type = ValueTypeFloat;
-    
-    if (interpreter->pass == PassRun)
-    {
-        if (type == TokenTOUCHX)
-        {
-            value.v.floatValue = core->machine->ioRegisters.touchX;
-        }
-        else if (type == TokenTOUCHY)
-        {
-            value.v.floatValue = core->machine->ioRegisters.touchY;
-        }
-        else
-        {
-            assert(0);
-        }
-    }
-    return value;
-}
+	struct Interpreter *interpreter = core->interpreter;
 
+	// TOUCH.?
+	enum TokenType type = interpreter->pc->type;
+	++interpreter->pc;
+
+	struct TypedValue value;
+	value.type = ValueTypeFloat;
+
+	if (interpreter->pass == PassRun)
+	{
+		if (type == TokenTOUCHX)
+		{
+			value.v.floatValue = core->machine->ioRegisters.touchX;
+		}
+		else if (type == TokenTOUCHY)
+		{
+			value.v.floatValue = core->machine->ioRegisters.touchY;
+		}
+		else
+		{
+			assert(0);
+		}
+	}
+	return value;
+}
 
 struct TypedValue fnc_SHOWN(struct Core *core)
 {
-    struct Interpreter *interpreter = core->interpreter;
-    
-    // SHOWN.?
-    enum TokenType type = interpreter->pc->type;
-    ++interpreter->pc;
-    
-    struct TypedValue value;
-    value.type = ValueTypeFloat;
-    
-    if (interpreter->pass == PassRun)
-    {
-        if (type == TokenSHOWNW)
-        {
-            value.v.floatValue = core->machine->ioRegisters.shown.width;
-        }
-        else if (type == TokenSHOWNH)
-        {
-            value.v.floatValue = core->machine->ioRegisters.shown.height;
-        }
-        else
-        {
-            assert(0);
-        }
-    }
-    return value;
+	struct Interpreter *interpreter = core->interpreter;
+
+	// SHOWN.?
+	enum TokenType type = interpreter->pc->type;
+	++interpreter->pc;
+
+	struct TypedValue value;
+	value.type = ValueTypeFloat;
+
+	if (interpreter->pass == PassRun)
+	{
+		if (type == TokenSHOWNW)
+		{
+			value.v.floatValue = core->machine->ioRegisters.shown.width;
+		}
+		else if (type == TokenSHOWNH)
+		{
+			value.v.floatValue = core->machine->ioRegisters.shown.height;
+		}
+		else
+		{
+			assert(0);
+		}
+	}
+	return value;
 }
 
 struct TypedValue fnc_SAFE(struct Core *core)
 {
-    struct Interpreter *interpreter = core->interpreter;
-    
-    // SAFE.?
-    enum TokenType type = interpreter->pc->type;
-    ++interpreter->pc;
-    
-    struct TypedValue value;
-    value.type = ValueTypeFloat;
-    
-    if (interpreter->pass == PassRun)
-    {        
-        if (type == TokenSAFEL)
-        {
-            value.v.floatValue = core->machine->ioRegisters.safe.left;
-        }
-        else if (type == TokenSAFET)
-        {
-            value.v.floatValue = core->machine->ioRegisters.safe.top;
-        }
-        else if (type == TokenSAFER)
-        {
-            value.v.floatValue = core->machine->ioRegisters.safe.right;
-        }
-        else if (type == TokenSAFEB)
-        {
-            value.v.floatValue = core->machine->ioRegisters.safe.bottom;
-        }
-        else
-        {
-            assert(0);
-        }
-    }
-    return value;
+	struct Interpreter *interpreter = core->interpreter;
+
+	// SAFE.?
+	enum TokenType type = interpreter->pc->type;
+	++interpreter->pc;
+
+	struct TypedValue value;
+	value.type = ValueTypeFloat;
+
+	if (interpreter->pass == PassRun)
+	{
+		if (type == TokenSAFEL)
+		{
+			value.v.floatValue = core->machine->ioRegisters.safe.left;
+		}
+		else if (type == TokenSAFET)
+		{
+			value.v.floatValue = core->machine->ioRegisters.safe.top;
+		}
+		else if (type == TokenSAFER)
+		{
+			value.v.floatValue = core->machine->ioRegisters.safe.right;
+		}
+		else if (type == TokenSAFEB)
+		{
+			value.v.floatValue = core->machine->ioRegisters.safe.bottom;
+		}
+		else
+		{
+			assert(0);
+		}
+	}
+	return value;
 }
 
 struct TypedValue fnc_PAUSE(struct Core *core)
 {
-    struct Interpreter *interpreter = core->interpreter;
-    
-    // PAUSE
-    ++interpreter->pc;
-    
-    struct TypedValue value;
-    value.type = ValueTypeFloat;
-    
-    if (interpreter->pass == PassRun)
-    {
-        if (interpreter->handlesPause) return val_makeError(ErrorAutomaticPauseNotDisabled);
-        
-        value.v.floatValue = core->machine->ioRegisters.status.pause ? BAS_TRUE : BAS_FALSE;
-        core->machine->ioRegisters.status.pause = 0;
-    }
-    return value;
+	struct Interpreter *interpreter = core->interpreter;
+
+	// PAUSE
+	++interpreter->pc;
+
+	struct TypedValue value;
+	value.type = ValueTypeFloat;
+
+	if (interpreter->pass == PassRun)
+	{
+		if (interpreter->handlesPause)
+			return val_makeError(ErrorAutomaticPauseNotDisabled);
+
+		value.v.floatValue = core->machine->ioRegisters.status.pause ? BAS_TRUE : BAS_FALSE;
+		core->machine->ioRegisters.status.pause = 0;
+	}
+	return value;
 }

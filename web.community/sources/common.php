@@ -99,7 +99,19 @@ function validateSessionAndGetUserId():string
 	}
 }
 
+function getServerQueryString()
+{
+	if(isset($_SERVER['QUERY_STRING'])) return $_SERVER['QUERY_STRING'];
+	elseif(isset($_SERVER['REQUEST_URI']))
+	{
+		$xpl=explode('/',$_SERVER['REQUEST_URI']);
+		$base=$xpl[array_key_last($xpl)];
+		if(strpos($base,'?')!==false) return substr($base,strpos($base,'?')+1);
+	}
+	return "";
+}
+
 $request=$_SERVER['REQUEST_URI'];
 $url=parse_url($request);
 $info=pathinfo($url['path']);
-$query=$_SERVER['QUERY_STRING'];
+$query=getServerQueryString();

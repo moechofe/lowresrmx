@@ -4,5 +4,6 @@
     "files.associations": {
         "*.tcc": "c",
         "compare": "c"
-    }
+    },
+    "cmake.configureOnOpen": true
 }
