@@ -38,7 +38,7 @@ class ExplorerItemCell: UICollectionViewCell {
         imageLayer.masksToBounds = true
 //        previewImageView.backgroundColor = AppStyle.mediumTintColor()
         
-        shadowView.layer.cornerRadius = 2
+        shadowView.layer.cornerRadius = 0
         shadowView.layer.shadowOffset = CGSize(width: 0, height: 1)
         shadowView.layer.shadowOpacity = 1.0
         shadowView.layer.shadowRadius = 2.0

@@ -373,7 +373,7 @@ class ExplorerViewController: UIViewController, UICollectionViewDelegateFlowLayo
 //            cellSize = CGSize(width: 110, height: 105)
 //        }
         // cellSize = CGSize(width:110, height: 185)
-        cellSize = CGSize(width:110, height: 140)
+        cellSize = CGSize(width:110, height: 150)
         let layout = collectionViewLayout as! UICollectionViewFlowLayout
         let width = collectionView.bounds.size.width - layout.sectionInset.left - layout.sectionInset.right
         let numItemsPerLine = floor(width / cellSize.width)
