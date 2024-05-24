@@ -18,7 +18,7 @@
 // 3. This notice may not be removed or altered from any source distribution.
 //
 
-#include "audio_chip.h"
+#include "machine/audio_chip.h"
 #include "core.h"
 #include <math.h>
 #include <string.h>
@@ -86,7 +86,7 @@ void audio_renderAudioBuffer(struct AudioRegisters *lifeRegisters, struct AudioR
 void audio_reset(struct Core *core)
 {
     struct AudioInternals *internals = &core->machineInternals->audioInternals;
-    
+
     for (int i = 0; i < NUM_VOICES; i++)
     {
         struct VoiceInternals *voiceIn = &internals->voices[i];
@@ -100,7 +100,7 @@ void audio_bufferRegisters(struct Core *core)
 {
     struct AudioRegisters *registers = &core->machine->audioRegisters;
     struct AudioInternals *internals = &core->machineInternals->audioInternals;
-    
+
     // next buffer
     int writeBufferIndex = internals->writeBufferIndex;
     if (writeBufferIndex >= 0)
@@ -111,17 +111,17 @@ void audio_bufferRegisters(struct Core *core)
     {
         writeBufferIndex = NUM_AUDIO_BUFFERS / 2;
     }
-    
+
     // copy registers to buffer
     memcpy(&internals->buffers[writeBufferIndex], registers, sizeof(struct AudioRegisters));
-    
+
     // reset "init" flags
     for (int v = 0; v < NUM_VOICES; v++)
     {
         struct Voice *voice = &registers->voices[v];
         voice->status.init = 0;
     }
-    
+
     internals->writeBufferIndex = writeBufferIndex;
 }
 
@@ -129,10 +129,10 @@ void audio_renderAudio(struct Core *core, int16_t *stereoOutput, int numSamples,
 {
     struct AudioInternals *internals = &core->machineInternals->audioInternals;
     struct AudioRegisters *lifeRegisters = &core->machine->audioRegisters;
-    
+
     int numSamplesPerUpdate = outputFrequency / 60 * NUM_CHANNELS;
     int offset = 0;
-    
+
     while (offset < numSamples)
     {
         if (offset + numSamplesPerUpdate > numSamples)
@@ -145,7 +145,7 @@ void audio_renderAudio(struct Core *core, int16_t *stereoOutput, int numSamples,
         {
             internals->readBufferIndex = (readBufferIndex + 1) % NUM_AUDIO_BUFFERS;
         }
-        
+
         offset += numSamplesPerUpdate;
     }
 }
@@ -153,14 +153,14 @@ void audio_renderAudio(struct Core *core, int16_t *stereoOutput, int numSamples,
 void audio_renderAudioBuffer(struct AudioRegisters *lifeRegisters, struct AudioRegisters *registers, struct AudioInternals *internals, int16_t *stereoOutput, int numSamples, int outputFrequency, int volume)
 {
     double overflow = 0xFFFFFF;
-    
+
     for (int v = 0; v < NUM_VOICES; v++)
     {
         struct Voice *voice = &registers->voices[v];
         if (voice->status.init)
         {
             voice->status.init = 0;
-            
+
             struct VoiceInternals *voiceIn = &internals->voices[v];
             voiceIn->envState = EnvStateAttack;
             voiceIn->lfoHold = false;
@@ -171,28 +171,28 @@ void audio_renderAudioBuffer(struct AudioRegisters *lifeRegisters, struct AudioR
             }
         }
     }
-    
+
     int i = 0;
     while (i < numSamples)
     {
         int16_t leftOutput = 0;
         int16_t rightOutput = 0;
-        
+
         if (internals->audioEnabled)
         {
             for (int v = 0; v < NUM_VOICES; v++)
             {
                 struct Voice *voice = &registers->voices[v];
                 struct VoiceInternals *voiceIn = &internals->voices[v];
-                
+
                 int freq = (voice->frequencyHigh << 8) | voice->frequencyLow;
                 if (freq == 0) continue;
-                
+
                 int volume = voice->status.volume << 4;
                 int pulseWidth = voice->attr.pulseWidth << 4;
-                
+
                 // --- LFO ---
-                
+
                 uint8_t lfoAccu8Last = voiceIn->lfoAccumulator;
                 if (!voiceIn->lfoHold)
                 {
@@ -212,7 +212,7 @@ void audio_renderAudioBuffer(struct AudioRegisters *lifeRegisters, struct AudioR
                 }
                 uint8_t lfoAccu8 = voiceIn->lfoAccumulator;
                 uint8_t lfoSample = 0;
-                
+
                 enum LFOWaveType lfoWaveType = voice->lfoAttr.wave;
                 switch (lfoWaveType)
                 {
@@ -243,16 +243,16 @@ void audio_renderAudioBuffer(struct AudioRegisters *lifeRegisters, struct AudioR
                         break;
                     }
                 }
-                
+
                 int freqAmount = lfoAmounts[voice->lfoOscAmount];
                 int volAmount = voice->lfoVolAmount;
                 int pwAmount = voice->lfoPWAmount;
-                
+
                 int freqMod = freq * lfoSample * freqAmount >> 16;
                 if (voice->lfoAttr.invert) freq -= freqMod; else freq += freqMod;
                 if (freq < 1) freq = 1;
                 if (freq > 65535) freq = 65535;
-                
+
                 if (voice->lfoAttr.invert)
                 {
                     volume -= volume * lfoSample * volAmount >> 12;
@@ -263,16 +263,16 @@ void audio_renderAudioBuffer(struct AudioRegisters *lifeRegisters, struct AudioR
                 }
                 if (volume < 0) volume = 0;
                 if (volume > 255) volume = 255;
-                
+
                 int pwMod = lfoSample * pwAmount >> 4;
                 if (voice->lfoAttr.invert) pulseWidth -= pwMod; else pulseWidth += pwMod;
                 if (pulseWidth < 0) pulseWidth = 0;
                 if (pulseWidth > 254) pulseWidth = 254;
-                
+
 //                if (i == 0 && v == 0) printf("pulseWidth %d\n", pulseWidth);
-                
+
                 // --- WAVEFORM GENERATOR ---
-                
+
                 uint16_t accu16Last = ((uint32_t)voiceIn->accumulator >> 4) & 0xFFFF;
                 double accumulator = voiceIn->accumulator + (double)freq * 65536.0 / (double)outputFrequency;
                 if (accumulator >= overflow)
@@ -282,9 +282,9 @@ void audio_renderAudioBuffer(struct AudioRegisters *lifeRegisters, struct AudioR
                 }
                 voiceIn->accumulator = accumulator;
                 uint16_t accu16 = ((uint32_t)voiceIn->accumulator >> 4) & 0xFFFF;
-                
+
                 uint16_t sample = 0x7FFF; // silence
-                
+
                 enum WaveType waveType = voice->attr.wave;
                 switch (waveType)
                 {
@@ -315,9 +315,9 @@ void audio_renderAudioBuffer(struct AudioRegisters *lifeRegisters, struct AudioR
                         break;
                     }
                 }
-                
+
                 // --- TIMEOUT ---
-                
+
                 if (voice->attr.timeout)
                 {
                     voiceIn->timeoutCounter -= 60.0 / outputFrequency;
@@ -327,14 +327,14 @@ void audio_renderAudioBuffer(struct AudioRegisters *lifeRegisters, struct AudioR
                         voice->status.gate = 0;
                     }
                 }
-                
+
                 // --- ENVELOPE GENERATOR ---
-                
+
                 if (!voice->status.gate)
                 {
                     voiceIn->envState = EnvStateRelease;
                 }
-                
+
                 switch (voiceIn->envState) {
                     case EnvStateAttack:
                         voiceIn->envCounter += envRates[voice->envA] / outputFrequency;
@@ -344,14 +344,14 @@ void audio_renderAudioBuffer(struct AudioRegisters *lifeRegisters, struct AudioR
                             voiceIn->envState = EnvStateDecay;
                         }
                         break;
-                        
+
                     case EnvStateDecay:
                         if (voiceIn->envCounter > voice->envS * 16.0)
                         {
                             voiceIn->envCounter -= envRates[voice->envD] / outputFrequency;
                         }
                         break;
-                        
+
                     case EnvStateRelease:
                         if (voiceIn->envCounter > 0.0)
                         {
@@ -363,14 +363,14 @@ void audio_renderAudioBuffer(struct AudioRegisters *lifeRegisters, struct AudioR
                         }
                         break;
                 }
-                
+
                 // --- OUTPUT ---
-                
+
                 volume = volume * (int)voiceIn->envCounter >> 8;
-                
+
                 // output peak to system registers
                 lifeRegisters->voices[v].peak = volume;
-                
+
                 int16_t voiceSample = (((int32_t)(sample - 0x7FFF)) * volume) >> 10; // 8 bit for volume, 2 bit for global
                 if (voice->status.mix & 0x01)
                 {
@@ -381,12 +381,12 @@ void audio_renderAudioBuffer(struct AudioRegisters *lifeRegisters, struct AudioR
                     rightOutput += voiceSample;
                 }
             }
-            
+
             // filter
-            
+
             int32_t *filterBufferL = internals->filterBuffer[0];
             int32_t *filterBufferR = internals->filterBuffer[1];
-            
+
             for (int f = AUDIO_FILTER_BUFFER_SIZE - 1; f > 0; f--)
             {
                 filterBufferL[f] = filterBufferL[f - 1];
@@ -394,11 +394,11 @@ void audio_renderAudioBuffer(struct AudioRegisters *lifeRegisters, struct AudioR
             }
             filterBufferL[0] = leftOutput;
             filterBufferR[0] = rightOutput;
-            
+
             leftOutput  = ((filterBufferL[0] >> 4) + (filterBufferL[1] >> 1) + (filterBufferL[2] >> 4));
             rightOutput = ((filterBufferR[0] >> 4) + (filterBufferR[1] >> 1) + (filterBufferR[2] >> 4));
         }
-        
+
         stereoOutput[i++] = leftOutput >> volume;
         stereoOutput[i++] = rightOutput >> volume;
     }

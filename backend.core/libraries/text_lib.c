@@ -18,7 +18,7 @@
 // 3. This notice may not be removed or altered from any source distribution.
 //
 
-#include "text_lib.h"
+#include "libraries/text_lib.h"
 #include "core.h"
 #include <string.h>
 #include <assert.h>

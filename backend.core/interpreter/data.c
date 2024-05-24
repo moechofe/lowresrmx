@@ -19,7 +19,7 @@
 //
 
 #include "data.h"
-#include "interpreter.h"
+#include "interpreter/interpreter.h"
 
 void dat_nextData(struct Interpreter *interpreter)
 {

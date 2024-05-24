@@ -25,7 +25,7 @@
 #include "dev_menu.h"
 #include "main.h"
 #include "dev_menu_data.h"
-#include "text_lib.h"
+#include "libraries/text_lib.h"
 #include "string_utils.h"
 #include "system_paths.h"
 #include "utils.h"
@@ -72,45 +72,45 @@ void dev_show(struct DevMenu *devMenu, bool reload)
     {
         devMenu->lastError = runner_loadProgram(devMenu->runner, getMainProgramFilename());
     }
-    
+
     devMenu->currentMenu = DevModeMenuMain;
     devMenu->currentButton = -1;
     devMenu->lastTouch = false;
-    
+
     struct Core *core = devMenu->runner->core;
-    
+
     struct TextLib *textLib = &devMenu->textLib;
     textLib->core = core;
-    
+
     itp_endProgram(core);
     machine_reset(core, true);
     overlay_reset(core);
-    
+
     core->machineInternals->isEnergySaving = true;
-    
+
     txtlib_clearScreen(textLib);
     textLib->fontCharOffset = 192;
     textLib->windowY = 7;
     textLib->windowHeight = 9;
-    
+
     memcpy(&core->machine->colorRegisters, dev_colors, sizeof(dev_colors));
     memcpy(&core->machine->videoRam.characters, dev_characters, sizeof(dev_characters));
     memcpy(&core->machine->cartridgeRom, dev_bg, sizeof(dev_bg));
-    
+
     textLib->sourceAddress = 4;
     textLib->sourceWidth = core->machine->cartridgeRom[2];
-    
+
     txtlib_copyBackground(textLib, 0, 0, 20, 16, 0, 0);
     dev_updateButtons(devMenu);
-    
+
     textLib->charAttr.palette = 1;
     txtlib_writeText(textLib, "DEVELOPMENT MENU", 2, 0);
-    
+
     textLib->charAttr.palette = 0;
     char progName[19];
     displayName(getMainProgramFilename(), progName, 19);
     txtlib_writeText(textLib, progName, 1, 2);
-    
+
     if (devMenu->lastError.code != ErrorNone)
     {
         dev_showError(devMenu, devMenu->lastError);
@@ -119,7 +119,7 @@ void dev_show(struct DevMenu *devMenu, bool reload)
     {
         dev_showInfo(devMenu);
     }
-    
+
     setMouseEnabled(true);
 }
 
@@ -127,13 +127,13 @@ void dev_update(struct DevMenu *devMenu, struct CoreInput *input)
 {
     struct Core *core = devMenu->runner->core;
     struct TextLib *textLib = &devMenu->textLib;
-    
+
     core_handleInput(core, input);
-    
+
     bool touch = core->machine->ioRegisters.status.touch;
     int cx = core->machine->ioRegisters.touchX / 8;
     int cy = core->machine->ioRegisters.touchY / 8;
-    
+
     if (devMenu->currentMenu == DevModeMenuMain)
     {
         if (devMenu->currentButton >= 0)
@@ -144,7 +144,7 @@ void dev_update(struct DevMenu *devMenu, struct CoreInput *input)
             if (!touch || !isInside)
             {
                 txtlib_setCellsAttr(textLib, bcx, bcy, bcx + 1, bcy + 1, 0, -1, -1, -1);
-                
+
                 if (isInside)
                 {
                     dev_onButtonTap(devMenu);
@@ -175,7 +175,7 @@ void dev_update(struct DevMenu *devMenu, struct CoreInput *input)
             if (!touch || !isInside)
             {
                 txtlib_setCellsAttr(textLib, 0, bcy, 19, bcy + 2, 0, -1, -1, -1);
-                
+
                 if (isInside)
                 {
                     dev_onButtonTap(devMenu);
@@ -195,7 +195,7 @@ void dev_update(struct DevMenu *devMenu, struct CoreInput *input)
         }
     }
     devMenu->lastTouch = core->machine->ioRegisters.status.touch;
-    
+
     overlay_draw(core, false);
 }
 
@@ -221,9 +221,9 @@ void dev_showInfo(struct DevMenu *devMenu)
 {
     struct Core *core = devMenu->runner->core;
     struct TextLib *textLib = &devMenu->textLib;
-    
+
     char info[21];
-    
+
     textLib->charAttr.palette = 5;
     txtlib_writeText(textLib, "TOKENS:", 0, 7);
     txtlib_writeText(textLib, "ROM:", 0, 8);
@@ -233,7 +233,7 @@ void dev_showInfo(struct DevMenu *devMenu)
     txtlib_writeText(textLib, info, 20 - (int)strlen(info), 7);
     sprintf(info, "%d/%d", data_currentSize(&core->interpreter->romDataManager), DATA_SIZE);
     txtlib_writeText(textLib, info, 20 - (int)strlen(info), 8);
-    
+
     textLib->charAttr.palette = 4;
     txtlib_writeText(textLib, "READY TO RUN", 4, 14);
 }
@@ -242,11 +242,11 @@ void dev_showError(struct DevMenu *devMenu, struct CoreError error)
 {
     struct Core *core = devMenu->runner->core;
     struct TextLib *textLib = &devMenu->textLib;
-    
+
     textLib->charAttr.palette = 0;
-    
+
     txtlib_clearWindow(textLib);
-    
+
     textLib->charAttr.palette = 2;
     txtlib_printText(textLib, err_getString(error.code));
     txtlib_printText(textLib, "\n");
@@ -257,7 +257,7 @@ void dev_showError(struct DevMenu *devMenu, struct CoreError error)
         char lineNumberText[30];
         sprintf(lineNumberText, "IN LINE %d:\n", number);
         txtlib_printText(textLib, lineNumberText);
-        
+
         const char *line = lineString(core->interpreter->sourceCode, error.sourcePosition);
         if (line)
         {
@@ -287,7 +287,7 @@ void dev_updateButtons(struct DevMenu *devMenu)
 void dev_onButtonTap(struct DevMenu *devMenu)
 {
     int button = devMenu->currentButton;
-    
+
     if (devMenu->currentMenu == DevModeMenuMain)
     {
         if (button == 0)
@@ -354,7 +354,7 @@ void dev_onButtonTap(struct DevMenu *devMenu)
 void dev_showToolsMenu(struct DevMenu *devMenu)
 {
     struct TextLib *textLib = &devMenu->textLib;
-    
+
     devMenu->currentMenu = DevModeMenuTools;
     const char *menu[MENU_SIZE];
     int count = 0;
@@ -375,13 +375,13 @@ void dev_showToolsMenu(struct DevMenu *devMenu)
 void dev_showClearRamMenu(struct DevMenu *devMenu)
 {
     struct TextLib *textLib = &devMenu->textLib;
-    
+
     devMenu->currentMenu = DevModeMenuClearRam;
     const char *menu[MENU_SIZE];
     menu[0] = "CLEAR";
     menu[1] = "CANCEL";
     dev_showMenu(devMenu, "CLEAR PERSIST. RAM?", menu, 2, 0);
-    
+
     textLib->charAttr.palette = 5;
     txtlib_writeText(textLib, "MAY DELETE DATA LIKE", 0, 12);
     txtlib_writeText(textLib, "GAME STATE OR", 3, 13);
@@ -392,14 +392,14 @@ void dev_showClearRamMenu(struct DevMenu *devMenu)
 void dev_showMenu(struct DevMenu *devMenu, const char *message, const char *buttons[], int numButtons, int numRemoveButtons)
 {
     struct TextLib *textLib = &devMenu->textLib;
-    
+
     textLib->charAttr.palette = 0;
     txtlib_setCells(textLib, 0, 0, 19, 15, 1);
-    
+
     textLib->charAttr.palette = 1;
     txtlib_setCells(textLib, 0, 0, 19, 0, 192);
     txtlib_writeText(textLib, message, (int)(20 - strlen(message))/2, 0);
-    
+
     textLib->charAttr.palette = 0;
     for (int i = 0; i < numButtons; i++)
     {

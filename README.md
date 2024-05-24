@@ -49,3 +49,14 @@ I want to be able to create games on the go using my iPad and eventually, put th
     - Ventura 13.4
     - Xcode 14.3
 
+### Setup
+
+#### To build `project.flutter`
+
+##### Ubuntu
+
+    cd project.flutter/core_plugin/src
+    ln -s ../../../backend.core core
+
+    cd project.flutter/client_app
+    flutter run -d linux

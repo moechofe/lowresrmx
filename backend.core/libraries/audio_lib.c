@@ -18,7 +18,7 @@
 // 3. This notice may not be removed or altered from any source distribution.
 //
 
-#include "audio_lib.h"
+#include "libraries/audio_lib.h"
 #include "core.h"
 #include <math.h>
 
@@ -53,14 +53,14 @@ void audlib_play(struct AudioLib *lib, int voiceIndex, float pitch, int len, int
 {
     struct Core *core = lib->core;
     struct Voice *voice = &core->machine->audioRegisters.voices[voiceIndex];
-    
+
     audlib_setPitch(voice, pitch);
-    
+
     if (sound != -1)
     {
         audlib_copySound(lib, lib->sourceAddress, sound, voiceIndex);
     }
-    
+
     if (len != -1)
     {
         voice->length = len;
@@ -68,7 +68,7 @@ void audlib_play(struct AudioLib *lib, int voiceIndex, float pitch, int len, int
     }
     voice->status.init = 1;
     voice->status.gate = 1;
-    
+
     machine_enableAudio(core);
 }
 
@@ -93,7 +93,7 @@ void audlib_playMusic(struct AudioLib *lib, int startPattern)
     player->row = 0;
     player->speed = 8;
     player->willBreak = false;
-    
+
     machine_enableAudio(lib->core);
 }
 
@@ -106,7 +106,7 @@ void audlib_playTrack(struct AudioLib *lib, int track, int voiceIndex)
     player->row = 0;
     player->speed = 8;
     player->willBreak = false;
-    
+
     machine_enableAudio(lib->core);
 }
 
@@ -314,7 +314,7 @@ void audlib_playRow(struct AudioLib *lib, struct ComposerPlayer *player, int tra
 {
     struct Core *core = lib->core;
     struct Voice *voice = &core->machine->audioRegisters.voices[voiceIndex];
-    
+
     struct TrackRow trackRow = audlib_getTrackRow(lib, player->sourceAddress, track, player->row);
     if (trackRow.note > 0 && trackRow.note < 255)
     {

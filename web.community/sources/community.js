@@ -37,6 +37,12 @@ const touchStart=(element,callback)=>{element.addEventListener('touchstart',call
 /** @type {function(!HTMLElement,function(!Event):void):void} */
 const mouseEnter=(element,callback)=>{element.addEventListener('mouseenter',callback)};
 
+/** @type {function(!HTMLElement,function(!Event):void):void} */
+const mouseLeave=(element,callback)=>{element.addEventListener('mouseleave',callback)};
+
+/** @type {function(!HTMLElement,function(!Event):void):void} */
+const mouseOut=(element,callback)=>{element.addEventListener('mouseout',callback)};
+
 /** @type {function(!HTMLElement):void} */
 const block=(element)=>{element.style.display='block';}
 
@@ -47,7 +53,13 @@ const flex=(element)=>{element.style.display='flex';}
 const none=(element)=>{element.style.display='none';}
 
 /** @type {function(!HTMLElement):bool} */
-const isShown=(element)=>element.style.display!=='none';
+const isDisplayed=(element)=>element.style.display!=='none';
+
+/** @type {function(!HTMLElement):void} */
+const hidden=(element)=>{element.style.visibility='hidden';}
+
+/** @type {function(!HTMLElement):void} */
+const visible=(element)=>{element.style.visibility='visible';}
 
 /** @type {function(string,string,Map<String,Sring>):!Promise<!Response>*/
 const post=(path,body,headers)=>fetch(path,{
@@ -130,6 +142,8 @@ const setupProgramList=()=>{
 		const list=instanciate(program_list);
 		const main=query('main');
 
+		// Bottom bar
+
 		const nav=instanciate(program_item_nav);
 		click(find(nav,'li:nth-child(1)'),(event)=>{
 			log("post");
@@ -143,12 +157,18 @@ const setupProgramList=()=>{
 		/** @type {function(!Event):void} */
 		const setupNav=(event)=>{
 			find(event.target,'nav').append(nav);
+			visible(nav);
 		};
 
-		/**
-		 * @typedef {string}
-		 */
+		/** @type {function(!Event):void} */
+		const hideNav=(event)=>{
+			hidden(nav);
+		};
+
+		/** @typedef {string} */
 		var ProgramItem;
+
+		// List of programs
 
 		/** @type {!Array<!ProgramItem>} */
 		const my_programs=await(await post('my_programs','')).json();
@@ -158,13 +178,20 @@ const setupProgramList=()=>{
 
 			find(item,'.name').textContent=data;
 
+			// Show the bottom bar
 			mouseEnter(item,setupNav);
 			touchStart(item,setupNav);
 
 			return item;
 		});
 
-		main.append.apply(main,items);
+		// List container
+
+		list.append.apply(list,items);
+		main.append(list);
+
+		// Hide the bottom bar
+		mouseLeave(list,hideNav);
 
 	})(query('#program-list'),query('#program-item'),query('#program-item-nav'));
 };

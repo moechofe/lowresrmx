@@ -24,6 +24,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <math.h>
 #include "rcstring.h"
 
 struct TypedValue fnc_ASC(struct Core *core)
@@ -352,24 +353,55 @@ struct TypedValue fnc_LEN(struct Core *core)
 		return val_makeError(ErrorSyntax);
 	++interpreter->pc;
 
-	// expression
-	struct TypedValue stringValue = itp_evaluateExpression(core, TypeClassString);
-	if (stringValue.type == ValueTypeError)
-		return stringValue;
-
-	// bracket close
-	if (interpreter->pc->type != TokenBracketClose)
-		return val_makeError(ErrorSyntax);
-	++interpreter->pc;
-
 	struct TypedValue value;
 	value.type = ValueTypeFloat;
 
-	if (interpreter->pass == PassRun)
+	// expression
+	struct TypedValue stringValue = itp_evaluateExpression(core, TypeClassAny);
+
+	// LEN(x
+	if (stringValue.type == ValueTypeFloat)
 	{
-		value.v.floatValue = strlen(stringValue.v.stringValue->chars);
-		rcstring_release(stringValue.v.stringValue);
+		struct TypedValue xValue = stringValue;
+
+		// LEN(x,
+		if (interpreter->pc->type != TokenComma) return val_makeError(ErrorSyntax);
+		++interpreter->pc;
+
+		// LEN(x,y
+		struct TypedValue yValue = itp_evaluateExpression(core, TypeClassNumeric);
+		if (yValue.type == ValueTypeError) return yValue;
+
+		// LEN(x,y)
+		if (interpreter->pc->type != TokenBracketClose) return val_makeError(ErrorSyntax);
+		++interpreter->pc;
+
+		if (interpreter->pass == PassRun)
+		{
+			value.v.floatValue = sqrtf(xValue.v.floatValue * xValue.v.floatValue + yValue.v.floatValue * yValue.v.floatValue);
+		}
 	}
+
+	// LEN($STR)
+	// LEN("HELLO")
+	else if(stringValue.type == ValueTypeString)
+	{
+		// bracket close
+		if (interpreter->pc->type != TokenBracketClose)
+			return val_makeError(ErrorSyntax);
+		++interpreter->pc;
+
+		if (interpreter->pass == PassRun)
+		{
+			value.v.floatValue = strlen(stringValue.v.stringValue->chars);
+			rcstring_release(stringValue.v.stringValue);
+		}
+	}
+	else
+	{
+		value.type == ValueTypeError;
+	}
+
 	return value;
 }
 

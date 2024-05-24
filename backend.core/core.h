@@ -25,10 +25,10 @@
 
 #include <stdio.h>
 #include <stdbool.h>
-#include "machine.h"
-#include "overlay.h"
-#include "interpreter.h"
-#include "disk_drive.h"
+#include "machine/machine.h"
+#include "overlay/overlay.h"
+#include "interpreter/interpreter.h"
+#include "accessories/disk_drive.h"
 #include "core_delegate.h"
 
 struct Core

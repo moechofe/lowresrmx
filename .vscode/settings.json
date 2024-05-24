@@ -3,7 +3,20 @@
     "cmake.buildDirectory": "${workspaceFolder}/project.cmake/build",
     "files.associations": {
         "*.tcc": "c",
-        "compare": "c"
+        "compare": "c",
+        "runner.h": "c",
+        "data_manager.h": "c",
+        "value.h": "c",
+        "audio_lib.h": "c"
     },
-    "cmake.configureOnOpen": true
+    "cmake.configureOnOpen": true,
+    "files.watcherExclude": {
+        "*.bc": true
+    },
+    "search.exclude": {
+        "*.bc": true
+    },
+    "files.exclude": {
+        "*.bc": true
+    }
 }

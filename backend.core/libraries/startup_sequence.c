@@ -22,7 +22,7 @@
 #include "core.h"
 #include <string.h>
 #include <stdint.h>
-#include "io_chip.h"
+#include "machine/io_chip.h"
 
 #define FONT_CHAR_OFFSET 192
 
@@ -31,7 +31,7 @@ extern uint32_t better_palette[];
 void runStartupSequence(struct Core *core)
 {
     struct DataEntry *entries = core->interpreter->romDataManager.entries;
-    
+
     // init font and window
     struct TextLib *textLib = &core->interpreter->textLib;
     textLib->fontCharOffset = FONT_CHAR_OFFSET;
@@ -43,16 +43,16 @@ void runStartupSequence(struct Core *core)
     textLib->windowY = (io->safe.top+7)/8;
     textLib->windowWidth = io->shown.width/8 - (io->safe.left+7)/8 - (io->safe.right+7)/8;
     textLib->windowHeight = io->shown.height/8 - (io->safe.top+7)/8 - (io->safe.bottom+7)/8;
-    
+
     // default characters/font
     if (strcmp(entries[0].comment, "FONT") == 0)
     {
         memcpy(&core->machine->videoRam.characters[FONT_CHAR_OFFSET], &core->machine->cartridgeRom[entries[0].start], entries[0].length);
     }
-    
+
     // default palettes
     uint8_t *colors = core->machine->colorRegisters.colors;
-    
+
     colors[0] = 15;
     colors[1] = 2;
     colors[2] = 12;
@@ -62,7 +62,7 @@ void runStartupSequence(struct Core *core)
     colors[5] = 29;
     colors[6] = 31;
     colors[7] = 0;
-    
+
     colors[8] = 0;
     colors[9] = 30;
     colors[10] = 17;
@@ -72,7 +72,7 @@ void runStartupSequence(struct Core *core)
     colors[13] = 2;
     colors[14] = 30;
     colors[15] = 0;
-    
+
     for (int i = 0; i < 16; i += 4)
     {
         colors[16 + i] = 0;
@@ -80,12 +80,12 @@ void runStartupSequence(struct Core *core)
         colors[18 + i] = 3;
         colors[19 + i] = 5;
     }
-    
+
     // main palettes
     int palLen = entries[1].length;
     if (palLen > 32) palLen = 32;
     memcpy(core->machine->colorRegisters.colors, &core->machine->cartridgeRom[entries[1].start], palLen);
-    
+
     // main characters
     memcpy(core->machine->videoRam.characters, &core->machine->cartridgeRom[entries[2].start], entries[2].length);
 
@@ -94,7 +94,7 @@ void runStartupSequence(struct Core *core)
     core->interpreter->textLib.sourceAddress = 0x10000 + bgStart + 4;
     core->interpreter->textLib.sourceWidth = core->machine->cartridgeRom[bgStart + 2];
     core->interpreter->textLib.sourceHeight = core->machine->cartridgeRom[bgStart + 3];
-    
+
     // voices
     for (int i = 0; i < NUM_VOICES; i++)
     {
@@ -104,7 +104,7 @@ void runStartupSequence(struct Core *core)
         voice->status.mix = 3;
         voice->envS = 15;
     }
-    
+
     // main sound source
     core->interpreter->audioLib.sourceAddress = 0x10000 + entries[15].start;
 }

@@ -18,7 +18,7 @@
 // 3. This notice may not be removed or altered from any source distribution.
 //
 
-#include "video_chip.h"
+#include "machine/video_chip.h"
 #include "core.h"
 #include <string.h>
 

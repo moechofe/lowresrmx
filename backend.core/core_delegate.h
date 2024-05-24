@@ -21,8 +21,8 @@
 #ifndef core_delegate_h
 #define core_delegate_h
 
-#include "data_manager.h"
-#include "error.h"
+#include "datamanager/data_manager.h"
+#include "interpreter/error.h"
 
 struct Core;
 
@@ -39,25 +39,25 @@ struct ControlsInfo {
 
 struct CoreDelegate {
     void *context;
-    
+
     /** Called on error */
     void (*interpreterDidFail)(void *context, struct CoreError coreError);
-    
+
     /** Returns true if the disk is ready, false if not. In case of not, core_diskLoaded must be called when ready. */
     bool (*diskDriveWillAccess)(void *context, struct DataManager *diskDataManager);
-    
+
     /** Called when a disk data entry was saved */
     void (*diskDriveDidSave)(void *context, struct DataManager *diskDataManager);
-    
+
     /** Called when a disk data entry was tried to be saved, but the disk is full */
     void (*diskDriveIsFull)(void *context, struct DataManager *diskDataManager);
-    
+
     /** Called when keyboard or gamepad settings changed */
     void (*controlsDidChange)(void *context, struct ControlsInfo controlsInfo);
-    
+
     /** Called when persistent RAM will be accessed the first time */
     void (*persistentRamWillAccess)(void *context, uint8_t *destination, int size);
-    
+
     /** Called when persistent RAM should be saved */
     void (*persistentRamDidChange)(void *context, uint8_t *data, int size);
 };

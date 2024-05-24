@@ -21,7 +21,7 @@
 #include "cmd_maths.h"
 #include "core.h"
 #include "pcg_basic.h"
-#include "machine.h"
+#include "machine/machine.h"
 
 #define _USE_MATH_DEFINES
 #ifndef __USE_MISC
@@ -117,11 +117,11 @@ struct TypedValue fnc_math1(struct Core *core)
                 break;
 
             case TokenHCOS:
-                value.v.floatValue = coshf(xValue.v.floatValue);
+                value.v.floatValue = coshf(xValue.v.floatValue * M_PI * 2);
                 break;
 
             case TokenHSIN:
-                value.v.floatValue = sinhf(xValue.v.floatValue);
+                value.v.floatValue = sinhf(xValue.v.floatValue * M_PI * 2);
                 break;
 
             case TokenHTAN:

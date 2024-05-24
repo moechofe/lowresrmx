@@ -22,7 +22,7 @@
 #define cmd_variables_h
 
 #include <stdio.h>
-#include "error.h"
+#include "interpreter/error.h"
 
 struct Core;
 

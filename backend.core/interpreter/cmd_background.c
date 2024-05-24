@@ -20,7 +20,7 @@
 
 #include "cmd_background.h"
 #include "core.h"
-#include "text_lib.h"
+#include "libraries/text_lib.h"
 #include "cmd_text.h"
 #include "interpreter_utils.h"
 #include <assert.h>
@@ -316,9 +316,9 @@ enum ErrorCode cmd_FLIP(struct Core *core)
 
 	if (interpreter->pass == PassRun)
 	{
-		if (fxValue.type == ValueTypeError) interpreter->textLib.charAttr.flipX = fxValue.v.floatValue == 0 ? 0 : 1;
+		if (fxValue.type == ValueTypeFloat) interpreter->textLib.charAttr.flipX = fxValue.v.floatValue == 0 ? 0 : 1;
 		// interpreter->textLib.charAttr.flipX = fxValue.v.floatValue ? 1 : 0;
-		if (fyValue.type == ValueTypeError) interpreter->textLib.charAttr.flipY = fyValue.v.floatValue == 0 ? 0 : 1;
+		if (fyValue.type == ValueTypeFloat) interpreter->textLib.charAttr.flipY = fyValue.v.floatValue == 0 ? 0 : 1;
 		// interpreter->textLib.charAttr.flipY = fyValue.v.floatValue ? 1 : 0;
 	}
 

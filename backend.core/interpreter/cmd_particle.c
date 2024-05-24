@@ -1,9 +1,9 @@
 #include "cmd_particle.h"
-#include "particles_lib.h"
+#include "libraries/particles_lib.h"
 
 #include "core.h"
 #include "value.h"
-#include "video_chip.h"
+#include "machine/video_chip.h"
 
 enum ErrorCode cmd_PARTICLE(struct Core *core)
 {
@@ -17,7 +17,7 @@ enum ErrorCode cmd_PARTICLE(struct Core *core)
     if(interpreter->pc->type==TokenOFF)
     {
         ++interpreter->pc;
-        
+
         prtclib_clear(core, lib);
         return itp_endOfCommand(interpreter);
     }

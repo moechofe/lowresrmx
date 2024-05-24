@@ -23,6 +23,6 @@ button.home { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://
 .program+.program { margin-top:1em; }
 .program>.visual { grid-area: 1/1/2/2; }
 .program>.info { grid-area: 1/2/2/3; }
-.program .picture { width:calc(216px / 2); height:calc(384px / 2); background-color: antiquewhite; }
+.program .picture { width:calc(180px); height:calc(180px); background-color: antiquewhite; }
 .program .name::after { content: ".rmx"; }
 

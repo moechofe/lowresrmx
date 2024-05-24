@@ -22,7 +22,7 @@
 #define cmd_screen_h
 
 #include <stdio.h>
-#include "error.h"
+#include "interpreter/error.h"
 #include "value.h"
 
 struct Core;

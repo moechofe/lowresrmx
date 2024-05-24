@@ -18,11 +18,11 @@
 // 3. This notice may not be removed or altered from any source distribution.
 //
 
-#include "error.h"
+#include "interpreter/error.h"
 
 const char *ErrorStrings[] = {
     "OK",
-    
+
     "Could Not Open Program",
     "Too Many Tokens",
     "ROM Is Full",
@@ -81,7 +81,9 @@ const char *ErrorStrings[] = {
     "EXIT SUB Outside Of A Subprogram",
     "Keyboard Not Enabled",
     "Automatic Pause Not Disabled",
-    "Not Allowed Outside Of Interrupt"
+    "Not Allowed Outside Of Interrupt",
+
+		"Out of error"
 };
 
 const char *err_getString(enum ErrorCode errorCode)

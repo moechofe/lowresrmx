@@ -24,19 +24,19 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include "interpreter_config.h"
-#include "tokenizer.h"
+#include "interpreter/tokenizer.h"
 #include "token.h"
-#include "error.h"
+#include "interpreter/error.h"
 #include "value.h"
 #include "labels.h"
 #include "variables.h"
 #include "data.h"
-#include "text_lib.h"
-#include "sprites_lib.h"
-#include "audio_lib.h"
-#include "io_chip.h"
-#include "data_manager.h"
-#include "particles_lib.h"
+#include "libraries/text_lib.h"
+#include "libraries/sprites_lib.h"
+#include "libraries/audio_lib.h"
+#include "machine/io_chip.h"
+#include "datamanager/data_manager.h"
+#include "libraries/particles_lib.h"
 #include "pcg_basic.h"
 
 #define BAS_TRUE -1.0f

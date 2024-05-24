@@ -20,32 +20,32 @@
 
 #include "cmd_memory.h"
 #include "core.h"
-#include "data_manager.h"
+#include "datamanager/data_manager.h"
 #include <assert.h>
 
 struct TypedValue fnc_PEEK(struct Core *core)
 {
     struct Interpreter *interpreter = core->interpreter;
-    
+
     // PEEK/W/L
     enum TokenType type = interpreter->pc->type;
     ++interpreter->pc;
-    
+
     // bracket open
     if (interpreter->pc->type != TokenBracketOpen) return val_makeError(ErrorSyntax);
     ++interpreter->pc;
-    
+
     // expression
     struct TypedValue addressValue = itp_evaluateExpression(core, TypeClassNumeric);
     if (addressValue.type == ValueTypeError) return addressValue;
-    
+
     // bracket close
     if (interpreter->pc->type != TokenBracketClose) return val_makeError(ErrorSyntax);
     ++interpreter->pc;
-    
+
     struct TypedValue resultValue;
     resultValue.type = ValueTypeFloat;
-    
+
     if (interpreter->pass == PassRun)
     {
         switch (type)
@@ -57,18 +57,18 @@ struct TypedValue fnc_PEEK(struct Core *core)
                 resultValue.v.floatValue = peek;
                 break;
             }
-            
+
             case TokenPEEKW:
             {
                 int peek1 = machine_peek(core, addressValue.v.floatValue);
                 int peek2 = machine_peek(core, addressValue.v.floatValue + 1);
                 if (peek1 == -1 || peek2 == -1) return val_makeError(ErrorIllegalMemoryAccess);
-                
+
                 int16_t value = peek1 | (peek2 << 8);
                 resultValue.v.floatValue = value;
                 break;
             }
-            
+
             case TokenPEEKL:
             {
                 int peek1 = machine_peek(core, addressValue.v.floatValue);
@@ -76,12 +76,12 @@ struct TypedValue fnc_PEEK(struct Core *core)
                 int peek3 = machine_peek(core, addressValue.v.floatValue + 2);
                 int peek4 = machine_peek(core, addressValue.v.floatValue + 3);
                 if (peek1 == -1 || peek2 == -1 || peek3 == -1 || peek4 == -1) return val_makeError(ErrorIllegalMemoryAccess);
-                
+
                 int32_t value = peek1 | (peek2 << 8) | (peek3 << 16) | (peek4 << 24);
                 resultValue.v.floatValue = value;
                 break;
             }
-            
+
             default:
                 assert(0);
         }
@@ -92,22 +92,22 @@ struct TypedValue fnc_PEEK(struct Core *core)
 enum ErrorCode cmd_POKE(struct Core *core)
 {
     struct Interpreter *interpreter = core->interpreter;
-    
+
     // POKE/W/L
     enum TokenType type = interpreter->pc->type;
     ++interpreter->pc;
-    
+
     // address value
     struct TypedValue addressValue = itp_evaluateExpression(core, TypeClassNumeric);
     if (addressValue.type == ValueTypeError) return addressValue.v.errorCode;
-    
+
     if (interpreter->pc->type != TokenComma) return ErrorSyntax;
     ++interpreter->pc;
-    
+
     // poke vale
     struct TypedValue pokeValue = itp_evaluateExpression(core, TypeClassNumeric);
     if (pokeValue.type == ValueTypeError) return pokeValue.v.errorCode;
-    
+
     if (interpreter->pass == PassRun)
     {
         switch (type)
@@ -118,7 +118,7 @@ enum ErrorCode cmd_POKE(struct Core *core)
                 if (!poke) return ErrorIllegalMemoryAccess;
                 break;
             }
-            
+
             case TokenPOKEW:
             {
                 int16_t value = pokeValue.v.floatValue;
@@ -127,7 +127,7 @@ enum ErrorCode cmd_POKE(struct Core *core)
                 if (!poke1 || !poke2) return ErrorIllegalMemoryAccess;
                 break;
             }
-            
+
             case TokenPOKEL:
             {
                 int32_t value = pokeValue.v.floatValue;
@@ -138,20 +138,20 @@ enum ErrorCode cmd_POKE(struct Core *core)
                 if (!poke1 || !poke2 || !poke3 || !poke4) return ErrorIllegalMemoryAccess;
                 break;
             }
-                
+
             default:
                 assert(0);
         }
 
     }
-    
+
     return itp_endOfCommand(interpreter);
 }
 
 enum ErrorCode cmd_FILL(struct Core *core)
 {
     struct Interpreter *interpreter = core->interpreter;
-    
+
     // FILL
     ++interpreter->pc;
 
@@ -165,18 +165,18 @@ enum ErrorCode cmd_FILL(struct Core *core)
     // length value
     struct TypedValue lengthValue = itp_evaluateExpression(core, TypeClassNumeric);
     if (lengthValue.type == ValueTypeError) return lengthValue.v.errorCode;
-    
+
     int fill = 0;
     if (interpreter->pc->type == TokenComma)
     {
         ++interpreter->pc;
-    
+
         // fill value
         struct TypedValue fillValue = itp_evaluateExpression(core, TypeClassNumeric);
         if (fillValue.type == ValueTypeError) return fillValue.v.errorCode;
         fill = fillValue.v.floatValue;
     }
-    
+
     if (interpreter->pass == PassRun)
     {
         int start = startValue.v.floatValue;
@@ -188,35 +188,35 @@ enum ErrorCode cmd_FILL(struct Core *core)
         }
         interpreter->cycles += length;
     }
-    
+
     return itp_endOfCommand(interpreter);
 }
 
 enum ErrorCode cmd_COPY(struct Core *core)
 {
     struct Interpreter *interpreter = core->interpreter;
-    
+
     // COPY
     ++interpreter->pc;
-    
+
     // source value
     struct TypedValue sourceValue = itp_evaluateExpression(core, TypeClassNumeric);
     if (sourceValue.type == ValueTypeError) return sourceValue.v.errorCode;
-    
+
     if (interpreter->pc->type != TokenComma) return ErrorSyntax;
     ++interpreter->pc;
-    
+
     // length value
     struct TypedValue lengthValue = itp_evaluateExpression(core, TypeClassNumeric);
     if (lengthValue.type == ValueTypeError) return lengthValue.v.errorCode;
 
     if (interpreter->pc->type != TokenTO) return ErrorSyntax;
     ++interpreter->pc;
-    
+
     // destination value
     struct TypedValue destinationValue = itp_evaluateExpression(core, TypeClassNumeric);
     if (destinationValue.type == ValueTypeError) return destinationValue.v.errorCode;
-    
+
     if (interpreter->pass == PassRun)
     {
         int source = sourceValue.v.floatValue;
@@ -244,33 +244,33 @@ enum ErrorCode cmd_COPY(struct Core *core)
         }
         interpreter->cycles += length;
     }
-    
+
     return itp_endOfCommand(interpreter);
 }
 
 struct TypedValue fnc_ROM_SIZE(struct Core *core)
 {
     struct Interpreter *interpreter = core->interpreter;
-    
+
     // ROM/SIZE
     enum TokenType type = interpreter->pc->type;
     ++interpreter->pc;
-    
+
     // bracket open
     if (interpreter->pc->type != TokenBracketOpen) return val_makeError(ErrorSyntax);
     ++interpreter->pc;
-    
+
     // index expression
     struct TypedValue indexValue = itp_evaluateNumericExpression(core, 0, MAX_ENTRIES - 1);
     if (indexValue.type == ValueTypeError) return indexValue;
-    
+
     // bracket close
     if (interpreter->pc->type != TokenBracketClose) return val_makeError(ErrorSyntax);
     ++interpreter->pc;
-    
+
     struct TypedValue value;
     value.type = ValueTypeFloat;
-    
+
     if (interpreter->pass == PassRun)
     {
         int index = indexValue.v.floatValue;
@@ -289,41 +289,41 @@ struct TypedValue fnc_ROM_SIZE(struct Core *core)
 enum ErrorCode cmd_ROL_ROR(struct Core *core)
 {
     struct Interpreter *interpreter = core->interpreter;
-    
+
     // ROL/ROR
     enum TokenType type = interpreter->pc->type;
     ++interpreter->pc;
-    
+
     // address value
     struct TypedValue addressValue = itp_evaluateExpression(core, TypeClassNumeric);
     if (addressValue.type == ValueTypeError) return addressValue.v.errorCode;
-    
+
     if (interpreter->pc->type != TokenComma) return ErrorSyntax;
     ++interpreter->pc;
-    
+
     // n vale
     struct TypedValue nValue = itp_evaluateExpression(core, TypeClassNumeric);
     if (nValue.type == ValueTypeError) return nValue.v.errorCode;
-    
+
     if (interpreter->pass == PassRun)
     {
         int value = machine_peek(core, addressValue.v.floatValue);
         if (value == -1) return ErrorIllegalMemoryAccess;
-        
+
         int n = (int)nValue.v.floatValue;
         if (type == TokenROR)
         {
             n = -n;
         }
         n &= 0x07;
-        
+
         value = value << n;
         value = value | (value >> 8);
-        
+
         bool poke = machine_poke(core, addressValue.v.floatValue, value);
         if (!poke) return ErrorIllegalMemoryAccess;
     }
-    
+
     return itp_endOfCommand(interpreter);
 }
 

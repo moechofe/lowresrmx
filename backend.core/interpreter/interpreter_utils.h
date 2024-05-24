@@ -24,8 +24,8 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include "value.h"
-#include "video_chip.h"
-#include "audio_chip.h"
+#include "machine/video_chip.h"
+#include "machine/audio_chip.h"
 
 struct Core;
 

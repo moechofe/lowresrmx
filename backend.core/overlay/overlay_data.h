@@ -23,7 +23,7 @@
 
 #include <stdio.h>
 #include <stdint.h>
-#include "video_chip.h"
+#include "machine/video_chip.h"
 
 extern uint8_t overlayColors[];
 extern uint8_t overlayCharacters[];

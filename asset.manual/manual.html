@@ -46,9 +46,15 @@ This is a heavily modified version and way more complicated to use, I recommend 
 <p>The goal 🥅 of the app is to provide a development environment to work with during my commutes in the subway, and later, being able to publish a real App on the Apple Store.</p>
 <p>The original LowRes NX, despite being an excellent development environment, lacks some capabilities to publish an App that looks credible.</p>
 <p>My main concern is the limited screen size unable to cover the whole devices screen and the landscape orientation.</p>
-<h3 id="background-layers">Background layers</h3>
+<h3 id="background">Background</h3>
 <p>4 background layers instead of 2 with 64x64 cells instead of 32x32.</p>
 <p>Support for big cells of 16x16 pixels has been removed.</p>
+<p>Removed 🗑️ syntaxes:</p>
+<p><code>CELL SIZE bg,size</code></p>
+<hr />
+<p>Alternative syntaxe to <code>FLIP</code> command:</p>
+<p><code>FLIP x,y</code></p>
+<p>Where <code>x</code> and <code>y</code> are both optional are accept any number. If it is different than zero, the flag will be set.</p>
 <h3 id="screen">Screen</h3>
 <p>A fantasy screen of 216x384 pixels.</p>
 <p>With perfect squared pixels, a fixed portrait orientation, and it always fill the entire device screen.</p>
@@ -84,6 +90,11 @@ This is a heavily modified version and way more complicated to use, I recommend 
 <p>Touchscreen only, with a float precision.</p>
 <p>Virtual controller and the posibility to use Bluetooth controller has been removed.</p>
 <p>Virtual keyboard are still present.</p>
+<p>When the device virtual keyboard is hidden by the user, the corresponding flag of I/O <a href="#Registers">Registers</a> is updated.</p>
+<p>Removed 🗑️ syntaxes:</p>
+<p><code>=BUTTON(p,n)</code>, <code>=UP(p)</code>, <code>=DOWN(p)</code>, <code>=LEFT(p)</code>, <code>=RIGHT(p)</code>, <code>GAMEPAD n</code>, <code>TOUCHSCREEN</code></p>
+<hr />
+<p>Change about the <code>=TOUCH.X/Y</code> functions that return float.</p>
 <hr />
 <p>New alternative to <code>WAIT</code> command:</p>
 <p><code>WAIT TAP</code></p>
@@ -133,6 +144,10 @@ PRINT A
 <code>=RND(max,address)</code></p>
 <p>Can specify an <code>address</code> where the internal state will be stored. It will consume 16 bytes.</p>
 <p>This allow to use multiple generator at the same times.</p>
+<hr />
+<p>New syntaxe to compute length:</p>
+<p><code>=LEN(x,y)</code></p>
+<p>Calculate the length of a 2D vector using the values of <code>x</code> and <code>y</code> as the coordinates for both axes.</p>
 <hr />
 <p>New function that interpolates values between 0 and 1 using easing mathematical functions.</p>
 <p><code>=EASE(function,mode,value)</code></p>
@@ -212,7 +227,7 @@ PRINT A
 <h3 id="text">Text</h3>
 <p>New command to expose the existing overlay message API:</p>
 <p><code>MESSAGE text</code></p>
-<h3 id="compatibily">Compatibily</h3>
+<h3 id="other">Other</h3>
 <p>New command to help support program from the original Lowres NX:</p>
 <p><code>COMPAT</code></p>
 <blockquote>
@@ -225,6 +240,11 @@ PRINT A
 </ul>
 <p>It do not fix everything and make the program 100% compatible but it can help.</p>
 <p>For instance, the commands and functions that has been removed will still be unavailable.</p>
+<hr />
+<p>Removed 🗑️ commands:</p>
+<p><code>DISPLAY</code></p>
+<p>Removed 🗑️ reserved keywords:</p>
+<p><code>ANIM</code>, <code>CLOSE</code>, <code>DECLARE</code>, <code>DEF</code>, <code>FLASH</code>, <code>FN</code>, <code>FUNCTION</code>, <code>LBOUND</code>, <code>OPEN</code>, <code>OUTPUT</code>, <code>SHARED</code>, <code>STATIC</code>, <code>TEMPO</code>, <code>VOICE</code>, <code>WRITE</code></p>
 <h3 id="memory">Memory</h3>
 <p>An almost compatible memory mapping.</p>
 <p>The total addressable memory grow from 64 Kibi to 128 Kibi.</p>
@@ -540,28 +560,25 @@ DATA <span class="hljs-number">1</span>,<span class="hljs-number">2</span>,<span
 <p><code>EMITTER emitter OFF</code></p>
 <p>Manually stop the <code>emitter</code>.</p>
 <h1 id="how-does-it-works">How does it works</h1>
-<h2 id="rendering-process">Rendering process</h2>
-<p>LowResRMX does not have a framebuffer where user will paint pixels. Instead, it simulates a NES/Gameboy PPU chip, which traverses its memory to generates output pixels based on register information.</p>
+<!--FIXME: spell checked NOW -->
+<p>LowResRMX does not have a framebuffer where users paint pixels. Instead, it simulates an NES/Gameboy PPU chip, which traverses its memory to generate output pixels based on characters, backgrounds, sprites, paletters and register information.</p>
+<hr />
+<p>Colors:</p>
+<p>LowResRMX uses a fixed palette and allows users to reference each of the 64 available colors using indices.
+Colors are grouped by 4 in palette, and there are 8 palettes available for the users to colorize their creations.</p>
+<p>From now on, the terms:</p>
+<ul>
+<li><strong>a palette</strong> apply to one of the 8 palettes with 4 colors inside,</li>
+<li><strong>a color</strong> means one of the 4 colors within a palette.</li>
+</ul>
+<p>Check color <a href="#Registers">registers</a> for information about the memory mapping and data format.</p>
+<!--FIXME: spell checked END -->
+<hr />
+<p>Characters:</p>
 <p>The 256 characters available in the dedicated memory are 8x8 pixels each and are assigned a number from 0 to 255.
 Whenever this number is encountered in the background or sprite, the rendering process will draw the corresponding block of 8x8 pixels.</p>
-<p>Characters:</p>
-<table>
-<thead>
-<tr>
-<th>addr</th>
-<th>size</th>
-<th>purpose</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>$8000</td>
-<td>4 Kibi</td>
-<td>Character Data</td>
-</tr>
-</tbody>
-</table>
-<p>A character is a block of 8x8 pixels and take 16 bytes.
+<p>A character is a block of 8x8 pixels and take 16 bytes.</p>
+<p>TODO: move information about memory later
 Each pixels as 2 bits to store the color information: 0 to 3.</p>
 <p>The first 8 bytes contain the low bits of all its pixels, followed by 8 more bytes containing the high bits of all pixels.</p>
 <blockquote>
@@ -586,25 +603,32 @@ Each pixels as 2 bits to store the color information: 0 to 3.</p>
 END SUB
 </code></pre></p>
 </blockquote>
-<h2 id="backgrounds">Backgrounds</h2>
+<hr />
+<p>Backgrounds:</p>
 <p>LowResRMX has 4 background layers, each have independent:</p>
 <ul>
 <li>X and Y position,</li>
 <li>and 64x64 character cells.</li>
 </ul>
-<p>The 4 layers are drawn in order from 3 to 0. Layer 0 will be visible above the other, unless the priority flag is used.</p>
-<p>Each cells can have it&#39;s own:</p>
+<p>The 4 layers are drawn in order from 4th to 1st. Cell&#39;s of the 1st background will be visible above the other, unless the priority flag is used.</p>
+<p>Each cells have it&#39;s own:</p>
 <ul>
-<li>character number 0..255,</li>
-<li>a palette 0..7,</li>
+<li>character number ,</li>
+<li>a palette,</li>
 <li>an horizontal and vertical flip,</li>
 <li>a priority to alter which layer is drawn on top of other.</li>
 </ul>
 <p>Layers are not framebuffer, You CANNOT easily paint pixels directly. Instead, every cells reference a characters number and those last hold the pixel color informations.</p>
 <p>A Character is a block of 8x8 pixels, and each pixel can hold one of 4 colors.
-It means, one character can only have 4 colors. Less than that, because the 1st color is means to be transparent ; one character can only have 3 distinct colors from 1 to 3.</p>
+It means, one character can only have 4 colors. Less than that, because the 1st color is means to be transparent ; one character can only have 3 distinct colors.</p>
+<p>Each layer can be shifted using the position in X and Y axes. When reaching the edges, the cells will wrap around and still remain visible.
+Put another way, when the rendering process tries to draw the 64th cell of a row, because it does not exist, it will draw the 1st cell instead.
+This can be used to achieve infinite scrolling.</p>
+<p>As say before, the 1st color of each palette it transparent expect for the 1st color of the 1st palette. It will determine the background color of the whole fantasy screen.</p>
+<p>Sprites:</p>
 <p>TODO: continue</p>
 <p>TODO: a word on the background color</p>
+<p>TODO: a word the priority</p>
 <h2 id="registers">Registers</h2>
 <p>Sprite Registers:</p>
 <p>There are 170 sprites, each occupies 6 bytes:</p>
@@ -619,8 +643,28 @@ It means, one character can only have 4 colors. Less than that, because the 1st 
 <tbody>
 <tr>
 <td>$FB00</td>
-<td>1020 Bytes</td>
-<td>Sprite registers</td>
+<td>6 Bytes</td>
+<td>1st sprite</td>
+</tr>
+<tr>
+<td>$FB06</td>
+<td>6 Bytes</td>
+<td>2nd sprite</td>
+</tr>
+<tr>
+<td>$FB0C</td>
+<td>6 Bytes</td>
+<td>3rd sprite</td>
+</tr>
+<tr>
+<td>…</td>
+<td></td>
+<td>…</td>
+</tr>
+<tr>
+<td>$FEF6</td>
+<td>6 Bytes</td>
+<td>170th sprite</td>
 </tr>
 <tr>
 <td>$FEFC</td>
@@ -1006,6 +1050,7 @@ Also, they are both offseted by 32 pixels. To place a sprite in the 0x0 coordina
 </tr>
 </tbody>
 </table>
+
 
 
 

@@ -1,0 +1,40 @@
+name: lowresrmx
+description: "A new Flutter project."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.3.4 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.6
+  re_editor: ^0.3.0
+  sw_rend: ^0.0.2
+  provider: ^6.1.2
+  ffi: ^2.1.2
+  path: ^1.9.0
+  path_provider: ^2.1.3
+  package_info_plus: ^8.0.0
+  core_plugin:
+    path: ../core_plugin
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
+  fonts:
+    - family: RecursiveLinear
+      fonts:
+        - asset: asset/RecMonoLinear-Regular-1.085.ttf
+        - asset: asset/RecMonoLinear-Italic-1.085.ttf
+          style: italic
+        - asset: asset/RecMonoLinear-Bold-1.085.ttf
+          weight: 700
+        - asset: asset/RecMonoLinear-BoldItalic-1.085.ttf
+          weight: 700
+          style: italic

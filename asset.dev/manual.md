@@ -196,6 +196,14 @@ This allow to use multiple generator at the same times.
 
 ---
 
+New syntaxe to compute length:
+
+`=LEN(x,y)`
+
+Calculate the length of a 2D vector using the values of `x` and `y` as the coordinates for both axes.
+
+---
+
 New function that interpolates values between 0 and 1 using easing mathematical functions.
 
 `=EASE(function,mode,value)`

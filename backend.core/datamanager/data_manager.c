@@ -18,7 +18,7 @@
 // 3. This notice may not be removed or altered from any source distribution.
 //
 
-#include "data_manager.h"
+#include "datamanager/data_manager.h"
 #include "charsets.h"
 #include <string.h>
 #include <stdlib.h>
@@ -35,7 +35,7 @@ void data_init(struct DataManager *manager)
 void data_deinit(struct DataManager *manager)
 {
     assert(manager);
-    
+
     if (manager->diskSourceCode)
     {
         free((void *)manager->diskSourceCode);
@@ -46,7 +46,7 @@ void data_deinit(struct DataManager *manager)
 void data_reset(struct DataManager *manager)
 {
     memset(manager->entries, 0, sizeof(struct DataEntry) * MAX_ENTRIES);
-    
+
     strcpy(manager->entries[1].comment, "MAIN PALETTES");
     strcpy(manager->entries[2].comment, "MAIN CHARACTERS");
     strcpy(manager->entries[3].comment, "MAIN BG");
@@ -63,13 +63,13 @@ struct CoreError data_import(struct DataManager *manager, const char *input, boo
 {
     assert(manager);
     assert(input);
-    
+
     const char *uppercaseInput = uppercaseString(input);
     if (!uppercaseInput) return err_makeCoreError(ErrorOutOfMemory, -1);
-    
+
     struct CoreError error = data_uppercaseImport(manager, uppercaseInput, keepSourceCode);
     free((void *)uppercaseInput);
-    
+
     return error;
 }
 
@@ -77,13 +77,13 @@ struct CoreError data_uppercaseImport(struct DataManager *manager, const char *i
 {
     assert(manager);
     assert(input);
-    
+
     data_reset(manager);
-    
+
     const char *character = input;
     uint8_t *currentDataByte = manager->data;
     uint8_t *endDataByte = &manager->data[DATA_SIZE];
-    
+
     // skip stuff before
     const char *prevChar = NULL;
     while (*character && !(*character == '#' && (!prevChar || *prevChar == '\n')))
@@ -91,24 +91,24 @@ struct CoreError data_uppercaseImport(struct DataManager *manager, const char *i
         prevChar = character;
         character++;
     }
-    
+
     if (keepSourceCode)
     {
         size_t length = (size_t)(character - input);
-        
+
         char *diskSourceCode = malloc(length + 1);
         if (!diskSourceCode) exit(EXIT_FAILURE);
-        
+
         stringConvertCopy(diskSourceCode, input, length);
         manager->diskSourceCode = diskSourceCode;
     }
-    
+
     while (*character)
     {
         if (*character == '#')
         {
             character++;
-            
+
             // entry index
             int entryIndex = 0;
             while (*character)
@@ -127,12 +127,12 @@ struct CoreError data_uppercaseImport(struct DataManager *manager, const char *i
             }
             if (*character != ':') return err_makeCoreError(ErrorUnexpectedCharacter, (int)(character - input));
             character++;
-            
+
             if (entryIndex >= MAX_ENTRIES) return err_makeCoreError(ErrorIndexOutOfBounds, (int)(character - input));
-            
+
             struct DataEntry *entry = &manager->entries[entryIndex];
             if (entry->length > 0) return err_makeCoreError(ErrorIndexAlreadyDefined, (int)(character - input));
-            
+
             // file comment
             const char *comment = character;
             do
@@ -144,7 +144,7 @@ struct CoreError data_uppercaseImport(struct DataManager *manager, const char *i
             if (commentLen >= ENTRY_COMMENT_SIZE) commentLen = ENTRY_COMMENT_SIZE - 1;
             memset(entry->comment, 0, ENTRY_COMMENT_SIZE);
             strncpy(entry->comment, comment, commentLen);
-            
+
             // binary data
             uint8_t *startByte = currentDataByte;
             bool shift = true;
@@ -175,12 +175,12 @@ struct CoreError data_uppercaseImport(struct DataManager *manager, const char *i
                 character++;
             }
             if (!shift) return err_makeCoreError(ErrorSyntax, (int)(character - input)); // incomplete hex value
-            
+
             int start = (int)(startByte - manager->data);
             int length = (int)(currentDataByte - startByte);
             entry->start = start;
             entry->length = length;
-            
+
             for (int i = entryIndex + 1; i < MAX_ENTRIES; i++)
             {
                 manager->entries[i].start = entry->start + entry->length;
@@ -201,7 +201,7 @@ struct CoreError data_uppercaseImport(struct DataManager *manager, const char *i
 char *data_export(struct DataManager *manager)
 {
     assert(manager);
-    
+
     size_t outputSize = data_calcOutputSize(manager);
     if (outputSize > 0)
     {
@@ -209,7 +209,7 @@ char *data_export(struct DataManager *manager)
         if (output)
         {
             char *current = output;
-            
+
             if (manager->diskSourceCode)
             {
                 size_t len = strlen(manager->diskSourceCode);
@@ -226,7 +226,7 @@ char *data_export(struct DataManager *manager)
                     }
                 }
             }
-            
+
             for (int i = 0; i < MAX_ENTRIES; i++)
             {
                 struct DataEntry *entry = &manager->entries[i];
@@ -254,7 +254,7 @@ char *data_export(struct DataManager *manager)
                         }
                         current += strlen(current);
                     }
-                    
+
                 }
             }
         }
@@ -312,11 +312,11 @@ void data_setEntry(struct DataManager *manager, int index, const char *comment, 
 {
     struct DataEntry *entry = &manager->entries[index];
     uint8_t *data = manager->data;
-        
+
     // move data of higher entries
     int nextStart = entry->start + length;
     assert(nextStart <= DATA_SIZE);
-        
+
     if (length > entry->length) // new entry is bigger
     {
         int diff = length - entry->length;
@@ -337,7 +337,7 @@ void data_setEntry(struct DataManager *manager, int index, const char *comment, 
             data[i] = 0;
         }
     }
-    
+
     // write new entry
     strncpy(entry->comment, comment, ENTRY_COMMENT_SIZE);
     entry->comment[ENTRY_COMMENT_SIZE - 1] = 0;
@@ -347,7 +347,7 @@ void data_setEntry(struct DataManager *manager, int index, const char *comment, 
     {
         data[i + start] = source[i];
     }
-    
+
     // move entry positions
     for (int i = index + 1; i < MAX_ENTRIES; i++)
     {

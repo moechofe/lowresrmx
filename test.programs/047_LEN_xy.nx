@@ -1,0 +1,4 @@
+PRINT LEN("test")
+PRINT LEN(0,12)
+DIM A(1) : A(0)=1 : A(1)=1
+PRINT LEN(A(0),A(1))

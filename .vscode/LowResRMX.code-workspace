@@ -1,0 +1,27 @@
+{
+	"folders": [
+		{
+			"path": ".."
+		},
+		{
+			"path": "../../Obsidian/LowRes RMX"
+		}
+	],
+	"settings": {
+		"files.associations": {
+			"*.tcc": "c",
+			"compare": "c",
+			"ratio": "c",
+			"system_error": "c",
+			"array": "c",
+			"functional": "c",
+			"tuple": "c",
+			"type_traits": "c",
+			"utility": "c"
+		},
+		"zig.initialSetupDone": false,
+		"search.exclude": {
+			"**/SDL*": true
+		}
+	}
+}

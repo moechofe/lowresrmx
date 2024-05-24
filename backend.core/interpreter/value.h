@@ -22,7 +22,7 @@
 #define value_h
 
 #include <stdio.h>
-#include "error.h"
+#include "interpreter/error.h"
 #include "rcstring.h"
 
 enum ValueType {

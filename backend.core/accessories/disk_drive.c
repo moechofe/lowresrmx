@@ -18,7 +18,7 @@
 // 3. This notice may not be removed or altered from any source distribution.
 //
 
-#include "disk_drive.h"
+#include "accessories/disk_drive.h"
 #include "core.h"
 #include <stdlib.h>
 #include <assert.h>
@@ -57,7 +57,7 @@ bool disk_prepare(struct Core *core)
     {
         dataManager->data = calloc(DATA_SIZE, 1);
         if (!dataManager->data) exit(EXIT_FAILURE);
-        
+
         data_init(dataManager);
     }
     return delegate_diskDriveWillAccess(core);
@@ -69,7 +69,7 @@ bool disk_saveFile(struct Core *core, int index, char *comment, int address, int
     {
         return false;
     }
-    
+
     assert(address >= 0 && address + length <= sizeof(struct Machine));
     struct DataManager *dataManager = &core->diskDrive->dataManager;
     if (!data_canSetEntry(dataManager, index, length))
@@ -80,7 +80,7 @@ bool disk_saveFile(struct Core *core, int index, char *comment, int address, int
     {
         uint8_t *source = &((uint8_t *)core->machine)[address];
         data_setEntry(dataManager, index, comment, source, length);
-        
+
         delegate_diskDriveDidSave(core);
     }
     return true;
@@ -92,10 +92,10 @@ bool disk_loadFile(struct Core *core, int index, int address, int maxLength, int
     {
         return false;
     }
-    
+
     struct DataEntry *entry = &core->diskDrive->dataManager.entries[index];
     uint8_t *data = core->diskDrive->dataManager.data;
-    
+
     // read file
     int start = entry->start + offset;
     int length = entry->length;

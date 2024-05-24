@@ -18,8 +18,8 @@
 // 3. This notice may not be removed or altered from any source distribution.
 //
 
-#include "tokenizer.h"
-#include "error.h"
+#include "interpreter/tokenizer.h"
+#include "interpreter/error.h"
 #include "charsets.h"
 #include <string.h>
 #include <stdlib.h>

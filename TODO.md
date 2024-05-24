@@ -43,5 +43,6 @@
 - [x] try to make the 0nth color non transparent
 - [x] expose message api to user
 - [x] create smaller program picture
+- [ ] there is a `view.endEditing(true)`, I should try to use it to fix the scrolling issue with the minimap
 - [ ]
 

@@ -25,7 +25,7 @@
 
 enum ErrorCode {
     ErrorNone,
-    
+
     ErrorCouldNotOpenProgram,
     ErrorTooManyTokens,
     ErrorRomIsFull,
@@ -84,7 +84,9 @@ enum ErrorCode {
     ErrorExitSubOutsideOfASubprogram,
     ErrorKeyboardNotEnabled,
     ErrorAutomaticPauseNotDisabled,
-    ErrorNotAllowedOutsideOfInterrupt
+    ErrorNotAllowedOutsideOfInterrupt,
+
+		ErrorMax
 };
 
 struct CoreError {

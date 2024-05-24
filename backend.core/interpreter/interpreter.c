@@ -18,7 +18,7 @@
 // 3. This notice may not be removed or altered from any source distribution.
 //
 
-#include "interpreter.h"
+#include "interpreter/interpreter.h"
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>

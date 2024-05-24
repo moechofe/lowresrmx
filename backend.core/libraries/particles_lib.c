@@ -1,7 +1,7 @@
-#include "particles_lib.h"
+#include "libraries/particles_lib.h"
 
 #include "core.h"
-#include "machine.h"
+#include "machine/machine.h"
 #include "pcg_basic.h"
 
 #define _USE_MATH_DEFINES

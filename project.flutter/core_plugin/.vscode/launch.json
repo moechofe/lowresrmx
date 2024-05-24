@@ -1,0 +1,18 @@
+{
+    "configurations": [
+        {
+            "name": "Attach core_plugin linux",
+            "type": "cppdbg",
+            "request": "attach",
+            "program": "${workspaceFolder}/../client_app/build/linux/x64/debug/bundle/lowresrmx",
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for dbg",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+        }
+    ]
+}

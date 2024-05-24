@@ -24,7 +24,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdint.h>
-#include "error.h"
+#include "interpreter/error.h"
 
 #define MAX_ENTRIES 16
 #define DATA_SIZE 0x10000

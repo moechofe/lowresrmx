@@ -11,8 +11,8 @@ import WebKit
 
 class ShareViewController: UIViewController, WKNavigationDelegate {
     
-    static let baseUrl = URL(string: "https://lowresnx.inutilis.com/")!
-//    static let baseUrl = URL(string: "http://localhost:8888/")!
+    //static let baseUrl = URL(string: "https://lowresnx.inutilis.com/")!
+    static let baseUrl = URL(string: "http://10.10.10.141:8080/")!
 
     weak var activity: ShareActivity?
     var programUrl: URL?
@@ -26,15 +26,38 @@ class ShareViewController: UIViewController, WKNavigationDelegate {
         config.processPool = AppController.shared.webProcessPool
         webView = WKWebView(frame: CGRect.zero, configuration: config)
         
-//        webView.backgroundColor = AppStyle.darkGrayColor()
+//        webView.layer.borderColor = UIColor.green.cgColor
+//        webView.layer.borderWidth = 2.0
+//        webView.layer.backgroundColor = UIColor.blue.cgColor
+        
+        
+        
+        //webView.backgroundColor = AppStyle.darkGrayColor()
+//        webView.backgroundColor = UIColor.lightGray
+//        webView.tintColor = UIColor.red
         webView.isOpaque = false
-        webView.scrollView.indicatorStyle = .white
+//        webView.scrollView.backgroundColor = UIColor.black
+//        webView.scrollView.indicatorStyle = .white
         webView.navigationDelegate = self
         view = webView
+        
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+//        let nba = UINavigationBar.appearance()
+//        nba.tintColor = UIColor.white
+//        if #available(iOS 13.0, *) {
+//            self.view.backgroundColor = .systemBackground
+//        } else {
+//            // Fallback on earlier versions
+//        }
+        
+//        self.modalPresentationStyle = .fullScreen
+        self.modalPresentationStyle = .popover
+//        self.tabBarController?.tabBar.tintColor = UIColor.brown
+//        self.popoverPresentationController?.backgroundColor=UIColor.brown
         
         navigationItem.title = "Share with Community"
         navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(cancel))
@@ -43,7 +66,7 @@ class ShareViewController: UIViewController, WKNavigationDelegate {
         activityView.sizeToFit()
         navigationItem.rightBarButtonItem = UIBarButtonItem(customView: activityView)
         
-        let urlRequest = URLRequest(url: ShareViewController.baseUrl.appendingPathComponent("app_auth.php"))
+        let urlRequest = URLRequest(url: ShareViewController.baseUrl.appendingPathComponent(""))
         webView.load(urlRequest)
     }
     

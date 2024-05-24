@@ -410,7 +410,7 @@ void update(void *arg)
     }
 
     while (SDL_PollEvent(&event))
-    {
+     {
         switch (event.type)
         {
             case SDL_QUIT:

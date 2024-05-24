@@ -1,4 +1,4 @@
-/.stversions
+.stversions
 *.bc
 .DS_Store
 build
@@ -6,4 +6,3 @@ xcuserdata
 zig-cache
 web.community/sources/private.php
 project.cmake/SDL*
-

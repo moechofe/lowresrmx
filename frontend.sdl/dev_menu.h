@@ -30,7 +30,7 @@
 #include "core.h"
 #include "settings.h"
 #include "runner.h"
-#include "text_lib.h"
+#include "libraries/text_lib.h"
 
 enum DevModeMenu {
     DevModeMenuMain,

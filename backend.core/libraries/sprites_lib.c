@@ -18,7 +18,7 @@
 // 3. This notice may not be removed or altered from any source distribution.
 //
 
-#include "sprites_lib.h"
+#include "libraries/sprites_lib.h"
 #include "core.h"
 #include <stdint.h>
 
@@ -37,29 +37,29 @@ bool sprlib_checkSingleCollision(struct SpritesLib *lib, struct Sprite *sprite, 
     {
         int ax1 = (sprite->x/16);
         int ay1 = (sprite->y/16);
-        
+
         int ax2 = (otherSprite->x/16);
         int ay2 = (otherSprite->y/16);
-        
+
         int s1 = (sprite->attr.size + 1) << 3;
         int s2 = (otherSprite->attr.size + 1) << 3;
-        
+
         int bx1 = ax1 + s1;
         int by1 = ay1 + s1;
         int bx2 = ax2 + s2;
         int by2 = ay2 + s2;
-        
+
         // rectangle check
         if (bx1 > ax2 && by1 > ay2 && ax1 < bx2 && ay1 < by2)
         {
             // pixel exact check
             int diffX = ax2 - ax1;
             int diffY = ay2 - ay1;
-            
+
             struct Character *characters = lib->core->machine->videoRam.characters;
             int c1 = sprite->character;
             int c2 = otherSprite->character;
-            
+
             for (int line = 0; line < s1; line++)
             {
                 if (line - diffY >= 0 && line - diffY < s2)
@@ -68,7 +68,7 @@ bool sprlib_checkSingleCollision(struct SpritesLib *lib, struct Sprite *sprite, 
                     int line2 = otherSprite->attr.flipY ? (s2 - (line - diffY) - 1) : (line - diffY);
                     bool flx1 = sprite->attr.flipX;
                     bool flx2 = otherSprite->attr.flipX;
-                    
+
                     uint32_t source1 = 0;
                     int chLine1 = line1 & 7;
                     int rc1 = c1 + (line1 >> 3 << 4);
@@ -83,7 +83,7 @@ bool sprlib_checkSingleCollision(struct SpritesLib *lib, struct Sprite *sprite, 
                         }
                         source1 |= val << (24 - (i << 3));
                     }
-                    
+
                     uint32_t source2 = 0;
                     int chLine2 = line2 & 7;
                     int rc2 = c2 + (line2 >> 3 << 4);
@@ -96,7 +96,7 @@ bool sprlib_checkSingleCollision(struct SpritesLib *lib, struct Sprite *sprite, 
                             // reverse bits
                             val = (((val * 0x0802LU & 0x22110LU) | (val * 0x8020LU & 0x88440LU)) * 0x10101LU >> 16) & 0xFF;
                         }
-                        
+
                         int shift = (24 - (i << 3) - diffX);
                         if (shift >= 0 && shift < 32)
                         {
@@ -107,7 +107,7 @@ bool sprlib_checkSingleCollision(struct SpritesLib *lib, struct Sprite *sprite, 
                             source2 |= val >> -shift;
                         }
                     }
-                    
+
                     if (source1 & source2)
                     {
                         return true;
@@ -123,7 +123,7 @@ bool sprlib_checkCollision(struct SpritesLib *lib, int checkIndex, int firstInde
 {
     struct Sprite *sprites = lib->core->machine->spriteRegisters.sprites;
     struct Sprite *sprite = &sprites[checkIndex];
-    
+
     if (sprlib_isSpriteOnScreen(sprite))
     {
         for (int i = firstIndex; i <= lastIndex; i++)

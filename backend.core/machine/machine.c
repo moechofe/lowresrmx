@@ -18,14 +18,14 @@
 // 3. This notice may not be removed or altered from any source distribution.
 //
 
-#include "machine.h"
+#include "machine/machine.h"
 #include <assert.h>
 #include <string.h>
 #include <stdbool.h>
 #include "core.h"
-#include "video_chip.h"
-#include "io_chip.h"
-#include "audio_chip.h"
+#include "machine/video_chip.h"
+#include "machine/io_chip.h"
+#include "machine/audio_chip.h"
 
 void machine_init(struct Core *core)
 {
