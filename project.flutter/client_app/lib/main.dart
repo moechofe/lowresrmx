@@ -1,26 +1,14 @@
 import 'dart:developer' show log;
-import 'dart:io' show Platform;
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:lowresrmx/data/program.dart';
 
 import 'package:provider/provider.dart';
 
 import 'package:lowresrmx/page/library_page.dart';
-import 'package:lowresrmx/page/edit_page.dart';
 import 'package:lowresrmx/core/runtime.dart';
-import 'package:lowresrmx/page/run_page.dart';
 import 'package:lowresrmx/theme.dart';
 
-import 'package:core_plugin/core_plugin.dart';
-
 void main() {
-	// WidgetsFlutterBinding.ensureInitialized();
-  // SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [
-  //   // SystemUiOverlay.top,
-  //   // SystemUiOverlay.bottom,
-  // ]);
   runApp(MyApp());
 }
 

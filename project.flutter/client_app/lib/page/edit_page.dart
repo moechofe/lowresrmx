@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:developer' show log;
 
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:lowresrmx/widget/code_editor.dart';
 
 import 'package:provider/provider.dart';
@@ -11,9 +10,6 @@ import 'package:re_editor/re_editor.dart';
 
 import 'package:lowresrmx/core/runtime.dart';
 import 'package:lowresrmx/data/library.dart';
-import 'package:lowresrmx/page/run_page.dart';
-import 'package:lowresrmx/style.dart';
-import 'package:lowresrmx/widget/search_panel.dart';
 
 // TODO: recover the last cursor position
 

@@ -1,12 +1,13 @@
+# The Flutter tooling requires that developers have CMake 3.10 or later
+# installed. You should not increase this version, as doing so will cause
+# the plugin to fail to compile for some customers of the plugin.
 cmake_minimum_required(VERSION 3.10)
+
 project(core_plugin_library VERSION 0.0.1 LANGUAGES C)
 
-# file(GLOB CORE_SOURCES "core/*.c" "core/*/*.c")
-# include_directories("core" "core/accessories" "core/datamanager" "core/interpreter" "core/libraries" "core/machine" "core/overlay")
-
 add_library(core_plugin SHARED
-	"core_plugin.c"
-	"core.c"
+  "core_plugin.c"
+  "core.c"
 )
 
 set_target_properties(core_plugin PROPERTIES
@@ -15,6 +16,3 @@ set_target_properties(core_plugin PROPERTIES
 )
 
 target_compile_definitions(core_plugin PUBLIC DART_SHARED_LIB)
-
-#target_link_libraries(core_plugin m)
-

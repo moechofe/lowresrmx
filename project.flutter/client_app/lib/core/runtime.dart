@@ -1,13 +1,9 @@
-import 'dart:async';
-import 'dart:developer' show log;
 import 'dart:ffi' as ffi;
 import 'dart:typed_data' show Uint8List;
 import 'dart:ui' as ui;
 
 import 'package:ffi/ffi.dart' show calloc;
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:sw_rend/software_texture.dart';
 
 import 'package:core_plugin/core_plugin_bindings_generated.dart';
 import 'package:core_plugin/core_plugin.dart';

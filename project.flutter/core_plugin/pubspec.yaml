@@ -1,18 +1,19 @@
 name: core_plugin
 description: "A new Flutter FFI plugin project."
 version: 0.0.1
+homepage:
 
 environment:
-  sdk: '>=3.4.0 <4.0.0'
+  sdk: '>=3.4.1 <4.0.0'
   flutter: '>=3.3.0'
 
 dependencies:
   flutter:
     sdk: flutter
   plugin_platform_interface: ^2.0.2
-  ffi: ^2.1.0
 
 dev_dependencies:
+  ffi: ^2.1.0
   ffigen: ^11.0.0
   flutter_test:
     sdk: flutter
