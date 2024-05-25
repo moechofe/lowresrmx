@@ -11,12 +11,12 @@
     },
     "cmake.configureOnOpen": true,
     "files.watcherExclude": {
-        "*.bc": true
+        "**/*.bc": true
     },
     "search.exclude": {
-        "*.bc": true
+        "**/*.bc": true
     },
     "files.exclude": {
-        "*.bc": true
+        "**/*.bc": true
     }
 }
