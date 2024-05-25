@@ -1,18 +1,17 @@
-import 'dart:developer' show log;
-
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
+import 'package:provider/provider.dart';
+
 import 'package:lowresrmx/data/library.dart';
-import 'package:lowresrmx/data/program.dart';
-import 'package:lowresrmx/page/edit_page.dart';
+import 'package:lowresrmx/widget/library_item.dart';
 
 // TODO: add sort options
 
 class MyLibraryGridDelegate extends SliverGridDelegate {
   @override
   SliverGridLayout getLayout(SliverConstraints constraints) {
-    int countPerRow = constraints.crossAxisExtent ~/ 100;
+    int countPerRow = constraints.crossAxisExtent ~/ 150;
     if (countPerRow < 1) countPerRow = 1;
     final double cross = constraints.crossAxisExtent / countPerRow;
     final double main = cross;
@@ -33,64 +32,29 @@ class MyLibraryGridDelegate extends SliverGridDelegate {
 }
 
 class MyCatalogGrid extends StatelessWidget {
-  const MyCatalogGrid({super.key});
+  final MyLibrarySort sort;
+  const MyCatalogGrid({required this.sort, super.key});
 
   @override
   Widget build(BuildContext context) {
-		log("MyCatalogGrid.build");
+    final MyLibrary _ = context.watch<MyLibrary>();
     return FutureBuilder(
-        future: MyLibrary.buildList(),
+        future: MyLibrary.buildList(sort),
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             return GridView.builder(
-              gridDelegate: MyLibraryGridDelegate(),
-              itemCount: snapshot.data!.length,
-              itemBuilder: (context, index) =>
-                  MyLibraryItem(program: snapshot.data![index]),
-            );
+                padding: const EdgeInsets.only(
+                    left: 12.0, right: 12.0, bottom: 24.0),
+                gridDelegate: MyLibraryGridDelegate(),
+                itemCount: snapshot.data!.length,
+                itemBuilder: (context, index) => MyLibraryItem(
+                    program: snapshot.data![index],
+                    key: ValueKey(snapshot.data![index])));
           } else {
             // TODO: report error
             // TODO: Do it better
             return const SizedBox();
           }
         });
-  }
-}
-
-class MyLibraryItem extends StatefulWidget {
-  final MyProgram program;
-
-  const MyLibraryItem({
-    required this.program,
-    super.key,
-  });
-
-  @override
-  State<MyLibraryItem> createState() => _MyLibraryItemState();
-}
-
-class _MyLibraryItemState extends State<MyLibraryItem> {
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: InkWell(
-        onTap: () {
-          Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) =>
-                      MyEditPage(programName: widget.program.name)));
-        },
-        borderRadius: BorderRadius.circular(12.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              title: Text(widget.program.name),
-            )
-          ],
-        ),
-      ),
-    );
   }
 }

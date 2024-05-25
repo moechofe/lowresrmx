@@ -4,8 +4,9 @@ import 'package:flutter/material.dart';
 
 import 'package:provider/provider.dart';
 
-import 'package:lowresrmx/page/library_page.dart';
 import 'package:lowresrmx/core/runtime.dart';
+import 'package:lowresrmx/data/library.dart';
+import 'package:lowresrmx/page/library_page.dart';
 import 'package:lowresrmx/theme.dart';
 
 void main() {
@@ -38,10 +39,15 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     final MyTheme theme = MyTheme(Theme.of(context).textTheme);
     log("MyApp.build() Not good if called multiple times.");
-    return ChangeNotifierProvider<Runtime>(
-      create: (context) => widget.coreRuntime,
-      child: MaterialApp(
-          title: 'Flutter Demo',
+    return MultiProvider(
+        providers: [
+          ChangeNotifierProvider<Runtime>(
+            create: (_) => widget.coreRuntime,
+          ),
+          ChangeNotifierProvider<MyLibrary>(create: (_) => MyLibrary()),
+        ],
+        child: MaterialApp(
+          title: 'LowResRMX',
           theme: theme.light(),
           darkTheme: theme.dark(),
           highContrastTheme: theme.lightHighContrast(),
@@ -49,10 +55,7 @@ class _MyAppState extends State<MyApp> {
           initialRoute: '/',
           routes: {
             '/': (context) => const MyLibraryPage(),
-						// '/edit': (context) => const MyEditPage(),
-            // '/': (context) => MyEditPage(),
-            // '/run': (context) => MyRunPage(),
-          }),
-    );
+          },
+        ));
   }
 }

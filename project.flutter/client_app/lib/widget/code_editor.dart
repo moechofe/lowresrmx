@@ -5,8 +5,9 @@ import 'package:re_editor/re_editor.dart';
 import 'package:lowresrmx/widget/search_panel.dart';
 
 class MyCodeEditor extends StatefulWidget {
-	final CodeLineEditingController controller;
-  const MyCodeEditor({required this.controller, super.key});
+	final CodeLineEditingController editingController;
+	final CodeFindController findController;
+  const MyCodeEditor({required this.editingController, required this.findController, super.key});
 
   @override
   State<MyCodeEditor> createState() => _MyCodeEditorState();
@@ -17,14 +18,15 @@ class _MyCodeEditorState extends State<MyCodeEditor> {
   Widget build(BuildContext context) {
     final ColorScheme colorScheme = Theme.of(context).colorScheme;
     return CodeEditor(
-      controller: widget.controller,
+      controller: widget.editingController,
+			findController: widget.findController,
       style: CodeEditorStyle(
           fontFamily: 'RecursiveLinear',
           fontSize: 16,
-          fontHeight: 1.1,
-          chunkIndicatorColor: Colors.red,
-          highlightColor: Colors.purple,
-          selectionColor: Colors.pink,
+          fontHeight: 1.2,
+          //chunkIndicatorColor: Colors.red,
+          highlightColor: colorScheme.tertiaryContainer.withOpacity(0.5),
+          //selectionColor: Colors.pink,
           cursorWidth: 4,
           cursorColor: colorScheme.onSurface),
       indicatorBuilder:

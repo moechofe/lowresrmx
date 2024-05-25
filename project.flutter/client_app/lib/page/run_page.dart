@@ -51,7 +51,8 @@ class _MyAppPageState extends State<MyRunPage> {
         widget.runtime.resize(constraints.maxWidth, constraints.maxHeight,
             safeArea.top, safeArea.left, safeArea.bottom, safeArea.right);
         return Focus(
-          autofocus: true,
+					// Is that the thing that makes the keyboard appear?
+          // autofocus: true,
           // canRequestFocus: true,
           onKeyEvent: (node, event) {
             if (event is KeyDownEvent &&
