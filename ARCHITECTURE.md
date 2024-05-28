@@ -54,6 +54,20 @@
 
     The new mobile app in developement.
 
+    To build it, you'll need a Android device with [on-device developer options enabled](https://developer.android.com/studio/debug/dev-options), and [Flutter](https://docs.flutter.dev/get-started/install).
+
+    Navigate to the 📂 `project.flutter/client_app` folder with a terminal and type:
+
+    ```
+    flutter devices
+    ```
+
+    And copy the id of your connected (mobile) device.
+
+    ```
+    flutter run -d <device-id>
+    ```
+
     #### Tested environment
 
     1. Ubuntu 💚

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:developer' show log;
 
 import 'package:flutter/material.dart';
+import 'package:lowresrmx/widget/edit_drawer.dart';
 
 import 'package:provider/provider.dart';
 
@@ -15,6 +16,10 @@ import 'package:lowresrmx/data/library.dart';
 
 // TODO: recover the last cursor position
 // TODO: save regularly
+
+enum MyEditMenu {
+	manual,
+}
 
 class MyEditPage extends StatefulWidget {
   final String programName;
@@ -47,74 +52,59 @@ class _MyEditPageState extends State<MyEditPage> {
 
   @override
   Widget build(BuildContext context) {
-    final ColorScheme colorScheme = Theme.of(context).colorScheme;
     return FutureBuilder(
         future: ready.future,
         builder: (context, snapshot) {
           if (snapshot.hasData) {
-            return MultiProvider(
-                providers: [
-                  ChangeNotifierProvider(create: (_) => findController),
-                ],
-                child: Scaffold(
-                  appBar: AppBar(
-                    title: const Text("hm"),
-                    actions: [
-                      const MySearchIcon(),
-                      IconButton(
-                          onPressed: () {},
-                          tooltip: "Run project",
-                          icon: const Icon(Icons.more_vert_rounded)),
-                      IconButton(
-                          onPressed: () {},
-                          icon: const Icon(Icons.toc_rounded)),
-                      const SizedBox(width: 24.0),
-                    ],
-                  ),
-                  body: PopScope(
-                      onPopInvoked: (didPop) async {
-                        await MyLibrary.writeCode(
-                            widget.programName, editingController.text);
-                      },
-                      child: FutureBuilder(
-                          future: ready.future,
-                          builder: (context, snapshot) {
-                            if (snapshot.hasData) {
-                              return Column(
-                                children: [
-                                  Expanded(
-                                      child: MyCodeEditor(
-                                    editingController: editingController,
-                                    findController: findController,
-                                  )),
-                                ],
-                              );
-                            } else {
-                              // TODO: loading? Maybe after a couple of milliseconds of delay
-                              return const SizedBox();
-                            }
-                          })),
-                  floatingActionButton: FloatingActionButton.small(
-                    onPressed: () async {
-                      await MyLibrary.writeCode(
-                          widget.programName, editingController.text);
-                      Runtime runtime = context.read<Runtime>();
-                      Error err =
-                          runtime.compileAndStart(editingController.text);
-                      log("Error: $err");
-                      if (err.ok) {
-                        Navigator.of(context).push(MaterialPageRoute(
-                            builder: (context) => MyRunPage(runtime)));
-                      }
-                      // TODO: handle error
-                    },
-                    tooltip: "Run program",
-                    child: const Icon(Icons.play_arrow_rounded),
-                  ),
-                ));
+            return MultiProvider(providers: [
+              ChangeNotifierProvider(create: (_) => findController),
+            ], child: buildScaffold(context));
           } else {
             return const SizedBox();
           }
         });
+  }
+
+  Widget buildScaffold(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.programName),
+        actions: [
+          const MySearchIcon(),
+          IconButton(onPressed: () {}, icon: const Icon(Icons.toc_rounded)),
+          const SizedBox(width: 24.0),
+        ],
+      ),
+			drawer: const MyEditDrawer(),
+      body: PopScope(
+          onPopInvoked: (didPop) async {
+            await MyLibrary.writeCode(
+                widget.programName, editingController.text);
+          },
+          child: Column(
+            children: [
+              Expanded(
+                  child: MyCodeEditor(
+                editingController: editingController,
+                findController: findController,
+              )),
+            ],
+          )),
+      floatingActionButton: FloatingActionButton.small(
+        onPressed: () async {
+          Runtime runtime = context.read<Runtime>();
+          Error err = runtime.compileAndStart(editingController.text);
+          log("Error: $err");
+          if (err.ok) {
+            Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => MyRunPage(runtime: runtime, programName: widget.programName)));
+						await MyLibrary.writeCode(widget.programName, editingController.text);
+          }
+          // TODO: handle error
+        },
+        tooltip: "Run program",
+        child: const Icon(Icons.play_arrow_rounded),
+      ),
+    );
   }
 }

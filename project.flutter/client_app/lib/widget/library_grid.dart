@@ -4,6 +4,7 @@ import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
 
 import 'package:lowresrmx/data/library.dart';
+import 'package:lowresrmx/data/preference.dart';
 import 'package:lowresrmx/widget/library_item.dart';
 
 // TODO: add sort options
@@ -14,12 +15,12 @@ class MyLibraryGridDelegate extends SliverGridDelegate {
     int countPerRow = constraints.crossAxisExtent ~/ 150;
     if (countPerRow < 1) countPerRow = 1;
     final double cross = constraints.crossAxisExtent / countPerRow;
-    final double main = cross;
+    final double main = cross + 56; // 48 is the height of the ListTile
     return SliverGridRegularTileLayout(
       childMainAxisExtent: main,
       childCrossAxisExtent: cross,
       crossAxisCount: countPerRow,
-      mainAxisStride: main + 8,
+      mainAxisStride: main,
       crossAxisStride: cross,
       reverseCrossAxis: false,
     );
@@ -37,6 +38,7 @@ class MyCatalogGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+		// Make sure to rebuild the grid when a program is created, removed or renamed.
     final MyLibrary _ = context.watch<MyLibrary>();
     return FutureBuilder(
         future: MyLibrary.buildList(sort),
@@ -47,9 +49,14 @@ class MyCatalogGrid extends StatelessWidget {
                     left: 12.0, right: 12.0, bottom: 24.0),
                 gridDelegate: MyLibraryGridDelegate(),
                 itemCount: snapshot.data!.length,
-                itemBuilder: (context, index) => MyLibraryItem(
-                    program: snapshot.data![index],
-                    key: ValueKey(snapshot.data![index])));
+                itemBuilder: (context, index) => ChangeNotifierProvider(
+									// Used to make sure to rebuild the item when a preference changes.
+									create: (_) => MyProgramPreference(snapshot.data![index]),
+									child: MyLibraryItem(
+											program: snapshot.data![index],
+											// The key is used to identify the item in the list when program are added and removed.
+											key: ValueKey(snapshot.data![index])),
+								));
           } else {
             // TODO: report error
             // TODO: Do it better

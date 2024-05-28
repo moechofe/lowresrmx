@@ -1,4 +1,3 @@
-import 'dart:developer' show log;
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -25,7 +24,7 @@ class MyScreenPainter extends CustomPainter {
       canvas.drawImage(image!, Offset.zero, Paint());
     }
 
-		// canvas.drawRect(Rect.fromLTWH(0,0, size.width,size.height), Paint()..color=Color.fromRGBO(255, 255, 255, 0.8));
+    // canvas.drawRect(Rect.fromLTWH(0,0, size.width,size.height), Paint()..color=Color.fromRGBO(255, 255, 255, 0.8));
   }
 
   @override
@@ -44,18 +43,38 @@ class MyScreenPaint extends StatefulWidget {
 }
 
 class _MyScreenPaintState extends State<MyScreenPaint> {
-	@override
-	initState() {
-		super.initState();
-		SystemChannels.textInput.invokeMethod("TextInput.show");
-	}
+  @override
+  initState() {
+    super.initState();
+    SystemChannels.textInput.invokeMethod("TextInput.show");
+  }
 
   @override
   Widget build(BuildContext context) {
     // log("ScreenPaint.build()");
     return CustomPaint(
-      size: Size(Runtime.imageWidth.toDouble(), Runtime.imageHeight.toDouble()),
-      painter: MyScreenPainter(context.watch<Runtime>()),
-    );
+        size: Size(Runtime.screenWidth.toDouble(), Runtime.screenHeight.toDouble()),
+        painter: MyScreenPainter(context.watch<Runtime>()),
+        // child: SizedBox(
+        //     width: Runtime.imageWidth.toDouble(),
+        //     height: Runtime.imageHeight.toDouble(),
+        //     child: Align(
+        //         alignment: Alignment.topRight,
+        //         child: Padding(
+				// 					padding: const EdgeInsets.all(2.0),
+				// 					child: SizedBox(
+
+				// 						width: 18,
+				// 						height: 18,
+				// 						child: IconButton(
+				// 								iconSize: 12,
+				// 																padding: EdgeInsets.zero,
+				// 								icon: const Icon(Icons.more_vert_rounded),
+				// 								onPressed: () {}),
+				// 					),
+				// 				)))
+
+        // // child: Text("test"),
+        );
   }
 }

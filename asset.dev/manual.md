@@ -12,11 +12,9 @@ It **will** includes a project manager, a code editor and some tools to edit gam
 
 ## Difference with Lowres NX
 
-The goal 🥅 of the app is to provide a development environment to work with during my commutes in the subway, and later, being able to publish a real App on the Apple Store.
+The goal 🥅 of the app is to provide a development environment to work with during my commutes in the subway, and later, being able to publish a real app on the stores.
 
-The original LowRes NX, despite being an excellent development environment, lacks some capabilities to publish an App that looks credible.
-
-My main concern is the limited screen size unable to cover the whole devices screen and the landscape orientation.
+The original LowRes NX, despite being an excellent development environment, lacks some capabilities IMHO.
 
 ### Background
 
@@ -451,14 +449,14 @@ Manually stop the `emitter`.
 
 <!--FIXME: spell checked NOW -->
 
-LowResRMX does not have a framebuffer where users paint pixels. Instead, it simulates an NES/Gameboy PPU chip, which traverses its memory to generate output pixels based on characters, backgrounds, sprites, paletters and register information.
+LowResRMX does not have a framebuffer where users paint pixels. Instead, it simulates an NES/Gameboy PPU chip, which traverses its memory to generate output pixels based on characters, backgrounds, sprites, palettes and register information.
 
 ----
 
 Colors:
 
-LowResRMX uses a fixed palette and allows users to reference each of the 64 available colors using indices.
-Colors are grouped by 4 in palette, and there are 8 palettes available for the users to colorize their creations.
+LowResRMX provides the user with a fixed palette of 64 colors.
+The colors are grouped into sets of 4 called palette, with 8 palettes available for users to colorize their creations.
 
 From now on, the terms:
 - **a palette** apply to one of the 8 palettes with 4 colors inside,

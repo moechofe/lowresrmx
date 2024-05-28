@@ -1911,7 +1911,7 @@ extern const char *TokenStrings[];
 
 enum ErrorCode {
     ErrorNone,
-    
+
     ErrorCouldNotOpenProgram,
     ErrorTooManyTokens,
     ErrorRomIsFull,
@@ -1970,7 +1970,9 @@ enum ErrorCode {
     ErrorExitSubOutsideOfASubprogram,
     ErrorKeyboardNotEnabled,
     ErrorAutomaticPauseNotDisabled,
-    ErrorNotAllowedOutsideOfInterrupt
+    ErrorNotAllowedOutsideOfInterrupt,
+
+		ErrorMax
 };
 
 struct CoreError {
@@ -2009,7 +2011,7 @@ struct CoreError err_noCoreError(void);
 
 enum ErrorCode {
     ErrorNone,
-    
+
     ErrorCouldNotOpenProgram,
     ErrorTooManyTokens,
     ErrorRomIsFull,
@@ -2068,7 +2070,9 @@ enum ErrorCode {
     ErrorExitSubOutsideOfASubprogram,
     ErrorKeyboardNotEnabled,
     ErrorAutomaticPauseNotDisabled,
-    ErrorNotAllowedOutsideOfInterrupt
+    ErrorNotAllowedOutsideOfInterrupt,
+
+		ErrorMax
 };
 
 struct CoreError {
@@ -2294,7 +2298,7 @@ struct LabelStackItem *lab_searchLabelStackItem(struct Interpreter *interpreter,
 
 enum ErrorCode {
     ErrorNone,
-    
+
     ErrorCouldNotOpenProgram,
     ErrorTooManyTokens,
     ErrorRomIsFull,
@@ -2353,7 +2357,9 @@ enum ErrorCode {
     ErrorExitSubOutsideOfASubprogram,
     ErrorKeyboardNotEnabled,
     ErrorAutomaticPauseNotDisabled,
-    ErrorNotAllowedOutsideOfInterrupt
+    ErrorNotAllowedOutsideOfInterrupt,
+
+		ErrorMax
 };
 
 struct CoreError {
@@ -3165,7 +3171,7 @@ struct IORegisters
 
 enum ErrorCode {
     ErrorNone,
-    
+
     ErrorCouldNotOpenProgram,
     ErrorTooManyTokens,
     ErrorRomIsFull,
@@ -3224,7 +3230,9 @@ enum ErrorCode {
     ErrorExitSubOutsideOfASubprogram,
     ErrorKeyboardNotEnabled,
     ErrorAutomaticPauseNotDisabled,
-    ErrorNotAllowedOutsideOfInterrupt
+    ErrorNotAllowedOutsideOfInterrupt,
+
+		ErrorMax
 };
 
 struct CoreError {
@@ -4179,7 +4187,7 @@ enum ErrorCode itp_labelStackError(struct LabelStackItem *item);
 
 enum ErrorCode {
     ErrorNone,
-    
+
     ErrorCouldNotOpenProgram,
     ErrorTooManyTokens,
     ErrorRomIsFull,
@@ -4238,7 +4246,9 @@ enum ErrorCode {
     ErrorExitSubOutsideOfASubprogram,
     ErrorKeyboardNotEnabled,
     ErrorAutomaticPauseNotDisabled,
-    ErrorNotAllowedOutsideOfInterrupt
+    ErrorNotAllowedOutsideOfInterrupt,
+
+		ErrorMax
 };
 
 struct CoreError {
@@ -4369,7 +4379,7 @@ bool disk_loadFile(struct Core *core, int index, int address, int maxLength, int
 
 enum ErrorCode {
     ErrorNone,
-    
+
     ErrorCouldNotOpenProgram,
     ErrorTooManyTokens,
     ErrorRomIsFull,
@@ -4428,7 +4438,9 @@ enum ErrorCode {
     ErrorExitSubOutsideOfASubprogram,
     ErrorKeyboardNotEnabled,
     ErrorAutomaticPauseNotDisabled,
-    ErrorNotAllowedOutsideOfInterrupt
+    ErrorNotAllowedOutsideOfInterrupt,
+
+		ErrorMax
 };
 
 struct CoreError {
@@ -4520,7 +4532,7 @@ void data_setEntry(struct DataManager *manager, int index, const char *comment, 
 
 enum ErrorCode {
     ErrorNone,
-    
+
     ErrorCouldNotOpenProgram,
     ErrorTooManyTokens,
     ErrorRomIsFull,
@@ -4579,7 +4591,9 @@ enum ErrorCode {
     ErrorExitSubOutsideOfASubprogram,
     ErrorKeyboardNotEnabled,
     ErrorAutomaticPauseNotDisabled,
-    ErrorNotAllowedOutsideOfInterrupt
+    ErrorNotAllowedOutsideOfInterrupt,
+
+		ErrorMax
 };
 
 struct CoreError {
@@ -4801,7 +4815,7 @@ enum BootIntroState {
 
 enum ErrorCode {
     ErrorNone,
-    
+
     ErrorCouldNotOpenProgram,
     ErrorTooManyTokens,
     ErrorRomIsFull,
@@ -4860,7 +4874,9 @@ enum ErrorCode {
     ErrorExitSubOutsideOfASubprogram,
     ErrorKeyboardNotEnabled,
     ErrorAutomaticPauseNotDisabled,
-    ErrorNotAllowedOutsideOfInterrupt
+    ErrorNotAllowedOutsideOfInterrupt,
+
+		ErrorMax
 };
 
 struct CoreError {
@@ -4952,7 +4968,7 @@ void data_setEntry(struct DataManager *manager, int index, const char *comment, 
 
 enum ErrorCode {
     ErrorNone,
-    
+
     ErrorCouldNotOpenProgram,
     ErrorTooManyTokens,
     ErrorRomIsFull,
@@ -5011,7 +5027,9 @@ enum ErrorCode {
     ErrorExitSubOutsideOfASubprogram,
     ErrorKeyboardNotEnabled,
     ErrorAutomaticPauseNotDisabled,
-    ErrorNotAllowedOutsideOfInterrupt
+    ErrorNotAllowedOutsideOfInterrupt,
+
+		ErrorMax
 };
 
 struct CoreError {
@@ -5121,7 +5139,7 @@ void delegate_persistentRamDidChange(struct Core *core, uint8_t *data, int size)
 
 enum ErrorCode {
     ErrorNone,
-    
+
     ErrorCouldNotOpenProgram,
     ErrorTooManyTokens,
     ErrorRomIsFull,
@@ -5180,7 +5198,9 @@ enum ErrorCode {
     ErrorExitSubOutsideOfASubprogram,
     ErrorKeyboardNotEnabled,
     ErrorAutomaticPauseNotDisabled,
-    ErrorNotAllowedOutsideOfInterrupt
+    ErrorNotAllowedOutsideOfInterrupt,
+
+		ErrorMax
 };
 
 struct CoreError {
@@ -5625,7 +5645,7 @@ enum ErrorCode tok_setSub(struct Tokenizer *tokenizer, int symbolIndex, struct T
 
 enum ErrorCode {
     ErrorNone,
-    
+
     ErrorCouldNotOpenProgram,
     ErrorTooManyTokens,
     ErrorRomIsFull,
@@ -5684,7 +5704,9 @@ enum ErrorCode {
     ErrorExitSubOutsideOfASubprogram,
     ErrorKeyboardNotEnabled,
     ErrorAutomaticPauseNotDisabled,
-    ErrorNotAllowedOutsideOfInterrupt
+    ErrorNotAllowedOutsideOfInterrupt,
+
+		ErrorMax
 };
 
 struct CoreError {
@@ -5901,7 +5923,7 @@ extern const char *CharSetHex;
 
 enum ErrorCode {
     ErrorNone,
-    
+
     ErrorCouldNotOpenProgram,
     ErrorTooManyTokens,
     ErrorRomIsFull,
@@ -5960,7 +5982,9 @@ enum ErrorCode {
     ErrorExitSubOutsideOfASubprogram,
     ErrorKeyboardNotEnabled,
     ErrorAutomaticPauseNotDisabled,
-    ErrorNotAllowedOutsideOfInterrupt
+    ErrorNotAllowedOutsideOfInterrupt,
+
+		ErrorMax
 };
 
 struct CoreError {
@@ -6434,7 +6458,7 @@ struct TypedValue itp_evaluateLFOAttributes(struct Core *core, union LFOAttribut
 
 enum ErrorCode {
     ErrorNone,
-    
+
     ErrorCouldNotOpenProgram,
     ErrorTooManyTokens,
     ErrorRomIsFull,
@@ -6493,7 +6517,9 @@ enum ErrorCode {
     ErrorExitSubOutsideOfASubprogram,
     ErrorKeyboardNotEnabled,
     ErrorAutomaticPauseNotDisabled,
-    ErrorNotAllowedOutsideOfInterrupt
+    ErrorNotAllowedOutsideOfInterrupt,
+
+		ErrorMax
 };
 
 struct CoreError {

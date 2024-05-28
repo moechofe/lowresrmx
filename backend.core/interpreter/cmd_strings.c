@@ -399,7 +399,7 @@ struct TypedValue fnc_LEN(struct Core *core)
 	}
 	else
 	{
-		value.type == ValueTypeError;
+		value.type = ValueTypeError;
 	}
 
 	return value;

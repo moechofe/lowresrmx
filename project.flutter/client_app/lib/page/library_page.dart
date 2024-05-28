@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:lowresrmx/data/library.dart';
+import 'package:lowresrmx/page/manual_page.dart';
 import 'package:lowresrmx/widget/library_grid.dart';
 
 enum MyLibraryMenuOption {
@@ -76,6 +77,7 @@ class _MyLibraryPageState extends State<MyLibraryPage> {
         _buildMorePopupMenu(context),
         const SizedBox(width: 24.0),
       ]),
+			drawer: _buildDrawer(context),
       floatingActionButton: FloatingActionButton.small(
         onPressed: () async {
 					MyLibrary.createProgram();
@@ -85,4 +87,15 @@ class _MyLibraryPageState extends State<MyLibraryPage> {
 			body: MyCatalogGrid(sort: sort)
     );
   }
+
+	Widget _buildDrawer(BuildContext context) {
+		return Drawer(child: ListView(
+			children: const [
+				// TODO: About tile
+
+				MyManualTile(),
+			],
+		)
+		,);
+	}
 }

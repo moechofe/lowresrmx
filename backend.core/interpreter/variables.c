@@ -58,7 +58,7 @@ struct SimpleVariable *var_createSimpleVariable(struct Interpreter *interpreter,
     variable->type = type;
     if (valueReference)
     {
-        variable->isReference = 1;
+        variable->isReference = -1;
         variable->v.reference = valueReference;
     }
     else
@@ -165,7 +165,7 @@ struct ArrayVariable *var_dimVariable(struct Interpreter *interpreter, enum Erro
     }
     variable->values = calloc(size, sizeof(union Value));
     if (!variable->values) exit(EXIT_FAILURE);
-    
+
     variable->numValues = (int)size;
     return variable;
 }
@@ -187,7 +187,7 @@ struct ArrayVariable *var_createArrayVariable(struct Interpreter *interpreter, e
     memset(variable, 0, sizeof(struct ArrayVariable));
     variable->symbolIndex = symbolIndex;
     variable->subLevel = subLevel;
-    variable->isReference = 1;
+    variable->isReference = -1;
     variable->type = arrayReference->type;
     int numDimensions = arrayReference->numDimensions;
     variable->numDimensions = numDimensions;

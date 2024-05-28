@@ -2,10 +2,12 @@ import 'dart:developer' show log;
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/painting.dart';
 
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
+import 'package:image/image.dart' as img;
 
 enum MyLibrarySort {
 	name,
@@ -43,23 +45,13 @@ class MyLibrary extends ChangeNotifier {
   static Future<File> getCodeFile(String programName) async {
     final documentDir = await getLibraryDir();
     final codePath = p.join(documentDir.path, "$programName$extension");
-    final codeFile = File(codePath);
-    if (await codeFile.exists()) {
-      return codeFile;
-    } else {
-      throw "Fail to read code for $programName";
-    }
+    return File(codePath);
   }
 
   static Future<File> getThumbFile(String programName) async {
     final documentDir = await getLibraryDir();
     final codePath = p.join(documentDir.path, "$programName.png");
-    final codeFile = File(codePath);
-    if (await codeFile.exists()) {
-      return codeFile;
-    } else {
-      throw "Fail to read thumbnail for $programName";
-    }
+    return File(codePath);
   }
 
   static Future<File> createProgram() async {
@@ -73,7 +65,6 @@ class MyLibrary extends ChangeNotifier {
       programFile = File(programPath);
     }
     await programFile.create();
-    log("Program $programPath created");
     MyLibrary().notifyListeners();
     return programFile;
   }
@@ -85,31 +76,30 @@ class MyLibrary extends ChangeNotifier {
     final File programFile = File(p.join(libraryDir.path, programPath));
     if (await programFile.exists()) {
       await programFile.rename(p.join(libraryDir.path, "$nameName$extension"));
-      log("Program $programName renamed to $nameName");
     }
     final String thumbPath = p.join(libraryDir.path, "$programName.png");
     final File thumbFile = File(p.join(libraryDir.path, thumbPath));
+		FileImage(thumbFile).evict();
     if (await thumbFile.exists()) {
       await thumbFile.rename(p.join(libraryDir.path, "$nameName.png"));
-      log("Thumbnail $programName renamed to $nameName");
     }
     MyLibrary().notifyListeners();
   }
 
   static Future<void> deleteProgram(String programName) async {
     final Directory libraryDir = await getLibraryDir();
+
     final String programPath =
         p.join(libraryDir.path, "$programName$extension");
     final File programFile = File(p.join(libraryDir.path, programPath));
     if (await programFile.exists()) {
       await programFile.delete();
-      log("Program $programName deleted");
     }
     final String thumbPath = p.join(libraryDir.path, "$programName.png");
     final File thumbFile = File(p.join(libraryDir.path, thumbPath));
+		FileImage(thumbFile).evict();
     if (await thumbFile.exists()) {
       await thumbFile.delete();
-      log("Thumbnail $programName deleted");
     }
 		MyLibrary().notifyListeners();
   }
@@ -153,13 +143,25 @@ class MyLibrary extends ChangeNotifier {
   // TODO: convert to UPPERCASE using settings
   static Future<String> readCode(String programName) async {
     final File codeFile = await getCodeFile(programName);
-    log("Program $programName loaded");
     return codeFile.readAsString();
   }
 
   static Future<void> writeCode(String programName, String code) async {
     final File codeFile = await getCodeFile(programName);
     codeFile.writeAsString(code);
-    log("Program $programName saved");
   }
+
+	static Future<FileImage> readThumbnail(String programName) async {
+		// This a async
+		final File thumbFile = await getThumbFile(programName);
+		// This is not async
+		return FileImage(thumbFile);
+	}
+
+	static Future<void> writeThumbnail(String programName, img.Image png) async {
+		final File thumbFile = await getThumbFile(programName);
+		await FileImage(thumbFile).evict();
+		img.encodePngFile(thumbFile.path, png);
+		MyLibrary().notifyListeners();
+	}
 }

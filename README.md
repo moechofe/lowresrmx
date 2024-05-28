@@ -21,6 +21,7 @@ Read the [ARCHITECTURE](ARCHITECTURE.md) file about what this project contains.
 
 <img alt="Programs list of the iOs App" src=".github/screenshot/01_my_programs.jpg" width="33%" height="auto"><img alt="Famicube color palette" src=".github/screenshot/02_colors.jpg" width="33%" height="auto"><img alt="WIP Kaboom remake" src=".github/screenshot/03_revasion.jpg" width="33%" height="auto">
 
-<img src="https://github.com/moechofe/LowResRMX/assets/79093/59453f11-9f97-4883-8c18-e16069ebfd65" height="14rem" width="auto"> [Youtube playlist](https://www.youtube.com/playlist?list=PLtmKVaz_2Cxe6pG7VbQfw5drkJsSpV3C6)
+I will post my progress on a
+<img src="https://github.com/moechofe/LowResRMX/assets/79093/59453f11-9f97-4883-8c18-e16069ebfd65" height="14rem" width="auto"> [Youtube playlist](https://www.youtube.com/playlist?list=PLtmKVaz_2Cxe6pG7VbQfw5drkJsSpV3C6).
 
 

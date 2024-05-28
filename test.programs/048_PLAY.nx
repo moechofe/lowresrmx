@@ -1,0 +1,6 @@
+do
+p=1+rnd(95)
+print "play 0,";p;",8"
+play 0,p,8
+wait tap
+loop
