@@ -102,7 +102,7 @@ class _MyLibraryItemState extends State<MyLibraryItem> {
 			Align(
 			alignment: Alignment.centerLeft,
 			child: Padding(
-				padding: const EdgeInsets.only(left: 12.0, right: 12.0, top: 4.0, bottom: 4.0),
+				padding: const EdgeInsets.only(left: 12.0, right: 12.0, top: 0.0, bottom: 4.0),
 				child: Text(
 					style: libraryItemTextStyle,
 					widget.program,

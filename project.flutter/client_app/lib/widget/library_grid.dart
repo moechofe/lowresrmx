@@ -15,7 +15,7 @@ class MyLibraryGridDelegate extends SliverGridDelegate {
     int countPerRow = constraints.crossAxisExtent ~/ 150;
     if (countPerRow < 1) countPerRow = 1;
     final double cross = constraints.crossAxisExtent / countPerRow;
-    final double main = cross + 56; // 48 is the height of the ListTile
+    final double main = cross + 48; // 48 is the height of the ListTile
     return SliverGridRegularTileLayout(
       childMainAxisExtent: main,
       childCrossAxisExtent: cross,

@@ -17,7 +17,7 @@ const Map<String, TextStyle> styleDark = {
 };
 
 const TextStyle libraryItemTextStyle = TextStyle(
-	fontFamily: 'Robotot',
+	fontFamily: 'Roboto',
 	fontWeight: FontWeight.w400,
 	fontSize: 18,
 );

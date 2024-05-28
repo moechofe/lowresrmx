@@ -96,6 +96,7 @@ class _MyEditPageState extends State<MyEditPage> {
           Error err = runtime.compileAndStart(editingController.text);
           log("Error: $err");
           if (err.ok) {
+						// TODO: I should replace the current page with the run page and do the opposite when going back
             Navigator.of(context).push(
                 MaterialPageRoute(builder: (context) => MyRunPage(runtime: runtime, programName: widget.programName)));
 						await MyLibrary.writeCode(widget.programName, editingController.text);

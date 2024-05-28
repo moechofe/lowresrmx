@@ -4,7 +4,6 @@ import 'dart:developer' show log;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:lowresrmx/data/library.dart';
 
 import 'package:provider/provider.dart';
 
@@ -56,88 +55,102 @@ class _MyRunPageState extends State<MyRunPage> {
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (context, constraints) {
-      // log("constraints: $constraints");
-      log("MyAppPage.build()");
       final EdgeInsets safeArea = MediaQuery.of(context).padding;
       widget.runtime.resize(constraints.maxWidth, constraints.maxHeight,
           safeArea.top, safeArea.left, safeArea.bottom, safeArea.right);
       // Capture simple touch events
-      return Stack(
-        children: [
-          RawGestureDetector(
-            gestures: {
-              TapAndPanGestureRecognizer: GestureRecognizerFactoryWithHandlers<
-                  TapAndPanGestureRecognizer>(
-                () => TapAndPanGestureRecognizer(),
-                (instance) {
-                  instance
-                    ..onTapDown = (details) {
-                      context.read<Runtime>().touchOn(details.localPosition);
-                    }
-                    ..onTapUp = (details) {
-                      context.read<Runtime>().touchOff();
-                    }
-                    ..onDragStart = (details) {
-                      context.read<Runtime>().touchOn(details.localPosition);
-                    }
-                    ..onDragUpdate = (details) {
-                      context.read<Runtime>().touchOn(details.localPosition);
-                    }
-                    ..onDragEnd = (details) {
-                      context.read<Runtime>().touchOff();
-                    };
-                },
-              ),
-            },
-            // Capture keyboard events
-            child: Focus(
-              autofocus: true,
-              onKeyEvent: (node, event) {
-                log("RunPage.KeyEvent: $event");
-                if (event is KeyDownEvent &&
-                    event.logicalKey == LogicalKeyboardKey.escape) {
-                  Navigator.of(context).pop();
-                  return KeyEventResult.handled;
-                } else {
-                  return KeyEventResult.ignored;
-                }
+      return Scaffold(
+        body: Stack(
+          children: [
+            RawGestureDetector(
+              gestures: {
+                TapAndPanGestureRecognizer:
+                    GestureRecognizerFactoryWithHandlers<
+                        TapAndPanGestureRecognizer>(
+                  () => TapAndPanGestureRecognizer(),
+                  (instance) {
+                    instance
+                      ..onTapDown = (details) {
+                        context.read<Runtime>().touchOn(details.localPosition);
+                      }
+                      ..onTapUp = (details) {
+                        context.read<Runtime>().touchOff();
+                      }
+                      ..onDragStart = (details) {
+                        context.read<Runtime>().touchOn(details.localPosition);
+                      }
+                      ..onDragUpdate = (details) {
+                        context.read<Runtime>().touchOn(details.localPosition);
+                      }
+                      ..onDragEnd = (details) {
+                        context.read<Runtime>().touchOff();
+                      };
+                  },
+                ),
               },
-              child: SizedBox(
-                width: constraints.maxWidth,
-                height: constraints.maxHeight,
-                // Make the screen scaled and aligned to the top left.
-                child: const FittedBox(
-                    fit: BoxFit.cover,
-                    alignment: Alignment.topLeft,
-                    child: MyScreenPaint()),
-              ),
-            ),
-          ),
-          Align(
-            alignment: Alignment.topRight,
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(0.0, 8.0, 32.0, 0.0),
-              child: PopupMenuButton<MyRunMenuOption>(
-                itemBuilder: (BuildContext context) => [
-                  const PopupMenuItem(
-                    value: MyRunMenuOption.thumbnail,
-                    child: Text("Save thumbnail"),
-                  ),
-                ],
-                onSelected: (value) async {
-                  final Runtime runtime = context.read<Runtime>();
-                  switch (value) {
-                    case MyRunMenuOption.thumbnail:
-											runtime.renderThumbnail(widget.programName);
-											break;
+              // Capture keyboard events
+              child: Focus(
+                autofocus: true,
+                onKeyEvent: (node, event) {
+                  log("RunPage.KeyEvent: $event");
+                  if (event is KeyDownEvent &&
+                      event.logicalKey == LogicalKeyboardKey.escape) {
+                    Navigator.of(context).pop();
+                    return KeyEventResult.handled;
+                  } else {
+                    return KeyEventResult.ignored;
                   }
-                  // Handle selected option
                 },
+                child: SizedBox(
+                  width: constraints.maxWidth,
+                  height: constraints.maxHeight,
+                  // Make the screen scaled and aligned to the top left.
+                  child: const FittedBox(
+                      fit: BoxFit.cover,
+                      alignment: Alignment.topLeft,
+                      child: MyScreenPaint()),
+                ),
               ),
             ),
-          )
-        ],
+            _buildMenu(context)
+          ],
+        ),
       );
     });
+  }
+
+  Align _buildMenu(BuildContext context) {
+    return Align(
+      alignment: Alignment.topRight,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(0.0, 8.0, 32.0, 0.0),
+        child: PopupMenuButton<MyRunMenuOption>(
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(100),
+            child: Container(
+              width: 32,
+              height: 32,
+              color: Colors.black45,
+              child: Icon(Icons.adaptive.more),
+            ),
+          ),
+          itemBuilder: (BuildContext context) => [
+            const PopupMenuItem(
+              value: MyRunMenuOption.thumbnail,
+              child: Text("Save thumbnail"),
+            ),
+          ],
+          onSelected: (value) async {
+            final Runtime runtime = context.read<Runtime>();
+            switch (value) {
+              case MyRunMenuOption.thumbnail:
+                runtime.renderThumbnail(widget.programName);
+                break;
+            }
+            // Handle selected option
+          },
+        ),
+      ),
+    );
   }
 }
