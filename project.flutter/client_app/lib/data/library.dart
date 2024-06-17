@@ -1,13 +1,13 @@
-import 'dart:developer' show log;
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
 
-import 'package:package_info_plus/package_info_plus.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 import 'package:image/image.dart' as img;
+
+import 'package:lowresrmx/data/preference.dart';
+// import 'package:lowresrmx/data/firestore.dart';
 
 enum MyLibrarySort {
 	name,
@@ -29,14 +29,7 @@ class MyLibrary extends ChangeNotifier {
   static String extension = ".rmx";
 
   static Future<Directory> getLibraryDir() async {
-    final documentDir = await getApplicationDocumentsDirectory();
-    String libraryPath = documentDir.path;
-    if (defaultTargetPlatform == TargetPlatform.linux ||
-        defaultTargetPlatform == TargetPlatform.windows) {
-      PackageInfo packageInfo = await PackageInfo.fromPlatform();
-      libraryPath = p.join(libraryPath, packageInfo.appName);
-    }
-    log("libraryPath: $libraryPath");
+		final String libraryPath = await MyPreference.getProgramDirectory();
     final Directory libraryDir = Directory(libraryPath);
     if (!await libraryDir.exists()) await libraryDir.create(recursive: true);
     return libraryDir;
@@ -65,6 +58,9 @@ class MyLibrary extends ChangeNotifier {
       programFile = File(programPath);
     }
     await programFile.create();
+
+		// MyFirestore.createProgram(p.basenameWithoutExtension(programPath));
+
     MyLibrary().notifyListeners();
     return programFile;
   }

@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
-import 'package:lowresrmx/data/preference.dart';
+
+import 'package:provider/provider.dart';
 
 import 'package:markdown_widget/markdown_widget.dart';
 
 import 'package:lowresrmx/page/manual_page.dart';
+import 'package:lowresrmx/core/runtime.dart';
+import 'package:lowresrmx/data/preference.dart';
 
 final List<IconData> _toolIcon = [
   Icons.build_rounded,
@@ -24,9 +27,15 @@ final List<IconData> _toolIcon = [
 
 // TODO: should rename from here
 
-class MyEditDrawer extends StatelessWidget {
-  const MyEditDrawer({super.key});
+class MyEditDrawer extends StatefulWidget {
+	final MyProgramPreference programPreference;
+  const MyEditDrawer({required this.programPreference, super.key});
 
+  @override
+  State<MyEditDrawer> createState() => _MyEditDrawerState();
+}
+
+class _MyEditDrawerState extends State<MyEditDrawer> {
   @override
   Widget build(BuildContext context) {
     return Drawer(
@@ -47,7 +56,7 @@ class MyEditDrawer extends StatelessWidget {
   }
 
   Widget _buildDrawer() {
-    const int reservedItems = 4;
+    const int reservedItems = 6;
     return FutureBuilder(
         future: MyPreference.listToolProgram(),
         builder: (context, snapshot) {
@@ -56,17 +65,22 @@ class MyEditDrawer extends StatelessWidget {
               itemCount: 3 + snapshot.data!.length,
               itemBuilder: (context, index) {
                 if (index == 0) {
-                  return const MyManualTile();
+                  return _buildTraceItem(context);
                 } else if (index == 1) {
-                  return _buildSettingItem(context);
-                } else if (index == 2) {
                   return const Divider();
+                } else if (index == 2) {
+                  return const MyManualTile();
                 } else if (index == 3) {
+                  return _buildSettingItem(context);
+                } else if (index == 4) {
+                  return const Divider();
+                } else if (index == 5) {
                   return const Padding(
-										padding: EdgeInsets.only(left: 52.0, right: 8.0, top: 8.0, bottom: 4),
-										child: Text("Open with a tool program:",
-												style: TextStyle(fontWeight: FontWeight.bold)),
-									);
+                    padding: EdgeInsets.only(
+                        left: 52.0, right: 8.0, top: 8.0, bottom: 4),
+                    child: Text("Open with a tool program:",
+                        style: TextStyle(fontWeight: FontWeight.bold)),
+                  );
                 }
                 return ListTile(
                   leading: Icon(
@@ -104,5 +118,17 @@ class MyEditDrawer extends StatelessWidget {
     );
   }
 
+  Widget _buildTraceItem(BuildContext context) {
+		final currentTrace = widget.programPreference.withTrace;
+    return SwitchListTile(
+      value: currentTrace,
+      title: const Text("Show trace"),
+      onChanged: (value) {
+				// Store the change
+        widget.programPreference.setWithTrace(!currentTrace);
+				// Force a rebuild
+        setState((){});
+      },
+    );
+  }
 }
-

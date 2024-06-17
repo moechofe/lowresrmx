@@ -18,7 +18,7 @@
 // 3. This notice may not be removed or altered from any source distribution.
 //
 
-#include "accessories/disk_drive.h"
+#include "disk_drive.h"
 #include "core.h"
 #include <stdlib.h>
 #include <assert.h>

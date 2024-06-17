@@ -20,7 +20,7 @@
 
 #include "cmd_background.h"
 #include "core.h"
-#include "libraries/text_lib.h"
+#include "text_lib.h"
 #include "cmd_text.h"
 #include "interpreter_utils.h"
 #include <assert.h>

@@ -19,6 +19,8 @@ if($url['path']==='/token')
 	$token.="-";
 	$token.=$hash;
 
+	// TODO: check if token already exists
+
 	// store temporary upload token, to validate the authorization of uploading a program by the user.
 	redis()->hset("t:$token","uid",$user_id);
 	redis()->expire("t:$token",UPLOAD_TOKEN_TTL);

@@ -18,7 +18,7 @@
 // 3. This notice may not be removed or altered from any source distribution.
 //
 
-#include "libraries/sprites_lib.h"
+#include "sprites_lib.h"
 #include "core.h"
 #include <stdint.h>
 

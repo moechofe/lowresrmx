@@ -20,7 +20,7 @@
 
 #include "cmd_memory.h"
 #include "core.h"
-#include "datamanager/data_manager.h"
+#include "data_manager.h"
 #include <assert.h>
 
 struct TypedValue fnc_PEEK(struct Core *core)

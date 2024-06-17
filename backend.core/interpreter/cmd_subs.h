@@ -22,7 +22,7 @@
 #define cmd_subs_h
 
 #include <stdio.h>
-#include "interpreter/error.h"
+#include "error.h"
 
 struct Core;
 

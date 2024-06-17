@@ -3,8 +3,8 @@
 
 #include <stdbool.h>
 
-#include "interpreter/tokenizer.h"
-#include "machine/video_chip.h"
+#include "tokenizer.h"
+#include "video_chip.h"
 
 #define EMITTER_MAX 16
 #define APPEARANCE_MAX 24

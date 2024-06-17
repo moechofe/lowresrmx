@@ -18,9 +18,9 @@
 // 3. This notice may not be removed or altered from any source distribution.
 //
 
-#include "overlay/overlay.h"
+#include "overlay.h"
 #include "core.h"
-#include "machine/io_chip.h"
+#include "io_chip.h"
 #include <math.h>
 
 void overlay_clear(struct Core *core);

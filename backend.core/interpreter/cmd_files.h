@@ -22,7 +22,7 @@
 #define cmd_files_h
 
 #include <stdio.h>
-#include "interpreter/error.h"
+#include "error.h"
 #include "value.h"
 
 struct Core;

@@ -10,7 +10,8 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.6
-  re_editor: ^0.3.0
+  re_editor:
+    path: ../re_editor
   sw_rend: ^0.0.2
   provider: ^6.1.2
   ffi: ^2.1.2
@@ -22,13 +23,23 @@ dependencies:
   image: ^4.2.0
   markdown_widget: ^2.3.2+6
   re_highlight: ^0.0.3
+  # stream_mixin: ^3.0.4
+  file_picker: ^8.0.5
+  # googleapis: ^13.1.0
+  # googleapis_auth: ^1.6.0
+  # extension_google_sign_in_as_googleapis_auth: ^2.0.12
+  # google_sign_in: ^6.2.1
+  # http: ^1.2.1
+  # flutter_secure_storage: ^9.2.2
   core_plugin:
     path: ../core_plugin
+  # cloud_firestore: ^5.0.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^4.0.0
+  change_app_package_name: ^1.2.0
 
 flutter:
   uses-material-design: true

@@ -81,6 +81,23 @@ class CorePluginBindings {
   late final _runnerInit =
       _runnerInitPtr.asFunction<void Function(ffi.Pointer<Runner>)>();
 
+  void runnerSetDelegate(
+    ffi.Pointer<Runner> arg0,
+    ffi.Pointer<CoreDelegate> arg1,
+  ) {
+    return _runnerSetDelegate(
+      arg0,
+      arg1,
+    );
+  }
+
+  late final _runnerSetDelegatePtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Void Function(ffi.Pointer<Runner>,
+              ffi.Pointer<CoreDelegate>)>>('runnerSetDelegate');
+  late final _runnerSetDelegate = _runnerSetDelegatePtr.asFunction<
+      void Function(ffi.Pointer<Runner>, ffi.Pointer<CoreDelegate>)>();
+
   void runnerDeinit(
     ffi.Pointer<Runner> arg0,
   ) {
@@ -145,7 +162,7 @@ class CorePluginBindings {
   late final _runnerStart =
       _runnerStartPtr.asFunction<void Function(ffi.Pointer<Runner>, int)>();
 
-  void runnerUpdate(
+  CoreError runnerUpdate(
     ffi.Pointer<Runner> arg0,
     ffi.Pointer<Input> arg1,
   ) {
@@ -157,10 +174,10 @@ class CorePluginBindings {
 
   late final _runnerUpdatePtr = _lookup<
       ffi.NativeFunction<
-          ffi.Void Function(
+          CoreError Function(
               ffi.Pointer<Runner>, ffi.Pointer<Input>)>>('runnerUpdate');
-  late final _runnerUpdate = _runnerUpdatePtr
-      .asFunction<void Function(ffi.Pointer<Runner>, ffi.Pointer<Input>)>();
+  late final _runnerUpdate = _runnerUpdatePtr.asFunction<
+      CoreError Function(ffi.Pointer<Runner>, ffi.Pointer<Input>)>();
 
   void runnerRender(
     ffi.Pointer<Runner> arg0,
@@ -178,12 +195,30 @@ class CorePluginBindings {
               ffi.Pointer<Runner>, ffi.Pointer<ffi.Void>)>>('runnerRender');
   late final _runnerRender = _runnerRenderPtr
       .asFunction<void Function(ffi.Pointer<Runner>, ffi.Pointer<ffi.Void>)>();
+
+  void runnerTrace(
+    ffi.Pointer<Runner> arg0,
+    bool arg1,
+  ) {
+    return _runnerTrace(
+      arg0,
+      arg1,
+    );
+  }
+
+  late final _runnerTracePtr = _lookup<
+          ffi.NativeFunction<ffi.Void Function(ffi.Pointer<Runner>, ffi.Bool)>>(
+      'runnerTrace');
+  late final _runnerTrace =
+      _runnerTracePtr.asFunction<void Function(ffi.Pointer<Runner>, bool)>();
 }
 
 final class Runner extends ffi.Struct {
   external ffi.Pointer<Core> core;
 
   external CoreDelegate delegate;
+
+  external CoreError runningError;
 }
 
 /// TODO: EMITTER_MAX and SPAWNER_MAX should be the same, right?
@@ -355,6 +390,7 @@ abstract class ErrorCode {
   static const int ErrorKeyboardNotEnabled = 57;
   static const int ErrorAutomaticPauseNotDisabled = 58;
   static const int ErrorNotAllowedOutsideOfInterrupt = 59;
+  static const int ErrorMax = 60;
 }
 
 final class ControlsInfo extends ffi.Struct {

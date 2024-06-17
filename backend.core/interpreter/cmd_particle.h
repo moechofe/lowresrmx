@@ -1,7 +1,7 @@
 #ifndef cmd_particle_h
 #define cmd_particle_h
 
-#include "interpreter/error.h"
+#include "error.h"
 
 struct Core;
 

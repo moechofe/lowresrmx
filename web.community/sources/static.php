@@ -9,9 +9,11 @@ if(in_array($url['path'],[
 	'/community.css',
 	'/post.css',
 	'/post.js',
-	'/pico.classless.min.css',
+	'/pico.min.css',
 	'/player.js',
 	'/player.wasm',
+	'/entry.css',
+	'/entry.js',
 ]))
 {
 	header("Content-Type: ".[

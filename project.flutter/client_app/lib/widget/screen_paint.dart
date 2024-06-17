@@ -1,7 +1,10 @@
+import 'dart:developer';
+import 'dart:isolate';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:lowresrmx/data/library.dart';
 
 import 'package:provider/provider.dart';
 
@@ -13,10 +16,9 @@ import 'package:lowresrmx/core/runtime.dart';
 //   ..style = PaintingStyle.stroke;
 
 class MyScreenPainter extends CustomPainter {
-  final Runtime runtime;
-  final ui.Image? image;
+  ui.Image? image;
 
-  MyScreenPainter(this.runtime) : image = runtime.image;
+  MyScreenPainter(this.image);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -24,17 +26,21 @@ class MyScreenPainter extends CustomPainter {
       canvas.drawImage(image!, Offset.zero, Paint());
     }
 
-    // canvas.drawRect(Rect.fromLTWH(0,0, size.width,size.height), Paint()..color=Color.fromRGBO(255, 255, 255, 0.8));
+    // canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height),
+    //     Paint()..color = const Color.fromRGBO(255, 255, 255, 0.8));
   }
 
   @override
   bool shouldRepaint(covariant MyScreenPainter oldDelegate) {
-    return image != oldDelegate.image;
+		return true;
   }
 }
 
 class MyScreenPaint extends StatefulWidget {
+	final ComPort comPort;
+
   const MyScreenPaint({
+		required this.comPort,
     super.key,
   });
 
@@ -43,38 +49,37 @@ class MyScreenPaint extends StatefulWidget {
 }
 
 class _MyScreenPaintState extends State<MyScreenPaint> {
+  ui.Image? image;
+
   @override
   initState() {
     super.initState();
-    SystemChannels.textInput.invokeMethod("TextInput.show");
+		// Start updating the image.
+		widget.comPort.onImage = (image) {
+			if (mounted) {
+				setState(() {
+					this.image = image;
+				});
+			}
+		};
+
+    // TODO: allow to show the keyboard, put it somewhere else
+    // SystemChannels.textInput.invokeMethod("TextInput.show");
   }
+
+	@override
+	void dispose() {
+		// Stop updating the image.
+		widget.comPort.onImage = null;
+		super.dispose();
+	}
 
   @override
   Widget build(BuildContext context) {
-    // log("ScreenPaint.build()");
     return CustomPaint(
-        size: Size(Runtime.screenWidth.toDouble(), Runtime.screenHeight.toDouble()),
-        painter: MyScreenPainter(context.watch<Runtime>()),
-        // child: SizedBox(
-        //     width: Runtime.imageWidth.toDouble(),
-        //     height: Runtime.imageHeight.toDouble(),
-        //     child: Align(
-        //         alignment: Alignment.topRight,
-        //         child: Padding(
-				// 					padding: const EdgeInsets.all(2.0),
-				// 					child: SizedBox(
-
-				// 						width: 18,
-				// 						height: 18,
-				// 						child: IconButton(
-				// 								iconSize: 12,
-				// 																padding: EdgeInsets.zero,
-				// 								icon: const Icon(Icons.more_vert_rounded),
-				// 								onPressed: () {}),
-				// 					),
-				// 				)))
-
-        // // child: Text("test"),
-        );
+      size:
+          Size(Runtime.screenWidth.toDouble(), Runtime.screenHeight.toDouble()),
+      painter: MyScreenPainter(image), //context.watch<Runtime>()),
+    );
   }
 }

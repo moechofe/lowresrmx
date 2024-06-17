@@ -18,7 +18,7 @@
 // 3. This notice may not be removed or altered from any source distribution.
 //
 
-#include "machine/audio_chip.h"
+#include "audio_chip.h"
 #include "core.h"
 #include <math.h>
 #include <string.h>

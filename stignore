@@ -3,3 +3,4 @@ build/
 .dart_tool
 *.bc
 .cxx
+ephemeral

@@ -24,7 +24,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdint.h>
-#include "machine/video_chip.h"
+#include "video_chip.h"
 
 #define INPUT_BUFFER_SIZE 256
 #define OVERLAY_BG 4

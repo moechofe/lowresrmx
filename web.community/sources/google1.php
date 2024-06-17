@@ -11,6 +11,7 @@ if($url['path']==='/google')
 
 	redis()->setex("l:$google_state",LOGIN_GOOGLE_TTL,$google_state);
 
+	// TODO: hide the user-agent
 	$config=json_decode(file_get_contents("https://accounts.google.com/.well-known/openid-configuration"),true);
 
 	$auth_request=$config['authorization_endpoint'].'?'.http_build_query([

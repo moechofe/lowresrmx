@@ -18,7 +18,7 @@
 // 3. This notice may not be removed or altered from any source distribution.
 //
 
-#include "datamanager/data_manager.h"
+#include "data_manager.h"
 #include "charsets.h"
 #include <string.h>
 #include <stdlib.h>

@@ -23,7 +23,7 @@
 #include "value.h"
 #include "cmd_text.h"
 #include "interpreter_utils.h"
-#include "libraries/sprites_lib.h"
+#include "sprites_lib.h"
 #include <assert.h>
 
 enum ErrorCode cmd_SPRITE(struct Core *core)

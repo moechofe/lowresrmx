@@ -38,7 +38,7 @@ class MyCatalogGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-		// Make sure to rebuild the grid when a program is created, removed or renamed.
+    // Make sure to rebuild the grid when a program is created, removed or renamed.
     final MyLibrary _ = context.watch<MyLibrary>();
     return FutureBuilder(
         future: MyLibrary.buildList(sort),
@@ -49,19 +49,24 @@ class MyCatalogGrid extends StatelessWidget {
                     left: 12.0, right: 12.0, bottom: 24.0),
                 gridDelegate: MyLibraryGridDelegate(),
                 itemCount: snapshot.data!.length,
-                itemBuilder: (context, index) => ChangeNotifierProvider(
-									// Used to make sure to rebuild the item when a preference changes.
-									create: (_) => MyProgramPreference(snapshot.data![index]),
-									child: MyLibraryItem(
-											program: snapshot.data![index],
-											// The key is used to identify the item in the list when program are added and removed.
-											key: ValueKey(snapshot.data![index])),
-								));
+                itemBuilder: (context, index) =>
+                    _buildGridItem(snapshot.data![index], index));
           } else {
             // TODO: report error
             // TODO: Do it better
             return const SizedBox();
           }
         });
+  }
+
+  Widget _buildGridItem(String programName, int index) {
+    // Used to make sure to rebuild the item when a preference changes.
+    return ChangeNotifierProvider(
+      create: (_) => MyProgramPreference(programName),
+      child: MyLibraryItem(
+          programName: programName,
+          // The key is used to identify the item in the list when program are added or removed.
+          key: ValueKey(programName)),
+    );
   }
 }

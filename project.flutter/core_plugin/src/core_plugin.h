@@ -36,11 +36,13 @@ typedef int RID;
 typedef struct Runner {
 	struct Core *core;
 	struct CoreDelegate delegate;
+	struct CoreError runningError;
 } Runner;
 
 typedef struct CoreInput Input;
 
 FFI_PLUGIN_EXPORT void runnerInit(Runner*);
+FFI_PLUGIN_EXPORT void runnerSetDelegate(Runner*,struct CoreDelegate*);
 FFI_PLUGIN_EXPORT void runnerDeinit(Runner*);
 
 FFI_PLUGIN_EXPORT struct CoreError runnerCompileProgram(Runner*,const char*);
@@ -49,7 +51,9 @@ FFI_PLUGIN_EXPORT const char* runnerGetError(Runner*,enum ErrorCode);
 
 FFI_PLUGIN_EXPORT void runnerStart(Runner*,int scondsSincePowerOn);
 
-FFI_PLUGIN_EXPORT void runnerUpdate(Runner*,Input*);
+FFI_PLUGIN_EXPORT struct CoreError runnerUpdate(Runner*,Input*);
 
 FFI_PLUGIN_EXPORT void runnerRender(Runner*,void*);
+
+FFI_PLUGIN_EXPORT void runnerTrace(Runner*,bool);
 

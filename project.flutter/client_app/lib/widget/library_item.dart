@@ -21,11 +21,12 @@ enum MyItemMenuOption {
   delete,
 }
 
+/// A [Card] with thumbnail, name of a program, a popup menu and a tap action to open the program editor.
 class MyLibraryItem extends StatefulWidget {
-  final String program;
+  final String programName;
 
   const MyLibraryItem({
-    required this.program,
+    required this.programName,
     super.key,
   });
 
@@ -39,17 +40,18 @@ class _MyLibraryItemState extends State<MyLibraryItem> {
   @override
   void initState() {
     super.initState();
-    controller = TextEditingController(text: widget.program);
+    controller = TextEditingController(text: widget.programName);
   }
 
   Future<ImageProvider> _loadThumbnail() {
-    return MyLibrary.readThumbnail(widget.program);
+    return MyLibrary.readThumbnail(widget.programName);
   }
 
   @override
   Widget build(BuildContext context) {
     final ColorScheme colorScheme = Theme.of(context).colorScheme;
-    final MyProgramPreference preference = context.watch<MyProgramPreference>();
+    // Will rebuild the widget when the preference is updated.
+    final MyProgramPreference preference = context.read<MyProgramPreference>();
     return LayoutBuilder(builder: (context, constraints) {
       return Card(
         surfaceTintColor: colorScheme.primaryContainer,
@@ -82,35 +84,35 @@ class _MyLibraryItemState extends State<MyLibraryItem> {
               MaterialPageRoute(
                   builder: (context) =>
                       // Will show the program editor page for this program.
-                      MyEditPage(programName: widget.program)));
+                      _gotoEditPage()));
         },
         borderRadius: BorderRadius.circular(12.0),
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          children: [
-            _buildThumbnail(constraints),
-            _buildName()
-          ],
+          children: [_buildThumbnail(constraints), _buildName()],
         ),
       ),
     );
   }
 
+  Widget _gotoEditPage() {
+    return MyEditPage(programName: widget.programName);
+  }
+
   Widget _buildName() {
-		return Expanded(
-			child:
-			Align(
-			alignment: Alignment.centerLeft,
-			child: Padding(
-				padding: const EdgeInsets.only(left: 12.0, right: 12.0, top: 0.0, bottom: 4.0),
-				child: Text(
-					style: libraryItemTextStyle,
-					widget.program,
-					maxLines: 1,
-					overflow: TextOverflow.ellipsis,
-				),
-			)
-		));
+    return Expanded(
+        child: Align(
+            alignment: Alignment.centerLeft,
+            child: Padding(
+              padding: const EdgeInsets.only(
+                  left: 12.0, right: 12.0, top: 0.0, bottom: 4.0),
+              child: Text(
+                style: libraryItemTextStyle,
+                widget.programName,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            )));
   }
 
   SizedBox _buildThumbnail(BoxConstraints constraints) {
@@ -181,7 +183,6 @@ class _MyLibraryItemState extends State<MyLibraryItem> {
       switch (value) {
         case MyItemMenuOption.isTool:
           preference.setTool(!preference.isTool);
-          // setState(() {});
           break;
         case MyItemMenuOption.rename:
           _showRenameDialog();
@@ -201,7 +202,7 @@ class _MyLibraryItemState extends State<MyLibraryItem> {
     String? newName = await showDialog<String?>(
       context: context,
       builder: (BuildContext context) {
-        String newName = widget.program;
+        String newName = widget.programName;
         return AlertDialog(
           icon: const Icon(Icons.drive_file_rename_outline_rounded),
           title: const Text("Rename"),
@@ -229,8 +230,8 @@ class _MyLibraryItemState extends State<MyLibraryItem> {
       },
     );
     if (newName != null) {
-      MyLibrary.renameProgram(widget.program, newName);
-      MyPreference.renameProgram(widget.program, newName);
+      MyLibrary.renameProgram(widget.programName, newName);
+      MyPreference.renameProgram(widget.programName, newName);
     }
   }
 
@@ -256,8 +257,8 @@ class _MyLibraryItemState extends State<MyLibraryItem> {
       },
     );
     if (confirmDelete == true) {
-      MyLibrary.deleteProgram(widget.program);
-      MyPreference.deleteProgram(widget.program);
+      MyLibrary.deleteProgram(widget.programName);
+      MyPreference.deleteProgram(widget.programName);
     }
   }
 }

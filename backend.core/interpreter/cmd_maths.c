@@ -21,7 +21,7 @@
 #include "cmd_maths.h"
 #include "core.h"
 #include "pcg_basic.h"
-#include "machine/machine.h"
+#include "machine.h"
 
 #define _USE_MATH_DEFINES
 #ifndef __USE_MISC

@@ -18,7 +18,7 @@
 // 3. This notice may not be removed or altered from any source distribution.
 //
 
-#include "libraries/audio_lib.h"
+#include "audio_lib.h"
 #include "core.h"
 #include <math.h>
 

@@ -1,47 +1,13 @@
 #include "core_plugin.h"
 
-
-
-
-
-// TextureBox
-
-
-
-
-
-
-
-// A very short-lived native function.
-//
-// For very short-lived functions, it is fine to call them on the main isolate.
-// They will block the Dart execution while running the native function, so
-// only do this for native functions which are guaranteed to be short-lived.
-FFI_PLUGIN_EXPORT int sum(int a, int b) { return a + b; }
-
-// A longer-lived native function, which occupies the thread calling it.
-//
-// Do not call these kind of native functions in the main isolate. They will
-// block Dart execution. This will cause dropped frames in Flutter applications.
-// Instead, call these native functions on a separate isolate.
-FFI_PLUGIN_EXPORT int sum_long_running(int a, int b) {
-  // Simulate work.
-#if _WIN32
-  Sleep(5000);
-#else
-  usleep(5000 * 1000);
-#endif
-  return a + b;
-}
-
 // Only one Runner for now, can change.
 static Runner* runner = NULL;
-// Allow to have multiple Runner, not sure if it usefull
-#define MAX_RID 0
 
 void interpreterDidFail(void *context,struct CoreError coreError)
 {
-	int a=12;
+	Runner *runner=(Runner*)context;
+	if(!runner->core) return;
+	runner->runningError=coreError;
 }
 
 bool diskDriveWillAccess(void *context,struct DataManager *diskDataManager)
@@ -89,7 +55,13 @@ FFI_PLUGIN_EXPORT void runnerInit(Runner *runner)
 	runner->delegate.persistentRamWillAccess=persistentRamWillAccess;
 	runner->delegate.persistentRamDidChange=persistentRamDidChange;
 	core_init(core);
-	core_setDelegate(core,&runner->delegate);
+	core->delegate=&runner->delegate;
+}
+
+FFI_PLUGIN_EXPORT void runnerSetDelegate(Runner *runner,struct CoreDelegate *delegate)
+{
+	core_setDelegate(runner->core,delegate);
+	int a=12;
 }
 
 FFI_PLUGIN_EXPORT void runnerDeinit(Runner *runner)
@@ -106,6 +78,7 @@ FFI_PLUGIN_EXPORT struct CoreError runnerCompileProgram(Runner *runner,const cha
 	return core_compileProgram(runner->core,code,false);
 }
 
+// TODO: remove the Runner*
 FFI_PLUGIN_EXPORT const char* runnerGetError(Runner *runner,enum ErrorCode code)
 {
 	if(!runner->core) return "Runner not ready";
@@ -115,20 +88,27 @@ FFI_PLUGIN_EXPORT const char* runnerGetError(Runner *runner,enum ErrorCode code)
 FFI_PLUGIN_EXPORT void runnerStart(Runner *runner,int scondsSincePowerOn)
 {
 	if(!runner->core) return;
+	runner->runningError=err_makeCoreError(ErrorNone,-1);
 	core_willRunProgram(runner->core, scondsSincePowerOn);
 }
 
-FFI_PLUGIN_EXPORT void runnerUpdate(Runner *runner,Input *input)
+FFI_PLUGIN_EXPORT struct CoreError runnerUpdate(Runner *runner,Input *input)
 {
-	if(!runner->core) return;
+	if(!runner->core) return err_makeCoreError(ErrorNone,-1);
 	core_update(runner->core,input);
+	return runner->runningError;
 }
 
 FFI_PLUGIN_EXPORT void runnerRender(Runner *runner,void *pixels)
 {
 	if(!runner->core) return;
 	if(!pixels) return;
-
 	video_renderScreen(runner->core,pixels);
+}
+
+FFI_PLUGIN_EXPORT void runnerTrace(Runner *runner,bool enabled)
+{
+	if(!runner->core) return;
+	core_setDebug(runner->core,enabled);
 }
 

@@ -24,9 +24,9 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdint.h>
-#include "machine/io_chip.h"
-#include "machine/video_chip.h"
-#include "machine/audio_chip.h"
+#include "io_chip.h"
+#include "video_chip.h"
+#include "audio_chip.h"
 
 #define VM_SIZE 0x20000
 #define VM_MAX 0x1FFFF

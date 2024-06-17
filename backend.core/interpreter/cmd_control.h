@@ -23,7 +23,7 @@
 
 #include <stdio.h>
 #include <stdbool.h>
-#include "interpreter/error.h"
+#include "error.h"
 
 struct Core;
 

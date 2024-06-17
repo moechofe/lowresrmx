@@ -23,7 +23,7 @@
 
 #include <stdio.h>
 #include <stdbool.h>
-#include "datamanager/data_manager.h"
+#include "data_manager.h"
 
 struct Core;
 

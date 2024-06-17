@@ -22,7 +22,7 @@
 #include "core.h"
 #include <string.h>
 #include <stdint.h>
-#include "machine/io_chip.h"
+#include "io_chip.h"
 
 #define FONT_CHAR_OFFSET 192
 

@@ -1,9 +1,9 @@
 #include "cmd_particle.h"
-#include "libraries/particles_lib.h"
+#include "particles_lib.h"
 
 #include "core.h"
 #include "value.h"
-#include "machine/video_chip.h"
+#include "video_chip.h"
 
 enum ErrorCode cmd_PARTICLE(struct Core *core)
 {

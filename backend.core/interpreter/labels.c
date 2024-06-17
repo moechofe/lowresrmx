@@ -19,7 +19,7 @@
 //
 
 #include "labels.h"
-#include "interpreter/interpreter.h"
+#include "interpreter.h"
 
 enum ErrorCode lab_pushLabelStackItem(struct Interpreter *interpreter, enum LabelType type, struct Token *token)
 {

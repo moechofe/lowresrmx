@@ -22,9 +22,9 @@
 #define core_stats_h
 
 #include <stdio.h>
-#include "interpreter/error.h"
-#include "interpreter/tokenizer.h"
-#include "datamanager/data_manager.h"
+#include "error.h"
+#include "tokenizer.h"
+#include "data_manager.h"
 
 struct Stats {
     struct Tokenizer *tokenizer;

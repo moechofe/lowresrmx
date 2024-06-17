@@ -47,6 +47,9 @@
 #define BGR 1
 #endif
 #endif
+#if __linux__
+#define BGR 1
+#endif
 
 struct Core;
 

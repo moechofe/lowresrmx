@@ -25,9 +25,10 @@ if($url['path']==='/publish')
 
 	redis()->persist("t:$token");
 	redis()->rename("t:$token","p:$program_id");
-	redis()->hset("p:$program_id","ct",date(DATE_ATOM));
-	redis()->hset("p:$program_id","author",substr($author,0,MAX_AUTHOR_NAME));
-
+	redis()->hmset("p:$program_id",
+		"ct",date(DATE_ATOM),
+		"author",substr($author,0,MAX_AUTHOR_NAME)
+	);
 	redis()->rpush("u:{$user_id}:p",$program_id);
 
 	exit;

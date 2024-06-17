@@ -3,14 +3,14 @@
 - [x] delete fnc_BUTTON
 - [ ] move pcg to a directory
 - [x] redo the project architecture
-- [ ] rename file extension `.nx` to `.rmx`
+- [x] rename file extension `.nx` to `.rmx`
 - [ ] plugin for popular code editor
 - [ ] add a text tool to the bg editor
 - [ ] stoping clear overlay on pause
 - [ ] run and loop an interrupt during pause, and allow to unpause
 - [ ] allow multiple instructions per line
 - [x] add an interrupt for emitter
-- [ ] remove LET, REM
+- [x] remove LET, REM
 - [ ] allow to create line shape with emitter or rect
 - [x] allow to login with google account
 - [x] allow to upload program
@@ -38,11 +38,20 @@
 - [x] I removed CELL SIZE cmd, update the doc
 - [x] remove the TokenDISPLAY and command
 - [x] Remove GAMEPAD
-- [ ] Allow to update shown.w/h during runtime
+- [x] Allow to update shown.w/h during runtime
 - [ ] protect unmapped memory access
 - [x] try to make the 0nth color non transparent
 - [x] expose message api to user
 - [x] create smaller program picture
 - [ ] there is a `view.endEditing(true)`, I should try to use it to fix the scrolling issue with the minimap
-- [ ]
+- [ ] flutter dev tool in --profile mode talk about pre-compiling shader, see: https://docs.flutter.dev/perf/shader
+- [ ] implement google drive
+- [x] move the runtime in an isolate
+- [ ] allow to show the keyboard
+- [ ] hide the system navigation bar
+- [ ] show the trace and store in preference
+- [ ] I should try to replace the library by the editor instead of pushing it
+- [ ] Clear overlay when resized
+- [ ] Allow to sync with icloud
+- [ ] Prevent modify post that is too old.
 

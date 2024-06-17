@@ -1,18 +1,18 @@
 import 'dart:developer' show log;
+import 'dart:isolate';
 
 import 'package:flutter/material.dart';
 
 import 'package:provider/provider.dart';
+
 
 import 'package:lowresrmx/core/runtime.dart';
 import 'package:lowresrmx/data/library.dart';
 import 'package:lowresrmx/page/library_page.dart';
 import 'package:lowresrmx/theme.dart';
 
-
 // TODO: delete the preference if the file is removed
 // TODO: rename the preference if the file is renamed
-
 
 // import 'dart:math' as math;
 // import 'dart:async';
@@ -55,17 +55,30 @@ import 'package:lowresrmx/theme.dart';
 //   audioStream.uninit(); //Call this from Flutter's State.dispose()
 // }
 
+// late ReceivePort receivePort;
+// late SendPort sendPort;
+// late Isolate isolate;
+
+late final ComPort core;
 
 
+void main() async {
+  // I'm just using the ReceivePort to be passed to the error reporter in the edit page, I don't need to listen to it.
+  // This will prevent the error at compilation.
+  // Provider.debugCheckInvalidValueType = null;
 
-void main() {
-  runApp(MyApp());
+  // receivePort = ReceivePort();
+  // isolate = await Isolate.spawn(isolateEntryPoint, receivePort.sendPort);
+  // sendPort = await receivePort.first;
+
+	core = ComPort();
+	await core.init();
+
+  runApp(const MyApp());
 }
 
 class MyApp extends StatefulWidget {
-  final Runtime coreRuntime;
-
-  MyApp({super.key}) : coreRuntime = Runtime();
+  const MyApp({super.key});
 
   @override
   State<MyApp> createState() => _MyAppState();
@@ -75,27 +88,30 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    widget.coreRuntime.initState();
+		// _handleSignIn();
   }
 
   @override
   void dispose() {
     super.dispose();
-    widget.coreRuntime.dispose();
   }
+
 
   @override
   Widget build(BuildContext context) {
     final MyTheme theme = MyTheme(Theme.of(context).textTheme);
     log("MyApp.build() Not good if called multiple times.");
+    // sendPort.send(IsolateMessageType.stop);
     return MultiProvider(
         providers: [
-          ChangeNotifierProvider<Runtime>(
-            create: (_) => widget.coreRuntime,
-          ),
+          // ChangeNotifierProvider<Runtime>(
+          //   create: (_) => widget.coreRuntime,
+          // ),
           ChangeNotifierProvider<MyLibrary>(create: (_) => MyLibrary()),
+          Provider<ComPort>(create: (_) => core),
         ],
         child: MaterialApp(
+					debugShowCheckedModeBanner: false,
           title: 'LowResRMX',
           theme: theme.light(),
           darkTheme: theme.dark(),
