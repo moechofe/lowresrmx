@@ -1,9 +1,7 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
+import 'package:lowresrmx/data/preference.dart';
 
 import 'package:provider/provider.dart';
-
 import 'package:re_editor/re_editor.dart';
 
 import 'package:lowresrmx/data/location.dart';
@@ -17,11 +15,13 @@ class MyCodeEditor extends StatefulWidget {
   final CodeFindController findController;
   final CodeScrollController scrollController;
   final FocusNode focusNode;
+	final MyEditorPreference editorSettings;
   const MyCodeEditor(
       {required this.editingController,
       required this.findController,
       required this.scrollController,
       required this.focusNode,
+			required this.editorSettings,
       super.key});
 
   @override
@@ -40,13 +40,12 @@ class _MyCodeEditorState extends State<MyCodeEditor> {
       autofocus: true,
       controller: widget.editingController,
       findController: widget.findController,
+			scrollController: widget.scrollController,
       style: CodeEditorStyle(
         fontFamily: 'RecursiveLinear',
-        fontSize: 16,
+        fontSize: widget.editorSettings.fontSize,
         fontHeight: 1.2,
-        //chunkIndicatorColor: Colors.red,
         highlightColor: colorScheme.tertiaryContainer.withOpacity(0.5),
-        //selectionColor: Colors.pink,
         cursorWidth: 4,
         cursorColor: colorScheme.onSurface,
         codeTheme: CodeHighlightTheme(
@@ -57,7 +56,7 @@ class _MyCodeEditorState extends State<MyCodeEditor> {
         final ColorScheme colorScheme = Theme.of(context).colorScheme;
         return Row(
           children: [
-            _buildErrorGutter(colorScheme, controller, notifier)
+            buildErrorGutter(colorScheme, controller, notifier)
           ],
         );
       },
@@ -67,7 +66,7 @@ class _MyCodeEditorState extends State<MyCodeEditor> {
     );
   }
 
-  Widget _buildErrorGutter(
+  Widget buildErrorGutter(
       ColorScheme colorScheme,
       CodeLineEditingController controller,
       ValueNotifier<CodeIndicatorValue?> notifier) {
@@ -78,14 +77,14 @@ class _MyCodeEditorState extends State<MyCodeEditor> {
         controller: controller,
         notifier: notifier,
 				continousLocation: continousLocation,
-        textStyle: const TextStyle(
+        textStyle: TextStyle(
           fontFamily: 'RecursiveLinear',
-          fontSize: 16,
+          fontSize: widget.editorSettings.fontSize,
           height: 1.2,
         ),
-        errorStyle: const TextStyle(
+        errorStyle: TextStyle(
           fontFamily: 'RecursiveLinear',
-          fontSize: 16,
+          fontSize: widget.editorSettings.fontSize,
           height: 1.2,
         ));
   }

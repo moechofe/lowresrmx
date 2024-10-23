@@ -14,6 +14,11 @@ if(in_array($url['path'],[
 	'/player.wasm',
 	'/entry.css',
 	'/entry.js',
+	'/share.html',
+	'/share.js',
+	'/share.css',
+	'/program_list.html',
+	'/program_list.js',
 ]))
 {
 	header("Content-Type: ".[

@@ -85,6 +85,7 @@ enum ErrorCode {
     ErrorKeyboardNotEnabled,
     ErrorAutomaticPauseNotDisabled,
     ErrorNotAllowedOutsideOfInterrupt,
+		ErrorUserDeviceDiskFull,
 
 		ErrorMax
 };

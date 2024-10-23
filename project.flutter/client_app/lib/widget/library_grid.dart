@@ -7,15 +7,13 @@ import 'package:lowresrmx/data/library.dart';
 import 'package:lowresrmx/data/preference.dart';
 import 'package:lowresrmx/widget/library_item.dart';
 
-// TODO: add sort options
-
 class MyLibraryGridDelegate extends SliverGridDelegate {
   @override
   SliverGridLayout getLayout(SliverConstraints constraints) {
     int countPerRow = constraints.crossAxisExtent ~/ 150;
     if (countPerRow < 1) countPerRow = 1;
     final double cross = constraints.crossAxisExtent / countPerRow;
-    final double main = cross + 48; // 48 is the height of the ListTile
+    final double main = cross + 40; // 40 is the height of the ListTile
     return SliverGridRegularTileLayout(
       childMainAxisExtent: main,
       childCrossAxisExtent: cross,
@@ -48,6 +46,7 @@ class MyCatalogGrid extends StatelessWidget {
                 padding: const EdgeInsets.only(
                     left: 12.0, right: 12.0, bottom: 24.0),
                 gridDelegate: MyLibraryGridDelegate(),
+
                 itemCount: snapshot.data!.length,
                 itemBuilder: (context, index) =>
                     _buildGridItem(snapshot.data![index], index));

@@ -1,30 +1,36 @@
-<?php
+<?php // Reached when user share a program from the iOS app.
 
 require_once __DIR__.'/common.php';
 
-if($url['path']==='/upload')
+// TODO: check limit
+
+if($url['path']==='/upload'&&$_SERVER['REQUEST_METHOD']==='GET')
 {
-	$source=file_get_contents('php://input');
-	if(empty($source)) badRequest("Fail to read input");
+	error_log(__FILE__);
 
-	$type=getallheaders()[HEADER_FILE_TYPE];
-	if(!in_array($type,['prg','img'])) badRequest("Fail to read type header");
+	// Check for the field from the iOS app
+	$program=base64_decode(trim(@$_GET['p']));
+	if(empty($program)||strlen($program)>MAX_UPLOAD_PROGRAM) badRequest("Fail to read program");
+	$thumbnail=base64_decode(trim(@$_GET['t']));
+	if(empty($thumbnail)||strlen($thumbnail)>MAX_UPLOAD_THUMBNAIL) badRequest("Fail to read thumbnail");
+	$name=trim(@$_GET['n']);
+	// TODO: check size of the name
+	if(empty($name)) badRequest("Fail to read name");
 
-	$token=getallheaders()[HEADER_TOKEN];
-	if(empty($token)) badRequest("Fail to read token header");
+	$uptoken=generateUploadToken();
+	error_log("Upload token: $uptoken");
+	if(empty($uptoken)) badRequest("Fail to generate token header");
 
-	$user_id=validateSessionAndGetUserId();
-	if(!$user_id) forbidden("Fail to read user");
+	// store the uploaded content
+	redis()->hsetnx("t:$uptoken","prg",zstd_compress($program));
+	redis()->hsetnx("t:$uptoken","img",zstd_compress($thumbnail));
 
-	// check for the token
-	$stored_user_id=redis()->hget("t:$token","uid");
-	if($user_id!==$stored_user_id) forbidden("Fail to validate token");
+	// store the name
+	redis()->hsetnx("t:$uptoken","name",$name);
 
-	// store the uploaded file
-	$source=zstd_compress($source);
-	redis()->hset("t:$token",$type,$source);
-	redis()->expire("t:$token",UPLOAD_TOKEN_TTL);
+	// will expire in 1 hour
+	redis()->expire("t:$uptoken",UPLOAD_TOKEN_TTL);
 
+	header("Location: /share?uptoken=$uptoken");
 	exit;
 }
-

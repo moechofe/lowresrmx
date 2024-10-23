@@ -137,7 +137,6 @@ const char *TokenStrings[] = {
     "NUMBER",
     "OFF",
     "ON",
-    "OPTIONAL",
     "PALETTE",
     "PAL",
     "PAUSE",

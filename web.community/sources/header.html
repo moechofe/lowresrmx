@@ -1,17 +1,33 @@
-<header class="container">
+<header class="container-fluid">
 
 	<nav>
 		<ul>
 			<li><a href="#">Community</a></li>
 		</ul>
-		<ul class="is-not-signed">
-			<li>
+		<ul class="is-not-signed" hidden>
+			<li class="sign-in">
 				<details class="dropdown">
 					<summary>
 						Sign in
 					</summary>
 					<ul dir="rtl">
-						<li><button class="google-sign-in">Sign in with Google</button></li>
+						<li class="google-sign-in"><button class="google-sign-in">Sign in with Google</button></li>
+						<li class="discord-sign-in"><button class="discord-sign-in">Sign in with Discord</button></li>
+					</ul>
+				</details>
+			</li>
+		</ul>
+		<ul class="is-signed" hidden>
+			<li class="user-profile">
+				<details class="dropdown">
+					<summary>
+						<div class="picture"></div>
+						<div class="name"></div>
+					</summary>
+					<ul dir="rtl">
+						<li><a href="#">Share</a></li>
+						<li><a href="#">Profile</a></li>
+						<li><a href="#">Sign out</a></li>
 					</ul>
 				</details>
 			</li>

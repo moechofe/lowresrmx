@@ -82,6 +82,7 @@ const char *ErrorStrings[] = {
     "Keyboard Not Enabled",
     "Automatic Pause Not Disabled",
     "Not Allowed Outside Of Interrupt",
+		"Not enough storage space on the device",
 
 		"Out of error"
 };

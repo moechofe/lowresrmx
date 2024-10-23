@@ -24,56 +24,62 @@ class MySearchPanel extends StatelessWidget implements PreferredSizeWidget {
       return const SizedBox(width: 0.0, height: 0.0);
     } else {
       return Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Column(
-          children: [buildSearchRow(), ...buildReplaceRow()],
-        ),
+      	padding: const EdgeInsets.all(12.0),
+      	child: Column(
+      		children: [buildSearchRow(context), ...buildReplaceRow(context)],
+      	),
       );
     }
   }
 
-  Widget buildSearchRow() {
-    return Row(children: [
-      Expanded(
-          child: TextField(
-        controller: controller.findInputController,
-        focusNode: controller.findInputFocusNode,
-        decoration: const InputDecoration(
-          border: OutlineInputBorder(),
-          label: Text("Search"),
-        ),
-      )),
-      const SizedBox(width: 8.0),
-      IconButton(
-          onPressed: () {
-            controller.nextMatch();
-          },
-          icon: const Icon(Icons.navigate_next_rounded))
-    ]);
+  Widget buildSearchRow(BuildContext context) {
+    return Container(
+			color: Theme.of(context).colorScheme.surfaceContainer,
+			child: Row(children: [
+				Expanded(
+						child: TextField(
+					controller: controller.findInputController,
+					focusNode: controller.findInputFocusNode,
+					decoration: const InputDecoration(
+						border: OutlineInputBorder(),
+						label: Text("Search"),
+					),
+				)),
+				const SizedBox(width: 8.0),
+				IconButton(
+						onPressed: () {
+							controller.nextMatch();
+						},
+						icon: const Icon(Icons.navigate_next_rounded))
+			]),
+		);
   }
 
-  List<Widget> buildReplaceRow() {
+  List<Widget> buildReplaceRow(BuildContext context) {
     if (!isReplaceMode) {
       return [];
     } else {
       return [
         const SizedBox(height: 12.0),
-        Row(
-          children: [
-            Expanded(
-                child: TextField(
-              controller: controller.replaceInputController,
-							focusNode: controller.replaceInputFocusNode,
-              decoration: const InputDecoration(
-                  border: OutlineInputBorder(), label: Text("Replace")),
-            )),
-            const SizedBox(width: 8.0),
-            IconButton(
-                onPressed: () {
-									controller.replaceMatch();
-								}, icon: const Icon(Icons.find_replace_rounded))
-          ],
-        )
+        Container(
+					color: Theme.of(context).colorScheme.surfaceContainer,
+					child: Row(
+						children: [
+							Expanded(
+									child: TextField(
+								controller: controller.replaceInputController,
+												focusNode: controller.replaceInputFocusNode,
+								decoration: const InputDecoration(
+										border: OutlineInputBorder(), label: Text("Replace")),
+							)),
+							const SizedBox(width: 8.0),
+							IconButton(
+									onPressed: () {
+														controller.replaceMatch();
+													}, icon: const Icon(Icons.find_replace_rounded))
+						],
+					),
+				)
       ];
     }
   }

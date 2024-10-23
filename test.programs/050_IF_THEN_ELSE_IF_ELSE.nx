@@ -1,0 +1,17 @@
+again: print "guess the number"
+answer=rnd(100)
+retry: input "1-100:";guess
+if guess<1 or guess>100 then
+  print "a number between 1 and 100"
+  goto retry
+else if guess=answer then
+  print "you got it!"
+  print
+  goto again
+else if guess<answer then
+  print "too low"
+  goto retry
+else
+  print "too high"
+  goto retry
+end if

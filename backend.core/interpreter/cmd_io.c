@@ -29,21 +29,44 @@ enum ErrorCode cmd_KEYBOARD(struct Core *core)
 	// KEYBOARD
 	++interpreter->pc;
 
-	// ON/OFF/OPTIONAL
+	// ON/OFF
 	enum TokenType type = interpreter->pc->type;
-	if (type != TokenON && type != TokenOFF && type != TokenOPTIONAL)
+	if (type != TokenON && type != TokenOFF)
 		return ErrorSyntax;
 	++interpreter->pc;
 
 	if (interpreter->pass == PassRun)
 	{
-		core->machine->ioRegisters.status.keyboardEnabled = (type == TokenON || type == TokenOPTIONAL);
-		// core->machine->ioRegisters.attr.keyboardEnabled = (type == TokenON || type == TokenOPTIONAL);
-		interpreter->isKeyboardOptional = (type == TokenOPTIONAL);
+		core->machine->ioRegisters.status.keyboardEnabled = (type == TokenON);
 		delegate_controlsDidChange(core);
 	}
 
 	return itp_endOfCommand(interpreter);
+}
+
+struct TypedValue fnc_KEYBOARD(struct Core *core)
+{
+	struct Interpreter *interpreter = core->interpreter;
+
+	// KEYBOARD
+	++interpreter->pc;
+
+	// KEYBOARD (
+	if (interpreter->pc->type != TokenBracketOpen) return val_makeError(ErrorSyntax);
+	++interpreter->pc;
+
+	// KEYBOARD ( )
+	if (interpreter->pc->type != TokenBracketClose) return val_makeError(ErrorSyntax);
+	++interpreter->pc;
+
+	struct TypedValue value;
+	value.type = ValueTypeFloat;
+
+	if (interpreter->pass == PassRun)
+	{
+		value.v.floatValue = core->machine->ioRegisters.status.keyboardEnabled > 0 ? -1 : 0;
+	}
+	return value;
 }
 
 enum ErrorCode cmd_PAUSE(struct Core *core)

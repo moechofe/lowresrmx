@@ -1,14 +1,12 @@
-### Setup
+To generate `core_plugin_bindings_generated.dart`.
 
-#### Ubuntu
+> Every times changes is made on `core_plugin.h` or `core_plugin.c`
 
     dart run ffigen --config ffigen.yaml --compiler-opts "-Isrc"
 
-    # dart run ffigen --config ffigen.yaml --compiler-opts "-Isrc/core/machine -Isrc/core/overlay -Isrc/core/libraries -Isrc/core/interpreter -Isrc/core/datamanager -Isrc/core/ -Isrc/core/accessories"
+To generate `core.h` and `core.c`:
 
-To generate the `core.h`:
+    cd lowresrmx/tool.dev
+    bash merge.bash
 
-    npm install -g cpp-merge
-
-    cd core
-    cpp-merge -o ../core.h -i . merge.h
+To debug the `core_plugin`, I run the `client_app` on linux and launch the `"Attach core_plugin linux"` configuration from `./.vscode/launch.json` and select `lowresrmx`, type the root password and place a break point on the `src/...` code.

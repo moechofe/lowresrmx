@@ -114,7 +114,7 @@ struct VideoRam {
 // =================================================
 
 struct SpriteRegisters {
-    struct Sprite sprites[NUM_SPRITES]; // 256 bytes
+    struct Sprite sprites[NUM_SPRITES]; // 1020 bytes
 };
 
 struct ColorRegisters {

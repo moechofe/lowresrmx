@@ -27,46 +27,6 @@ class CorePluginBindings {
           lookup)
       : _lookup = lookup;
 
-  /// A very short-lived native function.
-  ///
-  /// For very short-lived functions, it is fine to call them on the main isolate.
-  /// They will block the Dart execution while running the native function, so
-  /// only do this for native functions which are guaranteed to be short-lived.
-  int sum(
-    int a,
-    int b,
-  ) {
-    return _sum(
-      a,
-      b,
-    );
-  }
-
-  late final _sumPtr =
-      _lookup<ffi.NativeFunction<ffi.Int Function(ffi.Int, ffi.Int)>>('sum');
-  late final _sum = _sumPtr.asFunction<int Function(int, int)>();
-
-  /// A longer lived native function, which occupies the thread calling it.
-  ///
-  /// Do not call these kind of native functions in the main isolate. They will
-  /// block Dart execution. This will cause dropped frames in Flutter applications.
-  /// Instead, call these native functions on a separate isolate.
-  int sum_long_running(
-    int a,
-    int b,
-  ) {
-    return _sum_long_running(
-      a,
-      b,
-    );
-  }
-
-  late final _sum_long_runningPtr =
-      _lookup<ffi.NativeFunction<ffi.Int Function(ffi.Int, ffi.Int)>>(
-          'sum_long_running');
-  late final _sum_long_running =
-      _sum_long_runningPtr.asFunction<int Function(int, int)>();
-
   void runnerInit(
     ffi.Pointer<Runner> arg0,
   ) {
@@ -80,23 +40,6 @@ class CorePluginBindings {
           'runnerInit');
   late final _runnerInit =
       _runnerInitPtr.asFunction<void Function(ffi.Pointer<Runner>)>();
-
-  void runnerSetDelegate(
-    ffi.Pointer<Runner> arg0,
-    ffi.Pointer<CoreDelegate> arg1,
-  ) {
-    return _runnerSetDelegate(
-      arg0,
-      arg1,
-    );
-  }
-
-  late final _runnerSetDelegatePtr = _lookup<
-      ffi.NativeFunction<
-          ffi.Void Function(ffi.Pointer<Runner>,
-              ffi.Pointer<CoreDelegate>)>>('runnerSetDelegate');
-  late final _runnerSetDelegate = _runnerSetDelegatePtr.asFunction<
-      void Function(ffi.Pointer<Runner>, ffi.Pointer<CoreDelegate>)>();
 
   void runnerDeinit(
     ffi.Pointer<Runner> arg0,
@@ -149,18 +92,23 @@ class CorePluginBindings {
   void runnerStart(
     ffi.Pointer<Runner> arg0,
     int scondsSincePowerOn,
+    ffi.Pointer<ffi.Char> originalDataDisk,
+    int originalDataDiskSize,
   ) {
     return _runnerStart(
       arg0,
       scondsSincePowerOn,
+      originalDataDisk,
+      originalDataDiskSize,
     );
   }
 
   late final _runnerStartPtr = _lookup<
-          ffi.NativeFunction<ffi.Void Function(ffi.Pointer<Runner>, ffi.Int)>>(
-      'runnerStart');
-  late final _runnerStart =
-      _runnerStartPtr.asFunction<void Function(ffi.Pointer<Runner>, int)>();
+      ffi.NativeFunction<
+          ffi.Void Function(ffi.Pointer<Runner>, ffi.Int, ffi.Pointer<ffi.Char>,
+              ffi.Size)>>('runnerStart');
+  late final _runnerStart = _runnerStartPtr.asFunction<
+      void Function(ffi.Pointer<Runner>, int, ffi.Pointer<ffi.Char>, int)>();
 
   CoreError runnerUpdate(
     ffi.Pointer<Runner> arg0,
@@ -211,14 +159,96 @@ class CorePluginBindings {
       'runnerTrace');
   late final _runnerTrace =
       _runnerTracePtr.asFunction<void Function(ffi.Pointer<Runner>, bool)>();
+
+  int runnerGetSymbolCount(
+    ffi.Pointer<Runner> arg0,
+  ) {
+    return _runnerGetSymbolCount(
+      arg0,
+    );
+  }
+
+  late final _runnerGetSymbolCountPtr =
+      _lookup<ffi.NativeFunction<ffi.Int Function(ffi.Pointer<Runner>)>>(
+          'runnerGetSymbolCount');
+  late final _runnerGetSymbolCount =
+      _runnerGetSymbolCountPtr.asFunction<int Function(ffi.Pointer<Runner>)>();
+
+  ffi.Pointer<ffi.Char> runnerGetSymbolName(
+    ffi.Pointer<Runner> arg0,
+    int arg1,
+  ) {
+    return _runnerGetSymbolName(
+      arg0,
+      arg1,
+    );
+  }
+
+  late final _runnerGetSymbolNamePtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Pointer<ffi.Char> Function(
+              ffi.Pointer<Runner>, ffi.Int)>>('runnerGetSymbolName');
+  late final _runnerGetSymbolName = _runnerGetSymbolNamePtr
+      .asFunction<ffi.Pointer<ffi.Char> Function(ffi.Pointer<Runner>, int)>();
+
+  int runnerGetSymbolPosition(
+    ffi.Pointer<Runner> arg0,
+    int arg1,
+  ) {
+    return _runnerGetSymbolPosition(
+      arg0,
+      arg1,
+    );
+  }
+
+  late final _runnerGetSymbolPositionPtr = _lookup<
+          ffi.NativeFunction<ffi.Int Function(ffi.Pointer<Runner>, ffi.Int)>>(
+      'runnerGetSymbolPosition');
+  late final _runnerGetSymbolPosition = _runnerGetSymbolPositionPtr
+      .asFunction<int Function(ffi.Pointer<Runner>, int)>();
+
+  void inputKeyDown(
+    ffi.Pointer<Input> arg0,
+    int arg1,
+  ) {
+    return _inputKeyDown(
+      arg0,
+      arg1,
+    );
+  }
+
+  late final _inputKeyDownPtr = _lookup<
+          ffi.NativeFunction<ffi.Void Function(ffi.Pointer<Input>, ffi.Int)>>(
+      'inputKeyDown');
+  late final _inputKeyDown =
+      _inputKeyDownPtr.asFunction<void Function(ffi.Pointer<Input>, int)>();
 }
 
+/// @brief Hold stuff to control the core.
 final class Runner extends ffi.Struct {
+  /// @brief Pointer to the core.
   external ffi.Pointer<Core> core;
 
+  /// @brief Pointer to the core's delegate. I am totally not using the delegate has it was designed. I never manage to make it work. On the c side some Flutter pointer wasn't readable.
   external CoreDelegate delegate;
 
+  /// @brief Used to report the error when a program is running. It is filled by a delegate
   external CoreError runningError;
+
+  /// @brief Holding the data disk, memory is own by the core.
+  external ffi.Pointer<ffi.Char> dataDisk;
+
+  /// @brief Size of the data disk.
+  @ffi.Int()
+  external int dataDiskSize;
+
+  /// @brief Used to know if the data disk should be saved on Flutter side.
+  @ffi.Bool()
+  external bool shouldSaveDisk;
+
+  /// @brief Used to know if the keyboard should be opened on Flutter side.
+  @ffi.Bool()
+  external bool shouldOpenKeyboard;
 }
 
 /// TODO: EMITTER_MAX and SPAWNER_MAX should be the same, right?
@@ -390,7 +420,8 @@ abstract class ErrorCode {
   static const int ErrorKeyboardNotEnabled = 57;
   static const int ErrorAutomaticPauseNotDisabled = 58;
   static const int ErrorNotAllowedOutsideOfInterrupt = 59;
-  static const int ErrorMax = 60;
+  static const int ErrorUserDeviceDiskFull = 60;
+  static const int ErrorMax = 61;
 }
 
 final class ControlsInfo extends ffi.Struct {

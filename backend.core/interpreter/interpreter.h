@@ -121,7 +121,6 @@ struct Interpreter {
     union IOStatus lastFrameIOStatus;
     float timer;
     int seed;
-    bool isKeyboardOptional;
     union Value *lastVariableValue;
 
     struct TextLib textLib;

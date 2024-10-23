@@ -18,12 +18,12 @@ if($url['path']==='/twitter')
 			'grant_type'=>'client_credentials'))
 	));
 
-	$token=json_decode(
+	$uptoken=json_decode(
 	file_get_contents("https://api.twitter.com/oauth2/token",false,stream_context_create($opt)),true);
 
-	if(@$token['token_type']!=='bearer') return internalServerError("Fail to get token");
+	if(@$uptoken['token_type']!=='bearer') return internalServerError("Fail to get token");
 
-	var_dump($token);
+	var_dump($uptoken);
 
 	exit;
 }

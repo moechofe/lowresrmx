@@ -25,26 +25,27 @@ if($url['path']=='/post')
 	if(!in_array($where,FORUM_WHERE)) badRequest("Fail to read where");
 
 	$sequence=redis()->incr("seq:token");
-	$token=bin2hex(sodium_crypto_shorthash(strval($sequence),POST_TOKEN_KEY));
+	$uptoken=bin2hex(sodium_crypto_shorthash(strval($sequence),ENTRY_TOKEN_KEY));
 
 	$author=redis()->hget("u:$user_id","name");
+	$author=substr($author,0,MAX_AUTHOR_NAME);
 
 	$text=zstd_compress($text);
 
-	redis()->hmset("f:$token",
+	redis()->hmset("f:$uptoken",
 		"uid",$user_id,
 		"title",$title,
 		"text",$text,
 		"ct",date(DATE_ATOM),
-		"author",substr($author,0,MAX_AUTHOR_NAME)
+		"author",$author,
 	);
 
-	redis()->zadd("w:$where",SCORE_FOR_FIRST_POST,$token);
+	redis()->zadd("w:$where",SCORE_FOR_FIRST_POST,$uptoken);
 
-	redis()->lpush("u:{$user_id}:f",$token);
+	redis()->lpush("u:{$user_id}:f",$uptoken);
 
 	header("Content-Type: application/json",true);
-	echo json_encode($token);
+	echo json_encode($uptoken);
 	exit;
 }
 

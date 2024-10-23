@@ -301,15 +301,15 @@ void core_handleInput(struct Core *core, struct CoreInput *input)
 
 	if (input->key != 0)
 	{
-		if (ioRegisters->status.keyboardEnabled)
+		// if (ioRegisters->status.keyboardEnabled)
 		// if (ioAttr.keyboardEnabled)
-		{
+		// {
 			char key = input->key;
 			if ((key >= 32 && key < 127) || key == CoreInputKeyBackspace || key == CoreInputKeyReturn || key == CoreInputKeyDown || key == CoreInputKeyUp || key == CoreInputKeyRight || key == CoreInputKeyLeft)
 			{
 				ioRegisters->key = key;
 			}
-		}
+		// }
 		input->key = 0;
 		machine_suspendEnergySaving(core, 2);
 	}
@@ -511,18 +511,9 @@ void delegate_controlsDidChange(struct Core *core)
     if (core->delegate->controlsDidChange)
     {
         struct ControlsInfo info;
-        // union IOAttributes ioAttr = core->machine->ioRegisters.attr;
 				if (core->machine->ioRegisters.status.keyboardEnabled)
-        // if (ioAttr.keyboardEnabled)
         {
-            if (core->interpreter->isKeyboardOptional)
-            {
-                info.keyboardMode = KeyboardModeOptional;
-            }
-            else
-            {
-                info.keyboardMode = KeyboardModeOn;
-            }
+						info.keyboardMode = KeyboardModeOn;
         }
         else
         {
@@ -3779,21 +3770,44 @@ enum ErrorCode cmd_KEYBOARD(struct Core *core)
 	// KEYBOARD
 	++interpreter->pc;
 
-	// ON/OFF/OPTIONAL
+	// ON/OFF
 	enum TokenType type = interpreter->pc->type;
-	if (type != TokenON && type != TokenOFF && type != TokenOPTIONAL)
+	if (type != TokenON && type != TokenOFF)
 		return ErrorSyntax;
 	++interpreter->pc;
 
 	if (interpreter->pass == PassRun)
 	{
-		core->machine->ioRegisters.status.keyboardEnabled = (type == TokenON || type == TokenOPTIONAL);
-		// core->machine->ioRegisters.attr.keyboardEnabled = (type == TokenON || type == TokenOPTIONAL);
-		interpreter->isKeyboardOptional = (type == TokenOPTIONAL);
+		core->machine->ioRegisters.status.keyboardEnabled = (type == TokenON);
 		delegate_controlsDidChange(core);
 	}
 
 	return itp_endOfCommand(interpreter);
+}
+
+struct TypedValue fnc_KEYBOARD(struct Core *core)
+{
+	struct Interpreter *interpreter = core->interpreter;
+
+	// KEYBOARD
+	++interpreter->pc;
+
+	// KEYBOARD (
+	if (interpreter->pc->type != TokenBracketOpen) return val_makeError(ErrorSyntax);
+	++interpreter->pc;
+
+	// KEYBOARD ( )
+	if (interpreter->pc->type != TokenBracketClose) return val_makeError(ErrorSyntax);
+	++interpreter->pc;
+
+	struct TypedValue value;
+	value.type = ValueTypeFloat;
+
+	if (interpreter->pass == PassRun)
+	{
+		value.v.floatValue = core->machine->ioRegisters.status.keyboardEnabled > 0 ? -1 : 0;
+	}
+	return value;
 }
 
 enum ErrorCode cmd_PAUSE(struct Core *core)
@@ -4861,20 +4875,20 @@ enum ErrorCode cmd_POKE(struct Core *core)
 
             case TokenPOKEW:
             {
-                int16_t value = pokeValue.v.floatValue;
-                bool poke1 = machine_poke(core, addressValue.v.floatValue    , value);
-                bool poke2 = machine_poke(core, addressValue.v.floatValue + 1, value >> 8);
+                long value = (long)pokeValue.v.floatValue;
+                bool poke1 = machine_poke(core, addressValue.v.floatValue    , value & 0xff);
+                bool poke2 = machine_poke(core, addressValue.v.floatValue + 1, (value>>8) & 0xff);
                 if (!poke1 || !poke2) return ErrorIllegalMemoryAccess;
                 break;
             }
 
             case TokenPOKEL:
             {
-                int32_t value = pokeValue.v.floatValue;
-                bool poke1 = machine_poke(core, addressValue.v.floatValue    , value);
-                bool poke2 = machine_poke(core, addressValue.v.floatValue + 1, value >> 8);
-                bool poke3 = machine_poke(core, addressValue.v.floatValue + 2, value >> 16);
-                bool poke4 = machine_poke(core, addressValue.v.floatValue + 3, value >> 24);
+                long value = (long)pokeValue.v.floatValue;
+                bool poke1 = machine_poke(core, addressValue.v.floatValue    , value & 0xff);
+                bool poke2 = machine_poke(core, addressValue.v.floatValue + 1, (value>>8) & 0xff);
+                bool poke3 = machine_poke(core, addressValue.v.floatValue + 2, (value>>16) & 0xff);
+                bool poke4 = machine_poke(core, addressValue.v.floatValue + 3, (value>>24) & 0xff);
                 if (!poke1 || !poke2 || !poke3 || !poke4) return ErrorIllegalMemoryAccess;
                 break;
             }
@@ -5081,6 +5095,7 @@ enum ErrorCode cmd_DMA_COPY(struct Core *core)
     if (interpreter->pc->type != TokenCOPY) return ErrorSyntax;
     ++interpreter->pc;
 
+		// DMA COPY ROM
     if (interpreter->pc->type == TokenROM)
     {
         ++interpreter->pc;
@@ -8215,6 +8230,7 @@ const char *ErrorStrings[] = {
     "Keyboard Not Enabled",
     "Automatic Pause Not Disabled",
     "Not Allowed Outside Of Interrupt",
+		"Not enough storage space on the device",
 
 		"Out of error"
 };
@@ -8386,7 +8402,6 @@ struct CoreError itp_compileProgram(struct Core *core, const char *sourceCode)
 	interpreter->isSingleLineIf = false;
 	interpreter->lastFrameIOStatus.value = 0;
 	interpreter->seed = 0;
-	interpreter->isKeyboardOptional = false;
 
 	memset(&interpreter->textLib, 0, sizeof(struct TextLib));
 	memset(&interpreter->spritesLib, 0, sizeof(struct SpritesLib));
@@ -9638,6 +9653,9 @@ struct TypedValue itp_evaluateFunction(struct Core *core)
 	case TokenCEIL:
 		return fnc_math1(core);
 
+	case TokenKEYBOARD:
+		return fnc_KEYBOARD(core);
+
 	default:
 		break;
 	}
@@ -10774,7 +10792,6 @@ const char *TokenStrings[] = {
     "NUMBER",
     "OFF",
     "ON",
-    "OPTIONAL",
     "PALETTE",
     "PAL",
     "PAUSE",
@@ -12586,33 +12603,45 @@ void runStartupSequence(struct Core *core)
     // default palettes
     uint8_t *colors = core->machine->colorRegisters.colors;
 
-    colors[0] = 15;
-    colors[1] = 2;
-    colors[2] = 12;
-    colors[3] = 0;
+    colors[0] = 2;
+    colors[1] = 5;
+    colors[2] = 7;
+    colors[3] = 3;
 
-    colors[4] = 0;
-    colors[5] = 29;
-    colors[6] = 31;
-    colors[7] = 0;
+    colors[4] = 2;
+    colors[5] = 61;
+    colors[6] = 62;
+    colors[7] = 3;
 
-    colors[8] = 0;
-    colors[9] = 30;
-    colors[10] = 17;
-    colors[11] = 0;
+    colors[8] = 2;
+    colors[9] = 18;
+    colors[10] = 19;
+    colors[11] = 3;
 
-    colors[12] = 0;
-    colors[13] = 2;
-    colors[14] = 30;
-    colors[15] = 0;
+    colors[12] = 2;
+    colors[13] = 35;
+    colors[14] = 34;
+    colors[15] = 3;
 
-    for (int i = 0; i < 16; i += 4)
-    {
-        colors[16 + i] = 0;
-        colors[17 + i] = 2;
-        colors[18 + i] = 3;
-        colors[19 + i] = 5;
-    }
+    colors[16] = 2;
+    colors[17] = 53;
+    colors[18] = 54;
+    colors[19] = 3;
+
+    colors[20] = 2;
+    colors[21] = 13;
+    colors[22] = 14;
+    colors[23] = 3;
+
+    colors[24] = 2;
+    colors[25] = 45;
+    colors[26] = 46;
+    colors[27] = 3;
+
+    colors[28] = 2;
+    colors[29] = 26;
+    colors[30] = 27;
+    colors[31] = 3;
 
     // main palettes
     int palLen = entries[1].length;
@@ -12910,8 +12939,6 @@ void txtlib_inputBegin(struct TextLib *lib)
 	lib->core->machine->ioRegisters.key = 0;
 
 	lib->core->machine->ioRegisters.status.keyboardEnabled = 1;
-	// lib->core->machine->ioRegisters.attr.keyboardEnabled = 1;
-	lib->core->interpreter->isKeyboardOptional = false;
 	delegate_controlsDidChange(lib->core);
 
 	txtlib_scrollWindowIfNeeded(lib);

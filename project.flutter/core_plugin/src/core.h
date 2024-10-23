@@ -85,6 +85,7 @@ enum ErrorCode {
     ErrorKeyboardNotEnabled,
     ErrorAutomaticPauseNotDisabled,
     ErrorNotAllowedOutsideOfInterrupt,
+		ErrorUserDeviceDiskFull,
 
 		ErrorMax
 };
@@ -301,7 +302,7 @@ struct VideoRam {
 // =================================================
 
 struct SpriteRegisters {
-    struct Sprite sprites[NUM_SPRITES]; // 256 bytes
+    struct Sprite sprites[NUM_SPRITES]; // 1020 bytes
 };
 
 struct ColorRegisters {
@@ -971,7 +972,6 @@ enum TokenType {
     TokenNUMBER,
     TokenOFF,
     TokenON,
-    TokenOPTIONAL,
     TokenPALETTE,
     TokenPAL,
     TokenPAUSE,
@@ -1788,7 +1788,6 @@ struct Interpreter {
     union IOStatus lastFrameIOStatus;
     float timer;
     int seed;
-    bool isKeyboardOptional;
     union Value *lastVariableValue;
 
     struct TextLib textLib;

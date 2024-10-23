@@ -22,3 +22,8 @@ const TextStyle libraryItemTextStyle = TextStyle(
 	fontSize: 18,
 );
 
+const TextStyle settingHeader = TextStyle(
+	fontFamily: 'Roboto',
+	fontWeight: FontWeight.w500,
+	fontSize: 16,
+);

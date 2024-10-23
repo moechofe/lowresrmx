@@ -59,18 +59,9 @@ void delegate_controlsDidChange(struct Core *core)
     if (core->delegate->controlsDidChange)
     {
         struct ControlsInfo info;
-        // union IOAttributes ioAttr = core->machine->ioRegisters.attr;
 				if (core->machine->ioRegisters.status.keyboardEnabled)
-        // if (ioAttr.keyboardEnabled)
         {
-            if (core->interpreter->isKeyboardOptional)
-            {
-                info.keyboardMode = KeyboardModeOptional;
-            }
-            else
-            {
-                info.keyboardMode = KeyboardModeOn;
-            }
+						info.keyboardMode = KeyboardModeOn;
         }
         else
         {

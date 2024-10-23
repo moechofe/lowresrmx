@@ -60,6 +60,24 @@ const addClassCond=(element,className,condition)=>{
 	else element.classList.remove(className);
 }
 
+/** @type {function(!HTMLElement,string):void} */
+const addAttrCond=(element,name,value,condituon)=>{
+	if(condituon) element.setAttribute(name,value);
+	else element.removeAttribute(name);
+}
+
+/** @type {function(!HTMLElement,string,any):void} */
+const dataset=(element,key,val)=>element.dataset[key]=val;
+
+/** @type {function(!HTMLElement,string):any} */
+const dataget=(element,key)=>element.dataset[key];
+
+/** @type {function(!HTMLElement,string):void} */
+const text=(element,text)=>{element.innerText=text};
+
+/** @type {function(number,function):void} */
+const delay=(ms,func)=>setTimeout(func,ms);
+
 /** @type {function(string,string,Map<String,Sring>):!Promise<!Response>} */
 const post=(path,body,headers)=>fetch(path,{
 	method:'POST',
@@ -168,13 +186,24 @@ const setupSign=()=>{
 	post('is_signed','')
 	.then((res)=>res.json())
 	.then((signed)=>{
-		queryAll(signed?'.is-signed':'.is-not-signed').forEach((item)=>item.hidden=false);
+		log("signed",signed);
+		queryAll(signed===false?'.is-not-signed':'.is-signed').forEach((item)=>show(item));
+		if(signed)
+		{
+			text(query('.user-profile .name'),signed.author?signed.author:"no author name yet");
+			// query('.user-profile .picture').style.backgroundImage="url('"+signed.picture+"')";
+		}
 	}).catch((_)=>queryAll('.is-not-signed').forEach((item)=>show(item)));
 
-
 	((google_sign_in)=>{
-		click(google_sign_in,(event)=>{
+		click(google_sign_in,(_)=>{
 			window.location.href='/google';
 		});
-	})(query('#google-sign-in'))
+	})(query('button.google-sign-in'));
+
+	((discord_sign_in)=>{
+		click(discord_sign_in,(_)=>{
+			window.location.href='/discord';
+		});
+	})(query('button.discord-sign-in'));
 };

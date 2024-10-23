@@ -1,5 +1,4 @@
 import 'dart:convert' show Base64Codec;
-import 'dart:developer';
 import 'dart:typed_data' show Uint8List;
 
 import 'package:flutter/material.dart';
@@ -14,7 +13,7 @@ final Uint8List transparentPng = const Base64Codec().decode(
     "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAAA1BMVEUAAACnej3aAAAAAXRSTlMAQObYZgAAAApJREFUCNdjYAAAAAIAAeIhvDMAAAAASUVORK5CYII=");
 
 enum MyItemMenuOption {
-  isTool,
+  // isTool,
   rename,
   share,
   duplicate,
@@ -35,16 +34,21 @@ class MyLibraryItem extends StatefulWidget {
 }
 
 class _MyLibraryItemState extends State<MyLibraryItem> {
-  late final TextEditingController controller;
+  late final TextEditingController renameController;
 
   @override
   void initState() {
     super.initState();
-    controller = TextEditingController(text: widget.programName);
+    renameController = TextEditingController(text: widget.programName);
   }
 
-  Future<ImageProvider> _loadThumbnail() {
+  Future<ImageProvider> loadThumbnail() {
     return MyLibrary.readThumbnail(widget.programName);
+  }
+
+  void gotoEdit(BuildContext context) {
+    Navigator.of(context).pushReplacementNamed(MyEditPage.routeName,
+        arguments: {"programName": widget.programName});
   }
 
   @override
@@ -60,7 +64,7 @@ class _MyLibraryItemState extends State<MyLibraryItem> {
             future: preference.loadPreference(),
             builder: (context, snapshot) {
               if (snapshot.hasData) {
-                return _buildContent(
+                return buildContent(
                     context, constraints, snapshot.data as MyProgramPreference);
               } else {
                 return const SizedBox();
@@ -70,42 +74,33 @@ class _MyLibraryItemState extends State<MyLibraryItem> {
     });
   }
 
-  GestureDetector _buildContent(BuildContext context,
-      BoxConstraints constraints, MyProgramPreference preference) {
+  Widget buildContent(BuildContext context, BoxConstraints constraints,
+      MyProgramPreference preference) {
     // Unfortunatly, Inkwell does not support onLongPressStart with details, and I need the position to place the popup menu.
     return GestureDetector(
       onLongPressStart: (details) {
-        _showPopupMenu(context, details, preference);
+        showPopupMenu(context, details, preference);
       },
       child: InkWell(
         onTap: () {
-          Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) =>
-                      // Will show the program editor page for this program.
-                      _gotoEditPage()));
+          gotoEdit(context);
         },
         borderRadius: BorderRadius.circular(12.0),
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          children: [_buildThumbnail(constraints), _buildName()],
+          children: [buildThumbnail(constraints), buildName()],
         ),
       ),
     );
   }
 
-  Widget _gotoEditPage() {
-    return MyEditPage(programName: widget.programName);
-  }
-
-  Widget _buildName() {
+  Widget buildName() {
     return Expanded(
         child: Align(
             alignment: Alignment.centerLeft,
             child: Padding(
               padding: const EdgeInsets.only(
-                  left: 12.0, right: 12.0, top: 0.0, bottom: 4.0),
+                  left: 12.0, right: 12.0, top: 4.0, bottom: 4.0),
               child: Text(
                 style: libraryItemTextStyle,
                 widget.programName,
@@ -115,12 +110,12 @@ class _MyLibraryItemState extends State<MyLibraryItem> {
             )));
   }
 
-  SizedBox _buildThumbnail(BoxConstraints constraints) {
+  SizedBox buildThumbnail(BoxConstraints constraints) {
     return SizedBox(
-      width: constraints.maxWidth,
-      height: constraints.maxWidth,
+      width: constraints.maxWidth - 8,
+      height: constraints.maxWidth - 8,
       child: FutureBuilder(
-          future: _loadThumbnail(),
+          future: loadThumbnail(),
           builder: (context, snapshot) {
             if (snapshot.hasData) {
               return Opacity(
@@ -142,7 +137,7 @@ class _MyLibraryItemState extends State<MyLibraryItem> {
     );
   }
 
-  void _showPopupMenu(BuildContext context, LongPressStartDetails details,
+  void showPopupMenu(BuildContext context, LongPressStartDetails details,
       MyProgramPreference preference) {
     showMenu<MyItemMenuOption?>(
       context: context,
@@ -172,61 +167,58 @@ class _MyLibraryItemState extends State<MyLibraryItem> {
           value: MyItemMenuOption.delete,
           child: ListTile(leading: Icon(Icons.delete), title: Text('Delete')),
         ),
-        const PopupMenuDivider(),
-        CheckedPopupMenuItem<MyItemMenuOption>(
-            value: MyItemMenuOption.isTool,
-            checked: preference.isTool,
-            child: const Text('Is Tool')),
+        // const PopupMenuDivider(),
+        // CheckedPopupMenuItem<MyItemMenuOption>(
+        //     value: MyItemMenuOption.isTool,
+        //     checked: preference.isTool,
+        //     child: const Text('Is Tool')),
       ],
     ).then((value) {
       if (value == null) return;
       switch (value) {
-        case MyItemMenuOption.isTool:
-          preference.setTool(!preference.isTool);
-          break;
+        // case MyItemMenuOption.isTool:
+        //   preference.setTool(!preference.isTool);
+        //   break;
         case MyItemMenuOption.rename:
-          _showRenameDialog();
+          showRenameDialog();
           break;
         case MyItemMenuOption.share:
           break;
         case MyItemMenuOption.duplicate:
           break;
         case MyItemMenuOption.delete:
-          _showDeleteDialog();
+          showDeleteDialog();
           break;
       }
     });
   }
 
-  void _showRenameDialog() async {
+  void showRenameDialog() async {
     String? newName = await showDialog<String?>(
       context: context,
       builder: (BuildContext context) {
         String newName = widget.programName;
         return AlertDialog(
-          icon: const Icon(Icons.drive_file_rename_outline_rounded),
-          title: const Text("Rename"),
-          content: TextField(
-            controller: controller,
-            autofocus: true,
-            onChanged: (value) {
-              newName = value;
-            },
-            decoration: const InputDecoration(
-              labelText: "New Name",
+            icon: const Icon(Icons.drive_file_rename_outline_rounded),
+            title: const Text("Rename"),
+            content: TextField(
+              controller: renameController,
+              autofocus: true,
+              onChanged: (value) => newName = value,
+              decoration: const InputDecoration(
+                labelText: "New Name",
+              ),
             ),
-          ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text("Cancel"),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(context, newName),
-              child: const Text("Rename"),
-            ),
-          ],
-        );
+            actions: <Widget>[
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text("Cancel"),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, newName),
+                child: const Text("Rename"),
+              )
+            ]);
       },
     );
     if (newName != null) {
@@ -235,7 +227,7 @@ class _MyLibraryItemState extends State<MyLibraryItem> {
     }
   }
 
-  void _showDeleteDialog() async {
+  void showDeleteDialog() async {
     bool? confirmDelete = await showDialog<bool>(
       context: context,
       builder: (BuildContext context) {

@@ -141,7 +141,6 @@ enum TokenType {
     TokenNUMBER,
     TokenOFF,
     TokenON,
-    TokenOPTIONAL,
     TokenPALETTE,
     TokenPAL,
     TokenPAUSE,

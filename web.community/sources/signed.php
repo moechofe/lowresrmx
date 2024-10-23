@@ -12,9 +12,10 @@ if($url['path']==='/is_signed')
 		exit;
 	}
 
-	list($name,$picture,$author)=redis()->hget("u:$user_id","name","picture","author");
+	list($picture,$author)=redis()->hmget("u:$user_id","picture","author");
 
-	var_dump($name,$picture,$author);
+	header("Content-Type: application/json",true);
+	echo json_encode(compact("picture","author"));
 
 	exit;
 }

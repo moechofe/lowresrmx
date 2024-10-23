@@ -153,15 +153,15 @@ void core_handleInput(struct Core *core, struct CoreInput *input)
 
 	if (input->key != 0)
 	{
-		if (ioRegisters->status.keyboardEnabled)
+		// if (ioRegisters->status.keyboardEnabled)
 		// if (ioAttr.keyboardEnabled)
-		{
+		// {
 			char key = input->key;
 			if ((key >= 32 && key < 127) || key == CoreInputKeyBackspace || key == CoreInputKeyReturn || key == CoreInputKeyDown || key == CoreInputKeyUp || key == CoreInputKeyRight || key == CoreInputKeyLeft)
 			{
 				ioRegisters->key = key;
 			}
-		}
+		// }
 		input->key = 0;
 		machine_suspendEnergySaving(core, 2);
 	}

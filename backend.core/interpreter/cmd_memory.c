@@ -121,20 +121,20 @@ enum ErrorCode cmd_POKE(struct Core *core)
 
             case TokenPOKEW:
             {
-                int16_t value = pokeValue.v.floatValue;
-                bool poke1 = machine_poke(core, addressValue.v.floatValue    , value);
-                bool poke2 = machine_poke(core, addressValue.v.floatValue + 1, value >> 8);
+                long value = (long)pokeValue.v.floatValue;
+                bool poke1 = machine_poke(core, addressValue.v.floatValue    , value & 0xff);
+                bool poke2 = machine_poke(core, addressValue.v.floatValue + 1, (value>>8) & 0xff);
                 if (!poke1 || !poke2) return ErrorIllegalMemoryAccess;
                 break;
             }
 
             case TokenPOKEL:
             {
-                int32_t value = pokeValue.v.floatValue;
-                bool poke1 = machine_poke(core, addressValue.v.floatValue    , value);
-                bool poke2 = machine_poke(core, addressValue.v.floatValue + 1, value >> 8);
-                bool poke3 = machine_poke(core, addressValue.v.floatValue + 2, value >> 16);
-                bool poke4 = machine_poke(core, addressValue.v.floatValue + 3, value >> 24);
+                long value = (long)pokeValue.v.floatValue;
+                bool poke1 = machine_poke(core, addressValue.v.floatValue    , value & 0xff);
+                bool poke2 = machine_poke(core, addressValue.v.floatValue + 1, (value>>8) & 0xff);
+                bool poke3 = machine_poke(core, addressValue.v.floatValue + 2, (value>>16) & 0xff);
+                bool poke4 = machine_poke(core, addressValue.v.floatValue + 3, (value>>24) & 0xff);
                 if (!poke1 || !poke2 || !poke3 || !poke4) return ErrorIllegalMemoryAccess;
                 break;
             }
@@ -341,6 +341,7 @@ enum ErrorCode cmd_DMA_COPY(struct Core *core)
     if (interpreter->pc->type != TokenCOPY) return ErrorSyntax;
     ++interpreter->pc;
 
+		// DMA COPY ROM
     if (interpreter->pc->type == TokenROM)
     {
         ++interpreter->pc;

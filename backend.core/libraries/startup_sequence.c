@@ -53,33 +53,45 @@ void runStartupSequence(struct Core *core)
     // default palettes
     uint8_t *colors = core->machine->colorRegisters.colors;
 
-    colors[0] = 15;
-    colors[1] = 2;
-    colors[2] = 12;
-    colors[3] = 0;
+    colors[0] = 2;
+    colors[1] = 5;
+    colors[2] = 7;
+    colors[3] = 3;
 
-    colors[4] = 0;
-    colors[5] = 29;
-    colors[6] = 31;
-    colors[7] = 0;
+    colors[4] = 2;
+    colors[5] = 61;
+    colors[6] = 62;
+    colors[7] = 3;
 
-    colors[8] = 0;
-    colors[9] = 30;
-    colors[10] = 17;
-    colors[11] = 0;
+    colors[8] = 2;
+    colors[9] = 18;
+    colors[10] = 19;
+    colors[11] = 3;
 
-    colors[12] = 0;
-    colors[13] = 2;
-    colors[14] = 30;
-    colors[15] = 0;
+    colors[12] = 2;
+    colors[13] = 35;
+    colors[14] = 34;
+    colors[15] = 3;
 
-    for (int i = 0; i < 16; i += 4)
-    {
-        colors[16 + i] = 0;
-        colors[17 + i] = 2;
-        colors[18 + i] = 3;
-        colors[19 + i] = 5;
-    }
+    colors[16] = 2;
+    colors[17] = 53;
+    colors[18] = 54;
+    colors[19] = 3;
+
+    colors[20] = 2;
+    colors[21] = 13;
+    colors[22] = 14;
+    colors[23] = 3;
+
+    colors[24] = 2;
+    colors[25] = 45;
+    colors[26] = 46;
+    colors[27] = 3;
+
+    colors[28] = 2;
+    colors[29] = 26;
+    colors[30] = 27;
+    colors[31] = 3;
 
     // main palettes
     int palLen = entries[1].length;

@@ -29,7 +29,13 @@ https://pub.dev/packages/workmanager
 
 https://pub.dev/packages/permission_handler
 
+https://stackoverflow.com/questions/50561737/getting-permission-to-the-external-storage-file-provider-plugin
+
+https://pub.dev/packages/shared_storage
+
 
 #### About Sync
 
 https://pub.dev/packages/cloud_firestore
+https://pub.dev/packages/dropbox_client
+

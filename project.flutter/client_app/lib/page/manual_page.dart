@@ -39,7 +39,7 @@ class MyManualPage extends StatefulWidget {
 
 class _MyManualPageState extends State<MyManualPage> {
   // Need to be recreated or if not the TOC will not appear.
-  late TocController tocController = TocController();
+  late TocController tocController;
 
   Widget _buildToc() {
     return TocWidget(controller: tocController);
@@ -98,7 +98,14 @@ class _MyManualPageState extends State<MyManualPage> {
                 MarkdownWidget(
                     tocController: tocController,
                     data: manualData,
-                    key: UniqueKey()),
+                    key: UniqueKey(),
+										config: MarkdownConfig(configs: [
+
+										]),
+										markdownGenerator: MarkdownGenerator(
+
+										),
+										),
           )
         ]));
   }

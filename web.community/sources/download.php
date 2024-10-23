@@ -2,18 +2,26 @@
 
 require_once __DIR__.'/common.php';
 
-if(strlen($info['filename'])>16&&strlen($info['filename'])<512&&in_array($info['extension'],['prg','img']))
+if(strlen($info['filename'])>16&&strlen($info['filename'])<512&&in_array($info['extension'],['rmx','png']))
 {
-	$program_id=pathinfo($request,PATHINFO_FILENAME);
+	header("Content-Type: ".[
+		'rmx'=>'text/plain',
+		'png'=>'image/png',
+	][$info['extension']]);
 
-	$type=pathinfo($request,PATHINFO_EXTENSION);
-	if($type!=='prg'&&$type!=='img') badRequest("Fail to read type",__FILE__,__LINE__);
+	$folder=substr($info['filename'],0,3);
+	$path=CONTENT_FOLDER."$folder/{$info['filename']}.{$info['extension']}";
+	error_log("Path: $path");
 
-	// TODO: check publish status
-
-	$source=redis()->hget("p:$program_id",$type);
-	$source=zstd_uncompress($source);
-
-	echo $source;
-	exit;
+	if(file_exists($path))
+	{
+		readfile(CONTENT_FOLDER."$folder/{$info['filename']}.{$info['extension']}");
+		exit;
+	}
+	else
+	{
+		header("Status: 404 Not Found",true,404);
+		exit;
+	}
 }
+

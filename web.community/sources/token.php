@@ -2,14 +2,9 @@
 
 require_once __DIR__.'/common.php';
 
-if($url['path']==='/token')
+function generateUploadToken():string
 {
-	$user_id=validateSessionAndGetUserId();
-	if(!$user_id) forbidden("Fail to read user");
-
-	// TODO: count token per user and prevent re-creation
-
-	$sequence=redis()->incr("seq:token");
+	$sequence=redis()->incr("seq:uptoken");
 	$hash=bin2hex(sodium_crypto_shorthash(strval($sequence),UPLOAD_TOKEN_KEY));
 
 	$token="";
@@ -19,12 +14,20 @@ if($url['path']==='/token')
 	$token.="-";
 	$token.=$hash;
 
-	// TODO: check if token already exists
+	return $token;
+}
 
-	// store temporary upload token, to validate the authorization of uploading a program by the user.
-	redis()->hset("t:$token","uid",$user_id);
-	redis()->expire("t:$token",UPLOAD_TOKEN_TTL);
+function generateEntryToken():string
+{
+	$sequence=redis()->incr("seq:entry");
+	$hash=bin2hex(sodium_crypto_shorthash(strval($sequence),ENTRY_TOKEN_KEY));
 
-	header(HEADER_TOKEN.": ".$token);
-	exit;
+	$token="";
+	for($i=0;$i<2;++$i) $token.=SYLLABLE_LIST[random_int(0,count(SYLLABLE_LIST))];
+	$token.="-";
+	for($i=0;$i<2;++$i) $token.=SYLLABLE_LIST[random_int(0,count(SYLLABLE_LIST))];
+	$token.="-";
+	$token.=$hash;
+
+	return $token;
 }

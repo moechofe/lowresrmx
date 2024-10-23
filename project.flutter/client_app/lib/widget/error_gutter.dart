@@ -147,7 +147,7 @@ class MyErrorGutterRenderObject extends RenderBox {
     canvas
         .clipRect(Rect.fromLTWH(offset.dx, offset.dy, size.width, size.height));
     for (final CodeLineRenderParagraph paragraph in value.paragraphs) {
-			if (paragraph.index == _continousLocation.location.index) {
+			if (paragraph.index == _continousLocation.location.row) {
 				_textPainter.text = TextSpan(
 					text: "🐞",
 					style: _errorStyle

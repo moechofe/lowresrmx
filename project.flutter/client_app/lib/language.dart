@@ -92,7 +92,6 @@ final langLowResRMX = Mode(
       "NUMBER",
       "OFF",
       "ON",
-      "OPTIONAL",
       "OR",
       "PAL",
       "PALETTE",

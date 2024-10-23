@@ -7,19 +7,39 @@ import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-import 'package:ffi/ffi.dart' show calloc;
+import 'package:ffi/ffi.dart';
 import 'package:image/image.dart' as img;
 import 'package:mp_audio_stream/mp_audio_stream.dart';
 
 import 'package:core_plugin/core_plugin_bindings_generated.dart';
 import 'package:core_plugin/core_plugin.dart';
 
-import 'package:lowresrmx/data/library.dart';
+import 'package:lowresrmx/data/outline_entry.dart';
 
 class Location {
-  final int index;
-  final int offset;
-  Location(this.index, this.offset);
+  late final int row;
+  late final int column;
+  Location(this.row, this.column);
+
+	Location.fromCode(String code, int offset)
+	{
+    int index = 0;
+    int line = 0;
+    while (index < code.length) {
+      int newline = code.indexOf("\n", index);
+      if (newline == -1) {
+        break;
+      } else if (newline >= offset) {
+				row = line;
+				column = offset - index;
+				return;
+      }
+      index = newline + 1;
+      ++line;
+    }
+		row=line;
+		column = offset - index;
+	}
 }
 
 /// Used to transport errors from the runtime to the app
@@ -36,24 +56,27 @@ class Error {
   String toString() => "Error #$code at pos: $position: $msg";
 
   Location getLocation(String code) {
-    if (ok || this.position == -1) {
+    if (ok || position == -1) {
       return Location(-1, -1);
-    }
-    int position = this.position;
-    int index = 0;
-    int line = 0;
-    while (index < code.length) {
-      int newline = code.indexOf("\n", index);
-      if (newline == -1) {
-        break;
-      } else if (newline >= position) {
-        return Location(line, position - index);
-      }
-      index = newline + 1;
-      ++line;
-    }
-    return Location(line, position);
+    } else {
+			return Location.fromCode(code, position);
+		}
   }
+
+	Map<String, dynamic> toMap() {
+		return {
+			"code": code,
+			"msg": msg,
+			"position": position,
+		};
+	}
+
+	static Error? fromMap(Map<String, dynamic>? map) {
+		if(map == null) {
+			return null;
+		}
+		return Error(code: map["code"], msg: map["msg"], position: map["position"]);
+	}
 }
 
 /// Used to transport some type of message from the app to the isolate
@@ -64,25 +87,51 @@ enum IsolateMessageType {
   thumbnail,
 }
 
+// FIXME: Message should have Message in their name. Common!
+
+/// Message used to transport the code and the data disk from the app to the isolate
+class CompileAndRunMsg {
+	final String code;
+	final String dataDisk;
+	CompileAndRunMsg(this.code, this.dataDisk);
+}
+
 /// Message used to transport the code from the app to the isolate
-class CompileOnlyMessage {
+class CompileOnlyMsg {
   final String code;
-  CompileOnlyMessage(this.code);
+  CompileOnlyMsg(this.code);
 }
 
 /// Message used to transport the error from the isolate to the app
-class RunningError {
+class RunningErrorMsg {
   final Error error;
-  RunningError(this.error);
+  RunningErrorMsg(this.error);
 }
 
 /// Message used to transport the thumbnail from the isolate to the app
-class Thumbnail {
+class ThumbnailMsg {
   static int thumbWidth = 180;
   static int thumbHeight = 180;
 
   Uint8List pixels;
-  Thumbnail(this.pixels);
+  ThumbnailMsg(this.pixels);
+}
+
+/// Message used to transport the data disk from the isolate to the app
+class DataDiskMsg {
+	final String dataDisk;
+	DataDiskMsg(this.dataDisk);
+}
+
+/// Message used to transport the keyboard visibility from the isolate to the app
+class KeyboardVisibleMsg {
+	final bool open;
+	KeyboardVisibleMsg(this.open);
+}
+
+class KeyboardKeyDownMsg {
+	final int ascii;
+	KeyboardKeyDownMsg(this.ascii);
 }
 
 /// Bridge between the core and the app
@@ -93,6 +142,8 @@ class Runtime extends ChangeNotifier {
   static int bufferSize = screenWidth * screenHeight * bytePerPixel;
   Uint8List? bytesList;
   ui.Image? image;
+	String? dataDiskToSave;
+	bool keyboardOpen = false;
 
   final ffi.Pointer<Input> input = calloc();
   final ffi.Pointer<Runner> runner = calloc();
@@ -105,74 +156,12 @@ class Runtime extends ChangeNotifier {
   double _screenScale = 1.0;
   double get screenScale => _screenScale;
 
-  // static void didFail(ffi.Pointer<ffi.Void> runner, CoreError error) {
-  //   log("Runtime.didFail: $error");
-  //   // 	final Runtime runtime = Runtime();
-  //   // 	runtime.interpreterDidFail(CoreError.fromPointer(error));
-  // }
-
-  // static bool driveWillAccess(
-  //     ffi.Pointer<ffi.Void> runner, ffi.Pointer<DataManager> dataManager) {
-  //   log("driveWillAccess");
-  //   // TODO: Implement
-  //   return true;
-  // }
-
-  // static void driveDidSave(
-  //     ffi.Pointer<ffi.Void> runner, ffi.Pointer<DataManager> dataManager) {
-  //   log("driveDidSave");
-  // }
-
-  // static void driveIsFull(
-  //     ffi.Pointer<ffi.Void> runner, ffi.Pointer<DataManager> dataManager) {
-  //   log("driveIsFull");
-  // }
-
-  // static void controlsDidChange(
-  //     ffi.Pointer<ffi.Void> runner, ControlsInfo controls) {
-  //   log("controlsDidChange");
-  // }
-
-  // static void persistentRamWillAccess(ffi.Pointer<ffi.Void> runner,
-  //     ffi.Pointer<ffi.Uint8> destination, int size) {
-  //   log("persistentRamWillAccess");
-  // }
-
-  // static void persistentRamDidChange(
-  //     ffi.Pointer<ffi.Void> runner, ffi.Pointer<ffi.Uint8> source, int size) {
-  //   log("persistentRamDidChange");
-  // }
-
-  // void delegateInit() {
-  //   delegate.ref.context = ffi.Pointer.fromAddress(runner.address);
-  //   delegate.ref.interpreterDidFail =
-  //       ffi.Pointer.fromFunction<InterpreterDidFailFunc>(didFail);
-  //   delegate.ref.diskDriveWillAccess =
-  //       ffi.Pointer.fromFunction<InterpreterDriveWillAccessFunc>(
-  //           driveWillAccess, false);
-  //   delegate.ref.diskDriveDidSave =
-  //       ffi.Pointer.fromFunction<InterpreterDriveDidSaveFunc>(driveDidSave);
-  //   delegate.ref.diskDriveIsFull =
-  //       ffi.Pointer.fromFunction<InterpreterDriveDidSaveFunc>(driveIsFull);
-  //   delegate.ref.controlsDidChange =
-  //       ffi.Pointer.fromFunction<InterpreterControlsDidChangeFunc>(
-  //           controlsDidChange);
-  //   delegate.ref.persistentRamWillAccess =
-  //       ffi.Pointer.fromFunction<InterpreterPersistentRamWillAccessFunc>(
-  //           persistentRamWillAccess);
-  //   delegate.ref.persistentRamDidChange =
-  //       ffi.Pointer.fromFunction<InterpreterPersistentRamDidChangeFunc>(
-  //           persistentRamDidChange);
-  //   runnerSetDelegate(runner, ffi.Pointer.fromAddress(delegate.address));
-  // }
-
   void audioInit() {
     audioStream.init(channels: 2);
   }
 
   void initState() {
     runnerInit(runner);
-    // delegateInit();
     audioInit();
   }
 
@@ -182,11 +171,15 @@ class Runtime extends ChangeNotifier {
     runnerDeinit(runner);
   }
 
-  Error compileAndStart(String src) {
+  Error compileAndStart(String src, String dataDisk) {
     final CoreError err = runnerCompileProgram(runner, src);
     if (err.code == 0) {
+			final Uint8List dataList = Uint8List.fromList(dataDisk.codeUnits);
+			final int dataSize = dataList.length;
+			final ffi.Pointer<ffi.Uint8> dataDiskPtr = calloc<ffi.Uint8>(dataSize);
+			dataDiskPtr.asTypedList(dataDisk.length).setAll(0, dataList);
       // TODO: compute secondsSincePowerOn
-      runnerStart(runner, 123);
+      runnerStart(runner, 123, ffi.Pointer.fromAddress(dataDiskPtr.address), dataSize);
     }
     return Error(
         code: err.code,
@@ -221,29 +214,26 @@ class Runtime extends ChangeNotifier {
     input.ref.right = (safeRight / _screenScale).toInt();
   }
 
-  // TODO: Should I update in compute?
+	void keyDown(int ascii) {
+		inputKeyDown(input, ascii);
+	}
+
   Error update() {
     final CoreError err = runnerUpdate(runner, input);
+		if (runner.ref.shouldSaveDisk) {
+			dataDiskToSave = runner.ref.dataDisk.cast<Utf8>().toDartString(length: runner.ref.dataDiskSize);
+			runner.ref.shouldSaveDisk = false;
+		}
+		keyboardOpen=runner.ref.shouldOpenKeyboard;
     return Error(
         code: err.code,
         msg: runnerGetError(runner, err.code),
         position: err.sourcePosition);
   }
 
-  // TODO: Should I render in compute?
   void render() {
     runnerRender(runner, pixels);
     bytesList = pixels.asTypedList(bufferSize);
-    // for (int i = 0; i < bufferSize; i += 4) {
-    //   int r = bytesList![i];
-    //   int g = bytesList![i + 1];
-    //   int b = bytesList![i + 2];
-    //   int a = bytesList![i + 3];
-    //   if (r > 0 || g > 0 || b > 0) {
-    //     // log("r: $r, g: $g, b: $b, a: $a");
-    //   }
-    //   bytesList![i + 3] = 255;
-    // }
   }
 
   void touchOn(Offset pos) {
@@ -260,9 +250,16 @@ class Runtime extends ChangeNotifier {
     runnerTrace(runner, trace);
   }
 
-  void interpreterDidFail(CoreError error) {
-    log("Interpreter failed: $error");
-  }
+	List<OutlineEntry> getOutline() {
+		int count = runnerGetSymbolCount(runner);
+		List<OutlineEntry> list = [];
+		for (int i = 0; i < count; ++i) {
+			String name = runnerGetSymbolName(runner, i);
+			int position = runnerGetSymbolPosition(runner, i);
+			list.add(OutlineEntry(name, position));
+		}
+		return list;
+	}
 }
 
 /// Used to hold the [Runtime] instance into an isolate.
@@ -274,29 +271,39 @@ void isolateEntryPoint(SendPort sendPort) {
 
   bool running = false;
 
+	// Remember the keyboard state to avoid sending the same message each frame.
+	bool keyboardOpen = false;
+
   sendPort.send(receivePort.sendPort);
 
   receivePort.listen((message) {
-    if (message is String) {
-      // Receive the code and compile it, then send back the error. Start running if no error
-      final Error err = runtime.compileAndStart(message);
-      sendPort.send(err);
-    } else if (message is CompileOnlyMessage) {
+		if (message is CompileAndRunMsg) {
+			// Receive the code and compile it, then send back the error. Start running if no error
+			final Error err = runtime.compileAndStart(message.code, message.dataDisk);
+			sendPort.send(err);
+    } else if (message is CompileOnlyMsg) {
       // Receive the code and compile it, then send back the error
       final Error err = runtime.compileOnly(message.code);
       sendPort.send(err);
+			// Also send the list of outline entries
+			final List<OutlineEntry> outline = runtime.getOutline();
+			sendPort.send(outline);
     } else if (message is bool && message) {
       // Start the running at 60 fps
       log("isolate: Start running");
       running = true;
+			keyboardOpen = false;
     } else if (message is bool && !message) {
       // Stop the running
       log("isolate: Stop running");
       running = false;
+		// TODO: change for a real event
     } else if (message is List<double>) {
       // Receive the screen size and the safe area
       runtime.resize(message[0], message[1], message[2], message[3], message[4],
           message[5]);
+		} else if (message is KeyboardKeyDownMsg) {
+			runtime.keyDown(message.ascii);
     } else if (message is Offset) {
       // Receive the touch event
       runtime.touchOn(message);
@@ -315,7 +322,7 @@ void isolateEntryPoint(SendPort sendPort) {
     } else if (message is IsolateMessageType &&
         message == IsolateMessageType.thumbnail) {
       runtime.render();
-      sendPort.send(Thumbnail(runtime.bytesList!));
+      sendPort.send(ThumbnailMsg(runtime.bytesList!));
     }
   });
 
@@ -326,8 +333,16 @@ void isolateEntryPoint(SendPort sendPort) {
       runtime.render();
       sendPort.send(runtime.bytesList!);
       if (!err.ok) {
-        sendPort.send(RunningError(err));
+        sendPort.send(RunningErrorMsg(err));
       }
+			if (runtime.dataDiskToSave != null) {
+				sendPort.send(DataDiskMsg(runtime.dataDiskToSave!));
+				runtime.dataDiskToSave = null;
+			}
+			if (runtime.keyboardOpen != keyboardOpen) {
+				sendPort.send(KeyboardVisibleMsg(runtime.keyboardOpen));
+				keyboardOpen = runtime.keyboardOpen;
+			}
     }
   });
 }
@@ -341,6 +356,15 @@ typedef ThumbnailCallback = void Function(img.Image);
 /// To receive the error when the program is running.
 typedef RunnerErrorCallback = void Function(Error);
 
+/// To received the data disk to be saved on the device.
+typedef SaveDataDiskCallback = void Function(String);
+
+/// To receive the keyboard visibility.
+typedef KeyboardVisibleCallback = void Function(bool);
+
+/// To receive the outline entries.
+typedef OutlineCallback = void Function(List<OutlineEntry>);
+
 /// Used to group all communication with the isolate in one place
 class ComPort {
   late final Isolate isolate;
@@ -351,6 +375,9 @@ class ComPort {
   FrameCallback? onImage;
   ThumbnailCallback? onThumbnail;
   RunnerErrorCallback? onRunningError;
+	SaveDataDiskCallback? onSaveDataDisk;
+	KeyboardVisibleCallback? onKeyboardVisible;
+	OutlineCallback? onOutline;
 
   /// Setup the communication with the isolate and listen for messages
   Future<SendPort> init() async {
@@ -364,7 +391,7 @@ class ComPort {
       } else if (message is Error) {
         // Receive the error from the compilation
         compileCompleter!.complete(message);
-      } else if (message is RunningError) {
+      } else if (message is RunningErrorMsg) {
         // Receive the error when program is running
         if (onRunningError != null) {
           onRunningError!(message.error);
@@ -373,7 +400,7 @@ class ComPort {
         // Decode the image and call the callback
         ui.decodeImageFromPixels(message, Runtime.screenWidth,
             Runtime.screenHeight, ui.PixelFormat.rgba8888, onImage!);
-      } else if (message is Thumbnail) {
+      } else if (message is ThumbnailMsg) {
         // Receive the thumbnail
         img.Image image = img.copyCrop(
             img.Image.fromBytes(
@@ -384,27 +411,39 @@ class ComPort {
                 rowStride: Runtime.screenWidth * Runtime.bytePerPixel),
             x: 0,
             y: 0,
-            width: Thumbnail.thumbWidth,
-            height: Thumbnail.thumbHeight,
+            width: ThumbnailMsg.thumbWidth,
+            height: ThumbnailMsg.thumbHeight,
             antialias: false);
         onThumbnail!(image);
-        // MyLibrary.writeThumbnail(programName, image);
-      }
+      } else if (message is DataDiskMsg) {
+				if (onSaveDataDisk != null) {
+					onSaveDataDisk!(message.dataDisk);
+				}
+			} else if (message is KeyboardVisibleMsg) {
+				if (onKeyboardVisible != null) {
+					onKeyboardVisible!(message.open);
+				}
+			} else if (message is List<OutlineEntry>) {
+				// Receive the outline entries
+				if (onOutline != null) {
+					onOutline!(message);
+				}
+			}
     });
     return ready.future;
   }
 
   /// Compile and run the code in the isolate
-  Future<Error> compileAndRun(String code) async {
+  Future<Error> compileAndRun(String code, String dataDisk) async {
     compileCompleter = Completer();
-    sendPort.send(code);
+    sendPort.send(CompileAndRunMsg(code, dataDisk));
     return compileCompleter!.future;
   }
 
   /// Used to compile and report error in the editor
   Future<Error> compileOnly(String code) async {
     compileCompleter = Completer();
-    sendPort.send(CompileOnlyMessage(code));
+    sendPort.send(CompileOnlyMsg(code));
     return compileCompleter!.future;
   }
 
@@ -433,4 +472,8 @@ class ComPort {
       : sendPort.send(IsolateMessageType.traceOff);
 
 	void thumbnail() => sendPort.send(IsolateMessageType.thumbnail);
+
+	void keyDown(int ascii) {
+		sendPort.send(KeyboardKeyDownMsg(ascii));
+	}
 }
