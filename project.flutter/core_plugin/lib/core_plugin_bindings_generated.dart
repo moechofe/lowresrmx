@@ -249,6 +249,10 @@ final class Runner extends ffi.Struct {
   /// @brief Used to know if the keyboard should be opened on Flutter side.
   @ffi.Bool()
   external bool shouldOpenKeyboard;
+
+  /// @brief Used to tell when the client app enable the input mode. It should allow to open the keyboard using tap.
+  @ffi.Bool()
+  external bool shouldEnableInputMode;
 }
 
 /// TODO: EMITTER_MAX and SPAWNER_MAX should be the same, right?
@@ -417,11 +421,10 @@ abstract class ErrorCode {
   static const int ErrorSharedOutsideOfASubprogram = 54;
   static const int ErrorGlobalInsideOfASubprogram = 55;
   static const int ErrorExitSubOutsideOfASubprogram = 56;
-  static const int ErrorKeyboardNotEnabled = 57;
-  static const int ErrorAutomaticPauseNotDisabled = 58;
-  static const int ErrorNotAllowedOutsideOfInterrupt = 59;
-  static const int ErrorUserDeviceDiskFull = 60;
-  static const int ErrorMax = 61;
+  static const int ErrorAutomaticPauseNotDisabled = 57;
+  static const int ErrorNotAllowedOutsideOfInterrupt = 58;
+  static const int ErrorUserDeviceDiskFull = 59;
+  static const int ErrorMax = 60;
 }
 
 final class ControlsInfo extends ffi.Struct {
@@ -430,6 +433,9 @@ final class ControlsInfo extends ffi.Struct {
 
   @ffi.Bool()
   external bool isAudioEnabled;
+
+  @ffi.Bool()
+  external bool isInputState;
 }
 
 abstract class KeyboardMode {

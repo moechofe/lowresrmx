@@ -37,12 +37,12 @@ void persistentRamDidChange(void *context, uint8_t *data, int size);
 void runner_init(struct Runner *runner)
 {
     memset(runner, 0, sizeof(struct Runner));
-    
+
     struct Core *core = calloc(1, sizeof(struct Core));
     if (core)
     {
         core_init(core);
-        
+
         runner->coreDelegate.context = runner;
         runner->coreDelegate.interpreterDidFail = interpreterDidFail;
         runner->coreDelegate.diskDriveWillAccess = diskDriveWillAccess;
@@ -51,7 +51,7 @@ void runner_init(struct Runner *runner)
         runner->coreDelegate.controlsDidChange = controlsDidChange;
         runner->coreDelegate.persistentRamWillAccess = persistentRamWillAccess;
         runner->coreDelegate.persistentRamDidChange = persistentRamDidChange;
-        
+
         core_setDelegate(core, &runner->coreDelegate);
 
         runner->core = core;
@@ -63,7 +63,7 @@ void runner_deinit(struct Runner *runner)
     if (runner->core)
     {
         core_deinit(runner->core);
-        
+
         free(runner->core);
         runner->core = NULL;
     }
@@ -77,19 +77,19 @@ bool runner_isOkay(struct Runner *runner)
 struct CoreError runner_loadProgram(struct Runner *runner, const char *filename)
 {
     struct CoreError error = err_noCoreError();
-    
+
     FILE *file = fopen_utf8(filename, "rb");
     if (file)
     {
         fseek(file, 0, SEEK_END);
         long size = ftell(file);
         fseek(file, 0, SEEK_SET);
-        
+
         char *sourceCode = calloc(1, size + 1); // +1 for terminator
         if (sourceCode)
         {
             fread(sourceCode, size, 1, file);
-            
+
             error = core_compileProgram(runner->core, sourceCode, true);
             free(sourceCode);
         }
@@ -97,14 +97,14 @@ struct CoreError runner_loadProgram(struct Runner *runner, const char *filename)
         {
             error = err_makeCoreError(ErrorOutOfMemory, -1);
         }
-        
+
         fclose(file);
     }
     else
     {
         error = err_makeCoreError(ErrorCouldNotOpenProgram, -1);
     }
-    
+
     return error;
 }
 
@@ -124,31 +124,31 @@ bool diskDriveWillAccess(void *context, struct DataManager *diskDataManager)
 #ifdef __EMSCRIPTEN__
         overlay_message(runner->core, "NO DISK");
 #else
-        overlay_message(runner->core, "USING DISK.NX");
+        overlay_message(runner->core, "USING DISK.RMX");
 #endif
         runner->messageShownUsingDisk = true;
     }
-    
+
 #ifndef __EMSCRIPTEN__
-    
+
     char diskFilename[FILENAME_MAX];
     getDiskFilename(diskFilename);
-    
+
     FILE *file = fopen_utf8(diskFilename, "rb");
     if (file)
     {
         fseek(file, 0, SEEK_END);
         long size = ftell(file);
         fseek(file, 0, SEEK_SET);
-        
+
         char *sourceCode = calloc(1, size + 1); // +1 for terminator
         if (sourceCode)
         {
             fread(sourceCode, size, 1, file);
-            
+
             struct CoreError error = data_import(diskDataManager, sourceCode, true);
             free(sourceCode);
-            
+
             if (error.code != ErrorNone)
             {
                 core_traceError(runner->core, error);
@@ -159,12 +159,12 @@ bool diskDriveWillAccess(void *context, struct DataManager *diskDataManager)
             struct TextLib *lib = &runner->core->overlay->textLib;
             txtlib_printText(lib, "NOT ENOUGH MEMORY\n");
         }
-        
+
         fclose(file);
     }
-    
+
 #endif
-    
+
     return true;
 }
 
@@ -180,7 +180,7 @@ void diskDriveDidSave(void *context, struct DataManager *diskDataManager)
     {
         char diskFilename[FILENAME_MAX];
         getDiskFilename(diskFilename);
-        
+
         FILE *file = fopen_utf8(diskFilename, "wb");
         if (file)
         {
@@ -194,7 +194,7 @@ void diskDriveDidSave(void *context, struct DataManager *diskDataManager)
             txtlib_printText(lib, diskFilename);
             txtlib_printText(lib, "\n");
         }
-        
+
         free(output);
     }
 #endif
@@ -231,7 +231,7 @@ void persistentRamWillAccess(void *context, uint8_t *destination, int size)
 #ifndef __EMSCRIPTEN__
     char ramFilename[FILENAME_MAX];
     getRamFilename(ramFilename);
-    
+
     FILE *file = fopen_utf8(ramFilename, "rb");
     if (file)
     {
@@ -246,10 +246,10 @@ void persistentRamDidChange(void *context, uint8_t *data, int size)
 {
 #ifndef __EMSCRIPTEN__
     struct Runner *runner = context;
-    
+
     char ramFilename[FILENAME_MAX];
     getRamFilename(ramFilename);
-    
+
     FILE *file = fopen_utf8(ramFilename, "wb");
     if (file)
     {

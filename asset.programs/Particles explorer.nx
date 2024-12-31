@@ -1,0 +1,33 @@
+tinyexplosion:
+data 2,2,2,3,3,3,3,4,4,4,4,0,-1
+
+fullscreen:
+data 0 :'appearence
+data 0 :'shape
+data 80,60 :'outer/inner ring radius
+data 0,0 :'arc/rotation
+data 0,0 :'speed x/y
+data 0 :'explosivity
+data 1,10,1 :'count/delay/repeat
+
+particle 0,170 at $9000
+particle 0 data tinyexplosion
+
+emitter 1 at $a000
+emitter 0 data fullscreen
+
+do
+
+if tap then emitter 0 on 30,30
+
+wait vbl
+loop
+
+PRINT "TEST"
+
+#2:MAIN CHARACTERS
+00000000000000000000000000000000
+00000000000000003C7EFFFFFFFF7E3C
+0000000000000000003C7E7E7E7E3C00
+00000000000000000000183C3C180000
+

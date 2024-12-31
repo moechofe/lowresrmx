@@ -1,4 +1,35 @@
+- [ ] flutter_app: Hide black screen at start..
+- [ ] flutter_app: Show the search/replace bar above the code editor, not inside
+- [ ] flutter_app: Make the search/replace shorter.
+- [ ] flutter_app: Find a way to show line number, or longer line that wrap.
+- [ ] core: show more info in trace, like variables counter, label counter...
+- [ ] Change Project name: Demake Remix
+- [ ] manual: Add `ON EMITTER CALL`
+- [ ] core: Remove LET.
+- [ ] core: redo the particle system, use more variable
+
+    What is missing right now?
+
+    1. The ability to make a particle designer
+    2. ?
+
+    1. Proposal
+
+        I can keep the appearence stored in data, I like it.
+        I should try to change the emitter data and use variables
+
+            EMITTER eid [ON x,y] [DATA a,s,o,i,c,r,sx,sy,e,n,d,p]
+
+        With `a`,`s`,`o`,`i`,`c`,`r`,`sx`,`sy`,`e`,`n`,`d` and `p` are all optional.
+
+    2. Proposal
+
+        If the library is simulating actually external chip, it can hold additional internal memory modifiable using commands.
+
 - [ ] flutter_app: Can I prevent user to hide the keyboard?
+
+    No, but I can setup a special use case for when INPUT is used, has it actually block the game.
+
 - [x] core: Add a function to test  the keyboard visibility
 - [ ] core: Remove pause feature.
 - [-] flutter_app: enable ctrl/shift/insert... shortcut for cut copy past.
@@ -127,3 +158,4 @@
 - [ ] refresh google/discord oauth token
 - [ ] enable __Host- session cookie: Sauce: https://datatracker.ietf.org/doc/html/draft-west-cookie-prefixes-05#section-3.2
 - [ ] enable Secure session cookie
+- [ ] redo the dev menu for the desktop version

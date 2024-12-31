@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -10,14 +11,16 @@ import 'package:lowresrmx/core/runtime.dart';
 //   ..style = PaintingStyle.stroke;
 
 class MyScreenPainter extends CustomPainter {
-  ui.Image? image;
+	final ValueNotifier<ui.Image?> imageNotifier;
+  // ui.Image? image;
 
-  MyScreenPainter(this.image);
+  MyScreenPainter(this.imageNotifier) : super(repaint: imageNotifier);
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (image != null) {
-      canvas.drawImage(image!, Offset.zero, Paint());
+		if (imageNotifier.value != null) {
+    // if (image != null) {
+      canvas.drawImage(imageNotifier.value!, Offset.zero, Paint());
     }
 
     // canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height),
@@ -31,10 +34,12 @@ class MyScreenPainter extends CustomPainter {
 }
 
 class MyScreenPaint extends StatefulWidget {
-	final ComPort comPort;
+	// final ComPort comPort;
+	final ValueNotifier<ui.Image?> imageNotifier;
 
   const MyScreenPaint({
-		required this.comPort,
+		required this.imageNotifier,
+		// required this.comPort,
     super.key,
   });
 
@@ -45,35 +50,36 @@ class MyScreenPaint extends StatefulWidget {
 class _MyScreenPaintState extends State<MyScreenPaint> {
   ui.Image? image;
 
-  @override
-  initState() {
-    super.initState();
-		// Start updating the image.
-		widget.comPort.onImage = (image) {
-			if (mounted) {
-				setState(() {
-					this.image = image;
-				});
-			}
-		};
+  // @override
+  // initState() {
+  //   super.initState();
+	// 	// Start updating the image.
+	// 	widget.comPort.onImage = (image) {
+	// 		if (mounted) {
+	// 			// setState(() {
+	// 				this.image = image;
+	// 			// });
+	// 		}
+	// 	};
 
-    // TODO: allow to show the keyboard, put it somewhere else
-    // SystemChannels.textInput.invokeMethod("TextInput.show");
-  }
+  //   // TODO: allow to show the keyboard, put it somewhere else
+  //   // SystemChannels.textInput.invokeMethod("TextInput.show");
+  // }
 
-	@override
-	void dispose() {
-		// Stop updating the image.
-		widget.comPort.onImage = null;
-		super.dispose();
-	}
+	// @override
+	// void dispose() {
+	// 	// Stop updating the image.
+	// 	widget.comPort.onImage = null;
+	// 	super.dispose();
+	// }
 
   @override
   Widget build(BuildContext context) {
+		log("MyScreenPaint.build() Not good if called multiple times.");
     return CustomPaint(
       size:
           Size(Runtime.screenWidth.toDouble(), Runtime.screenHeight.toDouble()),
-      painter: MyScreenPainter(image), //context.watch<Runtime>()),
+      painter: MyScreenPainter(widget.imageNotifier), //context.watch<Runtime>()),
     );
   }
 }

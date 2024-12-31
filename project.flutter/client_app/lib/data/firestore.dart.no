@@ -1,0 +1,30 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+class MyFirestore {
+	static final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+	static Future<void> createProgram(String programName) async {
+		await _firestore.collection("programs").doc(programName).set({
+			"test": "test",
+		});
+	}
+
+	static Future<void> renameProgram(String oldName, String newName) async {
+		final oldDoc = _firestore.collection("programs").doc(oldName);
+		final newDoc = _firestore.collection("programs").doc(newName);
+		final oldData = (await oldDoc.get()).data();
+		await newDoc.set(oldData!);
+		await oldDoc.delete();
+	}
+
+	static Future<void> deleteProgram(String programName) async {
+		await _firestore.collection("programs").doc(programName).delete();
+	}
+
+	static Stream<List<String>> listPrograms() {
+		return _firestore.collection("programs").snapshots().map((snapshot) {
+			return snapshot.docs.map((doc) => doc.id).toList();
+		});
+	}
+}
+

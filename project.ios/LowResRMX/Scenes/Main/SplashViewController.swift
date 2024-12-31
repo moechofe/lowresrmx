@@ -48,7 +48,7 @@ class SplashViewController: UIViewController {
     }
     
     private func loadIntro() {
-        let url = Bundle.main.url(forResource: "Boot Intro", withExtension: "nx")!
+        let url = Bundle.main.url(forResource: "Boot Intro", withExtension: "rmx")!
         let sourceCode = try! String(contentsOf: url)
         let error = coreWrapper.compileProgram(sourceCode: sourceCode)
         guard error == nil else { fatalError() }

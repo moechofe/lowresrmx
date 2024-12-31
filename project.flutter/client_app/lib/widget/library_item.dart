@@ -1,4 +1,5 @@
 import 'dart:convert' show Base64Codec;
+import 'dart:io';
 import 'dart:typed_data' show Uint8List;
 
 import 'package:flutter/material.dart';
@@ -119,7 +120,7 @@ class _MyLibraryItemState extends State<MyLibraryItem> {
           builder: (context, snapshot) {
             if (snapshot.hasData) {
               return Opacity(
-                opacity: 0.2,
+                opacity: Platform.isLinux ? 0.2 : 1.0,
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(12.0),
                   child: Image(

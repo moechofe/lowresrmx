@@ -19,7 +19,7 @@
 			<string>Owner</string>
 			<key>LSItemContentTypes</key>
 			<array>
-				<string>com.inutilis.document.nx</string>
+				<string>com.inutilis.document.rmx</string>
 			</array>
 		</dict>
 	</array>
@@ -108,7 +108,7 @@
 			<key>UTTypeDescription</key>
 			<string>LowResRRMX Program</string>
 			<key>UTTypeIdentifier</key>
-			<string>com.inutilis.document.nx</string>
+			<string>com.inutilis.document.rmx</string>
 			<key>UTTypeTagSpecification</key>
 			<dict>
 				<key>public.filename-extension</key>

@@ -47,8 +47,10 @@
 #define BGR 1
 #endif
 #endif
+#if __ANDROID__
+#define BGR 0
+#endif
 #if __linux__
-#define BGR 1
 #endif
 
 struct Core;

@@ -8,6 +8,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'package:ffi/ffi.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:image/image.dart' as img;
 import 'package:mp_audio_stream/mp_audio_stream.dart';
 
@@ -21,8 +22,7 @@ class Location {
   late final int column;
   Location(this.row, this.column);
 
-	Location.fromCode(String code, int offset)
-	{
+  Location.fromCode(String code, int offset) {
     int index = 0;
     int line = 0;
     while (index < code.length) {
@@ -30,16 +30,16 @@ class Location {
       if (newline == -1) {
         break;
       } else if (newline >= offset) {
-				row = line;
-				column = offset - index;
-				return;
+        row = line;
+        column = offset - index;
+        return;
       }
       index = newline + 1;
       ++line;
     }
-		row=line;
-		column = offset - index;
-	}
+    row = line;
+    column = offset - index;
+  }
 }
 
 /// Used to transport errors from the runtime to the app
@@ -59,24 +59,24 @@ class Error {
     if (ok || position == -1) {
       return Location(-1, -1);
     } else {
-			return Location.fromCode(code, position);
-		}
+      return Location.fromCode(code, position);
+    }
   }
 
-	Map<String, dynamic> toMap() {
-		return {
-			"code": code,
-			"msg": msg,
-			"position": position,
-		};
-	}
+  Map<String, dynamic> toMap() {
+    return {
+      "code": code,
+      "msg": msg,
+      "position": position,
+    };
+  }
 
-	static Error? fromMap(Map<String, dynamic>? map) {
-		if(map == null) {
-			return null;
-		}
-		return Error(code: map["code"], msg: map["msg"], position: map["position"]);
-	}
+  static Error? fromMap(Map<String, dynamic>? map) {
+    if (map == null) {
+      return null;
+    }
+    return Error(code: map["code"], msg: map["msg"], position: map["position"]);
+  }
 }
 
 /// Used to transport some type of message from the app to the isolate
@@ -85,15 +85,16 @@ enum IsolateMessageType {
   traceOn,
   traceOff,
   thumbnail,
+	renderFrame,
 }
 
 // FIXME: Message should have Message in their name. Common!
 
 /// Message used to transport the code and the data disk from the app to the isolate
 class CompileAndRunMsg {
-	final String code;
-	final String dataDisk;
-	CompileAndRunMsg(this.code, this.dataDisk);
+  final String code;
+  final String dataDisk;
+  CompileAndRunMsg(this.code, this.dataDisk);
 }
 
 /// Message used to transport the code from the app to the isolate
@@ -119,19 +120,42 @@ class ThumbnailMsg {
 
 /// Message used to transport the data disk from the isolate to the app
 class DataDiskMsg {
-	final String dataDisk;
-	DataDiskMsg(this.dataDisk);
+  final String dataDisk;
+  DataDiskMsg(this.dataDisk);
 }
 
 /// Message used to transport the keyboard visibility from the isolate to the app
 class KeyboardVisibleMsg {
-	final bool open;
-	KeyboardVisibleMsg(this.open);
+  final bool open;
+  KeyboardVisibleMsg(this.open);
 }
 
+class InputModeMsg {
+  final bool enable;
+  InputModeMsg(this.enable);
+}
+
+/// Message used to transport the keyboard key down event from the app to the isolate
 class KeyboardKeyDownMsg {
-	final int ascii;
-	KeyboardKeyDownMsg(this.ascii);
+  final int ascii;
+  KeyboardKeyDownMsg(this.ascii);
+}
+
+class OrientationChangeMsg {
+	final double width;
+	final double height;
+	final double safeTop;
+	final double safeLeft;
+	final double safeBottom;
+	final double safeRight;
+	OrientationChangeMsg(this.width, this.height, this.safeTop, this.safeLeft,
+			this.safeBottom, this.safeRight);
+}
+
+class MeasurementMsg {
+	final double updateTime;
+	final double renderTime;
+	MeasurementMsg(this.updateTime, this.renderTime);
 }
 
 /// Bridge between the core and the app
@@ -142,8 +166,11 @@ class Runtime extends ChangeNotifier {
   static int bufferSize = screenWidth * screenHeight * bytePerPixel;
   Uint8List? bytesList;
   ui.Image? image;
-	String? dataDiskToSave;
-	bool keyboardOpen = false;
+  String? dataDiskToSave;
+  bool keyboardOpen = false;
+
+  /// During input mode, the keyboard should be openned on a tap.
+  bool inputMode = false;
 
   final ffi.Pointer<Input> input = calloc();
   final ffi.Pointer<Runner> runner = calloc();
@@ -174,12 +201,13 @@ class Runtime extends ChangeNotifier {
   Error compileAndStart(String src, String dataDisk) {
     final CoreError err = runnerCompileProgram(runner, src);
     if (err.code == 0) {
-			final Uint8List dataList = Uint8List.fromList(dataDisk.codeUnits);
-			final int dataSize = dataList.length;
-			final ffi.Pointer<ffi.Uint8> dataDiskPtr = calloc<ffi.Uint8>(dataSize);
-			dataDiskPtr.asTypedList(dataDisk.length).setAll(0, dataList);
+      final Uint8List dataList = Uint8List.fromList(dataDisk.codeUnits);
+      final int dataSize = dataList.length;
+      final ffi.Pointer<ffi.Uint8> dataDiskPtr = calloc<ffi.Uint8>(dataSize);
+      dataDiskPtr.asTypedList(dataDisk.length).setAll(0, dataList);
       // TODO: compute secondsSincePowerOn
-      runnerStart(runner, 123, ffi.Pointer.fromAddress(dataDiskPtr.address), dataSize);
+      runnerStart(
+          runner, 123, ffi.Pointer.fromAddress(dataDiskPtr.address), dataSize);
     }
     return Error(
         code: err.code,
@@ -214,17 +242,20 @@ class Runtime extends ChangeNotifier {
     input.ref.right = (safeRight / _screenScale).toInt();
   }
 
-	void keyDown(int ascii) {
-		inputKeyDown(input, ascii);
-	}
+  void keyDown(int ascii) {
+    inputKeyDown(input, ascii);
+  }
 
   Error update() {
     final CoreError err = runnerUpdate(runner, input);
-		if (runner.ref.shouldSaveDisk) {
-			dataDiskToSave = runner.ref.dataDisk.cast<Utf8>().toDartString(length: runner.ref.dataDiskSize);
-			runner.ref.shouldSaveDisk = false;
-		}
-		keyboardOpen=runner.ref.shouldOpenKeyboard;
+    if (runner.ref.shouldSaveDisk) {
+      dataDiskToSave = runner.ref.dataDisk
+          .cast<Utf8>()
+          .toDartString(length: runner.ref.dataDiskSize);
+      runner.ref.shouldSaveDisk = false;
+    }
+    keyboardOpen = runner.ref.shouldOpenKeyboard;
+    inputMode = runner.ref.shouldEnableInputMode;
     return Error(
         code: err.code,
         msg: runnerGetError(runner, err.code),
@@ -250,60 +281,78 @@ class Runtime extends ChangeNotifier {
     runnerTrace(runner, trace);
   }
 
-	List<OutlineEntry> getOutline() {
-		int count = runnerGetSymbolCount(runner);
-		List<OutlineEntry> list = [];
-		for (int i = 0; i < count; ++i) {
-			String name = runnerGetSymbolName(runner, i);
-			int position = runnerGetSymbolPosition(runner, i);
-			list.add(OutlineEntry(name, position));
-		}
-		return list;
-	}
+  List<OutlineEntry> getOutline() {
+    int count = runnerGetSymbolCount(runner);
+    List<OutlineEntry> list = [];
+    for (int i = 0; i < count; ++i) {
+      String name = runnerGetSymbolName(runner, i);
+      int position = runnerGetSymbolPosition(runner, i);
+      list.add(OutlineEntry(name, position));
+    }
+    return list;
+  }
 }
 
 /// Used to hold the [Runtime] instance into an isolate.
 void isolateEntryPoint(SendPort sendPort) {
   final ReceivePort receivePort = ReceivePort();
   final Runtime runtime = Runtime();
+  // late final Ticker ticker;
+  // Duration totalDuration = Duration.zero;
+  bool running = false; //  TODO: I may not need this, if Ticker is working correctly.
+
+	double updateTime,renderTime;
 
   runtime.initState();
 
-  bool running = false;
-
-	// Remember the keyboard state to avoid sending the same message each frame.
-	bool keyboardOpen = false;
+  // Remember the keyboard state to avoid sending the same message each frame.
+  bool currKeyboardOpen = false;
+  bool currInputMode = false;
 
   sendPort.send(receivePort.sendPort);
 
   receivePort.listen((message) {
-		if (message is CompileAndRunMsg) {
-			// Receive the code and compile it, then send back the error. Start running if no error
-			final Error err = runtime.compileAndStart(message.code, message.dataDisk);
-			sendPort.send(err);
+    if (message is CompileAndRunMsg) {
+      // Receive the code and compile it, then send back the error. Start running if no error
+      final Error err = runtime.compileAndStart(message.code, message.dataDisk);
+      sendPort.send(err);
     } else if (message is CompileOnlyMsg) {
       // Receive the code and compile it, then send back the error
       final Error err = runtime.compileOnly(message.code);
       sendPort.send(err);
-			// Also send the list of outline entries
-			final List<OutlineEntry> outline = runtime.getOutline();
-			sendPort.send(outline);
-    } else if (message is bool && message) {
-      // Start the running at 60 fps
-      log("isolate: Start running");
-      running = true;
-			keyboardOpen = false;
-    } else if (message is bool && !message) {
-      // Stop the running
-      log("isolate: Stop running");
-      running = false;
-		// TODO: change for a real event
-    } else if (message is List<double>) {
-      // Receive the screen size and the safe area
-      runtime.resize(message[0], message[1], message[2], message[3], message[4],
-          message[5]);
-		} else if (message is KeyboardKeyDownMsg) {
-			runtime.keyDown(message.ascii);
+      // Also send the list of outline entries
+      final List<OutlineEntry> outline = runtime.getOutline();
+      sendPort.send(outline);
+		} else if (message is IsolateMessageType && message == IsolateMessageType.renderFrame) {
+			// Render the frame
+			var stopwatch = Stopwatch()..start();
+			Error err = runtime.update();
+			updateTime = stopwatch.elapsed.inMicroseconds / Duration.microsecondsPerSecond;
+			stopwatch.reset();
+			runtime.render();
+			renderTime = stopwatch.elapsed.inMicroseconds / Duration.microsecondsPerSecond;
+			sendPort.send(MeasurementMsg(updateTime, renderTime));
+			sendPort.send(runtime.bytesList!);
+			if (!err.ok) {
+        sendPort.send(RunningErrorMsg(err));
+      }
+      if (runtime.dataDiskToSave != null) {
+        sendPort.send(DataDiskMsg(runtime.dataDiskToSave!));
+        runtime.dataDiskToSave = null;
+      }
+      if (runtime.keyboardOpen != currKeyboardOpen) {
+        sendPort.send(KeyboardVisibleMsg(runtime.keyboardOpen));
+        currKeyboardOpen = runtime.keyboardOpen;
+      }
+      if (runtime.inputMode != currInputMode) {
+        sendPort.send(InputModeMsg(runtime.inputMode));
+        currInputMode = runtime.inputMode;
+      }
+		} else if (message is OrientationChangeMsg) {
+			// Receive the screen size and the safe area
+			runtime.resize(message.width, message.height, message.safeTop, message.safeLeft, message.safeBottom, message.safeRight);
+    } else if (message is KeyboardKeyDownMsg) {
+      runtime.keyDown(message.ascii);
     } else if (message is Offset) {
       // Receive the touch event
       runtime.touchOn(message);
@@ -325,26 +374,6 @@ void isolateEntryPoint(SendPort sendPort) {
       sendPort.send(ThumbnailMsg(runtime.bytesList!));
     }
   });
-
-  // Start a 60 fps timer to update and render the runtime
-  Timer.periodic(Duration(milliseconds: (1000 / 60).round()), (timer) {
-    if (running) {
-      Error err = runtime.update();
-      runtime.render();
-      sendPort.send(runtime.bytesList!);
-      if (!err.ok) {
-        sendPort.send(RunningErrorMsg(err));
-      }
-			if (runtime.dataDiskToSave != null) {
-				sendPort.send(DataDiskMsg(runtime.dataDiskToSave!));
-				runtime.dataDiskToSave = null;
-			}
-			if (runtime.keyboardOpen != keyboardOpen) {
-				sendPort.send(KeyboardVisibleMsg(runtime.keyboardOpen));
-				keyboardOpen = runtime.keyboardOpen;
-			}
-    }
-  });
 }
 
 /// To receive the [ui.Image] to be paint on [CustomPainter].
@@ -362,6 +391,9 @@ typedef SaveDataDiskCallback = void Function(String);
 /// To receive the keyboard visibility.
 typedef KeyboardVisibleCallback = void Function(bool);
 
+/// To receive the input mode changes.
+typedef InputModeCallback = void Function(bool);
+
 /// To receive the outline entries.
 typedef OutlineCallback = void Function(List<OutlineEntry>);
 
@@ -370,14 +402,25 @@ class ComPort {
   late final Isolate isolate;
   late final ReceivePort receivePort;
   late final SendPort sendPort;
+	late final Ticker ticker;
+	Duration prevDuration = Duration.zero;
+	Stopwatch runtimeStopwatch = Stopwatch();
+	int prevRuntimeElapsed = 0;
   final Completer<SendPort> ready = Completer();
   Completer<Error>? compileCompleter;
   FrameCallback? onImage;
   ThumbnailCallback? onThumbnail;
   RunnerErrorCallback? onRunningError;
-	SaveDataDiskCallback? onSaveDataDisk;
-	KeyboardVisibleCallback? onKeyboardVisible;
-	OutlineCallback? onOutline;
+  SaveDataDiskCallback? onSaveDataDisk;
+  KeyboardVisibleCallback? onKeyboardVisible;
+  InputModeCallback? onInputMode;
+  OutlineCallback? onOutline;
+
+	StreamController<double> deltaTime = StreamController<double>();
+	StreamController<double> updateTime = StreamController<double>();
+	StreamController<double> renderTime = StreamController<double>();
+	StreamController<double> decodeTime = StreamController<double>();
+	StreamController<double> runtimeDeltaTime = StreamController<double>();
 
   /// Setup the communication with the isolate and listen for messages
   Future<SendPort> init() async {
@@ -397,9 +440,14 @@ class ComPort {
           onRunningError!(message.error);
         }
       } else if (message is Uint8List && onImage != null) {
+				final int delta = runtimeStopwatch.elapsedMicroseconds - prevRuntimeElapsed;
+				runtimeDeltaTime.add(delta / Duration.microsecondsPerSecond);
+				prevRuntimeElapsed = runtimeStopwatch.elapsedMicroseconds;
+				var stopwatch = Stopwatch()..start();
         // Decode the image and call the callback
         ui.decodeImageFromPixels(message, Runtime.screenWidth,
             Runtime.screenHeight, ui.PixelFormat.rgba8888, onImage!);
+				decodeTime.add(stopwatch.elapsed.inMicroseconds / Duration.microsecondsPerSecond);
       } else if (message is ThumbnailMsg) {
         // Receive the thumbnail
         img.Image image = img.copyCrop(
@@ -416,20 +464,37 @@ class ComPort {
             antialias: false);
         onThumbnail!(image);
       } else if (message is DataDiskMsg) {
-				if (onSaveDataDisk != null) {
-					onSaveDataDisk!(message.dataDisk);
-				}
-			} else if (message is KeyboardVisibleMsg) {
-				if (onKeyboardVisible != null) {
-					onKeyboardVisible!(message.open);
-				}
-			} else if (message is List<OutlineEntry>) {
-				// Receive the outline entries
-				if (onOutline != null) {
-					onOutline!(message);
-				}
+        if (onSaveDataDisk != null) {
+          onSaveDataDisk!(message.dataDisk);
+        }
+      } else if (message is KeyboardVisibleMsg) {
+        if (onKeyboardVisible != null) {
+          onKeyboardVisible!(message.open);
+        }
+      } else if (message is InputModeMsg) {
+        if (onInputMode != null) {
+          onInputMode!(message.enable);
+        }
+      } else if (message is List<OutlineEntry>) {
+        // Receive the outline entries
+        if (onOutline != null) {
+          onOutline!(message);
+        }
+      } else if (message is MeasurementMsg) {
+				updateTime.add(message.updateTime);
+				renderTime.add(message.renderTime);
 			}
     });
+
+		ticker = Ticker((Duration currDuration) {
+			final delta = currDuration - prevDuration;
+			deltaTime.add(delta.inMicroseconds / Duration.microsecondsPerSecond);
+			prevDuration = currDuration;
+
+			// NOTE: If started before the SendPort is ready, it will crash.
+			sendPort.send(IsolateMessageType.renderFrame);
+		});
+
     return ready.future;
   }
 
@@ -448,16 +513,26 @@ class ComPort {
   }
 
   /// Start updating the runtime at 60 fps
-  void start() => sendPort.send(true);
+  void start() {
+		ticker.start();
+		runtimeStopwatch.start();
+		// sendPort.send(true);
+	}
 
   /// Stop updating the runtime
-  void stop() => sendPort.send(false);
+  void stop() {
+		ticker.stop();
+		prevDuration = Duration.zero;
+		runtimeStopwatch.stop();
+		runtimeStopwatch.reset();
+		prevRuntimeElapsed=0;
+		// sendPort.send(false);
+	}
 
   /// Update the device screen size and the safe area
   void resize(double inWidth, double inHeight, double safeTop, double safeLeft,
       double safeBottom, double safeRight) {
-    sendPort
-        .send([inWidth, inHeight, safeTop, safeLeft, safeBottom, safeRight]);
+		sendPort.send(OrientationChangeMsg(inWidth, inHeight, safeTop, safeLeft, safeBottom, safeRight));
   }
 
   /// Send the touch event to the runtime
@@ -471,9 +546,9 @@ class ComPort {
       ? sendPort.send(IsolateMessageType.traceOn)
       : sendPort.send(IsolateMessageType.traceOff);
 
-	void thumbnail() => sendPort.send(IsolateMessageType.thumbnail);
+  void thumbnail() => sendPort.send(IsolateMessageType.thumbnail);
 
-	void keyDown(int ascii) {
-		sendPort.send(KeyboardKeyDownMsg(ascii));
-	}
+  void keyDown(int ascii) {
+    sendPort.send(KeyboardKeyDownMsg(ascii));
+  }
 }

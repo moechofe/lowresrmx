@@ -1,0 +1,126 @@
+import 'dart:developer' show log;
+
+import 'package:flutter/material.dart';
+
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:extension_google_sign_in_as_googleapis_auth/extension_google_sign_in_as_googleapis_auth.dart';
+import 'package:googleapis_auth/googleapis_auth.dart' as auth show AuthClient;
+import 'package:googleapis/drive/v3.dart';
+
+class MyGoogleTile extends StatefulWidget {
+  const MyGoogleTile({super.key});
+
+  @override
+  State<MyGoogleTile> createState() => _MyGoogleTileState();
+}
+
+class _MyGoogleTileState extends State<MyGoogleTile> {
+  final FlutterSecureStorage storage = const FlutterSecureStorage();
+  final GoogleSignIn googleSignIn =
+      GoogleSignIn.standard(scopes: [
+			'email']);
+
+  // bool signedIn = false;
+	GoogleSignInAccount? account;
+
+  @override
+  void initState() {
+    super.initState();
+    _initAccount();
+  }
+
+  Future<void> _initAccount() async {
+		googleSignIn.onCurrentUserChanged
+				.listen((GoogleSignInAccount? account) async {
+			log("_initAccount: $account");
+			if (account != null) {
+				_afterLoginWithGoogle(account);
+				setState(() {
+					this.account = account;
+					// signedIn = true;
+				});
+			} else {
+				setState(() {
+					this.account = null;
+					// signedIn = false;
+				});
+			}
+		});
+
+    if (await storage.read(key: 'googleSignedIn') == 'true') {
+
+      // final GoogleSignInAccount? account =
+			await googleSignIn.signInSilently();
+      // if (account != null) {
+      //   log("Google Signing in: $account");
+      //   setState(() {
+      //     signedIn = true;
+      //   });
+      // } else {
+      //   log("Google Signing out: $account");
+      //   setState(() {
+      //     signedIn = false;
+      //   });
+      // }
+    }
+  }
+
+	Future<void> _afterLoginWithGoogle(GoogleSignInAccount account) async {
+		log("_afterLoginWithGoogle: $account");
+		// final auth.AuthClient? client = await googleSignIn.authenticatedClient();
+		// log("Google Signing in: $client");
+
+		// final authorized = await googleSignIn.canAccessScopes([DriveApi.driveFileScope]);
+		// log("driveFileScope: $authorized");
+	}
+
+  Future<void> _loginWithGoogle() async {
+    try {
+      await googleSignIn.signIn();
+      log("Google Signing initialized: $account");
+
+    } catch (error) {
+      log("Error while inititialize Google Signing: $error");
+    }
+  }
+
+	// Future<void> _afterLoginWithGoogle(GoogleSignInAccount account) async {
+	// 	final Auth
+
+
+	// }
+
+  Widget buildNotSignedIn() {
+    return ListTile(
+      leading: const Icon(Icons.cloud_off_rounded),
+      title: const Text('Google Drive'),
+      onTap: () async {
+        await _loginWithGoogle();
+      },
+    );
+  }
+
+	Widget buildSignedIn() {
+		return ListTile(
+			// leading: const Icon(Icons.cloud_done_rounded),
+      leading: CircleAvatar(backgroundImage: NetworkImage(account?.photoUrl ?? '')),
+			title: Text(account?.displayName ?? 'Signed in'),
+      // subtitle: Text(''),
+			onTap: () async {
+				// await _loginWithGoogle();
+			},
+		);
+
+	}
+
+  @override
+  Widget build(BuildContext context) {
+    if (account == null) {
+      return buildNotSignedIn();
+    } else {
+      return buildSignedIn();
+    }
+  }
+}

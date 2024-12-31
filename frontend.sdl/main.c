@@ -41,7 +41,7 @@
 #include <math.h>
 #include <string.h>
 
-const char *defaultDisk = "Disk.nx";
+const char *defaultDisk = "Disk.rmx";
 // XXX: Change the default scale on linux
 //const int defaultWindowScale = 4;
 const int defaultWindowScale = 1;
@@ -281,6 +281,7 @@ void runMainProgram()
     if (error.code != ErrorNone)
     {
 #if DEV_MENU
+				core_setDebug(runner.core, true);
         showDevMenu();
 #else
         core_traceError(runner.core, error);
@@ -429,7 +430,7 @@ void update(void *arg)
                 break;
 
             case SDL_DROPFILE: {
-                if (hasPostfix(event.drop.file, ".nx") || hasPostfix(event.drop.file, ".NX"))
+                if (hasPostfix(event.drop.file, ".rmx") || hasPostfix(event.drop.file, ".RMX"))
                 {
 #if DEV_MENU
                     bool handled = (mainState == MainStateDevMenu && dev_handleDropFile(&devMenu, event.drop.file));
@@ -649,7 +650,7 @@ void update(void *arg)
             if (hasInput && !hasProgram())
             {
                 // user hint
-                overlay_message(runner.core, "DRAG .NX INTO WINDOW");
+                overlay_message(runner.core, "DRAG .RMX INTO WINDOW");
             }
             core_update(runner.core, &coreInput);
             if (machine_peek(runner.core, bootIntroStateAddress) == BootIntroStateReadyToRun)

@@ -49,6 +49,7 @@ void controlsDidChange(void *context,struct ControlsInfo controlsInfo)
 	Runner *runner=(Runner*)context;
 	if(!runner->core) return;
 	runner->shouldOpenKeyboard=controlsInfo.keyboardMode==KeyboardModeOn;
+	runner->shouldEnableInputMode=controlsInfo.isInputState;
 }
 
 void persistentRamWillAccess(void *context,uint8_t *destination,int size)

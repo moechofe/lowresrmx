@@ -3,6 +3,7 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
+  share_plus
   sw_rend
   url_launcher_windows
 )

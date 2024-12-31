@@ -234,7 +234,7 @@ void settings_saveAs(struct Settings *settings, const char *filename)
         fputs(settings->file.disabledelay ? optionYes : optionNo, file);
         fputs("\n\n", file);
 
-        fputs("# Add tools for the Edit ROM menu (max 4).\n# tool My Tool.nx\n", file);
+        fputs("# Add tools for the Edit ROM menu (max 4).\n# tool My Tool.rmx\n", file);
         for (int i = 0; i < settings->numTools; i++)
         {
             fputs("tool ", file);

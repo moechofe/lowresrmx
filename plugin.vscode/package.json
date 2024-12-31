@@ -17,21 +17,21 @@
     "contributes": {
         "languages": [
             {
-                "id": "nx",
+                "id": "rmx",
                 "aliases": [
                     "LowResRMX Basic",
-                    "nx"
+                    "rmx"
                 ],
                 "extensions": [
-                    ".nx"
+                    ".rmx"
                 ],
                 "configuration": "./language-configuration.json"
             }
         ],
         "grammars": [
             {
-                "language": "nx",
-                "scopeName": "source.nx",
+                "language": "rmx",
+                "scopeName": "source.rmx",
                 "path": "./syntaxes/nx.tmLanguage.json"
             }
         ],

@@ -352,7 +352,7 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
     @objc func shareScreenshot() {
         if let cgImage = nxView.layer.contents as! CGImage? {
             let uiImage = UIImage(cgImage: cgImage)
-            
+
             // crop
             let crop = CGRect(x:0,y:0,width:180,height:180).integral
             let croppedImage = cgImage.cropping(to: crop)
@@ -660,7 +660,7 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
                         let cDiskSourceCode = (document.sourceCode ?? "").cString(using: .utf8)
                         data_import(diskDataManager, cDiskSourceCode, true)
                         // TODO: hidding alert for now
-//                        self.showAlert(withTitle: "Using “Disk.nx” as Virtual Disk", message: nil, block: {
+//                        self.showAlert(withTitle: "Using “Disk.rmx” as Virtual Disk", message: nil, block: {
 //                            core_diskLoaded(&self.coreWrapper!.core)
 //                        })
                         core_diskLoaded(&self.coreWrapper!.core)

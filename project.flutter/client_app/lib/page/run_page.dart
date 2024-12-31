@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'dart:developer' show log;
 import 'dart:convert';
+import 'dart:ui' as ui show Image;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -15,6 +17,56 @@ enum MyRunMenuOption {
   trace,
   thumbnail,
   returnEditor,
+}
+
+class MyMeasurement extends StatefulWidget {
+  final String text;
+  final Stream<double> stream;
+  final double multiply;
+
+  const MyMeasurement(
+      {super.key, required this.text, required this.stream, this.multiply = 1});
+
+  @override
+  State<StatefulWidget> createState() {
+    return _MyMeasurementState();
+  }
+}
+
+class _MyMeasurementState extends State<MyMeasurement> {
+  final List<double> values = [];
+  double value = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.stream.listen((value) {
+      values.add(value);
+    });
+    Timer.periodic(const Duration(milliseconds: 500), (timer) {
+			if (values.isEmpty) return;
+      // double value = values.reduce((a, b) => a + b) / values.length;
+      double max = values.reduce((a, b) => a > b ? a : b);
+      values.clear();
+			if (!mounted) return;
+      setState(() {
+        value = max * widget.multiply;
+      });
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      "${widget.text}: ${value.toStringAsFixed(3)}",
+      style: const TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w800,
+          fontFamily: "monospace",
+          height: 0.9),
+      textAlign: TextAlign.left,
+    );
+  }
 }
 
 /// A page that show a running program.
@@ -43,6 +95,7 @@ class MyRunPage extends StatefulWidget {
 }
 
 class _MyRunPageState extends State<MyRunPage> {
+	final ValueNotifier<ui.Image?> imageNotifier = ValueNotifier(null);
   late final MyProgramPreference programPreference;
 
   @override
@@ -78,6 +131,12 @@ class _MyRunPageState extends State<MyRunPage> {
         SystemChannels.textInput.invokeMethod("TextInput.hide");
       }
     };
+    widget.comPort.onInputMode = (mode) {
+      log("Input mode: $mode");
+    };
+		widget.comPort.onImage = (image) {
+			imageNotifier.value = image;
+		};
     WidgetsBinding.instance.addPostFrameCallback((_) {
       widget.comPort.start();
     });
@@ -89,6 +148,7 @@ class _MyRunPageState extends State<MyRunPage> {
     widget.comPort.onSaveDataDisk = null;
     widget.comPort.onThumbnail = null;
     widget.comPort.onRunningError = null;
+		widget.comPort.onImage = null;
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
         overlays: SystemUiOverlay.values);
 
@@ -169,11 +229,11 @@ class _MyRunPageState extends State<MyRunPage> {
     return PopScope(
       canPop: false,
       onPopInvoked: (_) => gotoEditor(context),
-      child: buildLayout(),
+      child: buildLayout(context),
     );
   }
 
-  Widget buildLayout() {
+  Widget buildLayout(BuildContext context) {
     return LayoutBuilder(builder: (context, constraints) {
       // Send the safe area to the runtime.
       final EdgeInsets safeArea = MediaQuery.of(context).padding;
@@ -228,42 +288,38 @@ class _MyRunPageState extends State<MyRunPage> {
     return Focus(
         autofocus: true,
         onKeyEvent: (node, event) {
-					if (event is! KeyDownEvent) {
-						return KeyEventResult.ignored;
-					}
-          else if (event.logicalKey == LogicalKeyboardKey.escape) {
+          if (event is! KeyDownEvent) {
+            return KeyEventResult.ignored;
+          } else if (event.logicalKey == LogicalKeyboardKey.escape) {
             gotoEditor(context);
             return KeyEventResult.handled;
-					} else if (event.logicalKey == LogicalKeyboardKey.enter) {
-						widget.comPort.keyDown(10);
-						return KeyEventResult.handled;
-					} else if (event.logicalKey == LogicalKeyboardKey.backspace) {
-						widget.comPort.keyDown(8);
-						return KeyEventResult.handled;
+          } else if (event.logicalKey == LogicalKeyboardKey.enter) {
+            widget.comPort.keyDown(10);
+            return KeyEventResult.handled;
+          } else if (event.logicalKey == LogicalKeyboardKey.backspace) {
+            widget.comPort.keyDown(8);
+            return KeyEventResult.handled;
           } else {
-						String? char = (event as KeyEvent).character;
-						log("Char: $char");
-						if (char != null) {
-							Uint8List list = ascii.encode(char);
-							if (list.length == 1) {
-								int code = list[0];
-								log("Code: $code");
-								if (code >= 32 && code <= 95)
-								{
-									widget.comPort.keyDown(code);
-									return KeyEventResult.handled;
-								}
-								else if (code >= 97 && code <= 122)
-								{
-									widget.comPort.keyDown(code - 32);
-									return KeyEventResult.handled;
-								}
-							}
-						}
-						return KeyEventResult.ignored;
+            String? char = (event as KeyEvent).character;
+            log("Char: $char");
+            if (char != null) {
+              Uint8List list = ascii.encode(char);
+              if (list.length == 1) {
+                int code = list[0];
+                log("Code: $code");
+                if (code >= 32 && code <= 95) {
+                  widget.comPort.keyDown(code);
+                  return KeyEventResult.handled;
+                } else if (code >= 97 && code <= 122) {
+                  widget.comPort.keyDown(code - 32);
+                  return KeyEventResult.handled;
+                }
+              }
+            }
+            return KeyEventResult.ignored;
           }
         },
-        child: IgnoreKeyboardDismiss(child: buildScreen(constraints, context)));
+        child: buildScreen(constraints, context));
   }
 
   Widget buildScreen(BoxConstraints constraints, BuildContext context) {
@@ -274,9 +330,47 @@ class _MyRunPageState extends State<MyRunPage> {
         child: FittedBox(
             fit: BoxFit.cover,
             alignment: Alignment.topLeft,
-            child: MyScreenPaint(
-              comPort: widget.comPort,
+            child: Stack(
+              children: [
+                MyScreenPaint(
+									imageNotifier: imageNotifier,
+                  // comPort: widget.comPort,
+                ),
+                buildMeasurement(context)
+              ],
             )));
+  }
+
+  Container buildMeasurement(BuildContext context) {
+    return Container(
+        color: Colors.white,
+				padding: const EdgeInsets.only(left: 8.0, top: 20, right: 8.0, bottom: 8.0),
+          child: Column(
+						crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              MyMeasurement(
+                  text: "deltaTime",
+                  stream: widget.comPort.deltaTime.stream,
+                  multiply: 1000),
+              MyMeasurement(
+                  text: "updateTime",
+                  stream: widget.comPort.updateTime.stream,
+                  multiply: 1000),
+							MyMeasurement(
+									text: "renderTime",
+									stream: widget.comPort.renderTime.stream,
+									multiply: 1000),
+							MyMeasurement(
+									text: "decodeTime",
+									stream: widget.comPort.decodeTime.stream,
+									multiply: 1000),
+							MyMeasurement(
+									text: "runtimeDeltaTime",
+									stream: widget.comPort.runtimeDeltaTime.stream,
+									multiply: 1000),
+            ],
+          ),
+        );
   }
 
   Widget buildMenu(BuildContext context) {

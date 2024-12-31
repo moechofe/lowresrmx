@@ -210,7 +210,7 @@
 		922798982527251F004F6E1A /* Widgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 922798972527251F004F6E1A /* Widgets.swift */; };
 		9227989A25272523004F6E1A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9227989925272523004F6E1A /* Assets.xcassets */; };
 		9227989E25272523004F6E1A /* Widgets.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 922798912527251F004F6E1A /* Widgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		9227DA902204302F0035615C /* Boot Intro.nx in Resources */ = {isa = PBXBuildFile; fileRef = 9227DA8F2204302F0035615C /* Boot Intro.nx */; };
+		9227DA902204302F0035615C /* Boot Intro.rmx in Resources */ = {isa = PBXBuildFile; fileRef = 9227DA8F2204302F0035615C /* Boot Intro.rmx */; };
 		9227DC1E1FC8BB0700BC89FD /* ProjectManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9227DC1D1FC8BB0700BC89FD /* ProjectManager.swift */; };
 		9227DC221FC8C17A00BC89FD /* SplashViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9227DC211FC8C17A00BC89FD /* SplashViewController.swift */; };
 		9234247522C3FACC002431CD /* ClearRamActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9234247422C3FACC002431CD /* ClearRamActivity.swift */; };
@@ -426,7 +426,7 @@
 		922798972527251F004F6E1A /* Widgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Widgets.swift; sourceTree = "<group>"; };
 		9227989925272523004F6E1A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		9227989B25272523004F6E1A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		9227DA8F2204302F0035615C /* Boot Intro.nx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "Boot Intro.nx"; sourceTree = "<group>"; };
+		9227DA8F2204302F0035615C /* Boot Intro.rmx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "Boot Intro.rmx"; sourceTree = "<group>"; };
 		9227DC1D1FC8BB0700BC89FD /* ProjectManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectManager.swift; sourceTree = "<group>"; };
 		9227DC211FC8C17A00BC89FD /* SplashViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashViewController.swift; sourceTree = "<group>"; };
 		9234247422C3FACC002431CD /* ClearRamActivity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClearRamActivity.swift; sourceTree = "<group>"; };
@@ -902,7 +902,7 @@
 			children = (
 				92483F7C1F7C2A4300E6D476 /* LowResRMX.entitlements */,
 				92EA93C41F744573007BEFB1 /* Assets.xcassets */,
-				9227DA8F2204302F0035615C /* Boot Intro.nx */,
+				9227DA8F2204302F0035615C /* Boot Intro.rmx */,
 				925CC6931F75896F0059C230 /* Extensions */,
 				92BB14BF244B0F8800611F01 /* Wrappers */,
 				925CC6AF1F75899E0059C230 /* App */,
@@ -1079,7 +1079,7 @@
 				5B34ED1A2AC5835600220A80 /* cmd_io.bc in Resources */,
 				5B34ECF82AC5835600220A80 /* labels.bc in Resources */,
 				5B34ED7E2AC5835700220A80 /* boot_intro.bc in Resources */,
-				9227DA902204302F0035615C /* Boot Intro.nx in Resources */,
+				9227DA902204302F0035615C /* Boot Intro.rmx in Resources */,
 				5B34ED3E2AC5835600220A80 /* cmd_particle.bc in Resources */,
 				5B34ED622AC5835600220A80 /* startup_sequence.bc in Resources */,
 				5B34ED5C2AC5835600220A80 /* core.bc in Resources */,

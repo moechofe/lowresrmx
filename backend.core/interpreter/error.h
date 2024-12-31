@@ -82,7 +82,6 @@ enum ErrorCode {
     ErrorSharedOutsideOfASubprogram,
     ErrorGlobalInsideOfASubprogram,
     ErrorExitSubOutsideOfASubprogram,
-    ErrorKeyboardNotEnabled,
     ErrorAutomaticPauseNotDisabled,
     ErrorNotAllowedOutsideOfInterrupt,
 		ErrorUserDeviceDiskFull,

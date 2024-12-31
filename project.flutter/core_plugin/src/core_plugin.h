@@ -35,6 +35,8 @@ typedef struct Runner {
 	bool shouldSaveDisk;
 	/// @brief Used to know if the keyboard should be opened on Flutter side.
 	bool shouldOpenKeyboard;
+	/// @brief Used to tell when the client app enable the input mode. It should allow to open the keyboard using tap.
+	bool shouldEnableInputMode;
 } Runner;
 
 typedef struct CoreInput Input;

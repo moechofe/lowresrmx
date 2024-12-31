@@ -82,7 +82,6 @@ enum ErrorCode {
     ErrorSharedOutsideOfASubprogram,
     ErrorGlobalInsideOfASubprogram,
     ErrorExitSubOutsideOfASubprogram,
-    ErrorKeyboardNotEnabled,
     ErrorAutomaticPauseNotDisabled,
     ErrorNotAllowedOutsideOfInterrupt,
 		ErrorUserDeviceDiskFull,
@@ -1894,6 +1893,7 @@ enum KeyboardMode {
 struct ControlsInfo {
     enum KeyboardMode keyboardMode;
     bool isAudioEnabled;
+		bool isInputState;
 };
 
 struct CoreDelegate {

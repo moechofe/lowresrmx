@@ -35,6 +35,7 @@ enum KeyboardMode {
 struct ControlsInfo {
     enum KeyboardMode keyboardMode;
     bool isAudioEnabled;
+		bool isInputState;
 };
 
 struct CoreDelegate {
