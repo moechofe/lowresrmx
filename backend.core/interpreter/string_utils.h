@@ -24,6 +24,7 @@
 #include <stdio.h>
 
 const char *uppercaseString(const char *source);
+const char uppercaseChar(const char sourceChar);
 const char *lineString(const char *source, int pos);
 int lineNumber(const char *source, int pos);
 void stringConvertCopy(char *dest, const char *source, size_t length);

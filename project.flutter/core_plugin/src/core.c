@@ -567,13 +567,13 @@ void delegate_persistentRamDidChange(struct Core *core, uint8_t *data, int size)
 void stats_init(struct Stats *stats)
 {
     memset(stats, 0, sizeof(struct Stats));
-    
+
     stats->tokenizer = calloc(1, sizeof(struct Tokenizer));
     if (!stats->tokenizer) exit(EXIT_FAILURE);
-    
+
     stats->romDataManager = calloc(1, sizeof(struct DataManager));
     if (!stats->romDataManager) exit(EXIT_FAILURE);
-    
+
     stats->romDataManager->data = calloc(1, DATA_SIZE);
     if (!stats->romDataManager->data) exit(EXIT_FAILURE);
 }
@@ -582,10 +582,10 @@ void stats_deinit(struct Stats *stats)
 {
     free(stats->romDataManager->data);
     stats->romDataManager->data = NULL;
-    
+
     free(stats->tokenizer);
     stats->tokenizer = NULL;
-    
+
     free(stats->romDataManager);
     stats->romDataManager = NULL;
 }
@@ -594,47 +594,47 @@ struct CoreError stats_update(struct Stats *stats, const char *sourceCode)
 {
     stats->numTokens = 0;
     stats->romSize = 0;
-    
+
     struct CoreError error = err_noCoreError();
-    
+
     const char *upperCaseSourceCode = uppercaseString(sourceCode);
     if (!upperCaseSourceCode)
     {
         error = err_makeCoreError(ErrorOutOfMemory, -1);
         goto cleanup;
     }
-    
+
     error = tok_tokenizeUppercaseProgram(stats->tokenizer, upperCaseSourceCode);
     if (error.code != ErrorNone)
     {
         goto cleanup;
     }
-    
+
     stats->numTokens = stats->tokenizer->numTokens;
-    
+
     struct DataManager *romDataManager = stats->romDataManager;
     error = data_uppercaseImport(romDataManager, upperCaseSourceCode, false);
     if (error.code != ErrorNone)
     {
         goto cleanup;
     }
-    
+
     stats->romSize = data_currentSize(stats->romDataManager);
-    
+
     // add default characters if ROM entry 0 is unused
     struct DataEntry *entry0 = &romDataManager->entries[0];
     if (entry0->length == 0 && (DATA_SIZE - data_currentSize(romDataManager)) >= 1024)
     {
         stats->romSize += 1024;
     }
-    
+
 cleanup:
     tok_freeTokens(stats->tokenizer);
     if (upperCaseSourceCode)
     {
         free((void *)upperCaseSourceCode);
     }
-    
+
     return error;
 }
 //
@@ -1048,38 +1048,38 @@ const char *CharSetHex = "0123456789ABCDEF";
 enum ErrorCode cmd_SOUND(struct Core *core)
 {
     struct Interpreter *interpreter = core->interpreter;
-    
+
     // SOUND
     ++interpreter->pc;
-    
+
     // n value
     struct TypedValue nValue = itp_evaluateNumericExpression(core, 0, NUM_VOICES - 1);
     if (nValue.type == ValueTypeError) return nValue.v.errorCode;
-    
+
     // comma
     if (interpreter->pc->type != TokenComma) return ErrorSyntax;
     ++interpreter->pc;
-    
+
     // wave value
     struct TypedValue waveValue = itp_evaluateOptionalNumericExpression(core, 0, 3);
     if (waveValue.type == ValueTypeError) return waveValue.v.errorCode;
-    
+
     // comma
     if (interpreter->pc->type != TokenComma) return ErrorSyntax;
     ++interpreter->pc;
-    
+
     // pulse width value
     struct TypedValue pwValue = itp_evaluateOptionalNumericExpression(core, 0, 15);
     if (pwValue.type == ValueTypeError) return pwValue.v.errorCode;
-    
+
     // comma
     if (interpreter->pc->type != TokenComma) return ErrorSyntax;
     ++interpreter->pc;
-    
+
     // length value
     struct TypedValue lenValue = itp_evaluateOptionalNumericExpression(core, 0, 255);
     if (lenValue.type == ValueTypeError) return lenValue.v.errorCode;
-    
+
     if (interpreter->pass == PassRun)
     {
         int n = nValue.v.floatValue;
@@ -1099,7 +1099,7 @@ enum ErrorCode cmd_SOUND(struct Core *core)
             voice->attr.timeout = (len > 0) ? 1 : 0;
         }
     }
-    
+
     return itp_endOfCommand(interpreter);
 }
 
@@ -1110,15 +1110,15 @@ enum ErrorCode cmd_SOUND(struct Core *core)
 //    // SOUND COPY
 //    ++interpreter->pc;
 //    ++interpreter->pc;
-//    
+//
 //    // sound value
 //    struct TypedValue sValue = itp_evaluateNumericExpression(core, 0, 15);
 //    if (sValue.type == ValueTypeError) return sValue.v.errorCode;
-//    
+//
 //    // TO
 //    if (interpreter->pc->type != TokenTO) return ErrorSyntax;
 //    ++interpreter->pc;
-//    
+//
 //    // voice value
 //    struct TypedValue vValue = itp_evaluateNumericExpression(core, 0, NUM_VOICES - 1);
 //    if (vValue.type == ValueTypeError) return vValue.v.errorCode;
@@ -1127,37 +1127,37 @@ enum ErrorCode cmd_SOUND(struct Core *core)
 //    {
 //        audlib_copySound(&interpreter->audioLib, interpreter->audioLib.sourceAddress, sValue.v.floatValue, vValue.v.floatValue);
 //    }
-//    
+//
 //    return itp_endOfCommand(interpreter);
 //}
 
 enum ErrorCode cmd_VOLUME(struct Core *core)
 {
     struct Interpreter *interpreter = core->interpreter;
-    
+
     // VOLUME
     ++interpreter->pc;
-    
+
     // n value
     struct TypedValue nValue = itp_evaluateNumericExpression(core, 0, NUM_VOICES - 1);
     if (nValue.type == ValueTypeError) return nValue.v.errorCode;
-    
+
     // comma
     if (interpreter->pc->type != TokenComma) return ErrorSyntax;
     ++interpreter->pc;
-    
+
     // volume value
     struct TypedValue volValue = itp_evaluateOptionalNumericExpression(core, 0, 15);
     if (volValue.type == ValueTypeError) return volValue.v.errorCode;
-    
+
     // comma
     if (interpreter->pc->type != TokenComma) return ErrorSyntax;
     ++interpreter->pc;
-    
+
     // mix value
     struct TypedValue mixValue = itp_evaluateOptionalNumericExpression(core, 0, 3);
     if (mixValue.type == ValueTypeError) return mixValue.v.errorCode;
-    
+
     if (interpreter->pass == PassRun)
     {
         int n = nValue.v.floatValue;
@@ -1172,53 +1172,53 @@ enum ErrorCode cmd_VOLUME(struct Core *core)
             voice->status.mix = mix;
         }
     }
-    
+
     return itp_endOfCommand(interpreter);
 }
 
 enum ErrorCode cmd_ENVELOPE(struct Core *core)
 {
     struct Interpreter *interpreter = core->interpreter;
-    
+
     // ENVELOPE
     ++interpreter->pc;
-    
+
     // n value
     struct TypedValue nValue = itp_evaluateNumericExpression(core, 0, NUM_VOICES - 1);
     if (nValue.type == ValueTypeError) return nValue.v.errorCode;
-    
+
     // comma
     if (interpreter->pc->type != TokenComma) return ErrorSyntax;
     ++interpreter->pc;
-    
+
     // attack value
     struct TypedValue attValue = itp_evaluateOptionalNumericExpression(core, 0, 15);
     if (attValue.type == ValueTypeError) return attValue.v.errorCode;
-    
+
     // comma
     if (interpreter->pc->type != TokenComma) return ErrorSyntax;
     ++interpreter->pc;
-    
+
     // decay value
     struct TypedValue decValue = itp_evaluateOptionalNumericExpression(core, 0, 15);
     if (decValue.type == ValueTypeError) return decValue.v.errorCode;
-    
+
     // comma
     if (interpreter->pc->type != TokenComma) return ErrorSyntax;
     ++interpreter->pc;
-    
+
     // sustain value
     struct TypedValue susValue = itp_evaluateOptionalNumericExpression(core, 0, 15);
     if (susValue.type == ValueTypeError) return susValue.v.errorCode;
-    
+
     // comma
     if (interpreter->pc->type != TokenComma) return ErrorSyntax;
     ++interpreter->pc;
-    
+
     // release value
     struct TypedValue relValue = itp_evaluateOptionalNumericExpression(core, 0, 15);
     if (relValue.type == ValueTypeError) return relValue.v.errorCode;
-    
+
     if (interpreter->pass == PassRun)
     {
         int n = nValue.v.floatValue;
@@ -1240,53 +1240,53 @@ enum ErrorCode cmd_ENVELOPE(struct Core *core)
             voice->envR = relValue.v.floatValue;
         }
     }
-    
+
     return itp_endOfCommand(interpreter);
 }
 
 enum ErrorCode cmd_LFO(struct Core *core)
 {
     struct Interpreter *interpreter = core->interpreter;
-    
+
     // LFO
     ++interpreter->pc;
-    
+
     // n value
     struct TypedValue nValue = itp_evaluateNumericExpression(core, 0, NUM_VOICES - 1);
     if (nValue.type == ValueTypeError) return nValue.v.errorCode;
-    
+
     // comma
     if (interpreter->pc->type != TokenComma) return ErrorSyntax;
     ++interpreter->pc;
-    
+
     // rate value
     struct TypedValue rateValue = itp_evaluateOptionalNumericExpression(core, 0, 15);
     if (rateValue.type == ValueTypeError) return rateValue.v.errorCode;
-    
+
     // comma
     if (interpreter->pc->type != TokenComma) return ErrorSyntax;
     ++interpreter->pc;
-    
+
     // osc amount value
     struct TypedValue oscValue = itp_evaluateOptionalNumericExpression(core, 0, 15);
     if (oscValue.type == ValueTypeError) return oscValue.v.errorCode;
-    
+
     // comma
     if (interpreter->pc->type != TokenComma) return ErrorSyntax;
     ++interpreter->pc;
-    
+
     // vol amount value
     struct TypedValue volValue = itp_evaluateOptionalNumericExpression(core, 0, 15);
     if (volValue.type == ValueTypeError) return volValue.v.errorCode;
-    
+
     // comma
     if (interpreter->pc->type != TokenComma) return ErrorSyntax;
     ++interpreter->pc;
-    
+
     // pw amount value
     struct TypedValue pwValue = itp_evaluateOptionalNumericExpression(core, 0, 15);
     if (pwValue.type == ValueTypeError) return pwValue.v.errorCode;
-    
+
     if (interpreter->pass == PassRun)
     {
         int n = nValue.v.floatValue;
@@ -1308,139 +1308,139 @@ enum ErrorCode cmd_LFO(struct Core *core)
             voice->lfoPWAmount = pwValue.v.floatValue;
         }
     }
-    
+
     return itp_endOfCommand(interpreter);
 }
 
 enum ErrorCode cmd_LFO_A(struct Core *core)
 {
     struct Interpreter *interpreter = core->interpreter;
-    
+
     // LFO.A
     ++interpreter->pc;
-    
+
     // obsolete syntax!
-    
+
     // n value
     struct TypedValue nValue = itp_evaluateNumericExpression(core, 0, NUM_VOICES - 1);
     if (nValue.type == ValueTypeError) return nValue.v.errorCode;
-    
+
     struct Voice *voice = NULL;
     if (interpreter->pass == PassRun)
     {
         int n = nValue.v.floatValue;
         voice = &core->machine->audioRegisters.voices[n];
     }
-    
+
     // comma
     if (interpreter->pc->type != TokenComma) return ErrorSyntax;
     ++interpreter->pc;
-    
+
     union LFOAttributes attr;
     if (voice) attr = voice->lfoAttr; else attr.value = 0;
-    
+
     // attr value
     struct TypedValue attrValue = itp_evaluateLFOAttributes(core, attr);
     if (attrValue.type == ValueTypeError) return attrValue.v.errorCode;
-    
+
     if (interpreter->pass == PassRun)
     {
         voice->lfoAttr.value = attrValue.v.floatValue;
     }
-    
+
     return itp_endOfCommand(interpreter);
 }
 
 enum ErrorCode cmd_LFO_WAVE(struct Core *core)
 {
     struct Interpreter *interpreter = core->interpreter;
-    
+
     // LFO WAVE
     ++interpreter->pc;
     ++interpreter->pc;
-    
+
     // n value
     struct TypedValue nValue = itp_evaluateNumericExpression(core, 0, NUM_VOICES - 1);
     if (nValue.type == ValueTypeError) return nValue.v.errorCode;
-    
+
     // comma
     if (interpreter->pc->type != TokenComma) return ErrorSyntax;
     ++interpreter->pc;
-    
+
     // wave value
     struct TypedValue wavValue = itp_evaluateOptionalNumericExpression(core, 0, 3);
     if (wavValue.type == ValueTypeError) return wavValue.v.errorCode;
-    
+
     // comma
     if (interpreter->pc->type != TokenComma) return ErrorSyntax;
     ++interpreter->pc;
-    
+
     // inv value
     struct TypedValue invValue = itp_evaluateOptionalNumericExpression(core, -1, 1);
     if (invValue.type == ValueTypeError) return invValue.v.errorCode;
-    
+
     // comma
     if (interpreter->pc->type != TokenComma) return ErrorSyntax;
     ++interpreter->pc;
-    
+
     // env value
     struct TypedValue envValue = itp_evaluateOptionalNumericExpression(core, -1, 1);
     if (envValue.type == ValueTypeError) return envValue.v.errorCode;
-    
+
     // comma
     if (interpreter->pc->type != TokenComma) return ErrorSyntax;
     ++interpreter->pc;
-    
+
     // tri value
     struct TypedValue triValue = itp_evaluateOptionalNumericExpression(core, -1, 1);
     if (triValue.type == ValueTypeError) return triValue.v.errorCode;
-    
+
     if (interpreter->pass == PassRun)
     {
         int n = nValue.v.floatValue;
         struct Voice *voice = &core->machine->audioRegisters.voices[n];
-        
+
         if (wavValue.type != ValueTypeNull) voice->lfoAttr.wave = wavValue.v.floatValue;
         if (invValue.type != ValueTypeNull) voice->lfoAttr.invert = invValue.v.floatValue ? 1 : 0;
         if (envValue.type != ValueTypeNull) voice->lfoAttr.envMode = envValue.v.floatValue ? 1 : 0;
         if (triValue.type != ValueTypeNull) voice->lfoAttr.trigger = triValue.v.floatValue ? 1 : 0;
     }
-    
+
     return itp_endOfCommand(interpreter);
 }
 
 enum ErrorCode cmd_PLAY(struct Core *core)
 {
     struct Interpreter *interpreter = core->interpreter;
-    
+
     // PLAY
     ++interpreter->pc;
-    
+
     // n value
     struct TypedValue nValue = itp_evaluateNumericExpression(core, 0, NUM_VOICES - 1);
     if (nValue.type == ValueTypeError) return nValue.v.errorCode;
-    
+
     // comma
     if (interpreter->pc->type != TokenComma) return ErrorSyntax;
     ++interpreter->pc;
-    
+
     // pitch value
     struct TypedValue pValue = itp_evaluateNumericExpression(core, 0, 96);
     if (pValue.type == ValueTypeError) return pValue.v.errorCode;
-    
+
     int len = -1;
     if (interpreter->pc->type == TokenComma)
     {
         // comma
         ++interpreter->pc;
-        
+
         // length value
         struct TypedValue lenValue = itp_evaluateNumericExpression(core, 0, 255);
         if (lenValue.type == ValueTypeError) return lenValue.v.errorCode;
-        
+
         len = lenValue.v.floatValue;
     }
-    
+
     int sound = -1;
     if (interpreter->pc->type == TokenSOUND)
     {
@@ -1450,29 +1450,29 @@ enum ErrorCode cmd_PLAY(struct Core *core)
         // length value
         struct TypedValue sValue = itp_evaluateNumericExpression(core, 0, NUM_SOUNDS - 1);
         if (sValue.type == ValueTypeError) return sValue.v.errorCode;
-        
+
         sound = sValue.v.floatValue;
     }
-    
+
     if (interpreter->pass == PassRun)
     {
         audlib_play(&core->interpreter->audioLib, nValue.v.floatValue, pValue.v.floatValue, len, sound);
     }
-    
+
     return itp_endOfCommand(interpreter);
 }
 
 enum ErrorCode cmd_STOP(struct Core *core)
 {
     struct Interpreter *interpreter = core->interpreter;
-    
+
     // STOP
     ++interpreter->pc;
-    
+
     // n value
     struct TypedValue nValue = itp_evaluateOptionalNumericExpression(core, 0, NUM_VOICES - 1);
     if (nValue.type == ValueTypeError) return nValue.v.errorCode;
-    
+
     if (interpreter->pass == PassRun)
     {
         if (nValue.type != ValueTypeNull)
@@ -1485,101 +1485,101 @@ enum ErrorCode cmd_STOP(struct Core *core)
             audlib_stopAll(&interpreter->audioLib);
         }
     }
-    
+
     return itp_endOfCommand(interpreter);
 }
 
 enum ErrorCode cmd_MUSIC(struct Core *core)
 {
     struct Interpreter *interpreter = core->interpreter;
-    
+
     // MUSIC
     ++interpreter->pc;
-    
+
     // pattern value
     struct TypedValue pValue = itp_evaluateOptionalNumericExpression(core, 0, NUM_PATTERNS - 1);
     if (pValue.type == ValueTypeError) return pValue.v.errorCode;
-    
+
     if (interpreter->pass == PassRun)
     {
         int startPattern = (pValue.type != ValueTypeNull) ? pValue.v.floatValue : 0;
         audlib_playMusic(&interpreter->audioLib, startPattern);
     }
-    
+
     return itp_endOfCommand(interpreter);
 }
 
 enum ErrorCode cmd_TRACK(struct Core *core)
 {
     struct Interpreter *interpreter = core->interpreter;
-    
+
     // TRACK
     ++interpreter->pc;
-    
+
     // track value
     struct TypedValue tValue = itp_evaluateNumericExpression(core, 0, NUM_TRACKS - 1);
     if (tValue.type == ValueTypeError) return tValue.v.errorCode;
-    
+
     // comma
     if (interpreter->pc->type != TokenComma) return ErrorSyntax;
     ++interpreter->pc;
-    
+
     // voice value
     struct TypedValue vValue = itp_evaluateNumericExpression(core, 0, NUM_VOICES - 1);
     if (vValue.type == ValueTypeError) return vValue.v.errorCode;
-    
+
     if (interpreter->pass == PassRun)
     {
         audlib_playTrack(&interpreter->audioLib, tValue.v.floatValue, vValue.v.floatValue);
     }
-    
+
     return itp_endOfCommand(interpreter);
 }
 
 enum ErrorCode cmd_SOUND_SOURCE(struct Core *core)
 {
     struct Interpreter *interpreter = core->interpreter;
-    
+
     // SOUND
     ++interpreter->pc;
-    
+
     // SOURCE
     ++interpreter->pc;
-    
+
     // address value
     struct TypedValue aValue = itp_evaluateNumericExpression(core, 0, VM_MAX);
     if (aValue.type == ValueTypeError) return aValue.v.errorCode;
-    
+
     if (interpreter->pass == PassRun)
     {
         interpreter->audioLib.sourceAddress = aValue.v.floatValue;
     }
-    
+
     return itp_endOfCommand(interpreter);
 }
 
 struct TypedValue fnc_MUSIC(struct Core *core)
 {
     struct Interpreter *interpreter = core->interpreter;
-    
+
     // MUSIC
     ++interpreter->pc;
-    
+
     // bracket open
     if (interpreter->pc->type != TokenBracketOpen) return val_makeError(ErrorSyntax);
     ++interpreter->pc;
-    
+
     // x value
     struct TypedValue xValue = itp_evaluateExpression(core, TypeClassNumeric);
     if (xValue.type == ValueTypeError) return xValue;
-    
+
     // bracket close
     if (interpreter->pc->type != TokenBracketClose) return val_makeError(ErrorSyntax);
     ++interpreter->pc;
-    
+
     struct TypedValue value;
     value.type = ValueTypeFloat;
-    
+
     if (interpreter->pass == PassRun)
     {
         int x = xValue.v.floatValue;
@@ -3528,47 +3528,47 @@ enum ErrorCode cmd_LOAD(struct Core *core)
     // LOAD
     struct Token *startPc = interpreter->pc;
     ++interpreter->pc;
-    
+
     // file value
     struct TypedValue fileValue = itp_evaluateNumericExpression(core, 0, MAX_ENTRIES - 1);
     if (fileValue.type == ValueTypeError) return fileValue.v.errorCode;
-    
+
     // comma
     if (interpreter->pc->type != TokenComma) return ErrorSyntax;
     ++interpreter->pc;
-    
+
     // address value
     struct TypedValue addressValue = itp_evaluateExpression(core, TypeClassNumeric);
     if (addressValue.type == ValueTypeError) return addressValue.v.errorCode;
-    
+
     int maxLength = 0;
     int offset = 0;
     if (interpreter->pc->type == TokenComma)
     {
         ++interpreter->pc;
-        
+
         // max length value
         struct TypedValue maxLengthValue = itp_evaluateNumericExpression(core, 0, DATA_SIZE);
         if (maxLengthValue.type == ValueTypeError) return maxLengthValue.v.errorCode;
         maxLength = maxLengthValue.v.floatValue;
-        
+
         if (interpreter->pc->type == TokenComma)
         {
             ++interpreter->pc;
-            
+
             // offset value
             struct TypedValue offsetValue = itp_evaluateNumericExpression(core, 0, DATA_SIZE);
             if (offsetValue.type == ValueTypeError) return offsetValue.v.errorCode;
             offset = offsetValue.v.floatValue;
         }
     }
-    
+
     if (interpreter->pass == PassRun)
     {
         bool pokeFailed = false;
         bool ready = disk_loadFile(core, fileValue.v.floatValue, addressValue.v.floatValue, maxLength, offset, &pokeFailed);
         if (pokeFailed) return ErrorIllegalMemoryAccess;
-        
+
         interpreter->exitEvaluation = true;
         if (!ready)
         {
@@ -3578,7 +3578,7 @@ enum ErrorCode cmd_LOAD(struct Core *core)
             return ErrorNone;
         }
     }
-    
+
     return itp_endOfCommand(interpreter);
 }
 
@@ -3586,19 +3586,19 @@ enum ErrorCode cmd_SAVE(struct Core *core)
 {
     struct Interpreter *interpreter = core->interpreter;
     if (interpreter->pass == PassRun && interpreter->mode == ModeInterrupt) return ErrorNotAllowedInInterrupt;
-    
+
     // SAVE
     struct Token *startPc = interpreter->pc;
     ++interpreter->pc;
-    
+
     // file value
     struct TypedValue fileValue = itp_evaluateNumericExpression(core, 0, MAX_ENTRIES - 1);
     if (fileValue.type == ValueTypeError) return fileValue.v.errorCode;
-    
+
     // comma
     if (interpreter->pc->type != TokenComma) return ErrorSyntax;
     ++interpreter->pc;
-    
+
     // comment value
     struct TypedValue commentValue = itp_evaluateExpression(core, TypeClassString);
     if (commentValue.type == ValueTypeError) return commentValue.v.errorCode;
@@ -3606,7 +3606,7 @@ enum ErrorCode cmd_SAVE(struct Core *core)
     // comma
     if (interpreter->pc->type != TokenComma) return ErrorSyntax;
     ++interpreter->pc;
-    
+
     // address value
     struct TypedValue addressValue = itp_evaluateExpression(core, TypeClassNumeric);
     if (addressValue.type == ValueTypeError) return addressValue.v.errorCode;
@@ -3614,11 +3614,11 @@ enum ErrorCode cmd_SAVE(struct Core *core)
     // comma
     if (interpreter->pc->type != TokenComma) return ErrorSyntax;
     ++interpreter->pc;
-    
+
     // length value
     struct TypedValue lengthValue = itp_evaluateNumericExpression(core, 1, DATA_SIZE);
     if (lengthValue.type == ValueTypeError) return lengthValue.v.errorCode;
-    
+
     if (interpreter->pass == PassRun)
     {
         int address = addressValue.v.floatValue;
@@ -3629,7 +3629,7 @@ enum ErrorCode cmd_SAVE(struct Core *core)
         }
         bool ready = disk_saveFile(core, fileValue.v.floatValue, commentValue.v.stringValue->chars, address, length);
         rcstring_release(commentValue.v.stringValue);
-        
+
         interpreter->exitEvaluation = true;
         if (!ready)
         {
@@ -3639,7 +3639,7 @@ enum ErrorCode cmd_SAVE(struct Core *core)
             return ErrorNone;
         }
     }
-    
+
     return itp_endOfCommand(interpreter);
 }
 
@@ -3647,15 +3647,15 @@ enum ErrorCode cmd_FILES(struct Core *core)
 {
     struct Interpreter *interpreter = core->interpreter;
     if (interpreter->pass == PassRun && interpreter->mode == ModeInterrupt) return ErrorNotAllowedInInterrupt;
-    
+
     // FILES
     struct Token *startPc = interpreter->pc;
     ++interpreter->pc;
-    
+
     if (interpreter->pass == PassRun)
     {
         bool ready = disk_prepare(core);
-        
+
         interpreter->exitEvaluation = true;
         if (!ready)
         {
@@ -3665,21 +3665,21 @@ enum ErrorCode cmd_FILES(struct Core *core)
             return ErrorNone;
         }
     }
-    
+
     return itp_endOfCommand(interpreter);
 }
 
 struct TypedValue fnc_FILE(struct Core *core)
 {
     struct Interpreter *interpreter = core->interpreter;
-    
+
     // FILE$
     ++interpreter->pc;
-    
+
     // bracket open
     if (interpreter->pc->type != TokenBracketOpen) return val_makeError(ErrorSyntax);
     ++interpreter->pc;
-    
+
     // file value
     struct TypedValue fileValue = itp_evaluateNumericExpression(core, 0, MAX_ENTRIES - 1);
     if (fileValue.type == ValueTypeError) return fileValue;
@@ -3690,14 +3690,14 @@ struct TypedValue fnc_FILE(struct Core *core)
 
     struct TypedValue resultValue;
     resultValue.type = ValueTypeString;
-    
+
     if (interpreter->pass == PassRun)
     {
         if (core->diskDrive->dataManager.data == NULL) return val_makeError(ErrorDirectoryNotLoaded);
-        
+
         int index = fileValue.v.floatValue;
         struct DataEntry *entry = &core->diskDrive->dataManager.entries[index];
-        
+
         size_t len = strlen(entry->comment);
         resultValue.v.stringValue = rcstring_new(entry->comment, len);
         rcstring_retain(resultValue.v.stringValue);
@@ -3709,32 +3709,32 @@ struct TypedValue fnc_FILE(struct Core *core)
 struct TypedValue fnc_FSIZE(struct Core *core)
 {
     struct Interpreter *interpreter = core->interpreter;
-    
+
     // FSIZE
     ++interpreter->pc;
-    
+
     // bracket open
     if (interpreter->pc->type != TokenBracketOpen) return val_makeError(ErrorSyntax);
     ++interpreter->pc;
-    
+
     // file value
     struct TypedValue fileValue = itp_evaluateNumericExpression(core, 0, MAX_ENTRIES - 1);
     if (fileValue.type == ValueTypeError) return fileValue;
-    
+
     // bracket close
     if (interpreter->pc->type != TokenBracketClose) return val_makeError(ErrorSyntax);
     ++interpreter->pc;
-    
+
     struct TypedValue resultValue;
     resultValue.type = ValueTypeFloat;
-    
+
     if (interpreter->pass == PassRun)
     {
         if (core->diskDrive->dataManager.data == NULL) return val_makeError(ErrorDirectoryNotLoaded);
-        
+
         int index = fileValue.v.floatValue;
         struct DataEntry *entry = &core->diskDrive->dataManager.entries[index];
-        
+
         resultValue.v.floatValue = entry->length;
     }
     return resultValue;
@@ -3790,14 +3790,6 @@ struct TypedValue fnc_KEYBOARD(struct Core *core)
 	struct Interpreter *interpreter = core->interpreter;
 
 	// KEYBOARD
-	++interpreter->pc;
-
-	// KEYBOARD (
-	if (interpreter->pc->type != TokenBracketOpen) return val_makeError(ErrorSyntax);
-	++interpreter->pc;
-
-	// KEYBOARD ( )
-	if (interpreter->pc->type != TokenBracketClose) return val_makeError(ErrorSyntax);
 	++interpreter->pc;
 
 	struct TypedValue value;
@@ -6718,6 +6710,7 @@ enum ErrorCode cmd_LEFT_RIGHT(struct Core *core)
 	return itp_endOfCommand(interpreter);
 }
 
+// TODO: move to cmd_strings.c
 enum ErrorCode cmd_MID(struct Core *core)
 {
 	struct Interpreter *interpreter = core->interpreter;
@@ -6842,23 +6835,23 @@ enum ErrorCode cmd_MID(struct Core *core)
 enum ErrorCode cmd_CALL(struct Core *core)
 {
     struct Interpreter *interpreter = core->interpreter;
-    
+
     // CALL
     struct Token *tokenCALL = interpreter->pc;
     ++interpreter->pc;
-    
+
     // Identifier
     if (interpreter->pc->type != TokenIdentifier) return ErrorExpectedSubprogramName;
     struct Token *tokenSubIdentifier = interpreter->pc;
     ++interpreter->pc;
-    
+
     if (interpreter->pass == PassPrepare)
     {
         struct SubItem *item = tok_getSub(&interpreter->tokenizer, tokenSubIdentifier->symbolIndex);
         if (!item) return ErrorUndefinedSubprogram;
         tokenCALL->jumpToken = item->token;
     }
-    
+
     // optional arguments
     int numArguments = 0;
     if (interpreter->pc->type == TokenBracketOpen)
@@ -6867,7 +6860,7 @@ enum ErrorCode cmd_CALL(struct Core *core)
         {
             // bracket or comma
             ++interpreter->pc;
-            
+
             // argument
             struct Token *tokens = interpreter->pc;
             if ((interpreter->pc->type == TokenIdentifier || interpreter->pc->type == TokenStringIdentifier)
@@ -6879,7 +6872,7 @@ enum ErrorCode cmd_CALL(struct Core *core)
                 {
                     struct ArrayVariable *variable = var_getArrayVariable(interpreter, interpreter->pc->symbolIndex, interpreter->subLevel);
                     if (!variable) return ErrorArrayNotDimensionized;
-                    
+
                     enum ErrorCode errorCode = ErrorNone;
                     var_createArrayVariable(interpreter, &errorCode, numArguments + 1, interpreter->subLevel + 1, variable);
                     if (errorCode != ErrorNone) return errorCode;
@@ -6891,7 +6884,7 @@ enum ErrorCode cmd_CALL(struct Core *core)
                 // expression
                 struct TypedValue value = itp_evaluateExpression(core, TypeClassAny);
                 if (value.type == ValueTypeError) return value.v.errorCode;
-                
+
                 if (interpreter->pass == PassRun)
                 {
                     enum ErrorCode errorCode = ErrorNone;
@@ -6907,7 +6900,7 @@ enum ErrorCode cmd_CALL(struct Core *core)
                         // pass by value
                         struct SimpleVariable *variable = var_createSimpleVariable(interpreter, &errorCode, numArguments + 1, interpreter->subLevel + 1, value.type, NULL);
                         if (!variable) return errorCode;
-                        
+
                         variable->v = value.v;
                     }
                 }
@@ -6915,7 +6908,7 @@ enum ErrorCode cmd_CALL(struct Core *core)
             ++numArguments;
         }
         while (interpreter->pc->type == TokenComma);
-        
+
         if (interpreter->pc->type != TokenBracketClose) return ErrorSyntax;
         ++interpreter->pc;
     }
@@ -6924,10 +6917,10 @@ enum ErrorCode cmd_CALL(struct Core *core)
     {
         enum ErrorCode errorCode = lab_pushLabelStackItem(interpreter, LabelTypeCALL, interpreter->pc);
         if (errorCode != ErrorNone) return errorCode;
-        
+
         interpreter->pc = tokenCALL->jumpToken; // after sub name
         interpreter->subLevel++;
-        
+
         // parameters
         if (interpreter->pc->type == TokenBracketOpen)
         {
@@ -6935,10 +6928,10 @@ enum ErrorCode cmd_CALL(struct Core *core)
             do
             {
                 if (parameterIndex >= numArguments) return ErrorArgumentCountMismatch;
-                
+
                 // bracket or comma
                 ++interpreter->pc;
-                
+
                 // parameter
                 struct Token *tokenIdentifier = interpreter->pc;
                 if (tokenIdentifier->type != TokenIdentifier && tokenIdentifier->type != TokenStringIdentifier) return ErrorSyntax;
@@ -6950,11 +6943,11 @@ enum ErrorCode cmd_CALL(struct Core *core)
                     // array
                     struct ArrayVariable *variable = var_getArrayVariable(interpreter, parameterIndex + 1, interpreter->subLevel);
                     if (!variable || variable->type != varType) return ErrorTypeMismatch;
-                    
+
                     variable->symbolIndex = tokenIdentifier->symbolIndex;
-                    
+
                     interpreter->pc += 2;
-                    
+
                     if (interpreter->pc->type != TokenBracketClose) return ErrorSyntax;
                     ++interpreter->pc;
                 }
@@ -6963,18 +6956,18 @@ enum ErrorCode cmd_CALL(struct Core *core)
                     // simple variable
                     struct SimpleVariable *variable = var_getSimpleVariable(interpreter, parameterIndex + 1, interpreter->subLevel);
                     if (!variable || variable->type != varType) return ErrorTypeMismatch;
-                    
+
                     variable->symbolIndex = tokenIdentifier->symbolIndex;
-                    
+
                     ++interpreter->pc;
                 }
-                
+
                 ++parameterIndex;
             }
             while (interpreter->pc->type == TokenComma);
-            
+
             if (parameterIndex < numArguments) return ErrorArgumentCountMismatch;
-            
+
             if (interpreter->pc->type != TokenBracketClose) return ErrorSyntax;
             ++interpreter->pc;
         }
@@ -6991,15 +6984,15 @@ enum ErrorCode cmd_CALL(struct Core *core)
 enum ErrorCode cmd_SUB(struct Core *core)
 {
     struct Interpreter *interpreter = core->interpreter;
-    
+
     // SUB
     struct Token *tokenSUB = interpreter->pc;
     ++interpreter->pc;
-    
+
     // Identifier
     if (interpreter->pc->type != TokenIdentifier) return ErrorExpectedSubprogramName;
     ++interpreter->pc;
-    
+
     // parameters
     if (interpreter->pc->type == TokenBracketOpen)
     {
@@ -7007,12 +7000,12 @@ enum ErrorCode cmd_SUB(struct Core *core)
         {
             // bracket or comma
             ++interpreter->pc;
-            
+
             // parameter
             struct Token *tokenIdentifier = interpreter->pc;
             if (tokenIdentifier->type != TokenIdentifier && tokenIdentifier->type != TokenStringIdentifier) return ErrorSyntax;
             ++interpreter->pc;
-            
+
             if (interpreter->pc->type == TokenBracketOpen)
             {
                 ++interpreter->pc;
@@ -7021,11 +7014,11 @@ enum ErrorCode cmd_SUB(struct Core *core)
             }
         }
         while (interpreter->pc->type == TokenComma);
-        
+
         if (interpreter->pc->type != TokenBracketClose) return ErrorSyntax;
         ++interpreter->pc;
     }
-        
+
     if (interpreter->pass == PassPrepare)
     {
         if (interpreter->numLabelStackItems > 0)
@@ -7034,9 +7027,9 @@ enum ErrorCode cmd_SUB(struct Core *core)
         }
         enum ErrorCode errorCode = lab_pushLabelStackItem(interpreter, LabelTypeSUB, tokenSUB);
         if (errorCode != ErrorNone) return errorCode;
-        
+
         interpreter->subLevel++;
-        
+
         // Eol
         if (interpreter->pc->type != TokenEol) return ErrorSyntax;
         ++interpreter->pc;
@@ -7045,18 +7038,18 @@ enum ErrorCode cmd_SUB(struct Core *core)
     {
         interpreter->pc = tokenSUB->jumpToken; // after END SUB
     }
-    
+
     return ErrorNone;
 }
 
 enum ErrorCode cmd_END_SUB(struct Core *core)
 {
     struct Interpreter *interpreter = core->interpreter;
-    
+
     // END SUB
     ++interpreter->pc;
     ++interpreter->pc;
-        
+
     if (interpreter->pass == PassPrepare)
     {
         struct LabelStackItem *item = lab_popLabelStackItem(interpreter);
@@ -7073,7 +7066,7 @@ enum ErrorCode cmd_END_SUB(struct Core *core)
             enum ErrorCode errorCode = itp_labelStackError(item);
             return errorCode != ErrorNone ? errorCode : ErrorEndSubWithoutSub;
         }
-        
+
         // Eol
         if (interpreter->pc->type != TokenEol) return ErrorSyntax;
         ++interpreter->pc;
@@ -7082,11 +7075,11 @@ enum ErrorCode cmd_END_SUB(struct Core *core)
     {
         struct LabelStackItem *itemCALL = lab_popLabelStackItem(interpreter);
         if (!itemCALL) return ErrorEndSubWithoutSub;
-        
+
         // clean local variables
         var_freeSimpleVariables(interpreter, interpreter->subLevel);
         var_freeArrayVariables(interpreter, interpreter->subLevel);
-        
+
         if (itemCALL->type == LabelTypeONCALL)
         {
             // exit from interrupt
@@ -7103,7 +7096,7 @@ enum ErrorCode cmd_END_SUB(struct Core *core)
         }
     }
     interpreter->subLevel--;
-    
+
     return ErrorNone;
 }
 
@@ -7112,33 +7105,33 @@ enum ErrorCode cmd_SHARED(struct Core *core)
 {
     struct Interpreter *interpreter = core->interpreter;
     if (interpreter->pass == PassPrepare && interpreter->subLevel == 0) return ErrorSharedOutsideOfASubprogram;
-    
+
     do
     {
         // SHARED or comma
         ++interpreter->pc;
-        
+
         // identifier
         struct Token *tokenIdentifier = interpreter->pc;
         if (tokenIdentifier->type != TokenIdentifier && tokenIdentifier->type != TokenStringIdentifier) return ErrorExpectedVariableIdentifier;
         ++interpreter->pc;
-        
+
         enum ValueType varType = itp_getIdentifierTokenValueType(tokenIdentifier);
         int symbolIndex = tokenIdentifier->symbolIndex;
-        
+
         if (interpreter->pc->type == TokenBracketOpen)
         {
             // array
             ++interpreter->pc;
-            
+
             if (interpreter->pc->type != TokenBracketClose) return ErrorSyntax;
             ++interpreter->pc;
-            
+
             if (interpreter->pass == PassRun)
             {
                 struct ArrayVariable *globalVariable = var_getArrayVariable(interpreter, symbolIndex, 0);
                 if (!globalVariable) return ErrorArrayNotDimensionized;
-                
+
                 enum ErrorCode errorCode = ErrorNone;
                 var_createArrayVariable(interpreter, &errorCode, symbolIndex, interpreter->subLevel, globalVariable);
                 if (errorCode != ErrorNone) return errorCode;
@@ -7151,7 +7144,7 @@ enum ErrorCode cmd_SHARED(struct Core *core)
             {
                 struct SimpleVariable *globalVariable = var_getSimpleVariable(interpreter, symbolIndex, 0);
                 if (!globalVariable) return ErrorVariableNotInitialized;
-                
+
                 enum ErrorCode errorCode = ErrorNone;
                 var_createSimpleVariable(interpreter, &errorCode, symbolIndex, interpreter->subLevel, varType, &globalVariable->v);
                 if (errorCode != ErrorNone) return errorCode;
@@ -7159,7 +7152,7 @@ enum ErrorCode cmd_SHARED(struct Core *core)
         }
     }
     while (interpreter->pc->type == TokenComma);
-    
+
     return itp_endOfCommand(interpreter);
 }
 */
@@ -7168,19 +7161,19 @@ enum ErrorCode cmd_GLOBAL(struct Core *core)
 {
     struct Interpreter *interpreter = core->interpreter;
     if (interpreter->pass == PassPrepare && interpreter->subLevel > 0) return ErrorGlobalInsideOfASubprogram;
-    
+
     do
     {
         // GLOBAL or comma
         ++interpreter->pc;
-        
+
         // identifier
         struct Token *tokenIdentifier = interpreter->pc;
         if (tokenIdentifier->type != TokenIdentifier && tokenIdentifier->type != TokenStringIdentifier) return ErrorSyntax;
         ++interpreter->pc;
-        
+
         int symbolIndex = tokenIdentifier->symbolIndex;
-        
+
         if (interpreter->pass == PassRun)
         {
             struct SimpleVariable *variable = var_getSimpleVariable(interpreter, symbolIndex, 0);
@@ -7198,21 +7191,21 @@ enum ErrorCode cmd_GLOBAL(struct Core *core)
         }
     }
     while (interpreter->pc->type == TokenComma);
-    
+
     return itp_endOfCommand(interpreter);
 }
 
 enum ErrorCode cmd_EXIT_SUB(struct Core *core)
 {
     struct Interpreter *interpreter = core->interpreter;
-    
+
     // EXIT
     ++interpreter->pc;
-    
+
     // SUB
     if (interpreter->pc->type != TokenSUB) return ErrorSyntax;
     ++interpreter->pc;
-    
+
     if (interpreter->pass == PassPrepare)
     {
         if (interpreter->subLevel == 0) return ErrorExitSubOutsideOfASubprogram;
@@ -7222,11 +7215,11 @@ enum ErrorCode cmd_EXIT_SUB(struct Core *core)
     {
         struct LabelStackItem *itemCALL = lab_popLabelStackItem(interpreter);
         if (!itemCALL) return ErrorExitSubOutsideOfASubprogram;
-        
+
         // clean local variables
         var_freeSimpleVariables(interpreter, interpreter->subLevel);
         var_freeArrayVariables(interpreter, interpreter->subLevel);
-        
+
         if (itemCALL->type == LabelTypeONCALL)
         {
             // exit from interrupt
@@ -7809,14 +7802,14 @@ enum ErrorCode cmd_MESSAGE(struct Core *core)
 enum ErrorCode cmd_LET(struct Core *core)
 {
     struct Interpreter *interpreter = core->interpreter;
-    
+
     // LET keyword is optional
     if (interpreter->pc->type == TokenLET)
     {
         ++interpreter->pc;
         if (interpreter->pc->type != TokenIdentifier && interpreter->pc->type != TokenStringIdentifier) return ErrorSyntax;
     }
-    
+
     // identifier
     enum ErrorCode errorCode = ErrorNone;
     enum ValueType valueType = ValueTypeNull;
@@ -7824,12 +7817,12 @@ enum ErrorCode cmd_LET(struct Core *core)
     if (!varValue) return errorCode;
     if (interpreter->pc->type != TokenEq) return ErrorSyntax;
     ++interpreter->pc;
-    
+
     // value
     struct TypedValue value = itp_evaluateExpression(core, TypeClassAny);
     if (value.type == ValueTypeError) return value.v.errorCode;
     if (value.type != valueType) return ErrorTypeMismatch;
-    
+
     if (interpreter->pass == PassRun)
     {
         if (valueType == ValueTypeString && varValue->stringValue)
@@ -7838,7 +7831,7 @@ enum ErrorCode cmd_LET(struct Core *core)
         }
         *varValue = value.v;
     }
-    
+
     return itp_endOfCommand(interpreter);
 }
 
@@ -7846,7 +7839,7 @@ enum ErrorCode cmd_DIM(struct Core *core)
 {
     struct Interpreter *interpreter = core->interpreter;
     if (interpreter->pass == PassRun && interpreter->mode == ModeInterrupt) return ErrorNotAllowedInInterrupt;
-    
+
     bool isGlobal = false;
     struct Token *nextToken = interpreter->pc + 1;
     if (nextToken->type == TokenGLOBAL)
@@ -7855,12 +7848,12 @@ enum ErrorCode cmd_DIM(struct Core *core)
         if (interpreter->pass == PassPrepare && interpreter->subLevel > 0) return ErrorGlobalInsideOfASubprogram;
         isGlobal = true;
     }
-    
+
     do
     {
         // DIM, GLOBAL or comma
         ++interpreter->pc;
-        
+
         // identifier
         struct Token *tokenIdentifier = interpreter->pc;
         ++interpreter->pc;
@@ -7868,21 +7861,21 @@ enum ErrorCode cmd_DIM(struct Core *core)
         {
             return ErrorSyntax;
         }
-        
+
         int numDimensions = 0;
         int dimensionSizes[MAX_ARRAY_DIMENSIONS];
-        
+
         if (interpreter->pc->type != TokenBracketOpen) return ErrorSyntax;
         ++interpreter->pc;
-        
+
         for (int i = 0; i < MAX_ARRAY_DIMENSIONS; i++)
         {
             struct TypedValue value = itp_evaluateExpression(core, TypeClassNumeric);
             if (value.type == ValueTypeError) return value.v.errorCode;
-            
+
             dimensionSizes[i] = value.v.floatValue + 1; // value is max index, so size is +1
             numDimensions++;
-            
+
             if (interpreter->pc->type == TokenComma)
             {
                 ++interpreter->pc;
@@ -7892,10 +7885,10 @@ enum ErrorCode cmd_DIM(struct Core *core)
                 break;
             }
         }
-        
+
         if (interpreter->pc->type != TokenBracketClose) return ErrorSyntax;
         ++interpreter->pc;
-        
+
         if (interpreter->pass == PassRun)
         {
             enum ErrorCode errorCode = ErrorNone;
@@ -7910,51 +7903,51 @@ enum ErrorCode cmd_DIM(struct Core *core)
         }
     }
     while (interpreter->pc->type == TokenComma);
-    
+
     return itp_endOfCommand(interpreter);
 }
 
 struct TypedValue fnc_UBOUND(struct Core *core)
 {
     struct Interpreter *interpreter = core->interpreter;
-    
+
     // UBOUND
     ++interpreter->pc;
-    
+
     // bracket open
     if (interpreter->pc->type != TokenBracketOpen) return val_makeError(ErrorSyntax);
     ++interpreter->pc;
-    
+
     // array
     if (interpreter->pc->type != TokenIdentifier && interpreter->pc->type != TokenStringIdentifier) return val_makeError(ErrorSyntax);
     int symbolIndex = interpreter->pc->symbolIndex;
     ++interpreter->pc;
-    
+
     int d = 0;
     if (interpreter->pc->type == TokenComma)
     {
         // comma
         ++interpreter->pc;
-        
+
         // dimension value
         struct TypedValue dValue = itp_evaluateNumericExpression(core, 1, MAX_ARRAY_DIMENSIONS);
         if (dValue.type == ValueTypeError) return val_makeError(dValue.v.errorCode);
-        
+
         d = dValue.v.floatValue - 1;
     }
-    
+
     // bracket close
     if (interpreter->pc->type != TokenBracketClose) return val_makeError(ErrorSyntax);
     ++interpreter->pc;
-    
+
     struct TypedValue value;
     value.type = ValueTypeFloat;
-    
+
     if (interpreter->pass == PassRun)
     {
         struct ArrayVariable *variable = var_getArrayVariable(interpreter, symbolIndex, interpreter->subLevel);
         if (!variable) return val_makeError(ErrorArrayNotDimensionized);
-        
+
         value.v.floatValue = variable->dimensionSizes[d] - 1;
     }
     return value;
@@ -7966,32 +7959,32 @@ enum ErrorCode cmd_SWAP(struct Core *core)
 
     // SWAP
     ++interpreter->pc;
-    
+
     enum ErrorCode errorCode = ErrorNone;
-    
+
     // x identifier
     enum ValueType xValueType = ValueTypeNull;
     union Value *xVarValue = itp_readVariable(core, &xValueType, &errorCode, false);
     if (!xVarValue) return errorCode;
-    
+
     // comma
     if (interpreter->pc->type != TokenComma) return ErrorSyntax;
     ++interpreter->pc;
-    
+
     // y identifier
     enum ValueType yValueType = ValueTypeNull;
     union Value *yVarValue = itp_readVariable(core, &yValueType, &errorCode, false);
     if (!yVarValue) return errorCode;
-    
+
     if (xValueType != yValueType) return ErrorTypeMismatch;
-    
+
     if (interpreter->pass == PassRun)
     {
         union Value spareValue = *xVarValue;
         *xVarValue = *yVarValue;
         *yVarValue = spareValue;
     }
-    
+
     return itp_endOfCommand(interpreter);
 }
 //
@@ -9648,6 +9641,9 @@ struct TypedValue itp_evaluateFunction(struct Core *core)
 	case TokenCEIL:
 		return fnc_math1(core);
 
+	case TokenFLOOR:
+		return fnc_math1(core);
+
 	case TokenKEYBOARD:
 		return fnc_KEYBOARD(core);
 
@@ -10091,82 +10087,82 @@ enum ErrorCode itp_labelStackError(struct LabelStackItem *item)
 enum ErrorCode itp_evaluateSimpleAttributes(struct Core *core, struct SimpleAttributes *attrs)
 {
     struct Interpreter *interpreter = core->interpreter;
-    
+
     attrs->pal = -1;
     attrs->flipX = -1;
     attrs->flipY = -1;
     attrs->prio = -1;
     attrs->size = -1;
-    
+
     bool changed = false;
     bool checked = false;
-    
+
     do
     {
         checked = false;
-        
+
         // PAL
         if (interpreter->pc->type == TokenPAL && attrs->pal == -1)
         {
             ++interpreter->pc;
-            
+
             struct TypedValue value = itp_evaluateNumericExpression(core, 0, NUM_PALETTES - 1);
             if (value.type == ValueTypeError) return value.v.errorCode;
             attrs->pal = value.v.floatValue;
-            
+
             checked = true;
         }
-        
+
         // FLIP
         if (interpreter->pc->type == TokenFLIP && attrs->flipX == -1)
         {
             ++interpreter->pc;
-            
+
             struct TypedValue fxValue = itp_evaluateNumericExpression(core, -1, 1);
             if (fxValue.type == ValueTypeError) return fxValue.v.errorCode;
             attrs->flipX = fxValue.v.floatValue ? 1 : 0;
-            
+
             // comma
             if (interpreter->pc->type != TokenComma) return ErrorSyntax;
             ++interpreter->pc;
-            
+
             struct TypedValue fyValue = itp_evaluateNumericExpression(core, -1, 1);
             if (fyValue.type == ValueTypeError) return fyValue.v.errorCode;
             attrs->flipY = fyValue.v.floatValue ? 1 : 0;
-            
+
             checked = true;
         }
-        
+
         // PRIO
         if (interpreter->pc->type == TokenPRIO && attrs->prio == -1)
         {
             ++interpreter->pc;
-            
+
             struct TypedValue value = itp_evaluateNumericExpression(core, -1, 1);
             if (value.type == ValueTypeError) return value.v.errorCode;
             attrs->prio = value.v.floatValue ? 1 : 0;
-            
+
             checked = true;
         }
-        
+
         // SIZE
         if (interpreter->pc->type == TokenSIZE && attrs->size == -1)
         {
             ++interpreter->pc;
-            
+
             struct TypedValue value = itp_evaluateNumericExpression(core, 0, 3);
             if (value.type == ValueTypeError) return value.v.errorCode;
             attrs->size = value.v.floatValue;
-            
+
             checked = true;
         }
-        
+
         changed |= checked;
     }
     while (checked);
-    
+
     if (!changed) return ErrorSyntax;
-    
+
     return ErrorNone;
 }
 
@@ -10177,44 +10173,44 @@ struct TypedValue itp_evaluateCharAttributes(struct Core *core, union CharacterA
     {
         // bracket open
         interpreter->pc++;
-        
+
         // obsolete syntax!
-        
+
         union CharacterAttributes resultAttr = oldAttr;
-        
+
         struct TypedValue palValue = {ValueTypeNull, 0};
         struct TypedValue fxValue = {ValueTypeNull, 0};
         struct TypedValue fyValue = {ValueTypeNull, 0};
         struct TypedValue priValue = {ValueTypeNull, 0};
         struct TypedValue sValue = {ValueTypeNull, 0};
-        
+
         // palette value
         palValue = itp_evaluateOptionalNumericExpression(core, 0, NUM_PALETTES - 1);
         if (palValue.type == ValueTypeError) return palValue;
-        
+
         // comma
         if (interpreter->pc->type == TokenComma)
         {
             ++interpreter->pc;
-            
+
             // flip x value
             fxValue = itp_evaluateOptionalNumericExpression(core, -1, 1);
             if (fxValue.type == ValueTypeError) return fxValue;
-            
+
             // comma
             if (interpreter->pc->type == TokenComma)
             {
                 ++interpreter->pc;
-                
+
                 // flip y value
                 fyValue = itp_evaluateOptionalNumericExpression(core, -1, 1);
                 if (fyValue.type == ValueTypeError) return fyValue;
-                
+
                 // comma
                 if (interpreter->pc->type == TokenComma)
                 {
                     ++interpreter->pc;
-                    
+
                     // priority value
                     priValue = itp_evaluateOptionalNumericExpression(core, -1, 1);
                     if (priValue.type == ValueTypeError) return priValue;
@@ -10223,7 +10219,7 @@ struct TypedValue itp_evaluateCharAttributes(struct Core *core, union CharacterA
                     if (interpreter->pc->type == TokenComma)
                     {
                         ++interpreter->pc;
-                        
+
                         // size value
                         sValue = itp_evaluateOptionalNumericExpression(core, 0, 3);
                         if (sValue.type == ValueTypeError) return sValue;
@@ -10231,11 +10227,11 @@ struct TypedValue itp_evaluateCharAttributes(struct Core *core, union CharacterA
                 }
             }
         }
-        
+
         // bracket close
         if (interpreter->pc->type != TokenBracketClose) return val_makeError(ErrorSyntax);
         interpreter->pc++;
-        
+
         if (interpreter->pass == PassRun)
         {
             if (palValue.type != ValueTypeNull) resultAttr.palette = palValue.v.floatValue;
@@ -10244,7 +10240,7 @@ struct TypedValue itp_evaluateCharAttributes(struct Core *core, union CharacterA
             if (priValue.type != ValueTypeNull) resultAttr.priority = priValue.v.floatValue;
             if (sValue.type != ValueTypeNull) resultAttr.size = sValue.v.floatValue;
         }
-        
+
         struct TypedValue resultValue;
         resultValue.type = ValueTypeFloat;
         resultValue.v.floatValue = resultAttr.value;
@@ -10263,9 +10259,9 @@ struct TypedValue itp_evaluateCharAttributes(struct Core *core, union CharacterA
 //     {
 //         // bracket open
 //         interpreter->pc++;
-        
+
 //         union DisplayAttributes resultAttr = oldAttr;
-        
+
 //         struct TypedValue sValue = {ValueTypeNull, 0};
 //         struct TypedValue bg0Value = {ValueTypeNull, 0};
 //         struct TypedValue bg1Value = {ValueTypeNull, 0};
@@ -10284,7 +10280,7 @@ struct TypedValue itp_evaluateCharAttributes(struct Core *core, union CharacterA
 //         if (interpreter->pc->type == TokenComma)
 //         {
 //             ++interpreter->pc;
-            
+
 //             // bg0 value
 //             bg0Value = itp_evaluateOptionalNumericExpression(core, -1, 1);
 //             if (bg0Value.type == ValueTypeError) return bg0Value;
@@ -10293,25 +10289,25 @@ struct TypedValue itp_evaluateCharAttributes(struct Core *core, union CharacterA
 //             if (interpreter->pc->type == TokenComma)
 //             {
 //                 ++interpreter->pc;
-                
+
 //                 // bg1 value
 //                 bg1Value = itp_evaluateOptionalNumericExpression(core, -1, 1);
 //                 if (bg1Value.type == ValueTypeError) return bg1Value;
-                
+
 //                 // comma
 //                 if (interpreter->pc->type == TokenComma)
 //                 {
 //                     ++interpreter->pc;
-                    
+
 //                     // bg0 cell size value
 //                     bg0SizeValue = itp_evaluateOptionalNumericExpression(core, -1, 1);
 //                     if (bg0SizeValue.type == ValueTypeError) return bg0SizeValue;
-                    
+
 //                     // comma
 //                     if (interpreter->pc->type == TokenComma)
 //                     {
 //                         ++interpreter->pc;
-                        
+
 //                         // bg1 cell size value
 //                         bg1SizeValue = itp_evaluateOptionalNumericExpression(core, -1, 1);
 //                         if (bg1SizeValue.type == ValueTypeError) return bg1SizeValue;
@@ -10320,7 +10316,7 @@ struct TypedValue itp_evaluateCharAttributes(struct Core *core, union CharacterA
 //                         if (interpreter->pc->type == TokenComma)
 //                         {
 //                             ++interpreter->pc;
-                            
+
 //                             // bg2 cell size value
 //                             bg1SizeValue = itp_evaluateOptionalNumericExpression(core, -1, 1);
 //                             if (bg1SizeValue.type == ValueTypeError) return bg1SizeValue;
@@ -10329,11 +10325,11 @@ struct TypedValue itp_evaluateCharAttributes(struct Core *core, union CharacterA
 //                 }
 //             }
 //         }
-        
+
 //         // bracket close
 //         if (interpreter->pc->type != TokenBracketClose) return val_makeError(ErrorSyntax);
 //         interpreter->pc++;
-        
+
 //         if (interpreter->pass == PassRun)
 //         {
 //             if (sValue.type != ValueTypeNull) resultAttr.spritesEnabled = sValue.v.floatValue;
@@ -10342,7 +10338,7 @@ struct TypedValue itp_evaluateCharAttributes(struct Core *core, union CharacterA
 //             if (bg0SizeValue.type != ValueTypeNull) resultAttr.planeACellSize = bg0SizeValue.v.floatValue;
 //             if (bg1SizeValue.type != ValueTypeNull) resultAttr.planeBCellSize = bg1SizeValue.v.floatValue;
 //         }
-        
+
 //         struct TypedValue resultValue;
 //         resultValue.type = ValueTypeFloat;
 //         resultValue.v.floatValue = resultAttr.value;
@@ -10361,52 +10357,52 @@ struct TypedValue itp_evaluateLFOAttributes(struct Core *core, union LFOAttribut
     {
         // bracket open
         interpreter->pc++;
-        
+
         union LFOAttributes resultAttr = oldAttr;
-        
+
         struct TypedValue wavValue = {ValueTypeNull, 0};
         struct TypedValue invValue = {ValueTypeNull, 0};
         struct TypedValue envValue = {ValueTypeNull, 0};
         struct TypedValue triValue = {ValueTypeNull, 0};
-        
+
         // wave value
         wavValue = itp_evaluateOptionalNumericExpression(core, 0, 3);
         if (wavValue.type == ValueTypeError) return wavValue;
-        
+
         // comma
         if (interpreter->pc->type == TokenComma)
         {
             ++interpreter->pc;
-            
+
             // invert value
             invValue = itp_evaluateOptionalNumericExpression(core, -1, 1);
             if (invValue.type == ValueTypeError) return invValue;
-            
+
             // comma
             if (interpreter->pc->type == TokenComma)
             {
                 ++interpreter->pc;
-                
+
                 // env mode value
                 envValue = itp_evaluateOptionalNumericExpression(core, -1, 1);
                 if (envValue.type == ValueTypeError) return envValue;
-                
+
                 // comma
                 if (interpreter->pc->type == TokenComma)
                 {
                     ++interpreter->pc;
-                    
+
                     // trigger value
                     triValue = itp_evaluateOptionalNumericExpression(core, -1, 1);
                     if (triValue.type == ValueTypeError) return triValue;
                 }
             }
         }
-        
+
         // bracket close
         if (interpreter->pc->type != TokenBracketClose) return val_makeError(ErrorSyntax);
         interpreter->pc++;
-        
+
         if (interpreter->pass == PassRun)
         {
             if (wavValue.type != ValueTypeNull) resultAttr.wave = wavValue.v.floatValue;
@@ -10414,7 +10410,7 @@ struct TypedValue itp_evaluateLFOAttributes(struct Core *core, union LFOAttribut
             if (envValue.type != ValueTypeNull) resultAttr.envMode = envValue.v.floatValue;
             if (triValue.type != ValueTypeNull) resultAttr.trigger = triValue.v.floatValue;
         }
-        
+
         struct TypedValue resultValue;
         resultValue.type = ValueTypeFloat;
         resultValue.v.floatValue = resultAttr.value;
@@ -14411,7 +14407,7 @@ uint32_t pcg32_boundedrand_r(pcg32_random_t* rng, uint32_t bound)
     // should usually terminate quickly; on average (assuming all bounds are
     // equally likely), 82.25% of the time, we can expect it to require just
     // one iteration.  In the worst case, someone passes a bound of 2^31 + 1
-    // (i.e., 2147483649), which invalidates almost 50% of the range.  In 
+    // (i.e., 2147483649), which invalidates almost 50% of the range.  In
     // practice, bounds are typically small and only a tiny amount of the range
     // is eliminated.
     for (;;) {

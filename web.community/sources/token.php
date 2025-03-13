@@ -31,3 +31,9 @@ function generateEntryToken():string
 
 	return $token;
 }
+
+function validateEntryToken(string $token):string|null
+{
+	if(preg_match('/^[a-z]{3,}-[a-z]{3,}-[0-9a-f]{16}$/',$token)) return $token;
+	return null;
+}

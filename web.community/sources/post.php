@@ -1,4 +1,4 @@
-<?php
+<?php // TODO: seems not used
 
 require_once __DIR__.'/common.php';
 
@@ -15,10 +15,10 @@ if($url['path']=='/post')
 
 	$json=json_decode(file_get_contents('php://input'),true);
 
-	$title=mb_substr(trim(@$json['title']),0,MAX_POST_TITLE);
+	$title=mb_substr(@trim(@$json['title']),0,MAX_POST_TITLE);
 	if(empty($title)) badRequest("Fail to read title");
 
-	$text=mb_substr(trim(@$json['text']),0,MAX_POST_TEXT);
+	$text=mb_substr(@trim(@$json['text']),0,MAX_POST_TEXT);
 	if(empty($text)) badRequest("Fail to read text");
 
 	$where=@$json['where'];

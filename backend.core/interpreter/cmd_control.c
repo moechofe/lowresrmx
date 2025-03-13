@@ -954,7 +954,7 @@ enum ErrorCode cmd_SYSTEM(struct Core *core)
 	++interpreter->pc;
 
 	// type value
-	struct TypedValue tValue = itp_evaluateNumericExpression(core, 0, 4);
+	struct TypedValue tValue = itp_evaluateNumericExpression(core, 0, 8);
 	if (tValue.type == ValueTypeError)
 		return tValue.v.errorCode;
 
@@ -990,6 +990,22 @@ enum ErrorCode cmd_SYSTEM(struct Core *core)
 
 		case 4:
 			core->machineInternals->planeColor0IsOpaque[3] = (sValue.v.floatValue != 0.0f);
+			break;
+
+		case 5:
+			core->machine->videoRegisters.attr.planeADoubled = (sValue.v.floatValue != 0.0f);
+			break;
+
+		case 6:
+			core->machine->videoRegisters.attr.planeBDoubled = (sValue.v.floatValue != 0.0f);
+			break;
+
+		case 7:
+			core->machine->videoRegisters.attr.planeCDoubled = (sValue.v.floatValue != 0.0f);
+			break;
+
+		case 8:
+			core->machine->videoRegisters.attr.planeDDoubled = (sValue.v.floatValue != 0.0f);
 			break;
 		}
 	}

@@ -64,13 +64,15 @@ struct CoreError data_import(struct DataManager *manager, const char *input, boo
     assert(manager);
     assert(input);
 
-    const char *uppercaseInput = uppercaseString(input);
-    if (!uppercaseInput) return err_makeCoreError(ErrorOutOfMemory, -1);
+    // const char *uppercaseInput = uppercaseString(input);
+    // if (!uppercaseInput) return err_makeCoreError(ErrorOutOfMemory, -1);
 
-    struct CoreError error = data_uppercaseImport(manager, uppercaseInput, keepSourceCode);
-    free((void *)uppercaseInput);
+    // struct CoreError error = data_uppercaseImport(manager, uppercaseInput, keepSourceCode);
+    // free((void *)uppercaseInput);
 
-    return error;
+    // return error;
+
+		return data_uppercaseImport(manager, input, keepSourceCode);
 }
 
 struct CoreError data_uppercaseImport(struct DataManager *manager, const char *input, bool keepSourceCode)
@@ -151,7 +153,7 @@ struct CoreError data_uppercaseImport(struct DataManager *manager, const char *i
             int value = 0;
             while (*character && *character != '#')
             {
-                char *spos = strchr(CharSetHex, *character);
+                char *spos = strchr(CharSetHex, uppercaseChar(*character));
                 if (spos)
                 {
                     int digit = (int)(spos - CharSetHex);

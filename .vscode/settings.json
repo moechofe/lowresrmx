@@ -2,12 +2,25 @@
     "cmake.sourceDirectory": "${workspaceFolder}/project.cmake",
     "cmake.buildDirectory": "${workspaceFolder}/project.cmake/build",
     "files.associations": {
+        "*.embeddedhtml": "html",
         "*.tcc": "c",
         "compare": "c",
         "runner.h": "c",
         "data_manager.h": "c",
         "value.h": "c",
-        "audio_lib.h": "c"
+        "audio_lib.h": "c",
+        "cctype": "c",
+        "format": "c",
+        "charconv": "c",
+        "ratio": "c",
+        "array": "c",
+        "functional": "c",
+        "tuple": "c",
+        "type_traits": "c",
+        "utility": "c",
+        "system_error": "c",
+        "chrono": "c",
+        "optional": "c"
     },
     "cmake.configureOnOpen": true,
     "files.watcherExclude": {

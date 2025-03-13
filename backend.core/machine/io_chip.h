@@ -81,6 +81,7 @@ struct IORegisters
 	char key;
 	union IOStatus status;
 	// union IOAttributes attr;
+	uint8_t haptic;
 };
 
 #endif /* io_chip_h */

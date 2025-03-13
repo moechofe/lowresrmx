@@ -230,6 +230,8 @@ enum TokenType {
     TokenMESSAGE,
     TokenDMA,
 		TokenCEIL,
+		TokenFLOOR,
+		TokenHAPTIC,
 
     // Reserved Keywords
     Token_reserved,

@@ -32,8 +32,22 @@ enum KeyboardMode {
     KeyboardModeOptional
 };
 
+enum HapticMode {
+		None,
+		Error,
+		Warning,
+		Success,
+		Heavy,
+		Light,
+		Medium,
+		Rigid,
+		Soft,
+		Selection,
+};
+
 struct ControlsInfo {
     enum KeyboardMode keyboardMode;
+		enum HapticMode hapticMode;
     bool isAudioEnabled;
 		bool isInputState;
 };

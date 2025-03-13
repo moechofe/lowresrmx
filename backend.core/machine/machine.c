@@ -79,12 +79,24 @@ int machine_peek(struct Core *core, int address)
     return *(uint8_t *)((uint8_t *)core->machine + address);
 }
 
-short int machine_peek_short(struct Core *core, int address)
+int16_t machine_peek_short(struct Core *core, int address, enum ErrorCode *errorCode)
 {
+		*errorCode=ErrorNone;
     int peek1=machine_peek(core, address);
     int peek2=machine_peek(core, address+1);
-    if(peek1<0 || peek2<0) return -1;
-    return peek1|(peek2<<8);
+    if(peek1<0 || peek2<0) *errorCode=ErrorIllegalMemoryAccess;
+    return peek1|(peek2<<8); // MAY return negative number, and it's ok
+}
+
+int32_t machine_peek_long(struct Core *core, int address, enum ErrorCode *errorCode)
+{
+		*errorCode=ErrorNone;
+		int peek1 = machine_peek(core, address);
+		int peek2 = machine_peek(core, address + 1);
+		int peek3 = machine_peek(core, address + 2);
+		int peek4 = machine_peek(core, address + 3);
+		if (peek1 < 0 || peek2 < 0 || peek3 < 0 || peek4 < 0) *errorCode=ErrorIllegalMemoryAccess;
+		return peek1 | (peek2 << 8) | (peek3 << 16) | (peek4 << 24);
 }
 
 bool machine_poke(struct Core *core, int address, int value)
@@ -147,6 +159,15 @@ bool machine_poke_short(struct Core *core, int address, int16_t value)
     return true;
 }
 
+bool machine_poke_long(struct Core *core, int address, int32_t value)
+{
+    bool poke1 = machine_poke(core, address, value);
+    bool poke2 = machine_poke(core, address + 1, value >> 8);
+		bool poke3 = machine_poke(core, address + 2, value >> 16);
+		bool poke4 = machine_poke(core, address + 3, value >> 24);
+    if (!poke1 || !poke2 || !poke3 || !poke4) return false;
+    return true;
+}
 void machine_enableAudio(struct Core *core)
 {
     if (!core->machineInternals->audioInternals.audioEnabled)

@@ -1,4 +1,4 @@
-# LowResRMX manual
+# Manual
 
 > This is a fork of the excellent fantasy console Lowres NX by Timo "Inutilis" Kloss.<br>
 > This is a heavily modified version and way more complicated to use, I recommend you to stay on the original app:
@@ -12,15 +12,17 @@ It **will** includes a project manager, a code editor, and various tools to edit
 
 > **The documentation and included tools are still in development.**
 
-## Difference with Lowres NX
+## Difference
 
 The goal 🥅 of the app is to provide a development environment that I can use during my commutes on the subway, and later, to be able to publish a real app on the stores.
 
 The original LowRes NX, despite being an excellent development environment, lacks some capabilities, in my opinion.
 
-### Background
+#### Background
 
 4 background layers instead of 2, with 64x64 cells instead of 32x32.
+
+---
 
 Support for large 16x16 pixel cells has been removed.
 
@@ -36,7 +38,25 @@ Alternative syntax for the `FLIP` command:
 
 Where `x` and `y` are both optional and can accept any number. If the number is different from zero, the flag will be set.
 
-### Screen
+---
+
+New settings with the `SYSTEM` command to render a layer at double size:
+
+`SYSTEM setting,double`
+<br>where `setting` ranges from `5` to `8`.
+
+| setting | layer |
+| ------- | ----- |
+|       5 |     0 |
+|       6 |     1 |
+|       7 |     2 |
+|       8 |     3 |
+
+---
+
+Internal scroll offset not capped to 512 any more, but 0xFFFF.
+
+#### Screen
 
 A fantasy screen with a resolution of 216x384 pixels.
 
@@ -68,7 +88,7 @@ These return the offset in virtual pixels to apply from the boundary of the fant
 
 These functions can be used to avoid the top camera notch or the bottom inset full-width buttons.
 
-### Colors
+#### Colors
 
 The 64 available colors do not follow the original EGA style of LowRes NX. Instead, they use the [FAMICUBE palette created by Arne](https://lospec.com/palette-list/famicube).
 
@@ -76,21 +96,19 @@ The 64 available colors do not follow the original EGA style of LowRes NX. Inste
 
 ---
 
-New settings with the `SYSTEM` command:
+New settings with the `SYSTEM` command to make the color `0` for a layer opaque instead of transparent:
 
 `SYSTEM setting,opacity`
 <br>where `setting` ranges from `1` to `4`.
 
-This allows you to make color `0` of the background layer opaque instead of transparent.
+| setting | layer |
+| ------- | ----- |
+|       1 |     0 |
+|       2 |     1 |
+|       3 |     2 |
+|       4 |     3 |
 
-| setting | background |
-| ------- | ---------- |
-|       1 |          0 |
-|       2 |          1 |
-|       3 |          2 |
-|       4 |          3 |
-
-### Sprites
+#### Sprites
 
 170 sprites instead of 64.<br>
 Sprite number range from `0` to `169`.
@@ -101,7 +119,7 @@ e.g.:
 
     SPRITE 123,SPRITE.X(123)+0.25,
 
-### Input
+#### Input/Output
 
 Touchscreen only, with floating-point precision.
 
@@ -131,13 +149,17 @@ This will wait until a device tap is detected but will still render the screen.
 
 New function to ask the device if the virtual keyboard is visible.
 
-`=KEYBOARD()`
+`=KEYBOARD`
 
 Return `-1` if the keyboard is visible.
 
-### Flow control
+---
 
-New program flow control:
+New `HAPTIC h` command to trigger haptic feedback on the device.
+
+#### Control flow
+
+New program control flow:
 
 `ON value GOTO label,..`<br>
 `ON value GOSUB label,..`<br>
@@ -149,7 +171,7 @@ e.g.:
 
 	ON I GOTO ZERO,ONE,TWO
 
-### Data
+#### Data
 
 New keyword to skip read data:
 
@@ -189,11 +211,19 @@ Numeric values are supported as well:
     DATA 123.4
     PRINT TEST2*3
 
-### Math
+#### Math
 
 New function to return the ceiling value of a numerical value:
 
 `=CEIL(value)`
+
+---
+
+New function to return the flooring value of a numerical value:
+
+`=FLOOR(value)`
+
+> This is different than `=INT(value)`
 
 ---
 
@@ -254,13 +284,19 @@ This returns the interpolation of `value` between 0.0 and 1.0, using the specifi
 |   0 | inout |
 |  +1 | out   |
 
-### Text
+#### Text
 
 New command to expose the existing overlay message API:
 
 `MESSAGE text`
 
-### Other
+---
+
+`PRINT` command can now word wrap before breaking word.
+
+If there is not enough space to print a word inside the window, a new line is inserted to avoid breaking the word in two.
+
+#### Other
 
 New command to support programs from the original LowRes NX:
 
@@ -289,7 +325,7 @@ Removed 🗑️ reserved keywords:
 
 `ANIM`, `CLOSE`, `DECLARE`, `DEF`, `FLASH`, `FN`, `FUNCTION`, `LBOUND`, `OPEN`, `OUTPUT`, `SHARED`, `STATIC`, `TEMPO`, `VOICE`, `WRITE`
 
-### Memory
+#### Memory
 
 An almost compatible memory mapping.
 
@@ -355,7 +391,7 @@ It uses the following registers as data:
 
 The `COPY` command is now slightly faster.
 
-### Particles
+#### Particles
 
 The particles library reuses sprites to make them appear, disappear, change their character data, and move them across the screen.
 
@@ -481,7 +517,7 @@ It will automaticly end when `repeat` reach 0.
 
 Manually stop the `emitter`.
 
-# How does it works
+## How does it works
 
 <!--FIXME: spell checked NOW -->
 
@@ -546,7 +582,7 @@ Check background [registers](#Registers) for information about the memory mappin
 ### Sprites
 
 LowResRMX offers 170 sprites, each with:
-- and Y position,
+- X and Y position,
 - a size of 8x8, 16x16, 24x24 or 32x32 pixels,
 - a character number for the top left one,
 - a palette,
@@ -554,32 +590,15 @@ LowResRMX offers 170 sprites, each with:
 - and priority to show the sprite on top of bg cells with priorities.
 
 The 170 sprites are drawn in order from 170th (bottom) to 1st (top).
+The sprite numbers range start at zero `0`,so the last one is `169`.
 
 Sprites are groups of characters ranging from 1x1 to 4x4. The difference with bg is that you only choose the top-left character. The other character numbers are dependent on the top-left one.
 
-Here's an explaination:
-
-In memory, characters are grouped by 16 per row with 16 rows, called the spritesheet.
-
-|          |          |     |      |      |
-| -------- | -------- | --- | ---- | ---- |
-| `00`     | `01`     | …   | `0e` | `0f` |
-| **`10`** | **`11`** | …   | `1e` | `1f` |
-| **`20`** | **`21`** | …   | `2e` | `2f` |
-| `30`     | `31`     | …   | `3e` | `3f` |
-|          |          | …   |      |      |
-
-For a sprite with a size of 2x2 characters, and the top-left one is the number `10` in hexadecimal, the other characters will be the ones to its right and below it, so: `11`, `20`, and `21`.
-
 A sprite can be freely placed anywhere on the screen with 1/16 sub-pixel precision. This means you can add 0.5 to its position even if there will be no change visually.
-
-From now on, the terms:
-- **a sprite** is a group of 1x1 to 4x4 character,
-- **the spritesheet** is the whole 16x16 characters available.
 
 <!--FIXME: spell checked END -->
 
-# Program Language
+## Program Language
 
 The programming language follow the path of the original Lowres NX. It's a BASIC type language and here's how to use it.
 
@@ -601,7 +620,9 @@ Keywords and values are separated by spaces and instructions with new line.
 
 ### Identifiers
 
-An identifier is a word defined by the user that represent an idea inside the program and they are used to declare variables, labels or procedures (more on those terms later), e.g.: `hero`, `enemies`, `HP`, `score`, `spawn_monsters`, `update_screen`, `collect_coins`, `level12`…
+1. An identifier is a word defined by the and they are used to declare variables, labels or procedures (more on those terms later), e.g.: `hero`, `enemies`, `HP`, `score`, `spawn_monsters`, `update_screen`, `collect_coins`, `level12`…
+
+2. An identifier can also be a built-in function name provided by LowResNX as part of the [API](#api-instructions).
 
 Valid characters for identifiers art ASCII letters, digits and the underscore `_`. But they CANNOT start by a digits and they CANNOT have more than 21 characters.
 
@@ -635,7 +656,7 @@ Variable can also store strings:
     name$="Untel"
     print name$
 
-### Values
+### Literals
 
 Identifiers can store two types of value: number and string.
 
@@ -659,6 +680,23 @@ Here is an example that demonstrate how to recreate the program above using labe
     goto start
 
 A label is declared by an identifier followed by a coma `:`.
+
+---
+
+About using label identifier as [rvalue](#lvalue-and-rvalue). This feature allow use label name that lead to [constant string value](#data-rom-and-files) directly instead of having to store the value in a varible.
+
+Example, instead of writing:
+
+    data "chocolate"
+    read like$
+    print "I like",like$
+
+You can write:
+
+    like: data "chocolate"
+    print "I like",like
+
+And it working with in all [expression](#expression) that involve [literal string](#literals) or [string variable](#variables).
 
 ### Procedures
 
@@ -732,7 +770,7 @@ Here's an example:
 
 It will print `123`
 
-### Array
+### Arrays
 
 Arrays are list of values grouped into one variable:
 
@@ -752,9 +790,9 @@ TODO: Link DIM UBOUND
 
 ### Global scope
 
-When variables are declared in the main program body, they are local to the program body.
+When variables are initialized or declared in the main program body, they are local to the program body.
 
-When variables are declared inside a proceduc body, they are local to this procedure body.
+When variables are initialized or declared inside a proceduce body, they are local to this procedure body.
 
 It is possible to declare a variable global so it can be accessed in both scopes.
 
@@ -784,7 +822,7 @@ Comments are piece of text that is not executed. They are usefull for taking not
     'get touch position in cells coordinates
     tx=touch.x\8
 
-> Ever avoid Captain Obvious comment
+> Avoid Captain Obvious comment
 
 ### Grammar
 
@@ -850,13 +888,144 @@ Here is a set of rules on how it works:
 
 ### Expression
 
+Expression are used to compute values, be assigned to identifier or passed to function as arguments. Expression can be one of:
+
+- A [literal value](#literals):
+
+    ```
+    123
+    "gabu"
+    ```
+
+- A [variable identifier](#variables):
+
+    ```
+    myVar$
+    myArray(0)
+    ```
+
+- A [built-in function call](#built-in-functions):
+
+    ```
+    cos(1.314)
+    left$(name$,8)
+    ```
+
+- An [unary, binary or group operator](#operators):
+
+    ```
+    42+24
+    $FF00+A*2
+    count>=0
+    not dead
+    (2+3)*4
+    ```
+
+- A [label identifier](#labels):
+
+    ```
+    mylabel
+    ```
+
+### Operators
+
+Operator are used inside [expression](#expression) to compute or alter it's value.
+
+**Arithmetic operators.**
+
+Operate on two numeric values to produce a new one.
+
+| symbol | example   | purpose          |
+| ------ | --------- | ---------------- |
+| `-`    | `-42`     | negation         |
+| `^`    | `x^3`     | exponentation    |
+| `*`    | `2*y`     | multiplication   |
+| `/`    | `x/2`     | division         |
+| `\`    | `x\2`     | integer division |
+| `mod`  | `x mod 2` | modulo           |
+| `+`    | `c+2`     | addition         |
+| `-`    | `100-d`   | subtraction      |
+
+The priority of execution respect the mathematical rules.
+
+**Group operator.**
+
+Rounded parentheses `()` are used to counter the operator priority.
+
+TODO: difference between `/` and `\`
+
+**Comparison operator.**
+
+Used to compair two numeric or string values and produce `-1` if the test succeed or `0` otherwise. Generally used as expression in [`IF` flow control](#flow-control).
+
+| symbol | example  | purpose
+| ------ | -------- | -------
+| `=`    | `a=10`   | equal
+| `<>`   | `a<>100` | not equal
+| `>`    | `b>c`    | greater
+| `<`    | `5<x`    | less
+| `>=`   | `X>=20`  | greater or eqal
+| `<=`   | `X<=30`  | less or eqal
+
+**Bitwise operator.**
+
+Used to manipulate each bit of numeric values.
+
+| symbol | example                        | purpose                                                     |
+| ------ | ------------------------------ | ----------------------------------------------------------- |
+| `not`  | `not (x=15)`<br>`not 0`        | Bits that are 0 become 1,<br>and those that are 1 become 0. |
+| `and`  | `a=1 and b=12`<br>`170 and 15` | If both bits are 1, the<br>result is 1, 0 otherwise.        |
+| `or`   | `x=10 or y=0`<br>`128 or 2`    | The result is 0 if both<br>bits are 0, 1 otherwise.         |
+| `xor`  | `a xor b`                      | The resulst is 1 if only<br>one bit is 1, 0 otherwise.     |
+
+**Concatenation operator.**
+
+Copy a string at the end of another string.
+
+| symbol | example    | purpose                           |
+| ------ | ---------- | --------------------------------- |
+| `+`    | `"ab"+"c"` | Concatenate two strings into one. |
+
+### Commands
+
+LowResNX provide a bunch of built-in function to manipulate the fantasy device hardware such as the graphic or sound. You'll find them by consulting the [list of API instructions](#api-instructions).
+
+To execute a command, use it's identifier followed by a list of coma-separated arguments or other reserved keywords. The exact syntax depends on the command.
+
+    sprite off 0 to 169
+    sprite 0,40,60,1
+
+### Functions
+
+LowResNX provide a bunch of built-in function to manipulate the fantasy device hardware such as the graphic or sound. You'll find them by consulting the [list of API instructions](#api-instructions).
+
+To execute a function, use it's identifier followed by a list of coma-separated arguments surrounded by rounded parenthesis.
+
+    print mid$("test",3,1) :'print s
+
+A function will always return something and MUST be used as [rvalue](#lvalue-and-rvalue) inside an [expression](#expression).
+
+### Lvalue and Rvalue
+
+The equal `=` sign is used both as variable assignement and comparison operator, and It can lead to somo confusion. Here is a tip to help you:
+
+[Expression](#expression) can be one lvalue or rvalue.
+
+An lvalue appear at the left side of an assignation, and rvalue appear at the right side of an assignation.
+
+| expression    | type of value    |
+| ---------------- | ---------------- |
+| [variable](#variables) | lvalue or rvalue |
+| [literal](#literals)   | rvalue           |
+| function call | rvalue           |
+| any operator  | rvalue           |
+| label         | rvalue           |
+
+## BASIC instructions
+
 TODO: continue
 
-# BASIC instructions
-
-TODO: continue
-
-### Flow control
+### Control flow
 
 `END`
 
@@ -872,16 +1041,17 @@ It has the same effect as the execution reach the end of the program.
 
 Syntax:
 
-    IF condition THEN
+    IF expression THEN
         instruction...
-    [ELSE IF condition THEN
-        instruction...]*
+    [ELSE IF expression THEN
+        instruction...]
+    [ELSE IF...]
     [ELSE
         instruction]
     END IF
 
-Will execute the list of `instructions...` if the above `condition` is true.
-The `condition` must be an [expression](#expression).
+Will execute the list of `instruction...` if the above `expression` is true.
+An [expression](#expression) is evaluated as `true` if the result of the expression is different that `0` zero.
 
 It's possible to have multiple `ELSE IF` blocks but a maximum of one `ELSE` block is authorized.
 
@@ -905,7 +1075,7 @@ Real example of a game that ask playre to guess a number:
         goto retry
     end if
 
-**Short syntax:**
+Syntax:
 
     IF condition THEN instruction
 
@@ -928,9 +1098,126 @@ Real example of the same game with less lines:
 
 ---
 
+`DO/LOOP/EXIT`
+
+**Infinite loop**
+
+Syntax:
+
+    DO
+        instruction...
+        [EXIT]
+    LOOP
+
+Continuously execute the list of `instruction...`.
+
+Possible way to get out of the loop is using `EXIT` or `GOTO`.
+
+Real example of non stop moving square that bounce on the device screen:
+
+    x=shown.w\2
+    y=shown.h\2
+    sx=1
+    sy=1
+    do
+        if x=0 or x=shown.w-8 then sx=-sx
+        if y=0 or y=shown.h-8 then sy=-sy
+        add x,sx
+        add y,sy
+        sprite 0,x,y,1
+        wait vbl
+        if tap then exit
+    loop
+    print "done"
+    #2:main characters
+    00000000000000000000000000000000
+    0000000000000000FFFFFFFFFFFFFFFF
+
+`EXIT` instruction will exit one level of `DO/LOOP`.
+
+---
+
+`REPEAT/UNTIL/EXIT`
+
+**Condition-controlled loop***
+
+Syntax:
+
+    REPEAT
+        instruction...
+        [EXIT]
+    UNTIL expression
+
+Repeat the list of `instruction...` until the `expression` ahead became true.
+An [expression](#expression) is evaluated as `true` if the result of the expression is different that `0` zero.
+
+`EXIT` instruction will exit one level of `REPEAT/UNTIL`.
+
+> It different from `WHILE/WEND` because `expression` is evaluated after the list of `instruction...` is executed.
+
+    stop_now=-1
+    repeat
+        print "do it anyway"
+    until stop_now
+
+---
+
+`WHILE/WEND/EXIT`
+
+**Condition-controlled loop**
+
+Syntax:
+
+    WHILE expression
+        instruction...
+        [EXIT]
+    WEND
+
+Repeat the list of `instruction...` while the `expression` above is true.
+An [expression](#expression) is evaluated as `true` if the result of the expression is different that `0` zero.
+
+`EXIT` instruction will exit one level of `WHILE/WEND`.
+
+> It different from `REPEAT/UNTIL` because `expression` is evaluated before the list `instruction...` is executed.
+
+    count=0
+    while count
+    print "not executed"
+    wend
+
+---
+
+`FOR/TO/NEXT/EXIT`
+
+**Count-controlled loop**
+
+Syntax:
+
+    FOR identifier=begin TO ended [STEP incr]
+        instruction...
+        [EXIT]
+    NEXT identifier
+
+Repeat the list of `instruction...` while varying the value of the `identifier` starting at `begin` until it reach `ended` included.
+The increment can be changed using `incr`, allowing to iterates in reverse.
+
+Real example that print numbers from 1 to 9 in ascending and descending order.
+
+    for i=1 to 9
+    print i;
+    next i
+    print
+    for i=9 to 1 step -1
+    print i;
+    next i
+
+`EXIT` instruction will exit one level of `FOR/TO/NEXT`.
+
+---
+
 `GOTO`
 
-**Jump to a labeled instruction.**
+**Jump to instruction**
 
 Syntax:
 
@@ -962,7 +1249,7 @@ Real example of a tool that flip a coin:
 
 `GOSUB/RETURN`
 
-**Jump to a sub-routine.**
+**Jump to sub-routine**
 
 Expect to found a `RETURN` instruction to go back where it was right after the `GOSUB`.
 
@@ -1001,12 +1288,11 @@ TODO: Difference with SUB
 
 **Jump table.**
 
-
 Jump to one of the listed label according to a value.
 
 Syntax:
 
-    ON value GOTO label0,label1,label2...
+    ON value GOTO label0[,label1...]
 
 Will read the `value` and jump to:
 - the first label if `value` equal `0` zero,
@@ -1027,9 +1313,19 @@ Real example:
 
 ---
 
-`SUB/EXIT SUB/END SUB`
+`ON GOSUB`
+
+**Jump table to a sub-routine.**
+
+Similar to `ON GOTO` but expect to encounter a `RETURN`.
+
+---
+
+`SUB/END SUB/EXIT SUB`
 
 **Defining a proceduce.**
+
+TODO: check for remaining function, this term should be reserve for built-in function only.
 
 Syntax:
 
@@ -1107,8 +1403,6 @@ Real example, a game where player need to enter a sequence of digits and compute
 
 > This example show proceduces without argument: `perturb`, `delete`, proceduce that take one input argument `handle` and one proceduce that will output a value in the parameter `check`
 
----
-
 **Exiting early.**
 
 Syntax:
@@ -1121,163 +1415,854 @@ TODO: GOTO inside SUB
 
 TODO: playing with GOSUB and RETURN
 
-TODO: ON GOSUB
+### Data, ROM and files
 
-TODO: language instructions
+LowResRMX provide two ways to storing data or assets inside a program.
 
-TODO: about comments
+1. Use the combinaison of `DATA` and `READ` to store readable number and string and access it when you need it.
 
-TODO: on restore
+    Real example that list the Straw Hat Pirates members:
 
-# API instructions
+    ```
+    data 11
+    data "lufy",19,"zoro",21,"nami",20
+    data "usopp",21,"sanji",21,"chopper",17
+    data "robin",30,"franky",36,"brook",90
+    data "jinbe",46,"vivi",18
+    read count
+    for i=1 to count
+        read name$,age
+        print name$,age
+    next i
+    ```
 
-## Background API
+    Internaly it will use a read pointer that iterates all constant values.
 
-> [How backgrounds works](#backgrounds)
-
-### Cell's attributes
-
-`BG layer`
-
-Change the current background to `layer` for further cells operations.
-
-Wait `layer` a number from `0` to `3`.
-
-    TEXT 10,10,"/"
-    BG 1
-    TEXT 10,10,"\"
-
----
-
-`PAL p`
-
-Change the current palette to `p` for further cells operations.
-
-    PRINT "HELLO",
-    PAL 1
-    PRINT "WORLD"
+2. TODO: continue
 
 ---
 
-`FLIP h,v`
+`DATA/READ`
 
-Change the horizontal and vertical flip attributes to `h` and `v` respectively for further cells operations.
+**Declare constant values.**
 
-    FLIP 1,0
-    PRINT "DLROW OLLEH"
+Syntax:
+
+    DATA constant[,constant...]
+
+A comma separated list of constant values (numbers or strings) that can accessed using the `READ` command.
+
+**Read constant values.**
+
+Syntax:
+
+    READ identifier[,identifier...]
+
+Read one or more constant values that was declared using `DATA` into variables.
 
 ---
 
-`PRIO p`
+`RESTORE/SKIP`
 
-Change the priority to `p` for further cells operations.
+**Move the read pointer.**
 
-    SPRITE 0,78,78,1
-    PRIO 1
-    TEXT 10,10,"S"
+Syntax:
+
+    RESTORE [label]
+
+Move the read pointer to a specified label. The declared constant values that appear below the label will be read next.
+
+**Skip a number of constant value.**
+
+Syntax:
+
+    SKIP number
+
+Allow to skip a `number` of constant values by moving the read pointer.
+
+    data "failure"
+    data "success"
+    skip 1
+    read word$
+    print word$
+
+---
+
+`ON RESTORE`
+
+**Move table for the read pointer.**
+
+Similar to `ON GOTO` but move the read pointer instead of jumping.
+
+### Variable related
+
+**Scalar initialization**
+
+Syntax:
+
+    identifier=literal
+
+Single number or string variable MUST be initialized before reading it.
+
+    score=0
+    name$="player 1"
+    print name$;":",score
+
+> Learn more about [identifiers](#identifiers), [literals](#literals) and [variables](#variables).
+
+---
+
+`GLOBAL`
+
+**Scalar global declaration**
+
+Syntax:
+
+    DIM identifier...
+
+Declare a list of number or string variables to be globaly accessible in all scopes.
+`GLOBAL` keywords are illegal inside a `SUB/END SUB` subroutine body.
+
+> Learn more about [global scope](#global-scope).
+
+---
+
+`DIM`
+
+**Array declaration**
+
+Syntax:
+
+    DIM identifier(highest) [,identifier(highest)]...
+
+Will declare one or more arrays with `highest`+1 number of elements.
+Array of numbers or strings MUST be declared before reading or writing it.
+
+    dim scores(1),names$(1)
+    for i=0 to 1
+        print names$(i);":",scores(i)
+    next i
+
+---
+
+`DIM GLOBAL`
+
+**Global array declaration**
+
+Syntax:
+
+    DIM GLOBAL identifier(highest) [,identifier(highest)]...
+
+Similar to `DIM` but will declare the arrays globally accessible.
+`GLOBAL` keywords are illegal inside a `SUB/END SUB` subroutine body.
+
+> Learn more about [identifiers](#identifiers), [arrays](#arrays) and [global scope](#global-scope).
+
+---
+
+`=UBOUND`
+
+**Array highest index**
+
+Syntax:
+
+    =UBOUND(identifier[,dimension])
+
+Return the highest index of the array variable `identifier` at specified `dimension`.
+
+## API instructions
+
+LowResRMX provide a bunch of built-in [commands](#commands) and [functions](#functions) to communicates with the differents features provided by the fantasy console: input, graphics, sound and memory access.
+
+### Sprite API
+
+> [How sprits works](#sprites).
+
+Sprite are limited in numbers and should be used to show moving objects above background layers. It not an oblication and cool things can be made by infringe this rules.
+
+#### `SPRITE n,[x],[y],[c]`
+
+Sets the position `x`,`y` in pixel coordinates and character `c` number of the sprite `n`.
+
+`x`,`y` and `c` can be ommited to keep their current value.
+
+An example that show a smiley sprite moving in circle:
+
+    i=0
+    do
+        add i,1,0 to 99
+        sprite 0,cos(i/100)*40+60,sin(i/100)*40+60,1
+        wait vbl
+    loop
+    #2:main characters
+    00000000000000000000000000000000
+    007EFFFFEDFFFF7E0000003636000000
+
+#### `SPRITE n [PAL pal] [FLIP h,v] [PRIO pri] [SIZE s]`
+
+Sets one or more attributes for the sprite `n`:
+
+- `PAL pal` Change the palette to `pal`.
+- `FLIP h,v` Flip the sprite on horizontal `h` and vertical `v` axis.
+- `PRIO pri` Change the priority to `pri`.
+- `SIZE s` Change the size, a.k.a.: the number of characters width and height.
+
+Example of a sprite that get flipped according to it's position on the screen:
+
+    do
+        sprite 0,touch.x,touch.y,1
+        sprite 0 pal 6
+        sprite 0 flip touch.x>shown.w/2,touch.y>shown.h/2
+        wait vbl
+    loop
     #2:MAIN CHARACTERS
     00000000000000000000000000000000
-    003C7E6A7E7E3C000000183C00000000
+    40A0D0E8F4D0E818C06030180C305808
 
-### Background's cell
+TODO: link to sprite references
 
-`BG FILL x1,y1 TO x2,y2 CHAR c`
+#### `=SPRITE.X(n)`<br>`=SPRITE.Y(n)`
 
-Fills all cells from `x1`,`y1` coordinates to `x2`,`y2` with character `c` and the [current attributes](#cells-attributes).
+Return the position of the sprite `n`. With `n` between 0 and 169 inclusive.
 
-    BG FILL 1,1 to 5,5 char 1
-    BG FILL 2,2 to 4,4 char 2
+Example of a sprite smoothly follow the finger touch:
+
+    sprite 0,shown.w,shown.h,1
+    do
+        x=sprite.x(0)+(touch.x-sprite.x(0))/4
+        y=sprite.y(0)+(touch.y-sprite.y(0))/4
+        sprite 0,x,y,
+        wait vbl
+    loop
+    #2:MAIN CHARACTERS
+    00000000000000000000000000000000
+    007E7E66667E7E00FF81BDA5A5BD81FF
+
+#### `=SPRITE.C(n)`
+
+Return the first character number of the sprite `n`. With `n` between 0 and 169 inclusive.
+
+#### `SPRITE.A n,a`
+
+Sets all attributes at once for sprite `n`.
+
+TODO: link to sprite references
+
+#### `=SPRITE.A(n)`
+
+Return the whole attributes flags of the sprite `n`. With `n` between 0 and 169 inclusive.
+
+Example: that show how to read sprite attributes:
+
+    sprite 0,80,80,1
+    sprite.a 0,255
+    do
+        text 4,4,"palette: 00000"+bin$(sprite.a(0) and %111)
+        text 4,5,"flip:    000"+bin$(sprite.a(0) and %11000)
+        text 4,6,"size:    0"+bin$(sprite.a(0) and %1100000)
+        wait tap
+        sprite.a 0,rnd(255)
+    loop
+    #2:MAIN CHARACTERS
+    00000000000000000000000000000000
+    40A0D0E8F4D0E818C06030180C305808
+
+#### `SPRITE OFF`
+
+Hides all sprites.
+
+#### `SPRITE OFF n`
+
+Hide the sprite `n`.
+
+Example that hide a sprite at each tap:
+
+    for i=0 to 159
+        sprite i,rnd(shown.w-8),rnd(shown.h-8),1
+    next i
+    i=0
+    while i<159
+        wait tap
+        sprite off i
+        add i,1
+    wend
+    #2:MAIN CHARACTERS
+    00000000000000000000000000000000
+    0000000000000000FFFFFFFFFFFFFFFF
+
+#### `SPRITE OFF n1 to n2`.
+
+Hides all sprites from range `n1` to `n2` included.
+
+#### `=SPRITE.HIT(n)`
+
+Return if the sprite `n` collides with another sprite. Collision detection is not by checking overlapping pixels that are not transparent (not using the color `0`). With `n` between 0 and 169 inclusive.
+
+Example of a ball that bounce on the wall and fall into holes using `=SPRITE.HIT(n)` detection:
+
+    again:
+    for i=1 to 20
+        sprite i,rnd(shown.w)-8,rnd(shown.h)-8,2
+    next i
+    x=0
+    y=0
+    sx=1
+    sy=1
+    do
+        sprite 0,x,y,1
+        if sprite hit(0) then
+            wait 30
+            goto again
+        end if
+        wait vbl
+        x=sprite.x(0)+sx
+        y=sprite.y(0)+sy
+        if x<0 or x>shown.w-8 then sx=-sx
+        if y<0 or y>shown.h-8 then sy=-sy
+    loop
+    #1:MAIN PALETTES
+    0405
+    #2:MAIN CHARACTERS
+    00000000000000000000000000000000
+    003C7E7A72623C00000030240C1C0000
+    000000010101021C003C7E7F7F7F3E1C
+
+#### `=SPRITE.HIT(n,n1)`
+
+Return if the sprite `n` collides with the sprite `n1`. With `n` and `n1` between 0 and 169 inclusive.
+
+Example of two owerlapping sprites:
+
+    sprite 20,46,46,1
+    do
+    sprite 10,40+((timer/60) mod 2)*4,40,1
+    if sprite hit(10,20) then
+        text 8,5,"hit"
+    else
+        text 8,5,"   "
+    end if
+    wait vbl
+    loop
+    #2:MAIN CHARACTERS
+    00000000000000000000000000000000
+    FFFFFFFFF0F0F0F00000000000000000
+
+#### `=SPRITE.HIT(n,n1 to n2)`
+
+Return if the sprite `n` collides with any of the sprite from the range `n1` to `n2` included.
+
+> See `=HIT` below for an example.
+
+#### `=HIT`
+
+Return the sprite number of the one that collides with the sprite `n` from any of the last `=SPRITE.HIT()` function call.
+
+Example of a ball that bounce on the wall and destroy the obstable using `=HIT`:
+
+    for i=1 to 20
+        sprite i,rnd(shown.w)-8,rnd(shown.h)-8,2
+    next i
+    again:
+    x=0
+    y=0
+    sx=1
+    sy=1
+    do
+        sprite 0,x,y,1
+        if sprite hit(0,1 to 20) then
+            wait 15
+            sprite off hit
+            goto again
+        end if
+        wait vbl
+        x=sprite.x(0)+sx
+        y=sprite.y(0)+sy
+        if x<0 or x>shown.w-8 then sx=-sx
+        if y<0 or y>shown.h-8 then sy=-sy
+    loop
+    #1:MAIN PALETTES
+    0405
+    #2:MAIN CHARACTERS
+    00000000000000000000000000000000
+    003C7E7A72623C00000030240C1C0000
+    000000010101021C003C7E7F7F7F3E1C
+
+### Background API
+
+> [How backgrounds works](#backgrounds).
+
+The most basic way of drawing using the background API is to, first, [choose which cell's attribute](#draw-state) to use, then [paint the cells](#draw-cells) with a characters number.
+
+Another way of doing is to [copy attributes and character](#background-copy) number from a ROM.
+
+Aside to that, there are API for accessing the scrolling value of each layers in pixels, getting character numbers or attributes directly from layers or draw in memory instead of layers.
+
+Text generally use background mechanics as well, there are dedicated commands for that too.
+
+#### `CLS`
+
+Clear all background layers with character zero `0`, resets the current window to the default and the layer scrolling values.
+
+#### `CLS layer`
+
+Only clear the background layer numbered `layer` with character zero `0`. Do not alter the scrolling value.
+
+#### `SCROLL layer,x,y`
+
+Set the scroll offset of the `layer` in pixels coordinates.
+
+    text 10,10,"hello!"
+    bg 1
+    text 10,10,"hello!"
+    scroll 0,0,-4
+
+#### `=SCROLL.X(layer)`<br>`=SCROLL.Y(layer)`
+
+Return the scroll offset of the `layer` in pixels coordinates.
+
+Example of getting the scroll offset of the background layer:
+
+    for x=0 to 63
+    for y=0 to 63
+        cell x,y,rnd(3)
+    next y
+    next x
+    do
+        x=scroll.x(0)+(touch.x-scroll.x(0))/4
+        y=scroll.y(0)+(touch.y-scroll.y(0))/4
+        scroll 0,x,y
+        wait vbl
+    loop
     #2:MAIN CHARACTERS
     00000000000000000000000000000000
     FFFFFFFFFFFFFFFF0000000000000000
     0000000000000000FFFFFFFFFFFFFFFF
+    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
 
-`CLS`
 
-Clear all background layers with character zero `0`, resets the current window to the default and the backgrounds scrolling values.
+#### `BG layer`
 
-`CLS layer`
+Change the current layer to `layer` for further cells draw operations.
 
-Only clear the background numbered `layer` with character zero `0`. Do not alter the scrolling value.
+With `layer` a number from `0` to `3`.
 
----
+    text 10,10,"\"
+    bg 1
+    text 10,10,"/"
 
-`CELL cx,cy,c`
+#### `PAL p`
 
-Sets the cell of the current background at `cx`,`cy` coordinates to the character `c` with the [current attributes](#cells-attributes).
+Change the current palette to `p` for further cells draw operations.
+
+    print "hello",
+    pal 1
+    print "world"
+
+#### `FLIP h,v`
+
+Change the horizontal and vertical flip attributes to `h` and `v` respectively for further cells draw operations.
+
+    flip 1,0
+    print "dlrow olleh"
+
+#### `PRIO p`
+
+Change the priority to `p` for further cells draw operations.
+
+    sprite 0,78,78,1
+    prio 1
+    text 10,10,"s"
+    #2:main characters
+    00000000000000000000000000000000
+    003C7E6A7E7E3C000000183C00000000
+
+#### `ATTR a`
+
+Sets the palette, flip and priority attributes all at once using `a` for further cells draw operations.
+
+TODO: link to background reference
+
+#### `CELL x,y,[c]`
+
+Sets the cell of the current background at `x`,`y` coordinates to the character number `c` with the [current attributes](#cells-attributes).
 
 E.g. draw a face:
 
-    CELL 10,10,1
-    #2:MAIN CHARACTERS
+    cell 10,10,1
+    #2:main characters
     00000000000000000000000000000000
     003C7E6A7E7E3C000000183C00000000
 
+By omiting the `c` argument, the command will only alter the palette, flip and priority, but not change the character number.
+
+E.g. draw an inverted blue r letter:
+
+    cell 10,10,242
+    flip 1,0
+    pal 1
+    cell 10,10,
+
 > Use `BG`, `PAL`, `FLIP`, `PRIO` and `ATTR` to alter the [current attributes](#cells-attributes).
 
----
+#### `=CELL.C(x,y)`
 
-`=CELL.C(cx,cy)`
+Return the character number of the current background at `x`,`y` cell coordinates.
 
-Return the character of the current background at `cx`,`cy` coordinates.
+Example of a (silly) way to read the ASCII code of a char:
 
----
-
-TODO: continue
-
-### Cell attributes
-
-### Background's layer
-
-### Background's memory
-
-`BG COPY sx,sy,sw,sh TO dx,dy`
-
-Copies cell's informations (characters and attributes) from memory source to current background.
-
-Copies a rectangle at `sx`,`sy` coordinates and `sw`,`sh` size from the source, and paste it to the background at `dx`,`dy`.
-
-> By default the source data point to `=ROM(3)`, changes it using `BG SOURCE ROM(4)`.
-
-    BG SOURCE ROM(4)
-    BG COPY 0,0,4,1 to 4,4
+    bg 2
+    for x=0 to shown.w\8
+    for y=0 to shown.h\8
+        cell x,y,192+rnd(63)
+    next y
+    next x
+    bg 1
+    bg copy 0,0,6,4 to 4,4
+    do
+        bg 2
+        c=cell.c(touch.x\8,touch.y\8)
+        bg 0
+        text 5,5,"$"+right$("0"+hex$(c-192),2)
+        wait vbl
+    loop
     #2:MAIN CHARACTERS
+    00000000000000000000000000000000
+    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+    0000000000000000FFFFFFFFFFFFFFFF
+    #3:MAIN BG
+    00000604010001000100010001000000
+    01000100010001000100020001000100
+    01000100010002000000020002000200
+    02000200
+
+#### `=CELL.A(x,y)`
+
+Return the attributes of the current background at `x`,`y` cell coordinates
+
+Example that display cell's attributes:
+
+    bg 2
+    for x=0 to shown.w\8
+    for y=0 to shown.h\8
+        attr rnd(255)
+        cell x,y,192+rnd(63)
+    next y
+    next x
+    bg 1
+    bg fill 5,5 to 13,9 char 2
+    bg fill 4,4 to 12,8 char 1
+    bg 0
+    pal 0
+    prio 1
+    flip 0,0
+    text 5,5,"Pal:"
+    text 5,6,"Flip:"
+    text 5,7,"Prio:"
+    do
+        bg 2
+        a=cell.a(touch.x\8,touch.y\8)
+        bg 0
+        text 9,5,right$("00"+bin$(a and %111),3)
+        text 10,6,right$("0"+bin$((a\8) and %11),2)
+        text 10,7,right$("0"+bin$((a\32) and %11),2)
+        wait vbl
+    loop
+    #2:MAIN CHARACTERS
+    00000000000000000000000000000000
+    FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+    0000000000000000FFFFFFFFFFFFFFFF
+
+TODO: link to background reference
+
+#### `BG FILL x1,y1 TO x2,y2 CHAR c`
+
+Fills all cells from `x1`,`y1` coordinates to `x2`,`y2` with character `c` and the [current attributes](#cells-attributes).
+
+    bg fill 1,1 to 5,5 char 1
+    bg fill 2,2 to 4,4 char 2
+    #2:main characters
     00000000000000000000000000000000
     FFFFFFFFFFFFFFFF0000000000000000
     0000000000000000FFFFFFFFFFFFFFFF
-    #4:TEST BG
-    000004010100020001000200
 
----
+Similar to `CELL x,y,c` but with a rectangle of cells instead of just one cell.
 
-`BG SOURCE a`<br>
-`BG SOURCE a,w,h`
+#### `TINT y,y [PAL pal] [FLIP h,v] [PRIO p]`
 
-Specify the memory address `a` where source data will be used for background copy operations. Intended to be used jointly with `BG COPY sx,sy,sw,sh TO dx,dy`.
+Changes one or more [attributes of the cell](TODO: link to cells attributes reference) at `x`,`y` coordinates without changing the character number.
 
-When width and height `w,h` are omitted, the first 4 bytes from memory are used to detect and store the `w` and `h` parameters. Actual data start at `a+4`.
+E.g.: Yellow exclamation mark
 
-| addr | purpose        |
-| ---- | ---------------|
-|  a+0 | always zero    |
-|  a+1 | always zero    |
-|  a+2 | width in cell  |
-|  a+3 | height in cell |
-|  a+4 | cell's data    |
+    print "hello!"
+    tint 5,0 pal 7
 
-When width and height `w,h` are provided, the actual data start at `a`.
+#### `BG TINT y1,y1 TO x2,y2 [PAL pal] [FLIP h,v] [PRIO p]`
 
-> By default the source data point to `=ROM(3)`.
+Changes one or more [attributes](TODO: link to cells attributes reference) for all cells from `x1`,`y1` coordinates to `x2`,`y2` without changing the character number.
 
----
+Similar to `TINT y,y [PAL pal] [FLIP h,v] [PRIO p]` but with a rectangle of cells instead of just one.
 
-`MCELL cx,cy,c`
+#### `BG SOURCE a[,w,h]`
 
-Similar to `CELL cx,cy,c` but modify the source in memory instead of the current background.
+Set the address `a` in the cartridge to use as source for `BG COPY` operations.
+
+When `w` and `h` are specified, they are used as indiquating the number of cells in width and height of the source.
+
+If they are not specified, the [official background format data](#background-format-data) are used to store the width and the height.
+
+> If not specified the default address is taken by internally executing `=ROM(3)`
+
+TODO: example
+
+#### `BG COPY x1,y1,w,h TO x2,y2`
+
+Copy a rectangle of cell's attributes and character numbers from background source specified previously using `BG SOURCE a[,w,h]` at `x2`,`y2` coordinates of the current background layer.
+
+The rectangle is defined using the top-left corner `x1`,`y2` plus the width `w` and height `h`.
+
+#### `BG SCROLL x1,y1 to x2,y2 step x3,y3`
+
+Move a rectangle of cell's attributes and character numbers of the current layer by `x3`,`y3` in cell coordinates.
+
+The rectangle is defined using the top-left corner `x1`,`y2` and the bottom-right corner `x2`,`y2`.
+
+> This feature is internally used to scroll text when it reach the bottom of the window. TODO: link to window.
+
+#### `MCELL x,y,c`
+
+Similar to `CELL x,y,c` but modify the source in memory instead of the current layer.
 
 The source must point to writable memory, so it will not work with `BG SOURCE ROM(3)`.
 
-TODO: example
+#### `=MCELL.C(x,y)`
+
+Similar to `=CELL.C(x,y)` but read the current layer instead of the source in memory.
+
+#### `=MCELL.A(x,y)`
+
+Similar to `=CELL.A(x,y)` but read the current layer instead of the source in memory.
+
+#### `TEXT x,y,text$`
+
+Will print `text$` on the current layer starting at `x`,`y` using the current background attributes.
+
+  data "ga","bu","zo","meu"
+  for i=0 to 3
+    pal i
+    read c$
+    text 8+i*2,10,c$
+  next i
+
+#### `NUMBER x,y,number,count`
+
+Similar to `TEXT x,y,text$` but dedicated to print `number` instead of text. Will always show `count` digits by prefixing with `0` characters.
+
+    score=123
+    number 10,10,score,6
+
+#### `FONT first`
+
+Sets the characters range used for `TEXT`, `NUMBER` and `PRINT` commands. Sets `first` to be the character number where the range begin, it correspond to the space according to the ASCII reference. TODO: link
+
+The default value is 192, which points to where the default font is loaded at the beginning of the program. It might be overriden by `LOAD` operation.
+
+### Text API
+
+To print text on screen, LowResRMX actually use the [background API](#background-api).
+
+`WINDOW x,y,w,h,layer`
+
+Sets the current window where to draw text characters. `x`, `y` are the cell position where to start drawing on the background number `layer` while `w`, `h` are the width and height also in number of cells.
+
+    window 4,8,shown.w\8-8,20,0
+    print "Why do things simply when you can make them complicated?"
+
+> By default, the window is sets inside the safe area delimited by the safe functions (`=SAFE.L`...)
+
+#### `CLW`
+
+Clears the window but replacing all the cells by the space character. It also reset the cursor position.
+
+#### `LOCATE x,y`
+
+Move the cursor location at `x`,`y` in cells coordinates inside the window.
+
+    for i=1 to 9
+    locate i,i
+    print str$(i);
+    next i
+    end
+
+#### `=CURSOR.X`<br>`=CURSOR.Y`
+
+Return the cursor location `x` and `y` in cells coordinates inside the window.
+
+#### `PRINT expression-list`<br>
+
+Outputs string `expression-list` onto the current window.
+
+`expression-list` can be one or more of:
+- a string or numeric literal,
+- a variable identifier,
+- a label that point to a string data.
+
+When two items are separated by a coma `,` a space will be inserted between them.
+
+When two items are separated by semicolon `;` no space is inserted.
+
+Example with different expressions:
+
+    print "literal"
+    v$="variable"
+    print v$
+    txt: data "data"
+    print txt
+
+Example with different separators:
+
+    print "glu";"ed"
+    print "sepa","rated"
+
+    do
+    wait 2
+    print ".";
+    loop
+
+#### `PRINT`<br>
+
+Outputs a new line.
+
+### Input API
+
+LowResRMX do not support gamepad, user are forced to rely on touch only to implement a interface that allow to control their application.
+
+User can also rely on the OS virtual keyboard to capture typed characters.
+
+#### `=TOUCH`
+
+Return `-1` if the device screen is currently touched.
+
+Example that print a text only when device screen is touched:
+
+    do
+        cls
+        if touch then text 4,4,"touched"
+        wait vbl
+    loop
+
+#### `=TAP`
+
+Similar to `=TOUCH` but return `true` for one frame only. Ideal to trigger event on your program.
+
+Example of a flappy letter going down by gravity and up when tapping on the screen:
+
+    sprite 0,0,shown.h/2,226
+    gravity=3
+    do
+        wait vbl
+        x=sprite.x(0)+1
+        if x+8>shown.w then x=0
+        if tap then gravity=-9
+        y=clamp(sprite.y(0)+gravity,0,shown.h-8)
+        gravity=min(3,gravity+1)
+        sprite 0,x,y,
+    loop
+
+#### `=TOUCH.X`<br>`=TOUCH.Y`
+
+Returns the last pixel position touched. It returns a float numeric value, with a 1/16 pixel precisions, allowing for smooth pan or drag gesture.
+
+Example that display the float position on x and y axis:
+
+    do
+        cls
+        print touch.x
+        print touch.y
+        wait vbl
+    loop
+
+#### `KEYBOARD ON`<br>`KEYBOARD OFF`
+
+Show or hide the device virtual keyboard. Because user can hide the keybord using a dedicated key, do not assume the keyboard is visible. Use `KEYBOARD ON` inside a loop or rely on `=KEYBOARD` to detect when the keyboard is shown or not.
+
+#### `=KEYBOARD`
+
+Returns `-1` when the device virtual keyboard is visible.
+
+#### `=INKEY$`
+
+Returns only once the last pressed key. The returned value is a string containing one character, one of the supported by LowResRMX. If no key was pressed or if the pressed key is not supported, it returns an empty string.
+
+Example that output the pressed key:
+
+    do
+        keyboard on
+        k$=inkey$
+        if k$<>"" then
+            print k$;
+        end if
+        wait vbl
+    loop
+
+TODO: link to reference
+
+#### `=TIMER`
+
+Returns the number of frames since LowResRMX was launched. The value wraps to 0 when 5184000 is reached, which is about 24 hours.
+
+### Display API
+
+#### `PALETTE palette,[c0],[c1],[c2],[c3]`
+
+Sets the four colors on the height available `palette` (0..7). The color 0 of the palette 0 is generally used as backdrop color. (It can be change using the `SYSTEM` command.) `c0`, `c1`, `c2`, `c3` can accept a numeric value between 0 and 63, omit them to keep the current value. Consult the [64 colors reference](#64-colors) to choose the color you want.
+
+#### `=COLOR(palette,color)`
+
+Returns one of the [64 colors](#64-colors) associated to the pair `palette` (0..7), `color` (0..3).
+
+#### `SPRITE VIEW ON`<br>`SPRITE VIEW OFF`
+
+Enable or disable the rendering of all sprites.
+
+#### `BG VIEW ON`<br>`BG VIEW OFF`
+
+Enable or disable the rendering of all background layers.
+
+#### `WAIT VBL`<br>`WAIT frame`
+
+Wait for a number of `frame` to be drawn. Keyword `VBL` is similar to 1. This is used to:
+- draw frames at 60 FPS,
+- reduce device CPU usage,
+- preserve device battery.
+
+You probably MAY place at least one `WAIT VBL` inside every loop that wait for player input or to present something to the player.
+
+Example that show the effect:
+
+    sprite 0,shown.w/2-4,shown.h/2-4,240
+    locate 2,2
+    print "touch to wait vbl"
+    do
+        x=sprite.x(0)
+        y=sprite.y(0)
+        add x,1,-8 to shown.w
+        add y,1,-8 to shown.h
+        sprite 0,x,y,
+        if touch then wait vbl
+    loop
+
+
+
+
+
+TODO: VBL WAIT ON VBL
+
+
+
+
+TODO: SYSTEM
+
+
 
 TODO: continue
 
@@ -1297,7 +2282,103 @@ TODO: about numeric technical
 
 TODO: how window not updated when on-resized
 
-# Registers
+## References
+
+### 64 Colors
+
+<style>
+.famicube{display:flex:flex-wrap:wrap}
+.famicube div{font-family:monospace;padding:0.8em 1em;}
+.famicube div:nth-child(1){background:#000000;color:#fff}
+.famicube div:nth-child(2){background:#e03c28;color:#000}
+.famicube div:nth-child(3){background:#ffffff;color:#000}
+.famicube div:nth-child(4){background:#d7d7d7;color:#000}
+.famicube div:nth-child(5){background:#a8a8a8;color:#000}
+.famicube div:nth-child(6){background:#7b7b7b;color:#fff}
+.famicube div:nth-child(7){background:#343434;color:#fff}
+.famicube div:nth-child(8){background:#151515;color:#fff}
+.famicube div:nth-child(9){background:#0d2030;color:#fff}
+.famicube div:nth-child(10){background:#415d66;color:#fff}
+.famicube div:nth-child(11){background:#71a6a1;color:#000}
+.famicube div:nth-child(12){background:#bdffca;color:#000}
+.famicube div:nth-child(13){background:#25e2cd;color:#000}
+.famicube div:nth-child(14){background:#0a98ac;color:#fff}
+.famicube div:nth-child(15){background:#005280;color:#fff}
+.famicube div:nth-child(16){background:#00604b;color:#fff}
+.famicube div:nth-child(17){background:#20b562;color:#000}
+.famicube div:nth-child(18){background:#58d332;color:#000}
+.famicube div:nth-child(19){background:#139d08;color:#fff}
+.famicube div:nth-child(20){background:#004e00;color:#fff}
+.famicube div:nth-child(21){background:#172808;color:#fff}
+.famicube div:nth-child(22){background:#376d03;color:#fff}
+.famicube div:nth-child(23){background:#6ab417;color:#000}
+.famicube div:nth-child(24){background:#8cd612;color:#000}
+.famicube div:nth-child(25){background:#beeb71;color:#000}
+.famicube div:nth-child(26){background:#eeffa9;color:#000}
+.famicube div:nth-child(27){background:#b6c121;color:#000}
+.famicube div:nth-child(28){background:#939717;color:#fff}
+.famicube div:nth-child(29){background:#cc8f15;color:#000}
+.famicube div:nth-child(30){background:#ffbb31;color:#000}
+.famicube div:nth-child(31){background:#ffe737;color:#000}
+.famicube div:nth-child(32){background:#f68f37;color:#000}
+.famicube div:nth-child(33){background:#ad4e1a;color:#fff}
+.famicube div:nth-child(34){background:#231712;color:#fff}
+.famicube div:nth-child(35){background:#5c3c0d;color:#fff}
+.famicube div:nth-child(36){background:#ae6c37;color:#000}
+.famicube div:nth-child(37){background:#c59782;color:#000}
+.famicube div:nth-child(38){background:#e2d7b5;color:#000}
+.famicube div:nth-child(39){background:#4f1507;color:#fff}
+.famicube div:nth-child(40){background:#823c3d;color:#fff}
+.famicube div:nth-child(41){background:#da655e;color:#000}
+.famicube div:nth-child(42){background:#e18289;color:#000}
+.famicube div:nth-child(43){background:#f5b784;color:#000}
+.famicube div:nth-child(44){background:#ffe9c5;color:#000}
+.famicube div:nth-child(45){background:#ff82ce;color:#000}
+.famicube div:nth-child(46){background:#cf3c71;color:#fff}
+.famicube div:nth-child(47){background:#871646;color:#fff}
+.famicube div:nth-child(48){background:#a328b3;color:#fff}
+.famicube div:nth-child(49){background:#cc69e4;color:#000}
+.famicube div:nth-child(50){background:#d59cfc;color:#000}
+.famicube div:nth-child(51){background:#fec9ed;color:#000}
+.famicube div:nth-child(52){background:#e2c9ff;color:#000}
+.famicube div:nth-child(53){background:#a675fe;color:#000}
+.famicube div:nth-child(54){background:#6a31ca;color:#fff}
+.famicube div:nth-child(55){background:#5a1991;color:#fff}
+.famicube div:nth-child(56){background:#211640;color:#fff}
+.famicube div:nth-child(57){background:#3d34a5;color:#fff}
+.famicube div:nth-child(58){background:#6264dc;color:#000}
+.famicube div:nth-child(59){background:#9ba0ef;color:#000}
+.famicube div:nth-child(60){background:#98dcff;color:#000}
+.famicube div:nth-child(61){background:#5ba8ff;color:#000}
+.famicube div:nth-child(62){background:#0a89ff;color:#fff}
+.famicube div:nth-child(63){background:#024aca;color:#fff}
+.famicube div:nth-child(64){background:#00177d;color:#fff}
+</style>
+<div class="famicube">
+    <div>00</div><div>01</div><div>02</div><div>03</div><div>04</div><div>05</div><div>06</div><div>07</div>
+    <div>08</div><div>09</div><div>10</div><div>11</div><div>12</div><div>13</div><div>14</div><div>15</div>
+    <div>16</div><div>17</div><div>18</div><div>19</div><div>20</div><div>21</div><div>22</div><div>23</div>
+    <div>24</div><div>25</div><div>26</div><div>27</div><div>28</div><div>29</div><div>30</div><div>31</div>
+    <div>32</div><div>33</div><div>34</div><div>35</div><div>36</div><div>37</div><div>38</div><div>39</div>
+    <div>40</div><div>41</div><div>42</div><div>43</div><div>44</div><div>45</div><div>46</div><div>47</div>
+    <div>48</div><div>49</div><div>50</div><div>51</div><div>52</div><div>53</div><div>54</div><div>55</div>
+    <div>56</div><div>57</div><div>58</div><div>59</div><div>60</div><div>61</div><div>62</div><div>63</div>
+</div>
+
+### Background format data
+
+TODO: continue
+
+| addr | purpose        |
+| ---- | ---------------|
+|  a+0 | always zero    |
+|  a+1 | always zero    |
+|  a+2 | width in cell  |
+|  a+3 | height in cell |
+|  a+4 | cell's data    |
+
+
+### Registers
 
 Sprite Registers:
 
@@ -1324,7 +2405,7 @@ For each sprite:
 Both position on x and y axis use sub-pixels values. To advance by 1 pixel, the values should get increased by 16.
 Also, they are both offseted by 32 pixels. To place a sprite in the 0x0 coordinates, the values should be 512x512.
 
-Attributes bits:
+#### Attributes bits:
 
 | bits | purpose         |
 | ---- | --------------- |
@@ -1343,9 +2424,7 @@ Sprite size:
 | %10    | 24x24 pixels or 3x3 characters |
 | %11    | 32x32 pixels or 4x4 characters |
 
----
-
-Color registers:
+#### Color registers:
 
 There are 8 palettes with 4 colors each:
 
@@ -1362,9 +2441,7 @@ For each palette:
 | +2     | 1 Byte | 3rd color value |
 | +3     | 1 Byte | 4th color value |
 
----
-
-Video registers:
+#### Video registers:
 
 | addr  | size     | purpose                     |
 | ----- | -------- | --------------------------- |
@@ -1380,7 +2457,7 @@ Video registers:
 | $FF32 | 1 Byte   | Display attributes          |
 | $FF33 | 12 Bytes | Not used                    |
 
-Display attributes:
+#### Display attributes:
 
 | bits | purpose                    |
 | ---- | -------------------------- |
@@ -1390,17 +2467,13 @@ Display attributes:
 | 3    | Background layer 2 enabled |
 | 4    | Background layer 3 enabled |
 
----
-
-TODO: Audio registers:
+#### TODO: Audio registers:
 
 | addr  | size     | purpose         |
 | ----- | -------- | --------------- |
 | $FF40 | 48 Bytes | Audio registers |
 
----
-
-I/O registers:
+#### I/O registers:
 
 | addr  | size    | purpose                        |
 | ----- | ------- | ------------------------------ |
@@ -1421,7 +2494,7 @@ Pixels shown represent the number of fantasy pixels that is visible by the user 
 
 Pixels outsied the safe zone represent the number of fantasy pixels that are visible but should be considered unsafe for touch input as they are outside the safe area. TODO: link See: SAFE.L/T/R/B
 
-Other I/O status bits:
+#### Other I/O status bits:
 
 | bits | purpose                                   |
 | ---- | ----------------------------------------- |
@@ -1429,9 +2502,7 @@ Other I/O status bits:
 | 1    | Fantasy screen currently touched          |
 | 2    | Device virtual keyboard currently visible |
 
----
-
-DMA registers:
+#### DMA registers:
 
 | addr  | size    | purpose                 |
 | ----- | ------- | ----------------------- |

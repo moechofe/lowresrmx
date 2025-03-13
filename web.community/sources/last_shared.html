@@ -1,0 +1,71 @@
+<template id="program-list">
+
+	<!-- TODO: sorting -->
+	<main class="program-list container-fluid">
+	</main>
+
+</template>
+<template id="program-item">
+
+	<div class="program-item">
+		<div class="visual">
+			<div class="picture"></div>
+		</div>
+		<div class="info">
+			<h3 class="name"></h3>
+			<div class="date"></div>
+		</div>
+		<div class="actions">
+			<button class="publish">Publish</button>
+			<button class="play outline">Play</button>
+			<button class="delete outline secondary">Delete</button>
+	</div>
+
+</template>
+<template id="program-delete">
+
+	<dialog class="program-delete"><article>
+		<header class="container-fluid">
+			<h2>Delete program</h2>
+		</header>
+		<main class="container">
+			<fieldset>
+				<p>Are you sure you want to delete this program?</p>
+				<h3 class="name"></h3>
+			</fieldset>
+			<fieldset class="grid">
+				<button class="delete">Delete</button>
+				<button class="cancel outline">Cancel</button>
+			</fieldset>
+		</main>
+	</article></dialog>
+
+</template>
+<template id="publish-dialog">
+
+	<dialog class="publish-dialog"><article>
+		<header class="container-fluid">
+			<h2>Publish program</h2>
+		</header>
+		<main class="container">
+			<fieldset>
+				<select id="where" required>
+					<option selected disabled value="">
+						Where to post&hellip;
+					</option>
+					<option value="show">Showcase / Work in progress</option>
+					<option value="chat">Discussion / News / Unrelated</option>
+					<option value="help">Help / Example</option>
+				</select>
+				<input type="text" id="title" required placeholder="Public name" />
+				<textarea id="text" placeholder="Markdown supported message&hellip;" >
+</textarea>
+			</fieldset>
+			<fieldset class="grid">
+				<button class="publish">Publish</button>
+				<button class="cancel outline">Cancel</button>
+			</fieldset>
+		</main>
+	</article></dialog>
+
+</template>

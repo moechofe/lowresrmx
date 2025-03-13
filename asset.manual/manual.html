@@ -7,13 +7,14 @@
 <title>LowResRMX Manual</title>
 <style>
 body { font-family: 'Baskerville', 'Libre Baskerville', serif; font-size: 1.3em; margin: 0; }
-h1, h2, h3 { margin: 2.5em 0 1em 0; background: #444; color: #fff; padding: 0.6em 1em 0.4em 1em; }
+h1, h2, h3, h4 { margin: 2.5em 0 1em 0; background: #444; color: #fff; padding: 0.6em 1em 0.4em 1em; }
 body h1 { margin-top: 0; }
 p { margin: 1em; }
 blockquote { margin: 1em 0; border-left: solid 1em #ecc; padding: 0.2em 0.4em; background-color: #fee; }
-code { background-color: #ccc; padding: 0.2em 0.3em; margin: -0.2em -0.1em; }
+code { background-color: #ddd; padding: 0.2em 0.3em; margin: -0.2em -0.1em; }
+h4>code { background-color: #444; }
 code+code { display: inline-block; }
-pre { white-space: pre-wrap; font-family: 'Menlon-Regular', monospace; margin: 0; background-color: #ccc; padding: 0.5em 1em; display: inline-block; -moz-tab-size:2; -o-tab-size:2; tab-size:2; }
+pre { white-space: pre-wrap; font-family: 'Menlon-Regular', monospace; margin: 0; background-color: #ddd; padding: 0.5em 1em; display: inline-block; -moz-tab-size:2; -o-tab-size:2; tab-size:2; }
 pre>code { padding: 0; margin: 0; }
 blockquote>pre { margin-left: 1em; }
 blockquote pre,blockquote code { background-color: #ecc; }
@@ -29,12 +30,12 @@ hr { border: none; border-top: solid 0.15em #ccc; margin: 1em; }
 
 
 <!-- Tool: https://markdowntohtml.com/ -->
-<!-- and replace <br /> by <br /> and <hr /> by <hr /> -->
+<!-- and replace \<br\> by <br/> and \<hr\> by <hr/> -->
 <!-- &#39; ' -->
 
-<h1 id="lowresrmx-manual">LowResRMX manual</h1>
+<h1 id="manual">Manual</h1>
 <blockquote>
-<p>This is a fork of the excellent fantasy console Lowres NX by Timo &quot;Inutilis&quot; Kloss.<br />
+<p>This is a fork of the excellent fantasy console Lowres NX by Timo &quot;Inutilis&quot; Kloss.<br/>
 This is a heavily modified version and way more complicated to use, I recommend you to stay on the original app:
 <a href="https://apps.apple.com/app/lowres-nx-coder/id1318884577">LowRes NX Coder on App Store</a>.</p>
 </blockquote>
@@ -44,51 +45,83 @@ This is a heavily modified version and way more complicated to use, I recommend 
 <blockquote>
 <p><strong>The documentation and included tools are still in development.</strong></p>
 </blockquote>
-<h2 id="difference-with-lowres-nx">Difference with Lowres NX</h2>
+<h2 id="difference">Difference</h2>
 <p>The goal 🥅 of the app is to provide a development environment that I can use during my commutes on the subway, and later, to be able to publish a real app on the stores.</p>
 <p>The original LowRes NX, despite being an excellent development environment, lacks some capabilities, in my opinion.</p>
-<h3 id="background">Background</h3>
+<h4 id="background">Background</h4>
 <p>4 background layers instead of 2, with 64x64 cells instead of 32x32.</p>
+<hr/>
 <p>Support for large 16x16 pixel cells has been removed.</p>
 <p>Removed 🗑️ syntaxes:</p>
 <p><code>CELL SIZE bg,size</code></p>
-<hr />
+<hr/>
 <p>Alternative syntax for the <code>FLIP</code> command:</p>
 <p><code>FLIP x,y</code></p>
 <p>Where <code>x</code> and <code>y</code> are both optional and can accept any number. If the number is different from zero, the flag will be set.</p>
-<h3 id="screen">Screen</h3>
-<p>A fantasy screen with a resolution of 216x384 pixels.</p>
-<p>It features perfectly square pixels, a fixed portrait orientation, and always fills the entire device screen.</p>
-<p>Depending on the device's screen ratio, the number of visible virtual pixels may vary—from 216x288 on 4:3 devices to 177x384 on 19.5:9 devices.</p>
-<p>To detect the visible virtual pixels, use the new functions <code>=SHOWN.W</code> and <code>=SHOWN.H</code>.</p>
-<hr />
-<p>New functions to retrieve the visible fantasy display size:</p>
-<p><code>=SHOWN.W</code><br />
-<code>=SHOWN.H</code></p>
-<p>Returns the number of visible pixels in width and height respectively.</p>
-<hr />
-<p>New functions to query the safe area offset:</p>
-<p><code>=SAFE.L</code><br />
-<code>=SAFE.T</code><br />
-<code>=SAFE.R</code><br />
-<code>=SAFE.B</code></p>
-<p>These return the offset in virtual pixels to apply from the boundary of the fantasy device screen to reach the inner safe area specified by the device's operating system.</p>
-<p>These functions can be used to avoid the top camera notch or the bottom inset full-width buttons.</p>
-<h3 id="colors">Colors</h3>
-<p>The 64 available colors do not follow the original EGA style of LowRes NX. Instead, they use the <a href="https://lospec.com/palette-list/famicube">FAMICUBE palette created by Arne</a>.</p>
-<blockquote>
-<p>This makes using the color chooser from the original &quot;Gfx Designer&quot; in LowRes NX a bit more challenging.</p>
-</blockquote>
-<hr />
-<p>New settings with the <code>SYSTEM</code> command:</p>
-<p><code>SYSTEM setting,opacity</code>
-<br />where <code>setting</code> ranges from <code>1</code> to <code>4</code>.</p>
-<p>This allows you to make color <code>0</code> of the background layer opaque instead of transparent.</p>
+<hr/>
+<p>New settings with the <code>SYSTEM</code> command to render a layer at double size:</p>
+<p><code>SYSTEM setting,double</code>
+<br/>where <code>setting</code> ranges from <code>5</code> to <code>8</code>.</p>
 <table>
 <thead>
 <tr>
 <th>setting</th>
-<th>background</th>
+<th>layer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>5</td>
+<td>0</td>
+</tr>
+<tr>
+<td>6</td>
+<td>1</td>
+</tr>
+<tr>
+<td>7</td>
+<td>2</td>
+</tr>
+<tr>
+<td>8</td>
+<td>3</td>
+</tr>
+</tbody>
+</table>
+<hr/>
+<p>Internal scroll offset not capped to 512 any more, but 0xFFFF.</p>
+<h4 id="screen">Screen</h4>
+<p>A fantasy screen with a resolution of 216x384 pixels.</p>
+<p>It features perfectly square pixels, a fixed portrait orientation, and always fills the entire device screen.</p>
+<p>Depending on the device&#39;s screen ratio, the number of visible virtual pixels may vary—from 216x288 on 4:3 devices to 177x384 on 19.5:9 devices.</p>
+<p>To detect the visible virtual pixels, use the new functions <code>=SHOWN.W</code> and <code>=SHOWN.H</code>.</p>
+<hr/>
+<p>New functions to retrieve the visible fantasy display size:</p>
+<p><code>=SHOWN.W</code><br/>
+<code>=SHOWN.H</code></p>
+<p>Returns the number of visible pixels in width and height respectively.</p>
+<hr/>
+<p>New functions to query the safe area offset:</p>
+<p><code>=SAFE.L</code><br/>
+<code>=SAFE.T</code><br/>
+<code>=SAFE.R</code><br/>
+<code>=SAFE.B</code></p>
+<p>These return the offset in virtual pixels to apply from the boundary of the fantasy device screen to reach the inner safe area specified by the device&#39;s operating system.</p>
+<p>These functions can be used to avoid the top camera notch or the bottom inset full-width buttons.</p>
+<h4 id="colors">Colors</h4>
+<p>The 64 available colors do not follow the original EGA style of LowRes NX. Instead, they use the <a href="https://lospec.com/palette-list/famicube">FAMICUBE palette created by Arne</a>.</p>
+<blockquote>
+<p>This makes using the color chooser from the original &quot;Gfx Designer&quot; in LowRes NX a bit more challenging.</p>
+</blockquote>
+<hr/>
+<p>New settings with the <code>SYSTEM</code> command to make the color <code>0</code> for a layer opaque instead of transparent:</p>
+<p><code>SYSTEM setting,opacity</code>
+<br/>where <code>setting</code> ranges from <code>1</code> to <code>4</code>.</p>
+<table>
+<thead>
+<tr>
+<th>setting</th>
+<th>layer</th>
 </tr>
 </thead>
 <tbody>
@@ -110,34 +143,38 @@ This is a heavily modified version and way more complicated to use, I recommend 
 </tr>
 </tbody>
 </table>
-<h3 id="sprites">Sprites</h3>
-<p>170 sprites instead of 64.<br />
+<h4 id="sprites">Sprites</h4>
+<p>170 sprites instead of 64.<br/>
 Sprite number range from <code>0</code> to <code>169</code>.</p>
 <p>Positions support sub-pixels with <code>1/16</code> pixel precision.</p>
 <p>e.g.:</p>
 <pre><code>SPRITE <span class="hljs-number">123</span>,SPRITE.X(<span class="hljs-number">123</span>)+<span class="hljs-number">0.25</span>,
-</code></pre><h3 id="input">Input</h3>
+</code></pre><h4 id="input">Input</h4>
 <p>Touchscreen only, with floating-point precision.</p>
 <p>The virtual controller and the ability to use a Bluetooth controller have been removed.</p>
 <p>The virtual keyboard is still available.</p>
-<p>When the device's virtual keyboard is hidden by the user, the corresponding I/O <a href="#registers">Registers</a> flag is updated.</p>
+<p>When the device&#39;s virtual keyboard is hidden by the user, the corresponding I/O <a href="#registers">Registers</a> flag is updated.</p>
 <p>Removed 🗑️ syntaxes:</p>
 <p><code>=BUTTON(p,n)</code>, <code>=UP(p)</code>, <code>=DOWN(p)</code>, <code>=LEFT(p)</code>, <code>=RIGHT(p)</code>, <code>GAMEPAD n</code>, <code>TOUCHSCREEN</code></p>
-<hr />
+<hr/>
 <p>Changes to the <code>=TOUCH.X</code> and <code>=TOUCH.Y</code> functions: These now return floating-point values.</p>
-<hr />
+<hr/>
 <p>New alternative to the <code>WAIT</code> command:</p>
 <p><code>WAIT TAP</code></p>
 <p>This will wait until a device tap is detected but will still render the screen.</p>
-<h3 id="flow-control">Flow control</h3>
-<p>New program flow control:</p>
-<p><code>ON value GOTO label,..</code><br />
-<code>ON value GOSUB label,..</code><br />
+<hr/>
+<p>New function to ask the device if the virtual keyboard is visible.</p>
+<p><code>=KEYBOARD()</code></p>
+<p>Return <code>-1</code> if the keyboard is visible.</p>
+<h4 id="control-flow">Control flow</h4>
+<p>New program control flow:</p>
+<p><code>ON value GOTO label,..</code><br/>
+<code>ON value GOSUB label,..</code><br/>
 <code>ON value RESTORE label,..</code></p>
 <p>These commands will <code>GOTO</code>, <code>GOSUB</code> or <code>RESTORE</code> to one of the listed <code>label</code>s based on the <code>value</code>.</p>
 <p>e.g.:</p>
 <pre><code>ON I GOTO <span class="hljs-literal">ZERO</span>,<span class="hljs-literal">ONE</span>,<span class="hljs-literal">TWO</span>
-</code></pre><h3 id="data">Data</h3>
+</code></pre><h4 id="data">Data</h4>
 <p>New keyword to skip read data:</p>
 <p><code>SKIP number</code></p>
 <p>This will skip a specified <code>number</code> of data entries, so they are not read.</p>
@@ -147,8 +184,8 @@ Sprite number range from <code>0</code> to <code>169</code>.</p>
 READ A
 PRINT A
 'WILL PRINT "2"
-</code></pre><hr />
-<p>It's now possible to access data directly using its label:</p>
+</code></pre><hr/>
+<p>It&#39;s now possible to access data directly using its label:</p>
 <p><code>PRINT label</code></p>
 <p>This allows you to store a string using the <code>DATA</code> keyword and reference it in the <code>PRINT</code> command.</p>
 <p>e.g.:</p>
@@ -161,11 +198,20 @@ PRINT A
 <pre><code>TEST2:
 <span class="hljs-keyword">DATA</span> <span class="hljs-number">123.4</span>
 <span class="hljs-built_in">PRINT</span> TEST2*<span class="hljs-number">3</span>
-</code></pre><h3 id="math">Math</h3>
+</code></pre><h4 id="math">Math</h4>
+<p>New function to return the ceiling value of a numerical value:</p>
+<p><code>=CEIL(value)</code></p>
+<hr/>
+<p>New function to return the flooring value of a numerical value:</p>
+<p><code>=FLOOR(value)</code></p>
+<blockquote>
+<p>This is different than <code>=INT(value)</code></p>
+</blockquote>
+<hr/>
 <p>New function to clamp a numerical value:</p>
 <p><code>=CLAMP(value,min,max)</code></p>
 <p>This returns the <code>value</code> clamped between <code>min</code> and <code>max</code>.</p>
-<hr />
+<hr/>
 <p>New random generator and features:</p>
 <p><code>=RND</code></p>
 <p>Works the same as before but with a different generator, using <a href="https://www.pcg-random.org/">PCG</a>.</p>
@@ -174,11 +220,11 @@ PRINT A
 <code>=RND(max,address)</code></p>
 <p>You can specify an <code>address</code> where the internal state will be stored, consuming 16 bytes.</p>
 <p>This allows you to use multiple generators at the same time.</p>
-<hr />
+<hr/>
 <p>New syntax to compute length:</p>
 <p><code>=LEN(x,y)</code></p>
 <p>Calculates the length of a 2D vector using <code>x</code> and <code>y</code> as the coordinates for the two axes.</p>
-<hr />
+<hr/>
 <p>New function that interpolate values between <code>0</code> and <code>1</code> using easing mathematical functions:</p>
 <p><code>=EASE(function,mode,value)</code></p>
 <p>This returns the interpolation of <code>value</code> between 0.0 and 1.0, using the specified easing <code>function</code> and <code>mode</code>.</p>
@@ -254,10 +300,13 @@ PRINT A
 </tr>
 </tbody>
 </table>
-<h3 id="text">Text</h3>
+<h4 id="text">Text</h4>
 <p>New command to expose the existing overlay message API:</p>
 <p><code>MESSAGE text</code></p>
-<h3 id="other">Other</h3>
+<hr/>
+<p><code>PRINT</code> command can now word wrap before breaking word.</p>
+<p>If there is not enough space to print a word inside the window, a new line is inserted to avoid breaking the word in two.</p>
+<h4 id="other">Other</h4>
 <p>New command to support programs from the original LowRes NX:</p>
 <p><code>COMPAT</code></p>
 <blockquote>
@@ -270,16 +319,15 @@ PRINT A
 </ul>
 <p>This does not guarantee full compatibility but can help with some aspects.</p>
 <p>For instance, commands and functions that have been removed will still be unavailable.</p>
-<p>TODO: about double cells</p>
-<!-- FIXME: spell checked end -->
-<hr />
+<p>Double cell support for background is not emulated.</p>
+<hr/>
 <p>Removed 🗑️ commands:</p>
-<p><code>DISPLAY</code></p>
+<p><code>DISPLAY</code>, <code>KEYBOARD OPTIONAL</code>, <code>GAMEPAD</code>, <code>BUTTON</code>, <code>LEFT</code>, <code>RIGHT</code>, <code>DOWN</code>, <code>UP</code>, <code>TOUCHSCREEN</code></p>
 <p>Removed 🗑️ reserved keywords:</p>
 <p><code>ANIM</code>, <code>CLOSE</code>, <code>DECLARE</code>, <code>DEF</code>, <code>FLASH</code>, <code>FN</code>, <code>FUNCTION</code>, <code>LBOUND</code>, <code>OPEN</code>, <code>OUTPUT</code>, <code>SHARED</code>, <code>STATIC</code>, <code>TEMPO</code>, <code>VOICE</code>, <code>WRITE</code></p>
-<h3 id="memory">Memory</h3>
+<h4 id="memory">Memory</h4>
 <p>An almost compatible memory mapping.</p>
-<p>The total addressable memory grow from 64 Kibi to 128 Kibi.</p>
+<p>The total addressable memory has increased from 64 Kibit to 128 Kibit.</p>
 <p>Lowres NX:</p>
 <table>
 <thead>
@@ -292,32 +340,32 @@ PRINT A
 <tbody>
 <tr>
 <td>$0000</td>
-<td>32 Kibi</td>
+<td>32 Kibit</td>
 <td>Cartridge ROM</td>
 </tr>
 <tr>
 <td>$8000</td>
-<td>4 Kibi</td>
+<td>4 Kibit</td>
 <td>Character Data</td>
 </tr>
 <tr>
 <td>$9000</td>
-<td>2 Kibi</td>
+<td>2 Kibit</td>
 <td>BG0 Data</td>
 </tr>
 <tr>
 <td>$9800</td>
-<td>2 Kibi</td>
+<td>2 Kibit</td>
 <td>BG1 Data</td>
 </tr>
 <tr>
 <td>$A000</td>
-<td>16 Kibi</td>
+<td>16 Kibit</td>
 <td>Working RAM</td>
 </tr>
 <tr>
 <td>$E000</td>
-<td>4 Kibi</td>
+<td>4 Kibit</td>
 <td>Persistent RAM</td>
 </tr>
 <tr>
@@ -359,37 +407,37 @@ PRINT A
 <tbody>
 <tr>
 <td>$0000</td>
-<td>8 Kibi</td>
+<td>8 Kibit</td>
 <td>BG0 data</td>
 </tr>
 <tr>
 <td>$2000</td>
-<td>8 Kibi</td>
+<td>8 Kibit</td>
 <td>BG1 data</td>
 </tr>
 <tr>
 <td>$4000</td>
-<td>8 Kibi</td>
+<td>8 Kibit</td>
 <td>BG2 data</td>
 </tr>
 <tr>
 <td>$6000</td>
-<td>8 Kibi</td>
+<td>8 Kibit</td>
 <td>BG3 data</td>
 </tr>
 <tr>
 <td>$8000</td>
-<td>4 Kibi</td>
+<td>4 Kibit</td>
 <td>Character Data</td>
 </tr>
 <tr>
 <td>$9000</td>
-<td>20 Kibi</td>
+<td>20 Kibit</td>
 <td>Working RAM</td>
 </tr>
 <tr>
 <td>$E000</td>
-<td>6 Kibi</td>
+<td>6 Kibit</td>
 <td>Persisent RAM</td>
 </tr>
 <tr>
@@ -424,17 +472,17 @@ PRINT A
 </tr>
 <tr>
 <td>$10000</td>
-<td>64 Kibi</td>
+<td>64 Kibit</td>
 <td>Cartridge ROM</td>
 </tr>
 </tbody>
 </table>
 <p>TODO: Add particle/emitter registers</p>
-<hr />
-<p>New command and registers for a fast memory copy.</p>
-<p><code>DMA COPY</code><br />
+<hr/>
+<p>New command and registers for fast memory copying:</p>
+<p><code>DMA COPY</code><br/>
 <code>DMA COPY ROM</code></p>
-<p>Perform a fast memory copy that can be done only during interrupt calls.</p>
+<p>Performs a fast memory copy that can only be executed during interrupt calls.</p>
 <p>It uses the following registers as data:</p>
 <table>
 <thead>
@@ -459,16 +507,16 @@ PRINT A
 </tbody>
 </table>
 <blockquote>
-<p>Will only works in a subprogram that has been called during an interrupts, including: <code>RASTER</code>, <code>VBL</code> and <code>PARTICLE</code>.</p>
+<p>This will only work in a subprogram that has been called during an interrupt, including <code>RASTER</code>, <code>VBL</code>, and <code>PARTICLE</code>.</p>
 </blockquote>
-<hr />
-<p>The <code>COPY</code> command is slightly faster.</p>
-<h3 id="particles">Particles</h3>
-<p>The particles library reused the sprites to make them appear, dissapear, change theirs characters data and move them accross the screen.</p>
-<hr />
+<hr/>
+<p>The <code>COPY</code> command is now slightly faster.</p>
+<h4 id="particles">Particles</h4>
+<p>The particles library reuses sprites to make them appear, disappear, change their character data, and move them across the screen.</p>
+<hr/>
 <p><code>PARTICLE first,count AT address</code></p>
-<p>Declare to use <code>count</code> sprites starting from the <code>first</code> and store the internal data at <code>address</code>.</p>
-<p>It will consume 6 bytes per sprite in memory. For each sprite:</p>
+<p>Declare the use of <code>count</code> sprites starting from <code>first</code> and store the internal data at <code>address</code>.</p>
+<p>Each sprite will consume 6 bytes of memory. For each sprite:</p>
 <table>
 <thead>
 <tr>
@@ -504,27 +552,27 @@ PRINT A
 <pre><code>PARTICLE <span class="hljs-number">1</span>,<span class="hljs-number">20</span> AT $<span class="hljs-number">9000</span>
 'Will use sprite <span class="hljs-number">1</span> to <span class="hljs-number">20</span> included.
 'Store internal data from $<span class="hljs-number">9000</span> to $<span class="hljs-number">9078</span> excluded.
-</code></pre><hr />
+</code></pre><hr/>
 <p><code>PARTICLE appearance DATA label</code></p>
-<p>Declare a <code>label</code> that contains DATA for the particle <code>appearance</code>.</p>
-<p><code>appearance</code> is a number between 0 and 23.</p>
-<p>The associated DATA must contains a list of character number that will be used to draw the particle. Using a negative number will loop to the previous DATA value.</p>
-<p>A typical example is to put zero <code>0</code> and minus one <code>-1</code> for the two last data values, as it will allow to make the particle dissapear until the sprite is reused.</p>
+<p>Declare a <code>label</code> that contains data for the particle <code>appearance</code>.</p>
+<p><code>appearance</code> is a number between <code>0</code> and <code>23</code>.</p>
+<p>The associated data must contain a list of character numbers that will be used to draw the particle. Using a negative number will loop back to the previous data value.</p>
+<p>A common example is to use zero <code>0</code> and minus one <code>-1</code> for the last two data values, which allows the particle to disappear until the sprite is reused.</p>
 <p>e.g.:</p>
 <pre><code>MY_APPEARANCE:
 DATA <span class="hljs-number">1</span>,<span class="hljs-number">2</span>,<span class="hljs-number">3</span>,<span class="hljs-number">4</span>,<span class="hljs-number">0</span>,-<span class="hljs-number">1</span>
 <span class="hljs-symbol">'Will</span> show the <span class="hljs-built_in">character</span> <span class="hljs-number">1</span> <span class="hljs-keyword">to</span> <span class="hljs-number">4</span>, each per frame.
 <span class="hljs-symbol">'And</span> <span class="hljs-keyword">loop</span> <span class="hljs-keyword">with</span> the <span class="hljs-built_in">character</span> <span class="hljs-number">0</span>.
-</code></pre><hr />
+</code></pre><hr/>
 <p><code>PARTICLE OFF</code></p>
-<p>Clear each sprite position and each particle appearance.</p>
-<hr />
+<p>Clear all sprite positions and reset all particle appearances.</p>
+<hr/>
 <p><code>ON PARTICLE CALL subprogram</code></p>
-<p>For each particle, will call the subprogram using an interrupt.</p>
+<p>For each particle, the system will call the subprogram using an interrupt.</p>
 <p>The target <code>subprogram</code> will receive two arguments:</p>
 <ol>
-<li>the <code>sprite</code> number,</li>
-<li>and the particle <code>address</code>.</li>
+<li>The <code>sprite</code> number,</li>
+<li>The particle <code>address</code>.</li>
 </ol>
 <p>e.g.:</p>
 <pre><code><span class="hljs-keyword">SUB</span> MYPART(SPR,ADDR)
@@ -533,11 +581,11 @@ DATA <span class="hljs-number">1</span>,<span class="hljs-number">2</span>,<span
     <span class="hljs-comment">'Change the speed in y axis</span>
 <span class="hljs-keyword">END</span> <span class="hljs-keyword">SUB</span>
 </code></pre><p>TODO: specify the number of cycles available.</p>
-<hr />
+<hr/>
 <p><code>EMITTER count AT address</code></p>
-<p>Declare to use <code>count</code> emitter and store the internal data at <code>address</code>.</p>
-<p><code>count</code> is a number between 0 and 15.</p>
-<p>It will consume 6 bytes per emitter in memory. For each emitter:</p>
+<p>Declare the use of <code>count</code> emitters and store the internal data at <code>address</code>.</p>
+<p><code>count</code> is a number between <code>0</code> and <code>15</code>.</p>
+<p>Each emitter will consume 6 bytes of memory. For each emitter:</p>
 <table>
 <thead>
 <tr>
@@ -565,33 +613,38 @@ DATA <span class="hljs-number">1</span>,<span class="hljs-number">2</span>,<span
 <tr>
 <td>+5</td>
 <td>1 Byte</td>
-<td>Number of time to emit</td>
+<td>Number of times to emit</td>
 </tr>
 </tbody>
 </table>
-<hr />
+<!-- FIXME: spell checked end -->
+<hr/>
 <p><code>EMITTER emitter DATA label</code></p>
 <p>Declare a <code>label</code> that contains DATA for the <code>emitter</code>.</p>
 <p>The associated data must follow this list:</p>
 <ol>
-<li><code>appearance</code>,</li>
+<li><code>appearance</code> index of <code>appearance</code>, see: <code>PARTICLE appearance DATA label</code>.</li>
+<li><code>shape</code> TODO: continue doc,</li>
 <li><code>outer</code> ring radius,</li>
 <li><code>inner</code> ring radius,</li>
+<li><code>arc</code> TODO: continue doc,</li>
+<li><code>rotation</code> TODO: continue doc,</li>
 <li>initial particle <code>speed</code> on x axis,</li>
 <li>initial particle <code>speed</code> on y axis,</li>
+<li><code>explosivity</code> TODO: continue doc,</li>
 <li><code>count</code> of the number of particle to spawn at this frame,</li>
 <li>number of frame to <code>delay</code> the re-emittion,</li>
 <li>how many times to <code>repeat</code> the emittion.</li>
 </ol>
 <p>When a particle get spawn, a random position is computed between the <code>outer</code> and <code>inner</code> ring.</p>
-<hr />
+<hr/>
 <p><code>EMITTER emitter ON x,y</code></p>
 <p>Tell the <code>emitter</code> to emit particle staring at position <code>x</code> and <code>y</code>.</p>
 <p>It will automaticly end when <code>repeat</code> reach 0.</p>
-<hr />
+<hr/>
 <p><code>EMITTER emitter OFF</code></p>
 <p>Manually stop the <code>emitter</code>.</p>
-<h1 id="how-does-it-works">How does it works</h1>
+<h2 id="how-does-it-works">How does it works</h2>
 <!--FIXME: spell checked NOW -->
 <p>LowResRMX does not have a framebuffer where users paint pixels. Instead, it simulates an NES/Gameboy PPU chip, which traverses its memory to generate output pixels based on characters, backgrounds, sprites, palettes and register information.</p>
 <h3 id="colors">Colors</h3>
@@ -622,12 +675,12 @@ Whenever this number is encountered in the background or sprite, the rendering p
 <li>and 64x64 character cells.</li>
 </ul>
 <p>The 4 layers are drawn in order from 4th to 1st. Cells of the 1st background will be visible above the others unless the priority flag is used.</p>
-<p>Each cells have it's own:</p>
+<p>Each cells have it&#39;s own:</p>
 <ul>
 <li>character number,</li>
 <li>palette,</li>
 <li>horizontal and vertical flip,</li>
-<li>priority to alter which layer's cell is drawn on top of another and on top of sprites.</li>
+<li>priority to alter which layer&#39;s cell is drawn on top of another and on top of sprites.</li>
 </ul>
 <p>Layers are not framebuffers; you CANNOT easily paint pixels directly. Instead, every cell references a character number, and those hold the pixel color information.</p>
 <p>Each layer can be shifted using the position in the X and Y axes. When reaching the edges, the cells will wrap around and remain visible.
@@ -648,74 +701,20 @@ Put another way, when the rendering process tries to draw the 65th cell of a row
 <h3 id="sprites">Sprites</h3>
 <p>LowResRMX offers 170 sprites, each with:</p>
 <ul>
-<li>and Y position,</li>
+<li>X and Y position,</li>
 <li>a size of 8x8, 16x16, 24x24 or 32x32 pixels,</li>
 <li>a character number for the top left one,</li>
 <li>a palette,</li>
 <li>horizontal and vertical flip,</li>
 <li>and priority to show the sprite on top of bg cells with priorities.</li>
 </ul>
-<p>The 170 sprites are drawn in order from 170th (bottom) to 1st (top).</p>
+<p>The 170 sprites are drawn in order from 170th (bottom) to 1st (top).
+The sprite numbers range start at zero <code>0</code>,so the last one is <code>169</code>.</p>
 <p>Sprites are groups of characters ranging from 1x1 to 4x4. The difference with bg is that you only choose the top-left character. The other character numbers are dependent on the top-left one.</p>
-<p>Here's an explaination:</p>
-<p>In memory, characters are grouped by 16 per row with 16 rows, called the spritesheet.</p>
-<table>
-<thead>
-<tr>
-<th></th>
-<th></th>
-<th></th>
-<th></th>
-<th></th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>00</code></td>
-<td><code>01</code></td>
-<td>…</td>
-<td><code>0e</code></td>
-<td><code>0f</code></td>
-</tr>
-<tr>
-<td><strong><code>10</code></strong></td>
-<td><strong><code>11</code></strong></td>
-<td>…</td>
-<td><code>1e</code></td>
-<td><code>1f</code></td>
-</tr>
-<tr>
-<td><strong><code>20</code></strong></td>
-<td><strong><code>21</code></strong></td>
-<td>…</td>
-<td><code>2e</code></td>
-<td><code>2f</code></td>
-</tr>
-<tr>
-<td><code>30</code></td>
-<td><code>31</code></td>
-<td>…</td>
-<td><code>3e</code></td>
-<td><code>3f</code></td>
-</tr>
-<tr>
-<td></td>
-<td></td>
-<td>…</td>
-<td></td>
-</tr>
-</tbody>
-</table>
-<p>For a sprite with a size of 2x2 characters, and the top-left one is the number <code>10</code> in hexadecimal, the other characters will be the ones to its right and below it, so: <code>11</code>, <code>20</code>, and <code>21</code>.</p>
 <p>A sprite can be freely placed anywhere on the screen with 1/16 sub-pixel precision. This means you can add 0.5 to its position even if there will be no change visually.</p>
-<p>From now on, the terms:</p>
-<ul>
-<li><strong>a sprite</strong> is a group of 1x1 to 4x4 character,</li>
-<li><strong>the spritesheet</strong> is the whole 16x16 characters available.</li>
-</ul>
 <!--FIXME: spell checked END -->
-<h1 id="program-language">Program Language</h1>
-<p>The programming language follow the path of the original Lowres NX. It's a BASIC type language and here's how to use it.</p>
+<h2 id="program-language">Program Language</h2>
+<p>The programming language follow the path of the original Lowres NX. It&#39;s a BASIC type language and here&#39;s how to use it.</p>
 <h3 id="program">Program</h3>
 <p>A program is a list of so called instructions and executed by the fantasy console one by one from top to bottom. The simplest and iconic program could be:</p>
 <pre><code><span class="hljs-built_in">print</span> <span class="hljs-string">"hello world!"</span>
@@ -727,7 +726,12 @@ Put another way, when the rendering process tries to draw the 65th cell of a row
 <p>The program do not care about upper or lower case, use the one you prefers.</p>
 </blockquote>
 <h3 id="identifiers">Identifiers</h3>
-<p>An identifier is a word defined by the user that represent an idea inside the program and they are used to declare variables, labels or procedures (more on those terms later), e.g.: <code>hero</code>, <code>enemies</code>, <code>HP</code>, <code>score</code>, <code>spawn_monsters</code>, <code>update_screen</code>, <code>collect_coins</code>, <code>level12</code>…</p>
+<ol>
+<li><p>An identifier is a word defined by the and they are used to declare variables, labels or procedures (more on those terms later), e.g.: <code>hero</code>, <code>enemies</code>, <code>HP</code>, <code>score</code>, <code>spawn_monsters</code>, <code>update_screen</code>, <code>collect_coins</code>, <code>level12</code>…</p>
+</li>
+<li><p>An identifier can also be a built-in function name provided by LowResNX as part of the <a href="#api-instructions">API</a>.</p>
+</li>
+</ol>
 <p>Valid characters for identifiers art ASCII letters, digits and the underscore <code>_</code>. But they CANNOT start by a digits and they CANNOT have more than 21 characters.</p>
 <blockquote>
 <p>Important: Not all identifiers are valid because some of them are reserved by the language itself, check the <a href="#keywords">list of reserved keywords</a> and learn them to avoid common mistakes</p>
@@ -738,7 +742,7 @@ Put another way, when the rendering process tries to draw the 65th cell of a row
 <pre><code><span class="hljs-attr">score</span>=<span class="hljs-number">0</span>
 </code></pre><p>And to increment it:</p>
 <pre><code><span class="hljs-attr">score</span>=score+<span class="hljs-number">1</span>
-</code></pre><p>As you can see, variables are declared using an identifier, that why user should take care of giving them a nice name that help them remember what's inside.</p>
+</code></pre><p>As you can see, variables are declared using an identifier, that why user should take care of giving them a nice name that help them remember what&#39;s inside.</p>
 <p>As real example, this is a program that increment and print a score every time the player tap the device screen.</p>
 <pre><code><span class="hljs-keyword">score</span>=0
 <span class="hljs-keyword">do</span>
@@ -749,7 +753,7 @@ loop
 </code></pre><p>Variable can also store strings:</p>
 <pre><code><span class="hljs-built_in">name</span>$=<span class="hljs-string">"Untel"</span>
 print <span class="hljs-built_in">name</span>$
-</code></pre><h3 id="values">Values</h3>
+</code></pre><h3 id="literals">Literals</h3>
 <p>Identifiers can store two types of value: number and string.</p>
 <p>Numbers can be integer or decimal, e.g.: <code>123</code>, <code>-45</code>, <code>0.01</code>, <code>12345.6789</code></p>
 <p>String can only contains ASCII7 characters: letters, digits, some punctuations and some control characters: <code>&quot;hello WORLD! 123&quot;</code></p>
@@ -766,9 +770,19 @@ start:
     <span class="hljs-built_in">score</span>=<span class="hljs-built_in">score</span>+<span class="hljs-number">1</span>
 <span class="hljs-built_in">goto</span> start
 </code></pre><p>A label is declared by an identifier followed by a coma <code>:</code>.</p>
+<hr/>
+<p>About using label identifier as <a href="#lvalue-and-rvalue">rvalue</a>. This feature allow use label name that lead to <a href="#data-rom-and-files">constant string value</a> directly instead of having to store the value in a varible.</p>
+<p>Example, instead of writing:</p>
+<pre><code>data <span class="hljs-string">"chocolate"</span>
+<span class="hljs-built_in">read</span> like$
+<span class="hljs-built_in">print</span> <span class="hljs-string">"I like"</span>,like$
+</code></pre><p>You can write:</p>
+<pre><code><span class="hljs-keyword">like</span>: data <span class="hljs-string">"chocolate"</span>
+print <span class="hljs-string">"I like"</span>,<span class="hljs-keyword">like</span>
+</code></pre><p>And it working with in all <a href="#expression">expression</a> that involve <a href="#literals">literal string</a> or <a href="#variables">string variable</a>.</p>
 <h3 id="procedures">Procedures</h3>
 <p>The last usage of identifiers are procedures. They means to be reusable sub-part of a program.</p>
-<p>Here's a quick example:</p>
+<p>Here&#39;s a quick example:</p>
 <pre><code><span class="hljs-keyword">sub </span><span class="hljs-keyword">addition(a,b,c)
 </span>    c<span class="hljs-symbol">=a</span>+<span class="hljs-keyword">b
 </span><span class="hljs-symbol">end</span> <span class="hljs-keyword">sub</span>
@@ -784,14 +798,14 @@ print <span class="hljs-string">"result"</span>,<span class="hljs-keyword">resul
 <p>TODO: link to SUB/EXIT SUB/END SUB</p>
 <p>TODO: link to CALL</p>
 <h3 id="parameters-arguments-and-scopes">Parameters, arguments and scopes</h3>
-<p>An other concept that came with procedures are the parameters and the arguments but first, users have to learn as thing about variable's scope.</p>
+<p>An other concept that came with procedures are the parameters and the arguments but first, users have to learn as thing about variable&#39;s scope.</p>
 <p>By default, when declaring a variable in a program is scope is limited and are unknown inside a procedure. e.g.:</p>
 <pre><code><span class="hljs-keyword">score=0
 </span><span class="hljs-keyword">sub </span>print_score
     print <span class="hljs-string">"score"</span>,<span class="hljs-keyword">score
 </span>end <span class="hljs-keyword">sub
 </span>call print_score
-</code></pre><p>This program will produce an error by running it: <code>variable not initialized</code>. The program can't access the variable <code>score</code> inside the <code>print_score</code> proceduce.</p>
+</code></pre><p>This program will produce an error by running it: <code>variable not initialized</code>. The program can&#39;t access the variable <code>score</code> inside the <code>print_score</code> proceduce.</p>
 <p>One option is to <em>pass</em> the variable to the proceduce. Two changes must be made for that.</p>
 <ol>
 <li><p>User need to add a parameter to the proceduce declaration:</p>
@@ -805,8 +819,8 @@ print <span class="hljs-string">"result"</span>,<span class="hljs-keyword">resul
 </ol>
 <p>When the proceduce <code>print_score</code> is called, the argument <code>score</code> is <em>passed</em> to the proceduce inside the <code>s</code> argument.</p>
 <p>The variable <code>s</code> inside the proceduce is called a <em>local</em> variable and again, it is not accessible from the program out of the proceduce.</p>
-<p>Other subject, parameters are passed by reference, it's means that a variable passed to a proceduce and being modified by this procedure will stay modified by the execute exit the proceduce.</p>
-<p>Here's an example:</p>
+<p>Other subject, parameters are passed by reference, it&#39;s means that a variable passed to a proceduce and being modified by this procedure will stay modified by the execute exit the proceduce.</p>
+<p>Here&#39;s an example:</p>
 <pre><code>sub modify_it(<span class="hljs-name">a</span>)
     a=123
 end sub
@@ -814,7 +828,7 @@ my_value=0
 call modify_it(<span class="hljs-name">my_value</span>)
 print my_value
 </code></pre><p>It will print <code>123</code></p>
-<h3 id="array">Array</h3>
+<h3 id="arrays">Arrays</h3>
 <p>Arrays are list of values grouped into one variable:</p>
 <pre><code>dim player_score(<span class="hljs-number">1</span>)
 <span class="hljs-function"><span class="hljs-title">player_score</span><span class="hljs-params">(<span class="hljs-number">0</span>)</span></span>=<span class="hljs-number">123</span>
@@ -826,8 +840,8 @@ player_name<span class="hljs-variable">$(</span><span class="hljs-number">0</spa
 player_name<span class="hljs-variable">$(</span><span class="hljs-number">1</span>)=<span class="hljs-string">"John Doe"</span>
 </code></pre><p>TODO: Link DIM UBOUND</p>
 <h3 id="global-scope">Global scope</h3>
-<p>When variables are declared in the main program body, they are local to the program body.</p>
-<p>When variables are declared inside a proceduc body, they are local to this procedure body.</p>
+<p>When variables are initialized or declared in the main program body, they are local to the program body.</p>
+<p>When variables are initialized or declared inside a proceduce body, they are local to this procedure body.</p>
 <p>It is possible to declare a variable global so it can be accessed in both scopes.</p>
 <pre><code><span class="hljs-keyword">global</span> <span class="hljs-keyword">score</span>
 sub frag
@@ -850,7 +864,7 @@ loop
 <pre><code>'get <span class="hljs-section">touch</span> position in cells coordinates
 tx=<span class="hljs-section">touch</span>.x\<span class="hljs-number">8</span>
 </code></pre><blockquote>
-<p>Ever avoid Captain Obvious comment</p>
+<p>Avoid Captain Obvious comment</p>
 </blockquote>
 <h3 id="grammar">Grammar</h3>
 <p>As say earlier, a program is a list of instructions read and executed one by one. To make it easier to read, developer use a set of spaces, identations, new lines, comments, proceduces…</p>
@@ -897,27 +911,249 @@ tx=<span class="hljs-section">touch</span>.x\<span class="hljs-number">8</span>
 </li>
 </ul>
 <h3 id="expression">Expression</h3>
+<p>Expression are used to compute values, be assigned to identifier or passed to function as arguments. Expression can be one of:</p>
+<ul>
+<li><p>A <a href="#literals">literal value</a>:</p>
+<pre><code>  <span class="hljs-number">123</span>
+  <span class="hljs-string">"gabu"</span>
+</code></pre></li>
+<li><p>A <a href="#variables">variable identifier</a>:</p>
+<pre><code>  myVar<span class="hljs-variable">$
+</span>  myArray(<span class="hljs-number">0</span>)
+</code></pre></li>
+<li><p>A <a href="#built-in-functions">built-in function call</a>:</p>
+<pre><code>  <span class="hljs-built-in">cos</span>(<span class="hljs-number">1.314</span>)
+  left<span class="hljs-symbol">$</span>(name<span class="hljs-symbol">$</span>,<span class="hljs-number">8</span>)
+</code></pre></li>
+<li><p>An <a href="#operators">unary, binary or group operator</a>:</p>
+<pre><code>  <span class="hljs-number">42</span>+<span class="hljs-number">24</span>
+  $FF00+A*<span class="hljs-number">2</span>
+  count&gt;=<span class="hljs-number">0</span>
+  not dead
+  (<span class="hljs-number">2</span>+<span class="hljs-number">3</span>)*<span class="hljs-number">4</span>
+</code></pre></li>
+<li><p>A <a href="#labels">label identifier</a>:</p>
+<pre><code><span class="hljs-attribute">  mylabel</span>
+</code></pre></li>
+</ul>
+<h3 id="operators">Operators</h3>
+<p>Operator are used inside <a href="#expression">expression</a> to compute or alter it&#39;s value.</p>
+<p><strong>Arithmetic operators.</strong></p>
+<p>Operate on two numeric values to produce a new one.</p>
+<table>
+<thead>
+<tr>
+<th>symbol</th>
+<th>example</th>
+<th>purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-</code></td>
+<td><code>-42</code></td>
+<td>negation</td>
+</tr>
+<tr>
+<td><code>^</code></td>
+<td><code>x^3</code></td>
+<td>exponentation</td>
+</tr>
+<tr>
+<td><code>*</code></td>
+<td><code>2*y</code></td>
+<td>multiplication</td>
+</tr>
+<tr>
+<td><code>/</code></td>
+<td><code>x/2</code></td>
+<td>division</td>
+</tr>
+<tr>
+<td><code>\</code></td>
+<td><code>x\2</code></td>
+<td>integer division</td>
+</tr>
+<tr>
+<td><code>mod</code></td>
+<td><code>x mod 2</code></td>
+<td>modulo</td>
+</tr>
+<tr>
+<td><code>+</code></td>
+<td><code>c+2</code></td>
+<td>addition</td>
+</tr>
+<tr>
+<td><code>-</code></td>
+<td><code>100-d</code></td>
+<td>subtraction</td>
+</tr>
+</tbody>
+</table>
+<p>The priority of execution respect the mathematical rules.</p>
+<p><strong>Group operator.</strong></p>
+<p>Rounded parentheses <code>()</code> are used to counter the operator priority.</p>
+<p>TODO: difference between <code>/</code> and <code>\</code></p>
+<p><strong>Comparison operator.</strong></p>
+<p>Used to compair two numeric or string values and produce <code>-1</code> if the test succeed or <code>0</code> otherwise. Generally used as expression in <a href="#flow-control"><code>IF</code> flow control</a>.</p>
+<table>
+<thead>
+<tr>
+<th>symbol</th>
+<th>example</th>
+<th>purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>=</code></td>
+<td><code>a=10</code></td>
+<td>equal</td>
+</tr>
+<tr>
+<td><code>&lt;&gt;</code></td>
+<td><code>a&lt;&gt;100</code></td>
+<td>not equal</td>
+</tr>
+<tr>
+<td><code>&gt;</code></td>
+<td><code>b&gt;c</code></td>
+<td>greater</td>
+</tr>
+<tr>
+<td><code>&lt;</code></td>
+<td><code>5&lt;x</code></td>
+<td>less</td>
+</tr>
+<tr>
+<td><code>&gt;=</code></td>
+<td><code>X&gt;=20</code></td>
+<td>greater or eqal</td>
+</tr>
+<tr>
+<td><code>&lt;=</code></td>
+<td><code>X&lt;=30</code></td>
+<td>less or eqal</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Bitwise operator.</strong></p>
+<p>Used to manipulate each bit of numeric values.</p>
+<table>
+<thead>
+<tr>
+<th>symbol</th>
+<th>example</th>
+<th>purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>not</code></td>
+<td><code>not (x=15)</code><br/><code>not 0</code></td>
+<td>Bits that are 0 become 1,<br/>and those that are 1 become 0.</td>
+</tr>
+<tr>
+<td><code>and</code></td>
+<td><code>a=1 and b=12</code><br/><code>170 and 15</code></td>
+<td>If both bits are 1, the<br/>result is 1, 0 otherwise.</td>
+</tr>
+<tr>
+<td><code>or</code></td>
+<td><code>x=10 or y=0</code><br/><code>128 or 2</code></td>
+<td>The result is 0 if both<br/>bits are 0, 1 otherwise.</td>
+</tr>
+<tr>
+<td><code>xor</code></td>
+<td><code>a xor b</code></td>
+<td>The resulst is 1 if only<br/>one bit is 1, 0 otherwise.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Concatenation operator.</strong></p>
+<p>Copy a string at the end of another string.</p>
+<table>
+<thead>
+<tr>
+<th>symbol</th>
+<th>example</th>
+<th>purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>+</code></td>
+<td><code>&quot;ab&quot;+&quot;c&quot;</code></td>
+<td>Concatenate two strings into one.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="commands">Commands</h3>
+<p>LowResNX provide a bunch of built-in function to manipulate the fantasy device hardware such as the graphic or sound. You&#39;ll find them by consulting the <a href="#api-instructions">list of API instructions</a>.</p>
+<p>To execute a command, use it&#39;s identifier followed by a list of coma-separated arguments or other reserved keywords. The exact syntax depends on the command.</p>
+<pre><code>sprite off <span class="hljs-number">0</span> to <span class="hljs-number">169</span>
+sprite <span class="hljs-number">0</span>,<span class="hljs-number">40</span>,<span class="hljs-number">60</span>,<span class="hljs-number">1</span>
+</code></pre><h3 id="functions">Functions</h3>
+<p>LowResNX provide a bunch of built-in function to manipulate the fantasy device hardware such as the graphic or sound. You&#39;ll find them by consulting the <a href="#api-instructions">list of API instructions</a>.</p>
+<p>To execute a function, use it&#39;s identifier followed by a list of coma-separated arguments surrounded by rounded parenthesis.</p>
+<pre><code><span class="hljs-keyword">print</span> mid$(<span class="hljs-string">"test"</span>,3,1) :'<span class="hljs-keyword">print</span> <span class="hljs-built_in">s</span>
+</code></pre><p>A function will always return something and MUST be used as <a href="#lvalue-and-rvalue">rvalue</a> inside an <a href="#expression">expression</a>.</p>
+<h3 id="lvalue-and-rvalue">Lvalue and Rvalue</h3>
+<p>The equal <code>=</code> sign is used both as variable assignement and comparison operator, and It can lead to somo confusion. Here is a tip to help you:</p>
+<p><a href="#expression">Expression</a> can be one lvalue or rvalue.</p>
+<p>An lvalue appear at the left side of an assignation, and rvalue appear at the right side of an assignation.</p>
+<table>
+<thead>
+<tr>
+<th>expression</th>
+<th>type of value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="#variables">variable</a></td>
+<td>lvalue or rvalue</td>
+</tr>
+<tr>
+<td><a href="#literals">literal</a></td>
+<td>rvalue</td>
+</tr>
+<tr>
+<td>function call</td>
+<td>rvalue</td>
+</tr>
+<tr>
+<td>any operator</td>
+<td>rvalue</td>
+</tr>
+<tr>
+<td>label</td>
+<td>rvalue</td>
+</tr>
+</tbody>
+</table>
+<h2 id="basic-instructions">BASIC instructions</h2>
 <p>TODO: continue</p>
-<h1 id="basic-instructions">BASIC instructions</h1>
-<p>TODO: continue</p>
-<h3 id="flow-control">Flow control</h3>
+<h3 id="control-flow">Control flow</h3>
 <p><code>END</code></p>
 <p><strong>Stop the execution of the program.</strong></p>
 <p>It has the same effect as the execution reach the end of the program.</p>
-<hr />
+<hr/>
 <p><code>IF/THEN/ELSE IF/ELSE/END IF</code></p>
 <p><strong>Conditionnaly execute instructions.</strong></p>
 <p>Syntax:</p>
-<pre><code><span class="hljs-keyword">IF</span> condition <span class="hljs-keyword">THEN</span>
+<pre><code><span class="hljs-keyword">IF</span> expression <span class="hljs-keyword">THEN</span>
     instruction...
-[<span class="hljs-keyword">ELSE</span> <span class="hljs-keyword">IF</span> condition <span class="hljs-keyword">THEN</span>
-    instruction...]*
+[<span class="hljs-keyword">ELSE</span> <span class="hljs-keyword">IF</span> expression <span class="hljs-keyword">THEN</span>
+    instruction...]
+[<span class="hljs-keyword">ELSE</span> <span class="hljs-keyword">IF</span>...]
 [<span class="hljs-keyword">ELSE</span>
     instruction]
 <span class="hljs-keyword">END</span> <span class="hljs-keyword">IF</span>
-</code></pre><p>Will execute the list of <code>instructions...</code> if the above <code>condition</code> is true.
-The <code>condition</code> must be an <a href="#expression">expression</a>.</p>
-<p>It's possible to have multiple <code>ELSE IF</code> blocks but a maximum of one <code>ELSE</code> block is authorized.</p>
+</code></pre><p>Will execute the list of <code>instruction...</code> if the above <code>expression</code> is true.
+An <a href="#expression">expression</a> is evaluated as <code>true</code> if the result of the expression is different that <code>0</code> zero.</p>
+<p>It&#39;s possible to have multiple <code>ELSE IF</code> blocks but a maximum of one <code>ELSE</code> block is authorized.</p>
 <p>Real example of a game that ask playre to guess a number:</p>
 <pre><code>again: <span class="hljs-keyword">print</span> <span class="hljs-string">"guess the number"</span>
 answer=<span class="hljs-keyword">rnd</span>(<span class="hljs-number">100</span>)
@@ -936,9 +1172,9 @@ retry: <span class="hljs-keyword">input</span> <span class="hljs-string">"1-100:
     <span class="hljs-keyword">print</span> <span class="hljs-string">"too high"</span>
     <span class="hljs-keyword">goto</span> retry
 <span class="hljs-keyword">end</span> <span class="hljs-keyword">if</span>
-</code></pre><p><strong>Short syntax:</strong></p>
+</code></pre><p>Syntax:</p>
 <pre><code><span class="hljs-keyword">IF</span> condition <span class="hljs-keyword">THEN</span> instruction
-</code></pre><p>This form only allow one instruction, but it's also shorter.</p>
+</code></pre><p>This form only allow one instruction, but it&#39;s also shorter.</p>
 <p>Real example of the same game with less lines:</p>
 <pre><code>again: <span class="hljs-keyword">print</span> <span class="hljs-string">"guess the number"</span>
 answer=<span class="hljs-keyword">rnd</span>(<span class="hljs-number">100</span>)
@@ -952,9 +1188,93 @@ retry: <span class="hljs-keyword">input</span> <span class="hljs-string">"1-100:
 <span class="hljs-keyword">if</span> guess&lt;answer then <span class="hljs-keyword">print</span> <span class="hljs-string">"too low"</span>
 <span class="hljs-keyword">if</span> guess&gt;answer then <span class="hljs-keyword">print</span> <span class="hljs-string">"too high"</span>
 <span class="hljs-keyword">goto</span> retry
-</code></pre><hr />
+</code></pre><hr/>
+<p><code>DO/LOOP/EXIT</code></p>
+<p><strong>Infinite loop</strong></p>
+<p>Syntax:</p>
+<pre><code><span class="hljs-keyword">DO</span>
+    instruction...
+    [<span class="hljs-keyword">EXIT</span>]
+<span class="hljs-keyword">LOOP</span>
+</code></pre><p>Continuously execute the list of <code>instruction...</code>.</p>
+<p>Possible way to get out of the loop is using <code>EXIT</code> or <code>GOTO</code>.</p>
+<p>Real example of non stop moving square that bounce on the device screen:</p>
+<pre><code><span class="hljs-attr">x=shown.w\2</span>
+<span class="hljs-attr">y=shown.h\2</span>
+<span class="hljs-attr">sx=1</span>
+<span class="hljs-attr">sy=1</span>
+do
+    <span class="hljs-keyword">if</span> <span class="hljs-attr">x=0</span> <span class="hljs-literal">or</span> <span class="hljs-attr">x=shown.w-8</span> <span class="hljs-keyword">then</span> <span class="hljs-attr">sx=-sx</span>
+    <span class="hljs-keyword">if</span> <span class="hljs-attr">y=0</span> <span class="hljs-literal">or</span> <span class="hljs-attr">y=shown.h-8</span> <span class="hljs-keyword">then</span> <span class="hljs-attr">sy=-sy</span>
+    add x,sx
+    add y,sy
+    sprite <span class="hljs-number">0</span>,x,y,<span class="hljs-number">1</span>
+    wait vbl
+    <span class="hljs-keyword">if</span> tap <span class="hljs-keyword">then</span> exit
+loop
+print <span class="hljs-string">"done"</span>
+<span class="hljs-comment">#2:main characters</span>
+<span class="hljs-number">00000000000000000000000000000000</span>
+<span class="hljs-number">0000000000000000</span>FFFFFFFFFFFFFFFF
+</code></pre><p><code>EXIT</code> instruction will exit one level of <code>DO/LOOP</code>.</p>
+<hr/>
+<p><code>REPEAT/UNTIL/EXIT</code></p>
+<p><strong>Condition-controlled loop*</strong></p>
+<p>Syntax:</p>
+<pre><code><span class="hljs-keyword">REPEAT</span>
+    instruction...
+    [<span class="hljs-keyword">EXIT</span>]
+<span class="hljs-keyword">UNTIL</span> expression
+</code></pre><p>Repeat the list of <code>instruction...</code> until the <code>expression</code> ahead became true.
+An <a href="#expression">expression</a> is evaluated as <code>true</code> if the result of the expression is different that <code>0</code> zero.</p>
+<p><code>EXIT</code> instruction will exit one level of <code>REPEAT/UNTIL</code>.</p>
+<blockquote>
+<p>It different from <code>WHILE/WEND</code> because <code>expression</code> is evaluated after the list of <code>instruction...</code> is executed.</p>
+</blockquote>
+<pre><code>stop_now=<span class="hljs-number">-1</span>
+<span class="hljs-keyword">repeat</span>
+    <span class="hljs-keyword">print</span> <span class="hljs-string">"do it anyway"</span>
+<span class="hljs-keyword">until</span> stop_now
+</code></pre><hr/>
+<p><code>WHILE/WEND/EXIT</code></p>
+<p><strong>Condition-controlled loop</strong></p>
+<p>Syntax:</p>
+<pre><code><span class="hljs-keyword">WHILE</span> expression
+    instruction...
+    [<span class="hljs-keyword">EXIT</span>]
+<span class="hljs-keyword">WEND</span>
+</code></pre><p>Repeat the list of <code>instruction...</code> while the <code>expression</code> above is true.
+An <a href="#expression">expression</a> is evaluated as <code>true</code> if the result of the expression is different that <code>0</code> zero.</p>
+<p><code>EXIT</code> instruction will exit one level of <code>WHILE/WEND</code>.</p>
+<blockquote>
+<p>It different from <code>REPEAT/UNTIL</code> because <code>expression</code> is evaluated before the list <code>instruction...</code> is executed.</p>
+</blockquote>
+<pre><code><span class="hljs-keyword">count</span>=<span class="hljs-number">0</span>
+<span class="hljs-keyword">while</span> <span class="hljs-keyword">count</span>
+<span class="hljs-keyword">print</span> <span class="hljs-string">"not executed"</span>
+wend
+</code></pre><hr/>
+<p><code>FOR/TO/NEXT/EXIT</code></p>
+<p><strong>Count-controlled loop</strong></p>
+<p>Syntax:</p>
+<pre><code><span class="hljs-keyword">FOR</span> identifier=begin <span class="hljs-keyword">TO</span> ended [<span class="hljs-keyword">STEP</span> incr]
+    instruction...
+    [<span class="hljs-keyword">EXIT</span>]
+<span class="hljs-keyword">NEXT</span> identifier
+</code></pre><p>Repeat the list of <code>instruction...</code> while varying the value of the <code>identifier</code> starting at <code>begin</code> until it reach <code>ended</code> included.
+The increment can be changed using <code>incr</code>, allowing to iterates in reverse.</p>
+<p>Real example that print numbers from 1 to 9 in ascending and descending order.</p>
+<pre><code><span class="hljs-keyword">for</span> i=<span class="hljs-number">1</span> <span class="hljs-keyword">to</span> <span class="hljs-number">9</span>
+<span class="hljs-built_in">print</span> i;
+<span class="hljs-keyword">next</span> i
+<span class="hljs-built_in">print</span>
+<span class="hljs-keyword">for</span> i=<span class="hljs-number">9</span> <span class="hljs-keyword">to</span> <span class="hljs-number">1</span> <span class="hljs-keyword">step</span> -<span class="hljs-number">1</span>
+<span class="hljs-built_in">print</span> i;
+<span class="hljs-keyword">next</span> i
+</code></pre><p><code>EXIT</code> instruction will exit one level of <code>FOR/TO/NEXT</code>.</p>
+<hr/>
 <p><code>GOTO</code></p>
-<p><strong>Jump to a labeled instruction.</strong></p>
+<p><strong>Jump to instruction</strong></p>
 <p>Syntax:</p>
 <pre><code><span class="hljs-keyword">GOTO</span> <span class="hljs-keyword">label</span>
 </code></pre><p>With <code>label</code> being declared somewhere in the program.</p>
@@ -976,9 +1296,9 @@ tails:
 edge:
     <span class="hljs-keyword">print</span> <span class="hljs-string">"edge of the coin!"</span>
     <span class="hljs-keyword">goto</span> again
-</code></pre><hr />
+</code></pre><hr/>
 <p><code>GOSUB/RETURN</code></p>
-<p><strong>Jump to a sub-routine.</strong></p>
+<p><strong>Jump to sub-routine</strong></p>
 <p>Expect to found a <code>RETURN</code> instruction to go back where it was right after the <code>GOSUB</code>.</p>
 <p>The return location is store in a stack allow user to jump to sub-routine inside sub-routine. But the stack is limited. A good habit is to always have one <code>RETURN</code> for each <code>GOSUB</code>.</p>
 <p>A common usage of sub-routine is to reuse a piece of code multiple times instead of rewrite it again.</p>
@@ -1001,14 +1321,14 @@ increase:
     <span class="hljs-built_in">text</span> <span class="hljs-number">2</span>,<span class="hljs-number">2</span>,<span class="hljs-string">"score:"</span>+<span class="hljs-keyword">str</span>$(score)
     <span class="hljs-keyword">return</span>
 </code></pre><p>This example is tricky, there is one <code>RETURN</code>, two labels and three <code>GOSUB</code>. The good habit explain above is broken here, but here is the explaination.</p>
-<p>The important things is not the number of <code>RETURN</code> is the number of times the instruction is executed. User have to understand that one <code>GOSUB</code> execution will increase by one the size of the stack, and one execution of <code>RETURM</code> will reduce the same stack by exactly one. Every time the <code>WAIT VBL</code> instruction is reach, the stack size is empty, and that's is good sign. It means that the stack will not be overflowed.</p>
+<p>The important things is not the number of <code>RETURN</code> is the number of times the instruction is executed. User have to understand that one <code>GOSUB</code> execution will increase by one the size of the stack, and one execution of <code>RETURM</code> will reduce the same stack by exactly one. Every time the <code>WAIT VBL</code> instruction is reach, the stack size is empty, and that&#39;s is good sign. It means that the stack will not be overflowed.</p>
 <p>TODO: Difference with SUB</p>
-<hr />
+<hr/>
 <p><code>ON GOTO</code></p>
 <p><strong>Jump table.</strong></p>
 <p>Jump to one of the listed label according to a value.</p>
 <p>Syntax:</p>
-<pre><code><span class="hljs-keyword">ON</span> value <span class="hljs-keyword">GOTO</span> label0,label1,label2...
+<pre><code><span class="hljs-keyword">ON</span> value <span class="hljs-keyword">GOTO</span> label0[,label1...]
 </code></pre><p>Will read the <code>value</code> and jump to:</p>
 <ul>
 <li>the first label if <code>value</code> equal <code>0</code> zero,</li>
@@ -1025,9 +1345,14 @@ zero:
 one:
     <span class="hljs-keyword">print</span> <span class="hljs-string">"one"</span>
     <span class="hljs-keyword">goto</span> again
-</code></pre><hr />
-<p><code>SUB/EXIT SUB/END SUB</code></p>
+</code></pre><hr/>
+<p><code>ON GOSUB</code></p>
+<p><strong>Jump table to a sub-routine.</strong></p>
+<p>Similar to <code>ON GOTO</code> but expect to encounter a <code>RETURN</code>.</p>
+<hr/>
+<p><code>SUB/END SUB/EXIT SUB</code></p>
 <p><strong>Defining a proceduce.</strong></p>
+<p>TODO: check for remaining function, this term should be reserve for built-in function only.</p>
 <p>Syntax:</p>
 <pre><code><span class="hljs-keyword">SUB</span> name [(parameters...)]
     instruction...
@@ -1035,7 +1360,7 @@ one:
 </code></pre><p>This will define a procedure called <code>name</code> and can optionnaly received a list of values from the <code>parameters</code> list.</p>
 <p>Syntax of the <code>parameters</code> list:</p>
 <pre><code>(identifier[<span class="hljs-string">$</span>][<span class="hljs-symbol">()</span>], identifier[<span class="hljs-string">$</span>][<span class="hljs-symbol">()</span>]...)
-</code></pre><p>Hm, it's a mess, let's explain this. A parameter is always a <code>identifier</code> and can be followed by the type of value it contains. The list of possibilities are:</p>
+</code></pre><p>Hm, it&#39;s a mess, let&#39;s explain this. A parameter is always a <code>identifier</code> and can be followed by the type of value it contains. The list of possibilities are:</p>
 <ul>
 <li>a number: <code>my_num</code></li>
 <li>a string: <code>my_str$</code></li>
@@ -1043,7 +1368,7 @@ one:
 <li>an array of string: <code>my_str_array$()</code></li>
 </ul>
 <p>An empty list of <code>parameters</code> is not valid. Simply remove the parenthesis <code>()</code>.</p>
-<p>Proceduces are isolated small program that can be executed using the <a href="#CALL"><code>CALL</code> instruction</a>. Isolated because the variables declared inside it's body are local, learn more on <a href="#Parameters, arguments and scopes">scopes</a>. For comparison, the body of sub-routines reached using <code>GOSUB</code> are not isolated.</p>
+<p>Proceduces are isolated small program that can be executed using the <a href="#CALL"><code>CALL</code> instruction</a>. Isolated because the variables declared inside it&#39;s body are local, learn more on <a href="#Parameters, arguments and scopes">scopes</a>. For comparison, the body of sub-routines reached using <code>GOSUB</code> are not isolated.</p>
 <p>An other different with the sub-routines is that, the definitions of them are only executed throughout the <a href="#CALL"><code>CALL</code> instruction</a>, so, it is safe to place them anywhere inside the program.</p>
 <p>Real example, a game where player need to enter a sequence of digits and computer try to prevent it:</p>
 <pre><code><span class="hljs-comment">'perturb player input</span>
@@ -1095,100 +1420,379 @@ randomize timer
 </code></pre><blockquote>
 <p>This example show proceduces without argument: <code>perturb</code>, <code>delete</code>, proceduce that take one input argument <code>handle</code> and one proceduce that will output a value in the parameter <code>check</code></p>
 </blockquote>
-<hr />
 <p><strong>Exiting early.</strong></p>
 <p>Syntax:</p>
 <pre><code><span class="hljs-keyword">EXIT</span> <span class="hljs-keyword">SUB</span>
 </code></pre><p>TODO: wait for next do loop repeat until while wend exit sub end sub call exit sub global dim</p>
 <p>TODO: GOTO inside SUB</p>
 <p>TODO: playing with GOSUB and RETURN</p>
-<p>TODO: ON GOSUB</p>
-<p>TODO: language instructions</p>
-<p>TODO: about comments</p>
-<p>TODO: on restore</p>
+<h3 id="data-rom-and-files">Data, ROM and files</h3>
+<p>LowResRMX provide two ways to storing data or assets inside a program.</p>
+<ol>
+<li><p>Use the combinaison of <code>DATA</code> and <code>READ</code> to store readable number and string and access it when you need it.</p>
+<p> Real example that list the Straw Hat Pirates members:</p>
+<pre><code> data <span class="hljs-number">11</span>
+ data <span class="hljs-string">"lufy"</span>,<span class="hljs-number">19</span>,<span class="hljs-string">"zoro"</span>,<span class="hljs-number">21</span>,<span class="hljs-string">"nami"</span>,<span class="hljs-number">20</span>
+ data <span class="hljs-string">"usopp"</span>,<span class="hljs-number">21</span>,<span class="hljs-string">"sanji"</span>,<span class="hljs-number">21</span>,<span class="hljs-string">"chopper"</span>,<span class="hljs-number">17</span>
+ data <span class="hljs-string">"robin"</span>,<span class="hljs-number">30</span>,<span class="hljs-string">"franky"</span>,<span class="hljs-number">36</span>,<span class="hljs-string">"brook"</span>,<span class="hljs-number">90</span>
+ data <span class="hljs-string">"jinbe"</span>,<span class="hljs-number">46</span>,<span class="hljs-string">"vivi"</span>,<span class="hljs-number">18</span>
+ read count
+ for i=<span class="hljs-number">1</span> to count
+     read name$,age
+     print name$,age
+ next i
+</code></pre><p> Internaly it will use a read pointer that iterates all constant values.</p>
+</li>
+<li><p>TODO: continue</p>
+</li>
+</ol>
+<hr/>
+<p><code>DATA/READ</code></p>
+<p><strong>Declare constant values.</strong></p>
+<p>Syntax:</p>
+<pre><code>DATA <span class="hljs-keyword">constant</span>[,<span class="hljs-keyword">constant</span>...]
+</code></pre><p>A comma separated list of constant values (numbers or strings) that can accessed using the <code>READ</code> command.</p>
+<p><strong>Read constant values.</strong></p>
+<p>Syntax:</p>
+<pre><code>READ identifier<span class="hljs-string">[,identifier...]</span>
+</code></pre><p>Read one or more constant values that was declared using <code>DATA</code> into variables.</p>
+<hr/>
+<p><code>RESTORE/SKIP</code></p>
+<p><strong>Move the read pointer.</strong></p>
+<p>Syntax:</p>
+<pre><code>RESTORE [<span class="hljs-keyword">label</span><span class="bash">]</span>
+</code></pre><p>Move the read pointer to a specified label. The declared constant values that appear below the label will be read next.</p>
+<p><strong>Skip a number of constant value.</strong></p>
+<p>Syntax:</p>
+<pre><code><span class="hljs-keyword">SKIP </span>number
+</code></pre><p>Allow to skip a <code>number</code> of constant values by moving the read pointer.</p>
+<pre><code>data "failure"
+data "success"
+<span class="hljs-keyword">skip </span>1
+read word$
+print word$
+</code></pre><hr/>
+<p><code>ON RESTORE</code></p>
+<p><strong>Move table for the read pointer.</strong></p>
+<p>Similar to <code>ON GOTO</code> but move the read pointer instead of jumping.</p>
+<h3 id="variable-related">Variable related</h3>
+<p><strong>Scalar initialization</strong></p>
+<p>Syntax:</p>
+<pre><code><span class="hljs-attr">identifier</span>=literal
+</code></pre><p>Single number or string variable MUST be initialized before reading it.</p>
+<pre><code><span class="hljs-built_in">score</span>=<span class="hljs-number">0</span>
+<span class="hljs-built_in">name</span>$=<span class="hljs-string">"player 1"</span>
+print <span class="hljs-built_in">name</span>$;<span class="hljs-string">":"</span>,<span class="hljs-built_in">score</span>
+</code></pre><blockquote>
+<p>Learn more about <a href="#identifiers">identifiers</a>, <a href="#literals">literals</a> and <a href="#variables">variables</a>.</p>
+</blockquote>
+<hr/>
+<p><code>GLOBAL</code></p>
+<p><strong>Scalar global declaration</strong></p>
+<p>Syntax:</p>
+<pre><code><span class="hljs-function"><span class="hljs-title">DIM</span></span> identifier...
+</code></pre><p>Declare a list of number or string variables to be globaly accessible in all scopes.
+<code>GLOBAL</code> keywords are illegal inside a <code>SUB/END SUB</code> subroutine body.</p>
+<blockquote>
+<p>Learn more about <a href="#global-scope">global scope</a>.</p>
+</blockquote>
+<hr/>
+<p><code>DIM</code></p>
+<p><strong>Array declaration</strong></p>
+<p>Syntax:</p>
+<pre><code><span class="hljs-selector-tag">DIM</span> <span class="hljs-selector-tag">identifier</span>(highest) <span class="hljs-selector-attr">[,identifier(highest)]</span>...
+</code></pre><p>Will declare one or more arrays with <code>highest</code>+1 number of elements.
+Array of numbers or strings MUST be declared before reading or writing it.</p>
+<pre><code>dim scores(<span class="hljs-number">1</span>),names<span class="hljs-variable">$(</span><span class="hljs-number">1</span>)
+<span class="hljs-keyword">for</span> i=<span class="hljs-number">0</span> to <span class="hljs-number">1</span>
+    print names<span class="hljs-variable">$(</span>i);<span class="hljs-string">":"</span>,scores(i)
+<span class="hljs-keyword">next</span> i
+</code></pre><hr/>
+<p><code>DIM GLOBAL</code></p>
+<p><strong>Global array declaration</strong></p>
+<p>Syntax:</p>
+<pre><code><span class="hljs-keyword">DIM</span> <span class="hljs-keyword">GLOBAL</span> identifier(highest) [,identifier(highest)]...
+</code></pre><p>Similar to <code>DIM</code> but will declare the arrays globally accessible.
+<code>GLOBAL</code> keywords are illegal inside a <code>SUB/END SUB</code> subroutine body.</p>
+<blockquote>
+<p>Learn more about <a href="#identifiers">identifiers</a>, <a href="#arrays">arrays</a> and <a href="#global-scope">global scope</a>.</p>
+</blockquote>
+<hr/>
+<p><code>=UBOUND</code></p>
+<p><strong>Array highest index</strong></p>
+<p>Syntax:</p>
+<pre><code>=UBOUND(identifier[,dimension])
+</code></pre><p>Return the highest index of the array variable <code>identifier</code> at specified <code>dimension</code>.</p>
+<p>TODO: UBOUND</p>
 <h1 id="api-instructions">API instructions</h1>
+<p>LowResNX provide a bunch of built-in <a href="#commands">commands</a> and <a href="#functions">functions</a> to communicates with the differents features provided by the fantasy console: input, graphics, sound and memory access.</p>
+<h2 id="sprite-api">Sprite API</h2>
+<blockquote>
+<p><a href="#sprites">How sprits works</a>.</p>
+</blockquote>
+<p>Sprite are limited in numbers and should be used to show moving objects above background layers. It not an oblication and cool things can be made by infringe this rules.</p>
+<hr/>
+<h4 id="-sprite-n-x-y-c-"><code>SPRITE n,[x],[y],[c]</code></h4>
+<p>Sets the position <code>x</code>,<code>y</code> in pixel coordinates and character <code>c</code> number of the sprite <code>n</code>.</p>
+<p><code>x</code>,<code>y</code> and <code>c</code> can be ommited to keep their current value.</p>
+<p>An example that show a smiley sprite moving in circle:</p>
+<pre><code>i=0
+<span class="hljs-keyword">do</span>
+<span class="hljs-keyword">add</span> i,<span class="hljs-number">1</span>,<span class="hljs-number">0</span> <span class="hljs-keyword">to</span> <span class="hljs-number">99</span>
+sprite <span class="hljs-number">0</span>,<span class="hljs-keyword">cos</span>(i/<span class="hljs-number">100</span>)*<span class="hljs-number">40</span>+<span class="hljs-number">60</span>,<span class="hljs-keyword">sin</span>(i/<span class="hljs-number">100</span>)*<span class="hljs-number">40</span>+<span class="hljs-number">60</span>,<span class="hljs-number">1</span>
+<span class="hljs-keyword">wait</span> vbl
+<span class="hljs-keyword">loop</span>
+#<span class="hljs-number">2</span>:<span class="hljs-keyword">main</span> <span class="hljs-keyword">characters</span>
+<span class="hljs-number">00000000000000000000000000000000</span>
+<span class="hljs-number">007</span>EFFFFEDFFFF7E0000003636000000
+</code></pre><hr/>
+<h4 id="-sprite-n-pal-pal-flip-h-v-prio-pri-size-s-"><code>SPRITE n [PAL pal] [FLIP h,v] [PRIO pri] [SIZE s]</code></h4>
+<p>Sets one or more attributes for the sprite <code>n</code>:</p>
+<ul>
+<li><code>PAL pal</code> Change the palette to <code>pal</code>.</li>
+<li><code>FLIP h,v</code> Flip the sprite on horizontal <code>h</code> and vertical <code>v</code> axis.</li>
+<li><code>PRIO pri</code> Change the priority to <code>pri</code>.</li>
+<li><code>SIZE s</code> Change the size, a.k.a.: the number of characters width and height.</li>
+</ul>
+<p>TODO: link to sprite references</p>
+<hr/>
+<h4 id="-sprite-a-n-a-"><code>SPRITE.A n,a</code></h4>
+<p>Sets all attributes at once for sprite <code>n</code>.</p>
+<p>TODO: link to sprite references</p>
+<hr/>
+<h4 id="-sprite-off-"><code>SPRITE OFF</code></h4>
+<p>Hides all sprites.</p>
+<h4 id="-sprite-off-n-"><code>SPRITE OFF n</code></h4>
+<p>Hide the sprite <code>n</code>.</p>
+<h4 id="-sprite-off-n1-to-n2-"><code>SPRITE OFF n1 to n2</code>.</h4>
+<p>Hides all sprites from range <code>n1</code> to <code>n2</code> included.</p>
+<hr/>
+<h4 id="-sprite-x-n-br-sprite-y-n-"><code>=SPRITE.X(n)</code><br/><code>=SPRITE.Y(n)</code></h4>
+<p>Return the position of the sprite <code>n</code>.</p>
+<hr/>
+<h4 id="-sprite-c-n-"><code>=SPRITE.C(n)</code></h4>
+<p>Return the first character number of the sprite <code>n</code>.</p>
+<hr/>
+<h4 id="-sprite-a-n-"><code>=SPRITE.A(n)</code></h4>
+<p>Return the whole attributes flags of the sprite <code>n</code>.</p>
+<hr/>
+<h4 id="-sprite-hit-n-"><code>=SPRITE.HIT(n)</code></h4>
+<p>Return if the sprite <code>n</code> collides with another sprite. Collision detection is not by checking overlapping pixels that are not transparent (not using the color <code>0</code>).</p>
+<h4 id="-sprite-hit-n-n2-"><code>=SPRITE.HIT(n,n2)</code></h4>
+<p>Return if the sprite <code>n</code> collides with the sprite <code>n1</code>.</p>
+<h4 id="-sprite-hit-n-n1-to-n2-"><code>=SPRITE.HIT(n,n1 to n2)</code></h4>
+<p>Return if the sprite <code>n</code> collides with any of the sprite from the range <code>n1</code> to <code>n2</code> included.</p>
+<hr/>
+<h4 id="-hit-"><code>=HIT</code></h4>
+<p>Return the sprite number of the one that collides with the sprite <code>n</code> from any of the last <code>=SPRITE.HIT()</code> function call.</p>
 <h2 id="background-api">Background API</h2>
 <blockquote>
-<p><a href="#backgrounds">How backgrounds works</a></p>
+<p><a href="#backgrounds">How backgrounds works</a>.</p>
 </blockquote>
-<h3 id="cell-s-attributes">Cell's attributes</h3>
-<p><code>BG layer</code></p>
-<p>Change the current background to <code>layer</code> for further cells operations.</p>
-<p>Wait <code>layer</code> a number from <code>0</code> to <code>3</code>.</p>
-<pre><code>TEXT <span class="hljs-number">10</span>,<span class="hljs-number">10</span>,<span class="hljs-string">"/"</span>
-BG <span class="hljs-number">1</span>
-TEXT <span class="hljs-number">10</span>,<span class="hljs-number">10</span>,<span class="hljs-string">"<span class="hljs-subst">\"</span></span>
-</code></pre><hr />
-<p><code>PAL p</code></p>
-<p>Change the current palette to <code>p</code> for further cells operations.</p>
-<pre><code><span class="hljs-keyword">PRINT</span> <span class="hljs-string">"HELLO"</span>,
-PAL <span class="hljs-number">1</span>
-<span class="hljs-keyword">PRINT</span> <span class="hljs-string">"WORLD"</span>
-</code></pre><hr />
-<p><code>FLIP h,v</code></p>
-<p>Change the horizontal and vertical flip attributes to <code>h</code> and <code>v</code> respectively for further cells operations.</p>
-<pre><code>FLIP <span class="hljs-number">1</span>,<span class="hljs-number">0</span>
-PRINT <span class="hljs-string">"DLROW OLLEH"</span>
-</code></pre><hr />
-<p><code>PRIO p</code></p>
-<p>Change the priority to <code>p</code> for further cells operations.</p>
-<pre><code><span class="hljs-attribute">SPRITE</span> <span class="hljs-number">0</span>,<span class="hljs-number">78</span>,<span class="hljs-number">78</span>,<span class="hljs-number">1</span>
-PRIO <span class="hljs-number">1</span>
-TEXT <span class="hljs-number">10</span>,<span class="hljs-number">10</span>,<span class="hljs-string">"S"</span>
-<span class="hljs-comment">#2:MAIN CHARACTERS</span>
+<p>The most basic way of drawing using the background API is to, first, <a href="#draw-state">choose which cell&#39;s attribute</a> to use, then <a href="#draw-cells">paint the cells</a> with a characters number.</p>
+<p>Another way of doing is to <a href="#background-copy">copy attributes and character</a> number from a ROM.</p>
+<p>Aside to that, there are API for accessing the scrolling value of each layers in pixels, getting character numbers or attributes directly from layers or draw in memory instead of layers.</p>
+<p>Text generally use background mechanics as well, there are dedicated commands for that too.</p>
+<hr/>
+<h4 id="-cls-"><code>CLS</code></h4>
+<p>Clear all background layers with character zero <code>0</code>, resets the current window to the default and the layer scrolling values.</p>
+<h4 id="-cls-layer-"><code>CLS layer</code></h4>
+<p>Only clear the background layer numbered <code>layer</code> with character zero <code>0</code>. Do not alter the scrolling value.</p>
+<hr/>
+<h4 id="-scroll-layer-x-y-"><code>SCROLL layer,x,y</code></h4>
+<p>Set the scroll offset of the <code>layer</code> in pixels coordinates.</p>
+<pre><code>text <span class="hljs-number">10</span>,<span class="hljs-number">10</span>,<span class="hljs-string">"hello!"</span>
+bg <span class="hljs-number">1</span>
+text <span class="hljs-number">10</span>,<span class="hljs-number">10</span>,<span class="hljs-string">"hello!"</span>
+scroll <span class="hljs-number">0</span>,<span class="hljs-number">0</span>,<span class="hljs-number">-4</span>
+</code></pre><hr/>
+<h4 id="-scroll-x-layer-br-scroll-y-layer-"><code>=SCROLL.X(layer)</code><br/><code>=SCROLL.Y(layer)</code></h4>
+<p>Return the scroll offset of the <code>layer</code> in pixels coordinates.</p>
+<hr/>
+<h4 id="-bg-layer-"><code>BG layer</code></h4>
+<p>Change the current layer to <code>layer</code> for further cells draw operations.</p>
+<p>With <code>layer</code> a number from <code>0</code> to <code>3</code>.</p>
+<pre><code>text <span class="hljs-number">10</span>,<span class="hljs-number">10</span>,<span class="hljs-string">"<span class="hljs-subst">\"</span>
+bg 1
+text 10,10,"</span>/<span class="hljs-string">"</span>
+</code></pre><hr/>
+<h4 id="-pal-p-"><code>PAL p</code></h4>
+<p>Change the current palette to <code>p</code> for further cells draw operations.</p>
+<pre><code><span class="hljs-built_in">print</span> <span class="hljs-string">"hello"</span>,
+pal <span class="hljs-number">1</span>
+<span class="hljs-built_in">print</span> <span class="hljs-string">"world"</span>
+</code></pre><hr/>
+<h4 id="-flip-h-v-"><code>FLIP h,v</code></h4>
+<p>Change the horizontal and vertical flip attributes to <code>h</code> and <code>v</code> respectively for further cells draw operations.</p>
+<pre><code>flip <span class="hljs-number">1</span>,<span class="hljs-number">0</span>
+print <span class="hljs-string">"dlrow olleh"</span>
+</code></pre><hr/>
+<h4 id="-prio-p-"><code>PRIO p</code></h4>
+<p>Change the priority to <code>p</code> for further cells draw operations.</p>
+<pre><code>sprite <span class="hljs-number">0</span>,<span class="hljs-number">78</span>,<span class="hljs-number">78</span>,<span class="hljs-number">1</span>
+prio <span class="hljs-number">1</span>
+<span class="hljs-built_in">text</span> <span class="hljs-number">10</span>,<span class="hljs-number">10</span>,<span class="hljs-string">"s"</span>
+<span class="hljs-comment">#2:main characters</span>
 <span class="hljs-number">00000000000000000000000000000000</span>
-003C7E6A7E7E3C000000183C00000000
-</code></pre><h3 id="background-s-cell">Background's cell</h3>
-<p><code>BG FILL x1,y1 TO x2,y2 CHAR c</code></p>
-<p>Fills all cells from <code>x1</code>,<code>y1</code> coordinates to <code>x2</code>,<code>y2</code> with character <code>c</code> and the <a href="#cells-attributes">current attributes</a>.</p>
-<pre><code>BG FILL <span class="hljs-number">1</span>,<span class="hljs-number">1</span> <span class="hljs-built_in">to</span> <span class="hljs-number">5</span>,<span class="hljs-number">5</span> <span class="hljs-keyword">char</span> <span class="hljs-number">1</span>
-BG FILL <span class="hljs-number">2</span>,<span class="hljs-number">2</span> <span class="hljs-built_in">to</span> <span class="hljs-number">4</span>,<span class="hljs-number">4</span> <span class="hljs-keyword">char</span> <span class="hljs-number">2</span>
-<span class="hljs-comment">#2:MAIN CHARACTERS</span>
-<span class="hljs-number">00000000000000000000000000000000</span>
-FFFFFFFFFFFFFFFF0000000000000000
-<span class="hljs-number">0000000000000000</span>FFFFFFFFFFFFFFFF
-</code></pre><p><code>CLS</code></p>
-<p>Clear all background layers with character zero <code>0</code>, resets the current window to the default and the backgrounds scrolling values.</p>
-<p><code>CLS layer</code></p>
-<p>Only clear the background numbered <code>layer</code> with character zero <code>0</code>. Do not alter the scrolling value.</p>
-<hr />
-<p><code>CELL cx,cy,c</code></p>
-<p>Sets the cell of the current background at <code>cx</code>,<code>cy</code> coordinates to the character <code>c</code> with the <a href="#cells-attributes">current attributes</a>.</p>
+<span class="hljs-number">003</span>C7E6A7E7E3C000000183C00000000
+</code></pre><hr/>
+<h4 id="-attr-a-"><code>ATTR a</code></h4>
+<p>Sets the palette, flip and priority attributes all at once using <code>a</code> for further cells draw operations.</p>
+<p>TODO: link to background reference</p>
+<hr/>
+<h4 id="-cell-x-y-c-"><code>CELL x,y,[c]</code></h4>
+<p>Sets the cell of the current background at <code>x</code>,<code>y</code> coordinates to the character number <code>c</code> with the <a href="#cells-attributes">current attributes</a>.</p>
 <p>E.g. draw a face:</p>
-<pre><code><span class="hljs-selector-tag">CELL</span> 10,10,1
-<span class="hljs-selector-id">#2</span><span class="hljs-selector-pseudo">:MAIN</span> <span class="hljs-selector-tag">CHARACTERS</span>
+<pre><code><span class="hljs-selector-tag">cell</span> 10,10,1
+<span class="hljs-selector-id">#2</span><span class="hljs-selector-pseudo">:main</span> <span class="hljs-selector-tag">characters</span>
 00000000000000000000000000000000
 003<span class="hljs-selector-tag">C7E6A7E7E3C000000183C00000000</span>
+</code></pre><p>By omiting the <code>c</code> argument, the command will only alter the palette, flip and priority, but not change the character number.</p>
+<p>E.g. draw an inverted blue r letter:</p>
+<pre><code>cell <span class="hljs-number">10</span>,<span class="hljs-number">10</span>,<span class="hljs-number">242</span>
+flip <span class="hljs-number">1</span>,<span class="hljs-number">0</span>
+pal <span class="hljs-number">1</span>
+cell <span class="hljs-number">10</span>,<span class="hljs-number">10</span>,
 </code></pre><blockquote>
 <p>Use <code>BG</code>, <code>PAL</code>, <code>FLIP</code>, <code>PRIO</code> and <code>ATTR</code> to alter the <a href="#cells-attributes">current attributes</a>.</p>
 </blockquote>
-<hr />
-<p><code>=CELL.C(cx,cy)</code></p>
-<p>Return the character of the current background at <code>cx</code>,<code>cy</code> coordinates.</p>
-<hr />
-<p>TODO: continue</p>
-<h3 id="cell-attributes">Cell attributes</h3>
-<h3 id="background-s-layer">Background's layer</h3>
-<h3 id="background-s-memory">Background's memory</h3>
-<p><code>BG COPY sx,sy,sw,sh TO dx,dy</code></p>
-<p>Copies cell's informations (characters and attributes) from memory source to current background.</p>
-<p>Copies a rectangle at <code>sx</code>,<code>sy</code> coordinates and <code>sw</code>,<code>sh</code> size from the source, and paste it to the background at <code>dx</code>,<code>dy</code>.</p>
-<blockquote>
-<p>By default the source data point to <code>=ROM(3)</code>, changes it using <code>BG SOURCE ROM(4)</code>.</p>
-</blockquote>
-<pre><code>BG SOURCE ROM(<span class="hljs-number">4</span>)
-BG <span class="hljs-keyword">COPY</span><span class="bash"> 0,0,4,1 to 4,4
-</span><span class="hljs-comment">#2:MAIN CHARACTERS</span>
-<span class="hljs-number">00000000000000000000000000000000</span>
+<hr/>
+<h4 id="-cell-c-x-y-"><code>=CELL.C(x,y)</code></h4>
+<p>Return the character number of the current background at <code>x</code>,<code>y</code> cell coordinates.</p>
+<hr/>
+<h4 id="-cell-a-x-y-"><code>=CELL.A(x,y)</code></h4>
+<p>Return the attributes of the current background at <code>x</code>,<code>y</code> cell coordinates</p>
+<p>TODO: link to background reference</p>
+<hr/>
+<h4 id="-bg-fill-x1-y1-to-x2-y2-char-c-"><code>BG FILL x1,y1 TO x2,y2 CHAR c</code></h4>
+<p>Fills all cells from <code>x1</code>,<code>y1</code> coordinates to <code>x2</code>,<code>y2</code> with character <code>c</code> and the <a href="#cells-attributes">current attributes</a>.</p>
+<pre><code>bg<span class="hljs-built_in"> fill </span>1,1 to 5,5 char 1
+bg<span class="hljs-built_in"> fill </span>2,2 to 4,4 char 2
+<span class="hljs-comment">#2:main characters</span>
+00000000000000000000000000000000
 FFFFFFFFFFFFFFFF0000000000000000
-<span class="hljs-number">0000000000000000</span>FFFFFFFFFFFFFFFF
-<span class="hljs-comment">#4:TEST BG</span>
-<span class="hljs-number">000004010100020001000200</span>
-</code></pre><hr />
-<p><code>BG SOURCE a</code><br />
-<code>BG SOURCE a,w,h</code></p>
-<p>Specify the memory address <code>a</code> where source data will be used for background copy operations. Intended to be used jointly with <code>BG COPY sx,sy,sw,sh TO dx,dy</code>.</p>
-<p>When width and height <code>w,h</code> are omitted, the first 4 bytes from memory are used to detect and store the <code>w</code> and <code>h</code> parameters. Actual data start at <code>a+4</code>.</p>
+0000000000000000FFFFFFFFFFFFFFFF
+</code></pre><p>Similar to <code>CELL x,y,c</code> but with a rectangle of cells instead of just one cell.</p>
+<hr/>
+<h4 id="-tint-y-y-pal-pal-flip-h-v-prio-p-"><code>TINT y,y [PAL pal] [FLIP h,v] [PRIO p]</code></h4>
+<p>Changes one or more <a href="TODO: link to cells attributes reference">attributes of the cell</a> at <code>x</code>,<code>y</code> coordinates without changing the character number.</p>
+<p>E.g.: Yellow exclamation mark</p>
+<pre><code>print <span class="hljs-string">"hello!"</span>
+tint <span class="hljs-number">5</span>,<span class="hljs-number">0</span> pal <span class="hljs-number">7</span>
+</code></pre><hr/>
+<h4 id="-bg-tint-y1-y1-to-x2-y2-pal-pal-flip-h-v-prio-p-"><code>BG TINT y1,y1 TO x2,y2 [PAL pal] [FLIP h,v] [PRIO p]</code></h4>
+<p>Changes one or more <a href="TODO: link to cells attributes reference">attributes</a> for all cells from <code>x1</code>,<code>y1</code> coordinates to <code>x2</code>,<code>y2</code> without changing the character number.</p>
+<p>Similar to <code>TINT y,y [PAL pal] [FLIP h,v] [PRIO p]</code> but with a rectangle of cells instead of just one.</p>
+<hr/>
+<h4 id="-bg-source-a-w-h-"><code>BG SOURCE a[,w,h]</code></h4>
+<p>Set the address <code>a</code> in the cartridge to use as source for <code>BG COPY</code> operations.</p>
+<p>When <code>w</code> and <code>h</code> are specified, they are used as indiquating the number of cells in width and height of the source.</p>
+<p>If they are not specified, the <a href="#background-format-data">official background format data</a> are used to store the width and the height.</p>
+<blockquote>
+<p>If not specified the default address is taken by internally executing <code>=ROM(3)</code></p>
+</blockquote>
+<hr/>
+<h4 id="-bg-copy-x1-y1-w-h-to-x2-y2-"><code>BG COPY x1,y1,w,h TO x2,y2</code></h4>
+<p>Copy a rectangle of cell&#39;s attributes and character numbers from background source specified previously using <code>BG SOURCE a[,w,h]</code> at <code>x2</code>,<code>y2</code> coordinates of the current background layer.</p>
+<p>The rectangle is defined using the top-left corner <code>x1</code>,<code>y2</code> plus the width <code>w</code> and height <code>h</code>.</p>
+<hr/>
+<h4 id="-bg-scroll-x1-y1-to-x2-y2-step-x3-y3-"><code>BG SCROLL x1,y1 to x2,y2 step x3,y3</code></h4>
+<p>Move a rectangle of cell&#39;s attributes and character numbers of the current layer by <code>x3</code>,<code>y3</code> in cell coordinates.</p>
+<p>The rectangle is defined using the top-left corner <code>x1</code>,<code>y2</code> and the bottom-right corner <code>x2</code>,<code>y2</code>.</p>
+<blockquote>
+<p>This feature is internally used to scroll text when it reach the bottom of the window. TODO: link to window.</p>
+</blockquote>
+<hr/>
+<h4 id="-mcell-x-y-c-"><code>MCELL x,y,c</code></h4>
+<p>Similar to <code>CELL x,y,c</code> but modify the source in memory instead of the current layer.</p>
+<p>The source must point to writable memory, so it will not work with <code>BG SOURCE ROM(3)</code>.</p>
+<hr/>
+<h4 id="-mcell-c-x-y-"><code>=MCELL.C(x,y)</code></h4>
+<p>Similar to <code>=CELL.C(x,y)</code> but read the current layer instead of the source in memory.</p>
+<hr/>
+<h4 id="-mcell-a-x-y-"><code>=MCELL.A(x,y)</code></h4>
+<p>Similar to <code>=CELL.A(x,y)</code> but read the current layer instead of the source in memory.</p>
+<hr/>
+<h4 id="-text-x-y-text-"><code>TEXT x,y,text$</code></h4>
+<p>Will print <code>text$</code> on the current layer starting at <code>x</code>,<code>y</code> using the current background attributes.</p>
+<p>  data &quot;ga&quot;,&quot;bu&quot;,&quot;zo&quot;,&quot;meu&quot;
+  for i=0 to 3
+    pal i
+    read c$
+    text 8+i*2,10,c$
+  next i</p>
+<hr/>
+<h4 id="-number-x-y-number-count-"><code>NUMBER x,y,number,count</code></h4>
+<p>Similar to <code>TEXT x,y,text$</code> but dedicated to print <code>number</code> instead of text. Will always show <code>count</code> digits by prefixing with <code>0</code> characters.</p>
+<pre><code>score=<span class="hljs-number">123</span>
+number <span class="hljs-number">10</span>,<span class="hljs-number">10</span>,score,<span class="hljs-number">6</span>
+</code></pre><hr/>
+<h4 id="-font-first-"><code>FONT first</code></h4>
+<p>Sets the characters range used for <code>TEXT</code>, <code>NUMBER</code> and <code>PRINT</code> commands. Sets <code>first</code> to be the character number where the range begin, it correspond to the space according to the ASCII reference. TODO: link</p>
+<p>The default value is 192, which points to where the default font is loaded at the beginning of the program. It might be overriden by <code>LOAD</code> operation.</p>
+<h2 id="text-api">Text API</h2>
+<p>To print text on screen, LowResRMX actually use the <a href="#background-api">background API</a>.</p>
+<p><code>WINDOW x,y,w,h,layer</code></p>
+<p>Sets the current window where to draw text characters. <code>x</code>, <code>y</code> are the cell position where to start drawing on the background number <code>layer</code> while <code>w</code>, <code>h</code> are the width and height also in number of cells.</p>
+<pre><code>window <span class="hljs-number">4</span>,<span class="hljs-number">8</span>,shown.w\<span class="hljs-number">8</span><span class="hljs-number">-8</span>,<span class="hljs-number">20</span>,<span class="hljs-number">0</span>
+print <span class="hljs-string">"Why do things simply when you can make them complicated?"</span>
+</code></pre><blockquote>
+<p>By default, the window is sets inside the safe area delimited by the safe functions (<code>=SAFE.L</code>...)</p>
+</blockquote>
+<hr/>
+<h4 id="-clw-"><code>CLW</code></h4>
+<p>Clears the window but replacing all the cells by the space character. It also reset the cursor position.</p>
+<hr/>
+<h4 id="-locate-x-y-"><code>LOCATE x,y</code></h4>
+<p>Move the cursor location at <code>x</code>,<code>y</code> in cells coordinates inside the window.</p>
+<pre><code><span class="hljs-keyword">for</span> <span class="hljs-built_in">i</span>=<span class="hljs-number">1</span> to <span class="hljs-number">9</span>
+locate <span class="hljs-built_in">i</span>,<span class="hljs-built_in">i</span>
+print str$(<span class="hljs-built_in">i</span>);
+next <span class="hljs-built_in">i</span>
+<span class="hljs-keyword">end</span>
+</code></pre><hr/>
+<h4 id="-cursor-x-br-cursor-y-"><code>=CURSOR.X</code><br/><code>=CURSOR.Y</code></h4>
+<p>Return the cursor location <code>x</code> and <code>y</code> in cells coordinates inside the window.</p>
+<hr/>
+<h4 id="-print-expression-list-br-"><code>PRINT expression-list</code><br/></h4>
+<p>Outputs string <code>expression-list</code> onto the current window.</p>
+<p><code>expression-list</code> can be one or more of:</p>
+<ul>
+<li>a string or numeric literal,</li>
+<li>a variable identifier,</li>
+<li>a label that point to a string data.</li>
+</ul>
+<p>When two items are separated by a coma <code>,</code> a space will be inserted between them.</p>
+<p>When two items are separated by semicolon <code>;</code> no space is inserted.</p>
+<p>Example with different expressions:</p>
+<pre><code><span class="hljs-keyword">print</span> <span class="hljs-string">"literal"</span>
+v$=<span class="hljs-string">"variable"</span>
+<span class="hljs-keyword">print</span> v$
+txt: data <span class="hljs-string">"data"</span>
+<span class="hljs-keyword">print</span> txt
+</code></pre><p>Example with different separators:</p>
+<pre><code><span class="hljs-built_in">print</span> <span class="hljs-string">"glu"</span>;<span class="hljs-string">"ed"</span>
+<span class="hljs-built_in">print</span> <span class="hljs-string">"sepa"</span>,<span class="hljs-string">"rated"</span>
+
+<span class="hljs-built_in">do</span>
+wait <span class="hljs-number">2</span>
+<span class="hljs-built_in">print</span> <span class="hljs-string">"."</span>;
+<span class="hljs-built_in">loop</span>
+</code></pre><hr/>
+<h4 id="-print-br-"><code>PRINT</code><br/></h4>
+<p>Outputs a new line.</p>
+<p>TODO: continue</p>
+<p>TODO: API</p>
+<p>TODO: touch screen</p>
+<p>TODO: about memory</p>
+<p>TODO: about sound</p>
+<p>TODO: about priority</p>
+<p>TODO: about keywords</p>
+<p>TODO: about numeric technical</p>
+<p>TODO: how window not updated when on-resized</p>
+<h2 id="references">References</h2>
+<h3 id="background-format-data">Background format data</h3>
+<p>TODO: continue</p>
 <table>
 <thead>
 <tr>
@@ -1215,32 +1819,11 @@ FFFFFFFFFFFFFFFF0000000000000000
 </tr>
 <tr>
 <td>a+4</td>
-<td>cell's data</td>
-</tr>
-<tr>
-<td>...</td>
+<td>cell&#39;s data</td>
 </tr>
 </tbody>
 </table>
-<p>When width and height <code>w,h</code> are provided, the actual data start at <code>a</code>.</p>
-<blockquote>
-<p>By default the source data point to <code>=ROM(3)</code>.</p>
-</blockquote>
-<hr />
-<p><code>MCELL cx,cy,c</code></p>
-<p>Similar to <code>CELL cx,cy,c</code> but modify the source in memory instead of the current background.</p>
-<p>The source must point to writable memory, so it will not work with <code>BG SOURCE ROM(3)</code>.</p>
-<p>TODO: example</p>
-<p>TODO: continue</p>
-<p>TODO: API</p>
-<p>TODO: touch screen</p>
-<p>TODO: about memory</p>
-<p>TODO: about sound</p>
-<p>TODO: about priority</p>
-<p>TODO: about keywords</p>
-<p>TODO: about numeric technical</p>
-<p>TODO: how window not updated when on-resized</p>
-<h1 id="registers">Registers</h1>
+<h3 id="registers">Registers</h3>
 <p>Sprite Registers:</p>
 <p>There are 170 sprites, each occupies 6 bytes:</p>
 <table>
@@ -1318,7 +1901,7 @@ FFFFFFFFFFFFFFFF0000000000000000
 </table>
 <p>Both position on x and y axis use sub-pixels values. To advance by 1 pixel, the values should get increased by 16.
 Also, they are both offseted by 32 pixels. To place a sprite in the 0x0 coordinates, the values should be 512x512.</p>
-<p>Attributes bits:</p>
+<h4 id="attributes-bits-">Attributes bits:</h4>
 <table>
 <thead>
 <tr>
@@ -1376,8 +1959,8 @@ Also, they are both offseted by 32 pixels. To place a sprite in the 0x0 coordina
 </tr>
 </tbody>
 </table>
-<hr />
-<p>Color registers:</p>
+<hr/>
+<h4 id="color-registers-">Color registers:</h4>
 <p>There are 8 palettes with 4 colors each:</p>
 <table>
 <thead>
@@ -1427,8 +2010,8 @@ Also, they are both offseted by 32 pixels. To place a sprite in the 0x0 coordina
 </tr>
 </tbody>
 </table>
-<hr />
-<p>Video registers:</p>
+<hr/>
+<h4 id="video-registers-">Video registers:</h4>
 <table>
 <thead>
 <tr>
@@ -1495,7 +2078,7 @@ Also, they are both offseted by 32 pixels. To place a sprite in the 0x0 coordina
 </tr>
 </tbody>
 </table>
-<p>Display attributes:</p>
+<h4 id="display-attributes-">Display attributes:</h4>
 <table>
 <thead>
 <tr>
@@ -1526,8 +2109,8 @@ Also, they are both offseted by 32 pixels. To place a sprite in the 0x0 coordina
 </tr>
 </tbody>
 </table>
-<hr />
-<p>TODO: Audio registers:</p>
+<hr/>
+<h4 id="todo-audio-registers-">TODO: Audio registers:</h4>
 <table>
 <thead>
 <tr>
@@ -1544,8 +2127,8 @@ Also, they are both offseted by 32 pixels. To place a sprite in the 0x0 coordina
 </tr>
 </tbody>
 </table>
-<hr />
-<p>I/O registers:</p>
+<hr/>
+<h4 id="i-o-registers-">I/O registers:</h4>
 <table>
 <thead>
 <tr>
@@ -1610,7 +2193,7 @@ Also, they are both offseted by 32 pixels. To place a sprite in the 0x0 coordina
 <p>Last touch position X and Y are stored as float and currently LowResRMX do not have a way to peek float from memory, use TOUCH.X and TOUCH.Y function instead.</p>
 <p>Pixels shown represent the number of fantasy pixels that is visible by the user according to their device screen ratio. TODO: link See: SHOWN.W/H</p>
 <p>Pixels outsied the safe zone represent the number of fantasy pixels that are visible but should be considered unsafe for touch input as they are outside the safe area. TODO: link See: SAFE.L/T/R/B</p>
-<p>Other I/O status bits:</p>
+<h4 id="other-i-o-status-bits-">Other I/O status bits:</h4>
 <table>
 <thead>
 <tr>
@@ -1633,8 +2216,8 @@ Also, they are both offseted by 32 pixels. To place a sprite in the 0x0 coordina
 </tr>
 </tbody>
 </table>
-<hr />
-<p>DMA registers:</p>
+<hr/>
+<h4 id="dma-registers-">DMA registers:</h4>
 <table>
 <thead>
 <tr>
@@ -1661,6 +2244,79 @@ Also, they are both offseted by 32 pixels. To place a sprite in the 0x0 coordina
 </tr>
 </tbody>
 </table>
+
+<style>
+	.famicube{display:flex;flex-wrap:wrap;}
+	.famicube div{font-family:monospace;padding:0.8em 1em;}
+	</style>
+	<div class="famicube">
+			<div>00</div>
+			<div>01</div>
+			<div>02</div>
+			<div>03</div>
+			<div>04</div>
+			<div>05</div>
+			<div>06</div>
+			<div>07</div>
+			<div>08</div>
+			<div>09</div>
+			<div>10</div>
+			<div>11</div>
+			<div>12</div>
+			<div>13</div>
+			<div>14</div>
+			<div>15</div>
+			<div>16</div>
+			<div>17</div>
+			<div>18</div>
+			<div>19</div>
+			<div>20</div>
+			<div>21</div>
+			<div>22</div>
+			<div>23</div>
+			<div>24</div>
+			<div>25</div>
+			<div>26</div>
+			<div>27</div>
+			<div>28</div>
+			<div>29</div>
+			<div>30</div>
+			<div>31</div>
+			<div>32</div>
+			<div>33</div>
+			<div>34</div>
+			<div>35</div>
+			<div>36</div>
+			<div>37</div>
+			<div>38</div>
+			<div>39</div>
+			<div>40</div>
+			<div>41</div>
+			<div>42</div>
+			<div>43</div>
+			<div>44</div>
+			<div>45</div>
+			<div>46</div>
+			<div>47</div>
+			<div>48</div>
+			<div>49</div>
+			<div>50</div>
+			<div>51</div>
+			<div>52</div>
+			<div>53</div>
+			<div>54</div>
+			<div>55</div>
+			<div>56</div>
+			<div>57</div>
+			<div>58</div>
+			<div>59</div>
+			<div>60</div>
+			<div>61</div>
+			<div>62</div>
+			<div>63</div>
+	</div>
+
+
 
 
 

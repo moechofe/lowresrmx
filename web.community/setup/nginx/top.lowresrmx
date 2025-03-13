@@ -1,0 +1,17 @@
+server {
+	listen 80;
+	server_name lowresrmx.top;
+
+	root /home/martin/Cloud/LowResRMX/web.community/source;
+	index index.php;
+
+	location / {
+		try_files /index.php =404;
+	}
+
+	location ~ \.php$ {
+		include snippets/fastcgi-php.conf;
+		fastcgi_pass unix:/run/php/php8.3-fpm.sock;
+	}
+}
+

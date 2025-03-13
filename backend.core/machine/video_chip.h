@@ -130,6 +130,10 @@ union DisplayAttributes {
         uint8_t planeBEnabled:1;
         uint8_t planeCEnabled:1;
         uint8_t planeDEnabled:1;
+				uint8_t planeADoubled:1;
+				uint8_t planeBDoubled:1;
+				uint8_t planeCDoubled:1;
+				uint8_t planeDDoubled:1;
         // uint8_t planeACellSize:1;
         // uint8_t planeBCellSize:1;
         // uint8_t planeCCellSize:1;

@@ -40,5 +40,6 @@ enum ErrorCode cmd_MUSIC(struct Core *core);
 enum ErrorCode cmd_TRACK(struct Core *core);
 enum ErrorCode cmd_SOUND_SOURCE(struct Core *core);
 struct TypedValue fnc_MUSIC(struct Core *core);
+enum ErrorCode cmd_HAPTIC(struct Core *core);
 
 #endif /* cmd_audio_h */

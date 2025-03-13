@@ -27,6 +27,7 @@
 #include "io_chip.h"
 #include "video_chip.h"
 #include "audio_chip.h"
+#include "error.h"
 
 #define VM_SIZE 0x20000
 #define VM_MAX 0x1FFFF
@@ -73,13 +74,14 @@ struct Machine {
 
     // 0xFF70
     struct IORegisters ioRegisters;
-    uint8_t nothing5[0x30 - sizeof(struct IORegisters)]; // 18 Bytes
+    uint8_t nothing5[0x30 - sizeof(struct IORegisters)]; // 17 Bytes
 
     // 0xFFA0
     struct DmaRegisters dmaRegisters;
     uint8_t nothing6[0x10 - sizeof(struct DmaRegisters)]; // 10 Bytes
 
     // 0xFFB0
+		// TODO: I may have use this to store the number of cycles
     uint8_t nothing7[0x10000 - 0xFFB0];
 
     // 0x10000..0x20000
@@ -98,9 +100,11 @@ struct MachineInternals {
 void machine_init(struct Core *core);
 void machine_reset(struct Core *core, bool resetPersistent);
 int machine_peek(struct Core *core, int address);
-int16_t machine_peek_short(struct Core *core, int address);
+int16_t machine_peek_short(struct Core *core, int address, enum ErrorCode *errorCode);
+int32_t machine_peek_long(struct Core *core, int address, enum ErrorCode *errorCode);
 bool machine_poke(struct Core *core, int address, int value);
 bool machine_poke_short(struct Core *core, int address, int16_t value);
+bool machine_poke_long(struct Core *core, int address, int32_t value);
 void machine_enableAudio(struct Core *core);
 void machine_suspendEnergySaving(struct Core *core, int numUpdates);
 

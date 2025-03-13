@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>hm</title>
-<link rel="stylesheet" href="pico.classless.min.css">
+<link rel="stylesheet" href="pico.min.css">
 <link rel="stylesheet" href="entry.css">
 <script src="entry.js"></script>
 </head>
@@ -15,8 +15,31 @@
 	<article>
 		<h1><?=$title?></h1>
 		<p><?=$text?></p>
+		<div class="visual">
+			<div class="picture" style="background-image:url('./<?=$eid?>.png');"></div>
+		</div>
+		<div class="comment-list" id="comment-list" data-eid="<?=$eid?>">
+		</div>
+		<hr class="is-signed"/>
+		<fieldset id="comment" class="is-signed" data-eid="<?=$eid?>">
+			<label for="text">Comment</label>
+			<textarea id="text" placeholder="Markdown supported message&hellip;" ></textarea>
+			<button class="comment">Comment</button>
+		</fieldset>
 	</article>
 
 </main>
+<template id="comment-item">
+
+	<div class="comment-item">
+		<hr/>
+		<div class="info">
+			<h3 class="author"></h3>
+			<div class="date"></div>
+		</div>
+		<p><?=$text?></p>
+	</div>
+
+</template>
 </body>
 </html>

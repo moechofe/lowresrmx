@@ -19,6 +19,7 @@
 //
 
 #include "rcstring.h"
+#include "string_utils.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -31,6 +32,10 @@ struct RCString *rcstring_new(const char *chars, size_t len)
         string->refCount = 1; // retain
         if (chars)
         {
+						// for (size_t i = 0; i < len; i++)
+						// {
+						// 	string->chars[i] = uppercaseChar(chars[i]);
+						// }
             memcpy(string->chars, chars, len);
         }
         string->chars[len] = 0; // end of string

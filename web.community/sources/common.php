@@ -38,6 +38,15 @@ const FORUM_WHERE=['show','chat','help'];
 
 const SCORE_FOR_FIRST_POST=100;
 
+const PRG_EXT='rmx';
+const PRG_CONTENT_TYPE='text/plain';
+const IMG_EXT='png';
+const IMG_CONTENT_TYPE='image/png';
+const CONTENT_TYPE_MAP=[
+	PRG_EXT=>PRG_CONTENT_TYPE,
+	IMG_EXT=>IMG_CONTENT_TYPE,
+];
+
 // enum ScoreActivity
 // {
 // 	case Publishing;
@@ -101,6 +110,8 @@ function validateSessionAndGetUserId():string
 	if(!$session_id) return "";
 
 	list($status,$user_id)=redis()->hmget("s:$session_id","status","uid");
+	error_log("User: ".json_encode($user_id));
+	error_log("Status: $status");
 
 	switch($status)
 	{
@@ -114,7 +125,7 @@ function validateSessionAndGetUserId():string
 	}
 }
 
-function getServerQueryString()
+function getServerQueryString():string
 {
 	if(isset($_SERVER['QUERY_STRING'])) return $_SERVER['QUERY_STRING'];
 	elseif(isset($_SERVER['REQUEST_URI']))
@@ -126,11 +137,20 @@ function getServerQueryString()
 	return "";
 }
 
+function getQueryParams(string $query):array
+{
+	parse_str($query,$params);
+	return $params;
+}
+
 $request=$_SERVER['REQUEST_URI'];
 $url=parse_url($request);
 $info=pathinfo($url['path']);
 $query=getServerQueryString();
 $domain=$_SERVER['SERVER_NAME'];
+$params=getQueryParams($query);
+$isGet=$_SERVER['REQUEST_METHOD']==='GET';
+$isPost=$_SERVER['REQUEST_METHOD']==='POST';
 
 error_log("");
 error_log("");

@@ -1,3 +1,21 @@
+- [x] core: make print print newline if not engough space to print
+- [x] ios_app: prevent upper case on save.
+- [ ] core: feature that force portrait on fantasy side, not device.
+- [ ] core: make `x` and `y` of `SCROLL` cmd optional
+- [ ] particle_lib: I should return memory access error when machine_peek_short()
+- [x] core: implement a 2x zoom per bg.
+- [ ] core: give access to cycle counter to user
+- [ ] ios_app: add a security to prevent user to upload non wanted content, generate a signature on the ios side and check it on the web, I found libsodium for swift. I'm using TTL content right now.
+
+- [ ] web_app: https://vigneshwarar.substack.com/p/hackernews-ranking-algorithm-how
+
+    rank = (P-1)/((T+2)^2)
+    P = Points
+    T = Age in hours
+    G = 1.8
+
+- [ ] ios_app: Prevent to share without a thumbnail
+- [ ] ios_app: Remove `NSAllowsArbitraryLoads` and `NSAppTransportSecurity`, see: https://stackoverflow.com/questions/31254725/transport-security-has-blocked-a-cleartext-http
 - [ ] flutter_app: Hide black screen at start..
 - [ ] flutter_app: Show the search/replace bar above the code editor, not inside
 - [ ] flutter_app: Make the search/replace shorter.
@@ -13,7 +31,7 @@
     1. The ability to make a particle designer
     2. ?
 
-    1. Proposal
+    3. Proposal
 
         I can keep the appearence stored in data, I like it.
         I should try to change the emitter data and use variables
@@ -22,7 +40,7 @@
 
         With `a`,`s`,`o`,`i`,`c`,`r`,`sx`,`sy`,`e`,`n`,`d` and `p` are all optional.
 
-    2. Proposal
+    4. Proposal
 
         If the library is simulating actually external chip, it can hold additional internal memory modifiable using commands.
 
@@ -31,7 +49,7 @@
     No, but I can setup a special use case for when INPUT is used, has it actually block the game.
 
 - [x] core: Add a function to test  the keyboard visibility
-- [ ] core: Remove pause feature.
+- [ ] core: Remove pause feature. Or make it usefull for dev. Trace the "paused" message instead of in center of the screen.
 - [-] flutter_app: enable ctrl/shift/insert... shortcut for cut copy past.
 
     Cannot be done, the mapping for shortcut to action has been implement in the wrong way, preventing to map multiple shortcut to the same action (intent)
@@ -159,3 +177,6 @@
 - [ ] enable __Host- session cookie: Sauce: https://datatracker.ietf.org/doc/html/draft-west-cookie-prefixes-05#section-3.2
 - [ ] enable Secure session cookie
 - [ ] redo the dev menu for the desktop version
+- [ ] 🐞 when message get hidden, the first char of the trace is not displayed
+- [ ] add `BG x1,y2 TO x2,y2 ATTR a` maybe `PRIO`, `FLIP` or `PAL` too.
+- [ ] backup all .nx from the current app and make the new one that use .rmx

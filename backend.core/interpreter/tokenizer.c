@@ -27,13 +27,15 @@
 
 struct CoreError tok_tokenizeProgram(struct Tokenizer *tokenizer, const char *sourceCode)
 {
-    const char *uppercaseSourceCode = uppercaseString(sourceCode);
-    if (!uppercaseSourceCode) return err_makeCoreError(ErrorOutOfMemory, -1);
+    // const char *uppercaseSourceCode = uppercaseString(sourceCode);
+    // if (!uppercaseSourceCode) return err_makeCoreError(ErrorOutOfMemory, -1);
 
-    struct CoreError error = tok_tokenizeUppercaseProgram(tokenizer, uppercaseSourceCode);
-    free((void *)uppercaseSourceCode);
+    // struct CoreError error = tok_tokenizeUppercaseProgram(tokenizer, uppercaseSourceCode);
+    // free((void *)uppercaseSourceCode);
 
-    return error;
+    // return error;
+
+		return tok_tokenizeUppercaseProgram(tokenizer, sourceCode);
 }
 
 struct CoreError tok_tokenizeUppercaseProgram(struct Tokenizer *tokenizer, const char *sourceCode)
@@ -164,7 +166,7 @@ struct CoreError tok_tokenizeUppercaseProgram(struct Tokenizer *tokenizer, const
             int number = 0;
             while (*character)
             {
-                char *spos = strchr(CharSetHex, *character);
+                char *spos = strchr(CharSetHex, uppercaseChar(*character));
                 if (spos)
                 {
                     int digit = (int)(spos - CharSetHex);
@@ -219,7 +221,7 @@ struct CoreError tok_tokenizeUppercaseProgram(struct Tokenizer *tokenizer, const
                 int keywordIsAlphaNum = strchr(CharSetAlphaNum, keyword[0]) != NULL;
                 for (int pos = 0; pos <= keywordLen; pos++)
                 {
-                    char textCharacter = character[pos];
+                    char textCharacter = uppercaseChar(character[pos]);
 
                     if (pos < keywordLen)
                     {
@@ -278,13 +280,13 @@ struct CoreError tok_tokenizeUppercaseProgram(struct Tokenizer *tokenizer, const
         }
 
         // Symbol
-        if (strchr(CharSetLetters, *character))
+        if (strchr(CharSetLetters, uppercaseChar(*character)))
         {
             const char *firstCharacter = character;
             char isString = 0;
             while (*character)
             {
-                if (strchr(CharSetAlphaNum, *character))
+                if (strchr(CharSetAlphaNum, uppercaseChar(*character)))
                 {
                     character++;
                 }
@@ -308,7 +310,11 @@ struct CoreError tok_tokenizeUppercaseProgram(struct Tokenizer *tokenizer, const
                 return err_makeCoreError(ErrorSymbolNameTooLong, tokenSourcePosition);
             }
             char symbolName[SYMBOL_NAME_SIZE];
-            memcpy(symbolName, firstCharacter, len);
+						for (size_t i = 0; i < len; i++)
+						{
+							symbolName[i] = uppercaseChar(firstCharacter[i]);
+						}
+            // memcpy(symbolName, firstCharacter, len);
             symbolName[len] = 0;
             int symbolIndex = -1;
             // find existing symbol

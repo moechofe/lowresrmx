@@ -74,14 +74,17 @@ void prtclib_update(struct Core *core, struct ParticlesLib *lib)
     struct Interpreter *interpreter = core->interpreter;
 
     struct Token *dataToken;
+		enum ErrorCode errorCode;
 
     // update emitters
     for(int emitter_id=0; emitter_id<lib->emitters_count; ++emitter_id)
     {
         int emitter = lib->emitters_data_addr + emitter_id*EMITTER_MEM_SIZE; // 6 bytes
 
-        float emitter_pos_x=(float)machine_peek_short(lib->core, emitter+EMITTER_MEM_X)/16;
-        float emitter_pos_y=(float)machine_peek_short(lib->core, emitter+EMITTER_MEM_Y)/16;
+        float emitter_pos_x=(float)machine_peek_short(lib->core, emitter+EMITTER_MEM_X, &errorCode)/16;
+        float emitter_pos_y=(float)machine_peek_short(lib->core, emitter+EMITTER_MEM_Y, &errorCode)/16;
+
+				// TODO: must return error at some point
 
         // wait for delay to end
         int delay=machine_peek(lib->core, emitter+EMITTER_MEM_DELAY);
@@ -217,11 +220,11 @@ void prtclib_update(struct Core *core, struct ParticlesLib *lib)
         struct Sprite *spr=&lib->core->machine->spriteRegisters.sprites[sprite_id];
 
         // position x
-        float speed_x=(float)machine_peek_short(lib->core, particle+PARTICLE_MEM_X);
+        float speed_x=(float)machine_peek_short(lib->core, particle+PARTICLE_MEM_X, &errorCode);
         spr->x=(int)(spr->x+speed_x)&0x1FFF;
 
         // position y
-        float speed_y=(float)machine_peek_short(lib->core, particle+PARTICLE_MEM_Y);
+        float speed_y=(float)machine_peek_short(lib->core, particle+PARTICLE_MEM_Y, &errorCode);
         spr->y=(int)(spr->y+speed_y)&0x1FFF;
 
         // character

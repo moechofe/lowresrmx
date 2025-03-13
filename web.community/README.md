@@ -1,24 +1,45 @@
 
-Install `php8.1-cli` `php8.1-dev` `build-essential` `php8.1-mbstring`
+## Setup DEV environment
 
-Install https://github.com/redis/hiredis
+Install:
 
-Install https://github.com/nrk/phpiredis
+    sudo apt install php8.3-cli php8.3-dev build-essential php8.3-mbstring libsodium-dev libzstd-dev
 
-Enable the `phpiredis` for php cli
+Build and install https://github.com/redis/hiredis:
 
-Install libsodium-dev
+    make clean && make && make install
 
-Install https://github.com/jedisct1/libsodium-php
+Build and install https://github.com/nrk/phpiredis:
 
-Install libzstd-dev
+    phpize && ./configure && make clean && make && sudo make install
 
-Install https://github.com/kjdev/php-ext-zstd
+Build and install https://github.com/jedisct1/libsodium-php:
+
+    phpize && ./configure && make clean && make && sudo make install
+
+Build and install https://github.com/kjdev/php-ext-zstd:
+
+    phpize && ./configure && make clean && make && sudo make install
+
+Enable extensions for php cli:
+
+    > cat /etc/php/8.1/cli/conf.d/30-lowresrmx.ini
+    ; configuration for php xml module
+    ; priority=30
+    extension=phpiredis.so
+    extension=sodium.so
+    extension=zstd.so
+
+Check for loaded extensions:
+
+    php -i | grep '\(redis\|sodium\|zstd\)' | grep version
+
+Create and fill the `sources/private.php` file using the given `private.sample.php`
+
+Start the server:
 
     cd sources
     php -S 0.0.0.0:8080 index.php
-
-Sauce: https://silverhammermba.github.io/password/
 
 #### How to simulate a share from the app
 
@@ -29,7 +50,6 @@ Navigate to: `http://lowresrmx.top:8080/upload?p=QkcgU09VUkNFIFJPTSg0KQpCRyBDT1B
 
 ## Database:
 
-
 #### Shared program related
 
 > A shared program (with it's thumbnail) is a user's program stored in the database and linked to it's author by it's user id.
@@ -39,25 +59,25 @@ Navigate to: `http://lowresrmx.top:8080/upload?p=QkcgU09VUkNFIFJPTSg0KQpCRyBDT1B
 
 - _(hash)_ `"t:UPLOAD_TOKEN_ID"` temporay uploaded program **TTL**
 
-    <!-- - _(string)_ `["uid"]` `USER_ID` author user ID -->
     - _(string)_ `["prg"]` Zstandard compressed source for program
-    - _(string)_ `["img"]` Zstandard compressed source for image
+    - _(string)_ `["img"]` Thumbnail PNG binary
     - _(string)_ `["name"]` Program name
 
 - _(hash)_ `"p:PROGRAM_ID"` shared program
 
     - _(string)_ `["uid"]` `USER_ID` author user ID
     - _(string)_ `["prg"]` Zstandard compressed source for program
-    - _(string)_ `["img"]` Zstandard compressed source for thumbnail
+    - _(string)_ `["img"]` Thumbnail PNG binary
     - _(string)_ `["name"]` Name of the program at upload
     - _(string)_ `["ct"]` ATOM timestamp for creation time
     - _(string)_ `["author"]` Author name at creation
+    - _(string)_ `["first"]` `ENTRY_TOKEN_ID` of posted program.
 
 - _(list)_ `"u:USER_ID:p"` list of shared program
 
     - _(string)_ `[…]` `PROGRAM_ID`
 
-#### Posted messages related
+#### Published messages related
 
 - _(int)_ `"seq:entry"` sequence for message entry
 
@@ -68,22 +88,27 @@ Navigate to: `http://lowresrmx.top:8080/upload?p=QkcgU09VUkNFIFJPTSg0KQpCRyBDT1B
     - _(string)_ `["text"]` content of the message
     - _(string)_ `["ct"]` ATOM timestamp for creation time
     - _(string)_ `["author"]` Author name at creation
-    - _(string)_ `["prg"]` Zstandard compressed source for program
-    - _(string)_ `["img"]` Zstandard compressed source for thumbnail
+    - _(number)_ `["upvote"]` Cached total upvote
+    - _(string)_ `["status"]?` one of the following:
+      - `null`
+      - `"unlisted"`
+      - `"banned"`
 
-- _(hash)_ `"e:ENTRY_TOKEN_ID` following message entries
+- _(set)_ `"f:ENTRY_TOKEN_ID:v"` `USER_ID` upvotes
 
-    - _(string)_ `["fid"]` `ENTRY_TOKEN_ID` first message entry ID
+- _(int)_ `"f:ENTRY_TOKEN_ID:s"` sequence for comment id `CID`
+
+- _(hash)_ `"f:ENTRY_TOKEN_ID:CID` `CID`
+
     - _(string)_ `["uid"]` `USER_ID` author user ID
     - _(string)_ `["ct"]` ATOM timestamp for creation time
     - _(string)_ `["author"]` Author name at creation
-    - _(string)_ `["content"]` content of the message
-    - _(string)_ `["prg"]` Zstandard compressed source for program
-    - _(string)_ `["img"]` PNG compressed source for thumbnail
+    - _(string)_ `["text"]` content of the message
+    - _(string)_ `["status"]` one of the following:
+      - `null`
+      - `"banned"`
 
-> _ _(sortedset)_ `"f:ENTRY_TOKEN_ID:e"` list of following post entries
->
->      with score is the ATOM timestamp of the creation time
+- _(list)_ `"f:ENTRY_TOKEN_ID:c"` `CID` comment message entry
 
 - _(sortedset)_ `"w:WHERE_ID"` list the first message entries
 
@@ -123,11 +148,11 @@ Navigate to: `http://lowresrmx.top:8080/upload?p=QkcgU09VUkNFIFJPTSg0KQpCRyBDT1B
 
     - _(string)_ `["locale"]` ISO 639-1:2002
 
-- _(list)_ `"u:USER_ID:f"` list of first post entries ID
+- _(list)_ `"u:USER_ID:f"` list of first entries ID
 
     with score is the ATOM timestamp of the creation time
 
-- _(sortedset)_ `"u:USER_ID:e"` list of post entries ID
+- _(sortedset)_ `"u:USER_ID:c"` list of comment entries ID
 
     with score is the ATOM timestamp of the creation time
 
@@ -140,4 +165,19 @@ Navigate to: `http://lowresrmx.top:8080/upload?p=QkcgU09VUkNFIFJPTSg0KQpCRyBDT1B
 
     > Used to have a custom URL on the website must be unique.
 
+## Source:
+
+- `common.php` helpers for every pages.
+- `common.js` helpers for every pages.
+- `static.php` servers static files.
+
+- `token.php` used to generates unique tokens
+- `google1.php`, `google2.php` handle sign-in with google
+- `discord1.php`, `discord2.php` handle sign-in with discord
+- `upload.php` temporary store program and thumbnail from iOS App.
+- `share.php` share a user program and thumbnail or the website, and make it accessible for the owner.
+- `publish.php` publish a previously shared user's program and thumbnail and make it available for everybody.
+- `download.php` recover program and thumbnail (shared and published).
+- `last_shared.php` API to list user's shared program and thumbnail.
+- `delete.php` API to delete user's shared program and thumbnail.
 

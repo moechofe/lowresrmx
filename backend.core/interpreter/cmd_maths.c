@@ -155,8 +155,12 @@ struct TypedValue fnc_math1(struct Core *core)
                 break;
 
             case TokenCEIL:
-                    value.v.floatValue = ceilf(xValue.v.floatValue);
-                    break;
+								value.v.floatValue = ceilf(xValue.v.floatValue);
+								break;
+
+						case TokenFLOOR:
+								value.v.floatValue = floorf(xValue.v.floatValue);
+								break;
 
             default:
                 assert(0);

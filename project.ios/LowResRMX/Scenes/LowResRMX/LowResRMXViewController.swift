@@ -10,12 +10,6 @@ import UIKit
 import GameController
 import ReplayKit
 
-#if targetEnvironment(simulator)
-let SUPPORTS_GAME_CONTROLLERS = false
-#else
-let SUPPORTS_GAME_CONTROLLERS = true
-#endif
-
 protocol LowResRMXViewControllerDelegate: class {
     func didChangeDebugMode(enabled: Bool)
     func didEndWithError(_ error: LowResRMXError)
@@ -143,7 +137,7 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
                     if success, let sourceCode = document.sourceCode {
                         error = strongSelf.compileAndStartProgram(sourceCode: sourceCode)
                     } else {
-                        error = NSError(domain: "LowResRMXCoder", code: 0, userInfo: [NSLocalizedDescriptionKey: "Could not Open File"])
+                        error = NSError(domain: "LowResRMX", code: 0, userInfo: [NSLocalizedDescriptionKey: "Could not Open File"])
                     }
                     if let error = error {
                         strongSelf.showError(error)
@@ -192,12 +186,12 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
 
     // Saurce: https://developer.apple.com/forums/thread/110064
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return .portrait
+       return .portrait
     }
 
     // Saurce: https://developer.apple.com/forums/thread/110064
     override var shouldAutorotate: Bool {
-        return true
+       return true
     }
 
     deinit {
@@ -712,6 +706,25 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
             if controlsInfo.isAudioEnabled {
                 self.audioPlayer.start()
             }
+					  if controlsInfo.hapticMode==Error {
+							UINotificationFeedbackGenerator().notificationOccurred(.error)
+						} else if controlsInfo.hapticMode==Warning {
+							UINotificationFeedbackGenerator().notificationOccurred(.warning)
+						} else if controlsInfo.hapticMode==Success {
+							UINotificationFeedbackGenerator().notificationOccurred(.success)
+						} else if controlsInfo.hapticMode==Heavy {
+							UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
+						} else if controlsInfo.hapticMode==Light {
+							UIImpactFeedbackGenerator(style: .light).impactOccurred()
+						} else if controlsInfo.hapticMode==Medium {
+							UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+						} else if controlsInfo.hapticMode==Rigid {
+							UIImpactFeedbackGenerator(style: .rigid).impactOccurred()
+						} else if controlsInfo.hapticMode==Soft {
+							UIImpactFeedbackGenerator(style: .soft).impactOccurred()
+						} else if controlsInfo.hapticMode==Selection {
+							UISelectionFeedbackGenerator().selectionChanged()
+						}
         }
     }
 

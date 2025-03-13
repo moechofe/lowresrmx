@@ -92,7 +92,7 @@
 
 - (void)textFieldDidEndEditing:(UITextField *)textField
 {
-    textField.text = [textField.text uppercaseString];
+    // textField.text = [textField.text uppercaseString];
     self.activeTextField = nil;
     if ([self dynamicLayout])
     {

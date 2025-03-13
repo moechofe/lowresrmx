@@ -12,7 +12,7 @@ if($url['path']==='/delete'&&$_SERVER['REQUEST_METHOD']==='POST')
 	$json=json_decode(file_get_contents('php://input'),true);
 
 	{
-		$program_id=trim(@$json['p']);
+		$program_id=@trim(@$json['p']);
 		if(empty($program_id)) badRequest("Fail to read program");
 		if(strlen($program_id)<=16||strlen($program_id)>=512) badRequest("Fail to read program");
 

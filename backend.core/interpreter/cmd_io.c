@@ -51,14 +51,6 @@ struct TypedValue fnc_KEYBOARD(struct Core *core)
 	// KEYBOARD
 	++interpreter->pc;
 
-	// KEYBOARD (
-	if (interpreter->pc->type != TokenBracketOpen) return val_makeError(ErrorSyntax);
-	++interpreter->pc;
-
-	// KEYBOARD ( )
-	if (interpreter->pc->type != TokenBracketClose) return val_makeError(ErrorSyntax);
-	++interpreter->pc;
-
 	struct TypedValue value;
 	value.type = ValueTypeFloat;
 

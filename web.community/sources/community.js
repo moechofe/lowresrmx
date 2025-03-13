@@ -1,125 +1,132 @@
-(()=>new Promise(function(ready){
+(()=>new Promise((ready)=>{
 	document.addEventListener('readystatechange',ready)
-}))().then(()=>{
+}))().then(async()=>{
 
 <?php require_once __DIR__.'/common.js'; ?>
+<?php require_once __DIR__.'/utils.js'; ?>
+<?php require_once __DIR__.'/list_first.js'; ?>
 
-const setupProgramList=()=>{
-	(async(program_list,program_item,program_item_nav)=>{
-		const list=instanciate(program_list);
-		const main=query('main');
+	/** @type {!Array<!FirstItem>} */
+	const list_first=await(await get('list_first')).json();
 
-		// Bottom bar
+	const list=await setupFirstList(list_first);
 
-		const nav=instanciate(program_item_nav);
-		click(find(nav,'li:nth-child(1)'),(_)=>{
-			log("post");
-		});
-		click(find(nav,'li:nth-child(2)'),(_)=>{
-			log("edit");
-		});
-		click(find(nav,'li:nth-child(3)'),(_)=>{
-			log("run");
-		});
-		/** @type {function(!Event):void} */
-		const setupNav=(event)=>{
-			find(event.target,'nav').append(nav);
-			visible(nav);
-		};
+// const setupProgramList=()=>{
+// 	(async(last_shared,program_item,program_item_nav)=>{
+// 		const list=instanciate(last_shared);
+// 		const main=query('main');
 
-		/** @type {function(!Event):void} */
-		const hideNav=(event)=>{
-			hide(nav);
-		};
+// 		// Bottom bar
 
-		/** @typedef {string} */
-		var ProgramItem;
+// 		const nav=instanciate(program_item_nav);
+// 		click(find(nav,'li:nth-child(1)'),(_)=>{
+// 			log("post");
+// 		});
+// 		click(find(nav,'li:nth-child(2)'),(_)=>{
+// 			log("edit");
+// 		});
+// 		click(find(nav,'li:nth-child(3)'),(_)=>{
+// 			log("run");
+// 		});
+// 		/** @type {function(!Event):void} */
+// 		const setupNav=(event)=>{
+// 			find(event.target,'nav').append(nav);
+// 			visible(nav);
+// 		};
 
-		// List of programs
+// 		/** @type {function(!Event):void} */
+// 		const hideNav=(event)=>{
+// 			hide(nav);
+// 		};
 
-		/** @type {!Array<!ProgramItem>} */
-		const my_programs=await(await post('my_programs','')).json();
-		/** @type {!Array<!HTMLElement>} */
-		const items=my_programs.map((data)=>{
-			const item=instanciate(program_item);
+// 		/** @typedef {string} */
+// 		var ProgramItem;
 
-			find(item,'.name').textContent=data;
+// 		// List of programs
 
-			// Show the bottom bar
-			mouseEnter(item,setupNav);
-			touchStart(item,setupNav);
+// 		/** @type {!Array<!ProgramItem>} */
+// 		const my_programs=await(await post('my_programs','')).json();
+// 		/** @type {!Array<!HTMLElement>} */
+// 		const items=my_programs.map((data)=>{
+// 			const item=instanciate(program_item);
 
-			return item;
-		});
+// 			find(item,'.name').textContent=data;
 
-		// List container
+// 			// Show the bottom bar
+// 			mouseEnter(item,setupNav);
+// 			touchStart(item,setupNav);
 
-		list.append.apply(list,items);
-		main.append(list);
+// 			return item;
+// 		});
 
-		// Hide the bottom bar
-		mouseLeave(list,hideNav);
+// 		// List container
 
-	})(query('#program-list'),query('#program-item'),query('#program-item-nav'));
-};
+// 		list.append.apply(list,items);
+// 		main.append(list);
 
-const setupPost=()=>{
-	(async (post_page,new_post)=>{
-		const page=instanciate(post_page);
-		const main=query('main');
+// 		// Hide the bottom bar
+// 		mouseLeave(list,hideNav);
 
-		const title=find(page,'.title');
-		const text=find(page,'.text');
-		const where=find(page,'.where');
-		const submit=find(page,'.submit');
+// 	})(query('#program-list'),query('#program-item'),query('#program-item-nav'));
+// };
 
-		const isEmpty=(element)=>element.value.trim()==='';
+// const setupPost=()=>{
+// 	(async (post_page,new_post)=>{
+// 		const page=instanciate(post_page);
+// 		const main=query('main');
 
-		log(title,text,where,submit);
+// 		const title=find(page,'.title');
+// 		const text=find(page,'.text');
+// 		const where=find(page,'.where');
+// 		const submit=find(page,'.submit');
 
-		// // Refresh public program list
-		// const listPublished=async()=>{
-		// 	log("list published",await(await post('post','test')).body);
-		// };
+// 		const isEmpty=(element)=>element.value.trim()==='';
 
-		// Show the post page
+// 		log(title,text,where,submit);
 
-		click(new_post,(_)=>{
-			showAndHideSiblings(page);
+// 		// // Refresh public program list
+// 		// const listPublished=async()=>{
+// 		// 	log("list published",await(await post('post','test')).body);
+// 		// };
 
-			// TODO: clean the form
-			//post_page.hidden=false;
-			// listPublished();
+// 		// Show the post page
 
-		});
+// 		click(new_post,(_)=>{
+// 			showAndHideSiblings(page);
 
-		click(submit,(event)=>{
-			event.preventDefault();
+// 			// TODO: clean the form
+// 			//post_page.hidden=false;
+// 			// listPublished();
 
-			// Check the form
-			let error=false;
-			for(const element of [title,text,where])
-				error=error||isEmpty(element);
+// 		});
 
-			// Post the form
-			if(!error)
-				post('post',JSON.stringify({
-					title:title.value,
-					text:text.value,
-					where:where.value,
-				}))
+// 		click(submit,(event)=>{
+// 			event.preventDefault();
 
-			log("post",isEmpty(title),isEmpty(text),isEmpty(where),error);
-		});
+// 			// Check the form
+// 			let error=false;
+// 			for(const element of [title,text,where])
+// 				error=error||isEmpty(element);
 
-		main.append(page);
+// 			// Post the form
+// 			if(!error)
+// 				post('post',JSON.stringify({
+// 					title:title.value,
+// 					text:text.value,
+// 					where:where.value,
+// 				}))
 
-	})(query('#post-page'),query('#new-post'));
-};
+// 			log("post",isEmpty(title),isEmpty(text),isEmpty(where),error);
+// 		});
 
-	setupSign();
-	setupUploadCard();
-	setupProgramList();
-	setupPost();
+// 		main.append(page);
+
+// 	})(query('#post-page'),query('#new-post'));
+// };
+
+// 	setupSign();
+// 	setupUploadCard();
+// 	setupProgramList();
+// 	setupPost();
 
 });

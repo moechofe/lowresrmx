@@ -11,32 +11,37 @@ require_once __DIR__.'/google1.php';
 require_once __DIR__.'/discord2.php';
 require_once __DIR__.'/discord1.php';
 
-require_once __DIR__.'/twitter1.php';
+// require_once __DIR__.'/twitter1.php';
+
+require_once __DIR__.'/signed.php';
 
 require_once __DIR__.'/upload.php';
 require_once __DIR__.'/download.php';
 
 require_once __DIR__.'/share.php';
-require_once __DIR__.'/program_list.php';
+require_once __DIR__.'/last_shared.php';
 require_once __DIR__.'/publish.php';
 require_once __DIR__.'/delete.php';
 
+require_once __DIR__.'/list_first.php';
+require_once __DIR__.'/entry.php';
+require_once __DIR__.'/comment.php';
 
 
 
 
 
-require_once __DIR__.'/signed.php';
+
 // require_once __DIR__.'/published.php';
 
 // require_once __DIR__.'/player.php';
 
 // require_once __DIR__.'/trends.php';
-require_once __DIR__.'/my_programs.php';
-require_once __DIR__.'/program.php';
+// require_once __DIR__.'/my_programs.php';
+// require_once __DIR__.'/program.php';
 
-require_once __DIR__.'/post.php';
-require_once __DIR__.'/entry.php';
+// require_once __DIR__.'/post.php';
+// require_once __DIR__.'/entry.php';
 
 
 

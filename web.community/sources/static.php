@@ -17,8 +17,8 @@ if(in_array($url['path'],[
 	'/share.html',
 	'/share.js',
 	'/share.css',
-	'/program_list.html',
-	'/program_list.js',
+	'/last_shared.html',
+	'/last_shared.js',
 ]))
 {
 	header("Content-Type: ".[

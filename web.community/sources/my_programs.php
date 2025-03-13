@@ -1,4 +1,4 @@
-<?php
+<?php // TODO: seems not used
 
 require_once __DIR__.'/common.php';
 
@@ -13,13 +13,13 @@ if($url['path']==='/my_programs')
 	$start=max(0,$len-$count);
 	$stop=$start+$count-1;
 
-	$program_list=redis()->lrange("u:{$user_id}:p",$start,$stop);
-	$program_list=array_map(function($program_id){
+	$last_shared=redis()->lrange("u:{$user_id}:p",$start,$stop);
+	$last_shared=array_map(function($program_id){
 		list($name,$ct)=redis()->hmget("p:$program_id","name","ct");
 		return [$program_id,$name,$ct];
-	},$program_list);
+	},$last_shared);
 
 	header("Content-Type: application/json",true);
-	echo json_encode($program_list);
+	echo json_encode($last_shared);
 	exit;
 }

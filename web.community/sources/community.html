@@ -10,9 +10,8 @@
 </head>
 <body>
 <?php require_once __DIR__.'/header.html'; ?>
-<main>
-
-</main>
+<?php require_once __DIR__.'/list_first.html'; ?>
+<main class="first-list container-fluid"></main>
 <template id="program-item-nav">
 
 	<ul>
@@ -20,52 +19,6 @@
 		<li><button>Edit</button></li>
 		<li><button>Run</button></li>
 	</ul>
-</template>
-<template id="program-item">
-
-	<div class="program">
-		<div class="visual">
-			<div class="picture"></div>
-		</div>
-		<div class="info">
-			<div class="name">
-			</div>
-			<nav>
-			</nav>
-		</div>
-	</div>
-</template>
-<template id="program-list">
-
-	<section class="program-list">
-	</section>
-
-</template>
-<template id="post-page">
-
-	<section class="post-page" hidden>
-	<article>
-		<h3>Post a new message</h3>
-		<form>
-			<input type="text" class="title" placeholder="Title goes here&hellip;" required />
-			<textarea class="text" placeholder="Message goes here&hellip;" required></textarea>
-			<div class="button-bar">
-				<select class="where" required>
-					<option selected disabled value="">
-						Where to post&hellip;
-					</option>
-					<option value="show">Showcase / Work in progress</option>
-					<option value="chat">Discussion / News / Unrelated</option>
-					<option value="help">Help / Example</option>
-				</select>
-				<button class="submit">Post</button>
-			</div>
-		</form>
-	</article>
-	<div class="blocker" hidden>
-		<article aria-busy="true"></article>
-	</div>
-	</section>
 
 </template>
 </body>

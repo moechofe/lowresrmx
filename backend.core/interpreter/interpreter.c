@@ -83,9 +83,15 @@ struct CoreError itp_compileProgram(struct Core *core, const char *sourceCode)
 
 	// Parse source code
 
-	interpreter->sourceCode = uppercaseString(sourceCode);
-	if (!interpreter->sourceCode)
-		return err_makeCoreError(ErrorOutOfMemory, -1);
+	// interpreter->sourceCode = uppercaseString(sourceCode);
+	// if (!interpreter->sourceCode)
+	// 	return err_makeCoreError(ErrorOutOfMemory, -1);
+
+	size_t len = strlen(sourceCode);
+	char *buffer = malloc(len + 1);
+	if (buffer) memcpy(buffer, sourceCode, len + 1);
+	else return err_makeCoreError(ErrorOutOfMemory, -1);
+	interpreter->sourceCode = buffer;
 
 	struct CoreError error = tok_tokenizeUppercaseProgram(&interpreter->tokenizer, interpreter->sourceCode);
 	if (error.code != ErrorNone)
@@ -1400,6 +1406,9 @@ struct TypedValue itp_evaluateFunction(struct Core *core)
 	case TokenCEIL:
 		return fnc_math1(core);
 
+	case TokenFLOOR:
+		return fnc_math1(core);
+
 	case TokenKEYBOARD:
 		return fnc_KEYBOARD(core);
 
@@ -1631,14 +1640,7 @@ enum ErrorCode itp_evaluateCommand(struct Core *core)
 		return cmd_PRIO(core);
 
 	case TokenCELL:
-		// switch (itp_getNextTokenType(interpreter))
-		// {
-		//     case TokenSIZE:
-		//         return cmd_CELL_SIZE(core);
-
-		//     default:
 		return cmd_CELL(core);
-		// }
 		break;
 
 	case TokenTINT:
@@ -1776,6 +1778,9 @@ enum ErrorCode itp_evaluateCommand(struct Core *core)
 
 	case TokenDMA:
 		return cmd_DMA_COPY(core);
+
+	case TokenHAPTIC:
+		return cmd_HAPTIC(core);
 
 	default:
 		printf("Command not implemented: %s\n", TokenStrings[interpreter->pc->type]);

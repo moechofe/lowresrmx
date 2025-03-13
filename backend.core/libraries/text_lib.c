@@ -141,8 +141,25 @@ void txtlib_printText(struct TextLib *lib, const char *text)
 {
 	struct Plane *plane = txtlib_getBackground(lib, lib->windowBg);
 	const char *letter = text;
+	size_t word_len;
+	bool auto_newline=false;
+count_word_len:
+	word_len=0;
+	while(letter[word_len] && letter[word_len] != ' ' && letter[word_len] != '\n') word_len++;
+	if(word_len>0 && lib->cursorX>0 && lib->cursorX+word_len>lib->windowWidth)// && !auto_newline)
+	{
+		lib->cursorX=0;
+		lib->cursorY++;
+	}
 	while (*letter)
 	{
+		if(*letter==' ' && lib->cursorX==0 && auto_newline)
+		{
+			letter++;
+			auto_newline=false;
+			goto count_word_len;
+		}
+
 		txtlib_scrollWindowIfNeeded(lib);
 
 		if (*letter >= 32)
@@ -169,8 +186,14 @@ void txtlib_printText(struct TextLib *lib, const char *text)
 		{
 			lib->cursorX = 0;
 			lib->cursorY++;
+			auto_newline=true;
 		}
 
+		if(*letter==' ')
+		{
+			letter++;
+			goto count_word_len;
+		}
 		letter++;
 	}
 }

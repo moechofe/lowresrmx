@@ -33,6 +33,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC "${BACKEND_SOURCE_DIR}" "${BAC
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/sdl2)
 
 if(SDL2_PATH)
+	message("Using SDL2_PATH= ${SDL2_PATH}")
 	find_package(SDL2 REQUIRED)
 	target_include_directories(${PROJECT_NAME} PRIVATE ${SDL2_INCLUDE_DIRS})
 else()

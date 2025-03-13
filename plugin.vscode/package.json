@@ -7,7 +7,7 @@
     "icon": "images/icon.png",
     "author": "Marc Schraffenberger + Martin Mauchauffée",
     "license": "MIT",
-    "homepage": "https://github.com/schraf/lowresnx-visualstudiocode-ext#readme",
+    "homepage": "https://github.com/schraf/lowresrmx-visualstudiocode-ext#readme",
     "engines": {
         "vscode": "^1.50.0"
     },
@@ -32,7 +32,7 @@
             {
                 "language": "rmx",
                 "scopeName": "source.rmx",
-                "path": "./syntaxes/nx.tmLanguage.json"
+                "path": "./syntaxes/rmx.tmLanguage.json"
             }
         ],
         "commands": [
@@ -45,22 +45,22 @@
         "configuration": {
             "title": "LowResRMX",
             "properties": {
-                "lowResNX.run.fullScreen": {
+                "lowResRMX.run.fullScreen": {
                     "type": "boolean",
                     "default": false,
                     "description": "Start the application in fullscreen mode."
                 },
-                "lowResNX.run.disableDelay": {
+                "lowResRMX.run.disableDelay": {
                     "type": "boolean",
                     "default": false,
                     "description": "Disable the delay for too short frames."
                 },
-                "lowResNX.run.disableDev": {
+                "lowResRMX.run.disableDev": {
                     "type": "boolean",
                     "default": false,
-                    "description": "Disable the Development Menu, Esc key quits LowRes NX."
+                    "description": "Disable the Development Menu, Esc key quits LowRes RMX."
                 },
-                "lowResNX.run.zoom": {
+                "lowResRMX.run.zoom": {
                     "type": "string",
                     "default": "pixel perfect",
                     "enum": [
@@ -75,7 +75,7 @@
         }
     },
     "activationEvents": [
-        "onLanguage:nx",
+        "onLanguage:rmx",
         "onCommand:lowResRNX.runFile"
     ],
     "main": "./out/extension.js",

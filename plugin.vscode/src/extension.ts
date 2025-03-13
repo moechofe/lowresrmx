@@ -5,12 +5,12 @@ import * as child_process from 'child_process'
 
 export function activate (context: vscode.ExtensionContext) {
   context.subscriptions.push(vscode.languages.registerDocumentSymbolProvider(
-    { language: 'nx' }, new LowResNXDocumentSymbolProvider()
+    { language: 'rmx' }, new LowResRMXDocumentSymbolProvider()
   ))
 
-  context.subscriptions.push(vscode.commands.registerCommand('lowResNX.runFile', () => {
+  context.subscriptions.push(vscode.commands.registerCommand('lowResRMX.runFile', () => {
     const filename = vscode.window.activeTextEditor?.document.fileName
-    const cfg = vscode.workspace.getConfiguration('lowResNX')
+    const cfg = vscode.workspace.getConfiguration('lowResRMX')
     const args = []
 
     args.push('-fullscreen')
@@ -43,10 +43,10 @@ export function activate (context: vscode.ExtensionContext) {
       args.push(filename)
     }
 
-    const process = child_process.spawn('LowRes NX', args)
+    const process = child_process.spawn('LowResRMX', args)
 
     process.on('error', () => {
-      vscode.window.showInformationMessage('Failed to start LowRes NX. Check that it is in your PATH')
+      vscode.window.showInformationMessage('Failed to start LowResRMX. Check that it is in your PATH')
     })
   }))
 }

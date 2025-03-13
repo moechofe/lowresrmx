@@ -1,0 +1,6 @@
+[submodule "project.ios/zstd.swift"]
+	path = project.ios/zstd.swift
+	url = https://github.com/awxkee/zstd.swift
+[submodule "project.flutter/re_editor"]
+	path = project.flutter/re_editor
+	url = git@github.com:moechofe/re-editor.git

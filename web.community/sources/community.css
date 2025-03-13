@@ -1,5 +1,6 @@
-<?php require_once __DIR__.'/common.css'; ?>
+<?php require_once __DIR__.'/list_first.css'; ?>
 
+/*
 form .error { border-color: var(--form-element-invalid-border-color); }
 form .error:active { border-color: var(--form-element-invalid-active-border-color) }
 
@@ -12,4 +13,4 @@ form .error:active { border-color: var(--form-element-invalid-active-border-colo
 .program .picture { width:calc(180px); height:calc(180px); background-color: antiquewhite; }
 .program .name::after { content: ".rmx"; }
 
-.post-page textarea { resize: vertical; height: 10em; }
+.post-page textarea { resize: vertical; height: 10em; } */

@@ -23,6 +23,12 @@ const findAll=(elem,query)=>elem.querySelectorAll(query);
 /** @type {function(string):!HTMLElement} */
 const instanciate=(tpl)=>tpl.content.cloneNode(true).firstElementChild;
 
+/** @type {function(!HTMLElement,string,any):void} */
+const emit=(element,event_name,detail)=>{element.dispatchEvent(new CustomEvent(event_name,{detail:detail}))};
+
+/** @type {function(!HTMLElement,string,function(!Event):void):void} */
+const on=(element,event_name,callback)=>{element.addEventListener(event_name,callback)};
+
 /** @type {function(!HTMLElement,function(!Event):void):void} */
 const click=(element,callback)=>{element.addEventListener('click',callback)};
 
@@ -75,6 +81,32 @@ const dataget=(element,key)=>element.dataset[key];
 /** @type {function(!HTMLElement,string):void} */
 const text=(element,text)=>{element.innerText=text};
 
+/** @type {function(!HTMLElement,function():void):void} */
+const dialogOn=(dialog,done)=>{
+	const html=query('html');
+	addClassCond(html,'modal-is-open',true);
+	addClassCond(html,'modal-is-closing',false);
+	addClassCond(html,'modal-is-opening',true);
+	addAttrCond(dialog,'open','',true);
+	delay(800,_=>{
+		addClassCond(html,'modal-is-opening',false);
+		if(done)done();
+	});
+};
+
+const dialogOff=(dialog,done)=>{
+	const html=query('html');
+	addClassCond(html,'modal-is-opening',false);
+	addClassCond(html,'modal-is-closing',true);
+	delay(800,_=>{
+		addAttrCond(dialog,'open','',false);
+		addClassCond(html,'modal-is-open',false);
+		addClassCond(html,'modal-is-closing',false);
+		if(done)done();
+	});
+}
+
+
 /** @type {function(number,function):void} */
 const delay=(ms,func)=>setTimeout(func,ms);
 
@@ -123,6 +155,7 @@ const upload=(type,file,token)=>{
 };
 
 /** @type {function():void} */
+// TODO: deleteme, it should only be available throughout the iOS app
 const setupUploadCard=()=>{
 	(async (upload_card,share_program)=>{
 
@@ -182,6 +215,7 @@ const setupUploadCard=()=>{
 	})(query('#upload-card'),query('#share-program'));
 };
 
+// TODO: move to header.js
 const setupSign=()=>{
 	post('is_signed','')
 	.then((res)=>res.json())

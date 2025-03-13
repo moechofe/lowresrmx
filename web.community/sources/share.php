@@ -1,4 +1,6 @@
-<?php // Allow the user to share a program from the iOS app. After the upload, show the share page or the sign-in page if the user is not connected.
+<?php // Receive the upload token from /upload.php and store a program in Redis linked to the user who uploaded it.
+// Then it will redirect to /share.html
+// Allow the user to share a program from the iOS app. After the upload, show the share page or the sign-in page if the user is not connected. It will retrieve the temporary program from Redis and store it as files.
 
 require_once __DIR__.'/common.php';
 

@@ -115,29 +115,29 @@ enum ErrorCode cmd_SCROLL(struct Core *core)
         int y = (int)yValue.v.floatValue;
         if (bg == 0)
         {
-            reg->scrollAX = x & 0x1FF;
-            reg->scrollAY = y & 0x1FF;
+            reg->scrollAX = x & 0xffFF;
+            reg->scrollAY = y & 0xffFF;
             // reg->scrollMSB.aX = (x >> 8) & 1;
             // reg->scrollMSB.aY = (y >> 8) & 1;
         }
         else if(bg == 1)
         {
-            reg->scrollBX = x & 0x1FF;
-            reg->scrollBY = y & 0x1FF;
+            reg->scrollBX = x & 0xffFF;
+            reg->scrollBY = y & 0xffFF;
             // reg->scrollMSB.bX = (x >> 8) & 1;
             // reg->scrollMSB.bY = (y >> 8) & 1;
         }
         else if(bg == 2)
         {
-            reg->scrollCX = x & 0x1FF;
-            reg->scrollCY = y & 0x1FF;
+            reg->scrollCX = x & 0xffFF;
+            reg->scrollCY = y & 0xffFF;
             // reg->scrollMSB.cX = (x >> 8) & 1;
             // reg->scrollMSB.cY = (y >> 8) & 1;
         }
         else if(bg == 3)
         {
-            reg->scrollDX = x & 0x1FF;
-            reg->scrollDY = y & 0x1FF;
+            reg->scrollDX = x & 0xffFF;
+            reg->scrollDY = y & 0xffFF;
             // reg->scrollMSB.dX = (x >> 8) & 1;
             // reg->scrollMSB.dY = (y >> 8) & 1;
         }
@@ -228,49 +228,6 @@ enum ErrorCode cmd_BG_VIEW(struct Core *core)
 
     return itp_endOfCommand(interpreter);
 }
-
-// enum ErrorCode cmd_CELL_SIZE(struct Core *core)
-// {
-//     struct Interpreter *interpreter = core->interpreter;
-
-//     // CELL SIZE
-//     ++interpreter->pc;
-//     ++interpreter->pc;
-
-//     // bg value
-//     struct TypedValue bgValue = itp_evaluateNumericExpression(core, 0, 3);
-//     if (bgValue.type == ValueTypeError) return bgValue.v.errorCode;
-
-//     // comma
-//     if (interpreter->pc->type != TokenComma) return ErrorSyntax;
-//     ++interpreter->pc;
-
-//     // size value
-//     struct TypedValue sValue = itp_evaluateOptionalNumericExpression(core, 0, 1);
-//     if (sValue.type == ValueTypeError) return sValue.v.errorCode;
-
-//     if (interpreter->pass == PassRun)
-//     {
-//         if (bgValue.v.floatValue == 0)
-//         {
-//             core->machine->videoRegisters.attr.planeACellSize = sValue.v.floatValue;
-//         }
-//         else if(bgValue.v.floatValue == 1)
-//         {
-//             core->machine->videoRegisters.attr.planeBCellSize = sValue.v.floatValue;
-//         }
-//         else if(bgValue.v.floatValue == 2)
-//         {
-//             core->machine->videoRegisters.attr.planeCCellSize = sValue.v.floatValue;
-//         }
-//         else if(bgValue.v.floatValue == 3)
-//         {
-//             core->machine->videoRegisters.attr.planeDCellSize = sValue.v.floatValue;
-//         }
-//     }
-
-//     return itp_endOfCommand(interpreter);
-// }
 
 struct TypedValue fnc_COLOR(struct Core *core)
 {
