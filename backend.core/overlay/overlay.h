@@ -30,14 +30,19 @@
 struct Core;
 struct CoreInput;
 
-struct Overlay {
-    struct Plane plane;
-    struct TextLib textLib;
-    int timer;
-    int messageTimer;
+struct Overlay
+{
+	struct Plane plane;
+	struct TextLib textLib;
+	int timer;
+	int messageTimer;
+	char commandLine[27];
+	char previousCommandLine[27][9];
+	int previouscommandLineWriteIndex, previouscommandLineReadIndex;
 };
 
 void overlay_init(struct Core *core);
+void overlay_clear(struct Core *core);
 void overlay_reset(struct Core *core);
 void overlay_updateLayout(struct Core *core, struct CoreInput *input);
 void overlay_updateState(struct Core *core);

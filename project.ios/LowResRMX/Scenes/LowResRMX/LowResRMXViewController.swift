@@ -177,7 +177,9 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
         self.displayLink = displayLink
 
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
+				NotificationCenter.default.addObserver(self, selector: #selector(keyboardDidShow), name: UIResponder.keyboardDidShowNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
+				NotificationCenter.default.addObserver(self, selector: #selector(keyboardDidHide), name: UIResponder.keyboardDidHideNotification, object: nil)
 
         // Sauce: https://developer.apple.com/forums/thread/110064
         let value = UIInterfaceOrientation.portraitUpsideDown.rawValue
@@ -533,6 +535,17 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
 						}
 				}
     }
+
+		@objc func keyboardDidShow(_ notification: NSNotification) {
+			NSLog("Keyboard ON");
+			if let userInfo = notification.userInfo,
+      let keyboardRectangle = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect {
+      print(keyboardRectangle.height)
+		}
+
+		@objc func keyboardDidHide(_ notification: NSNotification) {
+			NSLog("Keyboard OFF");
+		}
 
     @objc func keyboardWillHide(_ notification: NSNotification) {
         keyboardTop = nil

@@ -1,3 +1,8 @@
+- [ ] core: make =KEYBOARD return the size of the keyboard
+- [ ] core: see where =PAUSE is usefull, interrupt? no, deleteme
+- [ ] core: remove PAUSE ON/OFF but keep PAUSE
+- [ ] core: reuse PAUSE to provide a simple debugger
+- [ ] core: make sure to prevent pause inside interrupt
 - [x] core: make print print newline if not engough space to print
 - [x] ios_app: prevent upper case on save.
 - [ ] core: feature that force portrait on fantasy side, not device.

@@ -65,173 +65,24 @@ enum ErrorCode cmd_PAUSE(struct Core *core)
 {
 	struct Interpreter *interpreter = core->interpreter;
 
+	if (interpreter->pass == PassRun && interpreter->mode == ModeInterrupt)
+		return ErrorNotAllowedInInterrupt;
+
 	// PAUSE
 	++interpreter->pc;
 
-	// ON/OFF?
-	enum TokenType type = interpreter->pc->type;
-	if (type == TokenON || type == TokenOFF)
-	{
-		++interpreter->pc;
-	}
+	core->interpreter->debug = true;
+	interpreter->state = StatePaused;
+	// overlay_updateState(core);
+	core->machine->ioRegisters.key = 0;
+	struct TextLib *lib = &core->overlay->textLib;
+	txtlib_printText(lib, "\nlowresrmx debugger\n");
+	txtlib_printText(lib, "==================\n\n");
+	txtlib_printText(lib, "  'PAUSE' to resume\n\n");
+	txtlib_scrollWindowIfNeeded(lib);
 
-	if (interpreter->pass == PassRun)
-	{
-		if (type == TokenON)
-		{
-			core->machine->ioRegisters.status.pause = 0;
-			interpreter->handlesPause = true;
-		}
-		else if (type == TokenOFF)
-		{
-			interpreter->handlesPause = false;
-		}
-		else
-		{
-			interpreter->state = StatePaused;
-			overlay_updateState(core);
-		}
-	}
 	return itp_endOfCommand(interpreter);
 }
-
-// struct TypedValue fnc_UP_DOWN_LEFT_RIGHT(struct Core *core)
-// {
-//     struct Interpreter *interpreter = core->interpreter;
-
-//     // UP/DOWN/LEFT/RIGHT
-//     enum TokenType type = interpreter->pc->type;
-//     ++interpreter->pc;
-
-//     // TAP
-//     bool tap = false;
-//     if (interpreter->pc->type == TokenTAP)
-//     {
-//         ++interpreter->pc;
-//         tap = true;
-//     }
-
-//     // bracket open
-//     if (interpreter->pc->type != TokenBracketOpen) return val_makeError(ErrorSyntax);
-//     ++interpreter->pc;
-
-//     // p expression
-//     struct TypedValue pValue = itp_evaluateNumericExpression(core, 0, 1);
-//     if (pValue.type == ValueTypeError) return pValue;
-
-//     // bracket close
-//     if (interpreter->pc->type != TokenBracketClose) return val_makeError(ErrorSyntax);
-//     ++interpreter->pc;
-
-//     struct TypedValue value;
-//     value.type = ValueTypeFloat;
-
-//     if (interpreter->pass == PassRun)
-//     {
-//         if (core->machine->ioRegisters.attr.gamepadsEnabled == 0) return val_makeError(ErrorGamepadNotEnabled);
-
-//         int p = pValue.v.floatValue;
-//         int active = 0;
-//         int lastFrameActive = 0;
-//         union Gamepad *gamepad = &core->machine->ioRegisters.gamepads[p];
-//         union Gamepad *lastFrameGamepad = &core->interpreter->lastFrameGamepads[p];
-//         switch (type)
-//         {
-//             case TokenUP:
-//                 active = gamepad->up;
-//                 lastFrameActive = lastFrameGamepad->up;
-//                 break;
-
-//             case TokenDOWN:
-//                 active = gamepad->down;
-//                 lastFrameActive = lastFrameGamepad->down;
-//                 break;
-
-//             case TokenLEFT:
-//                 active = gamepad->left;
-//                 lastFrameActive = lastFrameGamepad->left;
-//                 break;
-
-//             case TokenRIGHT:
-//                 active = gamepad->right;
-//                 lastFrameActive = lastFrameGamepad->right;
-//                 break;
-
-//             default:
-//                 assert(0);
-//                 break;
-//         }
-//         value.v.floatValue = active && !(tap && lastFrameActive) ? BAS_TRUE : BAS_FALSE;
-//     }
-//     return value;
-// }
-
-// TODO: deleteme
-
-// struct TypedValue fnc_BUTTON(struct Core *core)
-// {
-//     struct Interpreter *interpreter = core->interpreter;
-
-//     // BUTTON
-//     ++interpreter->pc;
-
-//     // TAP
-//     bool tap = false;
-//     if (interpreter->pc->type == TokenTAP)
-//     {
-//         ++interpreter->pc;
-//         tap = true;
-//     }
-
-//     // bracket open
-//     if (interpreter->pc->type != TokenBracketOpen) return val_makeError(ErrorSyntax);
-//     ++interpreter->pc;
-
-//     // p expression
-//     struct TypedValue pValue = itp_evaluateNumericExpression(core, 0, 1);
-//     if (pValue.type == ValueTypeError) return pValue;
-
-//     int n = -1;
-//     if (interpreter->pc->type == TokenComma)
-//     {
-//         // comma
-//         ++interpreter->pc;
-
-//         // n expression
-//         struct TypedValue nValue = itp_evaluateNumericExpression(core, 0, 1);
-//         if (nValue.type == ValueTypeError) return nValue;
-
-//         n = nValue.v.floatValue;
-//     }
-
-//     // bracket close
-//     if (interpreter->pc->type != TokenBracketClose) return val_makeError(ErrorSyntax);
-//     ++interpreter->pc;
-
-//     struct TypedValue value;
-//     value.type = ValueTypeFloat;
-
-//     if (interpreter->pass == PassRun)
-//     {
-//         int p = pValue.v.floatValue;
-//         union Gamepad *gamepad = &core->machine->ioRegisters.gamepads[p];
-
-//         int active = (n == -1) ? (gamepad->buttonA || gamepad->buttonB) : (n == 0) ? gamepad->buttonA : gamepad->buttonB;
-
-//         if (active && tap)
-//         {
-//             // invalidate button if it was already pressed last frame
-//             union Gamepad *lastFrameGamepad = &core->interpreter->lastFrameGamepads[p];
-//             if ((n == -1) ? (lastFrameGamepad->buttonA || lastFrameGamepad->buttonB) : (n == 0) ? lastFrameGamepad->buttonA : lastFrameGamepad->buttonB)
-//             {
-//                 active = 0;
-//             }
-//         }
-
-//         value.v.floatValue = active ? BAS_TRUE : BAS_FALSE;
-//     }
-//     return value;
-// }
 
 struct TypedValue fnc_TOUCH(struct Core *core)
 {
@@ -358,27 +209,6 @@ struct TypedValue fnc_SAFE(struct Core *core)
 		{
 			assert(0);
 		}
-	}
-	return value;
-}
-
-struct TypedValue fnc_PAUSE(struct Core *core)
-{
-	struct Interpreter *interpreter = core->interpreter;
-
-	// PAUSE
-	++interpreter->pc;
-
-	struct TypedValue value;
-	value.type = ValueTypeFloat;
-
-	if (interpreter->pass == PassRun)
-	{
-		if (interpreter->handlesPause)
-			return val_makeError(ErrorAutomaticPauseNotDisabled);
-
-		value.v.floatValue = core->machine->ioRegisters.status.pause ? BAS_TRUE : BAS_FALSE;
-		core->machine->ioRegisters.status.pause = 0;
 	}
 	return value;
 }

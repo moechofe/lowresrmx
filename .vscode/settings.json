@@ -20,7 +20,8 @@
         "utility": "c",
         "system_error": "c",
         "chrono": "c",
-        "optional": "c"
+        "optional": "c",
+        "variant": "c"
     },
     "cmake.configureOnOpen": true,
     "files.watcherExclude": {

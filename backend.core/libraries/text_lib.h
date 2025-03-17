@@ -31,24 +31,25 @@
 
 struct Core;
 
-struct TextLib {
-    struct Core *core;
-    union CharacterAttributes charAttr;
-    int fontCharOffset;
-    int windowX;
-    int windowY;
-    int windowWidth;
-    int windowHeight;
-    int windowBg;
-    int cursorX;
-    int cursorY;
-    int bg;
-    int sourceAddress;
-    int sourceWidth;
-    int sourceHeight;
-    char inputBuffer[INPUT_BUFFER_SIZE];
-    int inputLength;
-    int blink;
+struct TextLib
+{
+	struct Core *core;
+	union CharacterAttributes charAttr;
+	int fontCharOffset;
+	int windowX;
+	int windowY;
+	int windowWidth;
+	int windowHeight;
+	int windowBg;
+	int cursorX;
+	int cursorY;
+	int bg;
+	int sourceAddress;
+	int sourceWidth;
+	int sourceHeight;
+	char inputBuffer[INPUT_BUFFER_SIZE];
+	int inputLength;
+	int blink;
 };
 
 void txtlib_printText(struct TextLib *lib, const char *text);
@@ -70,5 +71,6 @@ int txtlib_getSourceCell(struct TextLib *lib, int x, int y, bool getAttrs);
 bool txtlib_setSourceCell(struct TextLib *lib, int x, int y, int character);
 
 void txtlib_itobin(char *buffer, size_t buffersize, size_t width, int value);
+void txtlib_scrollWindowIfNeeded(struct TextLib *lib);
 
 #endif /* text_lib_h */

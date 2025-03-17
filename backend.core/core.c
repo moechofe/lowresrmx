@@ -31,6 +31,7 @@ const char CoreInputKeyRight = 17;
 const char CoreInputKeyLeft = 18;
 const char CoreInputKeyDown = 19;
 const char CoreInputKeyUp = 20;
+const char CoreInputKeyDelete = 127;
 
 void core_handleInput(struct Core *core, struct CoreInput *input);
 
@@ -157,7 +158,7 @@ void core_handleInput(struct Core *core, struct CoreInput *input)
 		// if (ioAttr.keyboardEnabled)
 		// {
 			char key = input->key;
-			if ((key >= 32 && key < 127) || key == CoreInputKeyBackspace || key == CoreInputKeyReturn || key == CoreInputKeyDown || key == CoreInputKeyUp || key == CoreInputKeyRight || key == CoreInputKeyLeft)
+			if ((key >= 32 && key < 127) || key == CoreInputKeyBackspace || key == CoreInputKeyReturn || key == CoreInputKeyDown || key == CoreInputKeyUp || key == CoreInputKeyRight || key == CoreInputKeyLeft || key == CoreInputKeyDelete)
 			{
 				ioRegisters->key = key;
 			}
@@ -207,37 +208,6 @@ void core_handleInput(struct Core *core, struct CoreInput *input)
 		textLib->windowWidth = input->width / 8 - (input->left + 7) / 8 - (input->right + 7) / 8;
 		textLib->windowHeight = input->height / 8 - (input->top + 7) / 8 - (input->bottom + 7) / 8;
 	}
-	//
-	//    for (int i = 0; i < NUM_GAMEPADS; i++)
-	//    {
-	//        union Gamepad *gamepad = &ioRegisters->gamepads[i];
-	//        if (ioAttr.gamepadsEnabled > i && !ioAttr.keyboardEnabled)
-	//        {
-	//            struct CoreInputGamepad *inputGamepad = &input->gamepads[i];
-	//            gamepad->up = inputGamepad->up && !inputGamepad->down;
-	//            gamepad->down = inputGamepad->down && !inputGamepad->up;
-	//            gamepad->left = inputGamepad->left && !inputGamepad->right;
-	//            gamepad->right = inputGamepad->right && !inputGamepad->left;
-	//            gamepad->buttonA = inputGamepad->buttonA;
-	//            gamepad->buttonB = inputGamepad->buttonB;
-	//
-	//            if (inputGamepad->up || inputGamepad->down || inputGamepad->left || inputGamepad->right)
-	//            {
-	//                // some d-pad combinations are not registered as I/O, but mark them anyway.
-	//                processedOtherInput = true;
-	//            }
-	//
-	//            if (gamepad->value)
-	//            {
-	//                machine_suspendEnergySaving(core, 2);
-	//            }
-	//        }
-	//        else
-	//        {
-	//            gamepad->value = 0;
-	//        }
-	//    }
-
 	if (input->pause)
 	{
 		if (core->interpreter->state == StatePaused)

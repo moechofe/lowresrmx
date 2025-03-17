@@ -193,6 +193,8 @@
 		5B34ED992AC5835700220A80 /* core_delegate.c in Sources */ = {isa = PBXBuildFile; fileRef = 5B34ECE42AC5835600220A80 /* core_delegate.c */; };
 		5B7D1D7A2D43F1D200B871FA /* Clibsodium in Frameworks */ = {isa = PBXBuildFile; productRef = 5B7D1D792D43F1D200B871FA /* Clibsodium */; };
 		5B7D1D7C2D43F1D200B871FA /* Sodium in Frameworks */ = {isa = PBXBuildFile; productRef = 5B7D1D7B2D43F1D200B871FA /* Sodium */; };
+		5BF536CE2D848C1F00548D6A /* overlay_debugger.c in Sources */ = {isa = PBXBuildFile; fileRef = 5BF536CD2D848C1F00548D6A /* overlay_debugger.c */; };
+		5BF536CF2D848C1F00548D6A /* overlay_debugger.c in Sources */ = {isa = PBXBuildFile; fileRef = 5BF536CD2D848C1F00548D6A /* overlay_debugger.c */; };
 		920E1B1A1F77FF7A00664382 /* ExplorerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 920E1B191F77FF7A00664382 /* ExplorerViewController.swift */; };
 		920E1B1C1F78000800664382 /* ExplorerItemCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 920E1B1B1F78000800664382 /* ExplorerItemCell.swift */; };
 		920E1B321F78024500664382 /* NSString+Utils.m in Sources */ = {isa = PBXBuildFile; fileRef = 925CC6991F75896F0059C230 /* NSString+Utils.m */; };
@@ -419,6 +421,7 @@
 		5B34ECE32AC5835600220A80 /* overlay_data.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = overlay_data.h; sourceTree = "<group>"; };
 		5B34ECE42AC5835600220A80 /* core_delegate.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = core_delegate.c; sourceTree = "<group>"; };
 		5B34ECE52AC5835600220A80 /* core_stats.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = core_stats.h; sourceTree = "<group>"; };
+		5BF536CD2D848C1F00548D6A /* overlay_debugger.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = overlay_debugger.c; sourceTree = "<group>"; };
 		920E1B191F77FF7A00664382 /* ExplorerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExplorerViewController.swift; sourceTree = "<group>"; };
 		920E1B1B1F78000800664382 /* ExplorerItemCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExplorerItemCell.swift; sourceTree = "<group>"; };
 		920FC8672204C25A004707E7 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
@@ -711,6 +714,7 @@
 		5B34ECDD2AC5835600220A80 /* overlay */ = {
 			isa = PBXGroup;
 			children = (
+				5BF536CD2D848C1F00548D6A /* overlay_debugger.c */,
 				5B34ECDE2AC5835600220A80 /* overlay.bc */,
 				5B34ECDF2AC5835600220A80 /* overlay_data.c */,
 				5B34ECE02AC5835600220A80 /* overlay.h */,
@@ -1184,6 +1188,7 @@
 				5B34ED392AC5835600220A80 /* cmd_io.c in Sources */,
 				5B34ED252AC5835600220A80 /* cmd_memory.c in Sources */,
 				5B34ED6F2AC5835600220A80 /* particles_lib.c in Sources */,
+				5BF536CE2D848C1F00548D6A /* overlay_debugger.c in Sources */,
 				5B34ED132AC5835600220A80 /* charsets.c in Sources */,
 				5B34ED852AC5835700220A80 /* video_chip.c in Sources */,
 				5B34ED4B2AC5835600220A80 /* tokenizer.c in Sources */,
@@ -1253,6 +1258,7 @@
 				5B34ED2A2AC5835600220A80 /* cmd_strings.c in Sources */,
 				5B34ECE82AC5835600220A80 /* cmd_particle.c in Sources */,
 				5B34ECF22AC5835600220A80 /* rcstring.c in Sources */,
+				5BF536CF2D848C1F00548D6A /* overlay_debugger.c in Sources */,
 				926EB1DC1F757FAD0048A6CF /* UIViewController+LowResCoder.m in Sources */,
 				920E1B561F7816FA00664382 /* TextLabel.m in Sources */,
 				92BB14C1244B0FC700611F01 /* CoreStatsWrapper.swift in Sources */,

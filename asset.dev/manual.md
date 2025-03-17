@@ -317,9 +317,23 @@ Double cell support for background is not emulated.
 
 ---
 
-Removed 🗑️ commands:
+<!-- TODO: need spell check -->
 
-`DISPLAY`, `KEYBOARD OPTIONAL`, `GAMEPAD`, `BUTTON`, `LEFT`, `RIGHT`, `DOWN`, `UP`, `TOUCHSCREEN`
+`PAUSE` command has been reused for a different purpose.
+
+The posibility to pause and unpause the game is removed because game controller support has been removed.
+
+But the pause feature has been transformed to a kind of debugger.
+
+Read the specific documentation about the internal debugger.
+
+TODO: need link
+
+---
+
+Removed 🗑️ commands and functions:
+
+`DISPLAY`, `KEYBOARD OPTIONAL`, `GAMEPAD`, `BUTTON`, `LEFT`, `RIGHT`, `DOWN`, `UP`, `TOUCHSCREEN`, `PAUSE ON/OFF`, `PAUSE=`
 
 Removed 🗑️ reserved keywords:
 
@@ -2509,3 +2523,26 @@ Pixels outsied the safe zone represent the number of fantasy pixels that are vis
 | $FFA0 | 2 Bytes | Source address          |
 | $FFA2 | 2 Bytes | Number of bytes to copy |
 | $FFA4 | 2 Bytes | Destination address     |
+
+### Debugger
+
+When `PAUSE` command is executed, LowResRMX will stop the execution and display a command line interface where user can interact with.
+
+The is a simple interface, do not expect to run code with it.
+
+#### read and write a variable
+
+Syntaxe: `var`
+
+Print the value of a variable
+
+Syntaxe: `var = value`
+
+Set the value of a variable
+
+The `var` respect the same BASIC syntaxe rules:
+
+- `$` suffix for a string
+- `()` indexing for array
+
+

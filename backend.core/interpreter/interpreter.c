@@ -89,8 +89,10 @@ struct CoreError itp_compileProgram(struct Core *core, const char *sourceCode)
 
 	size_t len = strlen(sourceCode);
 	char *buffer = malloc(len + 1);
-	if (buffer) memcpy(buffer, sourceCode, len + 1);
-	else return err_makeCoreError(ErrorOutOfMemory, -1);
+	if (buffer)
+		memcpy(buffer, sourceCode, len + 1);
+	else
+		return err_makeCoreError(ErrorOutOfMemory, -1);
 	interpreter->sourceCode = buffer;
 
 	struct CoreError error = tok_tokenizeUppercaseProgram(&interpreter->tokenizer, interpreter->sourceCode);
@@ -149,7 +151,7 @@ struct CoreError itp_compileProgram(struct Core *core, const char *sourceCode)
 	interpreter->pass = PassRun;
 	interpreter->state = StateEvaluate;
 	interpreter->mode = ModeNone;
-	interpreter->handlesPause = true;
+	interpreter->pauseAtWait = false;
 	interpreter->currentDataToken = interpreter->firstData;
 	interpreter->currentDataValueToken = interpreter->firstData ? interpreter->firstData + 1 : NULL;
 	interpreter->isSingleLineIf = false;
@@ -467,11 +469,6 @@ void itp_didFinishVBL(struct Core *core)
 {
 	struct Interpreter *interpreter = core->interpreter;
 
-	// // remember this frame's IO
-	// for (int i = 0; i < NUM_GAMEPADS; i++)
-	// {
-	//     interpreter->lastFrameGamepads[i] = core->machine->ioRegisters.gamepads[i];
-	// }
 	interpreter->lastFrameIOStatus = core->machine->ioRegisters.status;
 
 	// timer
@@ -484,7 +481,7 @@ void itp_didFinishVBL(struct Core *core)
 	// pause
 	if (core->machine->ioRegisters.status.pause)
 	{
-		if (interpreter->handlesPause && interpreter->state == StateEvaluate)
+		if (interpreter->state == StateEvaluate)
 		{
 			interpreter->state = StatePaused;
 			overlay_updateState(core);
@@ -1164,7 +1161,8 @@ struct TypedValue itp_evaluatePrimaryExpression(struct Core *core)
 			{
 				value.type = ValueTypeString;
 				value.v.stringValue = str;
-				if (interpreter->pass == PassRun) rcstring_retain(value.v.stringValue);
+				if (interpreter->pass == PassRun)
+					rcstring_retain(value.v.stringValue);
 			}
 			else
 			{
@@ -1328,7 +1326,7 @@ struct TypedValue itp_evaluateFunction(struct Core *core)
 
 	case TokenTIMER:
 	case TokenRASTER:
-	// case TokenDISPLAY:
+		// case TokenDISPLAY:
 		return fnc_screen0(core);
 
 	case TokenSCROLLX:
@@ -1393,9 +1391,6 @@ struct TypedValue itp_evaluateFunction(struct Core *core)
 
 	case TokenFSIZE:
 		return fnc_FSIZE(core);
-
-	case TokenPAUSE:
-		return fnc_PAUSE(core);
 
 	case TokenMUSIC:
 		return fnc_MUSIC(core);
@@ -1701,9 +1696,6 @@ enum ErrorCode itp_evaluateCommand(struct Core *core)
 
 	case TokenSUB:
 		return cmd_SUB(core);
-
-		//        case TokenSHARED:
-		//            return cmd_SHARED(core);
 
 	case TokenGLOBAL:
 		return cmd_GLOBAL(core);

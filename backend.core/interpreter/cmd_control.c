@@ -534,7 +534,6 @@ enum ErrorCode cmd_WAIT(struct Core *core)
 			interpreter->exitEvaluation = true;
 			interpreter->waitTap = true;
 		}
-		return itp_endOfCommand(interpreter);
 	}
 	else
 	{
@@ -549,6 +548,8 @@ enum ErrorCode cmd_WAIT(struct Core *core)
 	{
 		interpreter->exitEvaluation = true;
 		interpreter->waitCount = wait;
+		if (interpreter->pauseAtWait) interpreter->state = StatePaused;
+		interpreter->pauseAtWait = false;
 	}
 	return itp_endOfCommand(interpreter);
 }

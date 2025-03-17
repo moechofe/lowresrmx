@@ -44,91 +44,96 @@
 
 struct Core;
 
-enum Pass {
-    PassPrepare,
-    PassRun
+enum Pass
+{
+	PassPrepare,
+	PassRun
 };
 
-enum State {
-    StateNoProgram,
-    StateEvaluate,
-    StateInput,
-    StatePaused,
-    StateWaitForDisk,
-    StateEnd
+enum State
+{
+	StateNoProgram,
+	StateEvaluate,
+	StateInput,
+	StatePaused,
+	StateWaitForDisk,
+	StateEnd
 };
 
-enum Mode {
-    ModeNone,
-    ModeMain,
-    ModeInterrupt
+enum Mode
+{
+	ModeNone,
+	ModeMain,
+	ModeInterrupt
 };
 
-enum InterruptType {
-    InterruptTypeRaster,
-    InterruptTypeVBL,
-    InterruptTypeParticle,
-		InterruptTypeEmitter,
+enum InterruptType
+{
+	InterruptTypeRaster,
+	InterruptTypeVBL,
+	InterruptTypeParticle,
+	InterruptTypeEmitter,
 };
 
-struct Interpreter {
-    const char *sourceCode;
+struct Interpreter
+{
+	const char *sourceCode;
 
-    enum Pass pass;
-    enum State state;
-    enum Mode mode;
-    struct Token *pc;
-    int subLevel;
-    int cycles;
-    int interruptOverCycles;
-    bool debug;
-    bool handlesPause;
-    int cpuLoadDisplay;
-    int cpuLoadMax;
-    int cpuLoadTimer;
+	enum Pass pass;
+	enum State state;
+	enum Mode mode;
+	struct Token *pc;
+	int subLevel;
+	int cycles;
+	int interruptOverCycles;
+	bool debug;
+	bool pauseAtWait;
+	int cpuLoadDisplay;
+	int cpuLoadMax;
+	int cpuLoadTimer;
 
-    bool compat;
+	bool compat;
 
-    struct Tokenizer tokenizer;
+	struct Tokenizer tokenizer;
 
-    struct DataManager romDataManager;
+	struct DataManager romDataManager;
 
-    struct LabelStackItem labelStackItems[MAX_LABEL_STACK_ITEMS];
-    int numLabelStackItems;
+	struct LabelStackItem labelStackItems[MAX_LABEL_STACK_ITEMS];
+	int numLabelStackItems;
 
-    bool isSingleLineIf;
+	bool isSingleLineIf;
 
-    struct SimpleVariable simpleVariables[MAX_SIMPLE_VARIABLES];
-    int numSimpleVariables;
-    struct ArrayVariable arrayVariables[MAX_ARRAY_VARIABLES];
-    int numArrayVariables;
-    struct RCString *nullString;
+	struct SimpleVariable simpleVariables[MAX_SIMPLE_VARIABLES];
+	int numSimpleVariables;
+	struct ArrayVariable arrayVariables[MAX_ARRAY_VARIABLES];
+	int numArrayVariables;
+	struct RCString *nullString;
 
-    struct Token *firstData;
-    struct Token *lastData;
-    struct Token *currentDataToken;
-    struct Token *currentDataValueToken;
+	struct Token *firstData;
+	struct Token *lastData;
+	struct Token *currentDataToken;
+	struct Token *currentDataValueToken;
 
-    struct Token *currentOnRasterToken;
-    struct Token *currentOnVBLToken;
-    struct Token *currentOnParticleToken;
-		struct Token *currentOnEmitterToken;
+	struct Token *currentOnRasterToken;
+	struct Token *currentOnVBLToken;
+	struct Token *currentOnParticleToken;
+	struct Token *currentOnEmitterToken;
 
-    int waitCount;
-    bool waitTap;
-    bool exitEvaluation;
-    // union Gamepad lastFrameGamepads[NUM_GAMEPADS];
-    union IOStatus lastFrameIOStatus;
-    float timer;
-    int seed;
-    union Value *lastVariableValue;
+	int waitCount;
+	bool waitTap;
+	bool exitEvaluation;
+	// union Gamepad lastFrameGamepads[NUM_GAMEPADS];
+	union IOStatus lastFrameIOStatus;
+	float timer;
+	int seed;
+	union Value *lastVariableValue;
 
-    struct TextLib textLib;
-    struct SpritesLib spritesLib;
-    struct AudioLib audioLib;
-    struct ParticlesLib particlesLib;
+	struct TextLib textLib;
+	struct SpritesLib spritesLib;
+	struct AudioLib audioLib;
+	struct ParticlesLib particlesLib;
 
-    pcg32_random_t defaultRng;
+	pcg32_random_t defaultRng;
 };
 
 void itp_init(struct Core *core);
