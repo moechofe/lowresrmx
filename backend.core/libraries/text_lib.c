@@ -289,7 +289,7 @@ void txtlib_inputBegin(struct TextLib *lib)
 	lib->blink = 0;
 	lib->core->machine->ioRegisters.key = 0;
 
-	lib->core->machine->ioRegisters.status.keyboardEnabled = 1;
+	lib->core->machine->ioRegisters.status.keyboardVisible = 1;
 	delegate_controlsDidChange(lib->core);
 
 	txtlib_scrollWindowIfNeeded(lib);

@@ -83,10 +83,6 @@ struct CoreError itp_compileProgram(struct Core *core, const char *sourceCode)
 
 	// Parse source code
 
-	// interpreter->sourceCode = uppercaseString(sourceCode);
-	// if (!interpreter->sourceCode)
-	// 	return err_makeCoreError(ErrorOutOfMemory, -1);
-
 	size_t len = strlen(sourceCode);
 	char *buffer = malloc(len + 1);
 	if (buffer)
@@ -251,7 +247,6 @@ void itp_runInterrupt(struct Core *core, enum InterruptType type)
 	case StateWaitForDisk:
 	{
 		struct Token *startToken = NULL;
-		int maxCycles;
 
 		int mainCycles = interpreter->cycles;
 		interpreter->cycles = 0;
@@ -260,24 +255,24 @@ void itp_runInterrupt(struct Core *core, enum InterruptType type)
 		{
 		case InterruptTypeRaster:
 			startToken = interpreter->currentOnRasterToken;
-			maxCycles = MAX_CYCLES_PER_RASTER;
+			interpreter->maxCycles = MAX_CYCLES_PER_RASTER;
 			break;
 
 		case InterruptTypeVBL:
 			startToken = interpreter->currentOnVBLToken;
-			maxCycles = MAX_CYCLES_PER_VBL;
+			interpreter->maxCycles = MAX_CYCLES_PER_VBL;
 			// update audio player
 			audlib_update(&interpreter->audioLib);
 			break;
 
 		case InterruptTypeParticle:
 			startToken = interpreter->currentOnParticleToken;
-			maxCycles = MAX_CYCLES_PER_PARTICLE;
+			interpreter->maxCycles = MAX_CYCLES_PER_PARTICLE;
 			break;
 
 		case InterruptTypeEmitter:
 			startToken = interpreter->currentOnEmitterToken;
-			maxCycles = MAX_CYCLES_PER_EMITTER;
+			interpreter->maxCycles = MAX_CYCLES_PER_EMITTER;
 			break;
 		}
 
@@ -447,7 +442,7 @@ void itp_runInterrupt(struct Core *core, enum InterruptType type)
 		}
 
 		// calculate cycles exceeding limit
-		interpreter->interruptOverCycles += interpreter->cycles - maxCycles;
+		interpreter->interruptOverCycles += interpreter->cycles - interpreter->maxCycles;
 		if (interpreter->interruptOverCycles < 0)
 		{
 			interpreter->interruptOverCycles = 0;
@@ -455,6 +450,7 @@ void itp_runInterrupt(struct Core *core, enum InterruptType type)
 
 		// sum of interrupt's and main cycle count
 		interpreter->cycles += mainCycles;
+		interpreter->maxCycles = MAX_CYCLES_TOTAL_PER_FRAME;
 
 		break;
 	}
@@ -478,22 +474,22 @@ void itp_didFinishVBL(struct Core *core)
 		interpreter->timer = 0;
 	}
 
-	// pause
-	if (core->machine->ioRegisters.status.pause)
-	{
-		if (interpreter->state == StateEvaluate)
-		{
-			interpreter->state = StatePaused;
-			overlay_updateState(core);
-			core->machine->ioRegisters.status.pause = 0;
-		}
-		else if (interpreter->state == StatePaused)
-		{
-			interpreter->state = StateEvaluate;
-			overlay_updateState(core);
-			core->machine->ioRegisters.status.pause = 0;
-		}
-	}
+	// // pause
+	// if (core->machine->ioRegisters.status.pause)
+	// {
+	// 	if (interpreter->state == StateEvaluate)
+	// 	{
+	// 		interpreter->state = StatePaused;
+	// 		overlay_updateState(core);
+	// 		core->machine->ioRegisters.status.pause = 0;
+	// 	}
+	// 	else if (interpreter->state == StatePaused)
+	// 	{
+	// 		interpreter->state = StateEvaluate;
+	// 		overlay_updateState(core);
+	// 		core->machine->ioRegisters.status.pause = 0;
+	// 	}
+	// }
 
 	// CPU load (rounded up)
 	int currentCpuLoad = (interpreter->cycles * 100 + MAX_CYCLES_TOTAL_PER_FRAME - 1) / MAX_CYCLES_TOTAL_PER_FRAME;

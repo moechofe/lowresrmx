@@ -517,7 +517,7 @@ struct TypedValue fnc_STR(struct Core *core)
 		if (!rcstring)
 			return val_makeError(ErrorOutOfMemory);
 
-		snprintf(rcstring->chars, 20, "%0.7g", numericValue.v.floatValue);
+		snprintf(rcstring->chars, 20, "%0.10g", numericValue.v.floatValue);
 		resultValue.v.stringValue = rcstring;
 		interpreter->cycles += strlen(rcstring->chars);
 	}

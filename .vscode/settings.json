@@ -28,7 +28,8 @@
         "**/*.bc": true
     },
     "search.exclude": {
-        "**/*.bc": true
+        "**/*.bc": true,
+        "project.flutter/core_plugin/src/core.*": true
     },
     "files.exclude": {
         "**/*.bc": true

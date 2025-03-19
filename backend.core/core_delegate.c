@@ -59,7 +59,7 @@ void delegate_controlsDidChange(struct Core *core)
     if (core->delegate->controlsDidChange)
     {
         struct ControlsInfo info;
-				if (core->machine->ioRegisters.status.keyboardEnabled)
+				if (core->machine->ioRegisters.status.keyboardVisible)
         {
 						info.keyboardMode = KeyboardModeOn;
         }

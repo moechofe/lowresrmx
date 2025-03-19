@@ -394,7 +394,7 @@ void core_handleInput(struct Core *core, struct CoreInput *input)
 			overlay_updateState(core);
 			processedOtherInput = true;
 		}
-		else if (!core->machine->ioRegisters.status.keyboardEnabled)
+		else if (!core->machine->ioRegisters.status.keyboardVisible)
 		{
 			// else if (!ioAttr.keyboardEnabled) {
 			ioRegisters->status.pause = 1;
@@ -428,13 +428,13 @@ bool core_getDebug(struct Core *core)
 
 bool core_isKeyboardEnabled(struct Core *core)
 {
-	return core->machine->ioRegisters.status.keyboardEnabled;
+	return core->machine->ioRegisters.status.keyboardVisible;
 	// return core->machine->ioRegisters.attr.keyboardEnabled;
 }
 
 void core_setKeybordEnabled(struct Core *core, bool enabled)
 {
-	core->machine->ioRegisters.status.keyboardEnabled = enabled;
+	core->machine->ioRegisters.status.keyboardVisible = enabled;
 }
 
 bool core_shouldRender(struct Core *core)
@@ -511,7 +511,7 @@ void delegate_controlsDidChange(struct Core *core)
     if (core->delegate->controlsDidChange)
     {
         struct ControlsInfo info;
-				if (core->machine->ioRegisters.status.keyboardEnabled)
+				if (core->machine->ioRegisters.status.keyboardVisible)
         {
 						info.keyboardMode = KeyboardModeOn;
         }
@@ -3778,7 +3778,7 @@ enum ErrorCode cmd_KEYBOARD(struct Core *core)
 
 	if (interpreter->pass == PassRun)
 	{
-		core->machine->ioRegisters.status.keyboardEnabled = (type == TokenON);
+		core->machine->ioRegisters.status.keyboardVisible = (type == TokenON);
 		delegate_controlsDidChange(core);
 	}
 
@@ -3797,7 +3797,7 @@ struct TypedValue fnc_KEYBOARD(struct Core *core)
 
 	if (interpreter->pass == PassRun)
 	{
-		value.v.floatValue = core->machine->ioRegisters.status.keyboardEnabled > 0 ? -1 : 0;
+		value.v.floatValue = core->machine->ioRegisters.status.keyboardVisible > 0 ? -1 : 0;
 	}
 	return value;
 }
@@ -12929,7 +12929,7 @@ void txtlib_inputBegin(struct TextLib *lib)
 	lib->blink = 0;
 	lib->core->machine->ioRegisters.key = 0;
 
-	lib->core->machine->ioRegisters.status.keyboardEnabled = 1;
+	lib->core->machine->ioRegisters.status.keyboardVisible = 1;
 	delegate_controlsDidChange(lib->core);
 
 	txtlib_scrollWindowIfNeeded(lib);

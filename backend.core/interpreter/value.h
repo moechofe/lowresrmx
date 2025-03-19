@@ -25,29 +25,33 @@
 #include "error.h"
 #include "rcstring.h"
 
-enum ValueType {
-    ValueTypeNull,
-    ValueTypeError,
-    ValueTypeFloat,
-    ValueTypeString
+enum ValueType
+{
+	ValueTypeNull,
+	ValueTypeError,
+	ValueTypeFloat,
+	ValueTypeString
 };
 
-union Value {
-    float floatValue;
-    struct RCString *stringValue;
-    union Value *reference;
-    enum ErrorCode errorCode;
+union Value
+{
+	float floatValue;
+	struct RCString *stringValue;
+	union Value *reference;
+	enum ErrorCode errorCode;
 };
 
-struct TypedValue {
-    enum ValueType type;
-    union Value v;
+struct TypedValue
+{
+	enum ValueType type;
+	union Value v;
 };
 
-enum TypeClass {
-    TypeClassAny,
-    TypeClassNumeric,
-    TypeClassString
+enum TypeClass
+{
+	TypeClassAny,
+	TypeClassNumeric,
+	TypeClassString
 };
 
 extern union Value ValueDummy;

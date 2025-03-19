@@ -216,11 +216,11 @@ void core_handleInput(struct Core *core, struct CoreInput *input)
 			overlay_updateState(core);
 			processedOtherInput = true;
 		}
-		else if (!core->machine->ioRegisters.status.keyboardEnabled)
-		{
-			// else if (!ioAttr.keyboardEnabled) {
-			ioRegisters->status.pause = 1;
-		}
+		// else if (!core->machine->ioRegisters.status.keyboardEnabled)
+		// {
+		// 	// else if (!ioAttr.keyboardEnabled) {
+		// 	ioRegisters->status.pause = 1;
+		// }
 		input->pause = false;
 	}
 
@@ -250,13 +250,12 @@ bool core_getDebug(struct Core *core)
 
 bool core_isKeyboardEnabled(struct Core *core)
 {
-	return core->machine->ioRegisters.status.keyboardEnabled;
-	// return core->machine->ioRegisters.attr.keyboardEnabled;
+	return core->machine->ioRegisters.status.keyboardVisible;
 }
 
 void core_setKeybordEnabled(struct Core *core, bool enabled)
 {
-	core->machine->ioRegisters.status.keyboardEnabled = enabled;
+	core->machine->ioRegisters.status.keyboardVisible = enabled;
 }
 
 bool core_shouldRender(struct Core *core)

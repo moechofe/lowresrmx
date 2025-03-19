@@ -540,7 +540,8 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
 			NSLog("Keyboard ON");
 			if let userInfo = notification.userInfo,
       let keyboardRectangle = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect {
-      print(keyboardRectangle.height)
+				print(keyboardRectangle.height)
+				}
 		}
 
 		@objc func keyboardDidHide(_ notification: NSNotification) {

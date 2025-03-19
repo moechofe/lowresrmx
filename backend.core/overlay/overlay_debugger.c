@@ -25,7 +25,7 @@ void print_value(struct Core *core, enum ValueType type, union Value *value)
 	if (type == ValueTypeFloat && value)
 	{
 		char buffer[20];
-		snprintf(buffer, 20, "  %0.7g", value->floatValue);
+		snprintf(buffer, 20, "  %0.10g", value->floatValue);
 		txtlib_printText(&core->overlay->textLib, buffer);
 		new_line(core);
 	}
@@ -43,7 +43,7 @@ void print_value(struct Core *core, enum ValueType type, union Value *value)
 	}
 }
 
-void set_value(struct Core *core, enum ValueType type, union Value *value, enum ValueType newType, float newFloat, struct RCString *newString)
+void set_value(struct Core *core, enum ValueType type, union Value *value, enum TokenType newType, float newFloat, struct RCString *newString)
 {
 	// NOTE: value and newValue are alreay tested before arriving here
 	if (newType == TokenFloat && type == ValueTypeFloat)
@@ -122,7 +122,11 @@ void process_command_line(struct Core *core)
 	if (err.code == ErrorNone && toks.numTokens > 0)
 	{
 		t = &toks.tokens[i++];
-		if (t->type == TokenIdentifier || t->type == TokenStringIdentifier)
+		if (t->type == TokenEol)
+		{
+			return;
+		}
+		else if (t->type == TokenIdentifier || t->type == TokenStringIdentifier)
 		{
 			t = &toks.tokens[i++];
 			struct SimpleVariable *simple = get_simple_var(core, toks.symbols[0].name);
@@ -334,9 +338,9 @@ void overlay_debugger(struct Core *core)
 	struct TextLib *lib = &core->overlay->textLib;
 	struct Overlay *overlay = core->overlay;
 
-	if (core->machine->ioRegisters.status.keyboardEnabled == 0)
+	if (core->machine->ioRegisters.status.keyboardVisible == 0)
 	{
-		core->machine->ioRegisters.status.keyboardEnabled = -1;
+		core->machine->ioRegisters.status.keyboardVisible = -1;
 		delegate_controlsDidChange(core);
 	}
 

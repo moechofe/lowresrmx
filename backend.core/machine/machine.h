@@ -59,30 +59,29 @@ struct Machine {
     uint8_t nothing1[0x0FB00-0x0F800]; // 768 Bytes
 
     // 0x0FB00..0x0FF00
-    struct SpriteRegisters spriteRegisters; // 1Kibi
+    struct SpriteRegisters spriteRegisters; // 1020 Bytes
     uint8_t nothing2[0x400 - sizeof(struct SpriteRegisters)]; // 4 bytes
 
     // 0x0FF00
-    struct ColorRegisters colorRegisters; // 32Bytes
+    struct ColorRegisters colorRegisters; // 32 Bytes
 
-    // 0xFF20
-    struct VideoRegisters videoRegisters;
+    // 0x0FF20..0x0FF40
+    struct VideoRegisters videoRegisters; // 20 Bytes
     uint8_t nothing3[0x20 - sizeof(struct VideoRegisters)]; // 12 Bytes
 
-    // 0xFF40
+    // 0x0FF40..0x0FF70
     struct AudioRegisters audioRegisters;
 
-    // 0xFF70
-    struct IORegisters ioRegisters;
-    uint8_t nothing5[0x30 - sizeof(struct IORegisters)]; // 17 Bytes
+    // 0x0FF70..0x0FFA0
+    struct IORegisters ioRegisters; // 24 Bytes
+    uint8_t nothing4[0x30 - sizeof(struct IORegisters)]; // 24 Bytes
 
-    // 0xFFA0
-    struct DmaRegisters dmaRegisters;
-    uint8_t nothing6[0x10 - sizeof(struct DmaRegisters)]; // 10 Bytes
+    // 0x0FFA0..0x0FFB0
+    struct DmaRegisters dmaRegisters; // 6 Bytes
+    uint8_t manually_mapped[0x10 - sizeof(struct DmaRegisters)]; // 10 Bytes
 
-    // 0xFFB0
-		// TODO: I may have use this to store the number of cycles
-    uint8_t nothing7[0x10000 - 0xFFB0];
+    // 0x0FFB0.0x10000
+    uint8_t nothing5[0x10000 - 0xFFB0]; // 80 Bytes !!!!!
 
     // 0x10000..0x20000
     uint8_t cartridgeRom[0x10000]; // 64Kibi

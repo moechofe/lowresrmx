@@ -85,6 +85,7 @@ struct Interpreter
 	struct Token *pc;
 	int subLevel;
 	int cycles;
+	int maxCycles;
 	int interruptOverCycles;
 	bool debug;
 	bool pauseAtWait;
@@ -122,7 +123,6 @@ struct Interpreter
 	int waitCount;
 	bool waitTap;
 	bool exitEvaluation;
-	// union Gamepad lastFrameGamepads[NUM_GAMEPADS];
 	union IOStatus lastFrameIOStatus;
 	float timer;
 	int seed;

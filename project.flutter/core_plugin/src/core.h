@@ -148,7 +148,7 @@ union IOStatus
 	{
 		uint8_t pause : 1;
 		uint8_t touch : 1;
-		uint8_t keyboardEnabled : 1;
+		uint8_t keyboardVisible : 1;
 	};
 	uint8_t value;
 };

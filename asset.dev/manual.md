@@ -612,6 +612,18 @@ A sprite can be freely placed anywhere on the screen with 1/16 sub-pixel precisi
 
 <!--FIXME: spell checked END -->
 
+### TODO: sound
+
+### CPU & cycles
+
+LowResRMX simulate a fantasy console with limitation, on of them is about the number of instruction the CPU can execute before the next frame MUST be drawn and presented to the player.
+
+This is obtained by a set of different rules applied to an internal CPU cycle counter. When the maximum is reached, the next frame is drawn no matter what. This can have the following effect:
+
+1. the execution of the main program is halted and will continu after the frame is drawn. The program will run slower.
+
+2. if the maximum cycles is reach during a RASTER interrupt, the next line is not drawn.
+
 ## Program Language
 
 The programming language follow the path of the original Lowres NX. It's a BASIC type language and here's how to use it.
@@ -2545,4 +2557,13 @@ The `var` respect the same BASIC syntaxe rules:
 - `$` suffix for a string
 - `()` indexing for array
 
+### Cycles
 
+Limit of cycles a program can execute:
+- 52668 per frames
+
+During interrupt, addional limits are also applied:
+- 3420 for VBL interrupt
+- 204 per line for RASTER interrupt
+- 51 per particle for PARTICLE interrupt
+- 102 per emitter for EMITTER interrupt

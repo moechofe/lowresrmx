@@ -23,65 +23,31 @@
 
 #include <stdint.h>
 
-#define NUM_GAMEPADS 2
-
-// ================ Gamepad ================
-
-// union Gamepad {
-//     struct {
-//         uint8_t up:1;
-//         uint8_t down:1;
-//         uint8_t left:1;
-//         uint8_t right:1;
-//         uint8_t buttonA:1;
-//         uint8_t buttonB:1;
-//     };
-//     uint8_t value;
-// };
-
-// ================ Status ================
-
 union IOStatus
 {
 	struct
 	{
-		uint8_t pause : 1;
 		uint8_t touch : 1;
-		uint8_t keyboardEnabled : 1;
+		uint8_t keyboardVisible : 1;
 	};
 	uint8_t value;
 };
 
-// ================ Attributes ================
-
-// union IOAttributes {
-//     struct {
-//     };
-//     uint8_t value;
-// };
-
-// ===============================================
-// ================ I/O Registers ================
-// ===============================================
-
 struct IORegisters
 {
-	// TODO: remove gamepad
-	// union Gamepad gamepads[NUM_GAMEPADS]; // 2 bytes
-	float touchX;
-	float touchY;
+	float touchX; // offset: 0
+	float touchY; // offset: 0x4
 	struct
 	{
 		uint16_t width, height;
-	} shown;
+	} shown; // offset: 0x8
 	struct
 	{
 		uint16_t left, top, right, bottom;
-	} safe;
-	char key;
-	union IOStatus status;
-	// union IOAttributes attr;
-	uint8_t haptic;
+	} safe; // offset: 0xC
+	char key; // offset: 0x14
+	union IOStatus status; // offset: 0x15
+	uint8_t haptic; // offset: 0x16
 };
 
 #endif /* io_chip_h */
