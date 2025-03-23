@@ -159,7 +159,6 @@ enum TokenType
 	TokenRASTER,
 	TokenREAD,
 	TokenSKIP,
-	TokenREM,
 	TokenREPEAT,
 	TokenRESTORE,
 	TokenRETURN,

@@ -1,6 +1,9 @@
 {
     "cmake.sourceDirectory": "${workspaceFolder}/project.cmake",
     "cmake.buildDirectory": "${workspaceFolder}/project.cmake/build",
+    "cmake.configureArgs": [
+        "-DSDL=./SDL2-2.30.0"
+    ],
     "files.associations": {
         "*.embeddedhtml": "html",
         "*.tcc": "c",

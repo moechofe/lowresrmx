@@ -94,7 +94,6 @@ struct Token* dat_readData(struct Token *dataToken, int skip)
 								dataToken+=1;
 								break;
 
-						case TokenREM:
 						case TokenApostrophe:
 								dataToken+=1;
 								break;

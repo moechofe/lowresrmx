@@ -14,7 +14,7 @@ It **will** includes a project manager, a code editor, and various tools to edit
 
 ## Difference
 
-The goal 🥅 of the app is to provide a development environment that I can use during my commutes on the subway, and later, to be able to publish a real app on the stores.
+The goal of the app is to provide a development environment that I can use during my commutes on the subway, and later, to be able to publish a real app on the stores.
 
 The original LowRes NX, despite being an excellent development environment, lacks some capabilities, in my opinion.
 
@@ -26,7 +26,7 @@ The original LowRes NX, despite being an excellent development environment, lack
 
 Support for large 16x16 pixel cells has been removed.
 
-Removed 🗑️ syntaxes:
+Removed syntaxes:
 
 `CELL SIZE bg,size`
 
@@ -2034,7 +2034,7 @@ Set the address `a` in the cartridge to use as source for `BG COPY` operations.
 
 When `w` and `h` are specified, they are used as indiquating the number of cells in width and height of the source.
 
-If they are not specified, the [official background format data](#background-format-data) are used to store the width and the height.
+If they are not specified, the [official background format data](#background-source-data) are used to store the width and the height.
 
 > If not specified the default address is taken by internally executing `=ROM(3)`
 
@@ -2096,7 +2096,7 @@ The default value is 192, which points to where the default font is loaded at th
 
 To print text on screen, LowResRMX actually use the [background API](#background-api).
 
-`WINDOW x,y,w,h,layer`
+#### `WINDOW x,y,w,h,layer`
 
 Sets the current window where to draw text characters. `x`, `y` are the cell position where to start drawing on the background number `layer` while `w`, `h` are the width and height also in number of cells.
 
@@ -2391,18 +2391,74 @@ TODO: how window not updated when on-resized
     <div>56</div><div>57</div><div>58</div><div>59</div><div>60</div><div>61</div><div>62</div><div>63</div>
 </div>
 
-### Background format data
+### Memory mapping
 
-TODO: continue
+| addr     | size        | purpose            |
+| -------- | ----------- | ------------------ |
+| `$00000` | 8 Kibibyte  | Layer 0 data       |
+| `$02000` | 8 Kibibyte  | Layer 1 data       |
+| `$04000` | 8 Kibibyte  | Layer 2 data       |
+| `$06000` | 8 Kibibyte  | Layer 3 data       |
+| `$08000` | 4 Kibibyte  | Character data     |
+| `$09000` | 20 Kibibyte | Working RAM        |
+| `$0E000` | 6 Kibibyte  | Persisent RAM      |
+| `$0FB00` | 1020 Bytes  | Sprite registers   |
+| `$0FF00` | 32 Bytes    | Color registers    |
+| `$0FF20` | 10 Bytes    | Video registers    |
+| `$0FF40` | 48 Bytes    | Audio registers    |
+| `$0FF70` | 28 Bytes    | I/O registers      |
+| `$0FFA0` | 6 Bytes     | DMA registers      |
+| `$0FFA6` | 10 Bytes    | Internal registers |
+| `$10000` | 64 Kibibyte | Cartridge ROM      |
 
-| addr | purpose        |
-| ---- | ---------------|
-|  a+0 | always zero    |
-|  a+1 | always zero    |
-|  a+2 | width in cell  |
-|  a+3 | height in cell |
-|  a+4 | cell's data    |
+TODO: Add particle/emitter registers
 
+### Background data
+
+The 4 layers use the same background format:
+- 64x64 cells
+- 2 bytes per cell
+
+For each cell:
+
+| addr | purpose                   |
+| ---- | --------------------------|
+| a+0  | character number (0..255) |
+| a+2  | character attributes      |
+
+### Cell attributes
+
+| bit mask  | purpose                |
+| --------- | ---------------------- |
+| %00000111 | palette number (0..7)  |
+| %00001000 | horizontal flip (0..1) |
+| %00010000 | vertical flip (0..1)   |
+| %00100000 | priority flag (0..1)   |
+
+_the last 2 bits are unused_
+
+### Background source data
+
+When using [`BG SOURCE a[,w,h]`](#bg-source-awh) without specifing `w,h` width and height, LowResRMX will use a specific data format:
+
+| addr | size   | purpose        |
+| ---- | ------ | ---------------|
+|  a+0 | 1 Byte | always zero    |
+|  a+1 | 1 Byte | always zero    |
+|  a+2 | 1 Byte | width in cell  |
+|  a+3 | 1 Byte | height in cell |
+|  a+4 | ...    | cell's data    |
+
+### Character data
+
+The 255 characters use the same character format:
+- 8x8 pixels
+- 2 bits per pixel
+- 16 bytes per character
+- [bit plane encoded](https://en.wikipedia.org/wiki/Bit_plane)
+
+The pixels are encoded bit per bit, from left to right, then top to bottom, one plane at a time.
+The 1st 8 bytes store the low bit for all the 8x8 pixels. The 2nd 8 bytes store the high bit.
 
 ### Registers
 

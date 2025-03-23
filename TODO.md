@@ -1,6 +1,9 @@
+- [ ]
+- [ ] windows: copy de dll https://stackoverflow.com/questions/13556885/how-to-change-the-executable-output-directory-for-win32-builds-in-cmake
+- [x] overlay windows should use SAFE and update at resize
 - [ ] core: can I use the last 80 bytes to share data across all ROM?
-- [ ] core: clean mess about ioRegisters and memory map
-- [ ] core: make =KEYBOARD return the size of the keyboard
+- [x] core: clean mess about ioRegisters and memory map
+- [x] core: make =KEYBOARD return the size of the keyboard
 - [x] core: see where =PAUSE is usefull, interrupt? no, deleteme
 - [x] core: remove PAUSE ON/OFF but keep PAUSE
 - [x] core: reuse PAUSE to provide a simple debugger
@@ -11,7 +14,7 @@
 - [ ] core: make `x` and `y` of `SCROLL` cmd optional
 - [ ] particle_lib: I should return memory access error when machine_peek_short()
 - [x] core: implement a 2x zoom per bg.
-- [ ] core: give access to cycle counter to user
+- [x] core: give access to cycle counter to user
 - [ ] ios_app: add a security to prevent user to upload non wanted content, generate a signature on the ios side and check it on the web, I found libsodium for swift. I'm using TTL content right now.
 
 - [ ] web_app: https://vigneshwarar.substack.com/p/hackernews-ranking-algorithm-how
@@ -28,7 +31,7 @@
 - [ ] flutter_app: Make the search/replace shorter.
 - [ ] flutter_app: Find a way to show line number, or longer line that wrap.
 - [ ] core: show more info in trace, like variables counter, label counter...
-- [ ] Change Project name: Demake Remix
+- [ ] Change Project name: Demake Remix, Retro Game Creator
 - [ ] manual: Add `ON EMITTER CALL`
 - [ ] core: Remove LET.
 - [ ] core: redo the particle system, use more variable
@@ -51,12 +54,14 @@
 
         If the library is simulating actually external chip, it can hold additional internal memory modifiable using commands.
 
+    5. Map emitter paramater in memory, allowing to copy them
+
 - [ ] flutter_app: Can I prevent user to hide the keyboard?
 
     No, but I can setup a special use case for when INPUT is used, has it actually block the game.
 
 - [x] core: Add a function to test  the keyboard visibility
-- [ ] core: Remove pause feature. Or make it usefull for dev. Trace the "paused" message instead of in center of the screen.
+- [x] core: Remove pause feature. Or make it usefull for dev. Trace the "paused" message instead of in center of the screen.
 - [-] flutter_app: enable ctrl/shift/insert... shortcut for cut copy past.
 
     Cannot be done, the mapping for shortcut to action has been implement in the wrong way, preventing to map multiple shortcut to the same action (intent)
@@ -85,23 +90,23 @@
     I probably need to implement a custom toolbar above the keyboard instead. I suspect showMenu to remove the focus on the editor and then, it selecte the whole line instead of the selection made by the user. Why did it act differently on Android and Linux?, I dunno.
 
 - [ ] flutter_app: How to mesure performance and battery consumption?
-- [ ] core: Add a ceil function
+- [x] core: Add a ceil function
 
     The function already exists, the entry in the manual is missing.
 
-- [ ] client_app: Add an option to hide the run_page menu on Android.
-- [ ] client_app: What about the system bar?
-- [x] client_app: The keyboard should not resize the canvas but alter it's size.
-- [x] client_app: The exit button on the run_page is not well placed.
-- [ ] 🐞 client_app: At 1st program run, the program is stuck and not get executed correctly.
-- [ ] client_app: When no tools are available in the edit_drawer, simply display how to add tool.
-- [ ] client_app/core: I should be able to check if the keyboard has been closed by the user and change the flag on the core side.
+- [ ] flutter_app: Add an option to hide the run_page menu on Android.
+- [ ] flutter_app: What about the system bar?
+- [x] flutter_app: The keyboard should not resize the canvas but alter it's size.
+- [x] flutter_app: The exit button on the run_page is not well placed.
+- [x] 🐞 flutter_app: At 1st program run, the program is stuck and not get executed correctly.
+- [ ] flutter_app: When no tools are available in the edit_drawer, simply display how to add tool.
+- [ ] flutter_app/core: I should be able to check if the keyboard has been closed by the user and change the flag on the core side.
 
     https://pub.dev/packages/flutter_keyboard_visibility
 
-- [ ] client_app: Restore previously pushed route.
-- [x] client_app: Allow to open the app using a file.
-- [x] client_app: Make MyProgramPreference independent beetween pages
+- [ ] flutter_app: Restore previously pushed route.
+- [x] flutter_app: Allow to open the app using a file.
+- [x] flutter_app: Make MyProgramPreference independent beetween pages
 
     Because the routes are replacing each other, I can setup a Provider in edit page and retrieve it in the drawer or in the run page. I need a proper FutureBuilder for each one.
 
@@ -109,7 +114,7 @@
 
     User has no way to open the keyboard manually anyway.
 
-- [ ] client_app: Keep an historic of changes.
+- [ ] flutter_app: Keep an historic of changes.
 - [ ] It seems a good idea to store the thumbnail inside the cartridge.
 - [x] onSaveDataDisk should save on datadisk or edited
 - [ ] finish the vscode-extension
@@ -122,14 +127,10 @@
 - [ ] move pcg to a directory
 - [x] redo the project architecture
 - [x] rename file extension `.nx` to `.rmx`
-- [ ] plugin for popular code editor
+- [ ] syntaxe highlight plugin for popular code editor
 - [ ] add a text tool to the bg editor
-- [ ] stoping clear overlay on pause
-- [ ] run and loop an interrupt during pause, and allow to unpause
-- [ ] allow multiple instructions per line
 - [x] add an interrupt for emitter
 - [x] remove LET, REM
-- [ ] allow to create line shape with emitter or rect
 - [x] allow to login with google account
 - [x] allow to upload program
 - [x] allow to publish programs
@@ -157,7 +158,7 @@
 - [x] remove the TokenDISPLAY and command
 - [x] Remove GAMEPAD
 - [x] Allow to update shown.w/h during runtime
-- [ ] protect unmapped memory access
+- [x] protect unmapped memory access
 - [x] try to make the 0nth color non transparent
 - [x] expose message api to user
 - [x] create smaller program picture
@@ -172,12 +173,11 @@
 - [ ] Clear overlay when resized
 - [ ] Allow to sync with icloud
 - [ ] Prevent modify post that is too old.
-- [ ] Can I avoid uppercaseString of data_import?
+- [x] Can I avoid uppercaseString of data_import?
 - [x] Use PopScope on edit_page to return to library_page
 - [ ] A tool to show the RETURN stack
-- [ ] A SAFE demo
-- [ ] Change default color
-- [ ] TRACE windows should use SAFE and update at resize
+- [x] A SAFE demo
+- [x] Change default color
 - [ ] delay asking for stars notation
 - [ ] refresh session TTL as long as user visiting the website
 - [ ] refresh google/discord oauth token

@@ -253,9 +253,9 @@ struct CoreError tok_tokenizeUppercaseProgram(struct Tokenizer *tokenizer, const
         }
         if (foundKeywordToken != TokenUndefined)
         {
-            if (foundKeywordToken == TokenREM || foundKeywordToken == TokenApostrophe)
+            if (foundKeywordToken == TokenApostrophe)
             {
-                // REM comment, skip until end of line
+                // comment, skip until end of line
                 while (*character)
                 {
                     if (*character < 0)

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.20.0)
+cmake_minimum_required(VERSION 3.21.0)
 project(LowResRMX LANGUAGES C)
 
 # Sauce: https://stackoverflow.com/questions/7787823/cmake-how-to-get-the-name-of-all-subdirectories-of-a-directory
@@ -15,6 +15,7 @@ ENDMACRO()
 
 cmake_path(GET PROJECT_SOURCE_DIR PARENT_PATH PROJECT_ROOT_DIR)
 message("PROJECT_ROOT_DIR= ${PROJECT_ROOT_DIR}")
+message("SDL= ${SDL}")
 
 set(BACKEND_SOURCE_DIR "${PROJECT_ROOT_DIR}/backend.core")
 SET(FRONDEND_SOURCE_DIR "${PROJECT_ROOT_DIR}/frontend.sdl")
@@ -37,7 +38,7 @@ if(SDL2_PATH)
 	find_package(SDL2 REQUIRED)
 	target_include_directories(${PROJECT_NAME} PRIVATE ${SDL2_INCLUDE_DIRS})
 else()
-	add_subdirectory("SDL" EXCLUDE_FROM_ALL)
+	add_subdirectory(${SDL} EXCLUDE_FROM_ALL)
 endif()
 
 if(SDL2_PATH)
@@ -48,8 +49,19 @@ else()
   endif()
   target_link_libraries(${PROJECT_NAME} PRIVATE SDL2::SDL2)
 
-  #install(FILES $<TARGET_RUNTIME_DLLS:SDL2> TYPE BIN)
+	# Seems this do nothing, on windows, the dll is SDL2d.dll
+  install(FILES $<TARGET_RUNTIME_DLLS:SDL2> TYPE BIN)
+
+	if(MSVC)
+		install(DIRECTORY "${SDL2_BINARY_DIR}/Debug/" TYPE BIN FILES_MATCHING REGEX "[^\\\\/.]\\.[dD][lL][lL]$")
+	endif()
 endif()
+
+get_cmake_property(_variableNames VARIABLES)
+list (SORT _variableNames)
+foreach (_variableName ${_variableNames})
+    message(STATUS "${_variableName}=${${_variableName}}")
+endforeach()
 
 if(APPLE)
 	target_include_directories(${PROJECT_NAME} PRIVATE /opt/homebrew/Cellar/sdl2/2.28.1/include/)

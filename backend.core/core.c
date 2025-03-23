@@ -253,9 +253,14 @@ bool core_isKeyboardEnabled(struct Core *core)
 	return core->machine->ioRegisters.status.keyboardVisible;
 }
 
-void core_setKeybordEnabled(struct Core *core, bool enabled)
+void core_setKeyboardEnabled(struct Core *core, bool enabled)
 {
 	core->machine->ioRegisters.status.keyboardVisible = enabled;
+}
+
+void core_setKeyboardHeight(struct Core *core, int height)
+{
+	core->machine->ioRegisters.keyboardHeight = height;
 }
 
 bool core_shouldRender(struct Core *core)

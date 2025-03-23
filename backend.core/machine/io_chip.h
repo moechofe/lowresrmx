@@ -35,19 +35,29 @@ union IOStatus
 
 struct IORegisters
 {
-	float touchX; // offset: 0
-	float touchY; // offset: 0x4
+	// 0x0ff70
+	float touchX;
+	// 0x0ff74
+	float touchY;
+	// 0x0ff78
 	struct
 	{
 		uint16_t width, height;
-	} shown; // offset: 0x8
+	} shown;
+	// 0x0ff7c
 	struct
 	{
 		uint16_t left, top, right, bottom;
-	} safe; // offset: 0xC
-	char key; // offset: 0x14
-	union IOStatus status; // offset: 0x15
-	uint8_t haptic; // offset: 0x16
+	} safe;
+	// 0x0ff84
+	char key;
+	// 0x0ff85
+	union IOStatus status;
+	// 0x0ff87
+	uint8_t haptic;
+	// 0x0ff88
+	int keyboardHeight;
+	// 0x0ff8c
 };
 
 #endif /* io_chip_h */

@@ -47,11 +47,11 @@ void overlay_updateLayout(struct Core *core, struct CoreInput *input)
 {
 	struct IORegisters *io = &core->machine->ioRegisters;
 	struct TextLib *lib = &core->overlay->textLib;
+	int b = io->safe.bottom > io->keyboardHeight ? io->safe.bottom : io->keyboardHeight;
 	lib->windowX = (io->safe.left + 7) / 8;
 	lib->windowY = (io->safe.top + 7) / 8;
 	lib->windowWidth = io->shown.width / 8 - (io->safe.left + 7) / 8 - (io->safe.right + 7) / 8;
-	lib->windowHeight = io->shown.height / 8 - (io->safe.top + 7) / 8 - (io->safe.bottom + 7) / 8;
-	// TODO: include keyboard height
+	lib->windowHeight = io->shown.height / 8 - (io->safe.top + 7) / 8 - (b + 7) / 8;
 }
 
 void overlay_reset(struct Core *core)

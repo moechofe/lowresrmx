@@ -73,8 +73,8 @@ struct Machine {
     struct AudioRegisters audioRegisters;
 
     // 0x0FF70..0x0FFA0
-    struct IORegisters ioRegisters; // 24 Bytes
-    uint8_t nothing4[0x30 - sizeof(struct IORegisters)]; // 24 Bytes
+    struct IORegisters ioRegisters; // 28 Bytes
+    uint8_t nothing4[0x30 - sizeof(struct IORegisters)]; // 20 Bytes
 
     // 0x0FFA0..0x0FFB0
     struct DmaRegisters dmaRegisters; // 6 Bytes

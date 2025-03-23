@@ -56,7 +56,7 @@ struct TypedValue fnc_KEYBOARD(struct Core *core)
 
 	if (interpreter->pass == PassRun)
 	{
-		value.v.floatValue = core->machine->ioRegisters.status.keyboardVisible != 0 ? -1 : 0;
+		value.v.floatValue = core->machine->ioRegisters.keyboardHeight;
 	}
 	return value;
 }

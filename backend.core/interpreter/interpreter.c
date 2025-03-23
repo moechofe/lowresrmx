@@ -1415,7 +1415,7 @@ enum ErrorCode itp_evaluateCommand(struct Core *core)
 {
 	struct Interpreter *interpreter = core->interpreter;
 	enum TokenType type = interpreter->pc->type;
-	if (type != TokenREM && type != TokenApostrophe && type != TokenEol && type != TokenUndefined)
+	if (type != TokenApostrophe && type != TokenEol && type != TokenUndefined)
 	{
 		++interpreter->cycles;
 	}
@@ -1428,7 +1428,6 @@ enum ErrorCode itp_evaluateCommand(struct Core *core)
 		}
 		break;
 
-	case TokenREM:
 	case TokenApostrophe:
 		++interpreter->pc;
 		break;
@@ -1806,6 +1805,7 @@ enum ErrorCode itp_labelStackError(struct LabelStackItem *item)
 	case LabelTypeGOSUB:
 	case LabelTypeCALL:
 	case LabelTypeONCALL:
+	default: // FIXME: Do I need this?
 		// should not happen in compile time
 		return ErrorSyntax;
 	}

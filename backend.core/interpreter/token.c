@@ -154,7 +154,6 @@ const char *TokenStrings[] = {
     "RASTER",
     "READ",
     "SKIP",
-    "REM",
     "REPEAT",
     "RESTORE",
     "RETURN",
