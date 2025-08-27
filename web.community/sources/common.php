@@ -1,4 +1,4 @@
-<?php
+<?php // Common functions and constants for the LowResRMX community website.
 
 header_remove('X-Powered-By');
 
@@ -47,6 +47,15 @@ const IMG_CONTENT_TYPE='image/png';
 const CONTENT_TYPE_MAP=[
 	PRG_EXT=>PRG_CONTENT_TYPE,
 	IMG_EXT=>IMG_CONTENT_TYPE,
+];
+
+const POINTS_GIVEN=[
+	'view'=>1,
+	'play'=>5,
+	'comment'=>5,
+	'upvote'=>50,
+	'publish'=>100,
+	'update_after_week'=>30, // maxed out at 90 points
 ];
 
 // enum ScoreActivity
@@ -105,6 +114,17 @@ function redis():Client
 	if($client===null) $client=new Client(REDIS_DSN);
 	if(!$client) internalServerError("Fail to reach db");
 	return $client;
+}
+
+function hgetall(array $data):array
+{
+	$result=[];
+	while($data)
+	{
+		$k=array_shift($data);
+		$result[$k]=array_shift($data);
+	}
+	return $result;
 }
 
 function revokeSession(string $session_id):void

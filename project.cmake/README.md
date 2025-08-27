@@ -1,26 +1,45 @@
-## Setup
+## Setup for Ubuntu 24.04.3 LTS
 
-Tested with [`SDL2-2.30.0`](https://github.com/libsdl-org/SDL/tree/release-2.30.0).
+1. Checkout the [SDL2-2.30.12](https://github.com/libsdl-org/SDL/tree/release-2.30.12) github repository somewhere:
 
-Checkout the SDL github repository into a subdirectory📁 in this folder:
+    ```bash
+    cd $HOME/Documents
+    git clone --branch release-2.30.12 https://github.com/libsdl-org/SDL.git SDL2-2.30.12
+    ```
 
-    `project.cmake/SDL2-2.30.0`
+2. Create a [Symbolic link](https://en.wikipedia.org/wiki/Symbolic_link) into the project:
 
-### Using Visual Studio Code
+    ```bash
+    cd LowResRMX/project.cmake
+    ln -s $HOME/Documents/SDL2-2.30.12 SDL2
+    ```
 
-The `CMakeLists.txt` file📄 will look inside this folder using the variable `${SDL}`, so you'll have to pass it to the cmake configure step: `-DSDL=./SDL2-2.30.0`.
+### Using [Visual Studio Code](https://code.visualstudio.com/) and [CMake Tools extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cmake-tools).
 
-On VSCode, this settings appear in `.vscode/settings.json` for the [CMake Tools extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cmake-tools):
+The `CMakeLists.txt` file will look inside this folder using the variable `${SDL}`.
 
-```json
-"cmake.configureArgs": [
-    "-DSDL=./SDL2-2.30.0"
-],
+1. Edit `.vscode/settings.json` for the :
+
+    ```json
+    "cmake.configureArgs": [
+        "-DSDL=./SDL2"
+    ],
+    ```
+
+2. Run `CMake: Configure` from the Command Palette.
+
+3. Run `CMake: Debug`.
+
+### Using a terminal
+
+```bash
+cd LowResRMX/project.cmake
+mkdir build && cd build
+cmake -DSDL="./SDL2" -DCMAKE_BUILD_TYPE=Debug ..
+cmake --build .
+./LowResRMX
 ```
 
-### Using Bash
+## Note:
 
-    cd project.cmake
-    mkdir build && cd build
-    cmake -DSDL="$(realpath ../SDL)" -DCMAKE_BUILD_TYPE=Release ..
-    cmake --build .
+I added a patch to `SDL_pipewire.c` but I forgot which one. It was a simple cast.

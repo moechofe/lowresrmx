@@ -1,4 +1,4 @@
-<?php
+<?php // API to publish a program to the forum.
 
 require_once __DIR__.'/common.php';
 
@@ -44,7 +44,7 @@ if(preg_match('/\/publish$/',$urlPath)&&$isPost)
 		"uid",$user_id,
 		"title",$title,
 		"text",$text,
-		"ct",date(DATE_ATOM),
+		"ut",date(DATE_ATOM),
 		"author",$author,
 	);
 	// Add to the user first post list
@@ -53,6 +53,19 @@ if(preg_match('/\/publish$/',$urlPath)&&$isPost)
 	redis()->zadd("w:$where",SCORE_FOR_FIRST_POST,$first_id);
 	// Mark the program as published (for the owner)
 	redis()->hset("p:$program_id","first",$first_id);
+	// Give points to the user for the first post
+	redis()->hmset("f:$first_id:r",
+		"point",POINTS_GIVEN['publish'],
+		"upvote",0,
+		"view",0,
+		"play",0,
+		"comment",0,
+		"where",$where,
+		"ct",date(DATE_ATOM),
+	);
+	// Update the rank of the post
+	redis()->zadd("rank:all",POINTS_GIVEN['publish'],$first_id);
+	redis()->zadd("rank:$where",POINTS_GIVEN['publish'],$first_id);
 
 	header("Content-Type: application/json",true);
 	echo json_encode($first_id);

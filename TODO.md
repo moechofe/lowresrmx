@@ -1,8 +1,10 @@
+# OMG!<br>There is a tremendous amount of work to do!<br>Can I do a little bit of it today?
+
 - [ ] web: Design score API and database.
 - [ ] web: API to count play time.
 - [ ] web: link to open in app
 
-    lowresnx://?name=2VoiceMusic&program=https%3A%2F%2Flowresnx.inutilis.com%2Fuploads%2F8khV2CXtCS_2VoiceMusic.nx&image=https%3A%2F%2Flowresnx.inutilis.com%2Fuploads%2F8khV2CXtCS_IMG_3098921E0F621.jpeg&topic_id=3694
+    `lowresnx://?name=2VoiceMusic&program=https%3A%2F%2Flowresnx.inutilis.com%2Fuploads%2F8khV2CXtCS_2VoiceMusic.nx&image=https%3A%2F%2Flowresnx.inutilis.com%2Fuploads%2F8khV2CXtCS_IMG_3098921E0F621.jpeg&topic_id=3694`
 
     name
     program
@@ -10,7 +12,7 @@
     topic_id
 
 - [x] web: redirect after publish
-- [ ] web: allow to edit and show markdown post text.
+- [ ] web: handle error when publish fails, redirect to something.
 - [x] web: apply the post text limit on javascript and report it to the user live.
 - [x] web: should comment and show comments on published prg
 - [x] web: should handle comment added.
@@ -41,7 +43,6 @@
 - [x] flutter: first command seems to not be executed the first time
 - [ ] core: can I prevent trace to draw on the message line?
 - [x] core: remove `PARTICLE appearance DATA label`, prevent auto changing the sprite number
-- [-] core: add a pack/unpack feature to store things inside string
 - [ ] windows: copy de dll https://stackoverflow.com/questions/13556885/how-to-change-the-executable-output-directory-for-win32-builds-in-cmake
 - [x] overlay windows should use SAFE and update at resize
 - [ ] core: can I use the last 80 bytes to share data across all ROM?
@@ -73,7 +74,6 @@
 - [ ] flutter: Show the search/replace bar above the code editor, not inside
 - [ ] flutter: Make the search/replace shorter.
 - [ ] flutter: Find a way to show line number, or longer line that wrap.
-- [-] core: show more info in trace, like variables counter, label counter... Provide memory mapping instead, or command in debugger
 - [ ] Change Project name: Demake Remix, Retro Game Creator
 - [ ] manual: Add `ON EMITTER CALL`
 - [ ] core: Remove LET.
@@ -120,7 +120,7 @@
     See: https://medium.com/@jigneshpatel24/share-file-in-flutter-image-pdf-video-document-multiple-files-e40b26251b0d
 
 - [x] flutter: Update re_editor.
-- [-] flutter: No context menu available for the text editor?
+- [ ] flutter: No context menu available for the text editor?
 
     Re-Editor implements the control logic of the desktop context menu and the mobile long-press selection menu, but does not provide a default UI. Developers need to implement the SelectionToolbarController interface and setup it through toolbarController.
 
@@ -167,7 +167,6 @@
 - [x] flutter: add custom symbols keyboard bar
 - [ ] sdl: fix the dev menu when running the desktop version
 - [x] delete fnc_BUTTON
-- [-] move pcg to a directory
 - [x] redo the project architecture
 - [x] rename file extension `.nx` to `.rmx`
 - [ ] flutter: syntaxe highlight plugin for popular code editor
@@ -184,16 +183,7 @@
 - [ ] allow to list community posts
 - [ ] Fix singleLine if with multiple statement per line, Check: `interpreter->isSingleLineIf`
 - [ ] Trigo function should use 0..1 instead of 0..2PI
-- [-] Auto color transition
 - [ ] Provide an export dedicated for web mobile, that handle ratio and open the window accordingly, test fullscreen, test input.
-- [-] try this easing func:
-
-	1/(1+c*((1/x)-1)^k)
-
-	and it's derivated
-
-	(c*k*((1/x)-1)^k-1) / ((c*x*((1/x)-1)^k+x)^2)
-
 - [ ] use 2 bytes with 1/16 precision number for particle animation progress
 - [ ] rename particle data and reserve a new keyword, one should talk about the character num and one for the palette num: CHAR and PALETTE
 - [ ] provide another hard coded palette with system command to switch it
@@ -208,6 +198,27 @@
 - [ ] there is a `view.endEditing(true)`, I should try to use it to fix the scrolling issue with the minimap
 - [ ] flutter dev tool in --profile mode talk about pre-compiling shader, see: https://docs.flutter.dev/perf/shader
 - [ ] implement google drive
+
+        cd project.flutter/android
+        ./gradlew signInReport
+
+    Then copy the SHA-1 in the Google Cloud Console in Credentials
+
+        flutter clean
+
+    Sauce:
+    - https://medium.com/codebrew/flutter-google-sign-in-without-firebase-3680713966fb
+    - https://support.google.com/cloud/answer/6158849#installedapplications&android&zippy=%2Cnative-applications%2Candroid
+    - https://developers.google.com/drive/api/guides/enable-sdk
+    - https://medium.com/@anupama.pathirage/using-oauth-2-0-to-access-google-apis-1dbd01edea9a
+    - https://stackoverflow.com/questions/68955545/flutter-how-to-backup-user-data-on-google-drive-like-whatsapp-does
+    - https://pub.dev/packages/workmanager
+    - https://pub.dev/packages/permission_handler
+    - https://stackoverflow.com/questions/50561737/getting-permission-to-the-external-storage-file-provider-plugin
+    - https://pub.dev/packages/shared_storage
+    - https://pub.dev/packages/cloud_firestore
+    - https://pub.dev/packages/dropbox_client
+
 - [x] move the runtime in an isolate
 - [ ] allow to show the keyboard
 - [ ] hide the system navigation bar
@@ -224,7 +235,7 @@
 - [ ] delay asking for stars notation
 - [ ] refresh session TTL as long as user visiting the website
 - [ ] refresh google/discord oauth token
-- [ ] enable __Host- session cookie: Sauce: https://datatracker.ietf.org/doc/html/draft-west-cookie-prefixes-05#section-3.2
+- [ ] enable `__Host-` session cookie: Sauce: https://datatracker.ietf.org/doc/html/draft-west-cookie-prefixes-05#section-3.2
 - [ ] enable Secure session cookie
 - [ ] redo the dev menu for the desktop version
 - [ ] 🐞 when message get hidden, the first char of the trace is not displayed

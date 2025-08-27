@@ -10,13 +10,13 @@
 </head>
 <body>
 <?php require_once __DIR__.'/header.html'; ?>
-<main>
+<main class="container-fluid">
 
 	<article>
 		<h1><?=$title?></h1>
 		<div class="info">
 			<div class="author"><a><?=$author?></a></div>
-			<div class="date" data-ct="<?=$ct?>"></div>
+			<div class="date" data-ct="<?=$ut?>"></div>
 		</div>
 		<p><?=$text?></p>
 		<div class="visual">
@@ -24,8 +24,8 @@
 		</div>
 		<div class="comment-list" id="comment-list" data-eid="<?=$eid?>">
 		</div>
-		<hr class="is-signed"/>
-		<fieldset id="comment" class="is-signed" data-eid="<?=$eid?>">
+		<hr class="is-signed" hidden/>
+		<fieldset id="comment" class="is-signed" data-eid="<?=$eid?>" hidden>
 			<div class="limit" data-limit="<?=MAX_POST_TEXT?>"></div>
 			<label for="text">Comment</label>
 			<textarea id="text" placeholder="Markdown supported message&hellip;" ></textarea>
@@ -36,7 +36,7 @@
 </main>
 <template id="comment-item">
 
-	<div class="comment-item">
+	<div class="comment-item>
 		<hr/>
 		<div class="info">
 			<div class="author"><a></a></div>

@@ -191,6 +191,8 @@
 		5B34ED972AC5835700220A80 /* overlay.c in Sources */ = {isa = PBXBuildFile; fileRef = 5B34ECE22AC5835600220A80 /* overlay.c */; };
 		5B34ED982AC5835700220A80 /* core_delegate.c in Sources */ = {isa = PBXBuildFile; fileRef = 5B34ECE42AC5835600220A80 /* core_delegate.c */; };
 		5B34ED992AC5835700220A80 /* core_delegate.c in Sources */ = {isa = PBXBuildFile; fileRef = 5B34ECE42AC5835600220A80 /* core_delegate.c */; };
+		5B572CB32DE710BA00196C83 /* globmatch.c in Sources */ = {isa = PBXBuildFile; fileRef = 5B572CB22DE710BA00196C83 /* globmatch.c */; };
+		5B572CB42DE710BA00196C83 /* globmatch.c in Sources */ = {isa = PBXBuildFile; fileRef = 5B572CB22DE710BA00196C83 /* globmatch.c */; };
 		5B7D1D7A2D43F1D200B871FA /* Clibsodium in Frameworks */ = {isa = PBXBuildFile; productRef = 5B7D1D792D43F1D200B871FA /* Clibsodium */; };
 		5B7D1D7C2D43F1D200B871FA /* Sodium in Frameworks */ = {isa = PBXBuildFile; productRef = 5B7D1D7B2D43F1D200B871FA /* Sodium */; };
 		5BF536CE2D848C1F00548D6A /* overlay_debugger.c in Sources */ = {isa = PBXBuildFile; fileRef = 5BF536CD2D848C1F00548D6A /* overlay_debugger.c */; };
@@ -421,6 +423,8 @@
 		5B34ECE32AC5835600220A80 /* overlay_data.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = overlay_data.h; sourceTree = "<group>"; };
 		5B34ECE42AC5835600220A80 /* core_delegate.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = core_delegate.c; sourceTree = "<group>"; };
 		5B34ECE52AC5835600220A80 /* core_stats.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = core_stats.h; sourceTree = "<group>"; };
+		5B572CB12DE710BA00196C83 /* globmatch.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = globmatch.h; sourceTree = "<group>"; };
+		5B572CB22DE710BA00196C83 /* globmatch.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = globmatch.c; sourceTree = "<group>"; };
 		5BF536CD2D848C1F00548D6A /* overlay_debugger.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = overlay_debugger.c; sourceTree = "<group>"; };
 		920E1B191F77FF7A00664382 /* ExplorerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExplorerViewController.swift; sourceTree = "<group>"; };
 		920E1B1B1F78000800664382 /* ExplorerItemCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExplorerItemCell.swift; sourceTree = "<group>"; };
@@ -534,6 +538,8 @@
 		5B34EC562AC5835600220A80 /* backend.core */ = {
 			isa = PBXGroup;
 			children = (
+				5B572CB12DE710BA00196C83 /* globmatch.h */,
+				5B572CB22DE710BA00196C83 /* globmatch.c */,
 				5B34EC572AC5835600220A80 /* interpreter */,
 				5B34ECAA2AC5835600220A80 /* core_delegate.bc */,
 				5B34ECAB2AC5835600220A80 /* core.h */,
@@ -1187,6 +1193,7 @@
 				5B34ED712AC5835600220A80 /* audio_lib.c in Sources */,
 				5B34ED392AC5835600220A80 /* cmd_io.c in Sources */,
 				5B34ED252AC5835600220A80 /* cmd_memory.c in Sources */,
+				5B572CB42DE710BA00196C83 /* globmatch.c in Sources */,
 				5B34ED6F2AC5835600220A80 /* particles_lib.c in Sources */,
 				5BF536CE2D848C1F00548D6A /* overlay_debugger.c in Sources */,
 				5B34ED132AC5835600220A80 /* charsets.c in Sources */,
@@ -1267,6 +1274,7 @@
 				9227DC1E1FC8BB0700BC89FD /* ProjectManager.swift in Sources */,
 				5B34ED7C2AC5835700220A80 /* core.c in Sources */,
 				5B34ED142AC5835600220A80 /* cmd_text.c in Sources */,
+				5B572CB32DE710BA00196C83 /* globmatch.c in Sources */,
 				5B34ED7A2AC5835600220A80 /* core_stats.c in Sources */,
 				92A7E148223B8EBC00ED2487 /* ShareActivity.swift in Sources */,
 				5B34ECEC2AC5835600220A80 /* cmd_variables.c in Sources */,

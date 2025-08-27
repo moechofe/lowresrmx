@@ -1,2 +1,46 @@
-nav details.dropdown summary {
-	display: flex; }
+/* nav details.dropdown summary {
+	display: flex; } */
+
+.is-loading summary
+{
+	color: #ddd !important;
+}
+
+li.sign-in
+{
+	display: block;
+	padding-left: 12px !important;
+	padding-right: 12px !important;
+}
+
+li.sign-in button
+{
+	display: block;
+	width: 100%;
+}
+
+/* Sauce: https://www.svgbackgrounds.com/tools/svg-to-css/ */
+
+button.google-sign-in
+{
+	background-color: white;
+	background-size: fit;
+	background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="none"><g clip-path="url(%23a)"><path fill="%234285F4" d="M29.6 20.227c0-.709-.064-1.39-.182-2.045H20v3.868h5.382a4.6 4.6 0 0 1-1.996 3.018v2.51h3.232c1.891-1.742 2.982-4.305 2.982-7.35"/><path fill="%2334A853" d="M20 30c2.7 0 4.964-.895 6.618-2.423l-3.232-2.509c-.895.6-2.04.955-3.386.955-2.605 0-4.81-1.76-5.595-4.123h-3.341v2.59A10 10 0 0 0 20 30"/><path fill="%23FBBC04" d="M14.405 21.9c-.2-.6-.314-1.24-.314-1.9s.114-1.3.314-1.9v-2.59h-3.341A10 10 0 0 0 10 20c0 1.614.386 3.14 1.064 4.49z"/><path fill="%23E94235" d="M20 13.977c1.468 0 2.786.505 3.823 1.496l2.868-2.869C24.959 10.992 22.695 10 20 10c-3.91 0-7.29 2.24-8.936 5.51l3.34 2.59c.787-2.364 2.991-4.123 5.596-4.123"/></g><defs><clipPath id="a"><path fill="%23fff" d="M10 10h20v20H10z"/></clipPath></defs></svg>');
+	background-position: left center;
+	color: black;
+	border-color: black;
+	padding-left: 40px;
+	font-weight: 600;
+}
+
+button.discord-sign-in
+{
+	background-color: #5865f2;
+	background-size: 24px 24px;
+	background-position: 8px center;
+	background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="800" height="800" class="h-6 w-6 mr-2" preserveAspectRatio="xMidYMid" viewBox="0 -28.5 256 256"><path fill="%23FFFFFF" d="M216.856 16.597A208.5 208.5 0 0 0 164.042 0c-2.275 4.113-4.933 9.645-6.766 14.046q-29.538-4.442-58.533 0c-1.832-4.4-4.55-9.933-6.846-14.046a207.8 207.8 0 0 0-52.855 16.638C5.618 67.147-3.443 116.4 1.087 164.956c22.169 16.555 43.653 26.612 64.775 33.193A161 161 0 0 0 79.735 175.3a136.4 136.4 0 0 1-21.846-10.632 109 109 0 0 0 5.356-4.237c42.122 19.702 87.89 19.702 129.51 0a132 132 0 0 0 5.355 4.237 136 136 0 0 1-21.886 10.653c4.006 8.02 8.638 15.67 13.873 22.848 21.142-6.58 42.646-16.637 64.815-33.213 5.316-56.288-9.08-105.09-38.056-148.36M85.474 135.095c-12.645 0-23.015-11.805-23.015-26.18s10.149-26.2 23.015-26.2 23.236 11.804 23.015 26.2c.02 14.375-10.148 26.18-23.015 26.18m85.051 0c-12.645 0-23.014-11.805-23.014-26.18s10.148-26.2 23.014-26.2c12.867 0 23.236 11.804 23.015 26.2 0 14.375-10.148 26.18-23.015 26.18"/></svg>');
+	color: white;
+	border-color: #5865f2;
+	padding-left: 40px;
+	font-weight: 600;
+}

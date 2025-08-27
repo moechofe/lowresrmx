@@ -1,21 +1,13 @@
-<?php
+<?php // Main entry point for the community web app. All requests go through here.
 
 // order is important
 // TODO: should be required in every file that needs it
 require_once __DIR__.'/common.php';
 require_once __DIR__.'/token.php';
 
-require_once __DIR__.'/google2.php';
-require_once __DIR__.'/google1.php';
-
-require_once __DIR__.'/discord2.php';
-require_once __DIR__.'/discord1.php';
+require_once __DIR__.'/sign.php';
 
 require_once __DIR__.'/player.php';
-
-// require_once __DIR__.'/twitter1.php';
-
-require_once __DIR__.'/signed.php';
 
 require_once __DIR__.'/upload.php';
 require_once __DIR__.'/download.php';

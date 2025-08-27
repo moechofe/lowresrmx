@@ -2,7 +2,7 @@
  * pid: string,
  * title: string,
  * author: string,
- * ct: string,
+ * ut: string,
  * upvote: number,
  * }} */
 var FirstItem;
@@ -19,11 +19,12 @@ const setupFirstList=(first_list)=>{return new Promise(async (res,rej)=>{
 
 		dataset(item,"pid",data.pid);
 
+		attr(find(item,"a"),"href",`./${encodeURI(data.pid)}.html`);
 		text(find(item,".title"),data.title||"Untitled");
 		find(item,".picture").style.backgroundImage="url(\"./"+data.pid+".png\")";
-		humanDate(find(item,'.date'),data.ct);
+		humanDate(find(item,'.date'),data.ut);
 		text(find(item,".author"),data.author);
-		text(find(item,".points"),data.upvote);
+		// text(find(item,".points"),data.upvote);
 
 		return item;
 	});

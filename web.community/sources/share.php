@@ -21,30 +21,28 @@ if(preg_match('/^\/share$/',$urlPath)&&$isGet)
 		require __DIR__.'/sign-in.html';
 		exit;
 	}
-	else
-	{
-		// Transfer the temporary program to a persistent one
-		list($prg,$img,$name)=redis()->hmget("t:$uptoken","prg","img","name");
-		$program_id=$uptoken;
-		$author=redis()->hget("u:$user_id","author");
 
-		// Store a persistent program
-		redis()->hmset("p:$program_id",
-			"uid",$user_id,
-			"prg",$prg,
-			"img",$img,
-			"name",$name,
-			"ct",date(DATE_ATOM),
-			"author",$author,
-		);
+	// Transfer the temporary program to a persistent one
+	list($prg,$img,$name)=redis()->hmget("t:$uptoken","prg","img","name");
+	$program_id=$uptoken;
+	$author=redis()->hget("u:$user_id","author");
 
-		// Add to the program list
-		redis()->rpush("u:$user_id:p",$program_id);
+	// Store a persistent program
+	redis()->hmset("p:$program_id",
+		"uid",$user_id,
+		"prg",$prg,
+		"img",$img,
+		"name",$name,
+		"ct",date(DATE_ATOM),
+		"author",$author,
+	);
 
-		// Clean up the temporary program
-		redis()->del("t:$uptoken");
+	// Add to the program list
+	redis()->rpush("u:$user_id:p",$program_id);
 
-		header("Location: /share.html");
-		exit;
-	}
+	// Clean up the temporary program
+	redis()->del("t:$uptoken");
+
+	header("Location: /share.html");
+	exit;
 }

@@ -3,65 +3,83 @@
 
 > Tested with php8.3 and php8.4
 
-Install for Ubuntu (Debian maybe):
+1. Install for Ubuntu:
 
-    sudo apt install php8.3-cli php8.3-dev build-essential php8.3-mbstring libsodium-dev libzstd-dev redis-server
+    ```bash
+    sudo apt install php8.3-cli php8.3-dev build-essential php8.3-mbstring libsodium-dev libzstd-dev redis-server redis-tools
+    ```
 
-Install for EndeavousOS (Arch maybe):
+2. Build and install [HIREDIS](https://github.com/redis/hiredis) from source:
 
-    yay -S extra/php aur/php84-mbstring aur/php84-sodium aur/redis
-
-Build and install https://github.com/redis/hiredis:
-
+    ```bash
+    cd $HOME/Documents
+    git clone --branch v1.3.0 https://github.com/redis/hiredis.git
+    cd hiredis
     make clean && make && sudo make install
+    ```
 
-Build and install https://github.com/nrk/phpiredis:
+3. Build and install [Phpiredis](https://github.com/nrk/phpiredis) from source:
 
+    ```bash
+    cd $HOME/Documents
+    git clone --branch v1.1 https://github.com/nrk/phpiredis.git
+    cd phpiredis
     phpize && ./configure && make clean && make && sudo make install
+    ```
 
-Build and install https://github.com/jedisct1/libsodium-php if not installed using the package manager:
+4. Build and install [libsodium-php](https://github.com/jedisct1/libsodium-php) from source:
 
+    ```bash
+    cd $HOME/Documents
+    git clone https://github.com/jedisct1/libsodium-php.git
+    cd libsodium-php
     phpize && ./configure && make clean && make && sudo make install
+    ```
 
-Build and install https://github.com/kjdev/php-ext-zstd:
+5. Build and install [Zstd Extension for PHP](https://github.com/kjdev/php-ext-zstd) from source:
 
-    phpize && ./configure && make clean && make && sudo make install
+    ```bash
+    cd $HOME/Documents
+    git clone https://github.com/kjdev/php-ext-zstd.git
+    cd php-ext-zstd
+    phpize && ./configure --with-libzstd && make clean && make && sudo make install
+    ```
 
-Enable extensions for php cli on Ubuntu:
+6. Enable extensions for php cli on Ubuntu:
 
-    > cat /etc/php/8.3/cli/conf.d/30-lowresrmx.ini
+    ```bash
+    cat /etc/php/8.3/cli/conf.d/30-lowresrmx.ini
+    ```
+    ```ini
     extension=mbstring.so
     extension=phpiredis.so
     extension=sodium.so
     extension=zstd.so
+    ```
 
-Enable extensions for php cli on EndeavourOS:
+7. Check for loaded extensions:
 
-    > cat /etc/php/conf.d/30-lowresrmx.ini
-    extension=mbstring.so
-    extension=phpiredis.so
-    extension=sodium.so
-    extension=zstd.so
-
-> On EndeavourOS, Check if there is two install of php `/usr/lib/php` and `/usr/lib/php84`. Modules may have been installed in the second one.
-
-Check for loaded extensions:
-
+    ```bash
     php -i | grep mbstring
     php -i | grep redis
     php -i | grep sodium
     php -i | grep zstd
+    ```
 
 Create and fill the `sources/private.php` file using the given `private.sample.php`
 
-Start the server:
+8. Start the server:
 
+    ```bash
     cd sources
     php -S 0.0.0.0:8080 index.php
+    ```
 
-Add to your `/etc/hosts':
+9. Add to your `/etc/hosts`:
 
+    ```hosts
     127.0.0.1 lowresrmx.top
+    ```
 
 #### How to simulate a share from the app
 
@@ -80,23 +98,23 @@ Navigate to: `http://lowresrmx.top:8080/upload?p=KLUv_aBjEwEAzTICyliGaC-wTEasHng
 
 - _(hash)_ `"t:UPLOAD_TOKEN_ID"` temporay uploaded program **TTL**
 
-    - _(string)_ `["prg"]` Zstandard compressed source for program
-    - _(string)_ `["img"]` Thumbnail PNG binary
-    - _(string)_ `["name"]` Program name
+    - _(str)_ `["prg"]` Zstandard compressed source for program
+    - _(str)_ `["img"]` Thumbnail PNG binary
+    - _(str)_ `["name"]` Program name
 
 - _(hash)_ `"p:PROGRAM_ID"` shared program
 
-    - _(string)_ `["uid"]` `USER_ID` author user ID
-    - _(string)_ `["prg"]` Zstandard compressed source for program
-    - _(string)_ `["img"]` Thumbnail PNG binary
-    - _(string)_ `["name"]` Name of the program at upload
-    - _(string)_ `["ct"]` ATOM timestamp for creation time
-    - _(string)_ `["author"]` Author name at creation
-    - _(string)_ `["first"]` `ENTRY_TOKEN_ID` of posted program.
+    - _(str)_ `["uid"]` `USER_ID` author user ID
+    - _(str)_ `["prg"]` Zstandard compressed source for program
+    - _(str)_ `["img"]` Thumbnail PNG binary
+    - _(str)_ `["name"]` Name of the program at upload
+    - _(str)_ `["ct"]` ATOM timestamp for creation time
+    - _(str)_ `["author"]` Author name at creation
+    - _(str)_ `["first"]` `ENTRY_TOKEN_ID` of posted program.
 
 - _(list)_ `"u:USER_ID:p"` list of shared program
 
-    - _(string)_ `[…]` `PROGRAM_ID`
+    - _(str)_ `[…]` `PROGRAM_ID`
 
 #### Published messages related
 
@@ -104,28 +122,25 @@ Navigate to: `http://lowresrmx.top:8080/upload?p=KLUv_aBjEwEAzTICyliGaC-wTEasHng
 
 - _(hash)_ `"f:ENTRY_TOKEN_ID":f` first message entry
 
-    - _(string)_ `["uid"]` `USER_ID` author user ID
-    - _(string)_ `["title"]` Title of the message (or the program)
-    - _(string)_ `["text"]` content of the message
-    - _(string)_ `["ct"]` ATOM timestamp for creation time
-    - _(string)_ `["author"]` Author name at creation
-    - _(number)_ `["upvote"]` Cached total upvote
-    - _(string)_ `["status"]?` one of the following:
+    - _(str)_ `["uid"]` `USER_ID` author user ID
+    - _(str)_ `["title"]` Title of the message (or the program)
+    - _(str)_ `["text"]` content of the message
+    - _(str)_ `["ut"]` ATOM timestamp for update time
+    - _(str)_ `["author"]` Author name at creation
+    - _(str)_ `["status"]?` one of the following:
       - `null`
       - `"unlisted"`
       - `"banned"`
-
-- _(set)_ `"f:ENTRY_TOKEN_ID:v"` `USER_ID` upvotes
 
 - _(int)_ `"f:ENTRY_TOKEN_ID:s"` sequence for comment id `CID`
 
 - _(hash)_ `"f:ENTRY_TOKEN_ID:CID` `CID`
 
-    - _(string)_ `["uid"]` `USER_ID` author user ID
-    - _(string)_ `["ct"]` ATOM timestamp for creation time
-    - _(string)_ `["author"]` Author name at creation
-    - _(string)_ `["text"]` content of the message
-    - _(string)_ `["status"]` one of the following:
+    - _(str)_ `["uid"]` `USER_ID` author user ID
+    - _(str)_ `["ct"]` ATOM timestamp for creation time
+    - _(str)_ `["author"]` Author name at creation
+    - _(str)_ `["text"]` content of the message
+    - _(str)_ `["status"]` one of the following:
       - `null`
       - `"banned"`
 
@@ -141,34 +156,34 @@ Navigate to: `http://lowresrmx.top:8080/upload?p=KLUv_aBjEwEAzTICyliGaC-wTEasHng
     > TODO: What is the purpose of this?
     > I think it was to revoke access from a administration console or something. See: revokeSession()
 
-    - _(string)_ `[…]` `SESSION_ID`
+    - _(str)_ `[…]` `SESSION_ID`
 
 - _(int)_ `"seq:google"` sequence for google login token creation
 
-- _(string)_ `"l:LOGIN_TOKEN_ID"` optionally an upload token **TTL**
+- _(str)_ `"l:LOGIN_TOKEN_ID"` optionally an upload token **TTL**
 
 - _(hash)_ `"s:SESSION_ID"` **TTL**
 
-    - _(string)_ `["uid"]` `USER_ID` user id
-    - _(string)_ `["status"]` one of the following:
+    - _(str)_ `["uid"]` `USER_ID` user id
+    - _(str)_ `["status"]` one of the following:
       - `"allowed"`
       - `"revoked"`
       - `"banned"`
-    - _(string)_ `["ct"]` ATOM timestamp for creation time
-    - _(string)_ `["at"]` ATOM timestamp for access time
+    - _(str)_ `["ct"]` ATOM timestamp for creation time
+    - _(str)_ `["at"]` ATOM timestamp for access time
 
 
 #### User data related
 
 - _(hash)_ `"u:USER_ID"` public profile
 
-    - _(string)_ `["name"]`
-    - _(string)_ `["picture"]` URL of a public picture
-    - _(string)_ `["author"]` current `AUTHOR_NAME`
+    - _(str)_ `["name"]`
+    - _(str)_ `["picture"]` URL of a public picture
+    - _(str)_ `["author"]` current `AUTHOR_NAME`
 
 - _(hash)_ `"u:USER_ID:g"` user settings
 
-    - _(string)_ `["locale"]` ISO 639-1:2002
+    - _(str)_ `["locale"]` ISO 639-1:2002
 
 - _(list)_ `"u:USER_ID:f"` list of first entries ID
 
@@ -183,10 +198,30 @@ Navigate to: `http://lowresrmx.top:8080/upload?p=KLUv_aBjEwEAzTICyliGaC-wTEasHng
 
 #### User author name related
 
-- _(string)_ `"a:AUTHOR_NAME"` `USER_ID`
+- _(str)_ `"a:AUTHOR_NAME"` `USER_ID`
 
     > Used to have a custom URL on the website must be unique.
 
 #### Rank related
 
-- _(zset)_ `"f:ENTRY_TOKEN_ID:r` `RANK`
+- _(zset)_ `"rank:all` `ENTRY_TOKEN_ID` Sorted first entries per score
+
+- _(zset)_ `"rank:show` `ENTRY_TOKEN_ID` Sorted first entries per score
+
+- _(zset)_ `"rank:chat` `ENTRY_TOKEN_ID` Sorted first entries per score
+
+- _(zset)_ `"rank:help``ENTRY_TOKEN_ID` Sorted first entries per score
+
+- _(set)_ `"f:ENTRY_TOKEN_ID:v"` `USER_ID` Upvoted by the user
+
+- _(hash)_ `"f:ENTRY_TOKEN_ID:r` Details for score
+
+    - _(int)_ `["point"]` Computed points
+    - _(int)_ `["upvote"]` Cached upvotes
+    - _(int)_ `["view"]` Counter of first post views
+    - _(int)_ `["play"]` Counter of plays
+    - _(int)_ `["comment"]` Counter of comment posted
+    _ _(str)_ `["where"]` WHERE_ID of the forum
+    - _(str)_ `["ct"]` ATOM timestamp for creation time
+    - _(str)_ `["ut"]` ATOM timestamp for update time
+

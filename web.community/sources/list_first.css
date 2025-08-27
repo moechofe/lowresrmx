@@ -3,8 +3,11 @@
 { margin-bottom: calc(var(--pico-block-spacing-vertical)
 	* 3); }
 
-.first-item
-{ display: grid;
+.first-item a
+{ display: block;
+	text-decoration: none;
+	color: inherit;
+  display: grid;
 	height: 7em;
 	grid-template-columns: calc(7em - var(--pico-block-spacing-vertical)
  * 2) 1fr;

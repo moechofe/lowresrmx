@@ -6,6 +6,8 @@
 <?php require_once __DIR__.'/utils.js'; ?>
 <?php require_once __DIR__.'/list_first.js'; ?>
 
+	setupSign();
+
 	/** @type {!Array<!FirstItem>} */
 	const list_first=await(await get('list_first')).json();
 

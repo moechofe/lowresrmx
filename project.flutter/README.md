@@ -1,41 +1,36 @@
-#### Enabling Google Signin
+## Setup for Ubuntu 24.04.3 LTS
 
-    cd project.flutter/android
-    ./gradlew signInReport
+1. Install Java `sudo adb install openjdk-21-jre-headless`
+1. Install [Android Studio](https://developer.android.com/studio).
+2. Install `Android SDK Build-Tools`, `Android SDK Command-line Tools`, `CMake`, `Android SDK Platforms-Tools` using the `SDK Manager`.
+3. Install [Flutter](https://docs.flutter.dev/get-started/install).
 
-Then copy the SHA-1 in the Google Cloud Console in Credentials
+    > Last version tested: Flutter version 3.35.1 & Dart version 3.9.0
 
-    flutter clean
+4. Install adb: `sudo apt install google-android-platform-tools-installer`
 
+### Run on Linux using [Visual Studio Code](https://code.visualstudio.com/) and [Flutter extension](https://marketplace.visualstudio.com/items?itemName=Dart-Code.flutter)
 
-Sauce:
-- https://medium.com/codebrew/flutter-google-sign-in-without-firebase-3680713966fb
-- https://support.google.com/cloud/answer/6158849#installedapplications&android&zippy=%2Cnative-applications%2Candroid
+1. Open the Command Palette and choose `Debug: Select and Start Debugging` ⇒ `Dart & Flutter…` ⇒ `client_app (Flutter Linux) LowResRMX`.
 
-#### Enabling Google Drive
+### Run on Linux using a terminal
 
-https://developers.google.com/drive/api/guides/enable-sdk
-https://medium.com/@anupama.pathirage/using-oauth-2-0-to-access-google-apis-1dbd01edea9a
+```bash
+cd project.flutter/client_app
+flutter run -dlinux
+```
 
+### Run on a real Android device using [Visual Studio Code](https://code.visualstudio.com/) and [Flutter extension](https://marketplace.visualstudio.com/items?itemName=Dart-Code.flutter)
 
-Try this:
-https://stackoverflow.com/questions/68955545/flutter-how-to-backup-user-data-on-google-drive-like-whatsapp-does
+1. Enable [Developer mode](https://www.android.com/intl/en_uk/articles/enable-android-developer-settings/).
+2. Connect the device using USB cables.
+3. Check for connected devices: `adb devices`
+4. Open the Command Palette and choose `Debug: Select and Start Debugging` ⇒ `Dart & Flutter…` ⇒ `client_app (Flutter YOUR_DEVICE_HERE) LowResRMX`.
 
-#### About background task
+### Run on a real Android device in release mode using a terminal
 
-https://pub.dev/packages/workmanager
-
-#### About permission
-
-https://pub.dev/packages/permission_handler
-
-https://stackoverflow.com/questions/50561737/getting-permission-to-the-external-storage-file-provider-plugin
-
-https://pub.dev/packages/shared_storage
-
-
-#### About Sync
-
-https://pub.dev/packages/cloud_firestore
-https://pub.dev/packages/dropbox_client
+```bash
+cd project.flutter/client_app
+flutter run --release -d$(adb devices|head -2|tail -1|awk '{print $1}')
+```
 

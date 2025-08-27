@@ -56,6 +56,12 @@ const hide=(element)=>element.hidden=true;
 const show=(element)=>element.hidden=false;
 
 /** @type {function(!HTMLElement):void} */
+const attr=(element,name,value)=>{
+	if(value===null) return element.removeAttribute(name);
+	element.setAttribute(name,value);
+}
+
+/** @type {function(!HTMLElement):void} */
 const disable=(element)=>element.setAttribute('disabled','');
 
 /** @type {function(!HTMLElement):void} */
@@ -243,17 +249,22 @@ const setupSign=()=>{
 			text(query('.user-profile .name'),signed.author?signed.author:"no author name yet");
 			// query('.user-profile .picture').style.backgroundImage="url('"+signed.picture+"')";
 		}
-	}).catch((_)=>queryAll('.is-not-signed').forEach((item)=>show(item)));
+	}).catch((_)=>queryAll('.is-not-signed').forEach((item)=>show(item))).finally((_)=>queryAll('.is-loading').forEach((item)=>hide(item)));
 
-	((google_sign_in)=>{
-		click(google_sign_in,(_)=>{
-			window.location.href='/google';
-		});
-	})(query('button.google-sign-in'));
+	click(query('button.google-sign-in'),(_)=>{
+		window.location.href='/google';
+	});
 
-	((discord_sign_in)=>{
-		click(discord_sign_in,(_)=>{
-			window.location.href='/discord';
+	click(query('button.discord-sign-in'),(_)=>{
+		window.location.href='/discord';
+	});
+
+	click(query('.sign-out a'),(_)=>{
+		post('sign_out','')
+		.then((res)=>res.json())
+		.then((signed_out)=>{
+			log("signed",!signed_out);
+			window.location.reload();
 		});
-	})(query('button.discord-sign-in'));
+	});
 };

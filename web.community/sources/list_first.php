@@ -1,4 +1,4 @@
-<?php
+<?php // API that return a list of published programs (a.k.a.: the first entry of a thread) order by score.
 
 require_once __DIR__.'/common.php';
 
@@ -16,13 +16,12 @@ if($url['path']==='/list_first')
 	$l=count($list)-1;
 	for($i=$l;$i>=0;--$i)
 	{
-		list($title,$author,$ct,$upvote)=$prg=redis()->hmget("f:{$list[$i]}:f","title","author","ct","upvote");
+		list($title,$author,$ut,$upvote)=$prg=redis()->hmget("f:{$list[$i]}:f","title","author","ut");
 		$last_published[]=[
 			'pid'=>$list[$i],
 			'title'=>$title,
 			'author'=>$author,
-			'ct'=>$ct,
-			'upvote'=>$upvote?intval($upvote):0,
+			'ut'=>$ut,
 		];
 	}
 

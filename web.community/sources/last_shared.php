@@ -5,10 +5,15 @@ require_once __DIR__.'/common.php';
 if($url['path']==='/last_shared')
 {
 	error_log(__FILE__);
-	header("Content-Type: application/json",true);
 
 	$user_id=validateSessionAndGetUserId();
-	if(!$user_id) forbidden("Fail to read user");
+	if(!$user_id)
+	{
+		require __DIR__.'/sign-in.html';
+		exit;
+	}// forbidden("Fail to read user");
+
+	header("Content-Type: application/json",true);
 
 	// TODO: handle more than 9999 programs.
 	$list=redis()->lrange("u:{$user_id}:p",-9999,-1);
