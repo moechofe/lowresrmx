@@ -1,4 +1,47 @@
-- [ ]
+- [ ] web: Design score API and database.
+- [ ] web: API to count play time.
+- [ ] web: link to open in app
+
+    lowresnx://?name=2VoiceMusic&program=https%3A%2F%2Flowresnx.inutilis.com%2Fuploads%2F8khV2CXtCS_2VoiceMusic.nx&image=https%3A%2F%2Flowresnx.inutilis.com%2Fuploads%2F8khV2CXtCS_IMG_3098921E0F621.jpeg&topic_id=3694
+
+    name
+    program
+    image
+    topic_id
+
+- [x] web: redirect after publish
+- [ ] web: allow to edit and show markdown post text.
+- [x] web: apply the post text limit on javascript and report it to the user live.
+- [x] web: should comment and show comments on published prg
+- [x] web: should handle comment added.
+- [ ] web: allow to play published prg.
+- [ ] web: allow to favorite prg.
+- [ ] web: allow to increase interest score, by visiting, playing, commenting, favoriting.
+- [ ] web: served published png should use file and not redis
+- [ ] web: Use rel=author on prg link
+- [ ] web: Make sure all *.php match using $url['path']
+- [x] web: Make sure "banned" is checked everywhere it's needed
+- [ ] web: Allow to list user or author published prg
+- [x] web: Make sure to not serve pages for non published prg, aka pid/program_id as it as comment and everything. pid.html should not work, but. What about the web-player?
+- [x] web: stop storing img and prg in redis during publish
+- [x] web: publish a shared prg
+- [x] web: show a published prg
+- [ ] web: provide a way for user to create their avatar using a prg
+- [ ] web: provide a way to ban (and unlist), first entry, comment, user
+
+- [ ] core: provide a way to change the offset where sound data are readed for patterns and tracks
+- [x] core: fix history in overlay debugger when % was typed
+- [ ] core: check how volume, mix, wave, pulse, length parameters are parse
+- [x] core: Add filter to DIM command of the debugger
+- [ ] core: `WAIT TAP` seems weird, check about VBL and RASTER interrupt
+- [x] core: fix HEX$ with negative numbers
+- [x] flutter: should update and render in the same scope
+- [ ] core: when keyboard is hidden, message will stay in place, can I erase it?
+- [ ] flutter/xcode: try to create a reverse luminance button for the top-left top-right buttons
+- [x] flutter: first command seems to not be executed the first time
+- [ ] core: can I prevent trace to draw on the message line?
+- [x] core: remove `PARTICLE appearance DATA label`, prevent auto changing the sprite number
+- [-] core: add a pack/unpack feature to store things inside string
 - [ ] windows: copy de dll https://stackoverflow.com/questions/13556885/how-to-change-the-executable-output-directory-for-win32-builds-in-cmake
 - [x] overlay windows should use SAFE and update at resize
 - [ ] core: can I use the last 80 bytes to share data across all ROM?
@@ -9,28 +52,28 @@
 - [x] core: reuse PAUSE to provide a simple debugger
 - [x] core: make sure to prevent pause inside interrupt
 - [x] core: make print print newline if not engough space to print
-- [x] ios_app: prevent upper case on save.
+- [x] xcode: prevent upper case on save.
 - [ ] core: feature that force portrait on fantasy side, not device.
-- [ ] core: make `x` and `y` of `SCROLL` cmd optional
+- [x] core: make `x` and `y` of `SCROLL` cmd optional
 - [ ] particle_lib: I should return memory access error when machine_peek_short()
 - [x] core: implement a 2x zoom per bg.
 - [x] core: give access to cycle counter to user
-- [ ] ios_app: add a security to prevent user to upload non wanted content, generate a signature on the ios side and check it on the web, I found libsodium for swift. I'm using TTL content right now.
+- [ ] xcode: add a security to prevent user to upload non wanted content, generate a signature on the ios side and check it on the web, I found libsodium for swift. I'm using TTL content right now.
 
 - [ ] web_app: https://vigneshwarar.substack.com/p/hackernews-ranking-algorithm-how
 
-    rank = (P-1)/((T+2)^2)
+    rank = (P-1)/((T+2)^G)
     P = Points
     T = Age in hours
     G = 1.8
 
-- [ ] ios_app: Prevent to share without a thumbnail
-- [ ] ios_app: Remove `NSAllowsArbitraryLoads` and `NSAppTransportSecurity`, see: https://stackoverflow.com/questions/31254725/transport-security-has-blocked-a-cleartext-http
-- [ ] flutter_app: Hide black screen at start..
-- [ ] flutter_app: Show the search/replace bar above the code editor, not inside
-- [ ] flutter_app: Make the search/replace shorter.
-- [ ] flutter_app: Find a way to show line number, or longer line that wrap.
-- [ ] core: show more info in trace, like variables counter, label counter...
+- [ ] xcode: Prevent to share without a thumbnail
+- [ ] xcode: Remove `NSAllowsArbitraryLoads` and `NSAppTransportSecurity`, see: https://stackoverflow.com/questions/31254725/transport-security-has-blocked-a-cleartext-http
+- [ ] flutter: Hide black screen at start..
+- [ ] flutter: Show the search/replace bar above the code editor, not inside
+- [ ] flutter: Make the search/replace shorter.
+- [ ] flutter: Find a way to show line number, or longer line that wrap.
+- [-] core: show more info in trace, like variables counter, label counter... Provide memory mapping instead, or command in debugger
 - [ ] Change Project name: Demake Remix, Retro Game Creator
 - [ ] manual: Add `ON EMITTER CALL`
 - [ ] core: Remove LET.
@@ -56,28 +99,28 @@
 
     5. Map emitter paramater in memory, allowing to copy them
 
-- [ ] flutter_app: Can I prevent user to hide the keyboard?
+- [ ] flutter: Can I prevent user to hide the keyboard?
 
     No, but I can setup a special use case for when INPUT is used, has it actually block the game.
 
 - [x] core: Add a function to test  the keyboard visibility
 - [x] core: Remove pause feature. Or make it usefull for dev. Trace the "paused" message instead of in center of the screen.
-- [-] flutter_app: enable ctrl/shift/insert... shortcut for cut copy past.
+- [-] flutter: enable ctrl/shift/insert... shortcut for cut copy past.
 
     Cannot be done, the mapping for shortcut to action has been implement in the wrong way, preventing to map multiple shortcut to the same action (intent)
     See: https://github.com/reqable/re-editor/blob/100e56708ff3dc93955e9e59c053aff944d7c193/lib/src/code_shortcuts.dart#L64
 
-- [x] flutter_app: Input.key is not set on flutter side.
+- [x] flutter: Input.key is not set on flutter side.
 - [x] 🐞 I/O register not working: $FF84, 1 Byte, ASCII code of last pressed key
-- [ ] flutter_app: Keyboard shortcut to run the app.
-- [ ] flutter_app: Scroll to created program in library_page.
-- [ ] flutter_app: Allow to change the size of the grid item in the library_page.
-- [ ] flutter_app: Share to save to download.
+- [ ] flutter: Keyboard shortcut to run the app.
+- [ ] flutter: Scroll to created program in library_page.
+- [ ] flutter: Allow to change the size of the grid item in the library_page.
+- [ ] flutter: Share to save to download.
 
     See: https://medium.com/@jigneshpatel24/share-file-in-flutter-image-pdf-video-document-multiple-files-e40b26251b0d
 
-- [x] flutter_app: Update re_editor.
-- [-] flutter_app: No context menu available for the text editor?
+- [x] flutter: Update re_editor.
+- [-] flutter: No context menu available for the text editor?
 
     Re-Editor implements the control logic of the desktop context menu and the mobile long-press selection menu, but does not provide a default UI. Developers need to implement the SelectionToolbarController interface and setup it through toolbarController.
 
@@ -89,24 +132,24 @@
 
     I probably need to implement a custom toolbar above the keyboard instead. I suspect showMenu to remove the focus on the editor and then, it selecte the whole line instead of the selection made by the user. Why did it act differently on Android and Linux?, I dunno.
 
-- [ ] flutter_app: How to mesure performance and battery consumption?
+- [ ] flutter: How to mesure performance and battery consumption?
 - [x] core: Add a ceil function
 
     The function already exists, the entry in the manual is missing.
 
-- [ ] flutter_app: Add an option to hide the run_page menu on Android.
-- [ ] flutter_app: What about the system bar?
-- [x] flutter_app: The keyboard should not resize the canvas but alter it's size.
-- [x] flutter_app: The exit button on the run_page is not well placed.
-- [x] 🐞 flutter_app: At 1st program run, the program is stuck and not get executed correctly.
-- [ ] flutter_app: When no tools are available in the edit_drawer, simply display how to add tool.
-- [ ] flutter_app/core: I should be able to check if the keyboard has been closed by the user and change the flag on the core side.
+- [ ] flutter: Add an option to hide the run_page menu on Android.
+- [ ] flutter: What about the system bar?
+- [x] flutter: The keyboard should not resize the canvas but alter it's size.
+- [x] flutter: The exit button on the run_page is not well placed.
+- [x] 🐞 flutter: At 1st program run, the program is stuck and not get executed correctly.
+- [ ] flutter: When no tools are available in the edit_drawer, simply display how to add tool.
+- [ ] flutter/core: I should be able to check if the keyboard has been closed by the user and change the flag on the core side.
 
     https://pub.dev/packages/flutter_keyboard_visibility
 
-- [ ] flutter_app: Restore previously pushed route.
-- [x] flutter_app: Allow to open the app using a file.
-- [x] flutter_app: Make MyProgramPreference independent beetween pages
+- [ ] flutter: Restore previously pushed route.
+- [x] flutter: Allow to open the app using a file.
+- [x] flutter: Make MyProgramPreference independent beetween pages
 
     Because the routes are replacing each other, I can setup a Provider in edit page and retrieve it in the drawer or in the run page. I need a proper FutureBuilder for each one.
 
@@ -114,20 +157,20 @@
 
     User has no way to open the keyboard manually anyway.
 
-- [ ] flutter_app: Keep an historic of changes.
+- [ ] flutter: Keep an historic of changes.
 - [ ] It seems a good idea to store the thumbnail inside the cartridge.
 - [x] onSaveDataDisk should save on datadisk or edited
 - [ ] finish the vscode-extension
 - [x] 🐞 the flutter has editor has a number of characters limit, it crop at save.
 - [ ] allow to remember the sorting option of the outline app wise, in the flutter app.
-- [ ] add undo/redo button
-- [ ] add custom symbols keyboard bar
-- [ ] fix the dev menu when running the desktop version
+- [x] flutter: add undo/redo button
+- [x] flutter: add custom symbols keyboard bar
+- [ ] sdl: fix the dev menu when running the desktop version
 - [x] delete fnc_BUTTON
-- [ ] move pcg to a directory
+- [-] move pcg to a directory
 - [x] redo the project architecture
 - [x] rename file extension `.nx` to `.rmx`
-- [ ] syntaxe highlight plugin for popular code editor
+- [ ] flutter: syntaxe highlight plugin for popular code editor
 - [ ] add a text tool to the bg editor
 - [x] add an interrupt for emitter
 - [x] remove LET, REM
