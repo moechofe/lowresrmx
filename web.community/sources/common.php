@@ -16,6 +16,8 @@ const HEADER_TOKEN='X-Application-Token';
 const HEADER_FILE_TYPE='X-Application-Type';
 const HEADER_SESSION='X-Application-Session'; // TODO: should be removed, I'm using cookies now
 const HEADER_SESSION_COOKIE='sid'; // Sauce: https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies
+const HEADER_ADMIN_ACCESS='X-Application-Request';
+const HEADER_SCAN_CURSOR='X-Application-Cursor';
 
 const UPLOAD_TOKEN_TTL=60*60; // 1 hour
 const LOGIN_GOOGLE_TTL=60*5; // 5 minutes
@@ -68,10 +70,16 @@ const CONTENT_TYPE_MAP=[
 
 require_once __DIR__.'/redis.php';
 
+function backtrace()
+{
+	file_put_contents('php://stderr',var_export(debug_backtrace(),true));
+}
+
 function badRequest(string $reason):void
 {
 	header("HTTP/1.1 400 Bad Request",true,400);
 	trigger_error($reason);
+	backtrace();
 	exit;
 }
 
@@ -79,6 +87,7 @@ function forbidden(string $reason):void
 {
 	header("HTTP/1.1 403 Forbidden",true,403);
 	trigger_error($reason);
+	backtrace();
 	exit;
 }
 
@@ -86,6 +95,7 @@ function internalServerError(string $reason):void
 {
 	header("HTTP/1.1 500 Internal Server Error",true,500);
 	trigger_error($reason);
+	backtrace();
 	exit;
 }
 
@@ -119,6 +129,10 @@ function validateSessionAndGetUserId():string
 		revokeSession($session_id);
 		return "";
 
+	case "banned":
+		revokeSession($session_id);
+		forbidden("User is banned");
+
 	case "allowed": default:
 		if(!$user_id) $user_id="";
 		return $user_id;
@@ -139,13 +153,15 @@ function getServerQueryString():string
 
 function getQueryParams(string $query):array
 {
+	$params=[];
 	parse_str($query,$params);
 	return $params;
 }
 
 $request=$_SERVER['REQUEST_URI'];
 $url=parse_url($request);
-$info=pathinfo($url['path']);
+$urlPath=rawurldecode($url['path']);
+$info=pathinfo($urlPath);
 $query=getServerQueryString();
 $domain=$_SERVER['SERVER_NAME'];
 $params=getQueryParams($query);
@@ -155,10 +171,13 @@ $isPost=$_SERVER['REQUEST_METHOD']==='POST';
 error_log("");
 error_log("");
 error_log("===============================");
-error_log("Request: $request");
-error_log("Url: ".json_encode($url));
+error_log("Request: ".substr($request,0,40)."... (".strlen($request)." bytes)");
+error_log("Path: ".$url["path"]);
 error_log("Info: ".json_encode($info));
-error_log("Query: $query");
+error_log("Query: ".substr($query,0,40)."... (".strlen($query)." bytes)");
 error_log("Headers: ".json_encode(getallheaders()));
 error_log("Cookie: ".json_encode($_COOKIE));
 error_log("Body: ".file_get_contents('php://input'));
+error_log("Params: ".json_encode(array_keys($params)));
+error_log("Outders: ".json_encode(headers_list()));
+error_log("Server: ".json_encode($_SERVER));

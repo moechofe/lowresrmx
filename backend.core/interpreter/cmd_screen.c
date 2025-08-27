@@ -23,6 +23,7 @@
 #include <assert.h>
 #include <stdint.h>
 #include "interpreter_utils.h"
+#include "value.h"
 
 enum ErrorCode cmd_PALETTE(struct Core *core)
 {
@@ -96,7 +97,7 @@ enum ErrorCode cmd_SCROLL(struct Core *core)
     ++interpreter->pc;
 
     // x value
-    struct TypedValue xValue = itp_evaluateExpression(core, TypeClassNumeric);
+    struct TypedValue xValue = itp_evaluateOptionalExpression(core, TypeClassNumeric);
     if (xValue.type == ValueTypeError) return xValue.v.errorCode;
 
     // comma
@@ -104,17 +105,17 @@ enum ErrorCode cmd_SCROLL(struct Core *core)
     ++interpreter->pc;
 
     // y value
-    struct TypedValue yValue = itp_evaluateExpression(core, TypeClassNumeric);
+    struct TypedValue yValue = itp_evaluateOptionalExpression(core, TypeClassNumeric);
     if (yValue.type == ValueTypeError) return yValue.v.errorCode;
 
     if (interpreter->pass == PassRun)
     {
         struct VideoRegisters *reg = &core->machine->videoRegisters;
         int bg = bgValue.v.floatValue;
-        int x = (int)xValue.v.floatValue;
-        int y = (int)yValue.v.floatValue;
         if (bg == 0)
         {
+            int x = (xValue.type == ValueTypeNull)?(int)reg->scrollAX:(int)xValue.v.floatValue;
+            int y = (yValue.type == ValueTypeNull)?(int)reg->scrollAY:(int)yValue.v.floatValue;
             reg->scrollAX = x & 0xffFF;
             reg->scrollAY = y & 0xffFF;
             // reg->scrollMSB.aX = (x >> 8) & 1;
@@ -122,6 +123,8 @@ enum ErrorCode cmd_SCROLL(struct Core *core)
         }
         else if(bg == 1)
         {
+        		int x = (xValue.type == ValueTypeNull)?(int)reg->scrollBX:(int)xValue.v.floatValue;
+            int y = (yValue.type == ValueTypeNull)?(int)reg->scrollBY:(int)yValue.v.floatValue;
             reg->scrollBX = x & 0xffFF;
             reg->scrollBY = y & 0xffFF;
             // reg->scrollMSB.bX = (x >> 8) & 1;
@@ -129,6 +132,8 @@ enum ErrorCode cmd_SCROLL(struct Core *core)
         }
         else if(bg == 2)
         {
+        		int x = (xValue.type == ValueTypeNull)?(int)reg->scrollCX:(int)xValue.v.floatValue;
+            int y = (yValue.type == ValueTypeNull)?(int)reg->scrollCY:(int)yValue.v.floatValue;
             reg->scrollCX = x & 0xffFF;
             reg->scrollCY = y & 0xffFF;
             // reg->scrollMSB.cX = (x >> 8) & 1;
@@ -136,6 +141,8 @@ enum ErrorCode cmd_SCROLL(struct Core *core)
         }
         else if(bg == 3)
         {
+        		int x = (xValue.type == ValueTypeNull)?(int)reg->scrollDX:(int)xValue.v.floatValue;
+            int y = (yValue.type == ValueTypeNull)?(int)reg->scrollDY:(int)yValue.v.floatValue;
             reg->scrollDX = x & 0xffFF;
             reg->scrollDY = y & 0xffFF;
             // reg->scrollMSB.dX = (x >> 8) & 1;

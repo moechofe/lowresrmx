@@ -57,8 +57,8 @@ void overlay_updateLayout(struct Core *core, struct CoreInput *input)
 void overlay_reset(struct Core *core)
 {
 	overlay_clear(core);
-	core->overlay->textLib.cursorX = 0;
-	core->overlay->textLib.cursorY = 0;
+	core->overlay->textLib.cursorX = core->overlay->textLib.windowX;
+	core->overlay->textLib.cursorY = core->overlay->textLib.windowY;
 	memset(core->overlay->commandLine, 0, 27);
 }
 
@@ -71,8 +71,8 @@ void overlay_updateState(struct Core *core)
 
 	if (!core->interpreter->debug)
 	{
-		core->overlay->textLib.cursorX = 0;
-		core->overlay->textLib.cursorY = 0;
+		core->overlay->textLib.cursorX = core->overlay->textLib.windowX;
+		core->overlay->textLib.cursorY = core->overlay->textLib.windowY;
 	}
 }
 
@@ -113,14 +113,14 @@ void overlay_draw(struct Core *core, bool ingame)
 		{
 			if (core->overlay->timer % 40 < 20)
 			{
-				txtlib_writeText(lib, "_", lib->cursorX, lib->cursorY);
+				txtlib_writeText(lib, "_", lib->windowX + lib->cursorX, lib->windowY + lib->cursorY);
 			}
 			else
 			{
 				char c[2] = {' ', 0};
 				if (lib->cursorX >= 0 && lib->cursorX < 26 && core->overlay->commandLine[lib->cursorX] != 0)
 					*c = core->overlay->commandLine[lib->cursorX];
-				txtlib_writeText(lib, c, lib->cursorX, lib->cursorY);
+				txtlib_writeText(lib, c, lib->windowX + lib->cursorX, lib->windowY + lib->cursorY);
 			}
 		}
 

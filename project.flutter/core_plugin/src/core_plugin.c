@@ -138,6 +138,12 @@ FFI_PLUGIN_EXPORT struct CoreError runnerUpdate(Runner *runner,Input *input)
 	return runner->runningError;
 }
 
+FFI_PLUGIN_EXPORT bool runnerShouldRender(Runner *runner)
+{
+	if(!runner->core) return false;
+	return core_shouldRender(runner->core);
+}
+
 FFI_PLUGIN_EXPORT void runnerRender(Runner *runner,void *pixels)
 {
 	if(!runner->core) return;

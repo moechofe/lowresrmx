@@ -184,7 +184,7 @@ class _MyEditPageState extends State<MyEditPage> with WidgetsBindingObserver {
     editingController = CodeLineEditingController.fromText(code);
     findController = CodeFindController(editingController);
     scrollController = CodeScrollController();
-    selectionToolbarController = MyEditPageToolbarController();
+    selectionToolbarController = const MyEditPageToolbarController();
 
     // When the code change, it will compile it and report errors in the gutter.
     editingController.addListener(() {
@@ -233,9 +233,8 @@ class _MyEditPageState extends State<MyEditPage> with WidgetsBindingObserver {
     }
   }
 
-  Future<Error> compileAndRun(ComPort comPort,
-      {required String programSource, required String dataDisk}) async {
-    return await comPort.compileAndRun(programSource, dataDisk);
+  Future<Error> compileAndRun(ComPort comPort,{required String programSource, required String dataDisk}) async {
+    	return await comPort.compileAndRun(programSource, dataDisk);
   }
 
   void runEditedProgramWithLibraryDataDisk(String executedProgramName) {

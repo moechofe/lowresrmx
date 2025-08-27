@@ -163,8 +163,6 @@ struct CoreError itp_compileProgram(struct Core *core, const char *sourceCode)
 	interpreter->audioLib.core = core;
 	interpreter->particlesLib.core = core;
 
-	pcg32_srandom_r(&(interpreter->defaultRng), 4715711917271117164, (intptr_t)&interpreter->defaultRng);
-
 	return err_noCoreError();
 }
 

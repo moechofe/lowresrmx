@@ -2,7 +2,7 @@
 
 require_once __DIR__.'/common.php';
 
-if($url['path']==='/google')
+if(preg_match('/^\/google$/',$urlPath)&&$isGet)
 {
 	error_log(__FILE__);
 	// Sauce: https://developers.google.com/identity/protocols/oauth2/web-server
@@ -18,7 +18,7 @@ if($url['path']==='/google')
 
 	$auth_request=$config['authorization_endpoint'].'?'.http_build_query([
 		'client_id'=>GOOGLE_CLIENT_ID,
-		'redirect_uri'=>WEBSITE_URL."{$url['path']}",
+		'redirect_uri'=>WEBSITE_URL."{$urlPath}",
 		'response_type'=>'code',
 		'scope'=>'openid profile',
 		'access_type'=>'offline',

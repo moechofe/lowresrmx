@@ -16,7 +16,7 @@ if($url['path']==='/list_first')
 	$l=count($list)-1;
 	for($i=$l;$i>=0;--$i)
 	{
-		list($title,$author,$ct,$upvote)=$prg=redis()->hmget("f:{$list[$i]}","title","author","ct","upvote");
+		list($title,$author,$ct,$upvote)=$prg=redis()->hmget("f:{$list[$i]}:f","title","author","ct","upvote");
 		$last_published[]=[
 			'pid'=>$list[$i],
 			'title'=>$title,

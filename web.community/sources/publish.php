@@ -2,7 +2,7 @@
 
 require_once __DIR__.'/common.php';
 
-if($url['path']==='/publish'&&$_SERVER['REQUEST_METHOD']==='POST')
+if(preg_match('/\/publish$/',$urlPath)&&$isPost)
 {
 	error_log(__FILE__);
 
@@ -33,12 +33,14 @@ if($url['path']==='/publish'&&$_SERVER['REQUEST_METHOD']==='POST')
 	$text=zstd_compress($text);
 
 	$folder=substr($first_id,0,3);
-	mkdir(CONTENT_FOLDER.$folder,0777,true);
-	file_put_contents(CONTENT_FOLDER."$folder/$first_id.rmx",$prg);
-	file_put_contents(CONTENT_FOLDER."$folder/$first_id.png",$img);
+	@mkdir(CONTENT_FOLDER.$folder,0777,true);
+	$prg=zstd_uncompress($prg);
+	if(empty($prg)) internalServerError("Fail to read program");
+	if(!file_put_contents(CONTENT_FOLDER."$folder/$first_id.rmx",$prg)) internalServerError("Fail to write program file");
+	if(!file_put_contents(CONTENT_FOLDER."$folder/$first_id.png",$img)) internalServerError("Fail to write image file");
 
 	// Publish the program
-	redis()->hmset("f:$first_id",
+	redis()->hmset("f:$first_id:f",
 		"uid",$user_id,
 		"title",$title,
 		"text",$text,

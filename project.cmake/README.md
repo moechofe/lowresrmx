@@ -6,6 +6,8 @@ Checkout the SDL github repository into a subdirectory📁 in this folder:
 
     `project.cmake/SDL2-2.30.0`
 
+### Using Visual Studio Code
+
 The `CMakeLists.txt` file📄 will look inside this folder using the variable `${SDL}`, so you'll have to pass it to the cmake configure step: `-DSDL=./SDL2-2.30.0`.
 
 On VSCode, this settings appear in `.vscode/settings.json` for the [CMake Tools extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cmake-tools):
@@ -16,4 +18,9 @@ On VSCode, this settings appear in `.vscode/settings.json` for the [CMake Tools 
 ],
 ```
 
+### Using Bash
 
+    cd project.cmake
+    mkdir build && cd build
+    cmake -DSDL="$(realpath ../SDL)" -DCMAKE_BUILD_TYPE=Release ..
+    cmake --build .

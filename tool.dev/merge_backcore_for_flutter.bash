@@ -25,7 +25,7 @@ list_include()
 		fi
 	done < <(rg '#include "(.*\.h)"' -or '$1' "$file")
 }
-list_include "$DIR/merge.h"
+list_include "$DIR/merge_backcore_for_flutter.h"
 echo "${included[*]}" | xargs cat > "$H"
 sed -i "/#include \"\(.*\)\.h\"/d" "$H"
 

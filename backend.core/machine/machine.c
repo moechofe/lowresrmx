@@ -26,6 +26,7 @@
 #include "video_chip.h"
 #include "io_chip.h"
 #include "audio_chip.h"
+#include "pcg_basic.h"
 
 void machine_init(struct Core *core)
 {
@@ -58,6 +59,8 @@ void machine_reset(struct Core *core, bool resetPersistent)
 
 	memset(core->machineInternals, 0, sizeof(struct MachineInternals));
 	audio_reset(core);
+
+	pcg32_srandom_r(&core->interpreter->defaultRng, 4715711917271117164, (intptr_t)&core->interpreter->defaultRng);
 }
 
 int machine_peek(struct Core *core, int address)

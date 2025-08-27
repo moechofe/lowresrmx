@@ -127,6 +127,20 @@ class CorePluginBindings {
   late final _runnerUpdate = _runnerUpdatePtr.asFunction<
       CoreError Function(ffi.Pointer<Runner>, ffi.Pointer<Input>)>();
 
+  bool runnerShouldRender(
+    ffi.Pointer<Runner> arg0,
+  ) {
+    return _runnerShouldRender(
+      arg0,
+    );
+  }
+
+  late final _runnerShouldRenderPtr =
+      _lookup<ffi.NativeFunction<ffi.Bool Function(ffi.Pointer<Runner>)>>(
+          'runnerShouldRender');
+  late final _runnerShouldRender =
+      _runnerShouldRenderPtr.asFunction<bool Function(ffi.Pointer<Runner>)>();
+
   void runnerRender(
     ffi.Pointer<Runner> arg0,
     ffi.Pointer<ffi.Void> arg1,
@@ -431,6 +445,9 @@ final class ControlsInfo extends ffi.Struct {
   @ffi.Int32()
   external int keyboardMode;
 
+  @ffi.Int32()
+  external int hapticMode;
+
   @ffi.Bool()
   external bool isAudioEnabled;
 
@@ -442,6 +459,19 @@ abstract class KeyboardMode {
   static const int KeyboardModeOff = 0;
   static const int KeyboardModeOn = 1;
   static const int KeyboardModeOptional = 2;
+}
+
+abstract class HapticMode {
+  static const int None = 0;
+  static const int Error = 1;
+  static const int Warning = 2;
+  static const int Success = 3;
+  static const int Heavy = 4;
+  static const int Light = 5;
+  static const int Medium = 6;
+  static const int Rigid = 7;
+  static const int Soft = 8;
+  static const int Selection = 9;
 }
 
 typedef Input = CoreInput;

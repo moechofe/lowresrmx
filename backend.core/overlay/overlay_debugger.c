@@ -1,14 +1,18 @@
 
+#include "interpreter_config.h"
 #include "overlay.h"
 #include "overlay_debugger.h"
 #include "core.h"
+#include "rcstring.h"
 #include "text_lib.h"
 #include "tokenizer.h"
 #include "token.h"
 #include "charsets.h"
 #include "variables.h"
 #include "string_utils.h"
+#include "rcstring.h"
 #include "machine.h"
+#include "globmatch.h"
 #include <string.h>
 
 void new_line(struct Core *core)
@@ -69,8 +73,8 @@ void print_command_line(struct Core *core)
 	struct TextLib *lib = &core->overlay->textLib;
 	struct Overlay *overlay = core->overlay;
 
-	txtlib_setCells(lib, 0, lib->cursorY, 27, lib->cursorY, 0);
-	txtlib_writeText(lib, overlay->commandLine, 0, lib->cursorY);
+	txtlib_setCells(lib, 0, lib->windowY + lib->cursorY, 27, lib->windowY + lib->cursorY, 0);
+	txtlib_writeText(lib, overlay->commandLine, lib->windowX, lib->windowY + lib->cursorY);
 }
 
 struct SimpleVariable *get_simple_var(struct Core *core, const char *looking_name)
@@ -205,6 +209,10 @@ void process_command_line(struct Core *core)
 			core->overlay->textLib.cursorX = 0;
 			core->overlay->textLib.cursorY = 0;
 			core->interpreter->state = StateEvaluate;
+
+			struct ControlsInfo info;
+			info.keyboardMode = KeyboardModeOff;
+			core->delegate->controlsDidChange(core->delegate->context, info);
 		}
 
 		// clear screen
@@ -225,13 +233,19 @@ void process_command_line(struct Core *core)
 		// list variables
 		else if (t->type == TokenDIM)
 		{
-			t = &toks.tokens[i++];
+			char filter[SYMBOL_NAME_SIZE+2] = "*";
 			int pagination = 0;
-			if (t->type == TokenFloat && t->floatValue >= 1)
-				pagination = (int)t->floatValue;
+			t = &toks.tokens[i++];
+			if (t->type == TokenIdentifier || t->type == TokenStringIdentifier)
+			{
+				strcat(filter, toks.symbols[t->symbolIndex].name);
+				strcat(filter, "*");
+				t = &toks.tokens[i++];
+			}
+			if (t->type == TokenFloat && t->floatValue >= 1) pagination = (int)t->floatValue;
 			struct Tokenizer *tokenizer = &core->interpreter->tokenizer;
 			struct IORegisters *ioRegisters = &core->machine->ioRegisters;
-			int canPrint = (ioRegisters->shown.height - ioRegisters->safe.top - ioRegisters->safe.bottom) / 8 - 3;
+			int canPrint = (core->overlay->textLib.windowHeight - 3);
 			int printed = 0;
 			// TODO: get shown.h and safe.top and keyboard.height
 			for (int i = 0; i < MAX_SYMBOLS && tokenizer->symbols[i].name[0] != 0; i++)
@@ -253,14 +267,14 @@ void process_command_line(struct Core *core)
 					pagination--;
 					printed = 0;
 				}
-				if (simple && pagination == 0)
+				if (simple && pagination == 0 && sl_globmatch(tokenizer->symbols[i].name, filter)>0)
 				{
 					txtlib_printText(&core->overlay->textLib, "  ");
 					txtlib_printText(&core->overlay->textLib, tokenizer->symbols[i].name);
 					new_line(core);
 					printed++;
 				}
-				else if (array && pagination == 0)
+				else if (array && pagination == 0 && sl_globmatch(tokenizer->symbols[i].name, filter)>0)
 				{
 					txtlib_printText(&core->overlay->textLib, "  ");
 					txtlib_printText(&core->overlay->textLib, tokenizer->symbols[i].name);
@@ -338,11 +352,9 @@ void overlay_debugger(struct Core *core)
 	struct TextLib *lib = &core->overlay->textLib;
 	struct Overlay *overlay = core->overlay;
 
-	if (core->machine->ioRegisters.status.keyboardVisible == 0)
-	{
-		core->machine->ioRegisters.status.keyboardVisible = -1;
-		delegate_controlsDidChange(core);
-	}
+	struct ControlsInfo info;
+	info.keyboardMode = KeyboardModeOn;
+	core->delegate->controlsDidChange(core->delegate->context, info);
 
 	char key = core->machine->ioRegisters.key;
 	if (key && lib->cursorX < 27)
@@ -386,14 +398,17 @@ void overlay_debugger(struct Core *core)
 		}
 		else if (key == CoreInputKeyReturn)
 		{
-			print_command_line(core);
-			new_line(core);
-			strcpy(overlay->previousCommandLine[overlay->previouscommandLineWriteIndex++], overlay->commandLine);
-			if (overlay->previouscommandLineWriteIndex >= 9)
-				overlay->previouscommandLineWriteIndex = 0;
-			overlay->previouscommandLineReadIndex = overlay->previouscommandLineWriteIndex;
-			process_command_line(core);
-			memset(core->overlay->commandLine, 0, 27);
+			if (strlen(overlay->commandLine) > 0)
+			{
+				print_command_line(core);
+				new_line(core);
+				strcpy(overlay->previousCommandLine[overlay->previouscommandLineWriteIndex++], overlay->commandLine);
+				if (overlay->previouscommandLineWriteIndex >= 9)
+					overlay->previouscommandLineWriteIndex = 0;
+				overlay->previouscommandLineReadIndex = overlay->previouscommandLineWriteIndex;
+				process_command_line(core);
+				memset(core->overlay->commandLine, 0, 27);
+			}
 		}
 		else if (key == CoreInputKeyUp)
 		{
@@ -420,7 +435,9 @@ void overlay_debugger(struct Core *core)
 			// insert char into the command line buffer
 			if (lib->cursorX < 26)
 			{
-				memcpy(overlay->commandLine + lib->cursorX + 1, overlay->commandLine + lib->cursorX, strlen(overlay->commandLine) - lib->cursorX);
+				char tmp[27];
+				strncpy(tmp, overlay->commandLine, 27);
+				memcpy(overlay->commandLine + lib->cursorX + 1, tmp + lib->cursorX, strlen(tmp) - lib->cursorX);
 				overlay->commandLine[lib->cursorX++] = key;
 				print_command_line(core);
 			}

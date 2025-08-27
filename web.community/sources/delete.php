@@ -2,7 +2,7 @@
 
 require_once __DIR__.'/common.php';
 
-if($url['path']==='/delete'&&$_SERVER['REQUEST_METHOD']==='POST')
+if(preg_match('/^\/delete$/',$urlPath)&&$isPost)
 {
 	error_log(__FILE__);
 

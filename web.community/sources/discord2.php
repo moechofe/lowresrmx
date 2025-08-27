@@ -2,8 +2,10 @@
 
 require_once __DIR__.'/common.php';
 
-if($url['path']==='/discord'&&!empty($_GET['code'])&&!empty($_GET['state']))
+if(preg_match('/^\/discord$/',$urlPath)&&$isGet&&!empty($_GET['code'])&&!empty($_GET['state']))
 {
+	error_log(__FILE__);
+
 	$state=hex2bin($_GET['state']);
 
 	if(redis()->get("l:$state")!==$state) forbidden("Fail to validate state");

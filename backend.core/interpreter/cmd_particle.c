@@ -50,34 +50,6 @@ enum ErrorCode cmd_PARTICLE(struct Core *core)
 
         if (interpreter->pass == PassRun) prtclib_setupPool(lib,(int)nValue.v.floatValue,(int)cValue.v.floatValue,(int)aValue.v.floatValue);
     }
-    else if(interpreter->pc->type==TokenDATA)
-    {
-        // PARTICLE <APPAREANCE>
-        if(core->interpreter->pass==PassPrepare && nValue.type!=ValueTypeFloat) return ErrorTypeMismatch;
-        else if(core->interpreter->pass==PassRun && ((int)nValue.v.floatValue<0 || (int)nValue.v.floatValue>APPEARANCE_MAX-1)) return ErrorInvalidParameter;
-
-        // PARTICLE <APPAREANCE> DATA
-        ++interpreter->pc;
-
-        // PARTICLE <APPAREANCE> DATA <LABEL>
-        if(interpreter->pc->type!=TokenIdentifier) return ErrorExpectedLabel;
-        struct Token *tk=interpreter->pc;
-        ++interpreter->pc;
-
-        if (interpreter->pass == PassPrepare)
-        {
-           struct JumpLabelItem *item = tok_getJumpLabel(&interpreter->tokenizer, tk->symbolIndex);
-           if (!item) return ErrorUndefinedLabel;
-        }
-        else if(interpreter->pass == PassRun)
-        {
-          struct JumpLabelItem *item = tok_getJumpLabel(&interpreter->tokenizer, tk->symbolIndex);
-
-          struct Token *dataToken = dat_reachData(interpreter, item->token);
-
-          prtclib_setApperanceLabel(lib,(int)nValue.v.floatValue,dataToken);
-        }
-    }
     else return ErrorSyntax;
 
     return itp_endOfCommand(interpreter);

@@ -34,8 +34,6 @@
         - Ubuntu 22.04.2 LTS
         - Clang 14.0
         - Cmake 3.22
-        - Visual Studio Code 1.82
-            - CMake Tools extension 1.15
 
     2. WSL on Windows 10 🤦‍♂️
 
@@ -47,8 +45,18 @@
         - Windows 10 Home 22H2 19045
         - Visual Studio Community 2019 x86
         - Cmake 3.27
-        - Visual Studio Code 1.82
-            - CMake Tools extension 1.15
+
+    4. EndeavourOS
+
+        - EndeavourOS 2025.03.19
+        - Gcc 14.2.1
+        - Cmake 4.0.1
+
+        ```
+        sudo pacman -S dbus
+        ```
+
+        I added a patch to `SDL_pipewire.c` but I forgot which one. It was a simple cast.
 
 - 📂 `project.flutter` 💗
 

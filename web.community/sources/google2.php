@@ -2,7 +2,7 @@
 
 require_once __DIR__.'/common.php';
 
-if($url['path']==='/google'&&!empty($_GET['code'])&&!empty($_GET['state']))
+if(preg_match('/^\/google$/',$urlPath)&&$isGet&&!empty($_GET['code'])&&!empty($_GET['state']))
 {
 	error_log(__FILE__);
 

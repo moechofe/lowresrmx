@@ -124,64 +124,41 @@ struct CoreError err_noCoreError(void);
 
 #include <stdint.h>
 
-#define NUM_GAMEPADS 2
-
-// ================ Gamepad ================
-
-// union Gamepad {
-//     struct {
-//         uint8_t up:1;
-//         uint8_t down:1;
-//         uint8_t left:1;
-//         uint8_t right:1;
-//         uint8_t buttonA:1;
-//         uint8_t buttonB:1;
-//     };
-//     uint8_t value;
-// };
-
-// ================ Status ================
-
 union IOStatus
 {
 	struct
 	{
-		uint8_t pause : 1;
 		uint8_t touch : 1;
 		uint8_t keyboardVisible : 1;
 	};
 	uint8_t value;
 };
 
-// ================ Attributes ================
-
-// union IOAttributes {
-//     struct {
-//     };
-//     uint8_t value;
-// };
-
-// ===============================================
-// ================ I/O Registers ================
-// ===============================================
-
 struct IORegisters
 {
-	// TODO: remove gamepad
-	// union Gamepad gamepads[NUM_GAMEPADS]; // 2 bytes
+	// 0x0ff70
 	float touchX;
+	// 0x0ff74
 	float touchY;
+	// 0x0ff78
 	struct
 	{
 		uint16_t width, height;
 	} shown;
+	// 0x0ff7c
 	struct
 	{
 		uint16_t left, top, right, bottom;
 	} safe;
+	// 0x0ff84
 	char key;
+	// 0x0ff85
 	union IOStatus status;
-	// union IOAttributes attr;
+	// 0x0ff87
+	uint8_t haptic;
+	// 0x0ff88
+	int keyboardHeight;
+	// 0x0ff8c
 };
 
 #endif /* io_chip_h */
@@ -234,8 +211,10 @@ struct IORegisters
 #define BGR 1
 #endif
 #endif
+#if __ANDROID__
+#define BGR 0
+#endif
 #if __linux__
-#define BGR 1
 #endif
 
 struct Core;
@@ -315,6 +294,10 @@ union DisplayAttributes {
         uint8_t planeBEnabled:1;
         uint8_t planeCEnabled:1;
         uint8_t planeDEnabled:1;
+				uint8_t planeADoubled:1;
+				uint8_t planeBDoubled:1;
+				uint8_t planeCDoubled:1;
+				uint8_t planeDDoubled:1;
         // uint8_t planeACellSize:1;
         // uint8_t planeBCellSize:1;
         // uint8_t planeCCellSize:1;
@@ -556,29 +539,29 @@ struct Machine {
     uint8_t nothing1[0x0FB00-0x0F800]; // 768 Bytes
 
     // 0x0FB00..0x0FF00
-    struct SpriteRegisters spriteRegisters; // 1Kibi
+    struct SpriteRegisters spriteRegisters; // 1020 Bytes
     uint8_t nothing2[0x400 - sizeof(struct SpriteRegisters)]; // 4 bytes
 
     // 0x0FF00
-    struct ColorRegisters colorRegisters; // 32Bytes
+    struct ColorRegisters colorRegisters; // 32 Bytes
 
-    // 0xFF20
-    struct VideoRegisters videoRegisters;
+    // 0x0FF20..0x0FF40
+    struct VideoRegisters videoRegisters; // 20 Bytes
     uint8_t nothing3[0x20 - sizeof(struct VideoRegisters)]; // 12 Bytes
 
-    // 0xFF40
+    // 0x0FF40..0x0FF70
     struct AudioRegisters audioRegisters;
 
-    // 0xFF70
-    struct IORegisters ioRegisters;
-    uint8_t nothing5[0x30 - sizeof(struct IORegisters)]; // 18 Bytes
+    // 0x0FF70..0x0FFA0
+    struct IORegisters ioRegisters; // 28 Bytes
+    uint8_t nothing4[0x30 - sizeof(struct IORegisters)]; // 20 Bytes
 
-    // 0xFFA0
-    struct DmaRegisters dmaRegisters;
-    uint8_t nothing6[0x10 - sizeof(struct DmaRegisters)]; // 10 Bytes
+    // 0x0FFA0..0x0FFB0
+    struct DmaRegisters dmaRegisters; // 6 Bytes
+    uint8_t manually_mapped[0x10 - sizeof(struct DmaRegisters)]; // 10 Bytes
 
-    // 0xFFB0
-    uint8_t nothing7[0x10000 - 0xFFB0];
+    // 0x0FFB0.0x10000
+    uint8_t nothing5[0x10000 - 0xFFB0]; // 80 Bytes !!!!!
 
     // 0x10000..0x20000
     uint8_t cartridgeRom[0x10000]; // 64Kibi
@@ -596,9 +579,11 @@ struct MachineInternals {
 void machine_init(struct Core *core);
 void machine_reset(struct Core *core, bool resetPersistent);
 int machine_peek(struct Core *core, int address);
-int16_t machine_peek_short(struct Core *core, int address);
+int16_t machine_peek_short(struct Core *core, int address, enum ErrorCode *errorCode);
+int32_t machine_peek_long(struct Core *core, int address, enum ErrorCode *errorCode);
 bool machine_poke(struct Core *core, int address, int value);
 bool machine_poke_short(struct Core *core, int address, int16_t value);
+bool machine_poke_long(struct Core *core, int address, int32_t value);
 void machine_enableAudio(struct Core *core);
 void machine_suspendEnergySaving(struct Core *core, int numUpdates);
 
@@ -665,24 +650,25 @@ extern uint8_t overlayCharacters[];
 
 struct Core;
 
-struct TextLib {
-    struct Core *core;
-    union CharacterAttributes charAttr;
-    int fontCharOffset;
-    int windowX;
-    int windowY;
-    int windowWidth;
-    int windowHeight;
-    int windowBg;
-    int cursorX;
-    int cursorY;
-    int bg;
-    int sourceAddress;
-    int sourceWidth;
-    int sourceHeight;
-    char inputBuffer[INPUT_BUFFER_SIZE];
-    int inputLength;
-    int blink;
+struct TextLib
+{
+	struct Core *core;
+	union CharacterAttributes charAttr;
+	int fontCharOffset;
+	int windowX;
+	int windowY;
+	int windowWidth;
+	int windowHeight;
+	int windowBg;
+	int cursorX;
+	int cursorY;
+	int bg;
+	int sourceAddress;
+	int sourceWidth;
+	int sourceHeight;
+	char inputBuffer[INPUT_BUFFER_SIZE];
+	int inputLength;
+	int blink;
 };
 
 void txtlib_printText(struct TextLib *lib, const char *text);
@@ -704,6 +690,7 @@ int txtlib_getSourceCell(struct TextLib *lib, int x, int y, bool getAttrs);
 bool txtlib_setSourceCell(struct TextLib *lib, int x, int y, int character);
 
 void txtlib_itobin(char *buffer, size_t buffersize, size_t width, int value);
+void txtlib_scrollWindowIfNeeded(struct TextLib *lib);
 
 #endif /* text_lib_h */
 //
@@ -735,14 +722,19 @@ void txtlib_itobin(char *buffer, size_t buffersize, size_t width, int value);
 struct Core;
 struct CoreInput;
 
-struct Overlay {
-    struct Plane plane;
-    struct TextLib textLib;
-    int timer;
-    int messageTimer;
+struct Overlay
+{
+	struct Plane plane;
+	struct TextLib textLib;
+	int timer;
+	int messageTimer;
+	char commandLine[27];
+	char previousCommandLine[27][9];
+	int previouscommandLineWriteIndex, previouscommandLineReadIndex;
 };
 
 void overlay_init(struct Core *core);
+void overlay_clear(struct Core *core);
 void overlay_reset(struct Core *core);
 void overlay_updateLayout(struct Core *core, struct CoreInput *input);
 void overlay_updateState(struct Core *core);
@@ -786,7 +778,7 @@ void overlay_draw(struct Core *core, bool ingame);
 // XXX: #define MAX_CYCLES_TOTAL_PER_FRAME 17556
 // XXX: #define MAX_CYCLES_PER_VBL 1140
 // XXX: #define MAX_CYCLES_PER_RASTER 51
-#define MAX_CYCLES_TOTAL_PER_FRAME 35112 // ??
+#define MAX_CYCLES_TOTAL_PER_FRAME 52668 // 17556*317
 #define MAX_CYCLES_PER_VBL 3420 // 1140*3 ??
 #define MAX_CYCLES_PER_RASTER 204 // 51*4 OK
 #define MAX_CYCLES_PER_PARTICLE 51 // ??
@@ -854,243 +846,247 @@ void rcstring_release(struct RCString *string);
 
 #include <stdio.h>
 
-enum TokenType {
-    TokenUndefined,
+enum TokenType
+{
+	TokenUndefined,
 
-    TokenIdentifier,
-    TokenStringIdentifier,
-    TokenLabel,
-    TokenFloat,
-    TokenString,
+	TokenIdentifier,
+	TokenStringIdentifier,
+	TokenLabel,
+	TokenFloat,
+	TokenString,
 
-    // Signs
-    TokenColon,
-    TokenComma,
-    TokenSemicolon,
-    TokenApostrophe,
-    TokenEol,
+	// Signs
+	TokenColon,
+	TokenComma,
+	TokenSemicolon,
+	TokenApostrophe,
+	TokenEol,
 
-    // Operators
-    TokenEq,
-    TokenGrEq,
-    TokenLeEq,
-    TokenUneq,
-    TokenGr,
-    TokenLe,
-    TokenBracketOpen,
-    TokenBracketClose,
-    TokenPlus,
-    TokenMinus,
-    TokenMul,
-    TokenDiv,
-    TokenDivInt,
-    TokenPow,
-    TokenAND,
-    TokenNOT,
-    TokenOR,
-    TokenXOR,
-    TokenMOD,
+	// Operators
+	TokenEq,
+	TokenGrEq,
+	TokenLeEq,
+	TokenUneq,
+	TokenGr,
+	TokenLe,
+	TokenBracketOpen,
+	TokenBracketClose,
+	TokenPlus,
+	TokenMinus,
+	TokenMul,
+	TokenDiv,
+	TokenDivInt,
+	TokenPow,
+	TokenAND,
+	TokenNOT,
+	TokenOR,
+	TokenXOR,
+	TokenMOD,
 
-    // Commands/Functions
-    TokenABS,
-    TokenACOS,
-    TokenADD,
-    TokenASC,
-    TokenASIN,
-    TokenATAN,
-    TokenATTR,
-    TokenBG,
-    TokenBIN,
-    // TokenBUTTON,
-    TokenCALL,
-    TokenCELLA,
-    TokenCELLC,
-    TokenCELL,
-    TokenCHAR,
-    TokenCHR,
-    TokenCLS,
-    TokenCLW,
-    TokenCOLOR,
-    TokenCOPY,
-    TokenCOS,
-    TokenCURSORX,
-    TokenCURSORY,
-    TokenDATA,
-    TokenDEC,
-    TokenDIM,
-    // TokenDISPLAY,
-    //TokenDOWN,
-    TokenDO,
-    TokenELSE,
-    TokenEND,
-    TokenENVELOPE,
-    TokenEXIT,
-    TokenEXP,
-    TokenFILE,
-    TokenFILES,
-    TokenFILL,
-    TokenFLIP,
-    TokenFONT,
-    TokenFOR,
-    TokenFSIZE,
-    //TokenGAMEPAD,
-    TokenGLOBAL,
-    TokenGOSUB,
-    TokenGOTO,
-    TokenHEX,
-    TokenHCOS,
-    TokenHIT,
-    TokenHSIN,
-    TokenHTAN,
-    TokenIF,
-    TokenINC,
-    TokenINKEY,
-    TokenINPUT,
-    TokenINSTR,
-    TokenINT,
-    TokenKEYBOARD,
-    TokenLEFTStr,
-    //TokenLEFT,
-    TokenLEN,
-    TokenLET,
-    TokenLFOA,
-    TokenLFO,
-    TokenLOAD,
-    TokenLOCATE,
-    TokenLOG,
-    TokenLOOP,
-    TokenMAX,
-    TokenMCELLA,
-    TokenMCELLC,
-    TokenMCELL,
-    TokenMID,
-    TokenMIN,
-    TokenCLAMP,
-    TokenMUSIC,
-    TokenNEXT,
-    TokenNUMBER,
-    TokenOFF,
-    TokenON,
-    TokenPALETTE,
-    TokenPAL,
-    TokenPAUSE,
-    TokenPEEKL,
-    TokenPEEKW,
-    TokenPEEK,
-    TokenPI,
-    TokenPLAY,
-    TokenPOKEL,
-    TokenPOKEW,
-    TokenPOKE,
-    TokenPRINT,
-    TokenPRIO,
-    TokenRANDOMIZE,
-    TokenRASTER,
-    TokenREAD,
-    TokenSKIP,
-    TokenREM,
-    TokenREPEAT,
-    TokenRESTORE,
-    TokenRETURN,
-    TokenRIGHTStr,
-    //TokenRIGHT,
-    TokenRND,
-    TokenROL,
-    TokenROM,
-    TokenROR,
-    TokenSAVE,
-    TokenSCROLLX,
-    TokenSCROLLY,
-    TokenSCROLL,
-    TokenSGN,
-    TokenSIN,
-    TokenSIZE,
-    TokenSOUND,
-    TokenSOURCE,
-    TokenSPRITEA,
-    TokenSPRITEC,
-    TokenSPRITEX,
-    TokenSPRITEY,
-    TokenSPRITE,
-    TokenSQR,
-    TokenSTEP,
-    TokenSTOP,
-    TokenSTR,
-    TokenSUB,
-    TokenSWAP,
-    TokenSYSTEM,
-    TokenTAN,
-    TokenTAP,
-    TokenTEXT,
-    TokenTHEN,
-    TokenTIMER,
-    TokenTINT,
-    //TokenTOUCHSCREEN,
-    TokenTOUCHX,
-    TokenTOUCHY,
-    TokenTOUCH,
-    TokenTO,
-    TokenTRACE,
-    TokenTRACK,
-    TokenUBOUND,
-    TokenUNTIL,
-    //TokenUP,
-    TokenVAL,
-    TokenVBL,
-    TokenVIEW,
-    TokenVOLUME,
-    TokenWAIT,
-    TokenWAVE,
-    TokenWEND,
-    TokenWHILE,
-    TokenWINDOW,
+	// Commands/Functions
+	TokenABS,
+	TokenACOS,
+	TokenADD,
+	TokenASC,
+	TokenASIN,
+	TokenATAN,
+	TokenATTR,
+	TokenBG,
+	TokenBIN,
+	// TokenBUTTON,
+	TokenCALL,
+	TokenCELLA,
+	TokenCELLC,
+	TokenCELL,
+	TokenCHAR,
+	TokenCHR,
+	TokenCLS,
+	TokenCLW,
+	TokenCOLOR,
+	TokenCOPY,
+	TokenCOS,
+	TokenCURSORX,
+	TokenCURSORY,
+	TokenDATA,
+	TokenDEC,
+	TokenDIM,
+	// TokenDISPLAY,
+	// TokenDOWN,
+	TokenDO,
+	TokenELSE,
+	TokenEND,
+	TokenENVELOPE,
+	TokenEXIT,
+	TokenEXP,
+	TokenFILE,
+	TokenFILES,
+	TokenFILL,
+	TokenFLIP,
+	TokenFONT,
+	TokenFOR,
+	TokenFSIZE,
+	// TokenGAMEPAD,
+	TokenGLOBAL,
+	TokenGOSUB,
+	TokenGOTO,
+	TokenHEX,
+	TokenHCOS,
+	TokenHIT,
+	TokenHSIN,
+	TokenHTAN,
+	TokenIF,
+	TokenINC,
+	TokenINKEY,
+	TokenINPUT,
+	TokenINSTR,
+	TokenINT,
+	TokenKEYBOARD,
+	TokenLEFTStr,
+	// TokenLEFT,
+	TokenLEN,
+	TokenLET,
+	TokenLFOA,
+	TokenLFO,
+	TokenLOAD,
+	TokenLOCATE,
+	TokenLOG,
+	TokenLOOP,
+	TokenMAX,
+	TokenMCELLA,
+	TokenMCELLC,
+	TokenMCELL,
+	TokenMID,
+	TokenMIN,
+	TokenCLAMP,
+	TokenMUSIC,
+	TokenNEXT,
+	TokenNUMBER,
+	TokenOFF,
+	TokenON,
+	TokenPALETTE,
+	TokenPAL,
+	TokenPAUSE,
+	TokenPEEKL,
+	TokenPEEKW,
+	TokenPEEK,
+	TokenPI,
+	TokenPLAY,
+	TokenPOKEL,
+	TokenPOKEW,
+	TokenPOKE,
+	TokenPRINT,
+	TokenPRIO,
+	TokenRANDOMIZE,
+	TokenRASTER,
+	TokenREAD,
+	TokenSKIP,
+	TokenREPEAT,
+	TokenRESTORE,
+	TokenRETURN,
+	TokenRIGHTStr,
+	// TokenRIGHT,
+	TokenRND,
+	TokenROL,
+	TokenROM,
+	TokenROR,
+	TokenSAVE,
+	TokenSCROLLX,
+	TokenSCROLLY,
+	TokenSCROLL,
+	TokenSGN,
+	TokenSIN,
+	TokenSIZE,
+	TokenSOUND,
+	TokenSOURCE,
+	TokenSPRITEA,
+	TokenSPRITEC,
+	TokenSPRITEX,
+	TokenSPRITEY,
+	TokenSPRITE,
+	TokenSQR,
+	TokenSTEP,
+	TokenSTOP,
+	TokenSTR,
+	TokenSUB,
+	TokenSWAP,
+	TokenSYSTEM,
+	TokenTAN,
+	TokenTAP,
+	TokenTEXT,
+	TokenTHEN,
+	TokenTIMER,
+	TokenTINT,
+	// TokenTOUCHSCREEN,
+	TokenTOUCHX,
+	TokenTOUCHY,
+	TokenTOUCH,
+	TokenTO,
+	TokenTRACE,
+	TokenTRACK,
+	TokenUBOUND,
+	TokenUNTIL,
+	// TokenUP,
+	TokenVAL,
+	TokenVBL,
+	TokenVIEW,
+	TokenVOLUME,
+	TokenWAIT,
+	TokenWAVE,
+	TokenWEND,
+	TokenWHILE,
+	TokenWINDOW,
 
-    TokenSHOWNW,
-    TokenSHOWNH,
-    TokenSAFEL,
-    TokenSAFET,
-    TokenSAFER,
-    TokenSAFEB,
+	TokenSHOWNW,
+	TokenSHOWNH,
+	TokenSAFEL,
+	TokenSAFET,
+	TokenSAFER,
+	TokenSAFEB,
 
-    TokenPARTICLE,
-    TokenEMITTER,
-    TokenAT,
-    TokenCOMPAT,
-    TokenEASE,
-    TokenMESSAGE,
-    TokenDMA,
-		TokenCEIL,
+	TokenPARTICLE,
+	TokenEMITTER,
+	TokenAT,
+	TokenCOMPAT,
+	TokenEASE,
+	TokenMESSAGE,
+	TokenDMA,
+	TokenCEIL,
+	TokenFLOOR,
+	TokenHAPTIC,
 
-    // Reserved Keywords
-    Token_reserved,
-    // TokenANIM,
-    // TokenCLOSE,
-    // TokenDECLARE,
-    // TokenDEF,
-    // TokenFLASH,
-    // TokenFN,
-    // TokenFUNCTION,
-    // TokenLBOUND,
-    // TokenOPEN,
-    // TokenOUTPUT,
-    // TokenSHARED,
-    // TokenSTATIC,
-    // TokenTEMPO,
-    // TokenVOICE,
-    // TokenWRITE,
+	// Reserved Keywords
+	Token_reserved,
+	// TokenANIM,
+	// TokenCLOSE,
+	// TokenDECLARE,
+	// TokenDEF,
+	// TokenFLASH,
+	// TokenFN,
+	// TokenFUNCTION,
+	// TokenLBOUND,
+	// TokenOPEN,
+	// TokenOUTPUT,
+	// TokenSHARED,
+	// TokenSTATIC,
+	// TokenTEMPO,
+	// TokenVOICE,
+	// TokenWRITE,
 
-    Token_count
+	Token_count
 };
 
-struct Token {
-    enum TokenType type;
-    union {
-        float floatValue;
-        struct RCString *stringValue;
-        int symbolIndex;
-        struct Token *jumpToken;
-    };
-    int sourcePosition;
+struct Token
+{
+	enum TokenType type;
+	union
+	{
+		float floatValue;
+		struct RCString *stringValue;
+		int symbolIndex;
+		struct Token *jumpToken;
+	};
+	int sourcePosition;
 };
 
 extern const char *TokenStrings[];
@@ -1182,29 +1178,33 @@ enum ErrorCode tok_setSub(struct Tokenizer *tokenizer, int symbolIndex, struct T
 
 #include <stdio.h>
 
-enum ValueType {
-    ValueTypeNull,
-    ValueTypeError,
-    ValueTypeFloat,
-    ValueTypeString
+enum ValueType
+{
+	ValueTypeNull,
+	ValueTypeError,
+	ValueTypeFloat,
+	ValueTypeString
 };
 
-union Value {
-    float floatValue;
-    struct RCString *stringValue;
-    union Value *reference;
-    enum ErrorCode errorCode;
+union Value
+{
+	float floatValue;
+	struct RCString *stringValue;
+	union Value *reference;
+	enum ErrorCode errorCode;
 };
 
-struct TypedValue {
-    enum ValueType type;
-    union Value v;
+struct TypedValue
+{
+	enum ValueType type;
+	union Value v;
 };
 
-enum TypeClass {
-    TypeClassAny,
-    TypeClassNumeric,
-    TypeClassString
+enum TypeClass
+{
+	TypeClassAny,
+	TypeClassNumeric,
+	TypeClassString
 };
 
 extern union Value ValueDummy;
@@ -1535,8 +1535,7 @@ void data_setEntry(struct DataManager *manager, int index, const char *comment, 
 
 #define PARTICLE_MEM_X 0
 #define PARTICLE_MEM_Y 2
-#define PARTICLE_MEM_APPEARANCE 4
-#define PARTICLE_MEM_FRAME 5
+#define PARTICLE_MEM_LIFETIME 4
 #define PARTICLE_MEM_SIZE 6
 
 #define EMITTER_MEM_X 0
@@ -1588,7 +1587,7 @@ struct ParticlesLib
 };
 
 void prtclib_setupPool(struct ParticlesLib *lib,int firstSprite,int poolCount,int particleAddr);
-void prtclib_setApperanceLabel(struct ParticlesLib *lib,int apperanceId,struct Token *label);
+// void prtclib_setApperanceLabel(struct ParticlesLib *lib,int apperanceId,struct Token *label);
 
 void prtclib_setupEmitter(struct ParticlesLib *lib,int poolCount,int particleAddr);
 void prtclib_setSpawnerLabel(struct ParticlesLib *lib,int emitterId,struct Token *label);
@@ -1710,91 +1709,96 @@ uint32_t pcg32_boundedrand_r(pcg32_random_t* rng, uint32_t bound);
 
 struct Core;
 
-enum Pass {
-    PassPrepare,
-    PassRun
+enum Pass
+{
+	PassPrepare,
+	PassRun
 };
 
-enum State {
-    StateNoProgram,
-    StateEvaluate,
-    StateInput,
-    StatePaused,
-    StateWaitForDisk,
-    StateEnd
+enum State
+{
+	StateNoProgram,
+	StateEvaluate,
+	StateInput,
+	StatePaused,
+	StateWaitForDisk,
+	StateEnd
 };
 
-enum Mode {
-    ModeNone,
-    ModeMain,
-    ModeInterrupt
+enum Mode
+{
+	ModeNone,
+	ModeMain,
+	ModeInterrupt
 };
 
-enum InterruptType {
-    InterruptTypeRaster,
-    InterruptTypeVBL,
-    InterruptTypeParticle,
-		InterruptTypeEmitter,
+enum InterruptType
+{
+	InterruptTypeRaster,
+	InterruptTypeVBL,
+	InterruptTypeParticle,
+	InterruptTypeEmitter,
 };
 
-struct Interpreter {
-    const char *sourceCode;
+struct Interpreter
+{
+	const char *sourceCode;
 
-    enum Pass pass;
-    enum State state;
-    enum Mode mode;
-    struct Token *pc;
-    int subLevel;
-    int cycles;
-    int interruptOverCycles;
-    bool debug;
-    bool handlesPause;
-    int cpuLoadDisplay;
-    int cpuLoadMax;
-    int cpuLoadTimer;
+	enum Pass pass;
+	enum State state;
+	enum Mode mode;
+	struct Token *pc;
+	int subLevel;
+	int cycles;
+	int maxCycles;
+	int interruptOverCycles;
+	bool debug;
+	bool pauseAtWait;
+	int cpuLoadDisplay;
+	int cpuLoadMax;
+	int cpuLoadTimer;
 
-    bool compat;
+	bool compat;
 
-    struct Tokenizer tokenizer;
+	struct Tokenizer tokenizer;
 
-    struct DataManager romDataManager;
+	struct DataManager romDataManager;
 
-    struct LabelStackItem labelStackItems[MAX_LABEL_STACK_ITEMS];
-    int numLabelStackItems;
+	struct LabelStackItem labelStackItems[MAX_LABEL_STACK_ITEMS];
+	int numLabelStackItems;
 
-    bool isSingleLineIf;
+	bool isSingleLineIf;
 
-    struct SimpleVariable simpleVariables[MAX_SIMPLE_VARIABLES];
-    int numSimpleVariables;
-    struct ArrayVariable arrayVariables[MAX_ARRAY_VARIABLES];
-    int numArrayVariables;
-    struct RCString *nullString;
+	struct SimpleVariable simpleVariables[MAX_SIMPLE_VARIABLES];
+	int numSimpleVariables;
+	struct ArrayVariable arrayVariables[MAX_ARRAY_VARIABLES];
+	int numArrayVariables;
+	struct RCString *nullString;
 
-    struct Token *firstData;
-    struct Token *lastData;
-    struct Token *currentDataToken;
-    struct Token *currentDataValueToken;
+	struct Token *firstData;
+	struct Token *lastData;
+	struct Token *currentDataToken;
+	struct Token *currentDataValueToken;
 
-    struct Token *currentOnRasterToken;
-    struct Token *currentOnVBLToken;
-    struct Token *currentOnParticleToken;
-		struct Token *currentOnEmitterToken;
+	struct Token *currentOnRasterToken;
+	struct Token *currentOnVBLToken;
+	struct Token *currentOnParticleToken;
+	struct Token *currentOnEmitterToken;
 
-    int waitCount;
-    bool waitTap;
-    bool exitEvaluation;
-    // union Gamepad lastFrameGamepads[NUM_GAMEPADS];
-    union IOStatus lastFrameIOStatus;
-    float timer;
-    int seed;
-    union Value *lastVariableValue;
+	int waitCount;
+	bool waitTap;
+	bool exitEvaluation;
+	union IOStatus lastFrameIOStatus;
+	float timer;
+	int seed;
+	union Value *lastVariableValue;
 
-    struct TextLib textLib;
-    struct SpritesLib spritesLib;
-    struct AudioLib audioLib;
-    struct ParticlesLib particlesLib;
+	struct TextLib textLib;
+	struct SpritesLib spritesLib;
+	struct AudioLib audioLib;
+	struct ParticlesLib particlesLib;
 
-    pcg32_random_t defaultRng;
+	pcg32_random_t defaultRng;
 };
 
 void itp_init(struct Core *core);
@@ -1890,8 +1894,22 @@ enum KeyboardMode {
     KeyboardModeOptional
 };
 
+enum HapticMode {
+		None,
+		Error,
+		Warning,
+		Success,
+		Heavy,
+		Light,
+		Medium,
+		Rigid,
+		Soft,
+		Selection,
+};
+
 struct ControlsInfo {
     enum KeyboardMode keyboardMode;
+		enum HapticMode hapticMode;
     bool isAudioEnabled;
 		bool isInputState;
 };
@@ -1986,6 +2004,7 @@ extern const char CoreInputKeyRight;
 extern const char CoreInputKeyLeft;
 extern const char CoreInputKeyDown;
 extern const char CoreInputKeyUp;
+extern const char CoreInputKeyDelete;
 
 void core_init(struct Core *core);
 void core_deinit(struct Core *core);
@@ -1998,7 +2017,8 @@ void core_willSuspendProgram(struct Core *core);
 void core_setDebug(struct Core *core, bool enabled);
 bool core_getDebug(struct Core *core);
 bool core_isKeyboardEnabled(struct Core *core);
-void core_setKeybordEnabled(struct Core *core, bool enabled);
+void core_setKeyboardEnabled(struct Core *core, bool enabled);
+void core_setKeyboardHeight(struct Core *core, int height);
 bool core_shouldRender(struct Core *core);
 
 void core_setInputGamepad(struct CoreInput *input, int player, bool up, bool down, bool left, bool right, bool buttonA, bool buttonB);
@@ -2106,6 +2126,7 @@ struct CoreError stats_update(struct Stats *stats, const char *sourceCode);
 #include <stdio.h>
 
 const char *uppercaseString(const char *source);
+const char uppercaseChar(const char sourceChar);
 const char *lineString(const char *source, int pos);
 int lineNumber(const char *source, int pos);
 void stringConvertCopy(char *dest, const char *source, size_t length);
@@ -2286,3 +2307,60 @@ enum ErrorCode cmd_MESSAGE(struct Core *core);
 extern uint8_t DefaultCharacters[][16];
 
 #endif /* default_characters_h */
+#ifndef overlay_debugger_h
+#define overlay_debugger_h
+
+struct Core;
+
+void overlay_debugger(struct Core *core);
+
+#endif /* overlay_debugger_h */
+/**
+ * Copyright (c) 2020 rxi
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the MIT license. See `log.c` for details.
+ */
+
+#ifndef LOG_H
+#define LOG_H
+
+#include <stdio.h>
+#include <stdarg.h>
+#include <stdbool.h>
+#include <time.h>
+
+#define LOG_VERSION "0.1.0"
+
+typedef struct {
+  va_list ap;
+  const char *fmt;
+  const char *file;
+  struct tm *time;
+  void *udata;
+  int line;
+  int level;
+} log_Event;
+
+typedef void (*log_LogFn)(log_Event *ev);
+typedef void (*log_LockFn)(bool lock, void *udata);
+
+enum { LOG_TRACE, LOG_DEBUG, LOG_INFO, LOG_WARN, LOG_ERROR, LOG_FATAL };
+
+#define log_trace(...) log_log(LOG_TRACE, __FILE__, __LINE__, __VA_ARGS__)
+#define log_debug(...) log_log(LOG_DEBUG, __FILE__, __LINE__, __VA_ARGS__)
+#define log_info(...)  log_log(LOG_INFO,  __FILE__, __LINE__, __VA_ARGS__)
+#define log_warn(...)  log_log(LOG_WARN,  __FILE__, __LINE__, __VA_ARGS__)
+#define log_error(...) log_log(LOG_ERROR, __FILE__, __LINE__, __VA_ARGS__)
+#define log_fatal(...) log_log(LOG_FATAL, __FILE__, __LINE__, __VA_ARGS__)
+
+const char* log_level_string(int level);
+void log_set_lock(log_LockFn fn, void *udata);
+void log_set_level(int level);
+void log_set_quiet(bool enable);
+int log_add_callback(log_LogFn fn, void *udata, int level);
+int log_add_fp(FILE *fp, int level);
+
+void log_log(int level, const char *file, int line, const char *fmt, ...);
+
+#endif

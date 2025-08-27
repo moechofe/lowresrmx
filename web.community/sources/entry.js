@@ -17,18 +17,44 @@ var CommentItem;
 const eid=dataget(query('#comment-list'),'eid');
 let cid=0;
 
+const setupDate=()=>{
+	queryAll('.date[data-ct]').forEach((elem)=>{
+		humanDate(elem,dataget(elem,'ct'));
+	});
+};
+
 const setupCommentForm=()=>{
 	const form=query('#comment');
 
-	click(find(form,'.comment'),()=>{
+	const showLimit=()=>{
+		const limit=find(form,'.limit');
+		const ta=find(form,'textarea');
+		const max=dataget(limit,'limit');
+		if(!max) return;
+		limit.textContent=`${ta.value.length}/${max}`;
+	};
+
+	input(find(form,'textarea'),(event)=>{
+		const max=dataget(find(form,'.limit'),'limit');
+		const ta=find(form,'textarea');
+		if(ta.value.length>max) ta.value=ta.value.substring(0,max);
+		showLimit();
+		autoHeight(event.target);
+		event.target.scrollIntoView(true);
+	});
+	showLimit();
+	autoHeight(find(form,'textarea'));
+
+	click(find(form,'.comment'),async()=>{
 		const eid=dataget(form,'eid');
 		if(!eid) return;
 		const text=find(form,'textarea').value.trim();
 		if(!text) return;
-		post('/comment',JSON.stringify({
-			f:eid,
-			x:text,
-		}),null);
+		if(await post(`${eid}/comment`,text,null))
+		{
+			find(form,'textarea').value='';
+			window.location.reload();
+		}
 	});
 };
 
@@ -46,9 +72,9 @@ const addComments=(cmnt_list)=>{
 	const items=cmnt_list.map(data=>{
 		const item=instanciate(item_tpl);
 
-		find(item,'.text').textContent=data.text;
-		find(item,'.author').textContent=data.author;
+		find(item,'.author a').textContent=data.author;
 		humanDate(find(item,'.date'),data.ct);
+		find(item,'p').textContent=data.text;
 
 		return item;
 	});
@@ -57,6 +83,7 @@ const addComments=(cmnt_list)=>{
 	return list;
 };
 
+setupDate();
 setupSign();
 setupCommentForm();
 

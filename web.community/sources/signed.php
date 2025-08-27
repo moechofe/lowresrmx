@@ -2,7 +2,7 @@
 
 require_once __DIR__.'/common.php';
 
-if($url['path']==='/is_signed')
+if(preg_match('/^\/is_signed$/',$urlPath)&&$isGet)
 {
 	$user_id=validateSessionAndGetUserId();
 	if(!$user_id)

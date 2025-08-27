@@ -5,7 +5,6 @@ import 'dart:ui' as ui show Image;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:lowresrmx/core/runtime.dart';
 import 'package:lowresrmx/data/library.dart';
 import 'package:lowresrmx/data/preference.dart';
@@ -54,6 +53,12 @@ class _MyMeasurementState extends State<MyMeasurement> {
       });
     });
   }
+
+	@override
+	void dispose() {
+		widget.stream.drain();
+		super.dispose();
+	}
 
   @override
   Widget build(BuildContext context) {
@@ -137,9 +142,12 @@ class _MyRunPageState extends State<MyRunPage> {
 		widget.comPort.onImage = (image) {
 			imageNotifier.value = image;
 		};
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      widget.comPort.start();
-    });
+		WidgetsBinding.instance.endOfFrame.then((_){
+			// FIXME: This scope is executed before `MyScreenPaint.build()`
+			Future.delayed(const Duration(milliseconds: 16), () {
+				widget.comPort.start();
+			});
+		});
   }
 
   @override
@@ -334,9 +342,7 @@ class _MyRunPageState extends State<MyRunPage> {
               children: [
                 MyScreenPaint(
 									imageNotifier: imageNotifier,
-                  // comPort: widget.comPort,
                 ),
-                buildMeasurement(context)
               ],
             )));
   }

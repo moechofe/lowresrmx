@@ -24,17 +24,34 @@
         "system_error": "c",
         "chrono": "c",
         "optional": "c",
-        "variant": "c"
+        "variant": "c",
+        "math.h": "c",
+        "context.h": "c",
+        "globmatch.h": "c"
     },
     "cmake.configureOnOpen": true,
     "files.watcherExclude": {
-        "**/*.bc": true
+        "**/.stversions": true,
+        "**/*.bc": true,
+        "**/*.stfolder": true
     },
     "search.exclude": {
+        "**/.stfolder": true,
+        "**/.stversions": true,
         "**/*.bc": true,
         "project.flutter/core_plugin/src/core.*": true
     },
     "files.exclude": {
+        "**/.stfolder": true,
+        "**/.stversions": true,
         "**/*.bc": true
+    },
+    "C_Cpp.files.exclude": {
+        "**/.stfolder": true,
+        "**/.stversions": true,
+        "**/*.bc": true,
+        "**/.git": true,
+        "**/.vscode": true,
+        "**/.vs": true
     }
 }

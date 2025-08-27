@@ -1,15 +1,17 @@
 <?php
 
+// order is important
+// TODO: should be required in every file that needs it
 require_once __DIR__.'/common.php';
 require_once __DIR__.'/token.php';
 
-// order is important
 require_once __DIR__.'/google2.php';
 require_once __DIR__.'/google1.php';
 
-// order is important
 require_once __DIR__.'/discord2.php';
 require_once __DIR__.'/discord1.php';
+
+require_once __DIR__.'/player.php';
 
 // require_once __DIR__.'/twitter1.php';
 
@@ -26,6 +28,7 @@ require_once __DIR__.'/delete.php';
 require_once __DIR__.'/list_first.php';
 require_once __DIR__.'/entry.php';
 require_once __DIR__.'/comment.php';
+require_once __DIR__.'/score.php';
 
 
 
@@ -49,7 +52,34 @@ require_once __DIR__.'/comment.php';
 
 
 
-require_once __DIR__.'/static.php';
+// server static files
+if(in_array($url['path'],[
+	'/community.html',
+	'/community.js',
+	'/community.css',
+	'/post.css',
+	'/post.js',
+	'/pico.min.css',
+	'/player.js',
+	'/player.wasm',
+	'/entry.css',
+	'/entry.js',
+	'/share.html',
+	'/share.js',
+	'/share.css',
+	'/last_shared.html',
+	'/last_shared.js',
+]))
+{
+	header("Content-Type: ".[
+		'html'=>'text/html',
+		'css'=>'text/css',
+		'js'=>'text/javascript',
+		'wasm'=>'application/wasm',
+	][$info['extension']]);
+	require_once __DIR__.$url['path'];
+	exit;
+}
 
 if($url['path']==='/')
 {

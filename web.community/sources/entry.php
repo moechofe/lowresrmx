@@ -1,16 +1,19 @@
 <?php
 
 require_once __DIR__.'/common.php';
+require_once __DIR__.'/token.php';
 
-if(strlen($info['basename'])>16&&strlen($info['basename'])<512&&preg_match('/\b(\w+-\w+-[0-9a-fA-F]{16})\.html$/',$info['basename'],$matches))
+if(preg_match("/^\/($MATCH_ENTRY_TOKEN)\.html$/",$urlPath,$matches))
 {
 	error_log(__FILE__);
 
 	$eid=$matches[1];
 
 	// Get the first entry post
-	list($title,$text)=redis()->hmget("f:$eid","title","text");
-	$text=zstd_uncompress($text);
+	list($title,$text,$ct,$author,$status)=redis()->hmget("f:$eid:f","title","text","ct","author","status");
+	if(empty($title) or empty($ct)) badRequest("Fail to read entry");
+	if($status==="banned") badRequest("Fail to validate entry");
+	if(!empty($text)) $text=zstd_uncompress($text);
 
 	// // Get the comments
 	// // TODO: pagination
@@ -26,6 +29,9 @@ if(strlen($info['basename'])>16&&strlen($info['basename'])<512&&preg_match('/\b(
 
 	// 	];
 	// }
+	//
+
+	$MAX_POST_TEXT=MAX_POST_TEXT;
 
 	require_once __DIR__.'/entry.html';
 	exit;

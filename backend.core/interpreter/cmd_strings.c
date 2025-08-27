@@ -107,6 +107,11 @@ struct TypedValue fnc_BIN_HEX(struct Core *core)
 	if (interpreter->pass == PassRun)
 	{
 		int x = xValue.v.floatValue;
+		if (x<0)
+		{
+			long int i=pow(16,width>0?width:maxLen)-1;
+			x=(unsigned int)x&i;
+		}
 
 		struct RCString *rcstring = rcstring_new(NULL, maxLen);
 		if (!rcstring)

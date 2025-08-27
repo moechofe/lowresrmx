@@ -6,7 +6,7 @@ require_once __DIR__.'/common.php';
 
 // Reached when user share a program from the iOS app, right after the upload.
 // See: upload.php
-if($url['path']==='/share')
+if(preg_match('/^\/share$/',$urlPath)&&$isGet)
 {
 	error_log(__FILE__);
 

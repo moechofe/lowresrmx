@@ -4,7 +4,8 @@ CC_FLAGS = -w -s USE_SDL=2 -I ../backend.core -I ../backend.core/machine -I ../b
 CC_FLAGS_MAIN = -s USE_SDL=2
 
 # File names
-EXEC = ../web.community/sources/player.js
+# EXEC = ../web.community/sources/player.js
+EXEC = ./player.js
 SOURCES = $(wildcard ../backend.core/*.c) $(wildcard ../backend.core/*/*.c) $(wildcard ../frontend.sdl/*.c)
 OBJECTS = $(SOURCES:.c=.bc)
 

@@ -24,7 +24,7 @@
 .program-item .picture
 { height: 100%;
 	background-size: cover;
-	border-radius: 1em; }
+	/* border-radius: 1em; */ }
 
 .program-item .picture::after
 { content: "";

@@ -33,7 +33,7 @@
 		const query=(q)=>d.querySelector(q)||create('div');
 		const click=(e,c)=>{e.addEventListener('click',c)};
 		click(query('button.google-sign-in'),()=>{
-			window.location.href='/google?uptoken=<?=$uptoken?>';
+			window.location.href='/google?uptoken=<?=rawurlencode($uptoken)?>';
 		});
 	});
 })(document);

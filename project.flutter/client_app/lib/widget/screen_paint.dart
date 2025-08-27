@@ -50,29 +50,6 @@ class MyScreenPaint extends StatefulWidget {
 class _MyScreenPaintState extends State<MyScreenPaint> {
   ui.Image? image;
 
-  // @override
-  // initState() {
-  //   super.initState();
-	// 	// Start updating the image.
-	// 	widget.comPort.onImage = (image) {
-	// 		if (mounted) {
-	// 			// setState(() {
-	// 				this.image = image;
-	// 			// });
-	// 		}
-	// 	};
-
-  //   // TODO: allow to show the keyboard, put it somewhere else
-  //   // SystemChannels.textInput.invokeMethod("TextInput.show");
-  // }
-
-	// @override
-	// void dispose() {
-	// 	// Stop updating the image.
-	// 	widget.comPort.onImage = null;
-	// 	super.dispose();
-	// }
-
   @override
   Widget build(BuildContext context) {
 		log("MyScreenPaint.build() Not good if called multiple times.");

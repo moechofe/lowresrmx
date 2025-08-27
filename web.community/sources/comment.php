@@ -4,11 +4,11 @@ require_once __DIR__.'/common.php';
 require_once __DIR__.'/token.php';
 
 // API to add a comment to a first entry post
-if(preg_match('/^\/([\w-]+)\/comment$/',$url['path'],$matches)&&$isPost)
+if(preg_match("/\/($MATCH_ENTRY_TOKEN)\/comment$/",$urlPath,$matches)&&$isPost)
 {
 	error_log(__FILE__);
 
-	$first_id=validateEntryToken($matches[1]);
+	$first_id=$matches[1];
 	if(!$first_id) badRequest("Fail to read entry");
 
 	$user_id=validateSessionAndGetUserId();
@@ -19,9 +19,9 @@ if(preg_match('/^\/([\w-]+)\/comment$/',$url['path'],$matches)&&$isPost)
 	if(empty($text)) badRequest("Fail to read text");
 
 	// Check for the first post
-	if(!redis()->exists("f:$first_id")) badRequest("Fail to validate program");
-	$status=redis()->hget("f:$first_id","status");
-	if($status==="banned") badRequest("Fail to validate program");
+	if(!redis()->exists("f:$first_id:f")) badRequest("Fail to validate program");
+	$status=redis()->hget("f:$first_id:f","status");
+	if($status==="banned") badRequest("Fail to validate entry");
 
 	$author=redis()->hget("u:$user_id","name");
 	$author=substr($author,0,MAX_AUTHOR_NAME);
@@ -46,11 +46,11 @@ if(preg_match('/^\/([\w-]+)\/comment$/',$url['path'],$matches)&&$isPost)
 }
 
 // API to retrieve comments of a first entry post.
-if(preg_match('/^\/([\w-]+)\/(\d+)$/',$url['path'],$matches)&&$isGet)
+if(preg_match("/\/($MATCH_ENTRY_TOKEN)\/(\d+)$/",$urlPath,$matches)&&$isGet)
 {
 	error_log(__FILE__);
 
-	$first_id=validateEntryToken($matches[1]);
+	$first_id=$matches[1];
 	if(!$first_id) badRequest("Fail to read entry");
 
 	$skip=intval($matches[2]);

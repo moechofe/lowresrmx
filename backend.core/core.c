@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
+#include "overlay.h"
 #include "string_utils.h"
 #include "startup_sequence.h"
 
@@ -177,8 +178,8 @@ void core_handleInput(struct Core *core, struct CoreInput *input)
 			{
 				int sw = ioRegisters->shown.width != 0 ? ioRegisters->shown.width : SCREEN_WIDTH;
 				int sh = ioRegisters->shown.height != 0 ? ioRegisters->shown.height : SCREEN_HEIGHT;
-				x -= (sw - 160) / 2;
-				y -= (sh - 128) / 2;
+				x -= (int)((sw - 160) / 2.0);
+				y -= (int)((sh - 128) / 2.0);
 				// if (x < 0) x = 0; else if (x >= 160) x = 160 - 1;
 				// if (y < 0) y = 0; else if (y >= 128) y = 128 - 1;
 			}
@@ -240,6 +241,7 @@ void core_willSuspendProgram(struct Core *core)
 void core_setDebug(struct Core *core, bool enabled)
 {
 	core->interpreter->debug = enabled;
+	if(!enabled) overlay_clear(core);
 	overlay_updateState(core);
 }
 
@@ -261,6 +263,12 @@ void core_setKeyboardEnabled(struct Core *core, bool enabled)
 void core_setKeyboardHeight(struct Core *core, int height)
 {
 	core->machine->ioRegisters.keyboardHeight = height;
+}
+
+void core_orientationChanged(struct Core *core)
+{
+	overlay_clear(core);
+	overlay_updateState(core);
 }
 
 bool core_shouldRender(struct Core *core)

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>hm</title>
+<title><?=$title?> - A LowResRMX project</title>
 <link rel="stylesheet" href="pico.min.css">
 <link rel="stylesheet" href="entry.css">
 <script src="entry.js"></script>
@@ -14,14 +14,19 @@
 
 	<article>
 		<h1><?=$title?></h1>
+		<div class="info">
+			<div class="author"><a><?=$author?></a></div>
+			<div class="date" data-ct="<?=$ct?>"></div>
+		</div>
 		<p><?=$text?></p>
 		<div class="visual">
-			<div class="picture" style="background-image:url('./<?=$eid?>.png');"></div>
+			<div class="picture" style="background-image:url('./<?=rawurlencode($eid)?>.png');"></div>
 		</div>
 		<div class="comment-list" id="comment-list" data-eid="<?=$eid?>">
 		</div>
 		<hr class="is-signed"/>
 		<fieldset id="comment" class="is-signed" data-eid="<?=$eid?>">
+			<div class="limit" data-limit="<?=MAX_POST_TEXT?>"></div>
 			<label for="text">Comment</label>
 			<textarea id="text" placeholder="Markdown supported message&hellip;" ></textarea>
 			<button class="comment">Comment</button>
@@ -34,10 +39,10 @@
 	<div class="comment-item">
 		<hr/>
 		<div class="info">
-			<h3 class="author"></h3>
+			<div class="author"><a></a></div>
 			<div class="date"></div>
 		</div>
-		<p><?=$text?></p>
+		<p></p>
 	</div>
 
 </template>

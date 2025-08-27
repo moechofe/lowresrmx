@@ -136,8 +136,19 @@ class ShareActivity: UIActivity {
 			// 	viewController?.present(alertController, animated: true, completion: nil)
 			// }
 
+			var components = URLComponents()
+			components.scheme = "http"
+			components.host = "lowresrmx.top"
+			components.port = 8080
+			components.path = "/upload"
+			components.queryItems = [
+				URLQueryItem(name: "p", value: programEncoded),
+				URLQueryItem(name: "t", value: imageEncoded),
+				URLQueryItem(name: "n", value: programName)
+			]
 
-			guard let url = URL(string: String(format: "http://lowresrmx.top:8080/upload?p=%@&t=%@&n=%@", programEncoded, imageEncoded, programName)) else {
+			guard let url = components.url else {
+			// string: String(format: "http://lowresrmx.top:8080/upload?p=%@&t=%@&n=%@", programEncoded, imageEncoded, programName)) else {
 				print("Failed to create url")
 				return
 			}

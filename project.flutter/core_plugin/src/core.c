@@ -172,6 +172,7 @@ const char *bootIntroSourceCode = "POKE $A000,2\nSTOP";
 #include <string.h>
 #include "core.h"
 #include "core.h"
+#include "core.h"
 
 const char CoreInputKeyReturn = '\n';
 const char CoreInputKeyBackspace = '\b';
@@ -179,6 +180,7 @@ const char CoreInputKeyRight = 17;
 const char CoreInputKeyLeft = 18;
 const char CoreInputKeyDown = 19;
 const char CoreInputKeyUp = 20;
+const char CoreInputKeyDelete = 127;
 
 void core_handleInput(struct Core *core, struct CoreInput *input);
 
@@ -305,7 +307,7 @@ void core_handleInput(struct Core *core, struct CoreInput *input)
 		// if (ioAttr.keyboardEnabled)
 		// {
 			char key = input->key;
-			if ((key >= 32 && key < 127) || key == CoreInputKeyBackspace || key == CoreInputKeyReturn || key == CoreInputKeyDown || key == CoreInputKeyUp || key == CoreInputKeyRight || key == CoreInputKeyLeft)
+			if ((key >= 32 && key < 127) || key == CoreInputKeyBackspace || key == CoreInputKeyReturn || key == CoreInputKeyDown || key == CoreInputKeyUp || key == CoreInputKeyRight || key == CoreInputKeyLeft || key == CoreInputKeyDelete)
 			{
 				ioRegisters->key = key;
 			}
@@ -355,37 +357,6 @@ void core_handleInput(struct Core *core, struct CoreInput *input)
 		textLib->windowWidth = input->width / 8 - (input->left + 7) / 8 - (input->right + 7) / 8;
 		textLib->windowHeight = input->height / 8 - (input->top + 7) / 8 - (input->bottom + 7) / 8;
 	}
-	//
-	//    for (int i = 0; i < NUM_GAMEPADS; i++)
-	//    {
-	//        union Gamepad *gamepad = &ioRegisters->gamepads[i];
-	//        if (ioAttr.gamepadsEnabled > i && !ioAttr.keyboardEnabled)
-	//        {
-	//            struct CoreInputGamepad *inputGamepad = &input->gamepads[i];
-	//            gamepad->up = inputGamepad->up && !inputGamepad->down;
-	//            gamepad->down = inputGamepad->down && !inputGamepad->up;
-	//            gamepad->left = inputGamepad->left && !inputGamepad->right;
-	//            gamepad->right = inputGamepad->right && !inputGamepad->left;
-	//            gamepad->buttonA = inputGamepad->buttonA;
-	//            gamepad->buttonB = inputGamepad->buttonB;
-	//
-	//            if (inputGamepad->up || inputGamepad->down || inputGamepad->left || inputGamepad->right)
-	//            {
-	//                // some d-pad combinations are not registered as I/O, but mark them anyway.
-	//                processedOtherInput = true;
-	//            }
-	//
-	//            if (gamepad->value)
-	//            {
-	//                machine_suspendEnergySaving(core, 2);
-	//            }
-	//        }
-	//        else
-	//        {
-	//            gamepad->value = 0;
-	//        }
-	//    }
-
 	if (input->pause)
 	{
 		if (core->interpreter->state == StatePaused)
@@ -394,11 +365,11 @@ void core_handleInput(struct Core *core, struct CoreInput *input)
 			overlay_updateState(core);
 			processedOtherInput = true;
 		}
-		else if (!core->machine->ioRegisters.status.keyboardVisible)
-		{
-			// else if (!ioAttr.keyboardEnabled) {
-			ioRegisters->status.pause = 1;
-		}
+		// else if (!core->machine->ioRegisters.status.keyboardEnabled)
+		// {
+		// 	// else if (!ioAttr.keyboardEnabled) {
+		// 	ioRegisters->status.pause = 1;
+		// }
 		input->pause = false;
 	}
 
@@ -429,12 +400,16 @@ bool core_getDebug(struct Core *core)
 bool core_isKeyboardEnabled(struct Core *core)
 {
 	return core->machine->ioRegisters.status.keyboardVisible;
-	// return core->machine->ioRegisters.attr.keyboardEnabled;
 }
 
-void core_setKeybordEnabled(struct Core *core, bool enabled)
+void core_setKeyboardEnabled(struct Core *core, bool enabled)
 {
 	core->machine->ioRegisters.status.keyboardVisible = enabled;
+}
+
+void core_setKeyboardHeight(struct Core *core, int height)
+{
+	core->machine->ioRegisters.keyboardHeight = height;
 }
 
 bool core_shouldRender(struct Core *core)
@@ -520,6 +495,8 @@ void delegate_controlsDidChange(struct Core *core)
             info.keyboardMode = KeyboardModeOff;
         }
         info.isAudioEnabled = core->machineInternals->audioInternals.audioEnabled;
+				info.hapticMode = core->machine->ioRegisters.haptic;
+				core->machine->ioRegisters.haptic=0;
         core->delegate->controlsDidChange(core->delegate->context, info);
     }
 }
@@ -597,14 +574,15 @@ struct CoreError stats_update(struct Stats *stats, const char *sourceCode)
 
     struct CoreError error = err_noCoreError();
 
-    const char *upperCaseSourceCode = uppercaseString(sourceCode);
-    if (!upperCaseSourceCode)
-    {
-        error = err_makeCoreError(ErrorOutOfMemory, -1);
-        goto cleanup;
-    }
+    // const char *upperCaseSourceCode = uppercaseString(sourceCode);
+    // if (!upperCaseSourceCode)
+    // {
+    //     error = err_makeCoreError(ErrorOutOfMemory, -1);
+    //     goto cleanup;
+    // }
 
-    error = tok_tokenizeUppercaseProgram(stats->tokenizer, upperCaseSourceCode);
+    // error = tok_tokenizeUppercaseProgram(stats->tokenizer, upperCaseSourceCode);
+		error = tok_tokenizeUppercaseProgram(stats->tokenizer, sourceCode);
     if (error.code != ErrorNone)
     {
         goto cleanup;
@@ -613,7 +591,8 @@ struct CoreError stats_update(struct Stats *stats, const char *sourceCode)
     stats->numTokens = stats->tokenizer->numTokens;
 
     struct DataManager *romDataManager = stats->romDataManager;
-    error = data_uppercaseImport(romDataManager, upperCaseSourceCode, false);
+    // error = data_uppercaseImport(romDataManager, upperCaseSourceCode, false);
+		error = data_uppercaseImport(romDataManager, sourceCode, false);
     if (error.code != ErrorNone)
     {
         goto cleanup;
@@ -630,10 +609,10 @@ struct CoreError stats_update(struct Stats *stats, const char *sourceCode)
 
 cleanup:
     tok_freeTokens(stats->tokenizer);
-    if (upperCaseSourceCode)
-    {
-        free((void *)upperCaseSourceCode);
-    }
+    // if (upperCaseSourceCode)
+    // {
+    //     free((void *)upperCaseSourceCode);
+    // }
 
     return error;
 }
@@ -703,13 +682,15 @@ struct CoreError data_import(struct DataManager *manager, const char *input, boo
     assert(manager);
     assert(input);
 
-    const char *uppercaseInput = uppercaseString(input);
-    if (!uppercaseInput) return err_makeCoreError(ErrorOutOfMemory, -1);
+    // const char *uppercaseInput = uppercaseString(input);
+    // if (!uppercaseInput) return err_makeCoreError(ErrorOutOfMemory, -1);
 
-    struct CoreError error = data_uppercaseImport(manager, uppercaseInput, keepSourceCode);
-    free((void *)uppercaseInput);
+    // struct CoreError error = data_uppercaseImport(manager, uppercaseInput, keepSourceCode);
+    // free((void *)uppercaseInput);
 
-    return error;
+    // return error;
+
+		return data_uppercaseImport(manager, input, keepSourceCode);
 }
 
 struct CoreError data_uppercaseImport(struct DataManager *manager, const char *input, bool keepSourceCode)
@@ -790,7 +771,7 @@ struct CoreError data_uppercaseImport(struct DataManager *manager, const char *i
             int value = 0;
             while (*character && *character != '#')
             {
-                char *spos = strchr(CharSetHex, *character);
+                char *spos = strchr(CharSetHex, uppercaseChar(*character));
                 if (spos)
                 {
                     int digit = (int)(spos - CharSetHex);
@@ -1603,6 +1584,26 @@ struct TypedValue fnc_MUSIC(struct Core *core)
         }
     }
     return value;
+}
+
+enum ErrorCode cmd_HAPTIC(struct Core *core)
+{
+	struct Interpreter *interpreter = core->interpreter;
+
+	// HAPTIC
+	++interpreter->pc;
+
+	// address value
+	struct TypedValue value = itp_evaluateNumericExpression(core, 0, 9);
+	if (value.type == ValueTypeError) return value.v.errorCode;
+
+	if (interpreter->pass == PassRun)
+	{
+		core->machine->ioRegisters.haptic = (uint8_t)value.v.floatValue;
+		delegate_controlsDidChange(core);
+	}
+
+	return itp_endOfCommand(interpreter);
 }
 //
 // Copyright 2017-2019 Timo Kloss
@@ -2842,7 +2843,6 @@ enum ErrorCode cmd_WAIT(struct Core *core)
 			interpreter->exitEvaluation = true;
 			interpreter->waitTap = true;
 		}
-		return itp_endOfCommand(interpreter);
 	}
 	else
 	{
@@ -2857,6 +2857,8 @@ enum ErrorCode cmd_WAIT(struct Core *core)
 	{
 		interpreter->exitEvaluation = true;
 		interpreter->waitCount = wait;
+		if (interpreter->pauseAtWait) interpreter->state = StatePaused;
+		interpreter->pauseAtWait = false;
 	}
 	return itp_endOfCommand(interpreter);
 }
@@ -3262,7 +3264,7 @@ enum ErrorCode cmd_SYSTEM(struct Core *core)
 	++interpreter->pc;
 
 	// type value
-	struct TypedValue tValue = itp_evaluateNumericExpression(core, 0, 4);
+	struct TypedValue tValue = itp_evaluateNumericExpression(core, 0, 8);
 	if (tValue.type == ValueTypeError)
 		return tValue.v.errorCode;
 
@@ -3298,6 +3300,22 @@ enum ErrorCode cmd_SYSTEM(struct Core *core)
 
 		case 4:
 			core->machineInternals->planeColor0IsOpaque[3] = (sValue.v.floatValue != 0.0f);
+			break;
+
+		case 5:
+			core->machine->videoRegisters.attr.planeADoubled = (sValue.v.floatValue != 0.0f);
+			break;
+
+		case 6:
+			core->machine->videoRegisters.attr.planeBDoubled = (sValue.v.floatValue != 0.0f);
+			break;
+
+		case 7:
+			core->machine->videoRegisters.attr.planeCDoubled = (sValue.v.floatValue != 0.0f);
+			break;
+
+		case 8:
+			core->machine->videoRegisters.attr.planeDDoubled = (sValue.v.floatValue != 0.0f);
 			break;
 		}
 	}
@@ -3797,7 +3815,7 @@ struct TypedValue fnc_KEYBOARD(struct Core *core)
 
 	if (interpreter->pass == PassRun)
 	{
-		value.v.floatValue = core->machine->ioRegisters.status.keyboardVisible > 0 ? -1 : 0;
+		value.v.floatValue = core->machine->ioRegisters.keyboardHeight;
 	}
 	return value;
 }
@@ -3806,173 +3824,27 @@ enum ErrorCode cmd_PAUSE(struct Core *core)
 {
 	struct Interpreter *interpreter = core->interpreter;
 
+	if (interpreter->pass == PassRun && interpreter->mode == ModeInterrupt)
+		return ErrorNotAllowedInInterrupt;
+
 	// PAUSE
 	++interpreter->pc;
 
-	// ON/OFF?
-	enum TokenType type = interpreter->pc->type;
-	if (type == TokenON || type == TokenOFF)
-	{
-		++interpreter->pc;
-	}
-
 	if (interpreter->pass == PassRun)
 	{
-		if (type == TokenON)
-		{
-			core->machine->ioRegisters.status.pause = 0;
-			interpreter->handlesPause = true;
-		}
-		else if (type == TokenOFF)
-		{
-			interpreter->handlesPause = false;
-		}
-		else
-		{
-			interpreter->state = StatePaused;
-			overlay_updateState(core);
-		}
+		core->interpreter->debug = true;
+		interpreter->state = StatePaused;
+		// overlay_updateState(core);
+		core->machine->ioRegisters.key = 0;
+		struct TextLib *lib = &core->overlay->textLib;
+		txtlib_printText(lib, "\nlowresrmx debugger\n");
+		txtlib_printText(lib, "==================\n\n");
+		txtlib_printText(lib, "  'PAUSE' to resume\n\n");
+		txtlib_scrollWindowIfNeeded(lib);
 	}
+
 	return itp_endOfCommand(interpreter);
 }
-
-// struct TypedValue fnc_UP_DOWN_LEFT_RIGHT(struct Core *core)
-// {
-//     struct Interpreter *interpreter = core->interpreter;
-
-//     // UP/DOWN/LEFT/RIGHT
-//     enum TokenType type = interpreter->pc->type;
-//     ++interpreter->pc;
-
-//     // TAP
-//     bool tap = false;
-//     if (interpreter->pc->type == TokenTAP)
-//     {
-//         ++interpreter->pc;
-//         tap = true;
-//     }
-
-//     // bracket open
-//     if (interpreter->pc->type != TokenBracketOpen) return val_makeError(ErrorSyntax);
-//     ++interpreter->pc;
-
-//     // p expression
-//     struct TypedValue pValue = itp_evaluateNumericExpression(core, 0, 1);
-//     if (pValue.type == ValueTypeError) return pValue;
-
-//     // bracket close
-//     if (interpreter->pc->type != TokenBracketClose) return val_makeError(ErrorSyntax);
-//     ++interpreter->pc;
-
-//     struct TypedValue value;
-//     value.type = ValueTypeFloat;
-
-//     if (interpreter->pass == PassRun)
-//     {
-//         if (core->machine->ioRegisters.attr.gamepadsEnabled == 0) return val_makeError(ErrorGamepadNotEnabled);
-
-//         int p = pValue.v.floatValue;
-//         int active = 0;
-//         int lastFrameActive = 0;
-//         union Gamepad *gamepad = &core->machine->ioRegisters.gamepads[p];
-//         union Gamepad *lastFrameGamepad = &core->interpreter->lastFrameGamepads[p];
-//         switch (type)
-//         {
-//             case TokenUP:
-//                 active = gamepad->up;
-//                 lastFrameActive = lastFrameGamepad->up;
-//                 break;
-
-//             case TokenDOWN:
-//                 active = gamepad->down;
-//                 lastFrameActive = lastFrameGamepad->down;
-//                 break;
-
-//             case TokenLEFT:
-//                 active = gamepad->left;
-//                 lastFrameActive = lastFrameGamepad->left;
-//                 break;
-
-//             case TokenRIGHT:
-//                 active = gamepad->right;
-//                 lastFrameActive = lastFrameGamepad->right;
-//                 break;
-
-//             default:
-//                 assert(0);
-//                 break;
-//         }
-//         value.v.floatValue = active && !(tap && lastFrameActive) ? BAS_TRUE : BAS_FALSE;
-//     }
-//     return value;
-// }
-
-// TODO: deleteme
-
-// struct TypedValue fnc_BUTTON(struct Core *core)
-// {
-//     struct Interpreter *interpreter = core->interpreter;
-
-//     // BUTTON
-//     ++interpreter->pc;
-
-//     // TAP
-//     bool tap = false;
-//     if (interpreter->pc->type == TokenTAP)
-//     {
-//         ++interpreter->pc;
-//         tap = true;
-//     }
-
-//     // bracket open
-//     if (interpreter->pc->type != TokenBracketOpen) return val_makeError(ErrorSyntax);
-//     ++interpreter->pc;
-
-//     // p expression
-//     struct TypedValue pValue = itp_evaluateNumericExpression(core, 0, 1);
-//     if (pValue.type == ValueTypeError) return pValue;
-
-//     int n = -1;
-//     if (interpreter->pc->type == TokenComma)
-//     {
-//         // comma
-//         ++interpreter->pc;
-
-//         // n expression
-//         struct TypedValue nValue = itp_evaluateNumericExpression(core, 0, 1);
-//         if (nValue.type == ValueTypeError) return nValue;
-
-//         n = nValue.v.floatValue;
-//     }
-
-//     // bracket close
-//     if (interpreter->pc->type != TokenBracketClose) return val_makeError(ErrorSyntax);
-//     ++interpreter->pc;
-
-//     struct TypedValue value;
-//     value.type = ValueTypeFloat;
-
-//     if (interpreter->pass == PassRun)
-//     {
-//         int p = pValue.v.floatValue;
-//         union Gamepad *gamepad = &core->machine->ioRegisters.gamepads[p];
-
-//         int active = (n == -1) ? (gamepad->buttonA || gamepad->buttonB) : (n == 0) ? gamepad->buttonA : gamepad->buttonB;
-
-//         if (active && tap)
-//         {
-//             // invalidate button if it was already pressed last frame
-//             union Gamepad *lastFrameGamepad = &core->interpreter->lastFrameGamepads[p];
-//             if ((n == -1) ? (lastFrameGamepad->buttonA || lastFrameGamepad->buttonB) : (n == 0) ? lastFrameGamepad->buttonA : lastFrameGamepad->buttonB)
-//             {
-//                 active = 0;
-//             }
-//         }
-
-//         value.v.floatValue = active ? BAS_TRUE : BAS_FALSE;
-//     }
-//     return value;
-// }
 
 struct TypedValue fnc_TOUCH(struct Core *core)
 {
@@ -4099,27 +3971,6 @@ struct TypedValue fnc_SAFE(struct Core *core)
 		{
 			assert(0);
 		}
-	}
-	return value;
-}
-
-struct TypedValue fnc_PAUSE(struct Core *core)
-{
-	struct Interpreter *interpreter = core->interpreter;
-
-	// PAUSE
-	++interpreter->pc;
-
-	struct TypedValue value;
-	value.type = ValueTypeFloat;
-
-	if (interpreter->pass == PassRun)
-	{
-		if (interpreter->handlesPause)
-			return val_makeError(ErrorAutomaticPauseNotDisabled);
-
-		value.v.floatValue = core->machine->ioRegisters.status.pause ? BAS_TRUE : BAS_FALSE;
-		core->machine->ioRegisters.status.pause = 0;
 	}
 	return value;
 }
@@ -4280,8 +4131,12 @@ struct TypedValue fnc_math1(struct Core *core)
                 break;
 
             case TokenCEIL:
-                    value.v.floatValue = ceilf(xValue.v.floatValue);
-                    break;
+								value.v.floatValue = ceilf(xValue.v.floatValue);
+								break;
+
+						case TokenFLOOR:
+								value.v.floatValue = floorf(xValue.v.floatValue);
+								break;
 
             default:
                 assert(0);
@@ -4806,25 +4661,20 @@ struct TypedValue fnc_PEEK(struct Core *core)
 
             case TokenPEEKW:
             {
-                int peek1 = machine_peek(core, addressValue.v.floatValue);
-                int peek2 = machine_peek(core, addressValue.v.floatValue + 1);
-                if (peek1 == -1 || peek2 == -1) return val_makeError(ErrorIllegalMemoryAccess);
+								enum ErrorCode errorCode;
+								int16_t peek = machine_peek_short(core, addressValue.v.floatValue, &errorCode);
+								if (errorCode > 0) return val_makeError(ErrorIllegalMemoryAccess);
 
-                int16_t value = peek1 | (peek2 << 8);
-                resultValue.v.floatValue = value;
+                resultValue.v.floatValue = (float)peek;
                 break;
             }
 
             case TokenPEEKL:
             {
-                int peek1 = machine_peek(core, addressValue.v.floatValue);
-                int peek2 = machine_peek(core, addressValue.v.floatValue + 1);
-                int peek3 = machine_peek(core, addressValue.v.floatValue + 2);
-                int peek4 = machine_peek(core, addressValue.v.floatValue + 3);
-                if (peek1 == -1 || peek2 == -1 || peek3 == -1 || peek4 == -1) return val_makeError(ErrorIllegalMemoryAccess);
-
-                int32_t value = peek1 | (peek2 << 8) | (peek3 << 16) | (peek4 << 24);
-                resultValue.v.floatValue = value;
+								enum ErrorCode errorCode;
+								int32_t peek = machine_peek_long(core, addressValue.v.floatValue, &errorCode);
+								if (errorCode > 0) return val_makeError(ErrorIllegalMemoryAccess);
+                resultValue.v.floatValue = (float)peek;
                 break;
             }
 
@@ -4868,20 +4718,16 @@ enum ErrorCode cmd_POKE(struct Core *core)
             case TokenPOKEW:
             {
                 long value = (long)pokeValue.v.floatValue;
-                bool poke1 = machine_poke(core, addressValue.v.floatValue    , value & 0xff);
-                bool poke2 = machine_poke(core, addressValue.v.floatValue + 1, (value>>8) & 0xff);
-                if (!poke1 || !poke2) return ErrorIllegalMemoryAccess;
+								bool poke = machine_poke_short(core, addressValue.v.floatValue, value);
+								if (!poke) return ErrorIllegalMemoryAccess;
                 break;
             }
 
             case TokenPOKEL:
             {
                 long value = (long)pokeValue.v.floatValue;
-                bool poke1 = machine_poke(core, addressValue.v.floatValue    , value & 0xff);
-                bool poke2 = machine_poke(core, addressValue.v.floatValue + 1, (value>>8) & 0xff);
-                bool poke3 = machine_poke(core, addressValue.v.floatValue + 2, (value>>16) & 0xff);
-                bool poke4 = machine_poke(core, addressValue.v.floatValue + 3, (value>>24) & 0xff);
-                if (!poke1 || !poke2 || !poke3 || !poke4) return ErrorIllegalMemoryAccess;
+								bool poke = machine_poke_long(core, addressValue.v.floatValue, value);
+								if (!poke) return ErrorIllegalMemoryAccess;
                 break;
             }
 
@@ -5178,34 +5024,6 @@ enum ErrorCode cmd_PARTICLE(struct Core *core)
 
         if (interpreter->pass == PassRun) prtclib_setupPool(lib,(int)nValue.v.floatValue,(int)cValue.v.floatValue,(int)aValue.v.floatValue);
     }
-    else if(interpreter->pc->type==TokenDATA)
-    {
-        // PARTICLE <APPAREANCE>
-        if(core->interpreter->pass==PassPrepare && nValue.type!=ValueTypeFloat) return ErrorTypeMismatch;
-        else if(core->interpreter->pass==PassRun && ((int)nValue.v.floatValue<0 || (int)nValue.v.floatValue>APPEARANCE_MAX-1)) return ErrorInvalidParameter;
-
-        // PARTICLE <APPAREANCE> DATA
-        ++interpreter->pc;
-
-        // PARTICLE <APPAREANCE> DATA <LABEL>
-        if(interpreter->pc->type!=TokenIdentifier) return ErrorExpectedLabel;
-        struct Token *tk=interpreter->pc;
-        ++interpreter->pc;
-
-        if (interpreter->pass == PassPrepare)
-        {
-           struct JumpLabelItem *item = tok_getJumpLabel(&interpreter->tokenizer, tk->symbolIndex);
-           if (!item) return ErrorUndefinedLabel;
-        }
-        else if(interpreter->pass == PassRun)
-        {
-          struct JumpLabelItem *item = tok_getJumpLabel(&interpreter->tokenizer, tk->symbolIndex);
-
-          struct Token *dataToken = dat_reachData(interpreter, item->token);
-
-          prtclib_setApperanceLabel(lib,(int)nValue.v.floatValue,dataToken);
-        }
-    }
     else return ErrorSyntax;
 
     return itp_endOfCommand(interpreter);
@@ -5424,29 +5242,29 @@ enum ErrorCode cmd_SCROLL(struct Core *core)
         int y = (int)yValue.v.floatValue;
         if (bg == 0)
         {
-            reg->scrollAX = x & 0x1FF;
-            reg->scrollAY = y & 0x1FF;
+            reg->scrollAX = x & 0xffFF;
+            reg->scrollAY = y & 0xffFF;
             // reg->scrollMSB.aX = (x >> 8) & 1;
             // reg->scrollMSB.aY = (y >> 8) & 1;
         }
         else if(bg == 1)
         {
-            reg->scrollBX = x & 0x1FF;
-            reg->scrollBY = y & 0x1FF;
+            reg->scrollBX = x & 0xffFF;
+            reg->scrollBY = y & 0xffFF;
             // reg->scrollMSB.bX = (x >> 8) & 1;
             // reg->scrollMSB.bY = (y >> 8) & 1;
         }
         else if(bg == 2)
         {
-            reg->scrollCX = x & 0x1FF;
-            reg->scrollCY = y & 0x1FF;
+            reg->scrollCX = x & 0xffFF;
+            reg->scrollCY = y & 0xffFF;
             // reg->scrollMSB.cX = (x >> 8) & 1;
             // reg->scrollMSB.cY = (y >> 8) & 1;
         }
         else if(bg == 3)
         {
-            reg->scrollDX = x & 0x1FF;
-            reg->scrollDY = y & 0x1FF;
+            reg->scrollDX = x & 0xffFF;
+            reg->scrollDY = y & 0xffFF;
             // reg->scrollMSB.dX = (x >> 8) & 1;
             // reg->scrollMSB.dY = (y >> 8) & 1;
         }
@@ -5537,49 +5355,6 @@ enum ErrorCode cmd_BG_VIEW(struct Core *core)
 
     return itp_endOfCommand(interpreter);
 }
-
-// enum ErrorCode cmd_CELL_SIZE(struct Core *core)
-// {
-//     struct Interpreter *interpreter = core->interpreter;
-
-//     // CELL SIZE
-//     ++interpreter->pc;
-//     ++interpreter->pc;
-
-//     // bg value
-//     struct TypedValue bgValue = itp_evaluateNumericExpression(core, 0, 3);
-//     if (bgValue.type == ValueTypeError) return bgValue.v.errorCode;
-
-//     // comma
-//     if (interpreter->pc->type != TokenComma) return ErrorSyntax;
-//     ++interpreter->pc;
-
-//     // size value
-//     struct TypedValue sValue = itp_evaluateOptionalNumericExpression(core, 0, 1);
-//     if (sValue.type == ValueTypeError) return sValue.v.errorCode;
-
-//     if (interpreter->pass == PassRun)
-//     {
-//         if (bgValue.v.floatValue == 0)
-//         {
-//             core->machine->videoRegisters.attr.planeACellSize = sValue.v.floatValue;
-//         }
-//         else if(bgValue.v.floatValue == 1)
-//         {
-//             core->machine->videoRegisters.attr.planeBCellSize = sValue.v.floatValue;
-//         }
-//         else if(bgValue.v.floatValue == 2)
-//         {
-//             core->machine->videoRegisters.attr.planeCCellSize = sValue.v.floatValue;
-//         }
-//         else if(bgValue.v.floatValue == 3)
-//         {
-//             core->machine->videoRegisters.attr.planeDCellSize = sValue.v.floatValue;
-//         }
-//     }
-
-//     return itp_endOfCommand(interpreter);
-// }
 
 struct TypedValue fnc_COLOR(struct Core *core)
 {
@@ -6573,7 +6348,7 @@ struct TypedValue fnc_STR(struct Core *core)
 		if (!rcstring)
 			return val_makeError(ErrorOutOfMemory);
 
-		snprintf(rcstring->chars, 20, "%0.7g", numericValue.v.floatValue);
+		snprintf(rcstring->chars, 20, "%0.10g", numericValue.v.floatValue);
 		resultValue.v.stringValue = rcstring;
 		interpreter->cycles += strlen(rcstring->chars);
 	}
@@ -6710,7 +6485,6 @@ enum ErrorCode cmd_LEFT_RIGHT(struct Core *core)
 	return itp_endOfCommand(interpreter);
 }
 
-// TODO: move to cmd_strings.c
 enum ErrorCode cmd_MID(struct Core *core)
 {
 	struct Interpreter *interpreter = core->interpreter;
@@ -7266,9 +7040,11 @@ enum ErrorCode cmd_EXIT_SUB(struct Core *core)
 #include <assert.h>
 #include "core.h"
 #include "core.h"
+#include "core.h"
 
 enum ErrorCode cmd_PRINT(struct Core *core)
 {
+	log_debug("cmd_PRINT %s",core->interpreter->pass==PassRun?"PassRun":"PassPrepare");
 	struct Interpreter *interpreter = core->interpreter;
 	if (interpreter->pass == PassRun && interpreter->mode == ModeInterrupt)
 		return ErrorNotAllowedInInterrupt;
@@ -7286,6 +7062,8 @@ enum ErrorCode cmd_PRINT(struct Core *core)
 		if (value.type == ValueTypeError)
 			return value.v.errorCode;
 
+		log_debug("  value type %s",value.type==ValueTypeString?"ValueTypeString":"ValueTypeFloat");
+
 		if (interpreter->pass == PassRun)
 		{
 			if (value.type == ValueTypeString)
@@ -7295,7 +7073,7 @@ enum ErrorCode cmd_PRINT(struct Core *core)
 			else if (value.type == ValueTypeFloat)
 			{
 				char buffer[20];
-				snprintf(buffer, 20, "%0.7g", value.v.floatValue);
+				snprintf(buffer, 20, "%0.10g", value.v.floatValue);
 				txtlib_printText(lib, buffer);
 			}
 		}
@@ -7736,7 +7514,7 @@ enum ErrorCode cmd_TRACE(struct Core *core)
 				if (debug)
 				{
 					char buffer[20];
-					snprintf(buffer, 20, "%0.7g", value.v.floatValue);
+					snprintf(buffer, 20, "%0.10g", value.v.floatValue);
 					txtlib_printText(lib, buffer);
 				}
 			}
@@ -7801,191 +7579,210 @@ enum ErrorCode cmd_MESSAGE(struct Core *core)
 
 enum ErrorCode cmd_LET(struct Core *core)
 {
-    struct Interpreter *interpreter = core->interpreter;
+	struct Interpreter *interpreter = core->interpreter;
 
-    // LET keyword is optional
-    if (interpreter->pc->type == TokenLET)
-    {
-        ++interpreter->pc;
-        if (interpreter->pc->type != TokenIdentifier && interpreter->pc->type != TokenStringIdentifier) return ErrorSyntax;
-    }
+	// LET keyword is optional
+	if (interpreter->pc->type == TokenLET)
+	{
+		++interpreter->pc;
+		if (interpreter->pc->type != TokenIdentifier && interpreter->pc->type != TokenStringIdentifier)
+			return ErrorSyntax;
+	}
 
-    // identifier
-    enum ErrorCode errorCode = ErrorNone;
-    enum ValueType valueType = ValueTypeNull;
-    union Value *varValue = itp_readVariable(core, &valueType, &errorCode, true);
-    if (!varValue) return errorCode;
-    if (interpreter->pc->type != TokenEq) return ErrorSyntax;
-    ++interpreter->pc;
+	// identifier
+	enum ErrorCode errorCode = ErrorNone;
+	enum ValueType valueType = ValueTypeNull;
+	union Value *varValue = itp_readVariable(core, &valueType, &errorCode, true);
+	if (!varValue)
+		return errorCode;
+	if (interpreter->pc->type != TokenEq)
+		return ErrorSyntax;
+	++interpreter->pc;
 
-    // value
-    struct TypedValue value = itp_evaluateExpression(core, TypeClassAny);
-    if (value.type == ValueTypeError) return value.v.errorCode;
-    if (value.type != valueType) return ErrorTypeMismatch;
+	// value
+	struct TypedValue value = itp_evaluateExpression(core, TypeClassAny);
+	if (value.type == ValueTypeError)
+		return value.v.errorCode;
+	if (value.type != valueType)
+		return ErrorTypeMismatch;
 
-    if (interpreter->pass == PassRun)
-    {
-        if (valueType == ValueTypeString && varValue->stringValue)
-        {
-            rcstring_release(varValue->stringValue);
-        }
-        *varValue = value.v;
-    }
+	if (interpreter->pass == PassRun)
+	{
+		if (valueType == ValueTypeString && varValue->stringValue)
+		{
+			rcstring_release(varValue->stringValue);
+		}
+		*varValue = value.v;
+	}
 
-    return itp_endOfCommand(interpreter);
+	return itp_endOfCommand(interpreter);
 }
 
 enum ErrorCode cmd_DIM(struct Core *core)
 {
-    struct Interpreter *interpreter = core->interpreter;
-    if (interpreter->pass == PassRun && interpreter->mode == ModeInterrupt) return ErrorNotAllowedInInterrupt;
+	struct Interpreter *interpreter = core->interpreter;
+	if (interpreter->pass == PassRun && interpreter->mode == ModeInterrupt)
+		return ErrorNotAllowedInInterrupt;
 
-    bool isGlobal = false;
-    struct Token *nextToken = interpreter->pc + 1;
-    if (nextToken->type == TokenGLOBAL)
-    {
-        ++interpreter->pc;
-        if (interpreter->pass == PassPrepare && interpreter->subLevel > 0) return ErrorGlobalInsideOfASubprogram;
-        isGlobal = true;
-    }
+	bool isGlobal = false;
+	struct Token *nextToken = interpreter->pc + 1;
+	if (nextToken->type == TokenGLOBAL)
+	{
+		++interpreter->pc;
+		if (interpreter->pass == PassPrepare && interpreter->subLevel > 0)
+			return ErrorGlobalInsideOfASubprogram;
+		isGlobal = true;
+	}
 
-    do
-    {
-        // DIM, GLOBAL or comma
-        ++interpreter->pc;
+	do
+	{
+		// DIM, GLOBAL or comma
+		++interpreter->pc;
 
-        // identifier
-        struct Token *tokenIdentifier = interpreter->pc;
-        ++interpreter->pc;
-        if (tokenIdentifier->type != TokenIdentifier && tokenIdentifier->type != TokenStringIdentifier)
-        {
-            return ErrorSyntax;
-        }
+		// identifier
+		struct Token *tokenIdentifier = interpreter->pc;
+		++interpreter->pc;
+		if (tokenIdentifier->type != TokenIdentifier && tokenIdentifier->type != TokenStringIdentifier)
+		{
+			return ErrorSyntax;
+		}
 
-        int numDimensions = 0;
-        int dimensionSizes[MAX_ARRAY_DIMENSIONS];
+		int numDimensions = 0;
+		int dimensionSizes[MAX_ARRAY_DIMENSIONS];
 
-        if (interpreter->pc->type != TokenBracketOpen) return ErrorSyntax;
-        ++interpreter->pc;
+		if (interpreter->pc->type != TokenBracketOpen)
+			return ErrorSyntax;
+		++interpreter->pc;
 
-        for (int i = 0; i < MAX_ARRAY_DIMENSIONS; i++)
-        {
-            struct TypedValue value = itp_evaluateExpression(core, TypeClassNumeric);
-            if (value.type == ValueTypeError) return value.v.errorCode;
+		for (int i = 0; i < MAX_ARRAY_DIMENSIONS; i++)
+		{
+			struct TypedValue value = itp_evaluateExpression(core, TypeClassNumeric);
+			if (value.type == ValueTypeError)
+				return value.v.errorCode;
 
-            dimensionSizes[i] = value.v.floatValue + 1; // value is max index, so size is +1
-            numDimensions++;
+			dimensionSizes[i] = value.v.floatValue + 1; // value is max index, so size is +1
+			numDimensions++;
 
-            if (interpreter->pc->type == TokenComma)
-            {
-                ++interpreter->pc;
-            }
-            else
-            {
-                break;
-            }
-        }
+			if (interpreter->pc->type == TokenComma)
+			{
+				++interpreter->pc;
+			}
+			else
+			{
+				break;
+			}
+		}
 
-        if (interpreter->pc->type != TokenBracketClose) return ErrorSyntax;
-        ++interpreter->pc;
+		if (interpreter->pc->type != TokenBracketClose)
+			return ErrorSyntax;
+		++interpreter->pc;
 
-        if (interpreter->pass == PassRun)
-        {
-            enum ErrorCode errorCode = ErrorNone;
-            struct ArrayVariable *variable = var_dimVariable(interpreter, &errorCode, tokenIdentifier->symbolIndex, numDimensions, dimensionSizes);
-            if (!variable) return errorCode;
-            variable->type = (tokenIdentifier->type == TokenStringIdentifier) ? ValueTypeString : ValueTypeFloat;
-            if (isGlobal)
-            {
-                variable->subLevel = SUB_LEVEL_GLOBAL;
-            }
-            interpreter->cycles += variable->numValues;
-        }
-    }
-    while (interpreter->pc->type == TokenComma);
+		if (interpreter->pass == PassRun)
+		{
+			enum ErrorCode errorCode = ErrorNone;
+			struct ArrayVariable *variable = var_dimVariable(interpreter, &errorCode, tokenIdentifier->symbolIndex, numDimensions, dimensionSizes);
+			if (!variable)
+				return errorCode;
+			variable->type = (tokenIdentifier->type == TokenStringIdentifier) ? ValueTypeString : ValueTypeFloat;
+			if (isGlobal)
+			{
+				variable->subLevel = SUB_LEVEL_GLOBAL;
+			}
+			interpreter->cycles += variable->numValues;
+		}
+	} while (interpreter->pc->type == TokenComma);
 
-    return itp_endOfCommand(interpreter);
+	return itp_endOfCommand(interpreter);
 }
 
 struct TypedValue fnc_UBOUND(struct Core *core)
 {
-    struct Interpreter *interpreter = core->interpreter;
+	struct Interpreter *interpreter = core->interpreter;
 
-    // UBOUND
-    ++interpreter->pc;
+	// UBOUND
+	++interpreter->pc;
 
-    // bracket open
-    if (interpreter->pc->type != TokenBracketOpen) return val_makeError(ErrorSyntax);
-    ++interpreter->pc;
+	// bracket open
+	if (interpreter->pc->type != TokenBracketOpen)
+		return val_makeError(ErrorSyntax);
+	++interpreter->pc;
 
-    // array
-    if (interpreter->pc->type != TokenIdentifier && interpreter->pc->type != TokenStringIdentifier) return val_makeError(ErrorSyntax);
-    int symbolIndex = interpreter->pc->symbolIndex;
-    ++interpreter->pc;
+	// array
+	if (interpreter->pc->type != TokenIdentifier && interpreter->pc->type != TokenStringIdentifier)
+		return val_makeError(ErrorSyntax);
+	int symbolIndex = interpreter->pc->symbolIndex;
+	++interpreter->pc;
 
-    int d = 0;
-    if (interpreter->pc->type == TokenComma)
-    {
-        // comma
-        ++interpreter->pc;
+	int d = 0;
+	if (interpreter->pc->type == TokenComma)
+	{
+		// comma
+		++interpreter->pc;
 
-        // dimension value
-        struct TypedValue dValue = itp_evaluateNumericExpression(core, 1, MAX_ARRAY_DIMENSIONS);
-        if (dValue.type == ValueTypeError) return val_makeError(dValue.v.errorCode);
+		// dimension value
+		struct TypedValue dValue = itp_evaluateNumericExpression(core, 1, MAX_ARRAY_DIMENSIONS);
+		if (dValue.type == ValueTypeError)
+			return val_makeError(dValue.v.errorCode);
 
-        d = dValue.v.floatValue - 1;
-    }
+		d = dValue.v.floatValue - 1;
+	}
 
-    // bracket close
-    if (interpreter->pc->type != TokenBracketClose) return val_makeError(ErrorSyntax);
-    ++interpreter->pc;
+	// bracket close
+	if (interpreter->pc->type != TokenBracketClose)
+		return val_makeError(ErrorSyntax);
+	++interpreter->pc;
 
-    struct TypedValue value;
-    value.type = ValueTypeFloat;
+	struct TypedValue value;
+	value.type = ValueTypeFloat;
 
-    if (interpreter->pass == PassRun)
-    {
-        struct ArrayVariable *variable = var_getArrayVariable(interpreter, symbolIndex, interpreter->subLevel);
-        if (!variable) return val_makeError(ErrorArrayNotDimensionized);
+	if (interpreter->pass == PassRun)
+	{
+		struct ArrayVariable *variable = var_getArrayVariable(interpreter, symbolIndex, interpreter->subLevel);
+		if (!variable)
+			return val_makeError(ErrorArrayNotDimensionized);
 
-        value.v.floatValue = variable->dimensionSizes[d] - 1;
-    }
-    return value;
+		value.v.floatValue = variable->dimensionSizes[d] - 1;
+	}
+	return value;
 }
 
 enum ErrorCode cmd_SWAP(struct Core *core)
 {
-    struct Interpreter *interpreter = core->interpreter;
+	struct Interpreter *interpreter = core->interpreter;
 
-    // SWAP
-    ++interpreter->pc;
+	// SWAP
+	++interpreter->pc;
 
-    enum ErrorCode errorCode = ErrorNone;
+	enum ErrorCode errorCode = ErrorNone;
 
-    // x identifier
-    enum ValueType xValueType = ValueTypeNull;
-    union Value *xVarValue = itp_readVariable(core, &xValueType, &errorCode, false);
-    if (!xVarValue) return errorCode;
+	// x identifier
+	enum ValueType xValueType = ValueTypeNull;
+	union Value *xVarValue = itp_readVariable(core, &xValueType, &errorCode, false);
+	if (!xVarValue)
+		return errorCode;
 
-    // comma
-    if (interpreter->pc->type != TokenComma) return ErrorSyntax;
-    ++interpreter->pc;
+	// comma
+	if (interpreter->pc->type != TokenComma)
+		return ErrorSyntax;
+	++interpreter->pc;
 
-    // y identifier
-    enum ValueType yValueType = ValueTypeNull;
-    union Value *yVarValue = itp_readVariable(core, &yValueType, &errorCode, false);
-    if (!yVarValue) return errorCode;
+	// y identifier
+	enum ValueType yValueType = ValueTypeNull;
+	union Value *yVarValue = itp_readVariable(core, &yValueType, &errorCode, false);
+	if (!yVarValue)
+		return errorCode;
 
-    if (xValueType != yValueType) return ErrorTypeMismatch;
+	if (xValueType != yValueType)
+		return ErrorTypeMismatch;
 
-    if (interpreter->pass == PassRun)
-    {
-        union Value spareValue = *xVarValue;
-        *xVarValue = *yVarValue;
-        *yVarValue = spareValue;
-    }
+	if (interpreter->pass == PassRun)
+	{
+		union Value spareValue = *xVarValue;
+		*xVarValue = *yVarValue;
+		*yVarValue = spareValue;
+	}
 
-    return itp_endOfCommand(interpreter);
+	return itp_endOfCommand(interpreter);
 }
 //
 // Copyright 2017 Timo Kloss
@@ -8083,7 +7880,6 @@ struct Token* dat_readData(struct Token *dataToken, int skip)
 								dataToken+=1;
 								break;
 
-						case TokenREM:
 						case TokenApostrophe:
 								dataToken+=1;
 								break;
@@ -8324,9 +8120,13 @@ struct CoreError itp_compileProgram(struct Core *core, const char *sourceCode)
 
 	// Parse source code
 
-	interpreter->sourceCode = uppercaseString(sourceCode);
-	if (!interpreter->sourceCode)
+	size_t len = strlen(sourceCode);
+	char *buffer = malloc(len + 1);
+	if (buffer)
+		memcpy(buffer, sourceCode, len + 1);
+	else
 		return err_makeCoreError(ErrorOutOfMemory, -1);
+	interpreter->sourceCode = buffer;
 
 	struct CoreError error = tok_tokenizeUppercaseProgram(&interpreter->tokenizer, interpreter->sourceCode);
 	if (error.code != ErrorNone)
@@ -8384,7 +8184,7 @@ struct CoreError itp_compileProgram(struct Core *core, const char *sourceCode)
 	interpreter->pass = PassRun;
 	interpreter->state = StateEvaluate;
 	interpreter->mode = ModeNone;
-	interpreter->handlesPause = true;
+	interpreter->pauseAtWait = false;
 	interpreter->currentDataToken = interpreter->firstData;
 	interpreter->currentDataValueToken = interpreter->firstData ? interpreter->firstData + 1 : NULL;
 	interpreter->isSingleLineIf = false;
@@ -8399,8 +8199,6 @@ struct CoreError itp_compileProgram(struct Core *core, const char *sourceCode)
 	interpreter->spritesLib.core = core;
 	interpreter->audioLib.core = core;
 	interpreter->particlesLib.core = core;
-
-	pcg32_srandom_r(&(interpreter->defaultRng), 4715711917271117164, (intptr_t)&interpreter->defaultRng);
 
 	return err_noCoreError();
 }
@@ -8484,7 +8282,6 @@ void itp_runInterrupt(struct Core *core, enum InterruptType type)
 	case StateWaitForDisk:
 	{
 		struct Token *startToken = NULL;
-		int maxCycles;
 
 		int mainCycles = interpreter->cycles;
 		interpreter->cycles = 0;
@@ -8493,24 +8290,24 @@ void itp_runInterrupt(struct Core *core, enum InterruptType type)
 		{
 		case InterruptTypeRaster:
 			startToken = interpreter->currentOnRasterToken;
-			maxCycles = MAX_CYCLES_PER_RASTER;
+			interpreter->maxCycles = MAX_CYCLES_PER_RASTER;
 			break;
 
 		case InterruptTypeVBL:
 			startToken = interpreter->currentOnVBLToken;
-			maxCycles = MAX_CYCLES_PER_VBL;
+			interpreter->maxCycles = MAX_CYCLES_PER_VBL;
 			// update audio player
 			audlib_update(&interpreter->audioLib);
 			break;
 
 		case InterruptTypeParticle:
 			startToken = interpreter->currentOnParticleToken;
-			maxCycles = MAX_CYCLES_PER_PARTICLE;
+			interpreter->maxCycles = MAX_CYCLES_PER_PARTICLE;
 			break;
 
 		case InterruptTypeEmitter:
 			startToken = interpreter->currentOnEmitterToken;
-			maxCycles = MAX_CYCLES_PER_EMITTER;
+			interpreter->maxCycles = MAX_CYCLES_PER_EMITTER;
 			break;
 		}
 
@@ -8680,7 +8477,7 @@ void itp_runInterrupt(struct Core *core, enum InterruptType type)
 		}
 
 		// calculate cycles exceeding limit
-		interpreter->interruptOverCycles += interpreter->cycles - maxCycles;
+		interpreter->interruptOverCycles += interpreter->cycles - interpreter->maxCycles;
 		if (interpreter->interruptOverCycles < 0)
 		{
 			interpreter->interruptOverCycles = 0;
@@ -8688,6 +8485,7 @@ void itp_runInterrupt(struct Core *core, enum InterruptType type)
 
 		// sum of interrupt's and main cycle count
 		interpreter->cycles += mainCycles;
+		interpreter->maxCycles = MAX_CYCLES_TOTAL_PER_FRAME;
 
 		break;
 	}
@@ -8702,11 +8500,6 @@ void itp_didFinishVBL(struct Core *core)
 {
 	struct Interpreter *interpreter = core->interpreter;
 
-	// // remember this frame's IO
-	// for (int i = 0; i < NUM_GAMEPADS; i++)
-	// {
-	//     interpreter->lastFrameGamepads[i] = core->machine->ioRegisters.gamepads[i];
-	// }
 	interpreter->lastFrameIOStatus = core->machine->ioRegisters.status;
 
 	// timer
@@ -8716,22 +8509,22 @@ void itp_didFinishVBL(struct Core *core)
 		interpreter->timer = 0;
 	}
 
-	// pause
-	if (core->machine->ioRegisters.status.pause)
-	{
-		if (interpreter->handlesPause && interpreter->state == StateEvaluate)
-		{
-			interpreter->state = StatePaused;
-			overlay_updateState(core);
-			core->machine->ioRegisters.status.pause = 0;
-		}
-		else if (interpreter->state == StatePaused)
-		{
-			interpreter->state = StateEvaluate;
-			overlay_updateState(core);
-			core->machine->ioRegisters.status.pause = 0;
-		}
-	}
+	// // pause
+	// if (core->machine->ioRegisters.status.pause)
+	// {
+	// 	if (interpreter->state == StateEvaluate)
+	// 	{
+	// 		interpreter->state = StatePaused;
+	// 		overlay_updateState(core);
+	// 		core->machine->ioRegisters.status.pause = 0;
+	// 	}
+	// 	else if (interpreter->state == StatePaused)
+	// 	{
+	// 		interpreter->state = StateEvaluate;
+	// 		overlay_updateState(core);
+	// 		core->machine->ioRegisters.status.pause = 0;
+	// 	}
+	// }
 
 	// CPU load (rounded up)
 	int currentCpuLoad = (interpreter->cycles * 100 + MAX_CYCLES_TOTAL_PER_FRAME - 1) / MAX_CYCLES_TOTAL_PER_FRAME;
@@ -9399,7 +9192,8 @@ struct TypedValue itp_evaluatePrimaryExpression(struct Core *core)
 			{
 				value.type = ValueTypeString;
 				value.v.stringValue = str;
-				if (interpreter->pass == PassRun) rcstring_retain(value.v.stringValue);
+				if (interpreter->pass == PassRun)
+					rcstring_retain(value.v.stringValue);
 			}
 			else
 			{
@@ -9563,7 +9357,7 @@ struct TypedValue itp_evaluateFunction(struct Core *core)
 
 	case TokenTIMER:
 	case TokenRASTER:
-	// case TokenDISPLAY:
+		// case TokenDISPLAY:
 		return fnc_screen0(core);
 
 	case TokenSCROLLX:
@@ -9629,9 +9423,6 @@ struct TypedValue itp_evaluateFunction(struct Core *core)
 	case TokenFSIZE:
 		return fnc_FSIZE(core);
 
-	case TokenPAUSE:
-		return fnc_PAUSE(core);
-
 	case TokenMUSIC:
 		return fnc_MUSIC(core);
 
@@ -9659,7 +9450,7 @@ enum ErrorCode itp_evaluateCommand(struct Core *core)
 {
 	struct Interpreter *interpreter = core->interpreter;
 	enum TokenType type = interpreter->pc->type;
-	if (type != TokenREM && type != TokenApostrophe && type != TokenEol && type != TokenUndefined)
+	if (type != TokenApostrophe && type != TokenEol && type != TokenUndefined)
 	{
 		++interpreter->cycles;
 	}
@@ -9672,7 +9463,6 @@ enum ErrorCode itp_evaluateCommand(struct Core *core)
 		}
 		break;
 
-	case TokenREM:
 	case TokenApostrophe:
 		++interpreter->pc;
 		break;
@@ -9875,14 +9665,7 @@ enum ErrorCode itp_evaluateCommand(struct Core *core)
 		return cmd_PRIO(core);
 
 	case TokenCELL:
-		// switch (itp_getNextTokenType(interpreter))
-		// {
-		//     case TokenSIZE:
-		//         return cmd_CELL_SIZE(core);
-
-		//     default:
 		return cmd_CELL(core);
-		// }
 		break;
 
 	case TokenTINT:
@@ -9943,9 +9726,6 @@ enum ErrorCode itp_evaluateCommand(struct Core *core)
 
 	case TokenSUB:
 		return cmd_SUB(core);
-
-		//        case TokenSHARED:
-		//            return cmd_SHARED(core);
 
 	case TokenGLOBAL:
 		return cmd_GLOBAL(core);
@@ -10021,6 +9801,9 @@ enum ErrorCode itp_evaluateCommand(struct Core *core)
 	case TokenDMA:
 		return cmd_DMA_COPY(core);
 
+	case TokenHAPTIC:
+		return cmd_HAPTIC(core);
+
 	default:
 		printf("Command not implemented: %s\n", TokenStrings[interpreter->pc->type]);
 		return ErrorSyntax;
@@ -10057,6 +9840,7 @@ enum ErrorCode itp_labelStackError(struct LabelStackItem *item)
 	case LabelTypeGOSUB:
 	case LabelTypeCALL:
 	case LabelTypeONCALL:
+	default: // FIXME: Do I need this?
 		// should not happen in compile time
 		return ErrorSyntax;
 	}
@@ -10512,6 +10296,7 @@ struct LabelStackItem *lab_searchLabelStackItem(struct Interpreter *interpreter,
 //
 
 #include "core.h"
+#include "core.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -10524,6 +10309,10 @@ struct RCString *rcstring_new(const char *chars, size_t len)
         string->refCount = 1; // retain
         if (chars)
         {
+						// for (size_t i = 0; i < len; i++)
+						// {
+						// 	string->chars[i] = uppercaseChar(chars[i]);
+						// }
             memcpy(string->chars, chars, len);
         }
         string->chars[len] = 0; // end of string
@@ -10589,6 +10378,16 @@ const char *uppercaseString(const char *source)
         *destChar = 0;
     }
     return buffer;
+}
+
+const char uppercaseChar(const char sourceChar)
+{
+		char finalChar = sourceChar;
+		if (finalChar >= 'a' && finalChar <= 'z')
+		{
+				finalChar -= 32;
+		}
+		return finalChar;
 }
 
 const char *lineString(const char *source, int pos)
@@ -10800,7 +10599,6 @@ const char *TokenStrings[] = {
     "RASTER",
     "READ",
     "SKIP",
-    "REM",
     "REPEAT",
     "RESTORE",
     "RETURN",
@@ -10872,6 +10670,8 @@ const char *TokenStrings[] = {
     "MESSAGE",
     "DMA",
 		"CEIL",
+		"FLOOR",
+		"HAPTIC",
 
     // Reserved Keywords
     NULL,
@@ -10922,13 +10722,15 @@ const char *TokenStrings[] = {
 
 struct CoreError tok_tokenizeProgram(struct Tokenizer *tokenizer, const char *sourceCode)
 {
-    const char *uppercaseSourceCode = uppercaseString(sourceCode);
-    if (!uppercaseSourceCode) return err_makeCoreError(ErrorOutOfMemory, -1);
+    // const char *uppercaseSourceCode = uppercaseString(sourceCode);
+    // if (!uppercaseSourceCode) return err_makeCoreError(ErrorOutOfMemory, -1);
 
-    struct CoreError error = tok_tokenizeUppercaseProgram(tokenizer, uppercaseSourceCode);
-    free((void *)uppercaseSourceCode);
+    // struct CoreError error = tok_tokenizeUppercaseProgram(tokenizer, uppercaseSourceCode);
+    // free((void *)uppercaseSourceCode);
 
-    return error;
+    // return error;
+
+		return tok_tokenizeUppercaseProgram(tokenizer, sourceCode);
 }
 
 struct CoreError tok_tokenizeUppercaseProgram(struct Tokenizer *tokenizer, const char *sourceCode)
@@ -11059,7 +10861,7 @@ struct CoreError tok_tokenizeUppercaseProgram(struct Tokenizer *tokenizer, const
             int number = 0;
             while (*character)
             {
-                char *spos = strchr(CharSetHex, *character);
+                char *spos = strchr(CharSetHex, uppercaseChar(*character));
                 if (spos)
                 {
                     int digit = (int)(spos - CharSetHex);
@@ -11114,7 +10916,7 @@ struct CoreError tok_tokenizeUppercaseProgram(struct Tokenizer *tokenizer, const
                 int keywordIsAlphaNum = strchr(CharSetAlphaNum, keyword[0]) != NULL;
                 for (int pos = 0; pos <= keywordLen; pos++)
                 {
-                    char textCharacter = character[pos];
+                    char textCharacter = uppercaseChar(character[pos]);
 
                     if (pos < keywordLen)
                     {
@@ -11146,9 +10948,9 @@ struct CoreError tok_tokenizeUppercaseProgram(struct Tokenizer *tokenizer, const
         }
         if (foundKeywordToken != TokenUndefined)
         {
-            if (foundKeywordToken == TokenREM || foundKeywordToken == TokenApostrophe)
+            if (foundKeywordToken == TokenApostrophe)
             {
-                // REM comment, skip until end of line
+                // comment, skip until end of line
                 while (*character)
                 {
                     if (*character < 0)
@@ -11173,13 +10975,13 @@ struct CoreError tok_tokenizeUppercaseProgram(struct Tokenizer *tokenizer, const
         }
 
         // Symbol
-        if (strchr(CharSetLetters, *character))
+        if (strchr(CharSetLetters, uppercaseChar(*character)))
         {
             const char *firstCharacter = character;
             char isString = 0;
             while (*character)
             {
-                if (strchr(CharSetAlphaNum, *character))
+                if (strchr(CharSetAlphaNum, uppercaseChar(*character)))
                 {
                     character++;
                 }
@@ -11203,7 +11005,11 @@ struct CoreError tok_tokenizeUppercaseProgram(struct Tokenizer *tokenizer, const
                 return err_makeCoreError(ErrorSymbolNameTooLong, tokenSourcePosition);
             }
             char symbolName[SYMBOL_NAME_SIZE];
-            memcpy(symbolName, firstCharacter, len);
+						for (size_t i = 0; i < len; i++)
+						{
+							symbolName[i] = uppercaseChar(firstCharacter[i]);
+						}
+            // memcpy(symbolName, firstCharacter, len);
             symbolName[len] = 0;
             int symbolIndex = -1;
             // find existing symbol
@@ -12107,295 +11913,280 @@ uint8_t DefaultCharacters[][16] = {
 
 #define _USE_MATH_DEFINES
 #ifndef __USE_MISC
-  #define __USE_MISC
+#define __USE_MISC
 #endif
 #include <math.h>
 
+#include <stdint.h>
+
 static pcg32_random_t pcg;
 
-void prtclib_setupPool(struct ParticlesLib *lib,int firstSprite,int poolCount,int particleAddr)
+void prtclib_setupPool(struct ParticlesLib *lib, int firstSprite, int poolCount, int particleAddr)
 {
-    lib->first_sprite_id=firstSprite;
-    lib->pool_count=poolCount;
-    lib->pool_next_id=0;
-    lib->particles_data_addr=particleAddr;
+	lib->first_sprite_id = firstSprite;
+	lib->pool_count = poolCount;
+	lib->pool_next_id = 0;
+	lib->particles_data_addr = particleAddr;
 
-    for(int particle_id=0;particle_id<lib->pool_count;++particle_id)
-    {
-			int particle = lib->particles_data_addr + particle_id*PARTICLE_MEM_SIZE; // 6 bytes
+	for (int particle_id = 0; particle_id < lib->pool_count; ++particle_id)
+	{
+		int particle = lib->particles_data_addr + particle_id * PARTICLE_MEM_SIZE; // 6 bytes
+		machine_poke_short(lib->core, particle+PARTICLE_MEM_LIFETIME, 0);
+	}
 
-      machine_poke(lib->core, particle+EMITTER_MEM_DELAY, -1);
-    }
-
-    pcg32_srandom_r(&pcg, 20321911116532, (intptr_t)&pcg);
+	pcg32_srandom_r(&pcg, 20321911116532, (intptr_t)&pcg);
 }
 
-void prtclib_setApperanceLabel(struct ParticlesLib *lib,int apperanceId,struct Token *label)
+void prtclib_setupEmitter(struct ParticlesLib *lib, int emitterCount, int emitterAddr)
 {
-    lib->apperances_label[apperanceId]=label;
+	lib->emitters_count = emitterCount;
+	lib->emitters_data_addr = emitterAddr;
 }
 
-void prtclib_setupEmitter(struct ParticlesLib *lib,int emitterCount,int emitterAddr)
+void prtclib_setSpawnerLabel(struct ParticlesLib *lib, int emitterId, struct Token *label)
 {
-    lib->emitters_count=emitterCount;
-    lib->emitters_data_addr=emitterAddr;
+	lib->emitters_label[emitterId] = label;
 }
 
-void prtclib_setSpawnerLabel(struct ParticlesLib *lib,int emitterId,struct Token *label)
+void prtclib_spawn(struct ParticlesLib *lib, int emitterId, float posX, float posY)
 {
-    lib->emitters_label[emitterId]=label;
+	if (emitterId < 0 && emitterId >= lib->emitters_count)
+		return;
+
+	int emitter = lib->emitters_data_addr + emitterId * EMITTER_MEM_SIZE; // 6 bytes
+
+	machine_poke_short(lib->core, emitter + EMITTER_MEM_X, ((int16_t)posX * 16) & 0x1FFF);
+	machine_poke_short(lib->core, emitter + EMITTER_MEM_Y, ((int16_t)posY * 16) & 0x1FFF);
+
+	machine_poke(lib->core, emitter + EMITTER_MEM_DELAY, 0); // start with no delay
+
+	uint8_t _appearance = dat_readU8(lib->emitters_label[emitterId], EMITTER_DATA_APPEARANCE, 0);
+	float _shape = dat_readFloat(lib->emitters_label[emitterId], EMITTER_DATA_SHAPE, 1);
+	float _outer = dat_readFloat(lib->emitters_label[emitterId], EMITTER_DATA_OUTER, 0);
+	float _inner = dat_readFloat(lib->emitters_label[emitterId], EMITTER_DATA_INNER, 0);
+	float _arc = dat_readFloat(lib->emitters_label[emitterId], EMITTER_DATA_ARC, 0);
+	float _rotation = dat_readFloat(lib->emitters_label[emitterId], EMITTER_DATA_ROTATION, 0);
+	float _speed_x = dat_readFloat(lib->emitters_label[emitterId], EMITTER_DATA_SPEED_X, 0);
+	float _speed_y = dat_readFloat(lib->emitters_label[emitterId], EMITTER_DATA_SPEED_Y, 0);
+	float _gravity = dat_readFloat(lib->emitters_label[emitterId], EMITTER_DATA_GRAVITY, 0);
+	uint8_t _count = dat_readU8(lib->emitters_label[emitterId], EMITTER_DATA_COUNT, 0);
+	uint8_t _delay = dat_readU8(lib->emitters_label[emitterId], EMITTER_DATA_DELAY, 0);
+
+	uint8_t repeat = 1 + dat_readU8(lib->emitters_label[emitterId], EMITTER_DATA_REPEAT, 0);
+	machine_poke(lib->core, emitter + EMITTER_MEM_REPEAT, repeat);
 }
 
-void prtclib_spawn(struct ParticlesLib *lib,int emitterId,float posX,float posY)
+void prtclib_stop(struct ParticlesLib *lib, int emitterId)
 {
-    if(emitterId<0 && emitterId>=lib->emitters_count) return;
+	if (emitterId < 0 && emitterId >= lib->emitters_count)
+		return;
 
-    int emitter = lib->emitters_data_addr + emitterId*EMITTER_MEM_SIZE; // 6 bytes
+	int emitter = lib->emitters_data_addr + emitterId * EMITTER_MEM_SIZE; // 6 bytes
 
-    machine_poke_short(lib->core, emitter+EMITTER_MEM_X, ((int16_t)posX*16)&0x1FFF);
-    machine_poke_short(lib->core, emitter+EMITTER_MEM_Y, ((int16_t)posY*16)&0x1FFF);
-
-    machine_poke(lib->core, emitter+EMITTER_MEM_DELAY, 0); // start with no delay
-
-    uint8_t repeat = 1 + dat_readU8(lib->emitters_label[emitterId],EMITTER_DATA_REPEAT,0);
-    machine_poke(lib->core, emitter+EMITTER_MEM_REPEAT, repeat);
-}
-
-void prtclib_stop(struct ParticlesLib *lib,int emitterId)
-{
-    if(emitterId<0 && emitterId>=lib->emitters_count) return;
-
-    int emitter = lib->emitters_data_addr + emitterId*EMITTER_MEM_SIZE; // 6 bytes
-
-    machine_poke(lib->core, emitter+EMITTER_MEM_REPEAT, 0);
+	machine_poke(lib->core, emitter + EMITTER_MEM_REPEAT, 0);
 }
 
 void prtclib_update(struct Core *core, struct ParticlesLib *lib)
 {
-    struct Interpreter *interpreter = core->interpreter;
+	struct Interpreter *interpreter = core->interpreter;
 
-    struct Token *dataToken;
+	struct Token *dataToken;
+	enum ErrorCode errorCode;
 
-    // update emitters
-    for(int emitter_id=0; emitter_id<lib->emitters_count; ++emitter_id)
-    {
-        int emitter = lib->emitters_data_addr + emitter_id*EMITTER_MEM_SIZE; // 6 bytes
+	// update emitters
+	for (int emitter_id = 0; emitter_id < lib->emitters_count; ++emitter_id)
+	{
+		int emitter = lib->emitters_data_addr + emitter_id * EMITTER_MEM_SIZE; // 6 bytes
 
-        float emitter_pos_x=(float)machine_peek_short(lib->core, emitter+EMITTER_MEM_X)/16;
-        float emitter_pos_y=(float)machine_peek_short(lib->core, emitter+EMITTER_MEM_Y)/16;
+		float emitter_pos_x = (float)machine_peek_short(lib->core, emitter + EMITTER_MEM_X, &errorCode) / 16;
+		float emitter_pos_y = (float)machine_peek_short(lib->core, emitter + EMITTER_MEM_Y, &errorCode) / 16;
 
-        // wait for delay to end
-        int delay=machine_peek(lib->core, emitter+EMITTER_MEM_DELAY);
-        if(delay>0)
-        {
-          machine_poke(lib->core, emitter+EMITTER_MEM_DELAY, delay-1);
-          continue;
-        }
+		// TODO: must return error at some point
 
-        // is there more to repeat?
-        int repeat=machine_peek(lib->core, emitter+EMITTER_MEM_REPEAT);
-        if(repeat>0)
-        {
-          // emitter data
-          uint8_t apperance_id = dat_readU8(lib->emitters_label[emitter_id],EMITTER_DATA_APPEARANCE,255);
-          if (apperance_id>APPEARANCE_MAX) continue;
+		// wait for delay to end
+		int delay = machine_peek(lib->core, emitter + EMITTER_MEM_DELAY);
+		if (delay > 0)
+		{
+			machine_poke(lib->core, emitter + EMITTER_MEM_DELAY, delay - 1);
+			continue;
+		}
 
-					float shape = dat_readFloat(lib->emitters_label[emitter_id],EMITTER_DATA_SHAPE,1);
-					float outer = dat_readFloat(lib->emitters_label[emitter_id],EMITTER_DATA_OUTER,0);
-          float inner = dat_readFloat(lib->emitters_label[emitter_id],EMITTER_DATA_INNER,0);
-					float arc = dat_readFloat(lib->emitters_label[emitter_id],EMITTER_DATA_ARC,0);
-					float rotation = dat_readFloat(lib->emitters_label[emitter_id],EMITTER_DATA_ROTATION,0);
-          float speed_x = dat_readFloat(lib->emitters_label[emitter_id],EMITTER_DATA_SPEED_X,0);
-          float speed_y = dat_readFloat(lib->emitters_label[emitter_id],EMITTER_DATA_SPEED_Y,0);
-					float gravity = dat_readFloat(lib->emitters_label[emitter_id],EMITTER_DATA_GRAVITY,0);
-          uint8_t count = dat_readU8(lib->emitters_label[emitter_id],EMITTER_DATA_COUNT,0);
-          uint8_t delay = dat_readU8(lib->emitters_label[emitter_id],EMITTER_DATA_DELAY,0);
+		// is there more to repeat?
+		int repeat = machine_peek(lib->core, emitter + EMITTER_MEM_REPEAT);
+		if (repeat > 0)
+		{
+			float shape = dat_readFloat(lib->emitters_label[emitter_id], EMITTER_DATA_SHAPE, 1);
+			float outer = dat_readFloat(lib->emitters_label[emitter_id], EMITTER_DATA_OUTER, 0);
+			float inner = dat_readFloat(lib->emitters_label[emitter_id], EMITTER_DATA_INNER, 0);
+			float arc = dat_readFloat(lib->emitters_label[emitter_id], EMITTER_DATA_ARC, 0);
+			float rotation = dat_readFloat(lib->emitters_label[emitter_id], EMITTER_DATA_ROTATION, 0);
+			float speed_x = dat_readFloat(lib->emitters_label[emitter_id], EMITTER_DATA_SPEED_X, 0);
+			float speed_y = dat_readFloat(lib->emitters_label[emitter_id], EMITTER_DATA_SPEED_Y, 0);
+			float gravity = dat_readFloat(lib->emitters_label[emitter_id], EMITTER_DATA_GRAVITY, 0);
+			uint8_t count = dat_readU8(lib->emitters_label[emitter_id], EMITTER_DATA_COUNT, 0);
+			uint8_t delay = dat_readU8(lib->emitters_label[emitter_id], EMITTER_DATA_DELAY, 0);
 
-          // reduce repeat
-          machine_poke(lib->core, emitter+EMITTER_MEM_REPEAT, repeat-1);
+			// reduce repeat
+			machine_poke(lib->core, emitter + EMITTER_MEM_REPEAT, repeat - 1);
 
-          // reset delay
-          machine_poke(lib->core, emitter+EMITTER_MEM_DELAY, delay);
+			// reset delay
+			machine_poke(lib->core, emitter + EMITTER_MEM_DELAY, delay);
 
-          for(int i=0; i<count; ++i)
-          {
-            // spawn a particle
-            int particle_id = lib->pool_next_id;
-            lib->pool_next_id = (lib->pool_next_id+1) % lib->pool_count;
+			for (int i = 0; i < count; ++i)
+			{
+				// spawn a particle
+				int particle_id = lib->pool_next_id;
+				lib->pool_next_id = (lib->pool_next_id + 1) % lib->pool_count;
 
-            int particle = lib->particles_data_addr + particle_id*PARTICLE_MEM_SIZE; // 6 bytes
+				int particle = lib->particles_data_addr + particle_id * PARTICLE_MEM_SIZE; // 6 bytes
 
-            int sprite_id=lib->first_sprite_id+particle_id;
-            struct Sprite *spr=&lib->core->machine->spriteRegisters.sprites[sprite_id];
+				int sprite_id = lib->first_sprite_id + particle_id;
+				struct Sprite *spr = &lib->core->machine->spriteRegisters.sprites[sprite_id];
 
-						float sprite_distance_x;
-						float sprite_distance_y;
+				float sprite_distance_x;
+				float sprite_distance_y;
+				int sign;
+
+				// inner, outer ring
+				if (outer > 0 && outer > inner && shape != 0)
+				{
+					if (shape > 0)
+					{
+						float angle = (float)ldexp(pcg32_random_r(&pcg), -32);
+						float r = (float)sqrt(ldexp(pcg32_random_r(&pcg), -32));
+						float diff = outer - inner;
+						float space_x = r * (diff) + inner;
+						float space_y = r * (diff) + inner;
+						sprite_distance_x = cosf(angle * M_PI * 2) * space_x;
+						sprite_distance_y = sinf(angle * M_PI * 2) * space_y * shape;
+					}
+					else if (inner == 0)
+					{
+						sign = pcg32_boundedrand_r(&pcg, 2) * 2 - 1;
+						sprite_distance_x = (float)pcg32_boundedrand_r(&pcg, outer) * sign;
+						sign = pcg32_boundedrand_r(&pcg, 2) * 2 - 1;
+						sprite_distance_y = (float)pcg32_boundedrand_r(&pcg, outer) * sign * -shape;
+					}
+					else
+					{
+						float x, y;
 						int sign;
-
-            // inner, outer ring
-            if(outer>0 && outer>inner && shape!=0)
-            {
-							if(shape>0)
-							{
-									float angle=(float)ldexp(pcg32_random_r(&pcg),-32);
-									float r=(float)sqrt(ldexp(pcg32_random_r(&pcg),-32));
-									float diff=outer-inner;
-									float space_x=r*(diff)+inner;
-									float space_y=r*(diff)+inner;
-									sprite_distance_x=cosf(angle*M_PI*2)*space_x;
-									sprite_distance_y=sinf(angle*M_PI*2)*space_y*shape;
-							}
-							else if(inner==0)
-							{
-									sign=pcg32_boundedrand_r(&pcg,2)*2-1;
-									sprite_distance_x=(float)pcg32_boundedrand_r(&pcg,outer)*sign;
-									sign=pcg32_boundedrand_r(&pcg,2)*2-1;
-									sprite_distance_y=(float)pcg32_boundedrand_r(&pcg,outer)*sign*-shape;
-							}
-							else
-							{
-									float x,y;
-									int sign;
-									float spectral=outer+outer*-shape;
-									double choose=ldexp(pcg32_random_r(&pcg),-32)*spectral;
-									if(choose<outer)
-									{
-										// horizontal
-										sign=pcg32_boundedrand_r(&pcg,2)*2-1;
-										sprite_distance_x=(float)pcg32_boundedrand_r(&pcg,outer*2)-outer;
-										sprite_distance_y=((float)pcg32_boundedrand_r(&pcg,outer-inner)+inner)*sign*-shape;
-									}
-									else
-									{
-										// vertical
-										sign=pcg32_boundedrand_r(&pcg,2)*2-1;
-										sprite_distance_x=((float)pcg32_boundedrand_r(&pcg,outer-inner)+inner)*sign;
-										sprite_distance_y=((float)pcg32_boundedrand_r(&pcg,outer*2)-outer)*-shape;
-									}
-							}
-            }
+						float spectral = outer + outer * -shape;
+						double choose = ldexp(pcg32_random_r(&pcg), -32) * spectral;
+						if (choose < outer)
+						{
+							// horizontal
+							sign = pcg32_boundedrand_r(&pcg, 2) * 2 - 1;
+							sprite_distance_x = (float)pcg32_boundedrand_r(&pcg, outer * 2) - outer;
+							sprite_distance_y = ((float)pcg32_boundedrand_r(&pcg, outer - inner) + inner) * sign * -shape;
+						}
 						else
 						{
-							sprite_distance_x=0;
-							sprite_distance_y=0;
+							// vertical
+							sign = pcg32_boundedrand_r(&pcg, 2) * 2 - 1;
+							sprite_distance_x = ((float)pcg32_boundedrand_r(&pcg, outer - inner) + inner) * sign;
+							sprite_distance_y = ((float)pcg32_boundedrand_r(&pcg, outer * 2) - outer) * -shape;
 						}
-
-						if(gravity>0)
-						{
-							int a=0;
-						}
-
-						float vector_len = sqrtf(sprite_distance_x*sprite_distance_x+sprite_distance_y*sprite_distance_y);
-						float sprite_norm_x=sprite_distance_x/vector_len;
-						float sprite_norm_y=sprite_distance_y/vector_len;
-
-						// position
-						spr->x=(int)((emitter_pos_x + sprite_distance_x + SPRITE_OFFSET_X)*16) & 0x1FFF;
-						spr->y=(int)((emitter_pos_y + sprite_distance_y + SPRITE_OFFSET_Y)*16) & 0x1FFF;
-
-            // speed x,y
-            machine_poke_short(lib->core, particle+PARTICLE_MEM_X, speed_x + sprite_norm_x*gravity);
-            machine_poke_short(lib->core, particle+PARTICLE_MEM_Y, speed_y + sprite_norm_y*gravity);
-
-            // apperance
-            machine_poke(lib->core, particle+PARTICLE_MEM_APPEARANCE, apperance_id);
-            machine_poke(lib->core, particle+PARTICLE_MEM_FRAME, 0);
-          }
-        }
-    }
-
-    // update particles
-    for(int particle_id=0; particle_id<lib->pool_count; ++particle_id)
-    {
-        int particle = lib->particles_data_addr + particle_id*PARTICLE_MEM_SIZE; // 6 bytes
-
-        // apperance is also used to disable the particle
-        int apperance_id=machine_peek(lib->core, particle+PARTICLE_MEM_APPEARANCE);
-        if(apperance_id>APPEARANCE_MAX) continue;
-
-        // sprite
-        int sprite_id=lib->first_sprite_id+particle_id;
-        struct Sprite *spr=&lib->core->machine->spriteRegisters.sprites[sprite_id];
-
-        // position x
-        float speed_x=(float)machine_peek_short(lib->core, particle+PARTICLE_MEM_X);
-        spr->x=(int)(spr->x+speed_x)&0x1FFF;
-
-        // position y
-        float speed_y=(float)machine_peek_short(lib->core, particle+PARTICLE_MEM_Y);
-        spr->y=(int)(spr->y+speed_y)&0x1FFF;
-
-        // character
-
-        int step_id=machine_peek(lib->core, particle+PARTICLE_MEM_FRAME);
-
-        float character=dat_readFloat(lib->apperances_label[apperance_id],step_id,0);
-        if(character>=0)
-        {
-          spr->character=(uint8_t)character;
-          machine_poke(lib->core, particle+PARTICLE_MEM_FRAME, (step_id+1)&0x1FFF);
-        }
-        else
-        {
-          step_id=step_id+(int)character;
-          character=dat_readFloat(lib->apperances_label[apperance_id],step_id,0);
-          if(character>=0)
-          {
-            spr->character=(uint8_t)character;
-            machine_poke(lib->core, particle+PARTICLE_MEM_FRAME, (step_id+1)&0x1FFF);
-          }
-        }
-    }
-}
-
-void prtclib_interrupt(struct Core *core,struct ParticlesLib *lib)
-{
-    for(int particle_id=0; particle_id<lib->pool_count; ++particle_id)
-    {
-        int particle = lib->particles_data_addr + particle_id*PARTICLE_MEM_SIZE; // 6 bytes
-
-        // apperance is also used to disable the particle
-        int apperance_id=machine_peek(lib->core, particle+PARTICLE_MEM_APPEARANCE);
-        if(apperance_id>APPEARANCE_MAX) continue;
-
-        lib->interrupt_sprite_id = lib->first_sprite_id+particle_id;
-        lib->interrupt_particle_addr = lib->particles_data_addr + particle_id*PARTICLE_MEM_SIZE;
-
-        itp_runInterrupt(core, InterruptTypeParticle);
-    }
-
-		for(int emitter_id=0; emitter_id<lib->emitters_count; ++emitter_id)
-    {
-				int emitter = lib->emitters_data_addr + emitter_id*EMITTER_MEM_SIZE; // 6 bytes
-
-				int repeat=machine_peek(lib->core, emitter+EMITTER_MEM_REPEAT);
-				if(repeat>0)
-				{
-						uint8_t count = dat_readU8(lib->emitters_label[emitter_id],EMITTER_DATA_COUNT,0);
-						if(count>0)
-						{
-							lib->interrupt_emitter_id = emitter_id;
-							lib->interrupt_emitter_addr = emitter;
-							itp_runInterrupt(core, InterruptTypeEmitter);
-						}
+					}
 				}
+				else
+				{
+					sprite_distance_x = 0;
+					sprite_distance_y = 0;
+				}
+
+				if (gravity > 0)
+				{
+					int a = 0;
+				}
+
+				float vector_len = sqrtf(sprite_distance_x * sprite_distance_x + sprite_distance_y * sprite_distance_y);
+				float sprite_norm_x = sprite_distance_x / vector_len;
+				float sprite_norm_y = sprite_distance_y / vector_len;
+
+				// position
+				spr->x = (int)((emitter_pos_x + sprite_distance_x + SPRITE_OFFSET_X) * 16) & 0x1FFF;
+				spr->y = (int)((emitter_pos_y + sprite_distance_y + SPRITE_OFFSET_Y) * 16) & 0x1FFF;
+
+				// speed x,y
+				machine_poke_short(lib->core, particle + PARTICLE_MEM_X, speed_x + sprite_norm_x * gravity);
+				machine_poke_short(lib->core, particle + PARTICLE_MEM_Y, speed_y + sprite_norm_y * gravity);
+
+				// lifetime
+				machine_poke_short(lib->core, particle + PARTICLE_MEM_LIFETIME, 0);
+
+			}
 		}
+	}
+
+	// update particles
+	for (int particle_id = 0; particle_id < lib->pool_count; ++particle_id)
+	{
+		int particle = lib->particles_data_addr + particle_id * PARTICLE_MEM_SIZE; // 6 bytes
+
+		// sprite
+		int sprite_id = lib->first_sprite_id + particle_id;
+		struct Sprite *spr = &lib->core->machine->spriteRegisters.sprites[sprite_id];
+
+		// position x
+		float speed_x = (float)machine_peek_short(lib->core, particle + PARTICLE_MEM_X, &errorCode);
+		spr->x = (int)(spr->x + speed_x) & 0x1FFF;
+
+		// position y
+		float speed_y = (float)machine_peek_short(lib->core, particle + PARTICLE_MEM_Y, &errorCode);
+		spr->y = (int)(spr->y + speed_y) & 0x1FFF;
+	}
 }
 
-
-void prtclib_clear(struct Core *core,struct ParticlesLib *lib)
+void prtclib_interrupt(struct Core *core, struct ParticlesLib *lib)
 {
-    for(int particle_id=0; particle_id<lib->pool_count; ++particle_id)
-    {
-        int particle = lib->particles_data_addr + particle_id*PARTICLE_MEM_SIZE; // 6 bytes
-        machine_poke(lib->core, particle+PARTICLE_MEM_APPEARANCE, 255);
+	enum ErrorCode errorCode;
 
-        int sprite_id=lib->first_sprite_id+particle_id;
-        struct Sprite *spr=&lib->core->machine->spriteRegisters.sprites[sprite_id];
+	for (int particle_id = 0; particle_id < lib->pool_count; ++particle_id)
+	{
+		int particle = lib->particles_data_addr + particle_id * PARTICLE_MEM_SIZE; // 6 bytes
 
-        spr->x = 0;
-        spr->y = 0;
-    }
+		// lifetime
+		int life_time = machine_peek_short(lib->core, particle + PARTICLE_MEM_LIFETIME, &errorCode);
+		machine_poke_short(lib->core, particle + PARTICLE_MEM_LIFETIME, (life_time + 1) & 0x1FFF);
+
+		lib->interrupt_sprite_id = lib->first_sprite_id + particle_id;
+		lib->interrupt_particle_addr = lib->particles_data_addr + particle_id * PARTICLE_MEM_SIZE;
+
+		itp_runInterrupt(core, InterruptTypeParticle);
+	}
+
+	for (int emitter_id = 0; emitter_id < lib->emitters_count; ++emitter_id)
+	{
+		int emitter = lib->emitters_data_addr + emitter_id * EMITTER_MEM_SIZE; // 6 bytes
+
+		int repeat = machine_peek(lib->core, emitter + EMITTER_MEM_REPEAT);
+		if (repeat > 0)
+		{
+			uint8_t count = dat_readU8(lib->emitters_label[emitter_id], EMITTER_DATA_COUNT, 0);
+			if (count > 0)
+			{
+				lib->interrupt_emitter_id = emitter_id;
+				lib->interrupt_emitter_addr = emitter;
+				itp_runInterrupt(core, InterruptTypeEmitter);
+			}
+		}
+	}
+}
+
+void prtclib_clear(struct Core *core, struct ParticlesLib *lib)
+{
+	for (int particle_id = 0; particle_id < lib->pool_count; ++particle_id)
+	{
+		int particle = lib->particles_data_addr + particle_id*PARTICLE_MEM_SIZE; // 6 bytes
+		machine_poke_short(lib->core, particle+PARTICLE_MEM_LIFETIME, 0);
+
+		int sprite_id = lib->first_sprite_id + particle_id;
+		struct Sprite *spr = &lib->core->machine->spriteRegisters.sprites[sprite_id];
+
+		spr->x = 0;
+		spr->y = 0;
+	}
 }
 //
 // Copyright 2017 Timo Kloss
@@ -12685,6 +12476,7 @@ void runStartupSequence(struct Core *core)
 #include "core.h"
 #include <string.h>
 #include <assert.h>
+#include "core.h"
 
 struct Plane *txtlib_getBackground(struct TextLib *lib, int bg)
 {
@@ -12713,6 +12505,7 @@ struct Plane *txtlib_getBackground(struct TextLib *lib, int bg)
 
 void txtlib_setCellAt(struct Plane *plane, int x, int y, int character, union CharacterAttributes attr)
 {
+	log_debug("txtlib_setCellAt %dx%d %d", x, y, character);
 	struct Cell *cell = &plane->cells[y & ROWS_MASK][x & COLS_MASK];
 	if (character >= 0)
 	{
@@ -12802,10 +12595,29 @@ void txtlib_scrollWindowIfNeeded(struct TextLib *lib)
 
 void txtlib_printText(struct TextLib *lib, const char *text)
 {
+	log_debug("txtlib_printText \"%s\"",text);
+
 	struct Plane *plane = txtlib_getBackground(lib, lib->windowBg);
 	const char *letter = text;
+	size_t word_len;
+	bool auto_newline=false;
+count_word_len:
+	word_len=0;
+	while(letter[word_len] && letter[word_len] != ' ' && letter[word_len] != '\n') word_len++;
+	if(word_len>0 && lib->cursorX>0 && lib->cursorX+word_len>lib->windowWidth)// && !auto_newline)
+	{
+		lib->cursorX=0;
+		lib->cursorY++;
+	}
 	while (*letter)
 	{
+		if(*letter==' ' && lib->cursorX==0 && auto_newline)
+		{
+			letter++;
+			auto_newline=false;
+			goto count_word_len;
+		}
+
 		txtlib_scrollWindowIfNeeded(lib);
 
 		if (*letter >= 32)
@@ -12815,6 +12627,7 @@ void txtlib_printText(struct TextLib *lib, const char *text)
 			{
 				printableLetter -= 32;
 			}
+			log_debug("txtlib_printText cursor %dx%d window %dx%d",lib->cursorX,lib->cursorY,lib->windowX,lib->windowY);
 			txtlib_setCellAt(plane, lib->cursorX + lib->windowX, lib->cursorY + lib->windowY, lib->fontCharOffset + (printableLetter - 32), lib->charAttr);
 			if (lib->windowBg != OVERLAY_BG)
 			{
@@ -12832,8 +12645,14 @@ void txtlib_printText(struct TextLib *lib, const char *text)
 		{
 			lib->cursorX = 0;
 			lib->cursorY++;
+			auto_newline=true;
 		}
 
+		if(*letter==' ')
+		{
+			letter++;
+			goto count_word_len;
+		}
 		letter++;
 	}
 }
@@ -13170,6 +12989,174 @@ void txtlib_itobin(char *buffer, size_t buffersize, size_t width, int value)
 		mask = (mask >> 1) & 0x7FFF;
 	}
 	buffer[p] = 0;
+}
+/*
+ * Copyright (c) 2020 rxi
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to
+ * deal in the Software without restriction, including without limitation the
+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+ * sell copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+ * IN THE SOFTWARE.
+ */
+
+#include "core.h"
+
+#define MAX_CALLBACKS 32
+
+typedef struct {
+  log_LogFn fn;
+  void *udata;
+  int level;
+} Callback;
+
+static struct {
+  void *udata;
+  log_LockFn lock;
+  int level;
+  bool quiet;
+  Callback callbacks[MAX_CALLBACKS];
+} L;
+
+
+static const char *level_strings[] = {
+  "TRC", "DBG", "NFO", "WRN", "ERR", "FTL"
+};
+
+#ifdef LOG_USE_COLOR
+static const char *level_colors[] = {
+  "\x1b[94m", "\x1b[36m", "\x1b[32m", "\x1b[33m", "\x1b[31m", "\x1b[35m"
+};
+#endif
+
+
+static void stdout_callback(log_Event *ev) {
+  char buf[16];
+  buf[strftime(buf, sizeof(buf), "%H:%M:%S", ev->time)] = '\0';
+#ifdef LOG_USE_COLOR
+  fprintf(
+    ev->udata, "%s %s%-3s\x1b[0m \x1b[90m%s:%d:\x1b[0m ",
+    buf, level_colors[ev->level], level_strings[ev->level],
+    ev->file, ev->line);
+#else
+  fprintf(
+    ev->udata, "%s %-5s %s:%d: ",
+    buf, level_strings[ev->level], ev->file, ev->line);
+#endif
+  vfprintf(ev->udata, ev->fmt, ev->ap);
+  fprintf(ev->udata, "\n");
+  fflush(ev->udata);
+}
+
+
+static void file_callback(log_Event *ev) {
+  char buf[64];
+  buf[strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", ev->time)] = '\0';
+  fprintf(
+    ev->udata, "%s %-5s %s:%d: ",
+    buf, level_strings[ev->level], ev->file, ev->line);
+  vfprintf(ev->udata, ev->fmt, ev->ap);
+  fprintf(ev->udata, "\n");
+  fflush(ev->udata);
+}
+
+
+static void lock(void)   {
+  if (L.lock) { L.lock(true, L.udata); }
+}
+
+
+static void unlock(void) {
+  if (L.lock) { L.lock(false, L.udata); }
+}
+
+
+const char* log_level_string(int level) {
+  return level_strings[level];
+}
+
+
+void log_set_lock(log_LockFn fn, void *udata) {
+  L.lock = fn;
+  L.udata = udata;
+}
+
+
+void log_set_level(int level) {
+  L.level = level;
+}
+
+
+void log_set_quiet(bool enable) {
+  L.quiet = enable;
+}
+
+
+int log_add_callback(log_LogFn fn, void *udata, int level) {
+  for (int i = 0; i < MAX_CALLBACKS; i++) {
+    if (!L.callbacks[i].fn) {
+      L.callbacks[i] = (Callback) { fn, udata, level };
+      return 0;
+    }
+  }
+  return -1;
+}
+
+
+int log_add_fp(FILE *fp, int level) {
+  return log_add_callback(file_callback, fp, level);
+}
+
+
+static void init_event(log_Event *ev, void *udata) {
+  if (!ev->time) {
+    time_t t = time(NULL);
+    ev->time = localtime(&t);
+  }
+  ev->udata = udata;
+}
+
+
+void log_log(int level, const char *file, int line, const char *fmt, ...) {
+  log_Event ev = {
+    .fmt   = fmt,
+    .file  = file,
+    .line  = line,
+    .level = level,
+  };
+
+  lock();
+
+  if (!L.quiet && level >= L.level) {
+    init_event(&ev, stderr);
+    va_start(ev.ap, fmt);
+    stdout_callback(&ev);
+    va_end(ev.ap);
+  }
+
+  for (int i = 0; i < MAX_CALLBACKS && L.callbacks[i].fn; i++) {
+    Callback *cb = &L.callbacks[i];
+    if (level >= cb->level) {
+      init_event(&ev, cb->udata);
+      va_start(ev.ap, fmt);
+      cb->fn(&ev);
+      va_end(ev.ap);
+    }
+  }
+
+  unlock();
 }
 //
 // Copyright 2016-2020 Timo Kloss
@@ -13604,142 +13591,187 @@ void audio_renderAudioBuffer(struct AudioRegisters *lifeRegisters, struct AudioR
 #include "core.h"
 #include "core.h"
 #include "core.h"
+#include "core.h"
 
 void machine_init(struct Core *core)
 {
-    assert(sizeof(struct Machine) == VM_SIZE);
+	assert(sizeof(struct Machine) == VM_SIZE);
 }
 
 void machine_reset(struct Core *core, bool resetPersistent)
 {
-    // video ram, working ram
-    memset(core->machine, 0, 0xE000);
+	// video ram, working ram
+	memset(core->machine, 0, 0xE000);
 
-    if (resetPersistent)
-    {
-        // persistent ram
-        memset(core->machine->persistentRam, 0, PERSISTENT_RAM_SIZE);
-    }
+	if (resetPersistent)
+	{
+		// persistent ram
+		memset(core->machine->persistentRam, 0, PERSISTENT_RAM_SIZE);
+	}
 
-    // TODO: memset(core->machine->nothing2, 0, VM_SIZE - 0x0FB00);
+	// TODO: memset(core->machine->nothing2, 0, VM_SIZE - 0x0FB00);
 
-    // sprite
-    memset((void*)&(core->machine->spriteRegisters), 0, sizeof(struct SpriteRegisters));
-    memset((void*)&(core->machine->colorRegisters), 0, sizeof(struct ColorRegisters));
-    memset((void*)&(core->machine->videoRegisters), 0, sizeof(struct VideoRegisters));
-    memset((void*)&(core->machine->dmaRegisters), 0, sizeof(struct DmaRegisters));
-    memset((void*)&(core->machine->audioRegisters), 0, sizeof(struct AudioRegisters));
-    memset((void*)&(core->machine->ioRegisters), 0, sizeof(struct IORegisters));
+	// sprite
+	memset((void *)&(core->machine->spriteRegisters), 0, sizeof(struct SpriteRegisters));
+	memset((void *)&(core->machine->colorRegisters), 0, sizeof(struct ColorRegisters));
+	memset((void *)&(core->machine->videoRegisters), 0, sizeof(struct VideoRegisters));
+	memset((void *)&(core->machine->dmaRegisters), 0, sizeof(struct DmaRegisters));
+	memset((void *)&(core->machine->audioRegisters), 0, sizeof(struct AudioRegisters));
+	memset((void *)&(core->machine->ioRegisters), 0, sizeof(struct IORegisters));
 
-    // // rom
-    // memset(core->machine->cartridgeRom, 0, 0x10000);
+	// // rom
+	// memset(core->machine->cartridgeRom, 0, 0x10000);
 
-    memset(core->machineInternals, 0, sizeof(struct MachineInternals));
-    audio_reset(core);
+	memset(core->machineInternals, 0, sizeof(struct MachineInternals));
+	audio_reset(core);
+
+	pcg32_srandom_r(&core->interpreter->defaultRng, 4715711917271117164, (intptr_t)&core->interpreter->defaultRng);
 }
 
 int machine_peek(struct Core *core, int address)
 {
-    if (address < 0 || address > VM_MAX)
-    {
-        return -1;
-    }
-    if (address >= 0x0E000 && address < 0x0F800) // persistent
-    {
-        if (!core->machineInternals->hasAccessedPersistent)
-        {
-            delegate_persistentRamWillAccess(core, core->machine->persistentRam, PERSISTENT_RAM_SIZE);
-            core->machineInternals->hasAccessedPersistent = true;
-        }
-    }
+	if (
+		 (address < 0) // outside mapped memory
+	|| (address > VM_MAX) // outside mapped memory
+	|| (address >= 0x0f800 && address < 0x0fb00) // nothing 1
+	|| (address >= 0x0fefc && address < 0x0ff00) // nothing 2
+	|| (address >= 0x0ff34 && address < 0x0ff40) // nothing 3
+	|| (address >= 0x0ff8c && address < 0x0ffa0) // nothing 4
+	|| (address >= 0x0ffb0 && address < 0x10000) // nothing 5
+	)
+	{
+		return -1;
+	}
 
-    // read byte
-    return *(uint8_t *)((uint8_t *)core->machine + address);
+	else if (address >= 0x0e000 && address < 0x0f800) // persistent
+	{
+		if (!core->machineInternals->hasAccessedPersistent)
+		{
+			delegate_persistentRamWillAccess(core, core->machine->persistentRam, PERSISTENT_RAM_SIZE);
+			core->machineInternals->hasAccessedPersistent = true;
+		}
+	}
+
+	// manually mapped
+	else if (address == 0x0ffa6) return core->interpreter->cycles & 0xff;
+	else if (address == 0x0ffa7) return (core->interpreter->cycles >> 8) & 0xff;
+	else if (address == 0x0ffa8) return (core->interpreter->cycles >> 16) & 0xff;
+	else if (address == 0x0ffa9) return (core->interpreter->cycles >> 24) & 0xff;
+
+	else if (address == 0x0ffaa) return core->interpreter->numSimpleVariables & 0xff;
+	else if (address == 0x0ffab) return (core->interpreter->numSimpleVariables >> 8) & 0xff;
+
+	else if (address == 0x0ffac) return core->interpreter->numArrayVariables & 0xff;
+	else if (address == 0x0ffad) return (core->interpreter->numArrayVariables >> 8) & 0xff;
+
+	else if (address == 0x0ffae) return core->interpreter->numLabelStackItems & 0xff;
+	else if (address == 0x0ffaf) return (core->interpreter->numLabelStackItems >> 8) & 0xff;
+
+	// read byte
+	return *(uint8_t *)((uint8_t *)core->machine + address);
 }
 
-short int machine_peek_short(struct Core *core, int address)
+int16_t machine_peek_short(struct Core *core, int address, enum ErrorCode *errorCode)
 {
-    int peek1=machine_peek(core, address);
-    int peek2=machine_peek(core, address+1);
-    if(peek1<0 || peek2<0) return -1;
-    return peek1|(peek2<<8);
+	*errorCode = ErrorNone;
+	int peek1 = machine_peek(core, address);
+	int peek2 = machine_peek(core, address + 1);
+	if (peek1 < 0 || peek2 < 0)
+		*errorCode = ErrorIllegalMemoryAccess;
+	return peek1 | (peek2 << 8); // MAY return negative number, and it's ok
+}
+
+int32_t machine_peek_long(struct Core *core, int address, enum ErrorCode *errorCode)
+{
+	*errorCode = ErrorNone;
+	int peek1 = machine_peek(core, address);
+	int peek2 = machine_peek(core, address + 1);
+	int peek3 = machine_peek(core, address + 2);
+	int peek4 = machine_peek(core, address + 3);
+	if (peek1 < 0 || peek2 < 0 || peek3 < 0 || peek4 < 0)
+		*errorCode = ErrorIllegalMemoryAccess;
+	return peek1 | (peek2 << 8) | (peek3 << 16) | (peek4 << 24);
 }
 
 bool machine_poke(struct Core *core, int address, int value)
 {
-    if (address < 0 && address >= 0x10000)
-    {
-        // cartridge ROM or outside RAM
-        return false;
-    }
-    // if((address>=0x0F800&&address<0x0FB00)
-    // && (address>=0x0FEFC&&address<0x0FF00)
-    // && (address>=0x0FEFC&&address<0x0FF40)
-    // && (address>=0x0FF36&&address<0x0FF00)
-    // {
-    //     // reserved memory
-    //     return false;
-    // }
-    // if (address >= 0xFF80) // TODO: update this
-    // {
-    //     // reserved registers
-    //     return false;
-    // }
-    // if (address == 0xFF76) // IO attributes
-    // {
-    //     // check for illegal input change (gamepad <-> touch)
-    //     union IOAttributes currAttr = core->machine->ioRegisters.attr;
-    //     union IOAttributes newAttr;
-    //     newAttr.value = value;
-    // }
-    // else
-		if (address >= 0x0E000 && address < 0x0F800) // persistent
-    {
-        if (!core->machineInternals->hasAccessedPersistent)
-        {
-            delegate_persistentRamWillAccess(core, core->machine->persistentRam, PERSISTENT_RAM_SIZE);
-            core->machineInternals->hasAccessedPersistent = true;
-        }
-        core->machineInternals->hasChangedPersistent = true;
-    }
+	if (
+		 (address < 0) // outside mapped memory
+	|| (address >= 0x10000) // ROM
+	|| (address >= 0x0f800 && address < 0x0fb00) // nothing 1
+	|| (address >= 0x0fefc && address < 0x0ff00) // nothing 2
+	|| (address >= 0x0ff34 && address < 0x0ff40) // nothing 3
+	|| (address >= 0x0ff88 && address < 0x0ffa0) // nothing 4
+	|| (address >= 0x0ffb0 && address < 0x10000) // nothing 5
+	|| (address >= 0x0ffa6 && address < 0x0ffb0) // manually mapped
+	)
+	{
+		return false;
+	}
+	else if (address >= 0x0e000 && address < 0x0f800) // persistent
+	{
+		if (!core->machineInternals->hasAccessedPersistent)
+		{
+			delegate_persistentRamWillAccess(core, core->machine->persistentRam, PERSISTENT_RAM_SIZE);
+			core->machineInternals->hasAccessedPersistent = true;
+		}
+		core->machineInternals->hasChangedPersistent = true;
+	}
+	else if (address >= 0x0ff70 && address < 0x0ffa0) // io registers
+	{
+		if (address == 0xff87) {} // haptic
+		else return false; // read only
+	}
 
-    // write byte
-    *(uint8_t *)((uint8_t *)core->machine + address) = value & 0xFF;
+	// write byte
+	*(uint8_t *)((uint8_t *)core->machine + address) = value & 0xFF;
 
-    if (address == 0xFF76) // IO attributes
-    {
-        delegate_controlsDidChange(core);
-    }
-    else if (address >= 0xFF40 && address < 0xFF70) // audio
-    {
-        machine_enableAudio(core);
-    }
-    return true;
+	if (address == 0x0ff70+0x15) // IOStatus
+	{
+		delegate_controlsDidChange(core);
+	}
+	else if (address >= 0x0ff40 && address < 0x0ff70) // AudioRegisters
+	{
+		machine_enableAudio(core);
+	}
+
+	return true;
 }
 
 bool machine_poke_short(struct Core *core, int address, int16_t value)
 {
-    bool poke1 = machine_poke(core, address, value);
-    bool poke2 = machine_poke(core, address + 1, value >> 8);
-    if (!poke1 || !poke2) return false;
-    return true;
+	bool poke1 = machine_poke(core, address, value);
+	bool poke2 = machine_poke(core, address + 1, value >> 8);
+	if (!poke1 || !poke2)
+		return false;
+	return true;
 }
 
+bool machine_poke_long(struct Core *core, int address, int32_t value)
+{
+	bool poke1 = machine_poke(core, address, value);
+	bool poke2 = machine_poke(core, address + 1, value >> 8);
+	bool poke3 = machine_poke(core, address + 2, value >> 16);
+	bool poke4 = machine_poke(core, address + 3, value >> 24);
+	if (!poke1 || !poke2 || !poke3 || !poke4)
+		return false;
+	return true;
+}
 void machine_enableAudio(struct Core *core)
 {
-    if (!core->machineInternals->audioInternals.audioEnabled)
-    {
-        core->machineInternals->audioInternals.audioEnabled = true;
-        delegate_controlsDidChange(core);
-    }
+	if (!core->machineInternals->audioInternals.audioEnabled)
+	{
+		core->machineInternals->audioInternals.audioEnabled = true;
+		delegate_controlsDidChange(core);
+	}
 }
 
 void machine_suspendEnergySaving(struct Core *core, int numUpdates)
 {
-    if (core->machineInternals->energySavingTimer < numUpdates)
-    {
-        core->machineInternals->energySavingTimer = numUpdates;
-    }
+	if (core->machineInternals->energySavingTimer < numUpdates)
+	{
+		core->machineInternals->energySavingTimer = numUpdates;
+	}
 }
 //
 // Copyright 2016-2020 Timo Kloss
@@ -13761,6 +13793,7 @@ void machine_suspendEnergySaving(struct Core *core, int numUpdates)
 // 3. This notice may not be removed or altered from any source distribution.
 //
 
+#include <stdint.h>
 #include "core.h"
 #include "core.h"
 #include <string.h>
@@ -13780,10 +13813,10 @@ int video_getCharacterPixel(struct Character *character, int x, int y)
     return b0 | (b1 << 1);
 }
 
-void video_renderPlane(struct Character *characters, struct Plane *plane, int sizeMode, int y, int scrollX, int scrollY, int pixelFlag, uint8_t *scanlineBuffer, bool opaque)
+void video_renderPlane(struct Character *characters, struct Plane *plane, int sizeMode, int y, int scrollX, int scrollY, int overlayFlag, uint8_t *scanlineBuffer, bool opaque, bool doubledX, bool doubledY)
 {
-    int divShift = sizeMode ? 4 : 3;
-    int planeY = y + scrollY;
+    int divShift = sizeMode ? 4 : 3; // TODO: deleteme
+		int planeY = (y + scrollY) >> (doubledY?1:0);
     int row = (planeY >> divShift) & ROWS_MASK;
     int cellY = planeY & 7;
 
@@ -13794,13 +13827,17 @@ void video_renderPlane(struct Character *characters, struct Plane *plane, int si
     uint8_t pal = 0;
     uint8_t pri = 0;
 
-    int pre = scrollX & 7;
+		int x_advance = doubledX?0:1; // will advance 1 pixel over two when doubledX is true
+		int x_next_char = doubledX?15:7;
+		int x_to_planeX = doubledX?1:0;
+
+		int pre = scrollX & (doubledX ? 15 : 7);
 
     while (x < SCREEN_WIDTH)
     {
         if (!b)
         {
-            int planeX = x + scrollX;
+						int planeX = (x + scrollX) >> x_to_planeX;
             int column = (planeX >> divShift) & COLS_MASK;
             struct Cell *cell = &plane->cells[row][column];
 
@@ -13838,16 +13875,17 @@ void video_renderPlane(struct Character *characters, struct Plane *plane, int si
 								// if color is not zero, replace it by the new color, I guess
 								if (pixel || (pixel==0 && opaque))
                 {
-                    *scanlineBuffer = pixel | pal | pri | pixelFlag;
+                    *scanlineBuffer = pixel | pal | pri | overlayFlag;
                 }
             }
             ++scanlineBuffer;
             ++x;
         }
 
-        d0 <<= 1;
-        d1 <<= 1;
-        b = (b + 1) & 7;
+        d0 <<= x_advance;
+        d1 <<= x_advance;
+				if (doubledX) x_advance = (x_advance+1)&1;
+				b = (b + 1) & x_next_char;
     }
 }
 
@@ -13979,39 +14017,39 @@ void video_renderScreen(struct Core *core, uint32_t *outputRGB)
         {
             if (reg->attr.planeDEnabled)
             {
-                int scrollX = reg->scrollDX; // | (reg->scrollMSB.dX << 8);
-                int scrollY = reg->scrollDY; // | (reg->scrollMSB.dY << 8);
+                int scrollX = reg->scrollDX & (reg->attr.planeDDoubled?0x3ff:0x1ff); // | (reg->scrollMSB.dX << 8);
+                int scrollY = reg->scrollDY & (reg->attr.planeDDoubled?0x3ff:0x1ff); // | (reg->scrollMSB.dY << 8);
                 video_renderPlane(ram->characters, &ram->planeD,
 								0, //reg->attr.planeDCellSize,
 								y, scrollX, scrollY, 0, scanlineBuffer,
-								mi->planeColor0IsOpaque[3]);
+								mi->planeColor0IsOpaque[3], reg->attr.planeDDoubled, reg->attr.planeDDoubled);
             }
             if (reg->attr.planeCEnabled)
             {
-                int scrollX = reg->scrollCX; // | (reg->scrollMSB.cX << 8);
-                int scrollY = reg->scrollCY; // | (reg->scrollMSB.cY << 8);
+                int scrollX = reg->scrollCX& (reg->attr.planeCDoubled?0x3ff:0x1ff); // | (reg->scrollMSB.cX << 8);
+                int scrollY = reg->scrollCY& (reg->attr.planeCDoubled?0x3ff:0x1ff); // | (reg->scrollMSB.cY << 8);
                 video_renderPlane(ram->characters, &ram->planeC,
 								0, //reg->attr.planeCCellSize,
 								y, scrollX, scrollY, 0, scanlineBuffer,
-								mi->planeColor0IsOpaque[2]);
+								mi->planeColor0IsOpaque[2], reg->attr.planeCDoubled, reg->attr.planeCDoubled);
             }
             if (reg->attr.planeBEnabled)
             {
-                int scrollX = reg->scrollBX; // | (reg->scrollMSB.bX << 8);
-                int scrollY = reg->scrollBY; // | (reg->scrollMSB.bY << 8);
+                int scrollX = reg->scrollBX& (reg->attr.planeBDoubled?0x3ff:0x1ff); // | (reg->scrollMSB.bX << 8);
+                int scrollY = reg->scrollBY& (reg->attr.planeBDoubled?0x3ff:0x1ff); // | (reg->scrollMSB.bY << 8);
                 video_renderPlane(ram->characters, &ram->planeB,
 								0, //reg->attr.planeBCellSize,
 								y, scrollX, scrollY, 0, scanlineBuffer,
-								mi->planeColor0IsOpaque[1]);
+								mi->planeColor0IsOpaque[1], reg->attr.planeBDoubled, reg->attr.planeBDoubled);
             }
             if (reg->attr.planeAEnabled)
             {
-                int scrollX = reg->scrollAX; // | (reg->scrollMSB.aX << 8);
-                int scrollY = reg->scrollAY; // | (reg->scrollMSB.aY << 8);
+                int scrollX = reg->scrollAX& (reg->attr.planeADoubled?0x3ff:0x1ff); // | (reg->scrollMSB.aX << 8);
+                int scrollY = reg->scrollAY& (reg->attr.planeADoubled?0x3ff:0x1ff); // | (reg->scrollMSB.aY << 8);
                 video_renderPlane(ram->characters, &ram->planeA,
 								0, //reg->attr.planeACellSize,
 								y, scrollX, scrollY, 0, scanlineBuffer,
-								mi->planeColor0IsOpaque[0]);
+								mi->planeColor0IsOpaque[0], reg->attr.planeADoubled, reg->attr.planeADoubled);
             }
             if (reg->attr.spritesEnabled)
             {
@@ -14021,7 +14059,7 @@ void video_renderScreen(struct Core *core, uint32_t *outputRGB)
         }
 
         // overlay
-        video_renderPlane((struct Character *)overlayCharacters, &core->overlay->plane, 0, y, 0, 0, OVERLAY_FLAG, scanlineBuffer, 0);
+        video_renderPlane((struct Character *)overlayCharacters, &core->overlay->plane, 0, y, 0, 0, OVERLAY_FLAG, scanlineBuffer, 0, 0, 0);
 
         outputPixel+=skip_before;
 
@@ -14069,143 +14107,148 @@ void video_renderScreen(struct Core *core, uint32_t *outputRGB)
 #include "core.h"
 #include "core.h"
 #include "core.h"
+#include "core.h"
 #include <math.h>
-
-void overlay_clear(struct Core *core);
-
+#include <string.h>
 
 void overlay_init(struct Core *core)
 {
-    struct IORegisters *io = &core->machine->ioRegisters;
-    struct TextLib *lib = &core->overlay->textLib;
-    lib->core = core;
-    lib->bg = OVERLAY_BG;
-    lib->windowBg = OVERLAY_BG;
-    lib->charAttr.priority = 1;
-    lib->charAttr.palette = 1;
-    lib->fontCharOffset = 0;
-    lib->windowX = 0;
-    lib->windowY = 0;
-    lib->windowWidth = 216/8;
-    lib->windowHeight = 384/8;
-    lib->cursorX = 0;
-    lib->cursorY = 0;
+	struct IORegisters *io = &core->machine->ioRegisters;
+	struct TextLib *lib = &core->overlay->textLib;
+	lib->core = core;
+	lib->bg = OVERLAY_BG;
+	lib->windowBg = OVERLAY_BG;
+	lib->charAttr.priority = 1;
+	lib->charAttr.palette = 1;
+	lib->fontCharOffset = 0;
+	lib->windowX = 0;
+	lib->windowY = 0;
+	lib->windowWidth = 216 / 8;
+	lib->windowHeight = 384 / 8;
+	lib->cursorX = 0;
+	lib->cursorY = 0;
 }
 
 void overlay_updateLayout(struct Core *core, struct CoreInput *input)
 {
-    struct IORegisters *io = &core->machine->ioRegisters;
-    struct TextLib *lib = &core->overlay->textLib;
-    lib->windowX = (io->safe.left+7)/8;
-    lib->windowY = (io->safe.top+7)/8;
-    lib->windowWidth = io->shown.width/8 - (io->safe.left+7)/8 - (io->safe.right+7)/8;
-    lib->windowHeight = io->shown.height/8 - (io->safe.top+7)/8 - (io->safe.bottom+7)/8;
+	struct IORegisters *io = &core->machine->ioRegisters;
+	struct TextLib *lib = &core->overlay->textLib;
+	int b = io->safe.bottom > io->keyboardHeight ? io->safe.bottom : io->keyboardHeight;
+	lib->windowX = (io->safe.left + 7) / 8;
+	lib->windowY = (io->safe.top + 7) / 8;
+	lib->windowWidth = io->shown.width / 8 - (io->safe.left + 7) / 8 - (io->safe.right + 7) / 8;
+	lib->windowHeight = io->shown.height / 8 - (io->safe.top + 7) / 8 - (b + 7) / 8;
 }
 
 void overlay_reset(struct Core *core)
 {
-    overlay_clear(core);
-    core->overlay->textLib.cursorX = 0;
-    core->overlay->textLib.cursorY = 0;
+	overlay_clear(core);
+	core->overlay->textLib.cursorX = core->overlay->textLib.windowX;
+	core->overlay->textLib.cursorY = core->overlay->textLib.windowY;
+	memset(core->overlay->commandLine, 0, 27);
 }
 
 void overlay_updateState(struct Core *core)
 {
-    overlay_clear(core);
+	if (core->interpreter->state == StatePaused)
+	{
+		core->overlay->timer = 0;
+	}
 
-    if (core->interpreter->state == StatePaused)
-    {
-        core->overlay->timer = 0;
-    }
-
-    if (!core->interpreter->debug)
-    {
-        core->overlay->textLib.cursorX = 0;
-        core->overlay->textLib.cursorY = 0;
-    }
+	if (!core->interpreter->debug)
+	{
+		core->overlay->textLib.cursorX = 0;
+		core->overlay->textLib.cursorY = 0;
+	}
 }
 
 void overlay_message(struct Core *core, const char *message)
 {
-    struct TextLib *lib = &core->overlay->textLib;
-    txtlib_setCells(lib,
-        0, lib->windowHeight-1+lib->windowY,
-        lib->windowWidth-1, lib->windowHeight-1+lib->windowY,
-        0);
-    txtlib_writeText(lib, message, lib->windowX, lib->windowHeight-1+lib->windowY);
-    core->overlay->messageTimer = 127;
-    machine_suspendEnergySaving(core, 127);
+	struct TextLib *lib = &core->overlay->textLib;
+	txtlib_setCells(lib,
+									0, lib->windowHeight - 1 + lib->windowY,
+									lib->windowWidth - 1, lib->windowHeight - 1 + lib->windowY,
+									0);
+	txtlib_writeText(lib, message, lib->windowX, lib->windowHeight - 1 + lib->windowY);
+	core->overlay->messageTimer = 127;
+	machine_suspendEnergySaving(core, 127);
 }
 
 void overlay_draw(struct Core *core, bool ingame)
 {
-    struct TextLib *lib = &core->overlay->textLib;
+	struct TextLib *lib = &core->overlay->textLib;
 
-    if (core->overlay->messageTimer > 0)
-    {
-        core->overlay->messageTimer--;
-        if (core->overlay->messageTimer < 27)
-        {
-            txtlib_scrollBackground(lib,
-                0, lib->windowHeight-1+lib->windowY,
-                lib->windowWidth-1, lib->windowHeight-1+lib->windowY,
-                -1, 0);
-            txtlib_setCell(lib,
-                lib->windowWidth-1+lib->windowX, lib->windowHeight-1+lib->windowY,
-                0);
-        }
-    }
+	if (core->overlay->messageTimer > 0)
+	{
+		core->overlay->messageTimer--;
+		if (core->overlay->messageTimer < 27)
+		{
+			txtlib_scrollBackground(lib,
+															0, lib->windowHeight - 1 + lib->windowY,
+															lib->windowWidth - 1, lib->windowHeight - 1 + lib->windowY,
+															-1, 0);
+			txtlib_setCell(lib,
+										 lib->windowWidth - 1 + lib->windowX, lib->windowHeight - 1 + lib->windowY,
+										 0);
+		}
+	}
 
-    if (ingame)
-    {
-        if (core->interpreter->state == StatePaused)
-        {
-            if (core->overlay->timer % 60 < 40)
-            {
-                txtlib_writeText(lib, "PAUSED", 7, 7);
-            }
-            else
-            {
-                // XXX: What is this 12?
-                txtlib_setCells(lib, 7, 7, 12, 7, 0);
-            }
-        }
+	if (ingame)
+	{
+		if (core->interpreter->state == StatePaused)
+		{
+			if (core->overlay->timer % 40 < 20)
+			{
+				txtlib_writeText(lib, "_", lib->windowX + lib->cursorX, lib->windowY + lib->cursorY);
+			}
+			else
+			{
+				char c[2] = {' ', 0};
+				if (lib->cursorX >= 0 && lib->cursorX < 26 && core->overlay->commandLine[lib->cursorX] != 0)
+					*c = core->overlay->commandLine[lib->cursorX];
+				txtlib_writeText(lib, c, lib->windowX + lib->cursorX, lib->windowY + lib->cursorY);
+			}
+		}
 
-        if (core->interpreter->debug)
-        {
-            txtlib_writeText(lib, "CPU", lib->windowWidth-3+lib->windowX, lib->windowY);
-            int cpuLoad = core->interpreter->cpuLoadDisplay;
-            if (cpuLoad < 100)
-            {
-                txtlib_writeNumber(lib, cpuLoad, 2, lib->windowWidth-3+lib->windowX, 1+lib->windowY);
-                txtlib_writeText(lib, "%", lib->windowWidth-1+lib->windowX, 1+lib->windowY);
-            }
-            else
-            {
-                txtlib_writeText(lib, "MAX", lib->windowWidth-3+lib->windowX, 1+lib->windowY);
-            }
-        }
-    }
+		if (core->interpreter->debug)
+		{
+			txtlib_writeText(lib, "CPU", lib->windowWidth - 3 + lib->windowX, lib->windowY);
+			int cpuLoad = core->interpreter->cpuLoadDisplay;
+			if (cpuLoad < 100)
+			{
+				txtlib_writeNumber(lib, cpuLoad, 2, lib->windowWidth - 3 + lib->windowX, 1 + lib->windowY);
+				txtlib_writeText(lib, "%", lib->windowWidth - 1 + lib->windowX, 1 + lib->windowY);
+			}
+			else
+			{
+				txtlib_writeText(lib, "MAX", lib->windowWidth - 3 + lib->windowX, 1 + lib->windowY);
+			}
+		}
 
-    core->overlay->timer++;
+		if (core->interpreter->state == StatePaused && core->interpreter->debug)
+		{
+			overlay_debugger(core);
+		}
+	}
+
+	core->overlay->timer++;
 }
 
 void overlay_clear(struct Core *core)
 {
-    struct Plane *plane = &core->overlay->plane;
-    for (int y = 0; y < PLANE_ROWS; y++)
-    {
-        for (int x = 0; x < PLANE_COLUMNS; x++)
-        {
-            struct Cell *cell = &plane->cells[y][x];
-            cell->character = 0;
-            cell->attr.palette = 0;
-            cell->attr.priority = 1;
-        }
-    }
-    core->overlay->messageTimer = 0;
+	struct Plane *plane = &core->overlay->plane;
+	for (int y = 0; y < PLANE_ROWS; y++)
+	{
+		for (int x = 0; x < PLANE_COLUMNS; x++)
+		{
+			struct Cell *cell = &plane->cells[y][x];
+			cell->character = 0;
+			cell->attr.palette = 0;
+			cell->attr.priority = 1;
+		}
+	}
+	core->overlay->messageTimer = 0;
 }
-
 //
 // Copyright 2017-2018 Timo Kloss
 //
@@ -14307,6 +14350,437 @@ uint8_t overlayCharacters[] = {
     0x3C, 0x7E, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x3C, 0x66, 0xC3, 0x99, 0xFF, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0x81, 0xFF,
 };
+
+#include "core.h"
+#include "core.h"
+#include "core.h"
+#include "core.h"
+#include "core.h"
+#include "core.h"
+#include "core.h"
+#include "core.h"
+#include "core.h"
+#include "core.h"
+#include <string.h>
+
+void new_line(struct Core *core)
+{
+	struct TextLib *lib = &core->overlay->textLib;
+
+	lib->cursorX = 0;
+	lib->cursorY++;
+	txtlib_scrollWindowIfNeeded(lib);
+}
+
+void print_value(struct Core *core, enum ValueType type, union Value *value)
+{
+	if (type == ValueTypeFloat && value)
+	{
+		char buffer[20];
+		snprintf(buffer, 20, "  %0.10g", value->floatValue);
+		txtlib_printText(&core->overlay->textLib, buffer);
+		new_line(core);
+	}
+	else if (type == ValueTypeString && value)
+	{
+		txtlib_printText(&core->overlay->textLib, "  \"");
+		txtlib_printText(&core->overlay->textLib, value->stringValue->chars);
+		txtlib_printText(&core->overlay->textLib, "\"");
+		new_line(core);
+	}
+	else
+	{
+		txtlib_printText(&core->overlay->textLib, "  variable not found");
+		new_line(core);
+	}
+}
+
+void set_value(struct Core *core, enum ValueType type, union Value *value, enum TokenType newType, float newFloat, struct RCString *newString)
+{
+	// NOTE: value and newValue are alreay tested before arriving here
+	if (newType == TokenFloat && type == ValueTypeFloat)
+	{
+		value->floatValue = newFloat;
+	}
+	else if (newType == TokenString && type == ValueTypeString)
+	{
+		if (value->stringValue)
+			rcstring_release(value->stringValue);
+		value->stringValue = newString;
+	}
+	else
+	{
+		txtlib_printText(&core->overlay->textLib, "  type mismatch");
+		new_line(core);
+		return;
+	}
+}
+
+void print_command_line(struct Core *core)
+{
+	struct TextLib *lib = &core->overlay->textLib;
+	struct Overlay *overlay = core->overlay;
+
+	txtlib_setCells(lib, 0, lib->windowY + lib->cursorY, 27, lib->windowY + lib->cursorY, 0);
+	txtlib_writeText(lib, overlay->commandLine, lib->windowX, lib->windowY + lib->cursorY);
+}
+
+struct SimpleVariable *get_simple_var(struct Core *core, const char *looking_name)
+{
+	struct Tokenizer *tokenizer = &core->interpreter->tokenizer;
+	for (int i = 0; i < MAX_SYMBOLS && tokenizer->symbols[i].name[0] != 0; i++)
+		if (strcmp(looking_name, tokenizer->symbols[i].name) == 0)
+			return var_getSimpleVariable(core->interpreter, i, core->interpreter->subLevel);
+	return NULL;
+}
+
+struct ArrayVariable *get_array_var(struct Core *core, const char *looking_name)
+{
+	struct Tokenizer *tokenizer = &core->interpreter->tokenizer;
+	for (int i = 0; i < MAX_SYMBOLS && tokenizer->symbols[i].name[0] != 0; i++)
+		if (strcmp(looking_name, tokenizer->symbols[i].name) == 0)
+			return var_getArrayVariable(core->interpreter, i, core->interpreter->subLevel);
+	return NULL;
+}
+
+int get_address(struct Core *core, struct Token *t)
+{
+	if (t->type != TokenFloat)
+	{
+		txtlib_printText(&core->overlay->textLib, "  syntax error");
+		new_line(core);
+		return -1;
+	}
+	int address = (int)t->floatValue;
+	if (address < 0 || address >= 0x10000)
+	{
+		txtlib_printText(&core->overlay->textLib, "  out of bounds");
+		new_line(core);
+		return -1;
+	}
+	return address;
+}
+
+void process_command_line(struct Core *core)
+{
+	struct Tokenizer toks;
+	struct CoreError err;
+	memset(&toks, 0, sizeof(struct Tokenizer));
+
+	err = tok_tokenizeUppercaseProgram(&toks, core->overlay->commandLine);
+
+	size_t i = 0;
+	struct Token *t;
+	if (err.code == ErrorNone && toks.numTokens > 0)
+	{
+		t = &toks.tokens[i++];
+		if (t->type == TokenEol)
+		{
+			return;
+		}
+		else if (t->type == TokenIdentifier || t->type == TokenStringIdentifier)
+		{
+			t = &toks.tokens[i++];
+			struct SimpleVariable *simple = get_simple_var(core, toks.symbols[0].name);
+			struct ArrayVariable *array = get_array_var(core, toks.symbols[0].name);
+			if (!simple && !array)
+				print_value(core, ValueTypeNull, &simple->v);
+			// read simple variable
+			else if (simple && t->type == TokenEol)
+				print_value(core, simple->type, &simple->v);
+			// write simple variable
+			else if (simple && t->type == TokenEq)
+			{
+				t = &toks.tokens[i++];
+				set_value(core, simple->type, &simple->v, t->type, t->floatValue, t->stringValue);
+			}
+			else if (array && t->type == TokenEol)
+			{
+				int a = 123;
+
+				// TODO: what to do here?
+			}
+			else if (array && t->type == TokenBracketOpen)
+			{
+				t = &toks.tokens[i++];
+				int indices[MAX_ARRAY_DIMENSIONS], dimensions = 0;
+				while (t->type != TokenBracketClose && t->type != TokenEol && t->type != TokenEq && dimensions < MAX_ARRAY_DIMENSIONS)
+				{
+					if (t->type == TokenFloat)
+					{
+						if (t->floatValue < 0 || t->floatValue >= array->dimensionSizes[dimensions])
+						{
+							txtlib_printText(&core->overlay->textLib, "  out of bounds");
+							new_line(core);
+							return;
+						}
+						indices[dimensions++] = t->floatValue;
+						t = &toks.tokens[i++];
+					}
+					else
+					{
+						txtlib_printText(&core->overlay->textLib, "  syntax error");
+						new_line(core);
+						return;
+					}
+					if (t->type != TokenComma && t->type != TokenBracketClose)
+					{
+						txtlib_printText(&core->overlay->textLib, "  syntax error");
+						new_line(core);
+						return;
+					}
+					t = &toks.tokens[i++];
+				}
+				if (dimensions != array->numDimensions)
+				{
+					txtlib_printText(&core->overlay->textLib, "  wrong dimensions");
+					new_line(core);
+					return;
+				}
+				union Value *value = var_getArrayValue(core->interpreter, array, &indices[0]);
+				// read array item
+				if (t->type == TokenEol)
+					print_value(core, array->type, value);
+				// write array item
+				else if (t->type == TokenEq)
+				{
+					t = &toks.tokens[i++];
+					set_value(core, array->type, value, t->type, t->floatValue, t->stringValue);
+				}
+			}
+		}
+
+		// resume execution
+		else if (t->type == TokenPAUSE)
+		{
+			overlay_clear(core);
+			core->overlay->textLib.cursorX = 0;
+			core->overlay->textLib.cursorY = 0;
+			core->interpreter->state = StateEvaluate;
+
+			struct ControlsInfo info;
+			info.keyboardMode = KeyboardModeOff;
+			core->delegate->controlsDidChange(core->delegate->context, info);
+		}
+
+		// clear screen
+		else if (t->type == TokenCLS)
+		{
+			overlay_clear(core);
+			core->overlay->textLib.cursorX = 0;
+			core->overlay->textLib.cursorY = 0;
+		}
+
+		// resume execution until next WAIT
+		else if (t->type == TokenWAIT)
+		{
+			core->interpreter->pauseAtWait = true;
+			core->interpreter->state = StateEvaluate;
+		}
+
+		// list variables
+		else if (t->type == TokenDIM)
+		{
+			t = &toks.tokens[i++];
+			int pagination = 0;
+			if (t->type == TokenFloat && t->floatValue >= 1)
+				pagination = (int)t->floatValue;
+			struct Tokenizer *tokenizer = &core->interpreter->tokenizer;
+			struct IORegisters *ioRegisters = &core->machine->ioRegisters;
+			int canPrint = (core->overlay->textLib.windowHeight - 3);
+			int printed = 0;
+			// TODO: get shown.h and safe.top and keyboard.height
+			for (int i = 0; i < MAX_SYMBOLS && tokenizer->symbols[i].name[0] != 0; i++)
+			{
+				struct SimpleVariable *simple = var_getSimpleVariable(core->interpreter, i, core->interpreter->subLevel);
+				struct ArrayVariable *array = var_getArrayVariable(core->interpreter, i, core->interpreter->subLevel);
+				if (!simple && !array)
+					continue;
+				else if (pagination == 0 && printed >= canPrint)
+				{
+					txtlib_printText(&core->overlay->textLib, "  ...");
+					new_line(core);
+					break;
+				}
+				else if (pagination > 0 && printed < canPrint)
+					printed++;
+				else if (pagination > 0)
+				{
+					pagination--;
+					printed = 0;
+				}
+				if (simple && pagination == 0)
+				{
+					txtlib_printText(&core->overlay->textLib, "  ");
+					txtlib_printText(&core->overlay->textLib, tokenizer->symbols[i].name);
+					new_line(core);
+					printed++;
+				}
+				else if (array && pagination == 0)
+				{
+					txtlib_printText(&core->overlay->textLib, "  ");
+					txtlib_printText(&core->overlay->textLib, tokenizer->symbols[i].name);
+					for (int j = 0; j < array->numDimensions; j++)
+					{
+						char buffer[20];
+						snprintf(buffer, 20, ",%d", array->dimensionSizes[j] - 1);
+						if (j == 0)
+							buffer[0] = '(';
+						txtlib_printText(&core->overlay->textLib, buffer);
+					}
+					txtlib_printText(&core->overlay->textLib, ")");
+					new_line(core);
+					printed++;
+				}
+			}
+		}
+
+		else if (t->type == TokenFloat)
+		{
+			int address = (int)t->floatValue;
+			if (address < 0 || address >= 0x10000)
+			{
+				txtlib_printText(&core->overlay->textLib, "  out of bounds");
+				new_line(core);
+				return;
+			}
+			t = &toks.tokens[i++];
+			// read memory
+			if (t->type == TokenEol)
+			{
+				int peek = machine_peek(core, address);
+				if (peek == -1)
+				{
+					txtlib_printText(&core->overlay->textLib, "  illegal memory access");
+					new_line(core);
+					return;
+				}
+				struct TypedValue value;
+				value.type = ValueTypeFloat;
+				value.v.floatValue = peek;
+				print_value(core, ValueTypeFloat, &value.v);
+			}
+			// write memory
+			else if (t->type == TokenEq)
+			{
+				t = &toks.tokens[i++];
+				if (t->type != TokenFloat)
+				{
+					txtlib_printText(&core->overlay->textLib, "  syntax error");
+					new_line(core);
+					return;
+				}
+				int poke = machine_poke(core, address, (int)t->floatValue);
+				if (!poke)
+				{
+					txtlib_printText(&core->overlay->textLib, "  illegal memory access");
+					new_line(core);
+					return;
+				}
+			}
+		}
+
+		else
+		{
+			txtlib_printText(&core->overlay->textLib, "  unsupported keyword");
+			new_line(core);
+			return;
+		}
+	}
+}
+
+void overlay_debugger(struct Core *core)
+{
+	struct TextLib *lib = &core->overlay->textLib;
+	struct Overlay *overlay = core->overlay;
+
+	struct ControlsInfo info;
+	info.keyboardMode = KeyboardModeOn;
+	core->delegate->controlsDidChange(core->delegate->context, info);
+
+	char key = core->machine->ioRegisters.key;
+	if (key && lib->cursorX < 27)
+	{
+		core->machine->ioRegisters.key = 0;
+
+		if (key == CoreInputKeyBackspace)
+		{
+			if (lib->cursorX > 0 && strlen(overlay->commandLine) > 0)
+			{
+				// move chars after the cursor one position to the left
+				memmove(overlay->commandLine + lib->cursorX - 1, overlay->commandLine + lib->cursorX, strlen(overlay->commandLine) - lib->cursorX + 1);
+				lib->cursorX--;
+				print_command_line(core);
+			}
+		}
+		else if (key == CoreInputKeyDelete)
+		{
+			if (strlen(overlay->commandLine) - lib->cursorX > 0)
+			{
+				// move chars after the cursor one position to the left
+				memmove(overlay->commandLine + lib->cursorX, overlay->commandLine + lib->cursorX + 1, strlen(overlay->commandLine) - lib->cursorX);
+				print_command_line(core);
+			}
+		}
+		else if (key == CoreInputKeyLeft)
+		{
+			if (lib->cursorX > 0)
+			{
+				lib->cursorX--;
+				print_command_line(core);
+			}
+		}
+		else if (key == CoreInputKeyRight)
+		{
+			if (lib->cursorX < 26 && lib->cursorX < strlen(overlay->commandLine))
+			{
+				lib->cursorX++;
+				print_command_line(core);
+			}
+		}
+		else if (key == CoreInputKeyReturn)
+		{
+			print_command_line(core);
+			new_line(core);
+			strcpy(overlay->previousCommandLine[overlay->previouscommandLineWriteIndex++], overlay->commandLine);
+			if (overlay->previouscommandLineWriteIndex >= 9)
+				overlay->previouscommandLineWriteIndex = 0;
+			overlay->previouscommandLineReadIndex = overlay->previouscommandLineWriteIndex;
+			process_command_line(core);
+			memset(core->overlay->commandLine, 0, 27);
+		}
+		else if (key == CoreInputKeyUp)
+		{
+			if (strlen(overlay->previousCommandLine[(overlay->previouscommandLineReadIndex + 9 - 1) % 9]) > 0)
+			{
+				overlay->previouscommandLineReadIndex = (overlay->previouscommandLineReadIndex + 9 - 1) % 9;
+				strcpy(overlay->commandLine, overlay->previousCommandLine[overlay->previouscommandLineReadIndex]);
+				lib->cursorX = strlen(overlay->commandLine);
+				print_command_line(core);
+			}
+		}
+		else if (key == CoreInputKeyDown)
+		{
+			if (strlen(overlay->previousCommandLine[(overlay->previouscommandLineReadIndex + 1) % 9]) > 0)
+			{
+				overlay->previouscommandLineReadIndex = (overlay->previouscommandLineReadIndex + 1) % 9;
+				strcpy(overlay->commandLine, overlay->previousCommandLine[overlay->previouscommandLineReadIndex]);
+				lib->cursorX = strlen(overlay->commandLine);
+				print_command_line(core);
+			}
+		}
+		else
+		{
+			// insert char into the command line buffer
+			if (lib->cursorX < 26)
+			{
+				memcpy(overlay->commandLine + lib->cursorX + 1, overlay->commandLine + lib->cursorX, strlen(overlay->commandLine) - lib->cursorX);
+				overlay->commandLine[lib->cursorX++] = key;
+				print_command_line(core);
+			}
+		}
+	}
+}
 /*
  * PCG Random Number Generation for C.
  *

@@ -5,7 +5,7 @@
 	<meta charset="utf-8">
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-	<title>LowResRMX</title>
+	<title><?=$title?> - A LowResRMX program</title>
 	<style>
 		:root {
 			--screen: #999;
@@ -113,7 +113,7 @@
 	<script type='text/javascript'>
 		var Module = {
 			canvas: document.getElementById('canvas'),
-			arguments: [window.location.href.replace(/\.(nx|rmx)$/, '.prg')],
+			arguments: [window.location.href.replace(/\.(player)$/,'.rmx')],
 			print: console.log.bind(console),
 			printErr: console.warn.bind(console),
 		};

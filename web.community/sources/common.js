@@ -1,6 +1,8 @@
 const HEADER_TOKEN='X-Application-Token';
 const HEADER_FILE_TYPE='X-Application-Type';
 const HEADER_SESSION='X-Application-Session';
+const HEADER_SCAN_CURSOR='X-Application-Cursor';
+
 
 const doc=document;
 const log=console.log.bind(console);
@@ -44,11 +46,20 @@ const mouseLeave=(element,callback)=>{element.addEventListener('mouseleave',call
 /** @type {function(!HTMLElement,function(!Event):void):void} */
 const mouseOut=(element,callback)=>{element.addEventListener('mouseout',callback)};
 
+/** @type {function(!HTMLElement,function(!Event):void):void} */
+const input=(element,callback)=>{element.addEventListener('input',callback)};
+
 /** @type {function(!HTMLElement):void} */
 const hide=(element)=>element.hidden=true;
 
 /** @type {function(!HTMLElement):void} */
 const show=(element)=>element.hidden=false;
+
+/** @type {function(!HTMLElement):void} */
+const disable=(element)=>element.setAttribute('disabled','');
+
+/** @type {function(!HTMLElement):void} */
+const enable=(element)=>element.removeAttribute('disable');
 
 /** @type {function(!HTMLElement):void} */
 const showAndHideSiblings=(element)=>{
@@ -106,6 +117,11 @@ const dialogOff=(dialog,done)=>{
 	});
 }
 
+/** @type {function(!HTMLElement):void} */
+const autoHeight=(element)=>{
+	element.style.height='';
+	element.style.height=element.scrollHeight+6+'px';
+}
 
 /** @type {function(number,function):void} */
 const delay=(ms,func)=>setTimeout(func,ms);

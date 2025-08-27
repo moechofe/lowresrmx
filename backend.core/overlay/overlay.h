@@ -37,7 +37,7 @@ struct Overlay
 	int timer;
 	int messageTimer;
 	char commandLine[27];
-	char previousCommandLine[27][9];
+	char previousCommandLine[9][27];
 	int previouscommandLineWriteIndex, previouscommandLineReadIndex;
 };
 

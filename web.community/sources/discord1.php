@@ -2,8 +2,9 @@
 
 require_once __DIR__.'/common.php';
 
-if($url['path']==='/discord')
+if(preg_match('/^\/discord$/',$urlPath)&&$isGet)
 {
+	error_log(__FILE__);
 	// Sauce: https://discord.com/developers/docs/topics/oauth2
 
 	$sequence=redis()->incr('seq:discord');
@@ -22,4 +23,3 @@ if($url['path']==='/discord')
 	header("Location: $auth_request");
 	exit;
 }
-

@@ -1,8 +1,9 @@
 <?php // Used to download a program or a thumbnail.
 
 require_once __DIR__.'/common.php';
+require_once __DIR__.'/token.php';
 
-if(strlen($info['filename'])>16&&strlen($info['filename'])<512&&in_array($info['extension'],[PRG_EXT,IMG_EXT]))
+if(preg_match("/^\/($MATCH_ENTRY_TOKEN)\.(".PRG_EXT."|".IMG_EXT.")$/",urldecode($urlPath),$matches)&&$isGet)
 {
 	header("Content-Type: ".CONTENT_TYPE_MAP[$info['extension']]);
 
@@ -36,4 +37,3 @@ if(strlen($info['filename'])>16&&strlen($info['filename'])<512&&in_array($info['
 		exit;
 	}
 }
-

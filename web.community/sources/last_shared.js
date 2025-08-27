@@ -141,11 +141,11 @@ const setupPublishDialog=()=>{
 
 	click(find(dialog,'button.cancel'),close);
 
-	click(find(dialog,'button.publish'),_=>{
+	click(find(dialog,'button.publish'),event=>{
+		disable(event.target);
 		const where=find(dialog,'select#where').value;
 		const title=find(dialog,'input#title').value;
 		const text=find(dialog,'textarea#text').value;
-		log(where,title,text);
 		if(!where||!title||!text) return;
 		if(!pid) return;
 		post('/publish',JSON.stringify({
@@ -153,11 +153,9 @@ const setupPublishDialog=()=>{
 			w:where,
 			i:title,
 			x:text,
-		})).then((res)=>res.json()).then((first)=>{
-			log(first);
+		})).then((res)=>res.json()).then((fid)=>{
+			if(cb)cb(fid);
 		});
-		// TODO: post the data and gather entry id
-		// TODO: relocate to the post
 	});
 
 	// Cancel button from the dialog

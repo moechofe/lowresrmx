@@ -5,13 +5,15 @@ require_once __DIR__.'/common.php';
 
 // TODO: check limit
 
-if($url['path']==='/upload'&&$_SERVER['REQUEST_METHOD']==='GET')
+if(preg_match('/^\/upload$/',$urlPath)&&$isGet)
 {
+	error_log(__FILE__);
+
 	// Check for the field from the iOS app
-	$program=base64_decode(str_replace('_','/',str_replace('-','+',@trim(@$_GET['p']))));
-	if(empty($program)||strlen($program)>MAX_UPLOAD_PROGRAM) badRequest("Fail to read program");
-	$thumbnail=base64_decode(str_replace('_','/',str_replace('-','+',@trim(@$_GET['t']))));
-	if(empty($thumbnail)||strlen($thumbnail)>MAX_UPLOAD_THUMBNAIL) badRequest("Fail to read thumbnail");
+	$prg=base64_decode(str_replace('_','/',str_replace('-','+',@trim(@$_GET['p']))));
+	if(empty($prg)||strlen($prg)>MAX_UPLOAD_PROGRAM) badRequest("Fail to read program");
+	$img=base64_decode(str_replace('_','/',str_replace('-','+',@trim(@$_GET['t']))));
+	if(empty($img)||strlen($img)>MAX_UPLOAD_THUMBNAIL) badRequest("Fail to read thumbnail");
 	$name=@trim(@$_GET['n']);
 	// TODO: check size of the name
 	if(empty($name)) badRequest("Fail to read name");
@@ -21,8 +23,8 @@ if($url['path']==='/upload'&&$_SERVER['REQUEST_METHOD']==='GET')
 	if(empty($uptoken)) badRequest("Fail to generate token header");
 
 	// store the uploaded content
-	redis()->hsetnx("t:$uptoken","prg",$program); // program is sent already zstd compressed
-	redis()->hsetnx("t:$uptoken","img",$thumbnail);
+	redis()->hsetnx("t:$uptoken","prg",$prg); // program is sent already zstd compressed
+	redis()->hsetnx("t:$uptoken","img",$img);
 
 	// store the name
 	redis()->hsetnx("t:$uptoken","name",$name);
@@ -34,10 +36,10 @@ if($url['path']==='/upload'&&$_SERVER['REQUEST_METHOD']==='GET')
 	exit;
 }
 
-else if($url['path']==='/upload'&&$_SERVER['REQUEST_METHOD']==='POST')
+else if(preg_match('/^\/upload$/',$urlPath)&&$isPost)
 {
-	header("Content-Type: application/json",true);
 	error_log(__FILE__);
+	header("Content-Type: application/json",true);
 
 	$file=file_get_contents('php://input');
 	if(empty($file)) badRequest("Fail to read file");

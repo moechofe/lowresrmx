@@ -247,6 +247,12 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
       core_willSuspendProgram(&coreWrapper.core)
     }
   }
+  
+	override func viewWillTransition(to size: CGSize, with coordinator: any UIViewControllerTransitionCoordinator) {
+		if let coreWrapper = coreWrapper {
+			core_orientationChanged(&coreWrapper.core)
+		}
+	}
 
   override var prefersStatusBarHidden: Bool {
     //        if #available(iOS 11.0, *) {
@@ -585,7 +591,7 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
       let keyboardRectangle = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect
     {
       if let coreWrapper = coreWrapper {
-        core_setKeyboardEnabled(&coreWrapper.core, true)
+        //core_setKeyboardEnabled(&coreWrapper.core, true)
         core_setKeyboardHeight(&coreWrapper.core, Int32(ceil(keyboardRectangle.height / screenScale)))
       }
     }

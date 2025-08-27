@@ -51,6 +51,7 @@ FFI_PLUGIN_EXPORT void runnerStart(Runner*,int scondsSincePowerOn,const char *or
 
 FFI_PLUGIN_EXPORT struct CoreError runnerUpdate(Runner*,Input*);
 
+FFI_PLUGIN_EXPORT bool runnerShouldRender(Runner*);
 FFI_PLUGIN_EXPORT void runnerRender(Runner*,void*);
 
 FFI_PLUGIN_EXPORT void runnerTrace(Runner*,bool);

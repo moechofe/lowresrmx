@@ -85,7 +85,7 @@ enum IsolateMessageType {
   traceOn,
   traceOff,
   thumbnail,
-	renderFrame,
+  renderFrame,
 }
 
 // FIXME: Message should have Message in their name. Common!
@@ -142,20 +142,20 @@ class KeyboardKeyDownMsg {
 }
 
 class OrientationChangeMsg {
-	final double width;
-	final double height;
-	final double safeTop;
-	final double safeLeft;
-	final double safeBottom;
-	final double safeRight;
-	OrientationChangeMsg(this.width, this.height, this.safeTop, this.safeLeft,
-			this.safeBottom, this.safeRight);
+  final double width;
+  final double height;
+  final double safeTop;
+  final double safeLeft;
+  final double safeBottom;
+  final double safeRight;
+  OrientationChangeMsg(this.width, this.height, this.safeTop, this.safeLeft,
+      this.safeBottom, this.safeRight);
 }
 
 class MeasurementMsg {
-	final double updateTime;
-	final double renderTime;
-	MeasurementMsg(this.updateTime, this.renderTime);
+  final double updateTime;
+  final double renderTime;
+  MeasurementMsg(this.updateTime, this.renderTime);
 }
 
 /// Bridge between the core and the app
@@ -263,8 +263,10 @@ class Runtime extends ChangeNotifier {
   }
 
   void render() {
-    runnerRender(runner, pixels);
-    bytesList = pixels.asTypedList(bufferSize);
+		// if(runnerShouldRender(runner)) {
+    	runnerRender(runner, pixels);
+    	bytesList = pixels.asTypedList(bufferSize);
+		// }
   }
 
   void touchOn(Offset pos) {
@@ -299,9 +301,10 @@ void isolateEntryPoint(SendPort sendPort) {
   final Runtime runtime = Runtime();
   // late final Ticker ticker;
   // Duration totalDuration = Duration.zero;
-  bool running = false; //  TODO: I may not need this, if Ticker is working correctly.
+  bool running =
+      false; //  TODO: I may not need this, if Ticker is working correctly.
 
-	double updateTime,renderTime;
+  double updateTime, renderTime;
 
   runtime.initState();
 
@@ -323,17 +326,20 @@ void isolateEntryPoint(SendPort sendPort) {
       // Also send the list of outline entries
       final List<OutlineEntry> outline = runtime.getOutline();
       sendPort.send(outline);
-		} else if (message is IsolateMessageType && message == IsolateMessageType.renderFrame) {
-			// Render the frame
-			var stopwatch = Stopwatch()..start();
-			Error err = runtime.update();
-			updateTime = stopwatch.elapsed.inMicroseconds / Duration.microsecondsPerSecond;
-			stopwatch.reset();
-			runtime.render();
-			renderTime = stopwatch.elapsed.inMicroseconds / Duration.microsecondsPerSecond;
-			sendPort.send(MeasurementMsg(updateTime, renderTime));
-			sendPort.send(runtime.bytesList!);
-			if (!err.ok) {
+    } else if (message is IsolateMessageType &&
+        message == IsolateMessageType.renderFrame) {
+      // Render the frame
+      var stopwatch = Stopwatch()..start();
+      Error err = runtime.update();
+      updateTime =
+          stopwatch.elapsed.inMicroseconds / Duration.microsecondsPerSecond;
+      stopwatch.reset();
+      runtime.render();
+      renderTime =
+          stopwatch.elapsed.inMicroseconds / Duration.microsecondsPerSecond;
+      sendPort.send(MeasurementMsg(updateTime, renderTime));
+      sendPort.send(runtime.bytesList!);
+      if (!err.ok) {
         sendPort.send(RunningErrorMsg(err));
       }
       if (runtime.dataDiskToSave != null) {
@@ -348,9 +354,10 @@ void isolateEntryPoint(SendPort sendPort) {
         sendPort.send(InputModeMsg(runtime.inputMode));
         currInputMode = runtime.inputMode;
       }
-		} else if (message is OrientationChangeMsg) {
-			// Receive the screen size and the safe area
-			runtime.resize(message.width, message.height, message.safeTop, message.safeLeft, message.safeBottom, message.safeRight);
+    } else if (message is OrientationChangeMsg) {
+      // Receive the screen size and the safe area
+      runtime.resize(message.width, message.height, message.safeTop,
+          message.safeLeft, message.safeBottom, message.safeRight);
     } else if (message is KeyboardKeyDownMsg) {
       runtime.keyDown(message.ascii);
     } else if (message is Offset) {
@@ -402,10 +409,11 @@ class ComPort {
   late final Isolate isolate;
   late final ReceivePort receivePort;
   late final SendPort sendPort;
-	late final Ticker ticker;
-	Duration prevDuration = Duration.zero;
-	Stopwatch runtimeStopwatch = Stopwatch();
-	int prevRuntimeElapsed = 0;
+	/// Regulary render the frame.
+  late final Ticker ticker;
+  Duration prevDuration = Duration.zero;
+  Stopwatch runtimeStopwatch = Stopwatch();
+  int prevRuntimeElapsed = 0;
   final Completer<SendPort> ready = Completer();
   Completer<Error>? compileCompleter;
   FrameCallback? onImage;
@@ -416,11 +424,11 @@ class ComPort {
   InputModeCallback? onInputMode;
   OutlineCallback? onOutline;
 
-	StreamController<double> deltaTime = StreamController<double>();
-	StreamController<double> updateTime = StreamController<double>();
-	StreamController<double> renderTime = StreamController<double>();
-	StreamController<double> decodeTime = StreamController<double>();
-	StreamController<double> runtimeDeltaTime = StreamController<double>();
+  StreamController<double> deltaTime = StreamController<double>();
+  StreamController<double> updateTime = StreamController<double>();
+  StreamController<double> renderTime = StreamController<double>();
+  StreamController<double> decodeTime = StreamController<double>();
+  StreamController<double> runtimeDeltaTime = StreamController<double>();
 
   /// Setup the communication with the isolate and listen for messages
   Future<SendPort> init() async {
@@ -440,14 +448,16 @@ class ComPort {
           onRunningError!(message.error);
         }
       } else if (message is Uint8List && onImage != null) {
-				final int delta = runtimeStopwatch.elapsedMicroseconds - prevRuntimeElapsed;
-				runtimeDeltaTime.add(delta / Duration.microsecondsPerSecond);
-				prevRuntimeElapsed = runtimeStopwatch.elapsedMicroseconds;
-				var stopwatch = Stopwatch()..start();
+        final int delta =
+            runtimeStopwatch.elapsedMicroseconds - prevRuntimeElapsed;
+        runtimeDeltaTime.add(delta / Duration.microsecondsPerSecond);
+        prevRuntimeElapsed = runtimeStopwatch.elapsedMicroseconds;
+        var stopwatch = Stopwatch()..start();
         // Decode the image and call the callback
         ui.decodeImageFromPixels(message, Runtime.screenWidth,
             Runtime.screenHeight, ui.PixelFormat.rgba8888, onImage!);
-				decodeTime.add(stopwatch.elapsed.inMicroseconds / Duration.microsecondsPerSecond);
+        decodeTime.add(
+            stopwatch.elapsed.inMicroseconds / Duration.microsecondsPerSecond);
       } else if (message is ThumbnailMsg) {
         // Receive the thumbnail
         img.Image image = img.copyCrop(
@@ -481,19 +491,19 @@ class ComPort {
           onOutline!(message);
         }
       } else if (message is MeasurementMsg) {
-				updateTime.add(message.updateTime);
-				renderTime.add(message.renderTime);
-			}
+        updateTime.add(message.updateTime);
+        renderTime.add(message.renderTime);
+      }
     });
 
-		ticker = Ticker((Duration currDuration) {
-			final delta = currDuration - prevDuration;
-			deltaTime.add(delta.inMicroseconds / Duration.microsecondsPerSecond);
-			prevDuration = currDuration;
+    ticker = Ticker((Duration currDuration) {
+      final delta = currDuration - prevDuration;
+      deltaTime.add(delta.inMicroseconds / Duration.microsecondsPerSecond);
+      prevDuration = currDuration;
 
-			// NOTE: If started before the SendPort is ready, it will crash.
-			sendPort.send(IsolateMessageType.renderFrame);
-		});
+      // NOTE: If started before the SendPort is ready, it will crash.
+      sendPort.send(IsolateMessageType.renderFrame);
+    });
 
     return ready.future;
   }
@@ -514,25 +524,27 @@ class ComPort {
 
   /// Start updating the runtime at 60 fps
   void start() {
-		ticker.start();
-		runtimeStopwatch.start();
-		// sendPort.send(true);
-	}
+		log("Ticker started");
+    ticker.start();
+    runtimeStopwatch.start();
+    // sendPort.send(true);
+  }
 
   /// Stop updating the runtime
   void stop() {
-		ticker.stop();
-		prevDuration = Duration.zero;
-		runtimeStopwatch.stop();
-		runtimeStopwatch.reset();
-		prevRuntimeElapsed=0;
-		// sendPort.send(false);
-	}
+		log("Ticker stopped");
+    ticker.stop();
+    prevDuration = Duration.zero;
+    runtimeStopwatch.stop();
+    runtimeStopwatch.reset();
+    prevRuntimeElapsed = 0;
+  }
 
   /// Update the device screen size and the safe area
   void resize(double inWidth, double inHeight, double safeTop, double safeLeft,
       double safeBottom, double safeRight) {
-		sendPort.send(OrientationChangeMsg(inWidth, inHeight, safeTop, safeLeft, safeBottom, safeRight));
+    sendPort.send(OrientationChangeMsg(
+        inWidth, inHeight, safeTop, safeLeft, safeBottom, safeRight));
   }
 
   /// Send the touch event to the runtime

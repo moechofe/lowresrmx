@@ -12,8 +12,7 @@
 
 #define PARTICLE_MEM_X 0
 #define PARTICLE_MEM_Y 2
-#define PARTICLE_MEM_APPEARANCE 4
-#define PARTICLE_MEM_FRAME 5
+#define PARTICLE_MEM_LIFETIME 4
 #define PARTICLE_MEM_SIZE 6
 
 #define EMITTER_MEM_X 0
@@ -65,7 +64,7 @@ struct ParticlesLib
 };
 
 void prtclib_setupPool(struct ParticlesLib *lib,int firstSprite,int poolCount,int particleAddr);
-void prtclib_setApperanceLabel(struct ParticlesLib *lib,int apperanceId,struct Token *label);
+// void prtclib_setApperanceLabel(struct ParticlesLib *lib,int apperanceId,struct Token *label);
 
 void prtclib_setupEmitter(struct ParticlesLib *lib,int poolCount,int particleAddr);
 void prtclib_setSpawnerLabel(struct ParticlesLib *lib,int emitterId,struct Token *label);

@@ -1,7 +1,34 @@
 <?php require_once __DIR__.'/header.css'; ?>
 
+article h1 + div
+{
+	margin-top: -1em;
+}
+
+article p
+{
+	margin-top: 1em;
+	font-size: 1.2em;
+}
+
+article .author, article .date
+{
+	display: inline;
+}
+
+article .author::before
+{
+	content: "by ";
+}
+
+article .date::before
+{
+	content: " the ";
+}
+
 article .picture
-{ max-height: 30em;
+{
+	max-height: 30em;
 	aspect-ratio: 1;
 	background-size: cover;
 }
@@ -11,9 +38,19 @@ article .picture::after
 	display: block;
 	width: 100%;
 	height: 100%;
-	background-color: rgba(255, 255, 255, 0.90); }
+	background-color: rgba(255, 255, 255, 0.90);
+}
+
+article fieldset .limit
+{
+	display: none;
+	float: right;
+}
 
 article fieldset textarea
-{ min-height: 5em;
-	max-height: 50em; }
-
+{
+	min-height: 5em;
+	height: 10em;
+	max-height: 50em;
+	font-size: 1.2em;
+}

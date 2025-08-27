@@ -421,15 +421,16 @@ Each sprite will consume 6 bytes of memory. For each sprite:
 | ---- | ------- | --------------- |
 | +0   | 2 Bytes | Speed on x axis |
 | +2   | 2 Bytes | Speed on y axis |
-| +4   | 1 Byte  | Appearence      |
-| +5   | 1 Byte  | Current frame   |
+> | +4   | 1 Byte  | Appearence      |
+> | +5   | 1 Byte  | Current frame   |
+| +4   | 2 Bytes | Lifetime        |
 
 e.g.:
 
 	PARTICLE 1,20 AT $9000
 	'Will use sprite 1 to 20 included.
 	'Store internal data from $9000 to $9078 excluded.
-
+<!--
 ---
 
 `PARTICLE appearance DATA label`
@@ -447,7 +448,7 @@ e.g.:
 	MY_APPEARANCE:
 	DATA 1,2,3,4,0,-1
 	'Will show the character 1 to 4, each per frame.
-	'And loop with the character 0.
+	'And loop with the character 0. -->
 
 ---
 
@@ -611,6 +612,15 @@ Sprites are groups of characters ranging from 1x1 to 4x4. The difference with bg
 A sprite can be freely placed anywhere on the screen with 1/16 sub-pixel precision. This means you can add 0.5 to its position even if there will be no change visually.
 
 <!--FIXME: spell checked END -->
+
+### TODO: layer and prio
+
+### Rendering
+
+The fantasy screen is rendered line by line, this is called a raster.
+
+During raster, the pixels from background layers and sprites are drawn according to priority flags and the palette is applied. All impacted parameters are not fixed, and a sub-routine can be used between each line to alter some parameters and create interessing visual effect, see [`ON RASTER CALL s`](#on-raster-call-s) and [`=RASTER`](#raster
+).
 
 ### TODO: sound
 
@@ -1602,7 +1612,7 @@ LowResRMX provide a bunch of built-in [commands](#commands) and [functions](#fun
 
 ### Sprite API
 
-> [How sprits works](#sprites).
+> [How sprites works](#sprites).
 
 Sprite are limited in numbers and should be used to show moving objects above background layers. It not an oblication and cool things can be made by infringe this rules.
 
@@ -1624,6 +1634,8 @@ An example that show a smiley sprite moving in circle:
     00000000000000000000000000000000
     007EFFFFEDFFFF7E0000003636000000
 
+Omitted parameters will keep their previous values.
+
 #### `SPRITE n [PAL pal] [FLIP h,v] [PRIO pri] [SIZE s]`
 
 Sets one or more attributes for the sprite `n`:
@@ -1644,6 +1656,8 @@ Example of a sprite that get flipped according to it's position on the screen:
     #2:MAIN CHARACTERS
     00000000000000000000000000000000
     40A0D0E8F4D0E818C06030180C305808
+
+Omitted parameters will keep their previous values.
 
 TODO: link to sprite references
 
@@ -1833,7 +1847,7 @@ Clear all background layers with character zero `0`, resets the current window t
 
 Only clear the background layer numbered `layer` with character zero `0`. Do not alter the scrolling value.
 
-#### `SCROLL layer,x,y`
+#### `SCROLL layer,[x],[y]`
 
 Set the scroll offset of the `layer` in pixels coordinates.
 
@@ -1841,6 +1855,8 @@ Set the scroll offset of the `layer` in pixels coordinates.
     bg 1
     text 10,10,"hello!"
     scroll 0,0,-4
+
+Omitted parameters will keep their previous values.
 
 #### `=SCROLL.X(layer)`<br>`=SCROLL.Y(layer)`
 
@@ -1864,7 +1880,6 @@ Example of getting the scroll offset of the background layer:
     FFFFFFFFFFFFFFFF0000000000000000
     0000000000000000FFFFFFFFFFFFFFFF
     FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-
 
 #### `BG layer`
 
@@ -2028,24 +2043,6 @@ Changes one or more [attributes](TODO: link to cells attributes reference) for a
 
 Similar to `TINT y,y [PAL pal] [FLIP h,v] [PRIO p]` but with a rectangle of cells instead of just one.
 
-#### `BG SOURCE a[,w,h]`
-
-Set the address `a` in the cartridge to use as source for `BG COPY` operations.
-
-When `w` and `h` are specified, they are used as indiquating the number of cells in width and height of the source.
-
-If they are not specified, the [official background format data](#background-source-data) are used to store the width and the height.
-
-> If not specified the default address is taken by internally executing `=ROM(3)`
-
-TODO: example
-
-#### `BG COPY x1,y1,w,h TO x2,y2`
-
-Copy a rectangle of cell's attributes and character numbers from background source specified previously using `BG SOURCE a[,w,h]` at `x2`,`y2` coordinates of the current background layer.
-
-The rectangle is defined using the top-left corner `x1`,`y2` plus the width `w` and height `h`.
-
 #### `BG SCROLL x1,y1 to x2,y2 step x3,y3`
 
 Move a rectangle of cell's attributes and character numbers of the current layer by `x3`,`y3` in cell coordinates.
@@ -2053,6 +2050,50 @@ Move a rectangle of cell's attributes and character numbers of the current layer
 The rectangle is defined using the top-left corner `x1`,`y2` and the bottom-right corner `x2`,`y2`.
 
 > This feature is internally used to scroll text when it reach the bottom of the window. TODO: link to window.
+
+#### `BG SOURCE address[,width,heigh]`
+
+Set the `address` on memory to use as source for `BG COPY` operations.
+
+When `width` and `height` are specified, they are used as indiquating the number of cells in the source.
+
+If they are not specified, the [official background data format](#background-source-data) are used to store the width and the height.
+
+> If not specified the default address is taken by internally executing `=ROM(3)`
+
+This can be used to generate background by using random numbers for instance:
+
+    a=$9000
+    for r=0 to 63
+    for c=0 to 63
+    poke a,1
+    inc a
+    poke a,rnd(1)*8
+    inc a
+    next c
+    next r
+
+    bg source $9000,64,64
+    bg copy 0,0,64,64 to 0,0
+
+    do
+    x=0
+    add x,sin(timer/600)*cos(timer/6000)*200
+    add x,sin(timer/500)*50
+
+    y=0
+    add y,cos(timer/400)*sin(timer/4000)*200
+    add y,cos(timer/700)*50
+
+    scroll 0,x,y
+    wait vbl
+    loop
+
+#### `BG COPY x1,y1,w,h TO x2,y2`
+
+Copy a rectangle of cell's attributes and character numbers from background source specified previously using `BG SOURCE a[,w,h]` at `x2`,`y2` coordinates of the current background layer.
+
+The rectangle is defined using the top-left corner `x1`,`y2` plus the width `w` and height `h`.
 
 #### `MCELL x,y,c`
 
@@ -2236,6 +2277,12 @@ TODO: link to reference
 
 Returns the number of frames since LowResRMX was launched. The value wraps to 0 when 5184000 is reached, which is about 24 hours.
 
+#### `WAIT TAP`
+
+Will stop execution of the program until a touch is made.
+
+> While waiting for a tap, interrupt sub-routines for `VBL/RASTER/PARTICLE/EMITTER` are still executed.
+
 ### Display API
 
 #### `PALETTE palette,[c0],[c1],[c2],[c3]`
@@ -2277,12 +2324,211 @@ Example that show the effect:
         if touch then wait vbl
     loop
 
+> `WAIT VBL` is equal `WAIT 1`
 
+#### `ON VBL CALL s`
 
+Before the execution of the code for the next frame, will execute the sub-routine `s`.
 
+> The code MUST be short, read more about [CPU cycles](#cycles).
 
-TODO: VBL WAIT ON VBL
+This can be used to execute code at every frame, independently of which part of the code is generating frames. Here is an example that demonstrate:
 
+    sub v
+        x=sprite.x(0)
+        add x,1,-8 to shown.w
+        y=sprite.y(0)
+        add y,1,-8 to shown.h
+        sprite 0,x,y,1
+    end sub
+    on vbl call v
+
+    one:
+    palette 0,43,,,
+    wait tap
+    goto two
+
+    two:
+    palette 0,59,,,
+    wait tap
+    goto one
+
+    #2:main characters
+    00000000000000000000000000000000
+    0000000000000000FFFFFFFFFFFFFFFF
+
+#### `ON VBL OFF`
+
+Will stop the execution of a sub-routine during VBL interrupt.
+
+#### `ON RASTER CALL s`
+
+Before the rendering of the next line of the screen, will execute a sub-routine `s`. This is usefull in conjonction with [`=RASTER`](#raster).
+
+> The code MUST be shorterest, read more about [CPU cycles](#cycles).
+
+This can be used to chance colors or scroll background layers, example:
+
+    text 3,8,"tap to toggle"
+    cell 10,10,1
+
+    sub r
+    if raster>=80 then
+        scroll 0,0,80-raster
+        palette 0,,,raster mod 64,
+    else if raster=0 then
+        scroll 0,0,0
+        palette 0,,,0,
+    end if
+    end sub
+
+    do
+        wait tap
+        on raster call r
+        wait tap
+        on raster off
+        scroll 0,0,0
+        palette 0,,,0,
+    loop
+
+#### `=RASTER`
+
+Return the fantasy screen line number currently rendered.
+
+#### `ON RASTER OFF`
+
+Will stop the execution of a sub-routine during RASTER interrupt.
+
+### Sound API
+
+TODO: Link to how sound work
+
+#### `PLAY voice,pitch[,length] [SOUND sound]`
+
+Play a note at the `pitch` on the `voice` with an optional `length` and `sound`.
+
+> Check [pitch references](<manual#Pitch values>) to learn which pitch conrespond to which notes.
+
+`length` use 1/60 of seconds as units with the maximum being 255, so 4.25 seconds. A length of 0 means that the sound will not stop until another sound is played on the same `voice`.
+
+`sound` is a number representing a group of settings that define the sound's characteristics. It requires the usage of the [`SOUND SOURCE`](<manual#`SOUND SOURCE [address]`>) command.
+
+#### `STOP`<br>`STOP [voice]`
+
+Stops the sound and track on the `voice` or all the voices if omitted.
+
+Release duration of envelope are not stop but fade out instead.
+
+#### `VOLUME voice,[volume],[mix]`
+
+Sets the `volume` and `mix` of `voice`.
+
+| parameter | value and range                                |
+|----------:|------------------------------------------------|
+|  `volume` | `0` .. `15`                                    |
+|     `mix` | `0` Muted<br>`1` Left<br>`2` Right<br>`3` Both |
+
+All parameters can be omitted to keep their current settings.
+
+#### `SOUND voice,[wave],[width],[length]`
+
+Sets the sound's characteristics for the `voice`.
+
+`wave` control the waveform. With a waveform of Pulse, the `width` control the pulse width. A value of 8 means a square wave.
+
+`length` control the length of the sound. A length of 0 means that the sound will not stop until another sound is played on the same `voice`. This value can be overriden by the parameter `length` of the [`PLAY` command](#play-voice-pitch-length-sound-sound).
+
+| parameter | value and range                                        |
+|----------:|--------------------------------------------------------|
+|    `wave` | `0` Sawtooth<br>`1` Triangle<br>`2` Pulse<br>`3` Noise |
+|   `width` | `0` .. `15`                                            |
+| `length`  | `0` Infinite<br>1 16.67ms .. `255` 4.25s               |
+
+Omitted parameters will keep their previous values.
+
+#### `ENVELOPE voice,[attack],[decay],[sustain],[release]`
+
+Set the volume envelope for the `voice`.
+
+Allow to change the `attack`, `decay` and `release` duration.
+
+`sustain` control the volume after the decay and before the release.
+
+| parameter | range               |
+|----------:|---------------------|
+|  `attack` | `0` 2ms .. `15` 12s |
+|   `decay` | `0` 2ms .. `15` 12s |
+| `release` | `0` 2ms .. `15` 12s |
+| `sustain` | `0` .. `15`         |
+
+All parameters can be omitted to keep their current settings.
+
+#### `LFO voice,[rate],[frequency],[volume],[width]`
+
+Set the Low Frequency Oscillator (LFO) for the `voice`.
+
+Allow to change the `rate`, the `frequency`, the `volume` and the `width` for Pulse waveform.
+
+|   parameter | range                   |
+|------------:|-------------------------|
+|      `rate` | `0` 0.12Hz .. `15` 18Hz |
+| `frequency` | `0` .. `15`             |
+|    `volume` | `0` .. `15`             |
+|     `width` | `0` .. `15`             |
+
+All parameters can be omitted to keep their current settings.
+
+#### `LFO WAVE voice,[wave],[invert],[env],[trigger]`
+
+Set options for the a second Low Frequency Oscillator (LFO) for the `voice`.
+
+Allow to change the `wave` and enable or disable `invert`, `env` and `trigger`.
+
+With `invert` off, the wave is added (+) to the output signal. With `invert` on, the wave is substracted (-).
+
+When `env` on, this second LFO will be played once. Will implictly set `trigger` on.
+
+With `trigger` on, this second LFO is restarted at every `PLAY`, otherwise the LFO is continously applied.
+
+| parameter | value                                                    |
+|----------:|----------------------------------------------------------|
+|    `wave` | `0` Triangle<br>`1` Sawtooth<br>`2` Square<br>`3` Random |
+|  `invert` | `0` Off<br>`1` On                                        |
+|     `env` | `0` Off<br>`1` On                                        |
+| `trigger` | `0` Off<br>`1` On                                        |
+
+All parameters can be omitted to keep their current settings.
+
+#### `SOUND SOURCE [address]`
+
+Set the `address` on memory to use as source for `MUSIC`, `TRACK` and `PLAY` commands. The [official sound data format]() TODO: link is used to decode the informations.
+
+> This will not affect already started playback.
+
+> If not specified the default address is taken by internally executing `=ROM(15)`
+
+#### `MUSIC [pattern]`
+
+Starts playing at the `pattern`. If omitted, it starts at pattern `0`.
+
+> This will consider that the data respects the [official soud data format]() TODO: link.
+
+#### `=MUSIC(what)`
+
+Question the current playback.
+
+| `what` |                                       |
+|-------:|---------------------------------------|
+|      0 | The current pattern                   |
+|      1 | The current row                       |
+|      2 | The current tick                      |
+|      3 | The current speed<br>`0` when stopped |
+
+#### `TRACK track,voice`
+
+Starts playing the `track` on `voice`.
+
+> This will consider that the data respects the [official soud data format]() TODO: link.
 
 
 
@@ -2308,13 +2554,15 @@ TODO: about numeric technical
 
 TODO: how window not updated when on-resized
 
+TODO: explain API notation `[optional]`
+
 ## References
 
 ### 64 Colors
 
 <style>
-.famicube{display:flex:flex-wrap:wrap}
-.famicube div{font-family:monospace;padding:0.8em 1em;}
+.famicube{display:flex;flex-wrap:wrap}
+.famicube div{font-family:monospace;padding:0.8em 1em;width:2em}
 .famicube div:nth-child(1){background:#000000;color:#fff}
 .famicube div:nth-child(2){background:#e03c28;color:#000}
 .famicube div:nth-child(3){background:#ffffff;color:#000}
@@ -2393,7 +2641,7 @@ TODO: how window not updated when on-resized
 
 ### Memory mapping
 
-| addr     | size        | purpose            |
+| address  | size        | purpose            |
 | -------- | ----------- | ------------------ |
 | `$00000` | 8 Kibibyte  | Layer 0 data       |
 | `$02000` | 8 Kibibyte  | Layer 1 data       |
@@ -2421,33 +2669,21 @@ The 4 layers use the same background format:
 
 For each cell:
 
-| addr | purpose                   |
-| ---- | --------------------------|
-| a+0  | character number (0..255) |
-| a+2  | character attributes      |
+| address | purpose                   |
+|--------:|---------------------------|
+|  addr+0 | character number (0..255) |
+|  addr+2 | character attributes      |
 
 ### Cell attributes
 
-| bit mask  | purpose                |
-| --------- | ---------------------- |
-| %00000111 | palette number (0..7)  |
-| %00001000 | horizontal flip (0..1) |
-| %00010000 | vertical flip (0..1)   |
-| %00100000 | priority flag (0..1)   |
+|    bit mask | purpose                |
+|------------:|------------------------|
+| `%00000111` | palette number (0..7)  |
+| `%00001000` | horizontal flip (0..1) |
+| `%00010000` | vertical flip (0..1)   |
+| `%00100000` | priority flag (0..1)   |
 
 _the last 2 bits are unused_
-
-### Background source data
-
-When using [`BG SOURCE a[,w,h]`](#bg-source-awh) without specifing `w,h` width and height, LowResRMX will use a specific data format:
-
-| addr | size   | purpose        |
-| ---- | ------ | ---------------|
-|  a+0 | 1 Byte | always zero    |
-|  a+1 | 1 Byte | always zero    |
-|  a+2 | 1 Byte | width in cell  |
-|  a+3 | 1 Byte | height in cell |
-|  a+4 | ...    | cell's data    |
 
 ### Character data
 
@@ -2460,20 +2696,92 @@ The 255 characters use the same character format:
 The pixels are encoded bit per bit, from left to right, then top to bottom, one plane at a time.
 The 1st 8 bytes store the low bit for all the 8x8 pixels. The 2nd 8 bytes store the high bit.
 
+### Background source format data
+
+When using [`BG SOURCE a[,w,h]`](#bg-source-awh) without specifing `w,h` width and height, LowResRMX will use a specific data format:
+
+| address | size   | purpose        |
+|--------:|--------|----------------|
+|  addr+0 | 1 Byte | always zero    |
+|  addr+1 | 1 Byte | always zero    |
+|  addr+2 | 1 Byte | width in cell  |
+|  addr+3 | 1 Byte | height in cell |
+|  addr+4 | ...    | cell's data    |
+
+### Sound source format data
+
+When using [`SOUND SOURCE`](<manual#`SOUND SOURCE [address]`>), LowResRMX will use the following data format to store sounds, patterns and tracks.
+
+TODO: continue
+
+|  address | purpose          |
+|---------:|------------------|
+|   addr+0 | 16 sound presets |
+| addr+128 | 64 patterns      |
+| addr+384 | 64 tracks        |
+
+For each sound preset:
+
+| address | size | purpose                                 |
+|--------:|------|-----------------------------------------|
+|  addr+0 | 1    | [Attributes](<manual#Attributes bits:>) |
+|  addr+1 | 1    | Length                                  |
+|  addr+2 | 2    | [Envelope](<manual#Envelope bits:>)     |
+|  addr+4 | 1    | LFO attributes                          |
+|  addr+5 | 2    | LFO settings                            |
+|  addr+7 | 1    | Not used                                |
+
+#### Attributes bits:
+
+| bits | purpose                                                        |
+|-----:|----------------------------------------------------------------|
+| 0..3 | Pulse width                                                    |
+| 4..5 | Wave<br>`0` Sawtooth<br>`1` Triangle<br>`2` Pulse<br>`3` Noise |
+|    6 | Timeout enabled                                                |
+
+#### Envelope bits:
+
+|   bits | purpose         |
+|-------:|-----------------|
+|   0..3 | Attack duration |
+|   4..7 | Decay duration  |
+|  8..11 | Sustain volume  |
+| 12..15 | Decay volume    |
+
+
+TODO: every attributes and settings
+
+### Pitch values
+
+| alpha | sylla | pitch per octave        |
+|-------|-------|-------------------------|
+| C     | Do    | 01 13 25 37 49 61 73 85 |
+| C#    | #Do   | 02 14 26 38 50 62 74 86 |
+| D     | Re    | 03 15 27 39 51 63 75 87 |
+| D#    | #Re   | 04 16 28 40 52 64 76 88 |
+| E     | Mi    | 05 17 29 41 53 65 77 89 |
+| F     | Fa    | 06 18 30 42 54 66 78 90 |
+| F#    | #Fa   | 07 19 31 43 55 67 79 91 |
+| G     | Sol   | 08 20 32 44 56 68 80 92 |
+| G#    | #Sol  | 09 21 33 45 57 69 81 93 |
+| A     | La    | 10 22 34 46 58 70 82 94 |
+| A#    | #La   | 11 23 35 47 59 71 83 95 |
+| B     | Si    | 12 24 36 48 60 72 84 96 |
+
 ### Registers
 
 Sprite Registers:
 
 There are 170 sprites, each occupies 6 bytes:
 
-| addr  | size    | purpose      |
-| ----- | ------- | ------------ |
-| $FB00 | 6 Bytes | 1st sprite   |
-| $FB06 | 6 Bytes | 2nd sprite   |
-| $FB0C | 6 Bytes | 3rd sprite   |
-| …     |         | …            |
-| $FEF6 | 6 Bytes | 170th sprite |
-| $FEFC | 4 Bytes | Not used     |
+| address | size    | purpose      |
+|--------:| ------- | ------------ |
+| `$FB00` | 6 Bytes | 1st sprite   |
+| `$FB06` | 6 Bytes | 2nd sprite   |
+| `$FB0C` | 6 Bytes | 3rd sprite   |
+| …       |         | …            |
+| `$FEF6` | 6 Bytes | 170th sprite |
+| `$FEFC` | 4 Bytes | Not used     |
 
 For each sprite:
 
@@ -2490,11 +2798,11 @@ Also, they are both offseted by 32 pixels. To place a sprite in the 0x0 coordina
 #### Attributes bits:
 
 | bits | purpose         |
-| ---- | --------------- |
+|-----:|-----------------|
 | 0..2 | Palette number  |
-| 3    | Horizontal flip |
-| 4    | Vertical flip   |
-| 5    | Priority        |
+|    3 | Horizontal flip |
+|    4 | Vertical flip   |
+|    5 | Priority        |
 | 6..7 | Size            |
 
 Sprite size:
@@ -2594,24 +2902,50 @@ Pixels outsied the safe zone represent the number of fantasy pixels that are vis
 
 ### Debugger
 
-When `PAUSE` command is executed, LowResRMX will stop the execution and display a command line interface where user can interact with.
+TODO: link
+When [`PAUSE`] command is executed, LowResRMX will stop the execution and display a command line interface where user can interact with.
 
 The is a simple interface, do not expect to run code with it.
 
-#### read and write a variable
+To quit the debugger, type the command `PAUSE` again.
 
-Syntaxe: `var`
+#### Read and write a variable
 
-Print the value of a variable
+Syntaxe: `variable`
 
-Syntaxe: `var = value`
+Print the `value` of a `variable`.
 
-Set the value of a variable
+Syntaxe: `variable = value`
 
-The `var` respect the same BASIC syntaxe rules:
+Set the `value` of a `variable`.
+
+The `variable` respect the same BASIC syntaxe rules:
 
 - `$` suffix for a string
 - `()` indexing for array
+
+#### List the accessible variables
+
+Syntaxe: `DIM [filter] [pagination]`
+
+Print the list of accessible variable at the current scope (global or subroutine).
+
+Allow to limit the output to the variables that matchs the `[filter]`.
+
+Allow to output more variables using the `[pagination]`.
+
+#### Read and write memory byte
+
+Syntaxe: `address`
+
+Print the `value` stored at memory `address`, it support decimal or hexadecimal literal.
+
+Syntaxe: `address = value`
+
+Set the `value` stored at at memory `address`.
+
+    $8000=%01010101
+    $8001=%10101010
 
 ### Cycles
 

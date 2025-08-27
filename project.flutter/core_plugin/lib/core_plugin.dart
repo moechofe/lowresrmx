@@ -33,6 +33,7 @@ CoreError runnerCompileProgram(ffi.Pointer<Runner> runner, String code) => _bind
 String runnerGetError(ffi.Pointer<Runner> runner, int code) => _bindings.runnerGetError(runner, code).cast<Utf8>().toDartString();
 
 void runnerStart(ffi.Pointer<Runner> runner, int scondsSincePowerOn, ffi.Pointer<ffi.Char> originalDataDisk, int originalDataDiskSize) => _bindings.runnerStart(runner, scondsSincePowerOn, originalDataDisk, originalDataDiskSize);
+bool runnerShouldRender(ffi.Pointer<Runner> runner) => _bindings.runnerShouldRender(runner);
 CoreError runnerUpdate(ffi.Pointer<Runner> runner, ffi.Pointer<Input> input) => _bindings.runnerUpdate(runner, input);
 void runnerRender(ffi.Pointer<Runner> runner, ffi.Pointer<ffi.Uint8> pixels) => _bindings.runnerRender(runner, pixels.cast<ffi.Void>());
 

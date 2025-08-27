@@ -21,8 +21,10 @@ on(list,'ask_to_delete',(event)=>{
 });
 
 on(list,'ask_to_publish',(event)=>{
-	publish_dialog(event.detail.pid,event.detail.name,()=>{
-		log("published");
+	publish_dialog(event.detail.pid,event.detail.name,(pid)=>{
+		log("published",pid);
+		window.location.href=`./${encodeURIComponent(pid)}.html`;
+		// TODO: relocate to the post
 	});
 });
 
