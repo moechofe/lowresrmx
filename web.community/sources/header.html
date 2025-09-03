@@ -1,8 +1,26 @@
 <header class="container-fluid">
 
 	<nav>
-		<ul>
-			<li><strong><a href="/community.html" class="secondary">#Foryou</a></strong></li>
+		<ul class="forum burger">
+			<li>
+				<details class="dropdown">
+					<summary>
+						☰
+					</summary>
+					<ul dir="ltr">
+						<li><a href="/community.html"<?php if(@$page!="community") echo ' class="secondary"'; ?>><img src="./logo.png"> #Foryou</a></li>
+						<li><a href="/show.html"<?php if(@$page!="show") echo ' class="secondary"'; ?>>Show</a></li>
+						<li><a href="/chat.html"<?php if(@$page!="chat") echo ' class="secondary"'; ?>>Chat</a></li>
+						<li><a href="/help.html"<?php if(@$page!="help") echo ' class="secondary"'; ?>>Help</a></li>
+					</ul>
+				</details>
+			</li>
+		</ul>
+		<ul class="forum links">
+			<li><a href="/community.html"<?php if(@$page!="community") echo ' class="secondary"'; ?>><img src="./logo.png"> #Foryou</a></li>
+			<li><a href="/show.html"<?php if(@$page!="show") echo ' class="secondary"'; ?>>Show</a></li>
+			<li><a href="/chat.html"<?php if(@$page!="chat") echo ' class="secondary"'; ?>>Chat</a></li>
+			<li><a href="/help.html"<?php if(@$page!="help") echo ' class="secondary"'; ?>>Help</a></li>
 		</ul>
 		<ul class="is-not-signed" hidden>
 			<li>
@@ -22,6 +40,7 @@
 				<details class="dropdown">
 					<summary class="name"></summary>
 					<ul dir="rtl">
+						<li><a href="./share.html">Share</a></li>
 						<li class="sign-out"><a href="#">Sign out</a></li>
 					</ul>
 				</details>
@@ -39,3 +58,21 @@
 	</nav>
 
 </header>
+<template id="error">
+
+	<dialog class="error"><article>
+		<header class="container-fluid">
+			<h2><code>POKE 53280,1</code></h2>
+		</header>
+		<main class="container">
+			<fieldset>
+				<p>Server 1 has been defeated.</p>
+			</fieldset>
+			<fieldset class="grid">
+				<button disabled>Cancel</button>
+				<button class="outline" disabled>Abort</button>
+			</fieldset>
+		</main>
+	</article></dialog>
+
+</template>

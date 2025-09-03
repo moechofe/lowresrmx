@@ -1,25 +1,17 @@
-<!DOCTYPE html>
+<?php
+	if(!isset($page)) $page='community';
+?><!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>LowResRMX community programs</title>
 <link rel="stylesheet" href="pico.min.css">
-<link rel="stylesheet" href="community.css">
-<script src="community.js"></script>
+<link rel="stylesheet" href="<?=$page?>.css">
+<script src="<?=$page?>.js"></script>
 </head>
 <body>
 <?php require_once __DIR__.'/header.html'; ?>
-<?php require_once __DIR__.'/list_first.html'; ?>
-<main class="first-list container-fluid"></main>
-<template id="program-item-nav">
-
-	<ul>
-		<li><button>Post</button></li>
-		<li><button>Edit</button></li>
-		<li><button>Run</button></li>
-	</ul>
-
-</template>
+<?php require_once __DIR__.'/list.html'; ?>
 </body>
 </html>

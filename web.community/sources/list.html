@@ -1,25 +1,57 @@
 <template id="program-list">
 
-	<!-- TODO: sorting -->
 	<main class="program-list container-fluid">
+	</main>
+
+</template>
+<template id="post-list">
+
+	<main class="post-list container-fluid">
 	</main>
 
 </template>
 <template id="program-item">
 
-	<div class="program-item">
+	<article class="program-item">
+	<a>
 		<div class="visual">
 			<div class="picture"></div>
 		</div>
 		<div class="info">
 			<h3 class="name"></h3>
+			<div class="points"></div>
+			<h5 class="author"></h5>
 			<div class="date"></div>
 		</div>
-		<div class="actions">
-			<button class="publish">Publish</button>
-			<button class="play outline">Play</button>
-			<button class="delete outline secondary">Delete</button>
-	</div>
+	</a>
+	<details class="dropdown" hidden>
+		<summary role="button" class="outline secondary">Actions</summary>
+		<ul>
+			<li><a href="#" class="publish">Publish now post</a></li>
+			<!-- <li><a href="#" class="list">List published posts</a></li> -->
+			<li><a href="#" class="delete">Delete program only</a></li>
+		</ul>
+	</details>
+	</article>
+
+</template>
+<template id="post-item">
+
+	<article class="post-item">
+	<a>
+		<div class="visual">
+			<div class="picture"></div>
+		</div>
+		<div class="info">
+			<h3 class="name"></h3>
+		</div>
+		<div class="content">
+			<div class="points"></div>
+			<h5 class="author"></h5>
+			<div class="date"></div>
+		</div>
+	</a>
+	</article>
 
 </template>
 <template id="program-delete">

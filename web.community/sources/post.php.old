@@ -40,9 +40,9 @@ if($url['path']=='/post')
 		"author",$author,
 	);
 
-	redis()->zadd("w:$where",SCORE_FOR_FIRST_POST,$uptoken);
-
 	redis()->lpush("u:{$user_id}:f",$uptoken);
+
+	updRank($uptoken);
 
 	header("Content-Type: application/json",true);
 	echo json_encode($uptoken);

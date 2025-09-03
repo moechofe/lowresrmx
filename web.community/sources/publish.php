@@ -1,6 +1,7 @@
 <?php // API to publish a program to the forum.
 
 require_once __DIR__.'/common.php';
+require_once __DIR__.'/rank.php';
 
 if(preg_match('/\/publish$/',$urlPath)&&$isPost)
 {
@@ -23,9 +24,10 @@ if(preg_match('/\/publish$/',$urlPath)&&$isPost)
 
 	// Check for the program
 	if(!redis()->exists("p:$program_id")) badRequest("Fail to validate program");
-	list($prg,$img)=redis()->hmget("p:$program_id","prg","img");
+	list($prg,$img,$name)=redis()->hmget("p:$program_id","prg","img","name");
 	if(empty($prg)) internalServerError("Fail to read program");
 	if(empty($img)) internalServerError("Fail to read image");
+	if(empty($name)) internalServerError("Fail to read program name");
 
 	$first_id=generateEntryToken();
 	$author=redis()->hget("u:$user_id","name");
@@ -46,26 +48,28 @@ if(preg_match('/\/publish$/',$urlPath)&&$isPost)
 		"text",$text,
 		"ut",date(DATE_ATOM),
 		"author",$author,
+		"name",$name,
 	);
+
+	// Register the program in the forum
+	redis()->zadd("w:$where",time(),$first_id);
+
 	// Add to the user first post list
 	redis()->lpush("u:{$user_id}:f",$first_id);
-	// Register the post in the forum
-	redis()->zadd("w:$where",SCORE_FOR_FIRST_POST,$first_id);
-	// Mark the program as published (for the owner)
-	redis()->hset("p:$program_id","first",$first_id);
+
 	// Give points to the user for the first post
-	redis()->hmset("f:$first_id:r",
-		"point",POINTS_GIVEN['publish'],
-		"upvote",0,
+	redis()->hmset("r:$first_id:d",
+		"pts",POINTS_GIVEN['publish'],
+		"vote",0,
 		"view",0,
 		"play",0,
-		"comment",0,
-		"where",$where,
+		"comm",0,
+		"w",$where,
 		"ct",date(DATE_ATOM),
 	);
+
 	// Update the rank of the post
-	redis()->zadd("rank:all",POINTS_GIVEN['publish'],$first_id);
-	redis()->zadd("rank:$where",POINTS_GIVEN['publish'],$first_id);
+	updRank($first_id);
 
 	header("Content-Type: application/json",true);
 	echo json_encode($first_id);

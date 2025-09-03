@@ -101,6 +101,15 @@ const text=(element,text)=>{element.innerText=text};
 /** @type {function(!HTMLElement,function():void):void} */
 const dialogOn=(dialog,done)=>{
 	const html=query('html');
+	const old=document.querySelector('dialog[open]');
+	if(old)
+	{
+		dialogOff(old);
+		delay(100,_=>{
+			dialogOn(dialog,done);
+		});
+		return;
+	}
 	addClassCond(html,'modal-is-open',true);
 	addClassCond(html,'modal-is-closing',false);
 	addClassCond(html,'modal-is-opening',true);
@@ -126,7 +135,7 @@ const dialogOff=(dialog,done)=>{
 /** @type {function(!HTMLElement):void} */
 const autoHeight=(element)=>{
 	element.style.height='';
-	element.style.height=element.scrollHeight+6+'px';
+	element.style.height=(element.scrollHeight>0?element.scrollHeight:214)+6+'px';
 }
 
 /** @type {function(number,function):void} */
@@ -163,7 +172,6 @@ const get=(path,headers)=>fetch(path,{
 /** @type {function(!File,String):!Promise<!Response>} */
 const upload=(type,file,token)=>{
 	const reader=new FileReader();
-	const xhr=new XMLHttpRequest();
 	return new Promise((res,rej)=>{
 		reader.onload=(event)=>{
 			post('upload',event.target.result,{
@@ -172,99 +180,30 @@ const upload=(type,file,token)=>{
 			}).then(res).catch(rej);
 		};
 		reader.error=rej;
-		reader.readAsBinaryString(file);
+		reader.readAsArrayBuffer(file);
 	});
 };
 
-/** @type {function():void} */
-// TODO: deleteme, it should only be available throughout the iOS app
-const setupUploadCard=()=>{
-	(async (upload_card,share_program)=>{
+const setupMobile=()=>{
+	if(window.matchMedia("(any-hover:none)").matches)
+		queryAll('.is-mobile').forEach((item)=>show(item));
+}
 
-		const inputs=findAll(upload_card,'input');
-		const blocker=find(upload_card,'.blocker');
-		const submit=find(upload_card,'.submit');
-		const cancel=find(upload_card,'.cancel');
-
-		const close=()=>{
-			upload_card.hidden=true;
-			blocker.hidden=false;
-		}
-
-		/** @type {string} */
-		let token="";
-
-		// wait for the card to be openned
-		click(share_program,async(_)=>{
-			// close the card
-			if(upload_card.hidden==false) return close();
-
-			// open the card, block the share button until the token is received
-			share_program.ariaDisabled=true;
-			blocker.hidden=false;
-			upload_card.hidden=false;
-
-			// wait for the token
-			token=(await get('token','')).headers.get(HEADER_TOKEN);
-			if(token)
-			{
-				blocker.hidden=true;
-				share_program.ariaDisabled=false;
-			}
-
-			// automaticly close the card after 1 hour, the token will be invalid
-			setTimeout(close,60*60*1000);
-		});
-
-		// upload the program and the image
-		click(submit,async(event)=>{
-			event.preventDefault();
-			blocker.hidden=false;
-			const prg=inputs[0].files[0]?upload('prg',inputs[0].files[0],token):Promise.reject();
-			const img=inputs[1].files[0]?upload('img',inputs[1].files[0],token):Promise.resolve();
-			await Promise.all([prg,img]);
-			await post('publish','',{
-				[HEADER_TOKEN]: token,
-			});
-			log("shared");
-		});
-
-		// to close the card
-		click(cancel,(event)=>{
-			event.preventDefault();
-			close();
-		});
-	})(query('#upload-card'),query('#share-program'));
+/** @type {function(!HTMLElement,string):void} */
+const humanDate=(elem,timestamp)=>{
+	/** @type {!Date} */
+	var date=null;
+	if(timestamp)
+	{
+		// Date in ISO 8601 format
+		const epoch=Date.parse(timestamp);
+		if(epoch) date=new Date(epoch);
+	}
+	// TODO: get the locale from the user throught cookie or sessions
+	text(elem,date?date.toLocaleDateString('en-US',{
+		year:'numeric',
+		month:'short',
+		day:'numeric'
+	}):"Unknown date");
 };
 
-// TODO: move to header.js
-const setupSign=()=>{
-	post('is_signed','')
-	.then((res)=>res.json())
-	.then((signed)=>{
-		log("signed",signed);
-		queryAll(signed===false?'.is-not-signed':'.is-signed').forEach((item)=>show(item));
-		if(signed)
-		{
-			text(query('.user-profile .name'),signed.author?signed.author:"no author name yet");
-			// query('.user-profile .picture').style.backgroundImage="url('"+signed.picture+"')";
-		}
-	}).catch((_)=>queryAll('.is-not-signed').forEach((item)=>show(item))).finally((_)=>queryAll('.is-loading').forEach((item)=>hide(item)));
-
-	click(query('button.google-sign-in'),(_)=>{
-		window.location.href='/google';
-	});
-
-	click(query('button.discord-sign-in'),(_)=>{
-		window.location.href='/discord';
-	});
-
-	click(query('.sign-out a'),(_)=>{
-		post('sign_out','')
-		.then((res)=>res.json())
-		.then((signed_out)=>{
-			log("signed",!signed_out);
-			window.location.reload();
-		});
-	});
-};

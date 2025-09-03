@@ -13,67 +13,61 @@ require_once __DIR__.'/upload.php';
 require_once __DIR__.'/download.php';
 
 require_once __DIR__.'/share.php';
-require_once __DIR__.'/last_shared.php';
+require_once __DIR__.'/list.php';
 require_once __DIR__.'/publish.php';
 require_once __DIR__.'/delete.php';
 
-require_once __DIR__.'/list_first.php';
 require_once __DIR__.'/entry.php';
 require_once __DIR__.'/comment.php';
 require_once __DIR__.'/score.php';
 
-
-
-
-
-
-// require_once __DIR__.'/published.php';
-
-// require_once __DIR__.'/player.php';
-
-// require_once __DIR__.'/trends.php';
-// require_once __DIR__.'/my_programs.php';
-// require_once __DIR__.'/program.php';
-
-// require_once __DIR__.'/post.php';
-// require_once __DIR__.'/entry.php';
-
-
-
-
-
-
-
 // server static files
-if(in_array($url['path'],[
+if(in_array($urlPath,[
 	'/community.html',
 	'/community.js',
 	'/community.css',
-	'/post.css',
-	'/post.js',
-	'/pico.min.css',
+	'/show.html',
+	'/show.js',
+	'/show.css',
+	'/chat.html',
+	'/chat.js',
+	'/chat.css',
+	'/help.html',
+	'/help.js',
+	'/help.css',
 	'/player.js',
-	'/player.wasm',
 	'/entry.css',
 	'/entry.js',
 	'/share.html',
 	'/share.js',
 	'/share.css',
-	'/last_shared.html',
-	'/last_shared.js',
 ]))
 {
 	header("Content-Type: ".[
 		'html'=>'text/html',
 		'css'=>'text/css',
 		'js'=>'text/javascript',
-		'wasm'=>'application/wasm',
 	][$info['extension']]);
-	require_once __DIR__.$url['path'];
+	require_once __DIR__.$urlPath;
+	exit;
+}
+if(in_array($urlPath,[
+	'/pico.min.css',
+	'/player.wasm',
+	'/favicon.ico',
+	'/logo.png',
+]))
+{
+	header("Content-Type: ".[
+		'wasm'=>'application/wasm',
+		'ico'=>'image/x-icon',
+		'png'=>'image/png',
+	][$info['extension']]);
+	readfile(__DIR__.$urlPath);
 	exit;
 }
 
-if($url['path']==='/')
+if($urlPath==='/')
 {
 	header("Status: 301 Moved Permanently",true,301);
 	header("Location: community.html");

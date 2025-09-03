@@ -1,7 +1,25 @@
+.first-list
+{ display: grid; gap: 1em; }
+@media (min-width: 460px) { .first-list {
+	grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 720px) { .first-list {
+	grid-template-columns: repeat(3, 1fr); } }
+@media (min-width: 980px) { .first-list {
+	grid-template-columns: repeat(4, 1fr); } }
+@media (min-width: 1240px) { .first-list {
+	grid-template-columns: repeat(5, 1fr); } }
+@media (min-width: 1500px) { .first-list {
+	grid-template-columns: repeat(6, 1fr); } }
+@media (min-width: 1760px) { .first-list {
+	grid-template-columns: repeat(7, 1fr); } }
 
 .first-item
+{ display: flex;
+	flex-direction: column; }
+
+/* .first-item
 { margin-bottom: calc(var(--pico-block-spacing-vertical)
-	* 3); }
+	* 3); } */
 
 .first-item a
 { display: block;

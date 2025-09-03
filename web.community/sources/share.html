@@ -10,6 +10,11 @@
 </head>
 <body>
 <?php require_once __DIR__.'/header.html'; ?>
-<?php require_once __DIR__.'/last_shared.html'; ?>
+
+<main class="container-fluid is-not-signed" hidden>
+	<p>You need to sign in to share your programs.</p>
+</main>
+
+<?php require_once __DIR__.'/list.html'; ?>
 </body>
 </html>

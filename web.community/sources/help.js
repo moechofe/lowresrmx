@@ -8,18 +8,18 @@
 	require_once __DIR__.'/list.js';
 ?>
 
-const setupCommunityList=()=>{
-	get('ranked').then((ans)=>{
+const setupChatList=()=>{
+	get('latest?w=help').then((ans)=>{
 		if(!ans.ok) return Promise.reject("");
 		return ans.json();
 	}).then((list)=>{
-		return setupProgramList(list,{isPost:true});
+		return setupPostList(list,{isPost:true});
 	}).then(/** @param {!Array<!ProgramItem>} list */(list)=>{
 		// console.log(list);
 	});
 };
 
 setupSign();
-setupCommunityList();
+setupChatList();
 
 });

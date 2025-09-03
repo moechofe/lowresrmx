@@ -3,7 +3,7 @@
 }))().then(async()=>{
 
 <?php require_once __DIR__.'/common.js'; ?>
-<?php require_once __DIR__.'/utils.js'; ?>
+<?php require_once __DIR__.'/header.js'; ?>
 
 /**
  * @typedef {{
@@ -14,7 +14,7 @@
  */
 var CommentItem;
 
-const eid=dataget(query('#comment-list'),'eid');
+const eid=dataget(query('article'),'eid');
 let cid=0;
 
 const setupDate=()=>{
@@ -46,7 +46,6 @@ const setupCommentForm=()=>{
 	autoHeight(find(form,'textarea'));
 
 	click(find(form,'.comment'),async()=>{
-		const eid=dataget(form,'eid');
 		if(!eid) return;
 		const text=find(form,'textarea').value.trim();
 		if(!text) return;
@@ -85,6 +84,8 @@ const addComments=(cmnt_list)=>{
 
 setupDate();
 setupSign();
+setupMobile();
+setupError();
 setupCommentForm();
 
 // TODO: show a loading stuff

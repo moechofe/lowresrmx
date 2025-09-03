@@ -5,16 +5,16 @@ require_once __DIR__.'/common.php';
 
 // TODO: check limit
 
-if(preg_match('/^\/upload$/',$urlPath)&&$isGet)
+if(preg_match('/^\/upload$/',$urlPath)&&$isGet&&!empty($_GET['p'])&&!empty($_GET['t'])&&!empty($_GET['n']))
 {
 	error_log(__FILE__);
 
 	// Check for the field from the iOS app
-	$prg=base64_decode(str_replace('_','/',str_replace('-','+',@trim(@$_GET['p']))));
+	$prg=base64_decode(str_replace('_','/',str_replace('-','+',trim($_GET['p']))));
 	if(empty($prg)||strlen($prg)>MAX_UPLOAD_PROGRAM) badRequest("Fail to read program");
-	$img=base64_decode(str_replace('_','/',str_replace('-','+',@trim(@$_GET['t']))));
+	$img=base64_decode(str_replace('_','/',str_replace('-','+',trim($_GET['t']))));
 	if(empty($img)||strlen($img)>MAX_UPLOAD_THUMBNAIL) badRequest("Fail to read thumbnail");
-	$name=@trim(@$_GET['n']);
+	$name=trim($_GET['n']);
 	// TODO: check size of the name
 	if(empty($name)) badRequest("Fail to read name");
 

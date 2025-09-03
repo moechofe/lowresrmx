@@ -9,7 +9,7 @@
 ?>
 
 const setupCommunityList=()=>{
-	get('ranked').then((ans)=>{
+	get('ranked?w=show').then((ans)=>{
 		if(!ans.ok) return Promise.reject("");
 		return ans.json();
 	}).then((list)=>{

@@ -11,19 +11,17 @@ if(preg_match("/^\/($MATCH_ENTRY_TOKEN)\.html$/",$urlPath,$matches))
 	$first_id=$matches[1];
 
 	// Get the first entry post
-	list($title,$text,$ut,$author,$status)=redis()->hmget("f:$first_id:f","title","text","ut","author","status");
+	list($title,$text,$ut,$author,$status,$name)=redis()->hmget("f:$first_id:f","title","text","ut","author","status","name");
 	if(empty($title) or empty($ut)) badRequest("Fail to read entry");
 	if($status==="banned") badRequest("Fail to validate entry");
 	if(!empty($text)) $text=zstd_uncompress($text);
 
 	// Update the view counter
-	redis()->hincrby("f:$first_id:r","view",1);
+	redis()->hincrby("r:$first_id:d","view",1);
 
 	updRank($first_id);
 
-	$MAX_POST_TEXT=MAX_POST_TEXT;
 	$eid=$first_id;
-
 	require_once __DIR__.'/entry.html';
 	exit;
 }

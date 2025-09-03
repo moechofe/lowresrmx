@@ -1,24 +1,32 @@
 /**
  * @typedef {{
  * pid: string,
- * name: string,
+ * name: string?,
+ * title: string?
  * author: string,
- * ct: string,
+ * ut: string?
+ * ct: string?,
  * }}
  */
-var SharedItem;
+var ProgramItem;
 
 /**
- * @brief List owner programs and present them with possible interactions.
- * @param {!Array<!SharedItem>} prg_list List of programs.
+ * @typedef {{
+ * isShare: boolean,
+ * isPost: boolean,
+ * }}
+ */
+var ProgramListConfig;
+
+/**
+ * @brief List programs and present them with possible interactions.
+ * @param {!Array<!ProgramItem>} prg_list List of programs.
+ * @param {ProgramListConfig} config Configuration of the list.
  * @return {Promise<HTMLElement>} The list of programs.
  * @event ask_to_publish {pid:string,name:string} When the user wants to publish a program.
  * @event ask_to_delete {pid:string,name:string} When the user wants to delete a program.
  */
-// TODO: rename setupSharedList
-// TODO: do not need promise
-const setupProgramList=(prg_list)=>{return new Promise(async (res,rej)=>{
-	// TODO: rename shared-list
+const setupProgramList=(prg_list,config)=>{return new Promise(async(res,rej)=>{
 	const item_tpl=query('#program-item');
 	const list=instanciate(query('#program-list'));
 	const body=query('body');
@@ -26,20 +34,28 @@ const setupProgramList=(prg_list)=>{return new Promise(async (res,rej)=>{
 	/** @type {!Array<!HTMLElement>} */
 	const items=prg_list.map(data=>{
 		const item=instanciate(item_tpl);
+		const a=find(item,'a');
 
 		dataset(item,'pid',data.pid);
 
-		find(item,'.name').textContent=data.name||"Untitled";
+		find(item,'.name').textContent=data.title||data.name||"Untitled";
 		find(item,'.picture').style.backgroundImage="url(\"./"+data.pid+".png\")";
-		humanDate(find(item,'.date'),data.ct);
+		find(item,'.author').textContent=data.author||"Unknown";
+		humanDate(find(item,'.date'),data.ut||data.ct);
+		find(item,'.points').textContent=data.points||"?";
 
-		// TODO: find a way to open the App with the program
-		if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent))
-			find(item,'.play').remove();
+		// // TODO: find a way to open the App with the program
+		// if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent))
+		// 	find(item,'.play').remove();
 
-		dataset(find(item,'button.publish'),'pid',data.pid);
+		if(config.isShare) show(find(item,'details'));
 
-		click(find(item,'button.publish'),_=>{
+		if(config.isPost) attr(a,"href",`./${encodeURI(data.pid)}.html`);
+		addClassCond(a,"is-post",config.isPost);
+
+		dataset(find(item,'.publish'),'pid',data.pid);
+
+		click(find(item,'.publish'),_=>{
 			emit(list,'ask_to_publish',{
 				pid:data.pid,
 				name:data.name,
@@ -63,11 +79,78 @@ const setupProgramList=(prg_list)=>{return new Promise(async (res,rej)=>{
 
 	// List container
 	list.append.apply(list,items);
-	// TODO: place the list in the share.html, because it will allow me to control where it appears.
 	body.append(list);
 
 	res(list);
 })};
+
+
+/**
+ * @brief List programs and present them with possible interactions.
+ * @param {!Array<!ProgramItem>} prg_list List of programs.
+ * @param {ProgramListConfig} config Configuration of the list.
+ * @return {Promise<HTMLElement>} The list of programs.
+ * @event ask_to_publish {pid:string,name:string} When the user wants to publish a program.
+ * @event ask_to_delete {pid:string,name:string} When the user wants to delete a program.
+ */
+const setupPostList=(prg_list,config)=>{return new Promise(async(res,rej)=>{
+	const item_tpl=query('#post-item');
+	const list=instanciate(query('#post-list'));
+	const body=query('body');
+
+	/** @type {!Array<!HTMLElement>} */
+	const items=prg_list.map(data=>{
+		const item=instanciate(item_tpl);
+		const a=find(item,'a');
+
+		dataset(item,'pid',data.pid);
+
+		find(item,'.name').textContent=data.title||data.name||"Untitled";
+		find(item,'.picture').style.backgroundImage="url(\"./"+data.pid+".png\")";
+		find(item,'.author').textContent=data.author||"Unknown";
+		humanDate(find(item,'.date'),data.ut||data.ct);
+		find(item,'.points').textContent=data.points||"?";
+
+		// // TODO: find a way to open the App with the program
+		// if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent))
+		// 	find(item,'.play').remove();
+
+		if(config.isShare) show(find(item,'details'));
+
+		if(config.isPost) attr(a,"href",`./${encodeURI(data.pid)}.html`);
+		addClassCond(a,"is-post",config.isPost);
+
+		// dataset(find(item,'.publish'),'pid',data.pid);
+
+		// click(find(item,'.publish'),_=>{
+		// 	emit(list,'ask_to_publish',{
+		// 		pid:data.pid,
+		// 		name:data.name,
+		// 	});
+		// });
+
+		// click(find(item,'.delete'),_=>{
+		// 	emit(list,'ask_to_delete',{
+		// 		pid:data.pid,
+		// 		name:data.name,
+		// 	});
+		// });
+
+		return item;
+	});
+
+	on(list,'remove_item',(event)=>{
+		log("remove_item",event.detail);
+		find(list,'.program-item[data-pid="'+event.detail.pid+'"]').remove();
+	});
+
+	// List container
+	list.append.apply(list,items);
+	body.append(list);
+
+	res(list);
+})};
+
 
 /**
  * @brief Prepare the dialog to delete a program.
@@ -155,6 +238,8 @@ const setupPublishDialog=()=>{
 			x:text,
 		})).then((res)=>res.json()).then((fid)=>{
 			if(cb)cb(fid);
+		}).catch((_)=>{
+			showError();
 		});
 	});
 

@@ -28,7 +28,7 @@ article .date::before
 
 article .picture
 {
-	max-height: 30em;
+	max-height: 20em;
 	aspect-ratio: 1;
 	background-size: cover;
 }

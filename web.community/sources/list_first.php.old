@@ -1,0 +1,3 @@
+<?php // API that return a list of published programs (a.k.a.: the first entry of a thread) order by score.
+
+require_once __DIR__.'/common.php';

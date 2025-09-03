@@ -2,20 +2,28 @@
 
 function updRank(string $first_id):void
 {
-	$members=hgetall(redis()->hgetall("f:$first_id:r"));
-	$where=$members['where'];
+	$members=hgetall(redis()->hgetall("r:$first_id:d"));
+	$where=$members['w'];
 	$ct=date_create($members['ct']);
+
 	$diff=date_diff($ct,date_create());
 	$age=(int)$diff->days*24+(int)$diff->h;
+
+	// Compute the points
 	$points=0
 	+POINTS_GIVEN['publish']
+	+POINTS_GIVEN['upvote']*$members['vote']
 	+POINTS_GIVEN['view']*$members['view']
 	+POINTS_GIVEN['play']*$members['play']
-	+POINTS_GIVEN['comment']*$members['comment']
-	+POINTS_GIVEN['upvote']*$members['upvote']
+	+POINTS_GIVEN['comment']*$members['comm']
 	;
-	redis()->hset("f:$first_id:r","point",$points);
+	// Compute the rank
 	$rank=($points-1)/(pow($age+2,1.8));
-	redis()->zadd("rank:all",$rank,$first_id);
-	redis()->zadd("rank:$where",$rank,$first_id);
+
+	// Update the score
+	redis()->hset("r:$first_id:d","pts",$points);
+
+	// Update the rank
+	redis()->zadd("r:all",$rank,$first_id);
+	redis()->zadd("r:$where",$rank,$first_id);
 }
