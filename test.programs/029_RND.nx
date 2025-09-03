@@ -1,4 +1,0 @@
-do
-PRINT RND
-wait tap
-loop

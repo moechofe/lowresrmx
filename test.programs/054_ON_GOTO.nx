@@ -1,9 +1,0 @@
-again:
-  wait 30
-  on rnd(1) goto zero,one
-zero:
-  print "zero"
-  goto again
-one:
-  print "one"
-  goto again

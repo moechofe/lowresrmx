@@ -38,11 +38,12 @@ class IndexSideBar: UIControl {
     override func awakeFromNib() {
         super.awakeFromNib()
         
+        // the color of the background for the whole vertical side index
 //        backgroundColor = AppStyle.mediumGrayColor()
         alpha = 0.5;
         
         highlight = UIView()
-//        highlight.backgroundColor = AppStyle.brightTintColor()
+        //highlight.backgroundColor = UIColor.lightGray
         highlight.alpha = 0.25
     }
     
@@ -53,7 +54,9 @@ class IndexSideBar: UIControl {
 //        let rectColor = AppStyle.brightTintColor()
         
         var markRect = CGRect(x: IndexSideBar.margin, y: 0.0, width: width - 2 * IndexSideBar.margin, height: 2.0)
+        // the color for the small markers inside the side index
 //        context?.setFillColor(rectColor.cgColor)
+				//context?.setFillColor(UIColor.lightGray.cgColor)
         
         if let markers = markers {
             for marker in markers {
@@ -209,10 +212,12 @@ class IndexSideBar: UIControl {
             let label = GORLabel()
             label.isUserInteractionEnabled = false
 //            label.backgroundColor = AppStyle.whiteColor()
+						label.backgroundColor = UIColor.black
             label.insets = UIEdgeInsets(top: 0, left: -4.0, bottom: 0, right: -4.0)
             label.layer.cornerRadius = 4.0
             label.clipsToBounds = true
 //            label.textColor = AppStyle.darkGrayColor()
+						label.textColor = UIColor.white
             label.font = UIFont.systemFont(ofSize: 11)
             label.textAlignment = .center
             label.text = marker.label

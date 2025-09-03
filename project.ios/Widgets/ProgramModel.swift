@@ -14,16 +14,17 @@ struct ProgramModel: Decodable {
     let program: String
     let image: String
     let topicId: Int
-    
+
     var appUrl: URL? {
         var url = URLComponents(string: "lowresrmx:")!
         url.queryItems = [
-            URLQueryItem(name: "name", value: name),
-            URLQueryItem(name: "program", value: program),
-            URLQueryItem(name: "image", value: image),
-            URLQueryItem(name: "topic_id", value: String(topicId))
+            URLQueryItem(name: "n", value: name),
+            URLQueryItem(name: "p", value: program),
+            URLQueryItem(name: "i", value: image),
+						URLQueryItem(name: "t", value: String(topicId)
+						)
         ]
         return url.url
     }
-    
+
 }

@@ -6,7 +6,7 @@
 1. Install for Ubuntu:
 
     ```bash
-    sudo apt install php8.3-cli php8.3-dev build-essential php8.3-mbstring libsodium-dev libzstd-dev redis-server redis-tools
+    sudo apt install nginx-full php8.3-cli php8.3-dev build-essential php8.3-mbstring libsodium-dev libzstd-dev redis-server redis-tools
     ```
 
 2. Build and install [HIREDIS](https://github.com/redis/hiredis) from source:
@@ -131,6 +131,7 @@ Navigate to: `http://lowresrmx.top:8080/upload?p=KLUv_aBjEwEAzTICyliGaC-wTEasHng
       - `null`
       - `"unlisted"`
       - `"banned"`
+    - _(str)_ `["name"]` Name of the program at upload
 
 - _(int)_ `"f:ENTRY_TOKEN_ID:s"` sequence for comment id `CID`
 
@@ -146,8 +147,13 @@ Navigate to: `http://lowresrmx.top:8080/upload?p=KLUv_aBjEwEAzTICyliGaC-wTEasHng
 
 - _(list)_ `"f:ENTRY_TOKEN_ID:c"` `CID` comment message entry
 
-- _(sortedset)_ `"w:WHERE_ID"` list the first message entries
+#### Forum related
 
+- _(sortedset)_ `"m:WHERE_ID"` list the first message entries
+
+    With score being the time when the post is created.
+
+    With `WHERE_ID` can be: `"show"`, `"chat"`, `"help"`
 
 #### Logged user related
 
@@ -195,7 +201,6 @@ Navigate to: `http://lowresrmx.top:8080/upload?p=KLUv_aBjEwEAzTICyliGaC-wTEasHng
 
 - _(list)_ `"u:USER_ID:a"` list of `AUTHOR_NAME`
 
-
 #### User author name related
 
 - _(str)_ `"a:AUTHOR_NAME"` `USER_ID`
@@ -204,24 +209,24 @@ Navigate to: `http://lowresrmx.top:8080/upload?p=KLUv_aBjEwEAzTICyliGaC-wTEasHng
 
 #### Rank related
 
-- _(zset)_ `"rank:all` `ENTRY_TOKEN_ID` Sorted first entries per score
+- _(zset)_ `"r:WHERE_ID` `ENTRY_TOKEN_ID` list the first message entries
 
-- _(zset)_ `"rank:show` `ENTRY_TOKEN_ID` Sorted first entries per score
+    With score being the computed score.
 
-- _(zset)_ `"rank:chat` `ENTRY_TOKEN_ID` Sorted first entries per score
+    With `WHERE_ID` can be: `"all"`, `"show"`, `"chat"`, `"help"`
 
-- _(zset)_ `"rank:help``ENTRY_TOKEN_ID` Sorted first entries per score
+- _(set)_ `"r:ENTRY_TOKEN_ID:v"` `USER_ID` Entry upvoted by the user
 
-- _(set)_ `"f:ENTRY_TOKEN_ID:v"` `USER_ID` Upvoted by the user
+- _(hash)_ `"r:ENTRY_TOKEN_ID:d` Details for score
 
-- _(hash)_ `"f:ENTRY_TOKEN_ID:r` Details for score
-
-    - _(int)_ `["point"]` Computed points
-    - _(int)_ `["upvote"]` Cached upvotes
+    - _(int)_ `["pts"]` Computed points
+    - _(int)_ `["vote"]` Cached upvotes
     - _(int)_ `["view"]` Counter of first post views
     - _(int)_ `["play"]` Counter of plays
-    - _(int)_ `["comment"]` Counter of comment posted
-    _ _(str)_ `["where"]` WHERE_ID of the forum
+    - _(int)_ `["comm"]` Counter of comment posted
+    _ _(str)_ `["w"]` WHERE_ID of the forum
     - _(str)_ `["ct"]` ATOM timestamp for creation time
     - _(str)_ `["ut"]` ATOM timestamp for update time
+
+        > TODO: `["ut"]` not used, is it usefull?
 

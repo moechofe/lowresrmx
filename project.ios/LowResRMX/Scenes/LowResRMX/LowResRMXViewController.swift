@@ -69,22 +69,22 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
   override func viewDidLoad() {
     super.viewDidLoad()
 
-    addKeyCommand(
-      UIKeyCommand(
-        input: "e", modifierFlags: .command, action: #selector(onExitTapped),
-        discoverabilityTitle: "Exit Program"))
-    addKeyCommand(
-      UIKeyCommand(
-        input: "d", modifierFlags: .command, action: #selector(toggleDebugMode),
-        discoverabilityTitle: "Debug Mode"))
-    addKeyCommand(
-      UIKeyCommand(
-        input: "s", modifierFlags: .command, action: #selector(shareScreenshot),
-        discoverabilityTitle: "Share Screenshot"))
-    addKeyCommand(
-      UIKeyCommand(
-        input: "i", modifierFlags: .command, action: #selector(captureProgramIcon),
-        discoverabilityTitle: "Capture Icon"))
+//    addKeyCommand(
+//      UIKeyCommand(
+//        input: "e", modifierFlags: .command, action: #selector(onExitTapped),
+//        discoverabilityTitle: "Exit Program"))
+//    addKeyCommand(
+//      UIKeyCommand(
+//        input: "d", modifierFlags: .command, action: #selector(toggleDebugMode),
+//        discoverabilityTitle: "Debug Mode"))
+//    addKeyCommand(
+//      UIKeyCommand(
+//        input: "s", modifierFlags: .command, action: #selector(shareScreenshot),
+//        discoverabilityTitle: "Share Screenshot"))
+//    addKeyCommand(
+//      UIKeyCommand(
+//        input: "i", modifierFlags: .command, action: #selector(captureProgramIcon),
+//        discoverabilityTitle: "Capture Icon"))
 
     startDate = Date()
 

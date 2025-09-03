@@ -1,2 +1,0 @@
-PRINT "safe=",safe.l,safe.t,safe.r,safe.b
-print "keepw=",peekw($ff7c),peekw($ff7e),peekw($ff80),peekw($ff82)

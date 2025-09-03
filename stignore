@@ -1,6 +1,0 @@
-*build*/
-build/
-.dart_tool
-*.bc
-.cxx
-ephemeral

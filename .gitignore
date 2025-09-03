@@ -1,9 +1,14 @@
 .stversions
+.stignore
 *.bc
+*.rdb
 .DS_Store
-build
+build*
 xcuserdata
 zig-cache
-web.community/sources/private.php
-project.cmake/SDL*
+/web.community/sources/private.php
+/project.cmake/SDL*
 private
+/asset.dev/generate_logo_wireframe.py
+/test.programs
+TODO.md

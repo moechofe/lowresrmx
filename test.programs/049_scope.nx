@@ -1,5 +1,0 @@
-score=0
-sub print_score
-    print "score",score
-end sub
-call print_score
