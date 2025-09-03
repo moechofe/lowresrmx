@@ -6,8 +6,8 @@
 build*
 xcuserdata
 zig-cache
-/web.community/sources/private.php
-/web.community/contents
+/project.web/sources/private.php
+/project.web/contents
 /project.cmake/SDL*
 private
 /asset.dev/generate_logo_wireframe.py
