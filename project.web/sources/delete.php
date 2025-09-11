@@ -4,8 +4,6 @@ require_once __DIR__.'/common.php';
 
 if(preg_match('/^\/delete$/',$urlPath)&&$isPost)
 {
-	error_log(__FILE__);
-
 	$user_id=validateSessionAndGetUserId();
 	if(!$user_id) forbidden("Fail to read user");
 

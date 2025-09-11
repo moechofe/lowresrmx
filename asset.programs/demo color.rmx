@@ -1,0 +1,72 @@
+'draw all available colors
+
+
+'used to detect if the layout has changed
+global shownw,shownh,resized
+
+sub checkresize
+'check if layout has changed: orientation changed or screen splitted
+'call this after 'wait vbl' and check var 'resized'
+  if shownw<>shown.w or shownh<>shown.h-safe.b then
+    resized=-1
+    shownw=shown.w :shownh=shown.h-safe.b-safe.t
+  else
+    resized=0
+  end if
+  'for capturing program icon
+  'shownw=180 :shownh=180-safe.b :resized=0
+end sub
+call checkresize :resized=-1
+
+'for changing palette during rasterisation
+global rasternext,rasteradd,rastercolor
+
+sub r
+  if raster=0 then
+    rasternext=0 :'next raster line
+    rastercolor=-1 :'start color
+    rasteradd=(shownh)/11+safe.t
+  end if
+  if raster>=rasternext and rastercolor<64 then
+    palette 0,max(0,rastercolor),rastercolor+1,rastercolor+2,rastercolor+3
+    palette 1,,,rastercolor+4,min(63,rastercolor+5)
+    add rastercolor,6
+    add rasternext,rasteradd
+  end if
+  'was used to skip safe.top, now return to normal addition
+  if raster=0 then rasteradd=(shownh)/11
+end sub
+
+on raster call r
+
+do
+  if resized then
+    bg 3
+    x=0 :w=int(shown.w/8/6)
+    pal 0
+    bg fill x,0 to 4,63 char 0
+    add x,4
+    for i=0 to 5
+      pal int(i/4)
+      bg fill x,0 to x+5,63 char (i mod 4)+int(i/4)*2
+      add x,w
+    next i
+    scroll 3,32-(shownw-6*8*w)/2,0
+  end if
+  wait vbl
+  call checkresize
+  
+  if tap then
+    x=clamp(int((touch.x+scroll.x(3)+32)/8/w)-2,0,5)
+    y=clamp(int((touch.y-safe.t)/rasteradd),0,10)
+    c=clamp(y*6+x-1,0,63)
+    message "color: "+str$(c)
+  end if
+loop
+
+#2:MAIN CHARACTERS
+00000000000000000000000000000000
+FFFFFFFFFFFFFFFF0000000000000000
+0000000000000000FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+

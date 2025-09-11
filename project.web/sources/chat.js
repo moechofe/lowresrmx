@@ -8,6 +8,8 @@
 	require_once __DIR__.'/list.js';
 ?>
 
+const post_dialog=setupPostDialog('chat');
+
 const setupChatList=()=>{
 	get('latest?w=chat').then((ans)=>{
 		if(!ans.ok) return Promise.reject("");
@@ -19,7 +21,16 @@ const setupChatList=()=>{
 	});
 };
 
+const setupNewTopic=()=>{
+	click(query('.new-topic'),(_)=>{
+		post_dialog((pid)=>{
+			window.location.href=`./${encodeURIComponent(pid)}.html`;
+		});
+	});
+};
+
 setupSign();
 setupChatList();
+setupNewTopic();
 
 });

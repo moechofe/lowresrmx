@@ -4,8 +4,6 @@ require_once __DIR__.'/common.php';
 
 if($url['path']==='/del_program'&&$_SERVER['REQUEST_METHOD']==='POST')
 {
-	error_log(__FILE__);
-
 	$user_id=validateSessionAndGetUserId();
 	if(!$user_id) forbidden("Fail to read user");
 

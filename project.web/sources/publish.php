@@ -1,12 +1,11 @@
-<?php // API to publish a program to the forum.
+<?php
 
 require_once __DIR__.'/common.php';
 require_once __DIR__.'/rank.php';
 
+// API to publish a program to the forum.
 if(preg_match('/\/publish$/',$urlPath)&&$isPost)
 {
-	error_log(__FILE__);
-
 	$user_id=validateSessionAndGetUserId();
 	if(!$user_id) forbidden("Fail to read user");
 
@@ -20,7 +19,7 @@ if(preg_match('/\/publish$/',$urlPath)&&$isPost)
 	$text=mb_substr(@trim(@$json['x']),0,MAX_POST_TEXT);
 	if(empty($text)) badRequest("Fail to read text");
 	$where=@$json['w'];
-	if(!in_array($where,FORUM_WHERE)) badRequest("Fail to read where");
+	if(!in_array($where,PROGRAM_VALID_FORUM)) badRequest("Fail to read where");
 
 	// Check for the program
 	if(!redis()->exists("p:$program_id")) badRequest("Fail to validate program");
@@ -29,11 +28,13 @@ if(preg_match('/\/publish$/',$urlPath)&&$isPost)
 	if(empty($img)) internalServerError("Fail to read image");
 	if(empty($name)) internalServerError("Fail to read program name");
 
+	// prepare text content
 	$first_id=generateEntryToken();
 	$author=redis()->hget("u:$user_id","name");
 	$author=substr($author,0,MAX_AUTHOR_NAME);
 	$text=zstd_compress($text);
 
+	// stored private program from redis to public program to file
 	$folder=substr($first_id,0,3);
 	@mkdir(CONTENT_FOLDER.$folder,0777,true);
 	$prg=zstd_uncompress($prg);
@@ -61,8 +62,6 @@ if(preg_match('/\/publish$/',$urlPath)&&$isPost)
 	redis()->hmset("r:$first_id:d",
 		"pts",POINTS_GIVEN['publish'],
 		"vote",0,
-		"view",0,
-		"play",0,
 		"comm",0,
 		"w",$where,
 		"ct",date(DATE_ATOM),

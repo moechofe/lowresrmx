@@ -65,8 +65,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                     } else if item.name == "i" {
                         topicId = item.value
 												if let topicId = topicId?.addingPercentEncoding(withAllowedCharacters: .alphanumerics.union(CharacterSet(charactersIn: "-"))), !topicId.isEmpty {
-													program = URL(string: "http://lowresrmx.top:8080/\(topicId).rmx")
-													image = URL(string: "http://lowresrmx.top:8080/\(topicId).png")
+													program = URL(string: "https://ret.ro.it/\(topicId).rmx")
+													image = URL(string: "https://ret.ro.it/\(topicId).png")
 												}
                     }
                 }

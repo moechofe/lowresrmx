@@ -2,12 +2,11 @@
 
 require_once __DIR__.'/common.php';
 require_once __DIR__.'/token.php';
+require_once __DIR__.'/rank.php';
 
 // API to add a comment to a first entry post
 if(preg_match("/\/($MATCH_ENTRY_TOKEN)\/comment$/",$urlPath,$matches)&&$isPost)
 {
-	error_log(__FILE__);
-
 	$first_id=$matches[1];
 	if(!$first_id) badRequest("Fail to read entry");
 
@@ -35,10 +34,17 @@ if(preg_match("/\/($MATCH_ENTRY_TOKEN)\/comment$/",$urlPath,$matches)&&$isPost)
 		"ct",date(DATE_ATOM),
 		"author",$author,
 	);
+
 	// Add to the user comment post list
-	redis()->rpush("u:$user_id:c",$cid);
+	redis()->rpush("u:$user_id:c","$first_id:$cid");
+
 	// Add the comment as child of the first post
 	redis()->rpush("f:$first_id:c",$cid);
+
+	// Give points to the user for the comment
+	redis()->hincrby("r:$first_id:d","comm",1);
+
+	updRank($first_id);
 
 	header("Content-Type: application/json",true);
 	echo json_encode(true);
@@ -48,8 +54,6 @@ if(preg_match("/\/($MATCH_ENTRY_TOKEN)\/comment$/",$urlPath,$matches)&&$isPost)
 // API to retrieve comments of a first entry post.
 if(preg_match("/\/($MATCH_ENTRY_TOKEN)\/(\d+)$/",$urlPath,$matches)&&$isGet)
 {
-	error_log(__FILE__);
-
 	$first_id=$matches[1];
 	if(!$first_id) badRequest("Fail to read entry");
 

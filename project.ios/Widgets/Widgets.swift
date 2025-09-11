@@ -21,7 +21,7 @@ struct Provider: TimelineProvider {
     func placeholder(in context: Context) -> ProgramEntry {
         return currentEntry ?? ProgramEntry(date: Date(), model: nil, image: nil)
     }
-    
+
     func getSnapshot(in context: Context, completion: @escaping (ProgramEntry) -> ()) {
         if context.isPreview, let currentEntry = currentEntry {
             completion(currentEntry)
@@ -38,7 +38,7 @@ struct Provider: TimelineProvider {
             }
         }
     }
-    
+
     func getTimeline(in context: Context, completion: @escaping (Timeline<ProgramEntry>) -> ()) {
         APIClient.shared.fetchProgramOfTheDay { (result) in
             let updateAfter: Date
@@ -58,7 +58,7 @@ struct Provider: TimelineProvider {
             completion(timeline)
         }
     }
-    
+
     private func loadImage(urlString: String) -> UIImage? {
         guard let url = URL(string: urlString) else { return nil }
         do {

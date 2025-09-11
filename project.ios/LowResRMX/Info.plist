@@ -14,21 +14,21 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-	<string>LowResRMX</string>
+	<string>Game Creator</string>
 	<key>CFBundleDocumentTypes</key>
 	<array>
 		<dict>
 			<key>CFBundleTypeIconFiles</key>
 			<array/>
 			<key>CFBundleTypeName</key>
-			<string>LowResRMX Program</string>
+			<string>Retro Game Creator Program</string>
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
 			<key>LSHandlerRank</key>
 			<string>Owner</string>
 			<key>LSItemContentTypes</key>
 			<array>
-				<string>com.inutilis.document.rmx</string>
+				<string>it.ro.ret.document.rmx</string>
 			</array>
 		</dict>
 	</array>
@@ -71,7 +71,7 @@
 	<string>Allow this to save screenshots.</string>
 	<key>NSUbiquitousContainers</key>
 	<dict>
-		<key>iCloud.com.inutilis.ios.LowRes-RMX-Coder</key>
+		<key>iCloud.it.ro.ret.ios.LowResRMX</key>
 		<dict>
 			<key>NSUbiquitousContainerIsDocumentScopePublic</key>
 			<true/>
@@ -117,7 +117,7 @@
 			<key>UTTypeDescription</key>
 			<string>LowResRRMX Program</string>
 			<key>UTTypeIdentifier</key>
-			<string>com.inutilis.document.rmx</string>
+			<string>it.ro.ret.document.rmx</string>
 			<key>UTTypeTagSpecification</key>
 			<dict>
 				<key>public.filename-extension</key>

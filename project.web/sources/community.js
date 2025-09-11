@@ -13,7 +13,7 @@ const setupCommunityList=()=>{
 		if(!ans.ok) return Promise.reject("");
 		return ans.json();
 	}).then((list)=>{
-		return setupProgramList(list,{isPost:true});
+		return setupProgramList(list,{isPost:true,isHome:true});
 	}).then(/** @param {!Array<!ProgramItem>} list */(list)=>{
 		// console.log(list);
 	});

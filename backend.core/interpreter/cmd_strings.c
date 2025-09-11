@@ -342,6 +342,7 @@ struct TypedValue fnc_LEFTStr_RIGHTStr(struct Core *core)
 	return resultValue;
 }
 
+// TODO: this should be in fnc_math2
 struct TypedValue fnc_LEN(struct Core *core)
 {
 	struct Interpreter *interpreter = core->interpreter;

@@ -4,10 +4,25 @@
 	</main>
 
 </template>
+<template id="program-list-first">
+
+	<div class="program-item what">
+		<p>Explore, vote on, and comment on programs made by the community using the iOS app <a href="<?=APPLE_APP_STORE?>">Retro Game Creator</a> — a fantasy console for game development and a fork of the excellent LowRes NX by Timo "Inutilis" Kloss. <strong data-tooltip="Use the sharing feature in the iOS app.">Publish your own programs to share them.</strong></p>
+		<p><a class="apple-app-store" href="<?=APPLE_APP_STORE?>" alt="Download on the AppStore">Retro Game Creator — a fantasy console for game development</a></p>
+	</div>
+
+</template>
 <template id="post-list">
 
 	<main class="post-list container-fluid">
 	</main>
+
+</template>
+<template id="post-list-first">
+
+	<div class="program-item what">
+		<p>The programs you uploaded to the website may be private until you publish them and post about them on a forum.</p>
+	</div>
 
 </template>
 <template id="program-item">
@@ -43,12 +58,8 @@
 			<div class="picture"></div>
 		</div>
 		<div class="info">
-			<h3 class="name"></h3>
-		</div>
-		<div class="content">
-			<div class="points"></div>
-			<h5 class="author"></h5>
-			<div class="date"></div>
+			<h5 class="name"></h5>
+			<small class="points"></small><small class="author"></small><small class="date"></small>
 		</div>
 	</a>
 	</article>
@@ -76,12 +87,12 @@
 <template id="publish-dialog">
 
 	<dialog class="publish-dialog"><article>
-		<header class="container-fluid">
+		<header class="container">
 			<h2>Publish program</h2>
 		</header>
 		<main class="container">
 			<fieldset>
-				<select id="where" required>
+				<select class="where" required>
 					<option selected disabled value="">
 						Where to post&hellip;
 					</option>
@@ -89,15 +100,42 @@
 					<option value="chat">Discussion / News / Unrelated</option>
 					<option value="help">Help / Example</option>
 				</select>
-				<input type="text" id="title" required placeholder="Public name" />
-				<textarea id="text" placeholder="Markdown supported message&hellip;" >
-</textarea>
+				<input type="text" class="title" required placeholder="Program title" />
+				<textarea class="text" placeholder="Message&hellip;" ></textarea>
 			</fieldset>
 			<fieldset class="grid">
 				<button class="publish">Publish</button>
 				<button class="cancel outline">Cancel</button>
 			</fieldset>
 		</main>
+	</article></dialog>
+
+</template>
+<template id="post-dialog">
+
+	<dialog class="post-dialog"><article>
+		<header class="container">
+			<h2>Post topic</h2>
+		</header>
+		<main class="container">
+			<fieldset class="content">
+				<select class="where" required>
+					<option selected disabled value="">
+						Where to post&hellip;
+					</option>
+					<option value="chat">Discussion / News / Unrelated</option>
+					<option value="help">Help / Example</option>
+				</select>
+				<input type="text" class="title" required placeholder="Topic title" />
+				<div class="limit" data-limit="<?=MAX_POST_TEXT?>"></div>
+				<textarea class="text" placeholder="Message&hellip;" ></textarea>
+			</fieldset>
+			<fieldset class="grid">
+				<button class="publish">Publish</button>
+				<button class="cancel outline">Cancel</button>
+			</fieldset>
+		</main>
+
 	</article></dialog>
 
 </template>

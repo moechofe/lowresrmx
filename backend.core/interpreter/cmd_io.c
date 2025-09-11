@@ -78,8 +78,8 @@ enum ErrorCode cmd_PAUSE(struct Core *core)
 		// overlay_updateState(core);
 		core->machine->ioRegisters.key = 0;
 		struct TextLib *lib = &core->overlay->textLib;
-		txtlib_printText(lib, "\nlowresrmx debugger\n");
-		txtlib_printText(lib, "==================\n\n");
+		txtlib_printText(lib, "\nDebugger\n");
+		txtlib_printText(lib,   "========\n\n");
 		txtlib_printText(lib, "  'PAUSE' to resume\n\n");
 		txtlib_scrollWindowIfNeeded(lib);
 	}

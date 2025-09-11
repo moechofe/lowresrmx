@@ -25,6 +25,12 @@ const findAll=(elem,query)=>elem.querySelectorAll(query);
 /** @type {function(string):!HTMLElement} */
 const instanciate=(tpl)=>tpl.content.cloneNode(true).firstElementChild;
 
+/** @type {function(!HTMLElement,!HTMLElement)} */
+const append=(parent,element)=>parent.append(element);
+
+/** @type {function(!HTMLElement)} */
+const clear=(parent)=>parent.innerHTML='';
+
 /** @type {function(!HTMLElement,string,any):void} */
 const emit=(element,event_name,detail)=>{element.dispatchEvent(new CustomEvent(event_name,{detail:detail}))};
 
@@ -65,7 +71,7 @@ const attr=(element,name,value)=>{
 const disable=(element)=>element.setAttribute('disabled','');
 
 /** @type {function(!HTMLElement):void} */
-const enable=(element)=>element.removeAttribute('disable');
+const enable=(element)=>element.removeAttribute('disabled');
 
 /** @type {function(!HTMLElement):void} */
 const showAndHideSiblings=(element)=>{
@@ -133,9 +139,9 @@ const dialogOff=(dialog,done)=>{
 }
 
 /** @type {function(!HTMLElement):void} */
-const autoHeight=(element)=>{
+const autoHeight=(element,initial)=>{
 	element.style.height='';
-	element.style.height=(element.scrollHeight>0?element.scrollHeight:214)+6+'px';
+	element.style.height=Math.max(initial,element.scrollHeight)+'px';
 }
 
 /** @type {function(number,function):void} */

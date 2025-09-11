@@ -42,172 +42,74 @@ class ShareActivity: UIActivity {
 			// NSLog("programUrl %@", [programUrl])
 			// NSLog("imageUrl %@", [imageUrl])
 
-			var programEncoded = ""
+
+			var programDataToSend: Data? = nil
 			if let programData = try? Data(contentsOf: programUrl) {
-				if let programData = try? ZStd.compress(programData) {
-					programEncoded = programData.base64EncodedString().replacingOccurrences(of: "+", with: "-").replacingOccurrences(of: "/", with: "_")
-				}
+					if let compressed = try? ZStd.compress(programData) {
+							programDataToSend = compressed
+					}
 			}
 
-			var imageEncoded = ""
-			if let imageData = try? Data(contentsOf: imageUrl) {
-				imageEncoded = imageData.base64EncodedString().replacingOccurrences(of: "+", with: "-").replacingOccurrences(of: "/", with: "_")
-			}
-
-			// NSLog("programEncoded %@", [programEncoded])
-			// NSLog("imageEncoded %@", [imageEncoded])
-
-			// // Create the URLs for the POST requests
-			// guard let programUrl = URL(string: "http://lowresrmx.top:8080/upload"),
-			// 			let thumbnailUrl = URL(string: "http://lowresrmx.top:8080/upload") else {
-			// 		NSLog("Invalid URL")
-			// 		return
+			// var imageEncoded = ""
+			// if let imageData = try? Data(contentsOf: imageUrl) {
+			// 	imageEncoded = imageData.base64EncodedString().replacingOccurrences(of: "+", with: "-").replacingOccurrences(of: "/", with: "_")
 			// }
 
-			// // Create the requests
-			// var programRequest = URLRequest(url: programUrl)
-			// programRequest.httpMethod = "POST"
-			// programRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
-			// programRequest.httpBody = programEncoded.data(using: .utf8)
 
-			// var thumbnailRequest = URLRequest(url: thumbnailUrl)
-			// thumbnailRequest.httpMethod = "POST"
-			// thumbnailRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
-			// thumbnailRequest.httpBody = imageEncoded.data(using: .utf8)
+            let url = URL(string: "https://ret.ro.it/upload")!
+            var request = URLRequest(url: url)
+            request.httpMethod = "POST"
 
-			// // Create a DispatchGroup to manage the completion of both tasks
-			// let dispatchGroup = DispatchGroup()
+            // Prepare JSON body
+            var json: [String: Any] = ["name": programName]
+            if let programDataToSend = programDataToSend {
+                json["program"] = programDataToSend.base64EncodedString()
+            }
+            if let imageData = try? Data(contentsOf: imageUrl) {
+                json["image"] = imageData.base64EncodedString()
+            }
+            do {
+                let jsonData = try JSONSerialization.data(withJSONObject: json, options: [])
+                request.httpBody = jsonData
+                request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            } catch {
+                print("Failed to encode JSON: \(error)")
+                return
+            }
 
-			// // Perform the first POST request
-			// dispatchGroup.enter()
-			// let programTask = URLSession.shared.dataTask(with: programRequest) { data, response, error in
-			// 		if let error = error {
-			// 				NSLog("POST request 1 failed: %@", error.localizedDescription)
-			// 		} else if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 {
-			// 				NSLog("POST request 1 succeeded")
-			// 		} else {
-			// 				NSLog("Unexpected response for POST request 1")
-			// 		}
-			// 		dispatchGroup.leave()
-			// }
-
-			// // Perform the second POST request
-			// dispatchGroup.enter()
-			// let thumbnailTask = URLSession.shared.dataTask(with: thumbnailRequest) { data, response, error in
-			// 		if let error = error {
-			// 				NSLog("POST request 2 failed: %@", error.localizedDescription)
-			// 		} else if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 {
-			// 				NSLog("POST request 2 succeeded")
-			// 		} else {
-			// 				NSLog("Unexpected response for POST request 2")
-			// 		}
-			// 		dispatchGroup.leave()
-			// }
-
-			// // Show a dialog to the user
-			// let alertController = UIAlertController(title: "Uploading", message: "Please wait while your data is being uploaded.", preferredStyle: .alert)
-			// let cancelAction = UIAlertAction(title: "Cancel", style: .cancel) { _ in
-			// 		// Cancel the upload tasks
-			// 		programTask.cancel()
-			// 		thumbnailTask.cancel()
-			// }
-			// alertController.addAction(cancelAction)
-
-			// // Start both tasks
-			// programTask.resume()
-			// thumbnailTask.resume()
-
-			// // Wait for both tasks to complete
-			// dispatchGroup.notify(queue: .main) {
-			// 		alertController.dismiss(animated: true, completion: nil)
-			// 		// Open the URL after both POST requests are successful
-			// 		if let url = URL(string: "https://example.com") {
-			// 			if #available(iOS 10.0, *) {
-			// 				UIApplication.shared.open(url, options: [:], completionHandler: nil)
-			// 			} else {
-			// 				// Fallback on earlier versions
-			// 			}
-			// 		}
-			// }
-
-			// // Present the alert controller
-			// viewController = UIApplication.shared.keyWindow?.rootViewController
-			// if (viewController != nil) {
-			// 	viewController?.present(alertController, animated: true, completion: nil)
-			// }
-
-			var components = URLComponents()
-			components.scheme = "http"
-			components.host = "lowresrmx.top"
-			components.port = 8080
-			components.path = "/upload"
-			components.queryItems = [
-				URLQueryItem(name: "p", value: programEncoded),
-				URLQueryItem(name: "t", value: imageEncoded),
-				URLQueryItem(name: "n", value: programName)
-			]
-
-			guard let url = components.url else {
-			// string: String(format: "http://lowresrmx.top:8080/upload?p=%@&t=%@&n=%@", programEncoded, imageEncoded, programName)) else {
-				print("Failed to create url")
-				return
-			}
-
-			if UIApplication.shared.canOpenURL(url) {
-				if #available(iOS 10.0, *) {
-						UIApplication.shared.open(url, options: [:], completionHandler: {(success) in
-								if success {
-										print("Opened url")
-								} else {
-										print("Failed to open url")
-								}
-						})
-				} else {
-						// Fallback on earlier versions
-				}
-			} else {
-				print("Cannot open url")
-			}
-		// }
-
-		// if let text = activityItems.first as? String {
-		// 	if let data = text.data(using: .utf8) {
-		// 		let base64String = data.base64EncodedString()
-		// 		// Use the base64String as needed
-		// 	}
-
-			// guard let programUrl = URL(string: "http://lowresrmx.top:8080/upload")
-
+            let task = URLSession.shared.dataTask(with: request) { data, response, error in
+                if let error = error {
+                    print("Error: \(error)")
+                } else if let response = response as? HTTPURLResponse {
+                    print("Status code: \(response.statusCode)")
+                }
+            }
+            task.resume()
+//
+//			guard let url = components.url else {
+//				print("Failed to create url")
+//				return
+//			}
+//
+//			print("Generated URL: \(url.absoluteString)")
+//
+//			if UIApplication.shared.canOpenURL(url) {
+//				if #available(iOS 10.0, *) {
+//						UIApplication.shared.open(url, options: [:], completionHandler: {(success) in
+//								if success {
+//										print("Opened url")
+//								} else {
+//										print("Failed to open url")
+//								}
+//						})
+//				} else {
+//						// Fallback on earlier versions
+//				}
+//			} else {
+//				print("Cannot open url")
+//
+//			}
 		}
-
-		// guard let url = URL(string: "http://10.10.35.216:8080/share?type=prg&content=gabuzomeu") else {
-		// 	print("Failed to create url")
-		// 	return
-		// }
-
-		// if UIApplication.shared.canOpenURL(url) {
-		//             if #available(iOS 10.0, *) {
-		//                 UIApplication.shared.open(url, options: [:], completionHandler: {(success) in
-		//                     if success {
-		//                         print("Opened url")
-		//                     } else {
-		//                         print("Failed to open url")
-		//                     }
-		//                 })
-		//             } else {
-		//                 // Fallback on earlier versions
-		//             }
-		// } else {
-		// 	print("Cannot open url")
-		// }
-
-		// let vc = ShareViewController()
-		// vc.activity = self
-		// if let programUrl = activityItems.first as? URL {
-		//     vc.programUrl = programUrl
-		//     vc.imageUrl = programUrl.deletingPathExtension().appendingPathExtension("png")
-		// }
-		// viewController = UINavigationController(rootViewController: vc)
 	}
 
 	override var activityViewController: UIViewController? {

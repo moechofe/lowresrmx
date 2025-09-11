@@ -39,11 +39,11 @@ const setupCommentForm=()=>{
 		const ta=find(form,'textarea');
 		if(ta.value.length>max) ta.value=ta.value.substring(0,max);
 		showLimit();
-		autoHeight(event.target);
+		autoHeight(event.target,214);
 		event.target.scrollIntoView(true);
 	});
 	showLimit();
-	autoHeight(find(form,'textarea'));
+	autoHeight(find(form,'textarea'),214);
 
 	click(find(form,'.comment'),async()=>{
 		if(!eid) return;
@@ -71,7 +71,7 @@ const addComments=(cmnt_list)=>{
 	const items=cmnt_list.map(data=>{
 		const item=instanciate(item_tpl);
 
-		find(item,'.author a').textContent=data.author;
+		find(item,'.author').textContent=data.author;
 		humanDate(find(item,'.date'),data.ct);
 		find(item,'p').textContent=data.text;
 
@@ -82,9 +82,34 @@ const addComments=(cmnt_list)=>{
 	return list;
 };
 
+const setupVote=()=>{
+	const vote=query('#vote');
+	const points=query('.points');
+	const upvoted=query('.upvoted');
+	const upv_tpl=query('#upv');
+
+	on(vote,'change',async()=>{
+		if(!eid) return;
+		disable(vote);
+		const resp=await get(`/${eid}/vote`);
+		if(resp.status===200)
+		{
+			const json=await resp.json();
+			vote.checked=json.upv;
+			text(points,json.pts);
+			if(json.upv)
+				for(i=0;i<20;++i)
+					append(upvoted,instanciate(upv_tpl));
+			else clear(upvoted);
+		}
+		enable(vote);
+	});
+}
+
 setupDate();
 setupSign();
 setupMobile();
+setupVote();
 setupError();
 setupCommentForm();
 

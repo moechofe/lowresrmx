@@ -1,6 +1,6 @@
 <?php // Related to updating the rank of entries in the forum.
 
-function updRank(string $first_id):void
+function updRank(string $first_id):int
 {
 	$members=hgetall(redis()->hgetall("r:$first_id:d"));
 	$where=$members['w'];
@@ -13,8 +13,6 @@ function updRank(string $first_id):void
 	$points=0
 	+POINTS_GIVEN['publish']
 	+POINTS_GIVEN['upvote']*$members['vote']
-	+POINTS_GIVEN['view']*$members['view']
-	+POINTS_GIVEN['play']*$members['play']
 	+POINTS_GIVEN['comment']*$members['comm']
 	;
 	// Compute the rank
@@ -26,4 +24,6 @@ function updRank(string $first_id):void
 	// Update the rank
 	redis()->zadd("r:all",$rank,$first_id);
 	redis()->zadd("r:$where",$rank,$first_id);
+
+	return $points;
 }

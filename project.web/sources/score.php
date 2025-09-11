@@ -3,33 +3,47 @@
 require_once __DIR__.'/common.php';
 require_once __DIR__.'/token.php';
 
-// API to increase play counter of an entry
-if(preg_match("/^\/($MATCH_ENTRY_TOKEN)\/run$/",$urlPath,$matches)&&$isGet)
+// API to upvote/downvote an entry
+if(preg_match("/^\/($MATCH_ENTRY_TOKEN)\/vote$/",$urlPath,$matches)&&$isGet)
 {
-	error_log(__FILE__);
+	$user_id=validateSessionAndGetUserId();
+	if(!$user_id) forbidden("Fail to read user");
 
-	$first_id=$$matches;
+	$first_id=$matches[1];
 	if(!$first_id) badRequest("Fail to read entry");
+	if(!redis()->exists("f:$first_id:f")) badRequest("Fail to validate entry");
 
-	// TODO: continue
+	$upvoted=redis()->sismember("r:$first_id:v",$user_id)?true:false;
+	if(!$upvoted)
+	{
+		// add the vote
+		redis()->sadd("r:$first_id:v",$user_id);
+		$upvoted=true;
+		redis()->hincrby("r:$first_id:d","vote",1);
+	}
+	else
+	{
+		// remove the vote
+		redis()->srem("r:$first_id:v",$user_id);
+		$upvoted=false;
+		redis()->hincrby("r:$first_id:d","vote",-1);
+	}
 
+	$points=updRank($first_id);
+
+	header("Content-Type: application/json",true);
+	echo json_encode([
+		"upv"=>$upvoted,
+		"pts"=>$points,
+	]);
+	exit;
 }
 
-// if(preg_match("/^\/updrank$/",$urlPath)&&$isGet&&@getallheaders()[HEADER_ADMIN_ACCESS]===ADMIN_ACCESS_SECRET)
-// {
-// 	header("Content-Type: application/json",true);
-// 	echo "{";
-// 	$cursor=@intval(getallheaders()[HEADER_SCAN_CURSOR]);
-// 	header(HEADER_SCAN_CURSOR.": $cursor");
-// 	list($cursor,$list)=redis()->scan($cursor,"match","f:*:f","count",100);
-// 	foreach($list as $item)
-// 	{
-// 		if(preg_match("/^f:($MATCH_ENTRY_TOKEN):f$/",$item,$matches))
-// 		{
-// 			$fid=$matches[1];
-// 			list($ct,$upvote)=redis()->hmget("f:$fid:f","ct","upvote");
-// 			echo $fid,$ct,$upvote;
-// 		}
-// 	}
-// 	echo "}";
-// }
+if(preg_match("/^\/updrank$/",$urlPath)&&$isGet&&@getallheaders()[HEADER_ADMIN_ACCESS]===ADMIN_ACCESS_SECRET)
+{
+	require_once __DIR__.'/updrank.php';
+
+	header("Content-Type: application/json",true);
+	echo json_encode(intval($new_cursor));
+	exit;
+}

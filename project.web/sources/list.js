@@ -31,6 +31,9 @@ const setupProgramList=(prg_list,config)=>{return new Promise(async(res,rej)=>{
 	const list=instanciate(query('#program-list'));
 	const body=query('body');
 
+	if(config.isShare) append(list,instanciate(query('#post-list-first')));
+	else if(config.isHome) append(list,instanciate(query('#program-list-first')));
+
 	/** @type {!Array<!HTMLElement>} */
 	const items=prg_list.map(data=>{
 		const item=instanciate(item_tpl);
@@ -43,10 +46,6 @@ const setupProgramList=(prg_list,config)=>{return new Promise(async(res,rej)=>{
 		find(item,'.author').textContent=data.author||"Unknown";
 		humanDate(find(item,'.date'),data.ut||data.ct);
 		find(item,'.points').textContent=data.points||"?";
-
-		// // TODO: find a way to open the App with the program
-		// if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent))
-		// 	find(item,'.play').remove();
 
 		if(config.isShare) show(find(item,'details'));
 
@@ -79,7 +78,7 @@ const setupProgramList=(prg_list,config)=>{return new Promise(async(res,rej)=>{
 
 	// List container
 	list.append.apply(list,items);
-	body.append(list);
+	append(body,list);
 
 	res(list);
 })};
@@ -111,42 +110,21 @@ const setupPostList=(prg_list,config)=>{return new Promise(async(res,rej)=>{
 		humanDate(find(item,'.date'),data.ut||data.ct);
 		find(item,'.points').textContent=data.points||"?";
 
-		// // TODO: find a way to open the App with the program
-		// if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent))
-		// 	find(item,'.play').remove();
-
 		if(config.isShare) show(find(item,'details'));
 
 		if(config.isPost) attr(a,"href",`./${encodeURI(data.pid)}.html`);
 		addClassCond(a,"is-post",config.isPost);
 
-		// dataset(find(item,'.publish'),'pid',data.pid);
-
-		// click(find(item,'.publish'),_=>{
-		// 	emit(list,'ask_to_publish',{
-		// 		pid:data.pid,
-		// 		name:data.name,
-		// 	});
-		// });
-
-		// click(find(item,'.delete'),_=>{
-		// 	emit(list,'ask_to_delete',{
-		// 		pid:data.pid,
-		// 		name:data.name,
-		// 	});
-		// });
-
 		return item;
 	});
 
 	on(list,'remove_item',(event)=>{
-		log("remove_item",event.detail);
 		find(list,'.program-item[data-pid="'+event.detail.pid+'"]').remove();
 	});
 
 	// List container
 	list.append.apply(list,items);
-	body.append(list);
+	append(body,list);
 
 	res(list);
 })};
@@ -186,7 +164,7 @@ const setupProgramDelete=()=>{
 		close();
 	});
 
-	body.append(dialog);
+	append(body,dialog);
 
 	return (pid_,name,on_delete)=>{
 		pid=pid_;
@@ -198,7 +176,7 @@ const setupProgramDelete=()=>{
 
 /**
  * @brief Prepare the dialog to publish a program.
- * @return {(pid:string,program_name:string,on_published:()=>void)=>void} Function to open the dialog.
+ * @return {(pid:string,program_name:string,on_published:(fid:string)=>void)=>void} Function to open the dialog.
  */
 const setupPublishDialog=()=>{
 	const publish_dialog=query('#publish-dialog');
@@ -215,22 +193,21 @@ const setupPublishDialog=()=>{
 		dialogOff(dialog,()=>{
 			pid=null;
 			cb=null;
-			// TODO: clean the fields
-			find(dialog,'select#where').value="";
-			find(dialog,'input#title').value="";
-			find(dialog,'textarea#text').value="";
+			find(dialog,'select.where').value="";
+			find(dialog,'input.title').value="";
+			find(dialog,'textarea.text').value="";
 		});
 	};
 
 	click(find(dialog,'button.cancel'),close);
 
 	click(find(dialog,'button.publish'),event=>{
-		disable(event.target);
-		const where=find(dialog,'select#where').value;
-		const title=find(dialog,'input#title').value;
-		const text=find(dialog,'textarea#text').value;
+		const where=find(dialog,'select.where').value;
+		const title=find(dialog,'input.title').value;
+		const text=find(dialog,'textarea.text').value;
 		if(!where||!title||!text) return;
 		if(!pid) return;
+		disable(event.target);
 		post('/publish',JSON.stringify({
 			p:pid,
 			w:where,
@@ -243,14 +220,84 @@ const setupPublishDialog=()=>{
 		});
 	});
 
-	// Cancel button from the dialog
-
-	body.append(dialog);
+	append(body,dialog);
 
 	return (pid_,name,on_published)=>{
 		pid=pid_;
 		cb=on_published;
-		find(dialog,'input#title').value=name||"Untitled";
+		find(dialog,'input.title').value=name||"Untitled";
+		dialogOn(dialog);
+	};
+};
+
+/**
+ * @brief Prepare the dialog to post a topic.
+ * @param {string} where
+ * @return {(on_posted:(fid:string)=>void)=>void} Function to open the dialog.
+ */
+const setupPostDialog=(where)=>{
+	const post_dialog=query('#post-dialog');
+	const dialog=instanciate(post_dialog);
+	const body=query('body');
+	const content=find(dialog,'.content');
+
+	/** @type {function():void} */
+	let cb=null;
+
+	const close=function(){
+		dialogOff(dialog,()=>{
+			cb=null;
+			find(dialog,'select.where').value="";
+			find(dialog,'input.title').value="";
+			find(dialog,'textarea.text').value="";
+		});
+	};
+
+	const showLimit=()=>{
+		const limit=find(content,'.limit');
+		const ta=find(content,'textarea');
+		const max=dataget(limit,'limit');
+		if(!max) return;
+		limit.textContent=`${ta.value.length}/${max}`;
+	};
+
+	input(find(content,'textarea'),(event)=>{
+		const max=dataget(find(content,'.limit'),'limit');
+		const ta=find(content,'textarea');
+		if(ta.value.length>max) ta.value=ta.value.substring(0,max);
+		showLimit();
+		autoHeight(event.target,214);
+		event.target.scrollIntoView(true);
+	});
+	showLimit();
+	autoHeight(find(content,'textarea'),214);
+
+	click(find(dialog,'button.cancel'),close);
+
+	click(find(dialog,'button.publish'),event=>{
+		const where=find(dialog,'select.where').value;
+		const title=find(dialog,'input.title').value;
+		const text=find(dialog,'textarea.text').value;
+		if(!where||!title||!text) return;
+		disable(event.target);
+		post('/post',JSON.stringify({
+			w:where,
+			i:title,
+			x:text,
+		})).then((res)=>res.json()).then((fid)=>{
+			if(cb)cb(fid);
+		}).catch((_)=>{
+			showError();
+		}).finally((_)=>{
+			enable(event.target);
+		});
+	});
+
+	append(body,dialog);
+
+	return (on_posted)=>{
+		cb=on_posted;
+		find(dialog,'select.where').value=where;
 		dialogOn(dialog);
 	};
 };

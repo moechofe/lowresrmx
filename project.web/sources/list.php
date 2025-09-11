@@ -6,10 +6,8 @@ require_once __DIR__.'/common.php';
 if(preg_match('/\/ranked$/',$urlPath)&&$isGet)
 {
 	header("Content-Type: application/json",true);
-	error_log(__FILE__);
-
 	$where=@$_GET['w'];
-	if(!in_array($where,FORUM_WHERE)) $where='all';
+	if(!in_array($where,PROGRAM_VALID_FORUM)) $where='all';
 
 	// TODO: handle more than 99 programs.
 	$list=redis()->zrevrange("r:$where",0,99);
@@ -20,7 +18,7 @@ if(preg_match('/\/ranked$/',$urlPath)&&$isGet)
 	$l=count($list)-1;
 	for($i=$l;$i>=0;--$i)
 	{
-		list($title,$author,$ut,$upvote)=$prg=redis()->hmget("f:{$list[$i]}:f","title","author","ut");
+		list($title,$author,$ut,$upvote,$name)=$prg=redis()->hmget("f:{$list[$i]}:f","title","author","ut","name");
 		$points=redis()->hget("r:{$list[$i]}:d","pts");
 		if(!empty($title)&&!empty($author)&&!empty($ut)) $published[]=[
 			'pid'=>$list[$i],
@@ -28,6 +26,7 @@ if(preg_match('/\/ranked$/',$urlPath)&&$isGet)
 			'author'=>$author,
 			'points'=>$points,
 			'ut'=>$ut,
+			'name'=>$name,
 		];
 	}
 
@@ -38,10 +37,8 @@ if(preg_match('/\/ranked$/',$urlPath)&&$isGet)
 if(preg_match('/\/latest$/',$urlPath)&&$isGet)
 {
 	header("Content-Type: application/json",true);
-	error_log(__FILE__);
-
 	$where=@$_GET['w'];
-	if(!in_array($where,FORUM_WHERE)) $where='all';
+	if(!in_array($where,PROGRAM_VALID_FORUM)) $where='all';
 
 	// TODO: handle more than 99 programs.
 	$list=redis()->zrevrange("w:$where",0,99);
@@ -52,7 +49,7 @@ if(preg_match('/\/latest$/',$urlPath)&&$isGet)
 	$l=count($list)-1;
 	for($i=$l;$i>=0;--$i)
 	{
-		list($title,$author,$ut,$upvote)=$prg=redis()->hmget("f:{$list[$i]}:f","title","author","ut");
+		list($title,$author,$ut,$upvote,$name)=$prg=redis()->hmget("f:{$list[$i]}:f","title","author","ut","name");
 		$points=redis()->hget("r:{$list[$i]}:d","pts");
 		if(!empty($title)&&!empty($author)&&!empty($ut)) $published[]=[
 			'pid'=>$list[$i],
@@ -60,6 +57,7 @@ if(preg_match('/\/latest$/',$urlPath)&&$isGet)
 			'author'=>$author,
 			'points'=>$points,
 			'ut'=>$ut,
+			'name'=>$name,
 		];
 	}
 

@@ -1,16 +1,14 @@
-<?php
-	if(!isset($page)) $page='community';
-?><!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>LowResRMX community programs</title>
 <link rel="stylesheet" href="pico.min.css">
-<link rel="stylesheet" href="<?=$page?>.css">
-<script src="<?=$page?>.js"></script>
+<link rel="stylesheet" href="community.css">
+<script src="community.js"></script>
 </head>
-<body>
+<body class="community">
 <?php require_once __DIR__.'/header.html'; ?>
 <?php require_once __DIR__.'/list.html'; ?>
 </body>

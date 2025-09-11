@@ -9,8 +9,6 @@ if(preg_match("/^\/($MATCH_ENTRY_TOKEN)\.(".PRG_EXT."|".IMG_EXT.")$/",urldecode(
 
 	$folder=substr($info['filename'],0,3);
 	$path=CONTENT_FOLDER."$folder/{$info['filename']}.{$info['extension']}";
-	error_log("Path: $path");
-
 	// already shared, use the files
 	if(file_exists($path))
 	{

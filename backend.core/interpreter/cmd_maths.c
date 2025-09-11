@@ -105,7 +105,7 @@ struct TypedValue fnc_math1(struct Core *core)
                 break;
 
             case TokenATAN:
-                value.v.floatValue = atanf(xValue.v.floatValue);
+                value.v.floatValue = atanf(xValue.v.floatValue);// * M_PI / 2;
                 break;
 
             case TokenCOS:

@@ -9,14 +9,12 @@ require_once __DIR__.'/common.php';
 // See: upload.php
 if(preg_match('/^\/share$/',$urlPath)&&$isGet)
 {
-	error_log(__FILE__);
-
 	$uptoken=@$_GET['uptoken'];
 	if(empty($uptoken)) badRequest("Fail to read uptoken");
 
 	$user_id=validateSessionAndGetUserId();
-	error_log("User id: $user_id");
 
+	// This is necessary to redirect user to the login page
 	if(!$user_id)
 	{
 		require __DIR__.'/sign-in.html';
@@ -51,8 +49,6 @@ if(preg_match('/^\/share$/',$urlPath)&&$isGet)
 // API that return a list of last uploaded programs for the connected user as a JSON array.
 if(preg_match('/^\/last_shared$/',$urlPath)&&$isGet)
 {
-	error_log(__FILE__);
-
 	$user_id=validateSessionAndGetUserId();
 	if(!$user_id) forbidden("Fail to read user");
 	// if(!$user_id)

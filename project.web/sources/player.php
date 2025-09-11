@@ -5,8 +5,6 @@ require_once __DIR__.'/token.php';
 
 if(preg_match("/\/($MATCH_ENTRY_TOKEN)\.player$/",$urlPath,$matches))
 {
-	error_log(__FILE__);
-
 	$eid=$matches[1];
 
 	// Get the first entry post

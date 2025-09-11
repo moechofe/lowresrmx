@@ -13,7 +13,6 @@ const setupSign=()=>{
 	post('is_signed','')
 	.then((res)=>res.json())
 	.then((signed)=>{
-		// log("signed",signed);
 		queryAll(signed===false?'.is-not-signed':'.is-signed').forEach((item)=>show(item));
 		if(signed)
 		{

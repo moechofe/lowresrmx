@@ -6,11 +6,9 @@ error_reporting(E_ALL);
 
 require_once __DIR__.'/private.php';
 
-const DOMAIN='lowresrmx.top';
-const PORT='8080';
-CONST HOST=DOMAIN.':'.PORT;
-const WEBSITE_URL='http://'.HOST;
-const REDIS_DSN='tcp://127.0.0.1:6379';
+defined('WEBSITE_URL') or define('WEBSITE_URL','http://lowresrmx.top:8080');
+defined('REDIS_DSN') or define('REDIS_DSN','tcp://127.0.0.1:6379');
+defined('APP_SCHEME') or define('APP_SCHEME','lowresrmx:');
 
 const HEADER_TOKEN='X-Application-Token';
 const HEADER_FILE_TYPE='X-Application-Type';
@@ -24,19 +22,20 @@ const LOGIN_GOOGLE_TTL=60*5; // 5 minutes
 const LOGIN_DISCORD_TTL=60*5; // 5 minutes
 const SESSION_TTL=60*60*24*30; // 30 days
 
-const CONTENT_FOLDER=__DIR__.'/../contents/';
+defined('CONTENT_FOLDER') or define('CONTENT_FOLDER',__DIR__.'/../contents/');
+const REDIS_SCAN_CURSOR_FILE="./.updrank_cursor";
 
 const SYLLABLE_LIST=['ing','er','a','ly','ed','i','es','re','tion','in','e','con','y','ter','ex','al','de','com','o','di','en','an','ty','ry','u','ti','ri','be','per','to','pro','ac','ad','ar','ers','ment','or','tions','ble','der','ma','na','si','un','at','dis','ca','cal','man','ap','po','sion','vi','el','est','la','lar','pa','ture','for','is','mer','pe','ra','so','ta','as','col','fi','ful','ger','low','ni','par','son','tle','day','ny','pen','pre','tive','car','ci','mo','on','ous','pi','se','ten','tor','ver','ber','can','dy','et','it','mu','no','ple','cu','fac','fer','gen','ic','land','light','ob','of','pos','tain','den','ings','mag','ments','set','some','sub','sur','ters','tu','af','au','cy','fa','im','li','lo','men','min','mon','op','out','rec','ro','sen','side','tal','tic','ties','ward','age','ba','but','cit','cle','co','cov','da','dif','ence','ern','eve','hap','ies','ket','lec','main','mar','mis','my','nal','ness','ning','n\'t','nu','oc','pres','sup','te','ted','tem','tin','tri','tro','up','va','ven','vis','am','bor','by','cat','cent','ev','gan','gle','head','high','il','lu','me','nore','part','por','read','rep','su','tend','ther','ton','try','um','uer','way','ate','bet','bles','bod','cap','cial','cir','cor','coun','cus','dan','dle','ef','end','ent','ered','fin','form','go','har','ish','lands','let','long','mat','meas','mem','mul','ner','play','ples','ply','port','press','sat','sec','ser','south','sun','the','ting','tra','tures','val','var','vid','wil','win','won','work','act','ag','air','als','bat','bi','cate','cen','char','come','cul','ders','east','fect','fish','fix','gi','grand','great','heav','ho','hunt','ion','its','jo','lat','lead','lect','lent','less','lin','mal','mi','mil','moth','near','nel','net','new','one','point','prac','ral','rect','ried','round','row','sa','sand','self','sent','ship','sim','sions','sis','sons','stand','sug','tel','tom','tors','tract','tray','us','vel','west','where','write'];
 
-const USER_AGENT='LowResRMX community website';
-
 const MAX_AUTHOR_NAME=100;
 const MAX_POST_TITLE=100;
+const MAX_POST_NAME=100;
 const MAX_POST_TEXT=15000;
 const MAX_UPLOAD_PROGRAM=0x10000;
 const MAX_UPLOAD_THUMBNAIL=132710;
 
-const FORUM_WHERE=['show','chat','help'];
+const PROGRAM_VALID_FORUM=['show','chat','help'];
+const TOPIC_VALID_FORUM=['chat','help'];
 
 const PRG_EXT='rmx';
 const PRG_CONTENT_TYPE='text/plain';
@@ -48,32 +47,13 @@ const CONTENT_TYPE_MAP=[
 ];
 
 const POINTS_GIVEN=[
-	'view'=>1,
-	'play'=>5,
 	'comment'=>5,
 	'upvote'=>50,
 	'publish'=>100,
 	'update_after_week'=>30, // maxed out at 90 points
 ];
 
-// enum ScoreActivity
-// {
-// 	case Publishing;
-// 	case Updating;
-// 	case Upvoting;
-// }
-
-// function computeScoreIncrease(Client $client,string $program_id,ScoreActivity $activity):void
-// {
-// 	switch($activity)
-// 	{
-// 	case ScoreActivity::Publishing:
-// 		// read the activity of the website, number of upvote per day
-// 		// and set the same value to the publish score
-
-// 		break;
-// 	}
-// }
+const APPLE_APP_STORE="#";
 
 require_once __DIR__.'/redis.php';
 
@@ -139,8 +119,6 @@ function validateSessionAndGetUserId():string
 
 	list($status,$user_id)=redis()->hmget("s:$session_id","status","uid");
 	error_log("User: ".json_encode($user_id));
-	error_log("Status: $status");
-
 	switch($status)
 	{
 	case "revoked":
@@ -176,26 +154,34 @@ function getQueryParams(string $query):array
 	return $params;
 }
 
-$request=$_SERVER['REQUEST_URI'];
-$url=parse_url($request);
-$urlPath=rawurldecode($url['path']);
-$info=pathinfo($urlPath);
-$query=getServerQueryString();
-$domain=$_SERVER['SERVER_NAME'];
-$params=getQueryParams($query);
-$isGet=$_SERVER['REQUEST_METHOD']==='GET';
-$isPost=$_SERVER['REQUEST_METHOD']==='POST';
+if(!defined("STDERR") or !posix_isatty(STDERR))
+{
+	$request=$_SERVER['REQUEST_URI'];
+	$url=parse_url($request);
+	$urlPath=rawurldecode($url['path']);
+	$info=pathinfo($urlPath);
+	$query=getServerQueryString();
+	$domain=$_SERVER['SERVER_NAME'];
+	$params=getQueryParams($query);
+	$isGet=$_SERVER['REQUEST_METHOD']==='GET';
+	$isPost=$_SERVER['REQUEST_METHOD']==='POST';
 
-error_log("");
-error_log("");
-error_log("===============================");
-error_log("Request: ".substr($request,0,40)."... (".strlen($request)." bytes)");
-error_log("Path: ".$url["path"]);
-error_log("Info: ".json_encode($info));
-error_log("Query: ".substr($query,0,40)."... (".strlen($query)." bytes)");
-error_log("Headers: ".json_encode(getallheaders()));
-error_log("Cookie: ".json_encode($_COOKIE));
-error_log("Body: ".file_get_contents('php://input'));
-error_log("Params: ".json_encode(array_keys($params)));
-error_log("Outders: ".json_encode(headers_list()));
-error_log("Server: ".json_encode($_SERVER));
+	header("Server: lowresrmx",true);
+
+	if($_SERVER['HTTP_HOST']=='localhost' || $_SERVER['HTTP_HOST']=='localhost')
+	{
+		error_log("");
+		error_log("");
+		error_log("===============================");
+		error_log("Request: ".substr($request,0,40)."... (".strlen($request)." bytes)");
+		error_log("Path: ".$url["path"]);
+		error_log("Info: ".json_encode($info));
+		error_log("Query: ".substr($query,0,40)."... (".strlen($query)." bytes)");
+		error_log("Headers: ".json_encode(getallheaders()));
+		error_log("Cookie: ".json_encode($_COOKIE));
+		error_log("Body: ".file_get_contents('php://input'));
+		error_log("Params: ".json_encode(array_keys($params)));
+		error_log("Outders: ".json_encode(headers_list()));
+		error_log("Server: ".json_encode($_SERVER));
+	}
+}

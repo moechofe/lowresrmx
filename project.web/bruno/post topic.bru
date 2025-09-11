@@ -1,0 +1,27 @@
+meta {
+  name: post topic
+  type: http
+  seq: 9
+}
+
+post {
+  url: http://lowresrmx.top:8080/post
+  body: json
+  auth: inherit
+}
+
+headers {
+  Cookie: sid=314cbd864047662a2806606850f054da
+}
+
+body:json {
+  {
+    "i": "Title",
+    "x": "Text",
+    "w": "chat"
+  }
+}
+
+settings {
+  encodeUrl: true
+}

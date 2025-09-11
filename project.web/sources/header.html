@@ -1,3 +1,4 @@
+<?php require_once __DIR__.'/message.html'; ?>
 <header class="container-fluid">
 
 	<nav>
@@ -8,19 +9,22 @@
 						☰
 					</summary>
 					<ul dir="ltr">
-						<li><a href="/community.html"<?php if(@$page!="community") echo ' class="secondary"'; ?>><img src="./logo.png"> #Foryou</a></li>
-						<li><a href="/show.html"<?php if(@$page!="show") echo ' class="secondary"'; ?>>Show</a></li>
-						<li><a href="/chat.html"<?php if(@$page!="chat") echo ' class="secondary"'; ?>>Chat</a></li>
-						<li><a href="/help.html"<?php if(@$page!="help") echo ' class="secondary"'; ?>>Help</a></li>
+						<li><a href="/community.html" class="community"><img src="./logo.png"> #Foryou</a></li>
+						<li><a href="/show.html" class="show">Show</a></li>
+						<li><a href="/chat.html" class="chat">Chat</a></li>
+						<li><a href="/help.html" class="help">Help</a></li>
 					</ul>
 				</details>
 			</li>
 		</ul>
 		<ul class="forum links">
-			<li><a href="/community.html"<?php if(@$page!="community") echo ' class="secondary"'; ?>><img src="./logo.png"> #Foryou</a></li>
-			<li><a href="/show.html"<?php if(@$page!="show") echo ' class="secondary"'; ?>>Show</a></li>
-			<li><a href="/chat.html"<?php if(@$page!="chat") echo ' class="secondary"'; ?>>Chat</a></li>
-			<li><a href="/help.html"<?php if(@$page!="help") echo ' class="secondary"'; ?>>Help</a></li>
+			<li><a href="/community.html" class="community"><img src="./logo.png"> #Foryou</a></li>
+			<li><a href="/show.html" class="show">Show</a></li>
+			<li><a href="/chat.html" class="chat">Chat</a></li>
+			<li><a href="/help.html" class="help">Help</a></li>
+		</ul>
+		<ul class="new is-list is-signed" hidden>
+			<li><button class="new-topic" class="primary"><span class="icon-plus"></span>New topic</button></li>
 		</ul>
 		<ul class="is-not-signed" hidden>
 			<li>

@@ -14,9 +14,10 @@ require_once __DIR__.'/download.php';
 
 require_once __DIR__.'/share.php';
 require_once __DIR__.'/list.php';
-require_once __DIR__.'/publish.php';
 require_once __DIR__.'/delete.php';
 
+require_once __DIR__.'/publish.php';
+require_once __DIR__.'/post.php';
 require_once __DIR__.'/entry.php';
 require_once __DIR__.'/comment.php';
 require_once __DIR__.'/score.php';
@@ -62,6 +63,7 @@ if(in_array($urlPath,[
 		'wasm'=>'application/wasm',
 		'ico'=>'image/x-icon',
 		'png'=>'image/png',
+		'css'=>'text/css'
 	][$info['extension']]);
 	readfile(__DIR__.$urlPath);
 	exit;
