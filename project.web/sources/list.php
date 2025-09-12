@@ -18,7 +18,7 @@ if(preg_match('/\/ranked$/',$urlPath)&&$isGet)
 	$l=count($list)-1;
 	for($i=$l;$i>=0;--$i)
 	{
-		list($title,$author,$ut,$upvote,$name)=$prg=redis()->hmget("f:{$list[$i]}:f","title","author","ut","name");
+		list($title,$author,$ut,$name)=$prg=redis()->hmget("f:{$list[$i]}:f","title","author","ut","name");
 		$points=redis()->hget("r:{$list[$i]}:d","pts");
 		if(!empty($title)&&!empty($author)&&!empty($ut)) $published[]=[
 			'pid'=>$list[$i],

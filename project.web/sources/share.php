@@ -23,6 +23,8 @@ if(preg_match('/^\/share$/',$urlPath)&&$isGet)
 
 	// Transfer the temporary program to a persistent one
 	list($prg,$img,$name)=redis()->hmget("t:$uptoken","prg","img","name");
+	if(empty($prg) || empty($img) || empty($name)) badRequest("Fail to read uploaded");
+
 	$program_id=$uptoken;
 	$author=redis()->hget("u:$user_id","author");
 

@@ -45,7 +45,9 @@ const setupProgramList=(prg_list,config)=>{return new Promise(async(res,rej)=>{
 		find(item,'.picture').style.backgroundImage="url(\"./"+data.pid+".png\")";
 		find(item,'.author').textContent=data.author||"Unknown";
 		humanDate(find(item,'.date'),data.ut||data.ct);
-		find(item,'.points').textContent=data.points||"?";
+
+		if(config.isPost)	find(item,'.points').textContent=data.points||"?";
+		else hide(find(item,'.points'));
 
 		if(config.isShare) show(find(item,'details'));
 
@@ -189,6 +191,14 @@ const setupPublishDialog=()=>{
 	/** @type {function():void} */
 	let cb=null;
 
+	const showLimit=()=>{
+		const limit=find(dialog,'.limit');
+		const ta=find(dialog,'textarea');
+		const max=dataget(limit,'limit');
+		if(!max) return;
+		limit.textContent=`${ta.value.length}/${max}`;
+	};
+
 	const close=function(){
 		dialogOff(dialog,()=>{
 			pid=null;
@@ -200,6 +210,17 @@ const setupPublishDialog=()=>{
 	};
 
 	click(find(dialog,'button.cancel'),close);
+
+	input(find(dialog,'textarea'),(event)=>{
+		const max=dataget(find(dialog,'.limit'),'limit');
+		const ta=find(dialog,'textarea');
+		if(ta.value.length>max) ta.value=ta.value.substring(0,max);
+		showLimit();
+		autoHeight(event.target,214);
+		event.target.scrollIntoView(true);
+	});
+	showLimit();
+	autoHeight(find(dialog,'textarea'),214);
 
 	click(find(dialog,'button.publish'),event=>{
 		const where=find(dialog,'select.where').value;

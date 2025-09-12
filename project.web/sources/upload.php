@@ -38,9 +38,9 @@ if(preg_match('/^\/upload$/',$urlPath)&&$isPost)
 	header("Content-Type: application/json",true);
 
 	$json=json_decode(file_get_contents('php://input'),true);
-	$prg=$json['p'];
+	$prg=base64_decode($json['p']);
 	if(empty($prg)||strlen($prg)>MAX_UPLOAD_PROGRAM) badRequest("Fail to read program");
-	$img=$json['i'];
+	$img=base64_decode($json['i']);
 	if(empty($img)||strlen($img)>MAX_UPLOAD_THUMBNAIL) badRequest("Fail to read image");
 	$name=mb_substr(@trim(@$json['n']),0,MAX_POST_NAME);
 

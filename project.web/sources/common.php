@@ -118,7 +118,6 @@ function validateSessionAndGetUserId():string
 	if(!$session_id) return "";
 
 	list($status,$user_id)=redis()->hmget("s:$session_id","status","uid");
-	error_log("User: ".json_encode($user_id));
 	switch($status)
 	{
 	case "revoked":

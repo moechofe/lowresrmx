@@ -19,10 +19,10 @@ community.html community.js community.css \
 show.html show.js show.css \
 chat.html chat.js chat.css \
 help.html help.js help.css \
-entry.php entry.css entry.js \
+entry.php entry.html entry.css entry.js \
 share.html share.js share.css \
 header.html header.js header.css \
 list.php list.html list.js list.css \
 favicon.ico logo.png \
-message.html \
+message.html privacy-policy.html terms-of-service.html \
 pico.min.css

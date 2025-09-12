@@ -57,9 +57,13 @@ if(in_array($urlPath,[
 	'/player.wasm',
 	'/favicon.ico',
 	'/logo.png',
+	'/privacy-policy.html',
+	'/terms-of-service.html'
+
 ]))
 {
 	header("Content-Type: ".[
+		'html'=>'text/html',
 		'wasm'=>'application/wasm',
 		'ico'=>'image/x-icon',
 		'png'=>'image/png',
