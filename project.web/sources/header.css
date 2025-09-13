@@ -12,6 +12,7 @@ body.chat a:not(.chat) { color: var(--pico-secondary); }
 body.show a:not(.show) { color: var(--pico-secondary); }
 body.help a:not(.help) { color: var(--pico-secondary); }
 body.share a:not(.share) { color: var(--pico-secondary); }
+body.entry a:not(.entry) { color: var(--pico-secondary); }
 
 header .burger summary+ul { min-width:9em; }
 header .burger summary+ul li a { font-weight:bold; }

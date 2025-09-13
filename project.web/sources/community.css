@@ -1,8 +1,8 @@
 <?php
-	require_once __DIR__.'/header.css';
-	require_once __DIR__.'/list.css';
+require_once __DIR__.'/header.css';
+require_once __DIR__.'/list.css';
+require_once __DIR__.'/footer.css';
 ?>
-
 .what { display: inherit; align-content: inherit; }
 .what .apple-app-store { width: 135px; height: 40px; display: inline-block; outline: none; text-indent: 100%;
     white-space: nowrap;

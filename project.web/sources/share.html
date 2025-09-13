@@ -9,12 +9,17 @@
 <script src="share.js"></script>
 </head>
 <body class="share">
-<?php require_once __DIR__.'/header.html'; ?>
-
-<main class="container-fluid is-not-signed" hidden>
-	<p>You need to sign in to share your programs.</p>
+<?php
+require_once __DIR__.'/header.html';
+?>
+<main class="program-list container-fluid">
+	<div class="program-item what">
+		<p>The programs you uploaded to the website may be private until you publish them and post about them on a forum.</p>
+	</div>
 </main>
-
-<?php require_once __DIR__.'/list.html'; ?>
+<?php
+require_once __DIR__.'/list.html';
+require_once __DIR__.'/footer.html';
+?>
 </body>
 </html>

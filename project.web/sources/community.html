@@ -9,7 +9,18 @@
 <script src="community.js"></script>
 </head>
 <body class="community">
-<?php require_once __DIR__.'/header.html'; ?>
-<?php require_once __DIR__.'/list.html'; ?>
+<?php
+require_once __DIR__.'/header.html';
+?>
+<main class="program-list container-fluid">
+	<div class="program-item what">
+		<p>Explore, vote on, and comment on programs made by the community using the iOS app <a href="<?=APPLE_APP_STORE?>">Retro Game Creator</a> — a fantasy console and game creator. <strong data-tooltip="Use the sharing feature in the iOS app.">Publish your own programs to share them.</strong></p>
+		<p><a class="apple-app-store" href="<?=APPLE_APP_STORE?>" alt="Download on the AppStore">Retro Game Creator — a fantasy console and game creator</a></p>
+	</div>
+</main>
+<?php
+require_once __DIR__.'/list.html';
+require_once __DIR__.'/footer.html';
+?>
 </body>
 </html>

@@ -28,11 +28,8 @@ var ProgramListConfig;
  */
 const setupProgramList=(prg_list,config)=>{return new Promise(async(res,rej)=>{
 	const item_tpl=query('#program-item');
-	const list=instanciate(query('#program-list'));
+	const list=query('.program-list');
 	const body=query('body');
-
-	if(config.isShare) append(list,instanciate(query('#post-list-first')));
-	else if(config.isHome) append(list,instanciate(query('#program-list-first')));
 
 	/** @type {!Array<!HTMLElement>} */
 	const items=prg_list.map(data=>{
@@ -80,7 +77,6 @@ const setupProgramList=(prg_list,config)=>{return new Promise(async(res,rej)=>{
 
 	// List container
 	list.append.apply(list,items);
-	append(body,list);
 
 	res(list);
 })};
@@ -96,7 +92,7 @@ const setupProgramList=(prg_list,config)=>{return new Promise(async(res,rej)=>{
  */
 const setupPostList=(prg_list,config)=>{return new Promise(async(res,rej)=>{
 	const item_tpl=query('#post-item');
-	const list=instanciate(query('#post-list'));
+	const list=query('.post-list');
 	const body=query('body');
 
 	/** @type {!Array<!HTMLElement>} */
@@ -126,7 +122,6 @@ const setupPostList=(prg_list,config)=>{return new Promise(async(res,rej)=>{
 
 	// List container
 	list.append.apply(list,items);
-	append(body,list);
 
 	res(list);
 })};

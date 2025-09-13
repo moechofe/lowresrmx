@@ -23,7 +23,7 @@ if(preg_match('/^\/google$/',$urlPath)&&$isGet&&!empty($_GET['code'])&&!empty($_
 			'client_secret'=>GOOGLE_CLIENT_SECRET,
 			'code'=>$_GET['code'],
 			'grant_type'=>'authorization_code',
-			'redirect_uri'=>WEBSITE_URL.$url['path'],
+			'redirect_uri'=>$_SERVER['HTTP_HOST'].$urlPath,
 		])
 	]];
 	// error_log("Token request: ".json_encode($token_request));
@@ -93,7 +93,7 @@ elseif(preg_match('/^\/google$/',$urlPath)&&$isGet)
 
 	$auth_request=$config['authorization_endpoint'].'?'.http_build_query([
 		'client_id'=>GOOGLE_CLIENT_ID,
-		'redirect_uri'=>WEBSITE_URL.$urlPath,
+		'redirect_uri'=>$_SERVER['HTTP_HOST'].$urlPath,
 		'response_type'=>'code',
 		'scope'=>'openid profile',
 		'access_type'=>'offline',
@@ -122,7 +122,7 @@ if(preg_match('/^\/discord$/',$urlPath)&&$isGet&&!empty($_GET['code'])&&!empty($
 			'client_secret'=>DISCORD_CLIENT_SECRET,
 			'code'=>$_GET['code'],
 			'grant_type'=>'authorization_code',
-			'redirect_uri'=>WEBSITE_URL.'/discord',
+			'redirect_uri'=>$_SERVER['HTTP_HOST'].'/discord',
 		])
 	]]);
 	// error_log("Token request: ".json_encode($token_request));
@@ -193,7 +193,7 @@ elseif(preg_match('/^\/discord$/',$urlPath)&&$isGet)
 	$auth_request="https://discord.com/oauth2/authorize?".http_build_query([
 		'client_id'=>DISCORD_CLIENT_ID,
 		'response_type'=>'code',
-		'redirect_uri'=>WEBSITE_URL.$urlPath,
+		'redirect_uri'=>$_SERVER['HTTP_HOST'].$urlPath,
 		'scope'=>'identify',
 		'state'=>bin2hex($state),
 	]);
