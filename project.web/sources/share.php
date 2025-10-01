@@ -1,6 +1,7 @@
 <?php
 
 require_once __DIR__.'/common.php';
+require_once __DIR__.'/admin.php';
 
 // Receive the upload token from /upload.php and store a program in Redis linked to the user who uploaded it.
 // Then it will redirect to /share.html
@@ -53,11 +54,6 @@ if(preg_match('/^\/last_shared$/',$urlPath)&&$isGet)
 {
 	$user_id=validateSessionAndGetUserId();
 	if(!$user_id) forbidden("Fail to read user");
-	// if(!$user_id)
-	// {
-	// 	require __DIR__.'/sign-in.html';
-	// 	exit;
-	// }// forbidden("Fail to read user");
 
 	header("Content-Type: application/json",true);
 
@@ -70,13 +66,31 @@ if(preg_match('/^\/last_shared$/',$urlPath)&&$isGet)
 	$l=count($programs)-1;
 	for($i=$l;$i>=0;--$i)
 	{
-		list($name,$author,$ct)=$prg=redis()->hmget("p:{$programs[$i]}","name","author","ct");
-		$list[]=[
+		list($name,$author,$ct,$first_id)=$prg=redis()->hmget("p:{$programs[$i]}","name","author","ct","first");
+		if(empty($name)||empty($author))
+		{
+			cleanInvalidUserProgram($user_id,$programs[$i]);
+			continue;
+		}
+
+		$entry=[
 			'pid'=>$programs[$i],
 			'name'=>$name,
 			'author'=>$author,
 			'ct'=>$ct,
 		];
+
+		if(!empty($first_id))
+		{
+			$points=intval(redis()->hget("r:$first_id:d","pts"));
+			if(!empty($points))
+			{
+				$entry['eid']=$first_id;
+				$entry['pts']=$points;
+			}
+		}
+
+		$list[]=$entry;
 	}
 
 	echo json_encode($list);

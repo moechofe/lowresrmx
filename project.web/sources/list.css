@@ -9,12 +9,14 @@
 .program-item { display:grid; grid-template-columns:1fr; grid-template-rows:max-content auto;
 align-content:space-between; }
 
-.program-item>a { display:flex; flex-direction:column; text-decoration:none; color:var(--pico-color); cursor:default; }
+.program-item>a { display:flex; flex-direction:column; text-decoration:none; color:var(--pico-color); cursor:default; position: relative; }
 .program-item>a.is-post { cursor:pointer; }
 
 .program-item .visual { margin:calc(var(--pico-block-spacing-vertical)*-1) calc(var(--pico-block-spacing-horizontal)*-1) 0 calc(var(--pico-block-spacing-vertical)*-1); border-top-left-radius:var(--pico-border-radius); border-top-right-radius:var(--pico-border-radius); overflow:hidden; }
 .program-item .picture { height:100%; background-size:cover; aspect-ratio:1; }
+<?php if($_SERVER['HTTP_HOST']=="lowresrmx.top:8080"): ?>
 .program-item .picture::after { content:""; display:block; width:100%; height:100%; background-color:rgba(255, 255, 255, 0.95); }
+<?php endif; ?>
 
 .program-item .info>* { display:inline-block; margin-right:var(--pico-block-spacing-vertical); }
 
@@ -26,6 +28,8 @@ align-content:space-between; }
 .program-item details summary+ul { bottom:calc(1rem * var(--pico-line-height) + var(--pico-form-element-spacing-vertical) * 2 + var(--pico-border-width) * 2); right:0; left:unset; }
 
 .program-item.what p { text-wrap: balance; text-align: right; }
+
+.program-item span.already { position: absolute; background: var(--pico-form-element-invalid-focus-color); color: #fff; padding: 0rem 0.4rem 0.1rem 0.4rem; border-radius: 0.5rem; border-style: solid; border-width: 0; user-select: none; font-weight: bold; left: -1.5em; box-shadow: #0007 0px 2px 5px 0px; }
 
 .post-list { display:flex; flex-direction:column; gap:calc(var(--pico-block-spacing-vertical) * 0.5); align-items:center; }
 .post-item { min-width:100%; padding:0; }
@@ -54,3 +58,4 @@ dialog header { border: none; }
 .publish-dialog fieldset.grid, .post-dialog fieldset.grid { grid-template-columns: 1fr 1fr; }
 
 dialog fieldset .limit { display: none; float: right; }
+

@@ -1,17 +1,17 @@
 meta {
   name: is_signed
   type: http
-  seq: 2
+  seq: 3
 }
 
 post {
-  url: https://ret.ro.it/is_signed
+  url: {{base}}/is_signed
   body: none
   auth: inherit
 }
 
 headers {
-  Cookie: sid=78a75600b19577a52806606850f054da
+  Cookie: sid={{sid}}
 }
 
 settings {

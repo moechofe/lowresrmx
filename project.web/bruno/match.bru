@@ -1,0 +1,24 @@
+meta {
+  name: match
+  type: http
+  seq: 16
+}
+
+get {
+  url: {{base}}/match?w=all&q=g
+  body: none
+  auth: inherit
+}
+
+params:query {
+  w: all
+  q: g
+}
+
+headers {
+  Cookie: sid={{sid}}
+}
+
+settings {
+  encodeUrl: true
+}

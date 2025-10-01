@@ -31,6 +31,7 @@ const MAX_AUTHOR_NAME=100;
 const MAX_POST_TITLE=100;
 const MAX_POST_NAME=100;
 const MAX_POST_TEXT=15000;
+const MAX_QUERY=100;
 const MAX_UPLOAD_PROGRAM=0x10000;
 const MAX_UPLOAD_THUMBNAIL=132710;
 
@@ -165,6 +166,9 @@ if(!defined("STDERR") or !posix_isatty(STDERR))
 	$isGet=$_SERVER['REQUEST_METHOD']==='GET';
 	$isPost=$_SERVER['REQUEST_METHOD']==='POST';
 
+	header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+	header("Cache-Control: post-check=0, pre-check=0", false);
+	header("Pragma: no-cache");
 	header("Server: lowresrmx",true);
 
 	if($_SERVER['HTTP_HOST']=='localhost' || $_SERVER['HTTP_HOST']=='localhost')

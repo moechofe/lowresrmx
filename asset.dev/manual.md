@@ -1451,7 +1451,7 @@ TODO: GOTO inside SUB
 
 TODO: playing with GOSUB and RETURN
 
-### Data, ROM and files
+### Embeded data
 
 LowResRMX provide two ways to storing data or assets inside a program.
 
@@ -1474,7 +1474,14 @@ LowResRMX provide two ways to storing data or assets inside a program.
 
     Internaly it will use a read pointer that iterates all constant values.
 
-2. TODO: continue
+2. Use the virtual file system accessible throughout `ROM(file)`
+
+    At the end of the virtual cartridge, after the BASIC code, are store the data for the 16 available virtual files.
+
+    It's quite difficult to edit them by hand, that why LowResRMX provide a [File API](#File API) to access and edit them.
+
+
+TODO: continue
 
 ---
 
@@ -2530,7 +2537,82 @@ Starts playing the `track` on `voice`.
 
 > This will consider that the data respects the [official soud data format]() TODO: link.
 
+### Memory API
 
+#### `POKE address,value`
+
+Write an 8bits `value` [0..255] in memory at `address`.
+
+The `address` must be writable. TODO: link
+
+Example that change the background color:
+
+    c=0
+    do
+        poke $ff00,C
+        add c,1,0 to 63
+        wait 5
+    loop
+
+#### `=PEEK(address)`
+
+Read and return a 8bits value [0..255] from memory at `address`.
+
+Example that print the last pressed ASCII key code:
+
+    do
+        keyboard on
+        print str$(peek($ff84))
+        wait 5
+    loop
+
+#### `POKEW address,value`
+
+Write a 16bits `value` [-32768..32767] in memory at `address`.
+
+#### `=PEEKW(address)`
+
+Read and return a 16bits value [-32768..32767] from memory at `address`.
+
+Example that print the width and height of the visible pixels:
+
+    print "width",peekw($ff78),shown.w
+    print "height",peekw($ff7a),shown.h
+
+#### `POKEL address,value`
+
+Write a 32bits `value` value [-2147483648..2147483647] in memory at `address`.
+
+#### `=PEEKL(address)`
+
+Read and return a 32bits value [-2147483648..2147483647] from memory at `address`.
+
+### File API
+
+TODO: ROM SIZE
+
+
+TODO: data and file
+At the end of the virtual cartridge, a bunch of data files
+
+#### `FILES`
+
+Enable the access to the files, allowing to use the other commands of the file API.
+
+Getting access to files allow to create editor program, like characters, map or custom editor. The official GFX and SFX use this command.
+
+When the `FILES` command is called, it will map the data stored in the fantasy cartridge to virtual files indexed from 0 to 15.
+
+#### `=FILE$(file)`
+
+Return the comment string of the `file`.
+
+> The command `FILES` must be called before.
+
+
+TODO: continue
+
+#### `LOAD f,a[,n[,o]]`
 
 TODO: SYSTEM
 
@@ -2555,6 +2637,58 @@ TODO: about numeric technical
 TODO: how window not updated when on-resized
 
 TODO: explain API notation `[optional]`
+
+## Debugger instructions
+
+#### `PAUSE`
+
+Enter the debugger. It bring a console where user can enter debugger specific commands. The scope used in the debugger is the same as the one in the program where the `PAUSE` appear.
+
+#### a variable name
+
+By typing the name of a variable, the debugger will print it's value. The variable use the same syntax as inside a program: `$` for string, `()` for array.
+
+The variable must be accessible throughout the scope of where the `PAUSE` has been used to enter the debugger. Global variables are still available everywhere.
+
+#### a variable name `=` new value
+
+Allow to change the value of a variable.
+
+Number literal use the same syntax as inside a program, it support integer, float, `$` hexadecimal and `%` binary.
+
+String literal should use the same syntax as inside a program: `"`.
+
+#### an address
+
+By typing a memory address, the debugger will print it's value as if it was read by `peek()`.
+
+The address can be indiquated using the `$` hexadecimal or by any other valid numeric literal.
+
+#### an address `=` a value
+
+Will try to modify the value store inside a memory address.
+
+    `$FF00=3`
+
+#### `CLS`
+
+Clear the debugger console.
+
+#### `WAIT`
+
+Resume execution until a `WAIT` command is found in the program, the scope may change.
+
+#### `DIM [filter] [pagination]`
+
+Print the list of accessible variable at the current scope.
+
+Allow to limit the output to the variables that matchs the `[filter]`.
+
+Allow to output more variables using the `[pagination]` with an index that start at `0` zero.
+
+#### `TRACE`
+
+Print the current call stack in order: label and procedure names.
 
 ## References
 
@@ -2899,53 +3033,6 @@ Pixels outsied the safe zone represent the number of fantasy pixels that are vis
 | $FFA0 | 2 Bytes | Source address          |
 | $FFA2 | 2 Bytes | Number of bytes to copy |
 | $FFA4 | 2 Bytes | Destination address     |
-
-### Debugger
-
-TODO: link
-When [`PAUSE`] command is executed, LowResRMX will stop the execution and display a command line interface where user can interact with.
-
-The is a simple interface, do not expect to run code with it.
-
-To quit the debugger, type the command `PAUSE` again.
-
-#### Read and write a variable
-
-Syntaxe: `variable`
-
-Print the `value` of a `variable`.
-
-Syntaxe: `variable = value`
-
-Set the `value` of a `variable`.
-
-The `variable` respect the same BASIC syntaxe rules:
-
-- `$` suffix for a string
-- `()` indexing for array
-
-#### List the accessible variables
-
-Syntaxe: `DIM [filter] [pagination]`
-
-Print the list of accessible variable at the current scope (global or subroutine).
-
-Allow to limit the output to the variables that matchs the `[filter]`.
-
-Allow to output more variables using the `[pagination]`.
-
-#### Read and write memory byte
-
-Syntaxe: `address`
-
-Print the `value` stored at memory `address`, it support decimal or hexadecimal literal.
-
-Syntaxe: `address = value`
-
-Set the `value` stored at at memory `address`.
-
-    $8000=%01010101
-    $8001=%10101010
 
 ### Cycles
 

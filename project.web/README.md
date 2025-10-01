@@ -150,6 +150,8 @@ Create and fill the `sources/private.php` file using the given `private.sample.p
 
 - _(sortedset)_ `"w:WHERE_ID"` list the first message entries
 
+    - _(str)_ `[…]` `ENTRY_TOKEN_ID`
+
     With score being the time when the post is created.
 
     With `WHERE_ID` can be: `"show"`, `"chat"`, `"help"`.
@@ -202,6 +204,8 @@ Create and fill the `sources/private.php` file using the given `private.sample.p
 
 - _(zset)_ `"r:WHERE_ID` `ENTRY_TOKEN_ID` list the first message entries
 
+    - _(str)_ `[…]` `ENTRY_TOKEN_ID`
+
     With score being the computed score.
 
     With `WHERE_ID` can be: `"all"`, `"show"`, `"chat"`, `"help"`
@@ -221,3 +225,10 @@ Create and fill the `sources/private.php` file using the given `private.sample.p
 
         > TODO: `["ut"]` not used, is it usefull?
 
+## Create a fake session
+
+```
+redis-cli hmset s:infdev status allowed uid 123
+redis-cli rpush u:123:s infdev
+redis-cli hmset u:123 name infdev picture "" locale en author infdev
+```

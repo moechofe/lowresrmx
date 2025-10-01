@@ -2,7 +2,7 @@
     "cmake.sourceDirectory": "${workspaceFolder}/project.cmake",
     "cmake.buildDirectory": "${workspaceFolder}/project.cmake/build",
     "cmake.configureArgs": [
-        "-DSDL=./SDL2-2.30.0"
+        "-DSDL=./SDL2"
     ],
     "files.associations": {
         "*.embeddedhtml": "html",
@@ -27,7 +27,8 @@
         "variant": "c",
         "math.h": "c",
         "context.h": "c",
-        "globmatch.h": "c"
+        "globmatch.h": "c",
+        "interpreter_config.h": "c"
     },
     "cmake.configureOnOpen": true,
     "files.watcherExclude": {

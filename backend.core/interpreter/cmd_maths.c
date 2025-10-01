@@ -313,7 +313,6 @@ struct TypedValue fnc_EASE(struct Core *core)
     struct Interpreter *interpreter = core->interpreter;
 
     // function
-    enum TokenType type = interpreter->pc->type;
     ++interpreter->pc;
 
     // bracket open
@@ -404,6 +403,8 @@ struct TypedValue fnc_EASE(struct Core *core)
     else if(e==9 && io<0) v = easeInBounce(x);
     else if(e==9 && io==0) v = easeInOutBounce(x);
     else if(e==9 && io>0) v = easeOutBounce(x);
+
+		else v = xValue.v.floatValue;
 
     struct TypedValue value;
     value.type = ValueTypeFloat;

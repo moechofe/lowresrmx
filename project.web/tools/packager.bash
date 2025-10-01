@@ -5,9 +5,9 @@ SOURCE_DIR="$SCRIPT_DIR/../sources"
 PACKAGE_FILE="$SCRIPT_DIR/package.tar.xz"
 
 rm "$PACKAGE_FILE"
-tar cfJ "$PACKAGE_FILE" --owner=0 --group=0 --no-same-owner --no-same-permissions -C "$SOURCE_DIR" \
+tar cfvJ "$PACKAGE_FILE" --owner=0 --group=0 --no-same-owner --no-same-permissions -C "$SOURCE_DIR" \
 index.php \
-redis.php \
+redis.php admin.php \
 common.php common.js \
 token.php sign.php sign-in.html \
 upload.php download.php \
@@ -22,6 +22,7 @@ help.html help.js help.css \
 entry.php entry.html entry.css entry.js \
 share.html share.js share.css \
 header.html header.js header.css \
+footer.html footer.css \
 list.php list.html list.js list.css \
 favicon.ico logo.png \
 message.html privacy-policy.html terms-of-service.html \

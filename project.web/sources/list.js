@@ -6,6 +6,8 @@
  * author: string,
  * ut: string?
  * ct: string?,
+ * eid: string?
+ * pts: number?
  * }}
  */
 var ProgramItem;
@@ -25,11 +27,11 @@ var ProgramListConfig;
  * @return {Promise<HTMLElement>} The list of programs.
  * @event ask_to_publish {pid:string,name:string} When the user wants to publish a program.
  * @event ask_to_delete {pid:string,name:string} When the user wants to delete a program.
+ * @event ask_to_replace {pid:string,name:string} When the user wants to replace the program of a post.
  */
 const setupProgramList=(prg_list,config)=>{return new Promise(async(res,rej)=>{
 	const item_tpl=query('#program-item');
 	const list=query('.program-list');
-	const body=query('body');
 
 	/** @type {!Array<!HTMLElement>} */
 	const items=prg_list.map(data=>{
@@ -46,10 +48,15 @@ const setupProgramList=(prg_list,config)=>{return new Promise(async(res,rej)=>{
 		if(config.isPost)	find(item,'.points').textContent=data.points||"?";
 		else hide(find(item,'.points'));
 
-		if(config.isShare) show(find(item,'details'));
-
 		if(config.isPost) attr(a,"href",`./${encodeURI(data.pid)}.html`);
 		addClassCond(a,"is-post",config.isPost);
+
+		if(config.isShare) show(find(item,'details'));
+
+		if(config.isShare && data.eid && data.pts) text(find(item,'.already'),`${data.pts}pts`);
+
+		if(config.isShare && data.eid) showAll(item,'.already');
+		if(config.isShare && !data.eid) showAll(item,'.notyet');
 
 		dataset(find(item,'.publish'),'pid',data.pid);
 
@@ -62,6 +69,13 @@ const setupProgramList=(prg_list,config)=>{return new Promise(async(res,rej)=>{
 
 		click(find(item,'.delete'),_=>{
 			emit(list,'ask_to_delete',{
+				pid:data.pid,
+				name:data.name,
+			});
+		});
+
+		click(find(item,'.replace'),_=>{
+			emit(list,'ask_to_replace',{
 				pid:data.pid,
 				name:data.name,
 			});
@@ -242,6 +256,81 @@ const setupPublishDialog=()=>{
 		pid=pid_;
 		cb=on_published;
 		find(dialog,'input.title').value=name||"Untitled";
+		dialogOn(dialog);
+	};
+};
+
+/**
+ * @brief Prepare the dialog to replace a program of a topic.
+ * @return {(pid:string,program_name:string,on_replaced:(fid:string)=>void)=>void} Function to open the dialog.
+ */
+const setupReplaceDialog=()=>{
+	const replace_dialog=query('#replace-dialog');
+	const dialog=instanciate(replace_dialog);
+	const body=query('body');
+
+	// /** @type {string|null} */
+	// let pid=null;
+
+	// /** @type {function():void} */
+	// let cb=null;
+
+	// const showLimit=()=>{
+	// 	const limit=find(dialog,'.limit');
+	// 	const ta=find(dialog,'textarea');
+	// 	const max=dataget(limit,'limit');
+	// 	if(!max) return;
+	// 	limit.textContent=`${ta.value.length}/${max}`;
+	// };
+
+	// const close=function(){
+	// 	dialogOff(dialog,()=>{
+	// 		pid=null;
+	// 		cb=null;
+	// 		find(dialog,'select.where').value="";
+	// 		find(dialog,'input.title').value="";
+	// 		find(dialog,'textarea.text').value="";
+	// 	});
+	// };
+
+	// click(find(dialog,'button.cancel'),close);
+
+	// input(find(dialog,'textarea'),(event)=>{
+	// 	const max=dataget(find(dialog,'.limit'),'limit');
+	// 	const ta=find(dialog,'textarea');
+	// 	if(ta.value.length>max) ta.value=ta.value.substring(0,max);
+	// 	showLimit();
+	// 	autoHeight(event.target,214);
+	// 	event.target.scrollIntoView(true);
+	// });
+	// showLimit();
+	// autoHeight(find(dialog,'textarea'),214);
+
+	// click(find(dialog,'button.publish'),event=>{
+	// 	const where=find(dialog,'select.where').value;
+	// 	const title=find(dialog,'input.title').value;
+	// 	const text=find(dialog,'textarea.text').value;
+	// 	if(!where||!title||!text) return;
+	// 	if(!pid) return;
+	// 	disable(event.target);
+	// 	post('/publish',JSON.stringify({
+	// 		p:pid,
+	// 		w:where,
+	// 		i:title,
+	// 		x:text,
+	// 	})).then((res)=>res.json()).then((fid)=>{
+	// 		if(cb)cb(fid);
+	// 	}).catch((_)=>{
+	// 		showError();
+	// 	});
+	// });
+
+	append(body,dialog);
+
+	return (pid_,name,on_replaced)=>{
+		pid=pid_;
+		cb=on_replaced;
+		// find(dialog,'input.title').value=name||"Untitled";
 		dialogOn(dialog);
 	};
 };

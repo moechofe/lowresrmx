@@ -60,8 +60,6 @@ void core_init(struct Core *core)
 	if (!core->overlay)
 		exit(EXIT_FAILURE);
 
-	struct IORegisters *ioRegisters = &core->machine->ioRegisters;
-
 	machine_init(core);
 	itp_init(core);
 	overlay_init(core);

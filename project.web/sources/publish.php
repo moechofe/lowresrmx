@@ -23,10 +23,11 @@ if(preg_match('/\/publish$/',$urlPath)&&$isPost)
 
 	// Check for the program
 	if(!redis()->exists("p:$program_id")) badRequest("Fail to validate program");
-	list($prg,$img,$name)=redis()->hmget("p:$program_id","prg","img","name");
+	list($prg,$img,$name,$first_id)=redis()->hmget("p:$program_id","prg","img","name","first");
 	if(empty($prg)) internalServerError("Fail to read program");
 	if(empty($img)) internalServerError("Fail to read image");
 	if(empty($name)) internalServerError("Fail to read program name");
+	if(!empty($first_id)) badRequest("Already published");
 
 	// prepare text content
 	$first_id=generateEntryToken();
@@ -52,6 +53,9 @@ if(preg_match('/\/publish$/',$urlPath)&&$isPost)
 		"name",$name,
 	);
 
+	// Mark the program as publish
+	redis()->hset("p:$program_id","first",$first_id);
+
 	// Register the program in the forum
 	redis()->zadd("w:$where",time(),$first_id);
 
@@ -73,4 +77,33 @@ if(preg_match('/\/publish$/',$urlPath)&&$isPost)
 	header("Content-Type: application/json",true);
 	echo json_encode($first_id);
 	exit;
+}
+
+// API to publish a program to the forum.
+if(preg_match('/\/last_published$/',$urlPath)&&$isGet)
+{
+	$user_id=validateSessionAndGetUserId();
+	if(!$user_id) forbidden("Fail to read user");
+
+	$cursor=max(0,intval(value: @getallheaders()[HEADER_SCAN_CURSOR]));
+
+	$list=redis()->lrange("u:$user_id:f",-$cursor-10,$cursor-1);
+
+	if(count($list)==10) $published=[$cursor+10];
+
+	foreach($list as $first_id)
+	{
+		list($title,$ut,$name)=redis()->hmget("f:$first_id:f","title","ut","name");
+		if(empty($title)||empty($ut)) { cleanInvalidUserFirst($user_id,$first_id); continue; }
+		$points=redis()->hget("r:{$first_id}:d","pts");
+		if(!empty($points)) $published[]=[
+			'pid'=>$first_id,
+			'title'=>$title,
+			'points'=>intval($points),
+			'ut'=>$ut
+		];
+	}
+
+	header("Content-Type: application/json",true);
+	echo json_encode($published);
 }

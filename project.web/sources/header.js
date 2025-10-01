@@ -5,8 +5,7 @@ const setupError=()=>{
 }
 
 const showError=()=>{
-	console.log("show error");
-	dialogOn(query('dialog.error'));
+	dialogOn(query('diaflog.error'));
 }
 
 const setupSign=()=>{

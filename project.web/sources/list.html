@@ -1,15 +1,8 @@
-<template id="program-list-first">
-
-	<div class="program-item what">
-		<p>Explore, vote on, and comment on programs made by the community using the iOS app <a href="<?=APPLE_APP_STORE?>">Retro Game Creator</a> — a fantasy console and game creator. <strong data-tooltip="Use the sharing feature in the iOS app.">Publish your own programs to share them.</strong></p>
-		<p><a class="apple-app-store" href="<?=APPLE_APP_STORE?>" alt="Download on the AppStore">Retro Game Creator — a fantasy console and game creator</a></p>
-	</div>
-
-</template>
 <template id="program-item">
 
 	<article class="program-item">
 	<a>
+		<span class="already" hidden data-tooltip="published"></span>
 		<div class="visual">
 			<div class="picture"></div>
 		</div>
@@ -23,9 +16,10 @@
 	<details class="dropdown" hidden>
 		<summary role="button" class="outline secondary">Actions</summary>
 		<ul>
-			<li><a href="#" class="publish">Publish now post</a></li>
+			<li class="notyet" hidden><a class="publish">Publish now post</a></li>
+			<li class="notyet" hidden><a class="replace">Replace old post</a></li>
 			<!-- <li><a href="#" class="list">List published posts</a></li> -->
-			<li><a href="#" class="delete">Delete program only</a></li>
+			<li><a class="delete">Delete program only</a></li>
 		</ul>
 	</details>
 	</article>
@@ -81,6 +75,33 @@
 					<option value="chat">Discussion / News / Unrelated</option>
 					<option value="help">Help / Example</option>
 				</select>
+				<input type="text" class="title" required placeholder="Program title" />
+				<div class="limit" data-limit="<?=MAX_POST_TEXT?>"></div>
+				<textarea class="text" placeholder="Message&hellip;" ></textarea>
+			</fieldset>
+			<fieldset class="grid">
+				<button class="publish">Publish</button>
+				<button class="cancel outline">Cancel</button>
+			</fieldset>
+		</main>
+	</article></dialog>
+
+</template>
+<template id="replace-dialog">
+
+	<dialog class="replace-dialog"><article>
+		<header class="container"><h2>Replace existing post</h2></header>
+		<main class="container">
+			<fieldset>
+				<section>
+				<ul>
+					<li>test</li>
+					<li>test</li>
+					<li>test</li>
+					<li>test</li>
+					<li>test</li>
+				</ul>
+				</section>
 				<input type="text" class="title" required placeholder="Program title" />
 				<div class="limit" data-limit="<?=MAX_POST_TEXT?>"></div>
 				<textarea class="text" placeholder="Message&hellip;" ></textarea>

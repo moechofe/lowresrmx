@@ -5,7 +5,7 @@ body .message a { color: #fff; text-decoration-color: #fff; }
 
 header { user-select:none; }
 header .burger { display:none; }
-@media (max-width:560px) { header .burger { display:flex; } header .links { display:none; } }
+@media (max-width:840px) { header .burger { display:flex; } header .links { display:none; } }
 
 body.community a:not(.community) { color: var(--pico-secondary); }
 body.chat a:not(.chat) { color: var(--pico-secondary); }
@@ -18,11 +18,18 @@ header .burger summary+ul { min-width:9em; }
 header .burger summary+ul li a { font-weight:bold; }
 
 header .forum { font-weight:bold; font-size:1.25em; }
-@media (max-width:640px) { ul.forum { font-size:1em; } }
+@media (max-width:940px) { ul.forum { font-size:1em; } }
 
 header .forum img { border-radius:50%; height: 24px; }
 
-@-moz-document url-prefix() { ul.new { position: relative; top: -2.5px; } }
+details.dropdown summary { display: flex; white-space: nowrap; }
+details.dropdown * { cursor:pointer; }
+
+/* nav a { white-space: nowrap; } */
+
+ul.new button.new-topic::after { content: "New Topic"; }
+@media (max-width:940px) { ul.new button.new-topic::after { content: "New"; } }
+@media (max-width:430px) { ul.new button.new-topic::after { content: unset; } }
 
 body:not(:is(.help,.chat)) header .new { display: none; }
 

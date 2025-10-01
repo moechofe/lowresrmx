@@ -2,12 +2,15 @@
 	document.addEventListener('DOMContentLoaded',ready)
 }))().then(async()=>{
 
-<?php require_once __DIR__.'/common.js'; ?>
-<?php require_once __DIR__.'/header.js'; ?>
-<?php require_once __DIR__.'/list.js'; ?>
+<?php
+require_once __DIR__.'/common.js';
+require_once __DIR__.'/header.js';
+require_once __DIR__.'/list.js';
+?>
 
 const delete_dialog=setupProgramDelete();
 const publish_dialog=setupPublishDialog();
+const replace_dialog=setupReplaceDialog();
 
 const setupShareList=()=>{
 	get('last_shared').then((ans)=>{
@@ -24,6 +27,12 @@ const setupShareList=()=>{
 
 		on(list,'ask_to_publish',(event)=>{
 			publish_dialog(event.detail.pid,event.detail.name,(pid)=>{
+				window.location.href=`./${encodeURIComponent(pid)}.html`;
+			});
+		});
+
+		on(list,'ask_to_replace',(event)=>{
+			replace_dialog(event.detail.pid,event.detail.name,(pid)=>{
 				window.location.href=`./${encodeURIComponent(pid)}.html`;
 			});
 		});

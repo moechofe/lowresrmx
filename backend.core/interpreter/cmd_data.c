@@ -125,7 +125,6 @@ enum ErrorCode cmd_SKIP(struct Core *core)
     struct Interpreter *interpreter = core->interpreter;
 
     // SKIP
-    struct Token *tokenSKIP = interpreter->pc;
     ++interpreter->pc;
 
     // skip value

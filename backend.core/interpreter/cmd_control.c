@@ -515,8 +515,6 @@ enum ErrorCode cmd_WAIT(struct Core *core)
 	if (interpreter->pass == PassRun && interpreter->mode == ModeInterrupt)
 		return ErrorNotAllowedInInterrupt;
 
-	struct Token *save = interpreter->pc;
-
 	// WAIT
 	++interpreter->pc;
 

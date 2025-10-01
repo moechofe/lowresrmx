@@ -116,7 +116,7 @@ enum ErrorCode cmd_POKE(struct Core *core)
 
             case TokenPOKEW:
             {
-                long value = (long)pokeValue.v.floatValue;
+                int16_t value = (int16_t)pokeValue.v.floatValue;
 								bool poke = machine_poke_short(core, addressValue.v.floatValue, value);
 								if (!poke) return ErrorIllegalMemoryAccess;
                 break;
@@ -124,7 +124,7 @@ enum ErrorCode cmd_POKE(struct Core *core)
 
             case TokenPOKEL:
             {
-                long value = (long)pokeValue.v.floatValue;
+                int32_t value = (int32_t)pokeValue.v.floatValue;
 								bool poke = machine_poke_long(core, addressValue.v.floatValue, value);
 								if (!poke) return ErrorIllegalMemoryAccess;
                 break;

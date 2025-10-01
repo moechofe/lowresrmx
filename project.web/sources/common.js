@@ -61,6 +61,12 @@ const hide=(element)=>element.hidden=true;
 /** @type {function(!HTMLElement):void} */
 const show=(element)=>element.hidden=false;
 
+/** @type {function(!HTMLElement,!string):void } */
+const hideAll=(element,query)=>element.querySelectorAll(query).forEach((item)=>hide(item));
+
+/** @type {function(!HTMLElement,!string):void } */
+const showAll=(element,query)=>element.querySelectorAll(query).forEach((item)=>show(item));
+
 /** @type {function(!HTMLElement):void} */
 const attr=(element,name,value)=>{
 	if(value===null) return element.removeAttribute(name);
@@ -155,7 +161,7 @@ const post=(path,body,headers)=>fetch(path,{
 	credentials:'same-origin',
 	headers:Object.assign({
 		'Content-Type':'application/x-binary',
-		[HEADER_SESSION]:window.localStorage.getItem('session')||'',
+		// [HEADER_SESSION]:window.localStorage.getItem('session')||'',
 	},headers),
 	redirect:'follow',
 	referrerPolicy:'no-referrer',
@@ -169,7 +175,7 @@ const get=(path,headers)=>fetch(path,{
 	cache:'no-cache',
 	credentials:'same-origin',
 	headers:Object.assign({
-		[HEADER_SESSION]:window.localStorage.getItem('session')||'',
+		// [HEADER_SESSION]:window.localStorage.getItem('session')||'',
 	},headers),
 	redirect:'follow',
 	referrerPolicy:'no-referrer',

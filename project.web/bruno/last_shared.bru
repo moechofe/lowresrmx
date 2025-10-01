@@ -1,0 +1,19 @@
+meta {
+  name: last_shared
+  type: http
+  seq: 17
+}
+
+get {
+  url: {{base}}/last_shared
+  body: none
+  auth: inherit
+}
+
+headers {
+  Cookie: sid={{sid}}
+}
+
+settings {
+  encodeUrl: true
+}

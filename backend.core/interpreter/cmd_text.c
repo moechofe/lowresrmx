@@ -514,7 +514,6 @@ enum ErrorCode cmd_TRACE(struct Core *core)
 enum ErrorCode cmd_MESSAGE(struct Core *core)
 {
 	struct Interpreter *interpreter = core->interpreter;
-	struct TextLib *lib = &core->overlay->textLib;
 
 	// MESSAGE
 	++interpreter->pc;
