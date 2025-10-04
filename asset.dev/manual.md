@@ -269,11 +269,17 @@ Every trigonometric function internally replace π by 0.5.
 
 What it does is making cosine and sine functions loop when the entry value reach 1.0. Making it easier to conceptualize angles.
 
-> Pico-8 does a similar approach.
+> Pico-8 does exactly that.
 
 E.g.: 0.5 is half a circle, 1.0 is a full circle.
 
-Impacted functions: `=COS(angle)`, `=SIN(angle)`, `=ATAN2(y,x)`
+Impacted functions: `=COS(angle)`, `=SIN(angle)`, `=ATAN(y,x)`
+
+---
+
+Removed commands and functions:
+
+`ACOS`, `ASIN`, `HCOS`, `HSIN`, `HTAN`
 
 ---
 

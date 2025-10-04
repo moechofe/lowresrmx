@@ -64,10 +64,8 @@ enum TokenType
 
 	// Commands/Functions
 	TokenABS,
-	TokenACOS,
 	TokenADD,
 	TokenASC,
-	TokenASIN,
 	TokenATAN,
 	TokenATTR,
 	TokenBG,
@@ -109,10 +107,7 @@ enum TokenType
 	TokenGOSUB,
 	TokenGOTO,
 	TokenHEX,
-	TokenHCOS,
 	TokenHIT,
-	TokenHSIN,
-	TokenHTAN,
 	TokenIF,
 	TokenINC,
 	TokenINKEY,

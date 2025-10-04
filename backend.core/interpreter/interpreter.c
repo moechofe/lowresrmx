@@ -885,12 +885,18 @@ struct TypedValue itp_evaluateExpressionLevel(struct Core *core, int level)
 			}
 			case TokenEq:
 			{
-				newValue.v.floatValue = (value.v.floatValue == rightValue.v.floatValue) ? BAS_TRUE : BAS_FALSE;
+				if(is_equal_approx(value.v.floatValue, rightValue.v.floatValue))
+					newValue.v.floatValue = BAS_TRUE;
+				else
+					newValue.v.floatValue = BAS_FALSE;
 				break;
 			}
 			case TokenUneq:
 			{
-				newValue.v.floatValue = (value.v.floatValue != rightValue.v.floatValue) ? BAS_TRUE : BAS_FALSE;
+				if(is_equal_approx(value.v.floatValue, rightValue.v.floatValue))
+					newValue.v.floatValue = BAS_FALSE;
+				else
+					newValue.v.floatValue = BAS_TRUE;
 				break;
 			}
 			case TokenGr:
@@ -1279,14 +1285,9 @@ struct TypedValue itp_evaluateFunction(struct Core *core)
 		return fnc_math0(core);
 
 	case TokenABS:
-	case TokenACOS:
-	case TokenASIN:
-	case TokenATAN:
 	case TokenCOS:
 	case TokenEXP:
-	case TokenHCOS:
-	case TokenHSIN:
-	case TokenHTAN:
+
 	case TokenINT:
 	case TokenLOG:
 	case TokenSGN:
@@ -1295,6 +1296,7 @@ struct TypedValue itp_evaluateFunction(struct Core *core)
 	case TokenTAN:
 		return fnc_math1(core);
 
+	case TokenATAN:
 	case TokenMAX:
 	case TokenMIN:
 		return fnc_math2(core);
@@ -1807,4 +1809,14 @@ enum ErrorCode itp_labelStackError(struct LabelStackItem *item)
 		// should not happen in compile time
 		return ErrorSyntax;
 	}
+}
+
+bool is_zero_approx(float x)
+{
+  return fabsf(x) < FLT_EPSILON*2;
+}
+
+bool is_equal_approx(float x, float y)
+{
+	return fabsf(x - y) < FLT_EPSILON*2;
 }

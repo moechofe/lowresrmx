@@ -59,10 +59,8 @@ const char *TokenStrings[] = {
 
     // Commands/Functions
     "ABS",
-    "ACOS",
     "ADD",
     "ASC",
-    "ASIN",
     "ATAN",
     "ATTR",
     "BG",
@@ -104,10 +102,7 @@ const char *TokenStrings[] = {
     "GOSUB",
     "GOTO",
     "HEX$",
-    "HCOS",
     "HIT",
-    "HSIN",
-    "HTAN",
     "IF",
     "INC",
     "INKEY$",

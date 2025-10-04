@@ -21,6 +21,8 @@
 #ifndef interpreter_h
 #define interpreter_h
 
+#include <math.h>
+#include <float.h>
 #include <stdio.h>
 #include <stdbool.h>
 #include "interpreter_config.h"
@@ -154,5 +156,8 @@ struct TypedValue itp_evaluateOptionalNumericExpression(struct Core *core, int m
 bool itp_isEndOfCommand(struct Interpreter *interpreter);
 enum ErrorCode itp_endOfCommand(struct Interpreter *interpreter);
 enum ErrorCode itp_labelStackError(struct LabelStackItem *item);
+
+bool is_equal_approx(float x, float y);
+bool is_zero_approx(float x);
 
 #endif /* interpreter_h */
