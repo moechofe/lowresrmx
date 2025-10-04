@@ -325,7 +325,6 @@ enum ErrorCode cmd_DMA_COPY(struct Core *core)
     int base_addr = 0;
 
     // DMA
-    enum TokenType type = interpreter->pc->type;
     ++interpreter->pc;
 
     // DMA COPY

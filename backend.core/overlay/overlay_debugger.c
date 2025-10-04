@@ -148,8 +148,6 @@ void process_command_line(struct Core *core)
 			}
 			else if (array && t->type == TokenEol)
 			{
-				int a = 123;
-
 				// TODO: what to do here?
 			}
 			else if (array && t->type == TokenBracketOpen)
@@ -244,7 +242,6 @@ void process_command_line(struct Core *core)
 			}
 			if (t->type == TokenFloat && t->floatValue >= 1) pagination = (int)t->floatValue;
 			struct Tokenizer *tokenizer = &core->interpreter->tokenizer;
-			struct IORegisters *ioRegisters = &core->machine->ioRegisters;
 			int canPrint = (core->overlay->textLib.windowHeight - 3);
 			int printed = 0;
 			// TODO: get shown.h and safe.top and keyboard.height
@@ -358,7 +355,6 @@ void process_command_line(struct Core *core)
 				if(len>20) len=20;
 				buffer[len]='\0';
 				memcpy(&buffer,ptr+1,len);
-				printf("==%s %d\n",buffer,len);
 				txtlib_printText(&core->overlay->textLib,buffer);
 				new_line(core);
 			}
@@ -443,7 +439,7 @@ void overlay_debugger(struct Core *core)
 			{
 				overlay->previouscommandLineReadIndex = (overlay->previouscommandLineReadIndex + 9 - 1) % 9;
 				strcpy(overlay->commandLine, overlay->previousCommandLine[overlay->previouscommandLineReadIndex]);
-				lib->cursorX = strlen(overlay->commandLine);
+				lib->cursorX = (int)strlen(overlay->commandLine);
 				print_command_line(core);
 			}
 		}
@@ -453,7 +449,7 @@ void overlay_debugger(struct Core *core)
 			{
 				overlay->previouscommandLineReadIndex = (overlay->previouscommandLineReadIndex + 1) % 9;
 				strcpy(overlay->commandLine, overlay->previousCommandLine[overlay->previouscommandLineReadIndex]);
-				lib->cursorX = strlen(overlay->commandLine);
+				lib->cursorX = (int)strlen(overlay->commandLine);
 				print_command_line(core);
 			}
 		}

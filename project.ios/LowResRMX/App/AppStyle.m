@@ -17,7 +17,7 @@
 + (void)setAppearance
 {
     // App tint color
-    UIWindow *window = (UIWindow *)[UIApplication sharedApplication].windows.firstObject;
+    //UIWindow *window = (UIWindow *)[UIApplication sharedApplication].windows.firstObject;
     //window.tintColor = [AppStyle darkTintColor];
     
     // Bars

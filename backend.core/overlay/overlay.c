@@ -27,7 +27,6 @@
 
 void overlay_init(struct Core *core)
 {
-	struct IORegisters *io = &core->machine->ioRegisters;
 	struct TextLib *lib = &core->overlay->textLib;
 	lib->core = core;
 	lib->bg = OVERLAY_BG;
