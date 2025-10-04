@@ -228,6 +228,11 @@ class ExplorerViewController: UIViewController, UICollectionViewDelegateFlowLayo
     @objc func onActionTapped(_ sender: UIBarButtonItem) {
         let alert = UIAlertController(title: "Options", message: nil, preferredStyle: .actionSheet)
 
+        let fontSizeAction = UIAlertAction(title: "Editor Font Size", style: .default, handler: { [weak self] (action) in
+            self?.showFontSizePicker()
+        })
+        alert.addAction(fontSizeAction)
+
         let addAction = UIAlertAction(title: "Reinstall Default Programs", style: .default, handler: { [weak self] (action) in
             self?.onReinstallTapped()
         })
@@ -277,6 +282,12 @@ class ExplorerViewController: UIViewController, UICollectionViewDelegateFlowLayo
         present(nc, animated: true, completion: nil)
 
         AppController.shared.didLogOut()
+    }
+
+    func showFontSizePicker() {
+        let fontSizePicker = FontSizePickerViewController()
+        let navigationController = UINavigationController(rootViewController: fontSizePicker)
+        present(navigationController, animated: true, completion: nil)
     }
 
     func showEditor(fileUrl: URL) {

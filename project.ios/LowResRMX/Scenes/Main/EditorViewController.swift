@@ -8,6 +8,8 @@
 
 import UIKit
 
+
+
 class EditorViewController: UIViewController, UITextViewDelegate, EditorTextViewDelegate, SearchToolbarDelegate, ProjectDocumentDelegate, LowResRMXViewControllerDelegate, LowResRMXViewControllerToolDelegate {
 
     @IBOutlet weak var sourceCodeTextView: EditorTextView!
@@ -32,6 +34,7 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
     var shouldActivateEditing = false
 
     private var documentStateChangedObserver: Any?
+    private var fontSizeObserver: Any?
     var document: ProjectDocument!
     var keyboardRect = CGRect()
 
@@ -67,11 +70,23 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
 
         sourceCodeTextView.text = document.sourceCode ?? ""
 
+        // Apply font size setting
+        applyFontSize()
+
         searchToolbar.searchDelegate = self
 
         indexSideBar.textView = sourceCodeTextView
 
         keyboardRect = CGRect()
+
+        // Setup font size change notification observer
+        fontSizeObserver = NotificationCenter.default.addObserver(
+            forName: .EditorFontSizeDidChange,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.applyFontSize()
+        }
 
         activityIndicatorView.isHidden = true
         sourceCodeTextView.isEditable = false
@@ -112,6 +127,9 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
         NotificationCenter.default.removeObserver(self)
         updateDocument()
         document.close(completionHandler: nil)
+        if let observer = fontSizeObserver {
+            NotificationCenter.default.removeObserver(observer)
+        }
     }
 
     func removeDocumentStateChangedObserver() {
@@ -133,6 +151,9 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
             searchToolbar.isHidden = true
         }
         updateEditorInsets()
+
+        // Ensure font size is applied when view appears
+        applyFontSize()
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -676,5 +697,15 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
             shouldActivateEditing = true
         }
     }
+
+    // MARK: - Font Size Management
+
+    private func applyFontSize() {
+        let fontSize = AppController.shared.editorFontSize
+        let font = UIFont(name: "Menlo", size: fontSize) ?? UIFont.monospacedSystemFont(ofSize: fontSize, weight: .regular)
+        sourceCodeTextView.font = font
+    }
+
+
 
 }
