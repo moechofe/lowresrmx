@@ -194,13 +194,7 @@ struct TypedValue fnc_math2(struct Core *core) {
       break;
 
     case TokenATAN:
-			//value.v.floatValue = -atan2f(y, x) / M_PI / 2;
-      //value.v.floatValue = -atan2f(-y, x) / M_PI / 2;
-			//value.v.floatValue = -atan2f(y, -x) / M_PI / 2;
-			//value.v.floatValue = -atan2f(-y, -x) / M_PI / 2;
-			//value.v.floatValue = atan2f(y, x) / M_PI / 2;
-			//value.v.floatValue = atan2f(-y, x) / M_PI / 2;
-			value.v.floatValue = 1.0 - atan2f(y, x) / M_PI / 2;
+			value.v.floatValue = - atan2f(y, x) / M_PI / 2;
       break;
 
     default:
