@@ -1,28 +1,17 @@
 TODO:
 
-1. **ABS** - Absolute value function
-2. **ACOS** - Arc cosine function
-3. **ADD** - Addition command
 4. **ASC** - ASCII code function
-5. **ASIN** - Arc sine function
 6. **ATAN** - Arc tangent function (only ATAN2 is mentioned in differences section)
 7. **ATTR** - Set cell attributes (mentioned in context but no dedicated section)
 8. **CHAR** - Character command
 9. **CHR$** - Character string function
 10. **COLOR** - Color function
-11. **DEC** - Decrement command
-12. **EXP** - Exponential function
 13. **FSIZE** - File size function
-14. **HCOS** - Hyperbolic/hexagonal cosine
-15. **HSIN** - Hyperbolic/hexagonal sine
-16. **HTAN** - Hyperbolic/hexagonal tangent
-17. **INC** - Increment command (mentioned in examples but no dedicated section)
 18. **INPUT** - Input command
 19. **INSTR** - In-string function
 20. **LEFT$** - Left substring function (mentioned in examples but no dedicated section)
 21. **LET** - Let assignment command
 22. **LFO.A** - LFO attribute function
-23. **LOG** - Logarithm function
 24. **MAX** - Maximum function
 25. **MID$** - Mid substring function (mentioned in examples but no dedicated section)
 26. **MIN** - Minimum function (mentioned in examples but no dedicated section)
@@ -32,8 +21,6 @@ TODO:
 30. **ROM** - ROM function
 31. **ROR** - Rotate right function
 32. **SAVE** - Save command
-33. **SGN** - Sign function
-34. **SQR** - Square root function
 35. **STR$** - String conversion function (mentioned in examples but no dedicated section)
 36. **SWAP** - Swap command
 37. **VAL** - Value function
@@ -265,43 +252,26 @@ Numeric values are supported as well:
 
 #### Math
 
-Every trigonometric function internally replace π by 0.5.
+- [Cosine, sine](#cosinecosnumbersinesinnumber) and [arc tangent](#arcatanxy) functions internally replace π by 0.5.
 
-What it does is making cosine and sine functions loop when the entry value reach 1.0. Making it easier to conceptualize angles.
+    > Pico-8 does exactly that.
 
-> Pico-8 does exactly that.
+    - an angle of 0.0 or 1.0 reprensent the right direction.
+    - an angle of 0.5 reprensent the left direction.
+    - an angle of 0.25 reprensent the top direction.
+    - an angle of -0.25 reprensent the bottom direction.
 
-E.g.: 0.5 is half a circle, 1.0 is a full circle.
+- Removed trigonometric functions: `ACOS`, `ASIN`, `HCOS`, `HSIN`, `HTAN`
 
-Impacted functions: `=COS(angle)`, `=SIN(angle)`, `=ATAN(y,x)`
+- New function to return the [ceiling value](#ceilceilnumber) of a numerical value:
 
----
+- New function to return the [flooring value](#floorfloornumber) of a numerical value:
 
-Removed commands and functions:
+- New function to [clamp a numerical value](#clampedclampvalueminmax).
 
-`ACOS`, `ASIN`, `HCOS`, `HSIN`, `HTAN`
+- New syntax to compute [vector length](#lengthlengthx,y).
 
----
-
-New function to return the ceiling value of a numerical value:
-
-`=CEIL(value)`
-
----
-
-New function to return the flooring value of a numerical value:
-
-`=FLOOR(value)`
-
-> This is different than `=INT(value)`
-
----
-
-New function to clamp a numerical value:
-
-`=CLAMP(value,min,max)`
-
-This returns the `value` clamped between `min` and `max`.
+- New function to compute [easing function](#interpolationeasefunctionmodevalue).
 
 ---
 
@@ -318,41 +288,6 @@ Works the same as before but with a different generator, using [PCG](https://www
 You can specify an `address` where the internal state will be stored, consuming 16 bytes.
 
 This allows you to use multiple generators at the same time.
-
----
-
-New syntax to compute length:
-
-`=LEN(x,y)`
-
-Calculates the length of a 2D vector using `x` and `y` as the coordinates for the two axes.
-
----
-
-New function that interpolate values between 0.0 and 1.0 using easing mathematical functions:
-
-`interpolation=EASE(function,mode,value)`
-
-This returns the `interpolation` of `value` between 0.0 and 1.0, using the specified easing `function` and `mode`.
-
-|     | function |
-| --- | -------- |
-|   0 | linear   |
-|   1 | sine     |
-|   2 | quad     |
-|   3 | cubic    |
-|   4 | quart    |
-|   5 | quint    |
-|   6 | circ     |
-|   7 | back     |
-|   8 | elastic  |
-|   9 | bounce   |
-
-|     | mode  |
-| --- | ----- |
-|  -1 | in    |
-|   0 | inout |
-|  +1 | out   |
 
 #### Text
 
@@ -2529,6 +2464,128 @@ Enabling the _color 0 opacity_ will make the color 0 of each palette non transpa
 > It's make no sens for layer 0.
 
 Enabling the _double size_ will make the background layer rendered at twice the size. The scrolling values are not affected.
+
+### Math API
+
+#### `cosine=COS(number)`<br>`sine=SIN(number)`
+
+Return the `cosine` or `sine` (0..1) value of a `number`.
+
+`COS()` and `SIN()` take (0..1) instead of (0..π*2), and `SIN()` is inverted.
+
+#### `arc=ATAN(x,y)`
+
+Return the `arc` tangent value of a `x`,`y` vector.
+
+`ATAN()` returns an value between (-0.5..0.5) making it suitable for use with `COS()` and `SIN()`.
+
+Example that show how to compute an angle from a position, and a position from an angle:
+
+    'get the center position of the screen
+    cx=shown.w/2-4
+    cy=shown.h/2-4
+    sprite 50,cx,cy,1
+
+    'initial position from the center
+    dx=40
+    dy=20
+    sprite 40,cx+dx,cy+dy,1
+    sprite 40 pal 1
+    sprite 30 pal 2
+
+    do
+        'new position from touch
+        dx=touch.x-cx
+        dy=touch.y-cy
+        sprite 40,cx+dx,cy+dy,1
+
+        'get angle from vector
+        a=atan(dx,dy)
+
+        'get position from angle
+        x=cos(a)*30
+        y=sin(a)*30
+
+        sprite 30,cx+x,cy+y,1
+        wait vbl
+    loop
+
+    #2:MAIN CHARACTERS
+    00000000000000000000000000000000
+    3C7EFFFFFFFF7E3C0000000000000000
+
+#### `absolute=ABS(number)`
+
+Return the `absolute` value of a `number`.
+
+#### `exponential=EXP(number)`
+
+Return the `exponential` value of a `number`.
+
+#### `logarithm=LOG(number)`
+
+Return the `logarithm` value of a `number`.
+
+#### `square=SQR(number)`
+
+Return the `square` root value of a `number`.
+
+#### `sign=SGN(number)`
+
+Return the `sign` (+1/-1) of a `number`.
+
+#### `floor=FLOOR(number)`
+
+Return the `floor` value of a `number`.
+
+#### `ceil=CEIL(number)`
+
+Return the `ceil` value of a `number`.
+
+#### `INC variable`<br>`DEC variable`
+
+Increment or decrement by 1 the value of a `variable`.
+
+#### `ADD variable,value`<br>ADD variable,increment,min TO max`
+
+Add a `value` to a `variable`.
+
+Optionally make it wrap around between `min` and `max`.
+
+#### `minimal=MIN(a,b)`<br>`maximal=MAX(a,b)`
+
+Return the `minimal` or `maximal` value between `a` and `b`.
+
+#### `clamped=CLAMP(value,min,max)`
+
+Return the `value` `clamped` between `min` and `max`.
+
+#### `length=LEN(x,y)`
+
+Return the `length` of a `x`,`y` vector.
+
+#### `interpolation=EASE(function,mode,value)`
+
+This returns the `interpolation` of `value` between 0.0 and 1.0, using the specified easing `function` and `mode`.
+
+|     | function |
+| ---:| -------- |
+|   0 | linear   |
+|   1 | sine     |
+|   2 | quad     |
+|   3 | cubic    |
+|   4 | quart    |
+|   5 | quint    |
+|   6 | circ     |
+|   7 | back     |
+|   8 | elastic  |
+|   9 | bounce   |
+
+|     | mode  |
+| ---:| ----- |
+|  -1 | in    |
+|   0 | inout |
+|  +1 | out   |
 
 ### Sound API
 
