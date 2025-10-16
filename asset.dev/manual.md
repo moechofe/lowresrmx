@@ -1,12 +1,4 @@
-TODO: need technical info about string, no? check ### Literals
-TODO: how window not updated when on-resized
-TODO: list of API instructions
-TODO: default ROM FILE entries
-TODO: check all TODO
-
-TODO: check for link reach
-TODO: check for doubled link
-TODO: ``` or \[tab\] ?
+TODO: backquote should be reserve to command or parameters names, not values
 
 # Retro Game Creator - Documentation
 
@@ -14,24 +6,24 @@ TODO: ``` or \[tab\] ?
 > This is a heavily modified version and way more complicated to use, I recommend you to stay on the original app:<br>
 > 🌐[LowRes NX Coder on App Store](https://apps.apple.com/app/lowres-nx-coder/id1318884577).
 
-## What is LowResRMX?
+## What is Retro Game Creator?
 
-Create your games and play them on the go using an iPhone or iPad. LowResRMX is a virtual game console and game development environment that includes all the tools you need to start and finish a project.
+Create games and play them on the go using an iPhone or iPad. Retro Game Creator is a virtual game console and game development environment that includes all the tools needed to start and finish a project.
 
 It includes a project manager, a code editor, and various tools to edit game assets: sprites, palettes, backgrounds, instruments, and music.
 
-LowResRMX simulates a virtual retro game console directly inside your device, allowing user to create, play, and share their games.
+Retro Game Creator simulates a virtual retro game console directly inside your device, allowing users to create, play, and share their games.
 
-It tries to emulate old-school 8-bits/16-bits console hardware by copying their limitations. Low number of colors, limited memory, and slow processing power.
+It emulates old-school 8-bit/16-bit console hardware by replicating their limitations: a low number of colors, limited memory, and slow processing power.
 
 ## Difference
 
 The goal of the app is to provide a development environment that I can use during my commutes on the subway, and later, to be able to publish a real app on the stores.
 
-The original LowRes NX, despite being an excellent development environment, lacks some capabilities, in my opinion to be used on a handled device.
+The original LowRes NX, despite being an excellent development environment, lacks some capabilities needed for use on a handheld device.
 
-> If you already know how to use Lowres NX, you can read the following list of differences below:<br>
-> For new users, I recommend to [jump to the: How does it work section](#how-does-it-work)
+> If you already know how to use Lowres NX, you can read the list of differences below.<br>
+> For new users, I recommend jumping to the [How does it work](#how-does-it-work) section.
 
 **Background:**
 
@@ -41,19 +33,19 @@ The original LowRes NX, despite being an excellent development environment, lack
 
     Removed syntaxes: <del>`CELL SIZE`</del>.
 
-- The [`FLIP` command take optional argument](#flip-horizontalvertical) now.
+- The [`FLIP` command now takes optional arguments](#flip-horizontalvertical).
 
-- New settings with the `SYSTEM` command to [render a layer at double size](#system-settingvalue):
+- New settings with the `SYSTEM` command to [render a layer at double size](#system-settingvalue).
 
-- Internal scroll offset not capped to 512 any more, but 0xFFFF.
+- Internal scroll offset is no longer capped at 512, but at 0xFFFF.
 
 **Screen:**
 
 - A new [fantasy screen](#screen) with a maximum resolution of 216x384 pixels.
 
-- New functions to [retrieve the visible fantasy display size](#widthshownwheightshownh)
+- New functions to [retrieve the visible fantasy display size](#widthshownwheightshownh).
 
-- New functions to [query the safe area offset](#leftsafeltopsafetrightsaferbottomsafeb):
+- New functions to [query the safe area offset](#leftsafeltopsafetrightsaferbottomsafeb).
 
 - Removed commands and functions: <del>`DISPLAY`</del>.
 
@@ -63,13 +55,13 @@ The original LowRes NX, despite being an excellent development environment, lack
 
     > This makes using the color chooser from the original "Gfx Designer" in LowRes NX a bit more challenging.
 
-- New settings with the `SYSTEM` command to make the [color `0` for a layer opaque](#system-settingvalue) instead of transparent:
+- New settings with the `SYSTEM` command to make [color `0` for a layer opaque](#system-settingvalue) instead of transparent.
 
 **Sprites:**
 
-- 170 sprites instead of 64. Sprite number range from `0` to `169`.
+- 170 sprites instead of 64. Sprite numbers range from 0 to 169.
 
-- Positions support sub-pixels with `1/16` pixel precision.
+- Positions support sub-pixels with 1/16 pixel precision.
 
         sprite 123,sprite.x(123)+0.25,
 
@@ -83,13 +75,13 @@ The original LowRes NX, despite being an excellent development environment, lack
 
     Removed useless commands: <del>`TOUCHSCREEN`</del>, <del>`KEYBOARD OPTIONAL`</del>
 
-- When the device's virtual keyboard is hidden by the user, the corresponding I/O [Registers](#registers) flag is updated. TODO: link
+- When the device's virtual keyboard is hidden by the user, the corresponding I/O [Registers](#registers) flag is updated (see [Other I/O status bits](#other-io-status-bits)).
 
-- New syntaxe to [wait until device screen is tapped](#wait-tap).
+- New syntax to [wait until device screen is tapped](#wait-tap).
 
-- New function that return [the height taken by the device virtual keyboard](#heightkeyboard) in pixels when it's visible.
+- New function that returns [the height taken by the device virtual keyboard](#heightkeyboard) in pixels when it's visible.
 
-- New `HAPTIC h` command to [trigger haptic feedback](#haptic-pattern) on the device.
+- New `HAPTIC` command to [trigger haptic feedback](#haptic-pattern) on the device.
 
 **Control flow:**
 
@@ -103,44 +95,44 @@ The original LowRes NX, despite being an excellent development environment, lack
 
 **Math:**
 
-- [Cosine, sine](#cosinecosnumbersinesinnumber) and [arc tangent](#arcatanxy) functions internally replace π by 0.5.
+- [Cosine, sine](#cosinecosnumbersinesinnumber) and [arc tangent](#arcatanxy) functions internally replace π with 0.5.
 
-    > Pico-8 does exactly that.
+    > Pico-8 uses the same approach.
 
-    - an angle of 0.0 or 1.0 reprensent the right direction.
-    - an angle of 0.5 reprensent the left direction.
-    - an angle of 0.25 reprensent the top direction.
-    - an angle of -0.25 reprensent the bottom direction.
+    - An angle of 0.0 or 1.0 represents the right direction.
+    - An angle of 0.5 represents the left direction.
+    - An angle of 0.25 represents the top direction.
+    - An angle of -0.25 represents the bottom direction.
 
 - Removed trigonometric functions: <del>`ACOS`</del>, <del>`ASIN`</del>, <del>`HCOS`</del>, <del>`HSIN`</del>, <del>`HTAN`</del>.
 
-- New function to return the [ceiling value](#ceilceilnumber) of a numerical value:
+- New function to return the [ceiling value](#ceilceilnumber) of a numerical value.
 
-- New function to return the [flooring value](#floorfloornumber) of a numerical value:
+- New function to return the [flooring value](#floorfloornumber) of a numerical value.
 
 - New function to [clamp a numerical value](#clampedclampvalueminmax).
 
-- New syntax to compute [vector length](#lengthlengthx,y).
+- New syntax to compute [vector length](#lengthlengthxy).
 
 - New function to compute [easing function](#interpolationeasefunctionmodevalue).
 
-- New random generator using 🌐[PCG](https://www.pcg-random.org/). It's more random now.
+- New random generator using 🌐[PCG](https://www.pcg-random.org/). It produces better randomness.
 
-- New syntax to generate random number that allow to [save the current state](#randomrnd-addressbrrandomrndmaxaddressbrrandomize-seedaddress).
+- New syntax to generate random numbers that allows [saving the current state](#randomrnd-addressbrrandomrndmaxaddressbrrandomize-seedaddress).
 
 **Text:**
 
-- New command to expose the existing [overlay message API](#message-text):
+- New command to expose the existing [overlay message API](#message-text).
 
-- `PRINT` command can now [word wrap before breaking word](#print-expression-list).
+- `PRINT` command can now [word wrap before breaking words](#print-expression-list).
 
     If there is not enough space to print a word inside the window, a new line is inserted to avoid breaking the word in two.
 
 **Other:**
 
-- New command to [support programs from the original LowRes NX](#compat):
+- New command to [support programs from the original LowRes NX](#compat).
 
-- Reuse the `PAUSE` command to bring the [internal debugger](#pause).
+- Reuse the `PAUSE` command to access the [internal debugger](#pause).
 
 - Removed commands and functions: <del>`PAUSE ON/OFF`</del>, <del>`PAUSE=`</del>.
 
@@ -168,7 +160,7 @@ The original LowRes NX, despite being an excellent development environment, lack
 | `$FF40` |           | Audio Registers  |
 | `$FF70` |           | I/O Registers    |
 
-LowResRMX:
+Retro Game Creator:
 
 |     addr | size       | purpose          |
 | --------:| ---------- | ---------------- |
@@ -178,7 +170,7 @@ LowResRMX:
 |  `$6000` | 8 Kibit    | BG3 data         |
 |  `$8000` | 4 Kibit    | Character Data   |
 |  `$9000` | 20 Kibit   | Working RAM      |
-|  `$E000` | 6 Kibit    | Persisent RAM    |
+|  `$E000` | 6 Kibit    | Persistent RAM   |
 |  `$FB00` | 1020 Bytes | Sprite registers |
 |  `$FF00` | 32 Bytes   | Color registers  |
 |  `$FF20` | 10 Bytes   | Video registers  |
@@ -209,9 +201,7 @@ LowResRMX:
 
 **Particles:**
 
-TODO: redo it
-
-> Work-in-progress: everything will changes
+> **Work in progress:** The particle system is under development and everything is subject to change.
 
 The particles library reuses sprites to make them appear, disappear, change their character data, and move them across the screen.
 
@@ -245,7 +235,7 @@ Declare a `label` that contains data for the particle `appearance`.
 
 `appearance` is a number between `0` and `23`.
 
-The associated data must contain a list of character numbers that will be used to draw the particle. Using a negative number will loop back to the previous data value.
+The associated data MUST contain a list of character numbers that will be used to draw the particle. Using a negative number will loop back to the previous data value.
 
 A common example is to use zero (0) and minus one (-1) for the last two data values, which allows the particle to disappear until the sprite is reused.
 
@@ -279,7 +269,7 @@ The target `subprogram` will receive two arguments:
 		'change the speed in y axis
 	end sub
 
-TODO: specify the number of cycles available.
+The number of available cycles will be specified in a future version.
 
 ---
 
@@ -292,11 +282,11 @@ Declare the use of `count` emitters and store the internal data at `address`.
 Each emitter will consume 6 bytes of memory. For each emitter:
 
 | addr | size    | purpose                 |
-| ---- | ------- | ----------------------- |
-| +0   | 2 Bytes | Position on x axis      |
-| +2   | 2 Bytes | Position on y axis      |
-| +4   | 1 Byte  | Delay before emit       |
-| +5   | 1 Byte  | Number of times to emit |
+| ----:| ------- | ----------------------- |
+|   +0 | 2 Bytes | Position on x axis      |
+|   +2 | 2 Bytes | Position on y axis      |
+|   +4 | 1 Byte  | Delay before emit       |
+|   +5 | 1 Byte  | Number of times to emit |
 
 ---
 
@@ -304,29 +294,29 @@ Each emitter will consume 6 bytes of memory. For each emitter:
 
 Declare a `label` that contains DATA for the `emitter`.
 
-The associated data must follow this list:
+The associated data MUST follow this list:
 1. `appearance` index of `appearance`, see: `PARTICLE appearance DATA label`.
-2. `shape` TODO: continue doc,
+2. `shape` (documentation pending),
 3. `outer` ring radius,
 4. `inner` ring radius,
-5. `arc` TODO: continue doc,
-6. `rotation` TODO: continue doc,
+5. `arc` (documentation pending),
+6. `rotation` (documentation pending),
 7. initial particle `speed` on x axis,
 8. initial particle `speed` on y axis,
-9. `explosivity` TODO: continue doc,
-10. `count` of the number of particle to spawn at this frame,
-11. number of frame to `delay` the re-emittion,
-12. how many times to `repeat` the emittion.
+9. `explosivity` (documentation pending),
+10. `count` of the number of particles to spawn at this frame,
+11. number of frames to `delay` before re-emission,
+12. how many times to `repeat` the emission.
 
-When a particle get spawn, a random position is computed between the `outer` and `inner` ring.
+When a particle is spawned, a random position is computed between the `outer` and `inner` ring.
 
 ---
 
 `EMITTER emitter ON x,y`
 
-Tell the `emitter` to emit particle staring at position `x` and `y`.
+Tell the `emitter` to emit particles starting at position `x` and `y`.
 
-It will automaticly end when `repeat` reach 0.
+It will automatically end when `repeat` reaches 0.
 
 ---
 
@@ -336,7 +326,7 @@ Manually stop the `emitter`.
 
 ## How does it work
 
-LowResRMX does not have a framebuffer where users paint pixels like in Pico-8. Instead, it simulates an NES/Gameboy PPU chip, which traverses its memory to generate output pixels based on characters, backgrounds, sprites, palettes and register information.
+Retro Game Creator does not have a framebuffer where users paint pixels like in Pico-8. Instead, it simulates a 🌐[NES/Gameboy PPU chip](https://www.nesdev.org/wiki/PPU), which traverses its memory to generate output pixels based on characters, backgrounds, sprites, palettes and register information.
 
 ### Screen
 
@@ -344,19 +334,19 @@ The fantasy screen has a maximum resolution of 216x384 pixels.
 
 It features perfectly square pixels, a fixed portrait orientation, and always fills the entire device screen.
 
-Depending on the device's screen ratio, the number of visible virtual pixels may vary from 216x288 on 4:3 devices to 177x384 on 19.5:9 devices (and maybe more).
+Depending on the device's screen ratio, the number of visible virtual pixels may vary from 216x288 on 4:3 devices to 177x384 on 19.5:9 devices.
 
-That's why LowResRMX provides an API to request the [actual visible dimension of the screen](#widthshownwheightshownh).
+That's why Retro Game Creator provides an API to request the [actual visible dimension of the screen](#widthshownwheightshownh).
 
-Addionally, the device can possess notch and bottom inset full-width buttons. For that LowResRMX provides an API to request the offset from the visible dimension to the [safe area](#leftsafeltopsafetrightsaferbottomsafeb).
+Additionally, the device can have a notch and bottom inset full-width buttons. Retro Game Creator provides an API to request the offset from the visible dimension to the [safe area](#leftsafeltopsafetrightsaferbottomsafeb).
 
 ### Colors
 
-LowResRMX provides the user with a fixed set of [64 colors](#64-colors).
+Retro Game Creator provides the user with a fixed set of [64 colors](#64-colors).
 
-The colors are grouped into sets of 4 called palette, with 8 palettes available for users to colorize their creations.
+The colors are grouped into sets of 4 called palettes, with 8 palettes available for users to colorize their creations.
 
-The 1st color of the 1st palette will be used as the background color for the whole program. For the following palettes (2nd to 8th), the 1st color is transparent.
+The 1st color of the 1st palette is used as the background color for the whole program. For the following palettes (2nd to 8th), the 1st color is transparent.
 
 This can be altered by the [`SYSTEM` command](#system-setting-value).
 
@@ -368,32 +358,32 @@ Sauce: 🌐[FAMICUBE palette created by Arne](https://lospec.com/palette-list/fa
 
 ### Characters
 
-The 256 characters are block of 8x8 pixels and are assigned to a number from 0 to 255.
-Whenever this number is use to be drawn in a background layer or a sprite, the rendering process will draw the corresponding block of 8x8 pixels.
+The 256 characters are blocks of 8x8 pixels assigned to numbers from 0 to 255.
+When a number is used to draw in a background layer or sprite, the rendering process draws the corresponding 8x8 pixel block.
 
 From now on, the term:
-- **a character** is a block of 8x8 pixels and take 16 bytes.
+- **a character** is a block of 8x8 pixels and takes 16 bytes.
 
 ### Backgrounds
 
-LowResRMX has 4 background layers, each with an independent:
+Retro Game Creator has 4 background layers, each with an independent:
 - X and Y position,
 - and 64x64 character cells.
 
 The 4 layers are drawn in order from 4th to 1st. Cells of the 1st background will be visible above the others unless the priority flag is used.
 
-Each cells have it's own:
+Each cell has its own:
 - character number,
 - palette,
 - horizontal and vertical flip,
 - priority to alter which layer's cell is drawn on top of another and on top of sprites.
 
-Layers are not framebuffers; you CANNOT easily paint pixels directly. Instead, every cell references a character number, and those hold the pixel color information.
+Layers are not framebuffers; you cannot easily paint pixels directly. Instead, every cell references a character number, and those hold the pixel color information.
 
-Each layer can be shifted using the position in the X and Y axes. When reaching the edges, the cells will wrap around and remain visible.
+Each layer can be shifted using the position on the X and Y axes. When reaching the edges, the cells will wrap around and remain visible.
 Put another way, when the rendering process tries to draw the 65th cell of a row, because it does not exist, it will draw the 1st cell instead. This can be used to achieve infinite scrolling.
 
-As mentioned before, the 1st color of each palette is transparent except for the 1st color of the 1st palette. It will determine the background color of the whole fantasy screen.
+As mentioned before, the 1st color of each palette is transparent except for the 1st color of the 1st palette, which determines the background color of the whole fantasy screen.
 
 This can be altered by the [`SYSTEM` command](#system-setting-value).
 
@@ -401,11 +391,11 @@ From now on, the terms:
 - **a layer** is a background layer of 64x64 cells,
 - **a cell** is a square of a layer that shows one character, so 8x8 pixel.
 
-Check background [registers](#Registers) for information about the memory mapping and data format.
+Check background [registers](#registers) for information about the memory mapping and data format.
 
 ### Sprites
 
-LowResRMX offers 170 sprites, each with:
+Retro Game Creator offers 170 sprites, each with:
 - X and Y position,
 - a dimension of 8x8, 16x16, 24x24 or 32x32 pixels,
 - a character number for the top left one,
@@ -414,9 +404,9 @@ LowResRMX offers 170 sprites, each with:
 - and priority to show the sprite on top of bg cells with priorities.
 
 The 170 sprites are drawn in order from 170th (bottom) to 1st (top).
-The sprite numbers range start at zero 0, so the last one is 169.
+The sprite numbers range starts at 0, so the last one is 169.
 
-Sprites are groups of characters ranging from 1x1 to 4x4. The difference with background is that you only choose the top-left character. The other character numbers are dependent on the top-left one. To compute it, add 16 from the first one to reach the character at the right, and add 16 from the first one to get the one below.
+Sprites are groups of characters ranging from 1x1 to 4x4. The difference with backgrounds is that you only choose the top-left character. The other character numbers are dependent on the top-left one. To compute them, add 1 from the first one to reach the character to the right, and add 16 from the first one to get the one below.
 
 Example with a 2x2 sprite with the first character to be 1:
 
@@ -425,51 +415,48 @@ Example with a 2x2 sprite with the first character to be 1:
 |  1 |  2 |
 | 16 | 17 |
 
-A sprite can be freely placed anywhere on the screen with 1/16 sub-pixel precision. This means you can add 0.5 to its position even if there will be no change visually.
-
-### TODO: layer and prio
+A sprite can be freely placed anywhere on the screen with 1/16 sub-pixel precision. This means you can add 0.5 to its position even if there will be no visual change.
 
 ### Rendering
 
-The fantasy screen is rendered line by line, this is called a raster.
+The fantasy screen is rendered line by line; this is called a raster.
 
-During raster, the pixels from background layers and sprites are drawn according to priority flags and the palette is applied. All impacted parameters are not fixed, and a sub-routine can be used between each line to alter some parameters and create interessing visual effect, see [`ON RASTER CALL s`](#on-raster-call-s) and [`=RASTER`](#raster
-).
+During raster, the pixels from background layers and sprites are drawn according to priority flags and the palette is applied. All impacted parameters are not fixed, and a sub-routine can be used between each line to alter some parameters and create interesting visual effects, see [`ON RASTER CALL s`](#on-raster-call-s) and [`=RASTER`](#raster).
 
 Check the [sprite API](#sprite-api) and the [background API](#background-api).
 
 ### CPU & cycles
 
-LowResRMX simulate a fantasy console with limitation, one of them is about the number of instruction the CPU can execute before the next frame MUST be drawn and presented to the player.
+Retro Game Creator simulates a fantasy console with limitations, one of them being the number of instructions the CPU can execute before the next frame MUST be drawn and presented to the player.
 
-This is obtained by a set of different rules applied to an internal CPU cycle counter. When the maximum is reached, the next frame is drawn no matter what. This can have the following effect:
+This is achieved by a set of different rules applied to an internal CPU cycle counter. When the maximum is reached, the next frame is drawn no matter what. This can have the following effects:
 
-1. the execution of the main program is halted and will continu after the frame is drawn. The program will run slower.
+1. The execution of the main program is halted and will continue after the frame is drawn. The program will run slower.
 
-2. if the maximum cycles is reach during a RASTER interrupt, the next line is not drawn.
+2. If the maximum cycles are reached during a raster interrupt, the next line is not drawn.
 
 ### Cartridge
 
-A LowResRMX cartridge is a text file containing the program code and 16 virtual files after the text.
+A Retro Game Creator cartridge is a text file containing the program code and 16 virtual files after the text.
 
-The virtual files data are encoded in hexadecimal and should respect a specific format.
+The virtual files data are encoded in hexadecimal and SHOULD respect a specific format.
 
-> Manually editing the virtual files data is not recommended as it can lead to unexpected behavior. Instead, use the provided tools and APIs to manipulate the virtual files.
+> Manually editing the virtual files data is NOT RECOMMENDED as it can lead to unexpected behavior. Instead, use the provided tools and APIs to manipulate the virtual files.
 
 ### Virtual file
 
-There is 16 virtual files are identified by a number (`id`) and can contain a `comment$`.
+There are 16 virtual files identified by a number (`id`) and can contain a `comment$`.
 
     #id:comment$
     data
 
-- `id` is a number between (0..15).
-- `comment$` is a string **without double quote** of 32 characters max.
-- `data` are a list of hexadecimal literals.
+- `id` is a number between 0 and 15.
+- `comment$` is a string **without double quotes** of 32 characters max.
+- `data` is a list of hexadecimal literals.
 
-When the program is started, the content of the files are loaded and [mapped to the memory](#memory-mapping).
+When the program is started, the content of the files is loaded and [mapped to the memory](#memory-mapping).
 
-The memory address for the files start at $10000, and the best way to know this address is to use the [`ROM(file)`](#rom-file) command.
+The memory address for the files starts at $10000, and the best way to know this address is to use the [`ROM(file)`](#addressromfile) function.
 
 Check the [file API](#file-api).
 
@@ -481,69 +468,73 @@ Each address contains a value of one byte (0..255). Some of those addresses are 
 
 Check the [memory API](#memory-api).
 
+### Persistent Memory
+
+The fantasy hardware simulates persistent memory allowing users to store some bytes on the device memory, making them persistent even after stopping the program or quitting the app.
+
 ### Sound
 
-The fantasy hardware simulates 4 voices to play sound effect and music using an internal tracks player .
+The fantasy hardware simulates 4 voices to play sound effects and music using an internal tracks player.
 
 Check the [sound API](#sound-api).
 
 ### Overlay
 
-When the program is running, there is an option in the device application that enable showing the screen ovelay.
+When the program is running, there is an option in the device application that enables showing the screen overlay.
 
-This screen show the simulated CPU usage by counting how many [fantasy CPU cycles](#cycles) has been consumed already.
+This screen shows the simulated CPU usage by counting how many [fantasy CPU cycles](#cycles) have been consumed already.
 
-It also show any message that has been printed on the overlay using  the [`TRACE` command](#trace-expresionexpression).
+It also shows any message that has been printed on the overlay using the [`TRACE` command](#trace-expressionexpression).
 
 ### Keyboard
 
-The fantasy hardware as access to the device virtual keyboard. It allow user to type while running a program.
+The fantasy hardware has access to the device virtual keyboard. It allows users to type while running a program.
 
 Check the [input API](#input-api).
 
 ## Program Language
 
-The programming language follow the path of the original Lowres NX. It's a BASIC type language and here's how to use it.
+The programming language follows the path of the original Lowres NX. It's a BASIC-type language and here's how to use it.
 
 ### Program
 
-A program is a list of so called instructions and executed by the fantasy hardware one by one from top to bottom. The simplest and iconic program could be:
+A program is a list of so-called instructions executed by the fantasy hardware one by one from top to bottom. The simplest and most iconic program could be:
 
     print "hello world!"
 
-Users are invited to create a new program, types the instruction above and run it.
+Users are invited to create a new program, type the instruction above and run it.
 
-Keywords and values are separated by spaces and instructions with new line.
+Keywords and values are separated by spaces and instructions by new lines.
 
     print "hello..."
     print "second instruction"
 
-> The program do not care about upper or lower case, use the one you prefers.
+> The program does not care about upper or lower case, use the one you prefer.
 
 ### Instructions
 
-Instructions are something to tell the fantasy hardware to do something.
+Instructions tell the fantasy hardware to do something.
 
-- Assigning a [literal](#literals) or an [expression](#expressions) to a [variable](#variables).
+- Assigning a [literal](#literals) or an [expression](#expressions) to a [variable](#variables-and-assignation).
 - Executing a [command](#commands) or a [function](#functions).
-- Calling a [procedure](#procedures) with or without [argument](#parameter-arguments-and-scopes).
-- Jumping to a [label](#labels) or going back from the stack TODO: link
+- Calling a [procedure](#procedures) with or without [arguments](#parameters-arguments-and-scopes).
+- Jumping to a [label](#labels-jumps-and-embedded-data) or returning from the [stack](#stack-sub-routine-and-return).
 
 ### Identifiers
 
-1. An identifier is a word defined by the user and are used to declare variables, labels or procedures (more on those terms later), e.g.: `hero`, `enemies`, `HP`, `score`, `spawn_monsters`, `updateScreen`, `CollectCoins`, `level12`…
+1. An identifier is a word defined by the user and is used to declare variables, labels or procedures (more on those terms later), e.g.: `hero`, `enemies`, `HP`, `score`, `spawn_monsters`, `updateScreen`, `CollectCoins`, `level12`…
 
-2. An identifier can also be a built-in function name provided by LowResRMX as part of the [API](#api-instructions).
+2. An identifier can also be a built-in function name provided by Retro Game Creator as part of the [API](#api-instructions).
 
-Valid characters for identifiers are: ASCII letters, digits and the underscore `_`. But they CANNOT start by a digits and they CANNOT have more than 21 characters.
+Valid characters for identifiers are: ASCII letters, digits and the underscore `_`. However, they cannot start with a digit and they cannot have more than 21 characters.
 
-**Important:** Not all identifiers are valid because some of them are reserved by the language itself, check the [list of reserved keywords](#reserved-keywords) and learn them to avoid common mistakes
+**Important:** Not all identifiers are valid because some of them are reserved by the language itself. Check the [list of reserved keywords](#reserved-keywords) and learn them to avoid common mistakes.
 
 ### Variables and assignation
 
-A variables is a value that retains in the memory fantasy hardware as long as the program is running. They can be used to store positions, scores, HP and all sort of information that users can think of. The purpose of variable is to store a value inside to get it back later.
+A variable is a value that is retained in the fantasy hardware memory as long as the program is running. Variables can be used to store positions, scores, HP and all sorts of information. The purpose of a variable is to store a value to retrieve it later.
 
-Example: think of a score counter that start at zero and increment every time a plumber hero jump on enemies heads. A nice name for this value can be `score` and can be declared and assigned like this:
+Example: a score counter that starts at zero and increments every time a plumber hero jumps on enemies' heads. An appropriate name for this value is `score` and it can be declared and assigned like this:
 
     score=0
 
@@ -551,9 +542,9 @@ And to increment it:
 
     score=score+1
 
-As you can see, variables are declared using an identifier, that why user should take care of giving them a nice name that help them remember what's inside.
+As you can see, variables are declared using an identifier. That's why users SHOULD choose descriptive names that help them remember what's inside.
 
-As real example, this is a program that increment and print a score every time the player tap the device screen.
+As a real example, this is a program that increments and prints a score every time the player taps the device screen.
 
     score=0
     do
@@ -571,7 +562,7 @@ Variable syntax:
 
     identifier[$][(expression)]
 
-This allow variables to have 4 differents form:
+This allows variables to have 4 different forms:
 
 - `my_number`
 - `my_string$`
@@ -580,17 +571,17 @@ This allow variables to have 4 differents form:
 
 ### Literals
 
-Identifiers can store two types of value: number and string.
+Identifiers can store two types of values: numbers and strings.
 
-Numbers can be integer or decimal, e.g.: `123`, `-45`, `0.01`, `12345.6789`
+Numbers can be integers or decimals, e.g.: `123`, `-45`, `0.01`, `12345.6789`
 
-String can only contains ASCII7 characters: letters, digits, some punctuations and some control characters: `"hello WORLD! 123"`
+Strings can only contain ASCII7 characters: letters, digits, some punctuation and some control characters: `"hello WORLD! 123"`
 
 Learn more about the technical information about [number type](#number-limits) and [string type](#string).
 
 ### Arrays
 
-Arrays are list of values grouped into one variable:
+Arrays are lists of values grouped into one variable:
 
     dim player_score(1)
     player_score(0)=123
@@ -604,13 +595,13 @@ Arrays can also store strings:
     player_name$(0)="Untel"
     player_name$(1)="John Doe"
 
-TODO: Link DIM UBOUND
+See [`DIM`](#dim) and [`=UBOUND`](#ubound) for more information.
 
-### Labels, jumps and embeded data
+### Labels, jumps and embedded data
 
-Another feature that used identifiers are labels. They are used to mark a position in the program to go back to it later. User have to understand that programs are executed line by line from top to bottom and labels are one solution to go back to the top of the program or anywhere else (almost).
+Another feature that uses identifiers are labels. They are used to mark a position in the program to go back to it later. Users need to understand that programs are executed line by line from top to bottom and labels are one solution to go back to the top of the program or anywhere else (almost).
 
-Here is an example that demonstrate how to recreate the program above using labels:
+Here is an example that demonstrates how to recreate the program above using labels:
 
     score=0
     start:
@@ -619,11 +610,11 @@ Here is an example that demonstrate how to recreate the program above using labe
         score=score+1
     goto start
 
-A label is declared by an identifier followed by a coma `:` (here "start"), and the `GOTO` command will make the program execution to "jump" to the previous `label` "start", creating an infinite loop.
+A label is declared by an identifier followed by a colon `:` (here "start"), and the `GOTO` command will make the program execution "jump" to the previous label "start", creating an infinite loop.
 
 ---
 
-About using label identifier as [rvalue](#lvalue-and-rvalue). This feature allow use label name that lead to [constant string value](#data-rom-and-files) directly instead of having to store the value in a varible.
+About using label identifiers as [rvalue](#lvalue-and-rvalue): This feature allows using label names that lead to [constant string values](#data-rom-and-files) directly instead of having to store the value in a variable.
 
 Example, instead of writing:
 
@@ -636,7 +627,7 @@ You can write:
     like: data "chocolate"
     print "I like",like
 
-And it working with in all [expression](#expression) that involve [literal string](#literals) or [string variable](#variables).
+And it works in all [expressions](#expressions) that involve [literal strings](#literals) or [string variables](#variables-and-assignation).
 
     test1: data "entanglem"
     print test1+left$(test1,3)
@@ -645,13 +636,13 @@ And it working with in all [expression](#expression) that involve [literal strin
 
 ### Stack, sub-routine and return
 
-Using `GOTO` command to jump to another part of the program is very usefull to organize the code of a program and create loop. Something is not enough, introcucing the `GOSUB` command.
+Using the `GOTO` command to jump to another part of the program is very useful to organize the code and create loops. Sometimes this is not enough, introducing the `GOSUB` command.
 
-The stack is a place inside the fantasy hardward that track where a program was before jumping to a label, allowing to `RETURN` to the previous location.
+The stack is a place inside the fantasy hardware that tracks where a program was before jumping to a label, allowing you to `RETURN` to the previous location.
 
-This allow to reach a same label from different parts of the code, while being able to return to it later.
+This allows reaching the same label from different parts of the code, while being able to return to it later.
 
-Example, of a program that reach the same label from to places.
+Example of a program that reaches the same label from two places.
 
     one:
         print "one"
@@ -667,7 +658,7 @@ Example, of a program that reach the same label from to places.
 
 ### Procedures
 
-The last usage of identifiers are procedures. They means to be reusable sub-part of a program.
+The last usage of identifiers are procedures. They are meant to be reusable sub-parts of a program.
 
 Here's a quick example:
 
@@ -675,28 +666,28 @@ Here's a quick example:
         c=a+b
     end sub
 
-By running this program, nothing will happens because procedures do not get executed automaticly. Instead the user must use a dedicated command for it:
+By running this program, nothing will happen because procedures do not get executed automatically. Instead the user MUST use a dedicated command for it:
 
     result=0
     call addition(120,3,result)
     print "result",result
 
-By adding this piece of code after the previous one and run the program, the solution of the operation 120+3 will be printed on the screen: "result 123".
+By adding this piece of code after the previous one and running the program, the solution of the operation 120+3 will be printed on the screen: "result 123".
 
-The advantage of calling proceduces is to be able to do it again and again.
+The advantage of calling procedures is being able to do it again and again.
 
     call addition(45,-78,result)
     print "result",result
 
 This time, it will print "result -33".
 
-The differences with [sub-routine](#stack-subroutine-and-return) is the [scope](#parameters-arguments-and-scopes).
+The difference with [sub-routines](#stack-sub-routine-and-return) is the [scope](#parameters-arguments-and-scopes).
 
 ### Parameters, arguments and scopes
 
-An other concept that came with procedures are the parameters and the arguments but first, users have to learn as thing about variable's scope.
+Another concept that comes with procedures are parameters and arguments, but first, users need to learn a thing about variable scope.
 
-By default, when declaring a variable in a program, it's scope is limited and the variable is unknown inside a procedure.
+By default, when declaring a variable in a program, its scope is limited and the variable is unknown inside a procedure.
 
     score=0
     sub print_score
@@ -704,21 +695,21 @@ By default, when declaring a variable in a program, it's scope is limited and th
     end sub
     call print_score
 
-This program will produce the error: "variable not initialized". The program can't access the variable `score` inside the `print_score` proceduce.
+This program will produce the error: "variable not initialized". The program can't access the variable `score` inside the `print_score` procedure.
 
-One option is to pass the variable to the proceduce. Two changes must be made for that.
+One option is to pass the variable to the procedure. Two changes MUST be made for that.
 
-1. User need to add a parameter to the proceduce declaration:
+1. Users need to add a parameter to the procedure declaration:
 
         sub print_score(s)
             print "score",s
         end sub
 
-2. User also need to add an argument to the proceduce call:
+2. Users also need to add an argument to the procedure call:
 
         call print_score(score)
 
-When the proceduce `print_score` is called, the argument `score` is passed to the proceduce inside the `s` argument.
+When the procedure `print_score` is called, the argument `score` is passed to the procedure inside the `s` parameter.
 
 Corrected program:
 
@@ -728,11 +719,11 @@ Corrected program:
         end sub
         call print_score(score)
 
-An other option is to rely on [global scope](#global-scope).
+Another option is to rely on [global scope](#local-and-global-scope).
 
 ### Passed by reference
 
-Arguments are passed by reference, it's means that a variable passed to a proceduce and being modified by this procedure will stay modified when exiting the proceduce.
+Arguments are passed by reference. This means that a variable passed to a procedure and being modified by this procedure will stay modified when exiting the procedure.
 
     sub modify_it(a)
         a=123
@@ -743,7 +734,7 @@ Arguments are passed by reference, it's means that a variable passed to a proced
 
 It will print `123`.
 
-To avoid this behavior, encapsulate the argument by round bracket `(identifier)`.
+To avoid this behavior, encapsulate the argument in round brackets `(identifier)`.
 
     sub modify_it(a)
         a=123
@@ -758,7 +749,7 @@ It will print `0`.
 
 When variables are initialized or declared in the main program body, they are local to the program body.
 
-When variables are initialized or declared inside a proceduce body, they are local to this procedure body.
+When variables are initialized or declared inside a procedure body, they are local to this procedure body.
 
 It is possible to declare a variable global so it can be accessed in both scopes.
 
@@ -773,37 +764,37 @@ It is possible to declare a variable global so it can be accessed in both scopes
         call frag
     loop
 
-MUST be declare before trying to access it.
+Global variables MUST be declared before trying to access them.
 
-The syntaxe to declare a global array is a bit different:
+The syntax to declare a global array is a bit different:
 
     dim global enemies
 
-TODO: link GLOBAL
+See [`GLOBAL`](#global) and [`DIM GLOBAL`](#dim-global) for more information.
 
 ### Comments
 
-Comments are piece of text that is not executed. They are usefull for taking notes of what a particular piece of code is doing.
+Comments are pieces of text that are not executed. They are useful for taking notes of what a particular piece of code is doing.
 
     'get touch position in cells coordinates
     tx=touch.x\8
 
-> Avoid 🌐[Captain Obvious](https://en.wikipedia.org/wiki/Captain_Obvious) comment!
+> Avoid 🌐[Captain Obvious](https://en.wikipedia.org/wiki/Captain_Obvious) comments!
 
 ### Grammar
 
-As say earlier, a program is a list of instructions read and executed one by one. To make it easier to read, developer use a set of spaces, identations, new lines, comments, proceduces…
+As said earlier, a program is a list of instructions read and executed one by one. To make it easier to read, developers use a set of spaces, indentations, new lines, comments, procedures…
 
 Here is a set of rules on how it works:
 
-- an instruction cannot be split on two lines.
+- An instruction cannot be split on two lines.
 
     This will not work:
 
         🐞a=
         123
 
-- label are not instruction, user can place instruction on the same line.
+- Labels are not instructions; users can place instructions on the same line.
 
     ✅ This will work:
 
@@ -811,15 +802,15 @@ Here is a set of rules on how it works:
         wait tap
         goto test
 
-- the only way to squiz two instructions on one line is to use the `:` colon separator.
+- The only way to squeeze two instructions on one line is to use the `:` colon separator.
 
     ✅ This will work:
 
         x=touch.x : y=touch.y
 
-    > I recommand to place spaces before and after the `:` colon until I fix the parsing issue
+    > I recommend placing spaces before and after the `:` colon until I fix the parsing issue.
 
-- `IF...THEN` use a different syntax for on line instruction, and `:` colon as instruction separator will not work correctly.
+- `IF...THEN` uses a different syntax for one-line instructions, and `:` colon as instruction separator will not work correctly.
 
     This will not work as intended:
 
@@ -832,14 +823,14 @@ Here is a set of rules on how it works:
 
     `y=touch.y` will always be executed.
 
-- Comment can be placed after the `:` colon instruction separator.
+- Comments can be placed after the `:` colon instruction separator.
 
     ✅ This will work:
 
         a=123 :'Default value
 
 
-- Identation as no meaning, user can place them whatever they want.
+- Indentation has no meaning; users can place it however they want.
 
     ✅ This will work:
 
@@ -848,18 +839,18 @@ Here is a set of rules on how it works:
         print "near"
 
 
-- Check the [list of reserved keywords](#keywords), as user cannot use them for identifiers.
+- Check the [list of reserved keywords](#reserved-keywords), as users cannot use them for identifiers.
 
 ### Expressions
 
-Expression are used to compute values, be assigned to identifier or passed to function as arguments. Expression can be one of:
+Expressions are used to compute values, be assigned to identifiers or passed to functions as arguments. An expression can be one of:
 
 - A [literal value](#literals):
 
         123
         "gabu"
 
-- A [variable identifier](#variables-and-assination):
+- A [variable identifier](#variables-and-assignation):
 
         myVar$
         myArray(0)
@@ -877,13 +868,13 @@ Expression are used to compute values, be assigned to identifier or passed to fu
         not dead
         (2+3)*4
 
-- A [label identifier](#labels):
+- A [label identifier](#labels-jumps-and-embedded-data):
 
         mylabel
 
 ### Operators
 
-Operator are used inside [expression](#expression) to compute or alter it's value.
+Operators are used inside [expressions](#expressions) to compute or alter their values.
 
 **Arithmetic operators:**
 
@@ -892,7 +883,7 @@ Operate on two numeric values to produce a new one.
 | symbol | example   | purpose          |
 | ------:| --------- | ---------------- |
 |    `-` | `-42`     | negation         |
-|    `^` | `x^3`     | exponentation    |
+|    `^` | `x^3`     | exponentiation   |
 |    `*` | `2*y`     | multiplication   |
 |    `/` | `x/2`     | division         |
 |    `\` | `x\2`     | integer division |
@@ -900,7 +891,7 @@ Operate on two numeric values to produce a new one.
 |    `+` | `c+2`     | addition         |
 |    `-` | `100-d`   | subtraction      |
 
-The priority of execution respect the mathematical rules.
+The priority of execution respects the mathematical rules.
 
 **Group operator:**
 
@@ -908,16 +899,16 @@ Rounded parentheses `()` are used to counter the operator priority.
 
 **Comparison operator:**
 
-Used to compair two numeric or string values and produce `-1` if the test succeed or `0` otherwise. Generally used as [expression](#expressions) in [conditional flow control](#control-flow).
+Used to compare two numeric or string values and produce `-1` if the test succeeds or `0` otherwise. Generally used as [expressions](#expressions) in [conditional flow control](#control-flow).
 
-| symbol | example  | purpose
-| ------:| -------- | -------
-|    `=` | `a=10`   | equal
-|   `<>` | `a<>100` | not equal
-|    `>` | `b>c`    | greater
-|    `<` | `5<x`    | less
-|   `>=` | `X>=20`  | greater or eqal
-|   `<=` | `X<=30`  | less or eqal
+| symbol | example  | purpose          |
+| ------:| -------- | ---------------- |
+|    `=` | `a=10`   | equal            |
+|   `<>` | `a<>100` | not equal        |
+|    `>` | `b>c`    | greater          |
+|    `<` | `5<x`    | less             |
+|   `>=` | `X>=20`  | greater or equal |
+|   `<=` | `X<=30`  | less or equal    |
 
 **Bitwise operator:**
 
@@ -928,7 +919,7 @@ Used to manipulate each bit of numeric values.
 |  `not` | `not (x=15)`<br>`not 0`        | Bits that are 0 become 1,<br>and those that are 1 become 0. |
 |  `and` | `a=1 and b=12`<br>`170 and 15` | If both bits are 1, the<br>result is 1, 0 otherwise.        |
 |   `or` | `x=10 or y=0`<br>`128 or 2`    | The result is 0 if both<br>bits are 0, 1 otherwise.         |
-|  `xor` | `a xor b`                      | The resulst is 1 if only<br>one bit is 1, 0 otherwise.     |
+|  `xor` | `a xor b`                      | The result is 1 if only<br>one bit is 1, 0 otherwise.       |
 
 **Concatenation operator:**
 
@@ -940,7 +931,7 @@ Copy a string at the end of another string.
 
 ### Commands
 
-LowResRMX provide a bunch of built-in commands to manipulate the fantasy device hardware such as the graphic or sound. You'll find them by consulting the [list of API instructions](#api-instructions).
+Retro Game Creator provide a bunch of built-in commands to manipulate the fantasy device hardware such as the graphic or sound. You'll find them by consulting the [list of API instructions](#api-instructions).
 
 To execute a command, use it's identifier followed by a list of coma-separated arguments or other reserved keywords. The exact syntax depends on the command.
 
@@ -949,13 +940,13 @@ To execute a command, use it's identifier followed by a list of coma-separated a
 
 ### Functions
 
-LowResRMX provide a bunch of built-in function to manipulate the fantasy device hardware such as the graphic or sound. You'll find them by consulting the [list of API instructions](#api-instructions).
+Retro Game Creator provide a bunch of built-in function to manipulate the fantasy device hardware such as the graphic or sound. You'll find them by consulting the [list of API instructions](#api-instructions).
 
 To execute a function, use it's identifier followed by a list of coma-separated arguments surrounded by rounded parenthesis.
 
     print mid$("test",3,1) :'print s
 
-A function will always return something and MUST be used as [rvalue](#lvalue-and-rvalue) inside an [expression](#expression).
+A function will always return something and MUST be used as [rvalue](#lvalue-and-rvalue) inside an [expressions](#expressions).
 
 ### Lvalue and Rvalue
 
@@ -965,7 +956,7 @@ The equal `=` sign is used both as variable assignement and comparison operator,
 
 - In all other cases, the variable is used as [a part of an expression](#expressions).
 
-An lvalue appear at the left side of an assignation, and rvalue appear at the right side of an assignation. Also rvalue is used as argument of a [functions](#functions) or [proceduces](#procedures).
+An lvalue appears on the left side of an assignment, and an rvalue appears on the right side of an assignment. Also, rvalue is used as an argument of [functions](#functions) or [procedures](#procedures).
 
 |                  expression | type of value    |
 | ---------------------------:| ---------------- |
@@ -1007,7 +998,7 @@ Some identifier cannot be used by the user for variables, proceduce or label nam
 
 ## BASIC instructions
 
-To be able to use the language as a tool to make games, LowResRMX provides instructions to:
+To be able to use the language as a tool to make games, Retro Game Creator provides instructions to:
 
 - manipulates the execution of a program: go here, go back, wait for this, do that if this happens and stuff like that.
 
@@ -1041,11 +1032,11 @@ It has the same effect as the execution reach the end of the program.
     end if
 
 Will execute the list of `instruction...` if the above `expression` is true.
-An [expression](#expression) is evaluated as `true` if the result of the expression is different that `0` zero.
+An [expression](#expression) is evaluated as `true` if the result of the expression is different from 0.
 
 It's possible to have multiple `ELSE IF` blocks but a maximum of one `ELSE` block is authorized.
 
-Real example of a game that ask playre to guess a number:
+Real example of a game that asks the player to guess a number:
 
     again: print "guess the number"
     answer=rnd(100)
@@ -1120,7 +1111,7 @@ Real example of non stop moving square that bounce on the device screen:
 
 `EXIT` command will exit one level of `DO/LOOP`.
 
-### `REPEAT/UNTIL/EXIT`
+#### `REPEAT/UNTIL/EXIT`
 
     repeat
         instruction...
@@ -1128,7 +1119,7 @@ Real example of non stop moving square that bounce on the device screen:
     until expression
 
 Repeat the list of `instruction...` until the `expression` ahead became true.
-An [expression](#expressions) is evaluated as `true` if the result of the expression is different that 0.
+An [expression](#expressions) is evaluated as `true` if the result of the expression is different from 0.
 
 `EXIT` command will exit one level of `REPEAT/UNTIL`.
 
@@ -1149,7 +1140,7 @@ It different from `WHILE/WEND` because `expression` is evaluated after the list 
     wend
 
 Repeat the list of `instruction...` while the `expression` above is true.
-An [expression](#expressions) is evaluated as `true` if the result of the expression is different that 0.
+An [expression](#expressions) is evaluated as `true` if the result of the expression is different from 0.
 
 `EXIT` instruction will exit one level of `WHILE/WEND`.
 
@@ -1222,11 +1213,11 @@ Expect to found a `RETURN` command to go back where it was right after the `GOSU
 
 The return location is store in a stack allow user to jump to a sub-routine and return from it.
 
-> A good habit is to always have one `RETURN` for each `GOSUB`.
+> Best practice: always have one `RETURN` for each `GOSUB`.
 
 A common usage of sub-routine is to reuse a piece of code multiple times instead of rewrite it again.
 
-> User should probably put all the sub-routine in one place near the end of the program to enshure they are not executed when not wanted.
+> Users SHOULD place all sub-routines in one place near the end of the program to ensure they are not executed unintentionally.
 
 Real example. A score is incremented using time and tap:
 
@@ -1245,11 +1236,11 @@ Real example. A score is incremented using time and tap:
         text 2,2,"score:"+str$(score)
         return
 
-This example is tricky, there is one `RETURN`, two labels and three `GOSUB`. The good habit explain above is broken here, but here is the explaination.
+This example has one `RETURN`, two labels and three `GOSUB`. The best practice mentioned above is not followed here, but here is the explanation.
 
-The important things is not the number of `RETURN` appear in the code but the number of times the command is executed. User have to understand that one `GOSUB` execution will [increase by one the size of the stack](#stack-subroutine-and-return), and one execution of `RETURN` will reduce the same stack by exactly one. If every time the `WAIT VBL` instruction is executed and the stack size is empty: it's a good sign. It means that the stack will not be overflowed.
+The important thing is not the number of `RETURN` statements in the code but the number of times the command is executed. Users need to understand that one `GOSUB` execution will [increase by one the size of the stack](#stack-subroutine-and-return), and one execution of `RETURN` will reduce the same stack by exactly one. If the stack size is empty every time the `WAIT VBL` instruction is executed, it's a good sign. It means that the stack will not overflow.
 
-User can print the current stack using [command `TRACE` from the debugger](#dbg-trace).
+Users can print the current stack using the [debugger `TRACE` command](#dbg-trace).
 
 #### `ON GOTO`<br>`ON GOSUB`
 
@@ -1260,8 +1251,8 @@ Jump to one of the listed `label` according to a `value`.
 With `ON GOSUB` will store the current program location on top of the stack before jumping, allowing to `RETURN` to this location later.
 
 Will read the `value` and jump to:
-- the first label if `value` equal `0` zero,
-- the second label if `value` equal `1` one,
+- the first label if `value` equal 0,
+- the second label if `value` equal 1,
 - ...
 
 Real example:
@@ -1298,13 +1289,13 @@ Hm, it's a mess! Let me explain this. A parameter is always a `identifier` and c
 - an array of number: `my_num_array()`
 - an array of string: `my_str_array$()`
 
-An empty list of `parameters` is not valid. Simply remove the parenthesis `()`.
+An empty list of `parameters` is not valid. Simply remove the parentheses `()`.
 
-Proceduces are isolated small program that can be executed using the [`CALL` command](#CALL). Isolated because the [variables declared inside are local](#local-and-global-scope).
+Procedures are isolated small programs that can be executed using the `CALL` command. They are isolated because [variables declared inside are local](#local-and-global-scope).
 
-> Body of sub-routines are only executed throughout the [`CALL` command](#CALL), so, it is safe to place them at the beginning of the program.
+> Body of sub-routines are only executed through the `CALL` command, so it is safe to place them at the beginning of the program.
 
-Real example, a game where player need to enter a sequence of digits and computer try to prevent it:
+Real example, a game where the player needs to enter a sequence of digits while the computer tries to prevent it:
 
     'perturb player input
     sub perturb
@@ -1355,15 +1346,15 @@ Real example, a game where player need to enter a sequence of digits and compute
 
 `EXIT SUB` command will exit the `SUB`.
 
-> Using `GOTO` inside a proceduce is probably a bad idea. Specially if the destination target is outside of the body. It will permanently increase the stack size without any possibility to reduce it.
+> Using `GOTO` inside a procedure is NOT RECOMMENDED, especially if the destination target is outside of the body. It will permanently increase the stack size without any possibility to reduce it.
 
-> Using `GOSUB` inside a proceduce that jump to a label outside of the body is also weird because the scope of the procedure will be used to execute the instructions.
+> Using `GOSUB` inside a procedure that jumps to a label outside of the body is NOT RECOMMENDED because the scope of the procedure will be used to execute the instructions.
 
-### Embeded data
+### Embedded data
 
-LowResRMX provide two ways to storing data or assets inside a program.
+Retro Game Creator provides two ways to store data or assets inside a program.
 
-1. Use the combinaison of `DATA` and `READ` to store readable number and string and access it when you need it.
+1. Use the combination of `DATA` and `READ` to store readable number and string and access it when you need it.
 
     Real example that list the Straw Hat Pirates members:
 
@@ -1426,7 +1417,7 @@ Declare a list of number or string variables to be globally [accessible in all s
 
 Will declare one or more arrays with `highest`+1 number of elements.
 
-Array of numbers or strings MUST be declared before reading or writing it.
+Arrays of numbers or strings MUST be declared before reading or writing them.
 
     dim scores(1),names$(1)
     for i=0 to 1
@@ -1457,11 +1448,11 @@ Swap the values of the variable `a` and `b`. They have to share same type.
 
 -- wikipedia
 
-LowResRMX provide a bunch of built-in [commands](#commands) and [functions](#functions) to communicates with the differents features provided by the fantasy console: input, graphics, sound, memory and more.
+Retro Game Creator provide a bunch of built-in [commands](#commands) and [functions](#functions) to communicates with the differents features provided by the fantasy console: input, graphics, sound, memory and more.
 
 ### Sprite API
 
-Sprite are limited in numbers and should be used to show moving objects above background layers. It not an oblication and cool things can be made by infringe this rules.
+Sprites are limited in numbers and SHOULD be used to show moving objects above background layers. It is not an obligation and interesting effects can be achieved by breaking these rules.
 
 Check [how sprites works](#sprites) and [sprites registers](#sprite-registers).
 
@@ -1479,7 +1470,8 @@ An example that show a smiley sprite moving in circle:
         sprite 0,cos(i/100)*40+60,sin(i/100)*40+60,1
         wait vbl
     loop
-    #2:main characters
+
+    #2:MAIN CHARACTERS
     00000000000000000000000000000000
     007EFFFFEDFFFF7E0000003636000000
 
@@ -1504,6 +1496,7 @@ Example of a sprite that get flipped according to it's position on the screen:
         sprite 0 flip touch.x>shown.w/2,touch.y>shown.h/2
         wait vbl
     loop
+
     #2:MAIN CHARACTERS
     00000000000000000000000000000000
     40A0D0E8F4D0E818C06030180C305808
@@ -1521,6 +1514,7 @@ Example of a sprite smoothly following the finger touch:
         sprite 0,x,y,
         wait vbl
     loop
+
     #2:MAIN CHARACTERS
     00000000000000000000000000000000
     007E7E66667E7E00FF81BDA5A5BD81FF
@@ -1812,7 +1806,7 @@ E.g. draw an inverted blue r letter:
 
 Return the `character` of the `x`,`y` cell from the [`current layer`](#bg-layer).
 
-Example of a (silly) way to read the ASCII code of a char:
+Example of reading the ASCII code of a character:
 
     bg 2
     for x=0 to shown.w\8
@@ -1909,7 +1903,7 @@ Similar to `TINT y,y [PAL pal] [FLIP h,v] [PRIO p]` but with a rectangle of cell
 
 #### `BG SCROLL x1,y1 to x2,y2 step x3,y3`
 
-Move the cell's attributes and character from the rectangle `x1`,`y1` to `x2`,`y2` (0..63) of the c[`current layer`](#bg-layer) by `x3`,`y3` in cell coordinates.
+Move the cell's attributes and character from the rectangle `x1`,`y1` to `x2`,`y2` (0..63) of the [`current layer`](#bg-layer) by `x3`,`y3` in cell coordinates.
 
 This feature is internally used to scroll text when it reach the bottom of the [window](#window-xywidthheightlayer).
 
@@ -1961,7 +1955,7 @@ Draw to the `x`,`y` cell to the background source specified previously using [`B
 
 Similar to [`CELL x,y,character`](#cell-x-y-character) but modify the source in memory instead of the [`current layer`](#bg-layer).
 
-The source MUST point to writable memory. It will not work with `BG SOURCE ROM(3)`.
+The source MUST point to writable memory. It will NOT work with `BG SOURCE ROM(3)`.
 
 Example that continously draw to the background source:
 
@@ -2018,13 +2012,13 @@ Similar to [`TEXT x,y,text$`](#text-xytext) but dedicated to print number instea
 
 Sets the `first` character number that will defines the range of ASCII characters used for `TEXT`, `NUMBER` and `PRINT` commands.
 
-The default value is 192, which points to where the default font is loaded at the beginning of the program if the characters are not used. It MAY be overriden by `LOAD` operation.
+The default value is 192, which points to where the default font is loaded at the beginning of the program if the characters are not used. It MAY be overridden by `LOAD` operation.
 
 ### Text API
 
-Commands dedicated to draw text on layers using characters data. 64 characters can be reserved to print characters on screen. By default thoses characters number are (192..255) but can be changed using the [`FONT` command](#font-first).
+Commands dedicated to draw text on layers using characters data. 64 characters can be reserved to print characters on screen. By default those characters number are (192..255) but can be changed using the [`FONT` command](#font-first).
 
-#### `WINDOW x,y,width,heigh,layer`
+#### `WINDOW x,y,width,height,layer`
 
 Sets the current window at `x`,`y` with `width`,`height` and on `layer` where text will be drawn.
 
@@ -2087,7 +2081,7 @@ Outputs a new line.
 
 ### Input API
 
-LowResRMX support touch input with float-point precision (but not multi-touches), and limited keyboard input.
+Retro Game Creator support touch input with float-point precision (but not multi-touches), and limited keyboard input.
 
 User can also rely on the OS virtual keyboard to capture typed characters.
 
@@ -2157,7 +2151,7 @@ Optionally, a `prompt` can be printed on the screen before the user input.
 
 #### `pressed$=INKEY$`
 
-Returns only once the last `pressed$` key. It's a string containing one ASCII character supported by LowResRMX. If no key was pressed or if the pressed key is not supported, it returns an empty string. TODO: link
+Returns only once the last `pressed$` key. It's a string containing one ASCII character supported by Retro Game Creator. If no key was pressed or if the pressed key is not supported, it returns an empty string. See [ASCII table](#ascii-table).
 
 Example that output the pressed key:
 
@@ -2172,7 +2166,7 @@ Example that output the pressed key:
 
 #### `frames=TIMER`
 
-Returns the number of `frames` since LowResRMX was launched. The value wraps to 0 when 5184000 is reached, which is about 24 hours.
+Returns the number of `frames` since Retro Game Creator was launched. The value wraps to 0 when 5184000 is reached, which is about 24 hours.
 
 #### `WAIT TAP`
 
@@ -2215,7 +2209,7 @@ Wait for a number of `frame` to be drawn. Keyword `VBL` is similar to 1. This is
 - reduce device CPU usage,
 - preserve device battery.
 
-You probably MAY place at least one `WAIT VBL` inside every loop that wait for player input or to present something to the player.
+It is RECOMMENDED to place at least one `WAIT VBL` inside every loop that waits for player input or presents something to the player.
 
 Example that show the effect:
 
@@ -2270,11 +2264,11 @@ Will stop the execution of a sub-routine during VBL interrupt.
 
 #### `ON RASTER CALL routine`
 
-Before the rendering of the next line of the screen, will execute a sub-`routine`. This is usefull in conjonction with [`=RASTER`](#raster).
+Before the rendering of the next line of the screen, will execute a sub-`routine`. This is useful in conjunction with [`=RASTER`](#raster).
 
-The code MUST be shorterest, read more about [CPU cycles](#cycles).
+The code MUST be shortest, read more about [CPU cycles](#cycles).
 
-This can be used to chance colors or scroll background layers, example:
+This can be used to change colors or scroll background layers, example:
 
     text 3,8,"tap to toggle"
     cell 10,10,1
@@ -2462,23 +2456,21 @@ Setting a specific `seed` will guarantee to return the same sequence of random n
 
 #### `random=RND address<br>random=RND(max,address)<br>RANDOMIZE seed[,address]`
 
-Similar to the original functions with a addional `address` parameter, where the current generator state will be stored.
+Similar to the original functions with a additional `address` parameter, where the current generator state will be stored.
 
-This is usefull if you want to keep multiple generator that still need to be determistic.
+This is useful if you want to keep multiple generator that still need to be deterministic.
 
 The generator state consume 16 Bytes of memory.
 
 ### String API
 
-#### `lenght=LEN(text)`
+#### `length=LEN(text)`
 
-Return the `lenght` in ascii7 character of a `text` string.
+Return the `length` in ascii7 character of a `text` string.
 
 #### `ascii7=ASC(character)`
 
-Converts the first `character` of a string to an `ascii7` code.
-
-TODO: link to ascii7 table
+Converts the first `character` of a string to an `ascii7` code. See [ASCII table](#ascii-table).
 
 #### `character=CHR$(ascii7)`
 
@@ -2492,7 +2484,7 @@ Converts a `number` to a `text` string.
 
 #### `number=VAL(text)`
 
-Converts a `text` string that starts with digits (and maybe one point `.`) into a `number`.
+Converts a `text` string that starts with digits (and optionally one decimal point `.`) into a `number`.
 
     print val("3.5abc")
 
@@ -2528,13 +2520,13 @@ Overwrites the `length` number of characters starting at `position` (1..) from t
 
 ### Sound API
 
-TODO: Link to how sound work
+The fantasy hardware simulates 4 voices to play sound effects and music. See [Sound](#sound) for an overview.
 
 #### `PLAY voice,pitch[,length] [SOUND sound]`
 
 Play a note at the `pitch` on the `voice` with an optional `length` and `sound`.
 
-Check the [pitch references](#pitch-values>) to learn which pitch conrespond to which notes.
+Check the [pitch references](#pitch-values) to learn which pitch correspond to which notes.
 
 `length` use 1/60 of seconds as units with the maximum being 255, so 4.25 seconds. A length of 0 means that the sound will not stop until another sound is played on the same `voice`.
 
@@ -2628,7 +2620,7 @@ All parameters can be omitted to keep their current settings.
 
 #### `SOUND SOURCE [address]`
 
-Set the `address` on memory to use as source for `MUSIC`, `TRACK` and `PLAY` commands. The [official sound data format]() TODO: link is used to decode the informations.
+Set the `address` on memory to use as source for `MUSIC`, `TRACK` and `PLAY` commands. The [sound source format data](#sound-source-format-data) is used to decode the information.
 
 This will not affect already started playback.
 
@@ -2638,7 +2630,7 @@ If not specified the default address is taken by internally executing `=ROM(15)`
 
 Starts playing at the `pattern`. If omitted, it starts at pattern `0`.
 
-This will consider that the data respects the [official soud data format]() TODO: link.
+This will consider that the data respects the [sound source format data](#sound-source-format-data).
 
 #### `=MUSIC(what)`
 
@@ -2655,7 +2647,7 @@ Question the current playback.
 
 Starts playing the `track` on `voice`.
 
-This will consider that the data respects the [official soud data format]() TODO: link.
+This will consider that the data respects the [sound source format data](#sound-source-format-data).
 
 ### Memory API
 
@@ -2663,7 +2655,7 @@ This will consider that the data respects the [official soud data format]() TODO
 
 Write an 8bits `value` (0..255) in memory at `address`.
 
-The `address` must be writable. TODO: link
+The `address` MUST be writable. See [memory mapping](#memory-mapping) for details.
 
 Example that change the background color:
 
@@ -2703,13 +2695,13 @@ Example that print the width and height of the visible pixels:
 
 Write a 32bits `value` value (-16777216..16777216) in memory at `address`.
 
-TODO: link to floating-point precision loss
+Note: Values are stored as floating-point. See [number limits](#number-limits) for precision details.
 
 #### `=PEEKL(address)`
 
 Read and return a 32bits value (-16777216..16777216) from memory at `address`.
 
-TODO: link to floating-point precision loss
+Note: Values are stored as floating-point. See [number limits](#number-limits) for precision details.
 
 #### `address=ROM(file)`
 
@@ -2752,11 +2744,11 @@ It uses the following registers as data:
 | `$FFA2` | 2 Bytes | Bytes count         |
 | `$FFA4` | 2 Bytes | Destination address |
 
-To copy from an address greater or equal than `$10000`, the optional `[ROM]` argument MUST be used.
+To copy from an address greater or equal than `$10000`, the OPTIONAL `[ROM]` argument MUST be used.
 
 ### File API
 
-Give access to the [virtual file embeded](#virtual-file) in the cartridge.
+Give access to the [virtual file embedded](#virtual-file) in the cartridge.
 
 #### `FILES`
 
@@ -2770,25 +2762,25 @@ When the `FILES` command is called, it will map the data stored in the fantasy c
 
 Return the `comment$` string of the `file`.
 
-The command [`FILES` MUST be called](#files) before.
+The command [`FILES`](#files) MUST be called before.
 
 #### `size=FSIZE(file)`
 
 Return the `size` in bytes stored in the `file`.
 
-The command [`FILES` MUST be called](#files) before.
+The command [`FILES`](#files) MUST be called before.
 
 #### `LOAD file,address[,limit[,offset]]`
 
 Load the virtual `file` at `address`. Optionnaly `limit` the number of bytes read and start at `offset`.
 
-The command [`FILES` MUST be called](#files) before.
+The command [`FILES`](#files) MUST be called before.
 
 #### `SAVE file,comment$,address,size`
 
 Save `size` bytes from `address` to the `file` and **erase previous data**. The `comment$` is just a reminder of what is stored.
 
-The command [`FILES` MUST be called](#files) before.
+The command [`FILES`](#files) MUST be called before.
 
 ### Other API
 
@@ -2849,7 +2841,6 @@ Enables compatibility mode:
 
 - Forces the rendering process to keep the original device screen.
 - Reverts the `RND` command and `=RND()` function to their original behavior.
-- Maybe other things I can't remember.
 
 This does not guarantee full compatibility but can help with some aspects. For instance:
 - Commands and functions that have been removed will still be unavailable.
@@ -2873,7 +2864,7 @@ Enter the debugger. It bring a console where user can enter debugger specific co
 
 By typing the name of a variable, the debugger will print it's value. The variable use the same syntax as inside a program: `$` for string, `()` for array.
 
-The variable must be accessible throughout the scope of where the `PAUSE` has been used to enter the debugger. Global variables are still available everywhere.
+The variable MUST be accessible throughout the scope of where the `PAUSE` has been used to enter the debugger. Global variables are still available everywhere.
 
 #### dbg: a variable name `=` new value
 
@@ -2881,13 +2872,13 @@ Allow to change the value of a variable.
 
 Number literal use the same syntax as inside a program, it support integer, float, `$` hexadecimal and `%` binary.
 
-String literal should use the same syntax as inside a program: `"`.
+String literal SHOULD use the same syntax as inside a program: `"`.
 
 #### dbg: an address
 
 By typing a memory address, the debugger will print it's value as if it was read by `peek()`.
 
-The address can be indiquated using the `$` hexadecimal or by any other valid numeric literal.
+The address can be indicated using the `$` hexadecimal or by any other valid numeric literal.
 
 #### dbg: an address `=` a value
 
@@ -2917,7 +2908,7 @@ Print the current call stack in order: label and procedure names.
 
 ## References
 
-This anex provides technical informations about how things work under the hood.
+This annex provides technical information about how things work under the hood.
 
 ### 64 Colors
 
@@ -3010,7 +3001,7 @@ This anex provides technical informations about how things work under the hood.
 | `$06000` | 8 Kibibyte  | Layer 3 data       |
 | `$08000` | 4 Kibibyte  | Character data     |
 | `$09000` | 20 Kibibyte | Working RAM        |
-| `$0E000` | 6 Kibibyte  | Persisent RAM      |
+| `$0E000` | 6 Kibibyte  | Persistent RAM     |
 | `$0FB00` | 1020 Bytes  | Sprite registers   |
 | `$0FF00` | 32 Bytes    | Color registers    |
 | `$0FF20` | 10 Bytes    | Video registers    |
@@ -3061,7 +3052,7 @@ The 1st 8 bytes store the low bit for all the 8x8 pixels. The 2nd 8 bytes store 
 
 ### Background source format data
 
-When using [`BG SOURCE address[,width,height]`](#bg-source-address-width-height) without specifing `width` and `height`, A specific header is added before the regular [background data](#background-data):
+When using [`BG SOURCE address[,width,height]`](#bg-source-addresswidthheight) without specifying `width` and `height`, a specific header is added before the regular [background data](#background-data):
 
 | address | size   | purpose         |
 | -------:| ------ | --------------- |
@@ -3073,7 +3064,7 @@ When using [`BG SOURCE address[,width,height]`](#bg-source-address-width-height)
 
 ### Sound source format data
 
-When using [`SOUND SOURCE`](<manual#`SOUND SOURCE [address]`>), LowResRMX will use the following data format to store sounds, patterns and tracks.
+When using [`SOUND SOURCE`](<manual#`SOUND SOURCE [address]`>), Retro Game Creator will use the following data format to store sounds, patterns and tracks.
 
 TODO: continue
 
@@ -3133,9 +3124,9 @@ TODO: every attributes and settings
 
 ### ASCII table
 
-LowResRMX understand ASCII7 characters (0..127).
+Retro Game Creator understand ASCII7 characters (0..127).
 
-The [text API](#text-api) can only print a fraction of it and remap it. The [`FONT` command](#font-first) is used to indiquate which characters are use to print the ASCII characters.
+The [text API](#text-api) can only print a fraction of it and remap it. The [`FONT` command](#font-first) is used to indicate which characters are use to print the ASCII characters.
 
 | ascii code | usage                         |
 | ----------:| ------------------------------|
@@ -3143,103 +3134,109 @@ The [text API](#text-api) can only print a fraction of it and remap it. The [`FO
 |     32..95 | used by [`FONT`](#font-first) |
 |    95..255 | not used                      |
 
-| code | hexa | character or purpose |
-| ----:| ----:| -------------------- |
-|   17 |  $11 | right arrow          |
-|   18 |  $12 | left arrow           |
-|   19 |  $13 | down arrow           |
-|   20 |  $14 | up arrow             |
-|   32 |  $20 | whitespace           |
-|   33 |  $21 | "!"                  |
-|   34 |  $22 | '"'                  |
-|   35 |  $23 | "#"                  |
-|   36 |  $24 | "$"                  |
-|   37 |  $25 | "%"                  |
-|   38 |  $26 | "&"                  |
-|   39 |  $27 | "'"                  |
-|   40 |  $28 | "("                  |
-|   41 |  $29 | ")"                  |
-|   42 |  $2A | "*"                  |
-|   43 |  $2B | "+"                  |
-|   44 |  $2C | ","                  |
-|   45 |  $2D | "-"                  |
-|   46 |  $2E | "."                  |
-|   47 |  $2F | "/"                  |
-|   48 |  $30 | "0"                  |
-|   49 |  $31 | "1"                  |
-|   50 |  $32 | "2"                  |
-|   51 |  $33 | "3"                  |
-|   52 |  $34 | "4"                  |
-|   53 |  $35 | "5"                  |
-|   54 |  $36 | "6"                  |
-|   55 |  $37 | "7"                  |
-|   56 |  $38 | "8"                  |
-|   57 |  $39 | "9"                  |
-|   58 |  $3A | ":"                  |
-|   59 |  $3B | ";"                  |
-|   60 |  $3C | "<"                  |
-|   61 |  $3D | "="                  |
-|   62 |  $3E | ">"                  |
-|   63 |  $3F | "?"                  |
-|   64 |  $40 | "@"                  |
-|   65 |  $41 | "A"                  |
-|   66 |  $42 | "B"                  |
-|   67 |  $43 | "C"                  |
-|   68 |  $44 | "D"                  |
-|   69 |  $45 | "E"                  |
-|   70 |  $46 | "F"                  |
-|   71 |  $47 | "G"                  |
-|   72 |  $48 | "H"                  |
-|   73 |  $49 | "I"                  |
-|   74 |  $4A | "J"                  |
-|   75 |  $4B | "K"                  |
-|   76 |  $4C | "L"                  |
-|   77 |  $4D | "M"                  |
-|   78 |  $4E | "N"                  |
-|   79 |  $4F | "O"                  |
-|   80 |  $50 | "P"                  |
-|   81 |  $51 | "Q"                  |
-|   82 |  $52 | "R"                  |
-|   83 |  $53 | "S"                  |
-|   84 |  $54 | "T"                  |
-|   85 |  $55 | "U"                  |
-|   86 |  $56 | "V"                  |
-|   87 |  $57 | "W"                  |
-|   88 |  $58 | "X"                  |
-|   89 |  $59 | "Y"                  |
-|   90 |  $5A | "Z"                  |
-|   91 |  $5B | "["                  |
-|   92 |  $5C | "\"                  |
-|   93 |  $5D | "]"                  |
-|   94 |  $5E | "^"                  |
-|   95 |  $5F | "_"                  |
-|   96 |  $60 | "`"                  |
-|   97 |  $61 | "a"                  |
-|   98 |  $62 | "b"                  |
-|   99 |  $63 | "c"                  |
-|  100 |  $64 | "d"                  |
-|  101 |  $65 | "e"                  |
-|  102 |  $66 | "f"                  |
-|  103 |  $67 | "g"                  |
-|  104 |  $68 | "h"                  |
-|  105 |  $69 | "i"                  |
-|  106 |  $6A | "j"                  |
-|  107 |  $6B | "k"                  |
-|  108 |  $6C | "l"                  |
-|  109 |  $6D | "m"                  |
-|  110 |  $6E | "n"                  |
-|  111 |  $6F | "o"                  |
-|  112 |  $70 | "p"                  |
-|  113 |  $71 | "q"                  |
-|  114 |  $72 | "r"                  |
-|  115 |  $73 | "s"                  |
-|  116 |  $74 | "t"                  |
-|  117 |  $75 | "u"                  |
-|  118 |  $76 | "v"                  |
-|  119 |  $77 | "w"                  |
-|  120 |  $78 | "x"                  |
-|  121 |  $79 | "y"                  |
-|  122 |  $7A | "z"                  |
+| code | hexa | character   |
+| ----:| ----:| ----------- |
+|   17 |  $11 | right arrow |
+|   18 |  $12 | left arrow  |
+|   19 |  $13 | down arrow  |
+|   20 |  $14 | up arrow    |
+|   32 |  $20 | whitespace  |
+|   33 |  $21 | "!"         |
+|   34 |  $22 | '"'         |
+|   35 |  $23 | "#"         |
+|   36 |  $24 | "$"         |
+|   37 |  $25 | "%"         |
+|   38 |  $26 | "&"         |
+|   39 |  $27 | "'"         |
+|   40 |  $28 | "("         |
+|   41 |  $29 | ")"         |
+|   42 |  $2A | "*"         |
+|   43 |  $2B | "+"         |
+|   44 |  $2C | ","         |
+|   45 |  $2D | "-"         |
+|   46 |  $2E | "."         |
+|   47 |  $2F | "/"         |
+|   48 |  $30 | "0"         |
+|   49 |  $31 | "1"         |
+|   50 |  $32 | "2"         |
+|   51 |  $33 | "3"         |
+|   52 |  $34 | "4"         |
+|   53 |  $35 | "5"         |
+|   54 |  $36 | "6"         |
+|   55 |  $37 | "7"         |
+|   56 |  $38 | "8"         |
+|   57 |  $39 | "9"         |
+|   58 |  $3A | ":"         |
+|   59 |  $3B | ";"         |
+|   60 |  $3C | "<"         |
+|   61 |  $3D | "="         |
+|   62 |  $3E | ">"         |
+|   63 |  $3F | "?"         |
+|   64 |  $40 | "@"         |
+
+| code | hexa | character   |
+| ----:| ----:| ----------- |
+|   65 |  $41 | "A"         |
+|   66 |  $42 | "B"         |
+|   67 |  $43 | "C"         |
+|   68 |  $44 | "D"         |
+|   69 |  $45 | "E"         |
+|   70 |  $46 | "F"         |
+|   71 |  $47 | "G"         |
+|   72 |  $48 | "H"         |
+|   73 |  $49 | "I"         |
+|   74 |  $4A | "J"         |
+|   75 |  $4B | "K"         |
+|   76 |  $4C | "L"         |
+|   77 |  $4D | "M"         |
+|   78 |  $4E | "N"         |
+|   79 |  $4F | "O"         |
+|   80 |  $50 | "P"         |
+|   81 |  $51 | "Q"         |
+|   82 |  $52 | "R"         |
+|   83 |  $53 | "S"         |
+|   84 |  $54 | "T"         |
+|   85 |  $55 | "U"         |
+|   86 |  $56 | "V"         |
+|   87 |  $57 | "W"         |
+|   88 |  $58 | "X"         |
+|   89 |  $59 | "Y"         |
+|   90 |  $5A | "Z"         |
+
+| code | hexa | character   |
+| ----:| ----:| ----------- |
+|   91 |  $5B | "["         |
+|   92 |  $5C | "\"         |
+|   93 |  $5D | "]"         |
+|   94 |  $5E | "^"         |
+|   95 |  $5F | "_"         |
+|   96 |  $60 | "`"         |
+|   97 |  $61 | "a"         |
+|   98 |  $62 | "b"         |
+|   99 |  $63 | "c"         |
+|  100 |  $64 | "d"         |
+|  101 |  $65 | "e"         |
+|  102 |  $66 | "f"         |
+|  103 |  $67 | "g"         |
+|  104 |  $68 | "h"         |
+|  105 |  $69 | "i"         |
+|  106 |  $6A | "j"         |
+|  107 |  $6B | "k"         |
+|  108 |  $6C | "l"         |
+|  109 |  $6D | "m"         |
+|  110 |  $6E | "n"         |
+|  111 |  $6F | "o"         |
+|  112 |  $70 | "p"         |
+|  113 |  $71 | "q"         |
+|  114 |  $72 | "r"         |
+|  115 |  $73 | "s"         |
+|  116 |  $74 | "t"         |
+|  117 |  $75 | "u"         |
+|  118 |  $76 | "v"         |
+|  119 |  $77 | "w"         |
+|  120 |  $78 | "x"         |
+|  121 |  $79 | "y"         |
+|  122 |  $7A | "z"         |
 
 ### Registers
 
@@ -3280,8 +3277,8 @@ For each sprite:
 |     +4 | 1 Byte  | Character number     |
 |     +5 | 1 Byte  | Character attributes |
 
-Both position on x and y axis use sub-pixels values. To advance by 1 pixel, the values should get increased by 16.
-Also, they are both offseted by 32 pixels. To place a sprite in the 0x0 coordinates, the values should be 512x512.
+Both position on x and y axis use sub-pixels values. To advance by 1 pixel, the values SHOULD get increased by 16.
+Also, they are both offseted by 32 pixels. To place a sprite in the 0x0 coordinates, the values SHOULD be 512x512.
 
 #### Character attributes
 
@@ -3366,11 +3363,11 @@ For each palette:
 | `$FF84` | 1 Byte  | ASCII code of last pressed key |
 | `$FF85` | 1 Byte  | Other I/O status bits          |
 
-Last touch position X and Y are stored as float and currently LowResRMX do not have a way to peek float from memory, use [`TOUCH.X` and `TOUCH.Y`](#xtouchxytouchy) functions instead.
+Last touch position X and Y are stored as float and currently Retro Game Creator do not have a way to peek float from memory, use [`TOUCH.X` and `TOUCH.Y`](#xtouchxytouchy) functions instead.
 
-Pixels shown represent the number of fantasy pixels that is visible by the user according to their device screen ratio. Use the practicle [`SHOWN.W` and `SHOWN.H`](#widthshownxheightshownh) functions.
+Pixels shown represent the number of fantasy pixels that is visible by the user according to their device screen ratio. Use the practical [`SHOWN.W` and `SHOWN.H`](#widthshownxheightshownh) functions.
 
-Pixels outside the safe zone represent the number of fantasy pixels that are visible but should be considered unsafe for touch input as they are outside the safe area. Use the easy memorable [`SAFE.L`, `SAFE.T`, `SAFE.R` and `SAFE.B`](#leftsafeltopsafetrightsaferbottomsafeb) functions.
+Pixels outside the safe zone represent the number of fantasy pixels that are visible but SHOULD be considered unsafe for touch input as they are outside the safe area. Use the easy memorable [`SAFE.L`, `SAFE.T`, `SAFE.R` and `SAFE.B`](#leftsafeltopsafetrightsaferbottomsafeb) functions.
 
 #### Other I/O status bits
 
@@ -3390,26 +3387,26 @@ Pixels outside the safe zone represent the number of fantasy pixels that are vis
 
 ### Cycles
 
-The fantasy hardware simulates CPU cycles. A cycle a fixed time duration that can be used to compute things. In LowResRMX each instructions cost a number of cycles that follow a set of rules.
+The fantasy hardware simulates CPU cycles. A cycle a fixed time duration that can be used to compute things. In Retro Game Creator each instructions cost a number of cycles that follow a set of rules.
 
-1. 1 cycle per instruction,
-2. 1 cycle for reading the value of a variable,
-3. 1 cycle per operator in expression evaluation,
-4. 1 cycle per array item creation,
-5. 1 cycle per function execution,
-6. 1 cycle per literals evaluation,
-7. 1 cycle per label read as value,
-8. 1 cycle per command execution,
-9. 8 cycles for copying sound data for each sound play,
-10. 1 cycle per character for string creation, modification, concatenation,
-11. 1 cycle per byte for memory copy or modification (except `DMA COPY`),
-12. almost 1/32 cycle per byte copied using `DMA COPY`,
-13. 2 cycles per cells modification including text.
+- 1 cycle per instruction,
+- 1 cycle for reading the value of a variable,
+- 1 cycle per operator in expression evaluation,
+- 1 cycle per array item creation,
+- 1 cycle per function execution,
+- 1 cycle per literals evaluation,
+- 1 cycle per label read as value,
+- 1 cycle per command execution,
+- 8 cycles for copying sound data for each sound play,
+- 1 cycle per character for string creation, modification, concatenation,
+- 1 cycle per byte for memory copy or modification (except `DMA COPY`),
+- almost 1/32 cycle per byte copied using `DMA COPY`,
+- 2 cycles per cells modification including text.
 
 Limit of cycles a program can execute:
 - 52668 per frames
 
-During interrupt, addional limits are also applied:
+During interrupt, additional limits are also applied:
 - 3420 for VBL interrupt
 - 204 per line for RASTER interrupt
 - 51 per particle for PARTICLE interrupt
@@ -3417,7 +3414,7 @@ During interrupt, addional limits are also applied:
 
 ### Number limits
 
-LowResRMX internally store numbers as 🌐[floating point](https://en.wikipedia.org/wiki/IEEE_754) on 32 bits.
+Retro Game Creator internally store numbers as 🌐[floating point](https://en.wikipedia.org/wiki/IEEE_754) on 32 bits.
 
 This enough to store integers values (-16777216..16777216) with a 1 to 1 precision.
 
@@ -3429,7 +3426,7 @@ With lower or bigger numbers, precision will decrease, making those number equal
         print "no"
     end if
 
-With float numbers, the precision max depends on whatever the programs want. It is not clear for me.
+With floating-point numbers, the maximum precision varies depending on the magnitude of the number.
 
     print 4.000000299=4
     print 4.000000300<>4
