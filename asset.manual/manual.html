@@ -1,28 +1,35 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-<title>LowResRMX Manual</title>
+<title>Retro Game Creator - Documentation</title>
 <style>
-body { font-family: 'Baskerville', 'Libre Baskerville', serif; font-size: 1.3em; margin: 0; }
-h1, h2, h3, h4 { margin: 2.5em 0 1em 0; background: #444; color: #fff; padding: 0.6em 1em 0.4em 1em; }
+a { color: #36b; }
+a:visited { color: #639; }
+body { font-family: 'Baskerville', 'Libre Baskerville', serif; font-size: 1.3em; margin: 0; background: #f7f2ed; }
+h1, h2, h3, h4 { margin: 2.0em 0 1em 0; background: #639; color: #fff; padding: 0.5em 1em 0.4em 1em; }
 body h1 { margin-top: 0; }
 p { margin: 1em; }
-blockquote { margin: 1em 0; border-left: solid 1em #ecc; padding: 0.2em 0.4em; background-color: #fee; }
-code { background-color: #ddd; padding: 0.2em 0.3em; margin: -0.2em -0.1em; }
-h4>code { background-color: #444; }
+blockquote { margin: 1em 0; border-left: solid 1em #c66; padding: 0.2em 0.4em; background-color: #f2d9d9; font-style: italic; }
+code { background-color: #927353; color: #fff; padding: 0.2em 0.3em; margin: -0.2em -0.1em; border-radius: 0.3em; text-decoration: none; }
+del { text-decoration-color: #fff; }
+del code { background-color: #a35; }
+h4 { background-color: #e94; color: #420; }
+h4>code { background-color: unset; color: unset; padding: unset; margin: 0; border-radius: unset; font-size: 1.5em; }
 code+code { display: inline-block; }
-pre { white-space: pre-wrap; font-family: 'Menlon-Regular', monospace; margin: 0; background-color: #ddd; padding: 0.5em 1em; display: inline-block; -moz-tab-size:2; -o-tab-size:2; tab-size:2; }
-pre>code { padding: 0; margin: 0; }
+pre { white-space: pre-wrap; font-family: 'Menlon-Regular', monospace; margin: 0; background-color: #dad0c6; padding: 0.5em 1em; display: inline-block; -moz-tab-size:2; -o-tab-size:2; tab-size:2; border-top-right-radius: 0.3em; border-bottom-right-radius: 0.3em; }
+pre>code { padding: 0; margin: 0; background-color: unset; color: #000; }
 blockquote>pre { margin-left: 1em; }
-blockquote pre,blockquote code { background-color: #ecc; }
+ul { padding-left: 2em; }
+ul li>pre { margin-left: -2em; padding-left: 2.0em; }
+ol li>pre { margin-left: -2em; padding-left: 2.5em; }
+blockquote pre,blockquote code { background-color: #c66; font-style: normal; }
 table { border-collapse: collapse; margin: 0 1em; display: inline-block; }
 table+table { margin-left: 2em; vertical-align:top; }
 td, th { padding: 0.2em 0.8em; text-align: left; }
-tbody>tr, tr+tr { border-top: solid 0.1em #ddd; }
-hr { border: none; border-top: solid 0.15em #ccc; margin: 1em; }
+tbody>tr, tr+tr { border-top: solid 0.1em #b8a189; }
+hr { border: none; border-top: solid 0.15em #639; margin: 1em; }
 </style>
 </head>
 <body>
@@ -30,375 +37,214 @@ hr { border: none; border-top: solid 0.15em #ccc; margin: 1em; }
 
 
 <!-- Tool: https://markdowntohtml.com/ -->
-<!-- and replace \<br\> by <br/> and \<hr\> by <hr/> -->
-<!-- &#39; ' -->
+<!-- remove antislash for br and hr tag -->
+<!-- & # 39; ' -->
+<!-- fix table -->
 
-<h1 id="manual">Manual</h1>
+<h1 id="retro-game-creator-documentation">Retro Game Creator - Documentation</h1>
 <blockquote>
-<p>This is a fork of the excellent fantasy console Lowres NX by Timo &quot;Inutilis&quot; Kloss.<br/>
-This is a heavily modified version and way more complicated to use, I recommend you to stay on the original app:
+<p>This is a fork of the excellent fantasy console Lowres NX by Timo &quot;Inutilis&quot; Kloss.<br>
+This is a heavily modified version and way more complicated to use, I recommend you to stay on the original app:<br>
 <a href="https://apps.apple.com/app/lowres-nx-coder/id1318884577">LowRes NX Coder on App Store</a>.</p>
 </blockquote>
-<!-- FIXME: spell checked start -->
+<h2 id="what-is-lowresrmx-">What is LowResRMX?</h2>
 <p>Create your games and play them on the go using an iPhone or iPad. LowResRMX is a virtual game console and game development environment that includes all the tools you need to start and finish a project.</p>
-<p>It <strong>will</strong> includes a project manager, a code editor, and various tools to edit game assets: sprites, palettes, backgrounds, instruments, and music.</p>
-<blockquote>
-<p><strong>The documentation and included tools are still in development.</strong></p>
-</blockquote>
+<p>It includes a project manager, a code editor, and various tools to edit game assets: sprites, palettes, backgrounds, instruments, and music.</p>
+<p>LowResRMX simulates a virtual retro game console directly inside your device, allowing user to create, play, and share their games.</p>
+<p>It tries to emulate old-school 8-bits/16-bits console hardware by copying their limitations. Low number of colors, limited memory, and slow processing power.</p>
 <h2 id="difference">Difference</h2>
 <p>The goal of the app is to provide a development environment that I can use during my commutes on the subway, and later, to be able to publish a real app on the stores.</p>
-<p>The original LowRes NX, despite being an excellent development environment, lacks some capabilities, in my opinion.</p>
-<h4 id="background">Background</h4>
-<p>4 background layers instead of 2, with 64x64 cells instead of 32x32.</p>
-<hr/>
-<p>Support for large 16x16 pixel cells has been removed.</p>
-<p>Removed syntaxes:</p>
-<p><code>CELL SIZE bg,size</code></p>
-<hr/>
-<p>Alternative syntax for the <code>FLIP</code> command:</p>
-<p><code>FLIP x,y</code></p>
-<p>Where <code>x</code> and <code>y</code> are both optional and can accept any number. If the number is different from zero, the flag will be set.</p>
-<hr/>
-<p>New settings with the <code>SYSTEM</code> command to render a layer at double size:</p>
-<p><code>SYSTEM setting,double</code>
-<br/>where <code>setting</code> ranges from <code>5</code> to <code>8</code>.</p>
-<table>
-<thead>
-<tr>
-<th>setting</th>
-<th>layer</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>5</td>
-<td>0</td>
-</tr>
-<tr>
-<td>6</td>
-<td>1</td>
-</tr>
-<tr>
-<td>7</td>
-<td>2</td>
-</tr>
-<tr>
-<td>8</td>
-<td>3</td>
-</tr>
-</tbody>
-</table>
-<hr/>
-<p>Internal scroll offset not capped to 512 any more, but 0xFFFF.</p>
-<h4 id="screen">Screen</h4>
-<p>A fantasy screen with a resolution of 216x384 pixels.</p>
-<p>It features perfectly square pixels, a fixed portrait orientation, and always fills the entire device screen.</p>
-<p>Depending on the device&#39;s screen ratio, the number of visible virtual pixels may vary—from 216x288 on 4:3 devices to 177x384 on 19.5:9 devices.</p>
-<p>To detect the visible virtual pixels, use the new functions <code>=SHOWN.W</code> and <code>=SHOWN.H</code>.</p>
-<hr/>
-<p>New functions to retrieve the visible fantasy display size:</p>
-<p><code>=SHOWN.W</code><br/>
-<code>=SHOWN.H</code></p>
-<p>Returns the number of visible pixels in width and height respectively.</p>
-<hr/>
-<p>New functions to query the safe area offset:</p>
-<p><code>=SAFE.L</code><br/>
-<code>=SAFE.T</code><br/>
-<code>=SAFE.R</code><br/>
-<code>=SAFE.B</code></p>
-<p>These return the offset in virtual pixels to apply from the boundary of the fantasy device screen to reach the inner safe area specified by the device&#39;s operating system.</p>
-<p>These functions can be used to avoid the top camera notch or the bottom inset full-width buttons.</p>
-<h4 id="colors">Colors</h4>
-<p>The 64 available colors do not follow the original EGA style of LowRes NX. Instead, they use the <a href="https://lospec.com/palette-list/famicube">FAMICUBE palette created by Arne</a>.</p>
+<p>The original LowRes NX, despite being an excellent development environment, lacks some capabilities, in my opinion to be used on a handled device.</p>
+<blockquote>
+<p>If you already know how to use Lowres NX, you can read the following list of differences below:<br>
+For new users, I recommend to <a href="#how-does-it-work">jump to the: How does it work section</a></p>
+</blockquote>
+<p><strong>Background:</strong></p>
+<ul>
+<li><p><a href="#backgrounds">4 background layers</a> instead of 2, with 64x64 cells instead of 32x32.</p>
+</li>
+<li><p>Support for large 16x16 pixel cells has been removed.</p>
+<p>  Removed syntaxes: <del><code>CELL SIZE</code></del></p>
+</li>
+<li><p>The <a href="#flip-horizontalvertical"><code>FLIP</code> command take optional argument</a> now.</p>
+</li>
+<li><p>New settings with the <code>SYSTEM</code> command to <a href="#system-settingvalue">render a layer at double size</a>:</p>
+</li>
+<li><p>Internal scroll offset not capped to 512 any more, but 0xFFFF.</p>
+</li>
+</ul>
+<p><strong>Screen:</strong></p>
+<ul>
+<li><p>A new <a href="#screen">fantasy screen</a> with a maximum resolution of 216x384 pixels.</p>
+</li>
+<li><p>New functions to <a href="#widthshownwheightshownh">retrieve the visible fantasy display size</a></p>
+</li>
+<li><p>New functions to <a href="#leftsafeltopsafetrightsaferbottomsafeb">query the safe area offset</a>:</p>
+</li>
+<li><p>Removed commands and functions: <code>DISPLAY</code>.</p>
+</li>
+</ul>
+<p><strong>Colors:</strong></p>
+<ul>
+<li><p>The 64 available colors <a href="#colors">do not follow the original EGA style</a> of LowRes NX.</p>
 <blockquote>
 <p>This makes using the color chooser from the original &quot;Gfx Designer&quot; in LowRes NX a bit more challenging.</p>
 </blockquote>
-<hr/>
-<p>New settings with the <code>SYSTEM</code> command to make the color <code>0</code> for a layer opaque instead of transparent:</p>
-<p><code>SYSTEM setting,opacity</code>
-<br/>where <code>setting</code> ranges from <code>1</code> to <code>4</code>.</p>
-<table>
-<thead>
-<tr>
-<th>setting</th>
-<th>layer</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>1</td>
-<td>0</td>
-</tr>
-<tr>
-<td>2</td>
-<td>1</td>
-</tr>
-<tr>
-<td>3</td>
-<td>2</td>
-</tr>
-<tr>
-<td>4</td>
-<td>3</td>
-</tr>
-</tbody>
-</table>
-<h4 id="sprites">Sprites</h4>
-<p>170 sprites instead of 64.<br/>
-Sprite number range from <code>0</code> to <code>169</code>.</p>
-<p>Positions support sub-pixels with <code>1/16</code> pixel precision.</p>
-<p>e.g.:</p>
-<pre><code>SPRITE <span class="hljs-number">123</span>,SPRITE.X(<span class="hljs-number">123</span>)+<span class="hljs-number">0.25</span>,
-</code></pre><h4 id="input-output">Input/Output</h4>
-<p>Touchscreen only, with floating-point precision.</p>
-<p>The virtual controller and the ability to use a Bluetooth controller have been removed.</p>
-<p>The virtual keyboard is still available.</p>
-<p>When the device&#39;s virtual keyboard is hidden by the user, the corresponding I/O <a href="#registers">Registers</a> flag is updated.</p>
-<p>Removed 🗑️ syntaxes:</p>
-<p><code>=BUTTON(p,n)</code>, <code>=UP(p)</code>, <code>=DOWN(p)</code>, <code>=LEFT(p)</code>, <code>=RIGHT(p)</code>, <code>GAMEPAD n</code>, <code>TOUCHSCREEN</code></p>
-<hr/>
-<p>Changes to the <code>=TOUCH.X</code> and <code>=TOUCH.Y</code> functions: These now return floating-point values.</p>
-<hr/>
-<p>New alternative to the <code>WAIT</code> command:</p>
-<p><code>WAIT TAP</code></p>
-<p>This will wait until a device tap is detected but will still render the screen.</p>
-<hr/>
-<p>New function to ask the device if the virtual keyboard is visible.</p>
-<p><code>=KEYBOARD</code></p>
-<p>Return <code>-1</code> if the keyboard is visible.</p>
-<hr/>
-<p>New <code>HAPTIC h</code> command to trigger haptic feedback on the device.</p>
-<h4 id="control-flow">Control flow</h4>
-<p>New program control flow:</p>
-<p><code>ON value GOTO label,..</code><br/>
-<code>ON value GOSUB label,..</code><br/>
-<code>ON value RESTORE label,..</code></p>
-<p>These commands will <code>GOTO</code>, <code>GOSUB</code> or <code>RESTORE</code> to one of the listed <code>label</code>s based on the <code>value</code>.</p>
-<p>e.g.:</p>
-<pre><code>ON I GOTO <span class="hljs-literal">ZERO</span>,<span class="hljs-literal">ONE</span>,<span class="hljs-literal">TWO</span>
-</code></pre><h4 id="data">Data</h4>
-<p>New keyword to skip read data:</p>
-<p><code>SKIP number</code></p>
-<p>This will skip a specified <code>number</code> of data entries, so they are not read.</p>
-<p>e.g.:</p>
-<pre><code>DATA 0,1,2
-<span class="hljs-keyword">SKIP </span>2
-READ A
-PRINT A
-'WILL PRINT "2"
-</code></pre><hr/>
-<p>It&#39;s now possible to access data directly using its label:</p>
-<p><code>PRINT label</code></p>
-<p>This allows you to store a string using the <code>DATA</code> keyword and reference it in the <code>PRINT</code> command.</p>
-<p>e.g.:</p>
-<pre><code>PRINT TEST
-<span class="hljs-keyword">TEST:
-</span>DATA "GABUZOMEU"
-</code></pre><p>It also works in variables, functions, and commands:</p>
-<pre><code>A<span class="hljs-variable">$=</span>TEST+LEFT<span class="hljs-variable">$(</span>TEST,<span class="hljs-number">2</span>)
-</code></pre><p>Numeric values are supported as well:</p>
-<pre><code>TEST2:
-<span class="hljs-keyword">DATA</span> <span class="hljs-number">123.4</span>
-<span class="hljs-built_in">PRINT</span> TEST2*<span class="hljs-number">3</span>
-</code></pre><h4 id="math">Math</h4>
-<p>New function to return the ceiling value of a numerical value:</p>
-<p><code>=CEIL(value)</code></p>
-<hr/>
-<p>New function to return the flooring value of a numerical value:</p>
-<p><code>=FLOOR(value)</code></p>
-<blockquote>
-<p>This is different than <code>=INT(value)</code></p>
-</blockquote>
-<hr/>
-<p>New function to clamp a numerical value:</p>
-<p><code>=CLAMP(value,min,max)</code></p>
-<p>This returns the <code>value</code> clamped between <code>min</code> and <code>max</code>.</p>
-<hr/>
-<p>New random generator and features:</p>
-<p><code>=RND</code></p>
-<p>Works the same as before but with a different generator, using <a href="https://www.pcg-random.org/">PCG</a>.</p>
-<p><code>RANDOMIZE seed,address</code>
-<code>=RND address</code>
-<code>=RND(max,address)</code></p>
-<p>You can specify an <code>address</code> where the internal state will be stored, consuming 16 bytes.</p>
-<p>This allows you to use multiple generators at the same time.</p>
-<hr/>
-<p>New syntax to compute length:</p>
-<p><code>=LEN(x,y)</code></p>
-<p>Calculates the length of a 2D vector using <code>x</code> and <code>y</code> as the coordinates for the two axes.</p>
-<hr/>
-<p>New function that interpolate values between <code>0</code> and <code>1</code> using easing mathematical functions:</p>
-<p><code>=EASE(function,mode,value)</code></p>
-<p>This returns the interpolation of <code>value</code> between 0.0 and 1.0, using the specified easing <code>function</code> and <code>mode</code>.</p>
-<table>
-<thead>
-<tr>
-<th></th>
-<th>function</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>0</td>
-<td>linear</td>
-</tr>
-<tr>
-<td>1</td>
-<td>sine</td>
-</tr>
-<tr>
-<td>2</td>
-<td>quad</td>
-</tr>
-<tr>
-<td>3</td>
-<td>cubic</td>
-</tr>
-<tr>
-<td>4</td>
-<td>quart</td>
-</tr>
-<tr>
-<td>5</td>
-<td>quint</td>
-</tr>
-<tr>
-<td>6</td>
-<td>circ</td>
-</tr>
-<tr>
-<td>7</td>
-<td>back</td>
-</tr>
-<tr>
-<td>8</td>
-<td>elastic</td>
-</tr>
-<tr>
-<td>9</td>
-<td>bounce</td>
-</tr>
-</tbody>
-</table>
-<table>
-<thead>
-<tr>
-<th></th>
-<th>mode</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>-1</td>
-<td>in</td>
-</tr>
-<tr>
-<td>0</td>
-<td>inout</td>
-</tr>
-<tr>
-<td>+1</td>
-<td>out</td>
-</tr>
-</tbody>
-</table>
-<h4 id="text">Text</h4>
-<p>New command to expose the existing overlay message API:</p>
-<p><code>MESSAGE text</code></p>
-<hr/>
-<p><code>PRINT</code> command can now word wrap before breaking word.</p>
-<p>If there is not enough space to print a word inside the window, a new line is inserted to avoid breaking the word in two.</p>
-<h4 id="other">Other</h4>
-<p>New command to support programs from the original LowRes NX:</p>
-<p><code>COMPAT</code></p>
-<blockquote>
-<p>Note: This command will be removed at some point. Some commands from LowRes NX are already unavailable.</p>
-</blockquote>
-<p>Enables compatibility mode:</p>
-<ul>
-<li>Forces the rendering process to keep the original device screen.</li>
-<li>Reverts the <code>RND</code> command and <code>=RND()</code> function to their original behavior.</li>
+</li>
+<li><p>New settings with the <code>SYSTEM</code> command to make the <a href="#system-settingvalue">color <code>0</code> for a layer opaque</a> instead of transparent:</p>
+</li>
 </ul>
-<p>This does not guarantee full compatibility but can help with some aspects.</p>
-<p>For instance, commands and functions that have been removed will still be unavailable.</p>
-<p>Double cell support for background is not emulated.</p>
-<hr/>
-<!-- TODO: need spell check -->
-<p><code>PAUSE</code> command has been reused for a different purpose.</p>
-<p>The posibility to pause and unpause the game is removed because game controller support has been removed.</p>
-<p>But the pause feature has been transformed to a kind of debugger.</p>
-<p>Read the specific documentation about the internal debugger.</p>
-<p>TODO: need link</p>
-<hr/>
-<p>Removed 🗑️ commands and functions:</p>
-<p><code>DISPLAY</code>, <code>KEYBOARD OPTIONAL</code>, <code>GAMEPAD</code>, <code>BUTTON</code>, <code>LEFT</code>, <code>RIGHT</code>, <code>DOWN</code>, <code>UP</code>, <code>TOUCHSCREEN</code>, <code>PAUSE ON/OFF</code>, <code>PAUSE=</code></p>
-<p>Removed 🗑️ reserved keywords:</p>
-<p><code>ANIM</code>, <code>CLOSE</code>, <code>DECLARE</code>, <code>DEF</code>, <code>FLASH</code>, <code>FN</code>, <code>FUNCTION</code>, <code>LBOUND</code>, <code>OPEN</code>, <code>OUTPUT</code>, <code>SHARED</code>, <code>STATIC</code>, <code>TEMPO</code>, <code>VOICE</code>, <code>WRITE</code></p>
-<h4 id="memory">Memory</h4>
-<p>An almost compatible memory mapping.</p>
-<p>The total addressable memory has increased from 64 Kibit to 128 Kibit.</p>
-<p>Lowres NX:</p>
+<p><strong>Sprites:</strong></p>
+<ul>
+<li><p>170 sprites instead of 64. Sprite number range from <code>0</code> to <code>169</code>.</p>
+</li>
+<li><p>Positions support sub-pixels with <code>1/16</code> pixel precision.</p>
+<pre><code>  sprite <span class="hljs-number">123</span>,sprite.x(<span class="hljs-number">123</span>)+<span class="hljs-number">0.25</span>,
+</code></pre></li>
+</ul>
+<p><strong>Input/Output:</strong></p>
+<ul>
+<li><p><a href="#xtouchxytouchy">Touch coordinates return floating-point</a> values instead of integers.</p>
+</li>
+<li><p>The virtual controller and the ability to use a Bluetooth controller have been removed.</p>
+<p>  Removed gamepad related functions: <code>=BUTTON(p,n)</code>, <code>=UP(p)</code>, <code>=DOWN(p)</code>, <code>=LEFT(p)</code>, <code>=RIGHT(p)</code>, <code>GAMEPAD n</code>.</p>
+<p>  Removed useless commands: <code>TOUCHSCREEN</code>, <code>KEYBOARD OPTIONAL</code></p>
+</li>
+<li><p>When the device's virtual keyboard is hidden by the user, the corresponding I/O <a href="#registers">Registers</a> flag is updated. TODO: link</p>
+</li>
+<li><p>New syntaxe to <a href="#wait-tap">wait until device screen is tapped</a>.</p>
+</li>
+<li><p>New function that return <a href="#heightkeyboard">the height taken by the device virtual keyboard</a> in pixels when it's visible.</p>
+</li>
+<li><p>New <code>HAPTIC h</code> command to <a href="#haptic-pattern">trigger haptic feedback</a> on the device.</p>
+</li>
+</ul>
+<p><strong>Control flow:</strong></p>
+<ul>
+<li>New program control flow: <a href="#on-goto"><code>ON GOTO</code></a>, <a href="#on-gosub"><code>ON GOSUB</code></a> and <a href="#on-restore"><code>ON RESTORE</code></a>.</li>
+</ul>
+<p><strong>Data:</strong></p>
+<ul>
+<li><p>New keyword to <a href="#skip-number">skip read data</a>.</p>
+</li>
+<li><p>It's now possible to <a href="#labels">access data directly using its label</a> without the need to <code>READ</code> them.</p>
+</li>
+</ul>
+<p><strong>Math:</strong></p>
+<ul>
+<li><p><a href="#cosinecosnumbersinesinnumber">Cosine, sine</a> and <a href="#arcatanxy">arc tangent</a> functions internally replace π by 0.5.</p>
+<blockquote>
+<p>Pico-8 does exactly that.</p>
+</blockquote>
+<ul>
+<li>an angle of 0.0 or 1.0 reprensent the right direction.</li>
+<li>an angle of 0.5 reprensent the left direction.</li>
+<li>an angle of 0.25 reprensent the top direction.</li>
+<li>an angle of -0.25 reprensent the bottom direction.</li>
+</ul>
+</li>
+<li><p>Removed trigonometric functions: <code>ACOS</code>, <code>ASIN</code>, <code>HCOS</code>, <code>HSIN</code>, <code>HTAN</code></p>
+</li>
+<li><p>New function to return the <a href="#ceilceilnumber">ceiling value</a> of a numerical value:</p>
+</li>
+<li><p>New function to return the <a href="#floorfloornumber">flooring value</a> of a numerical value:</p>
+</li>
+<li><p>New function to <a href="#clampedclampvalueminmax">clamp a numerical value</a>.</p>
+</li>
+<li><p>New syntax to compute <a href="#lengthlengthx,y">vector length</a>.</p>
+</li>
+<li><p>New function to compute <a href="#interpolationeasefunctionmodevalue">easing function</a>.</p>
+</li>
+<li><p>New random generator using <a href="https://www.pcg-random.org/">PCG</a>. It's more random now.</p>
+</li>
+<li><p>New syntax to generate random number that allow to <a href="#randomrnd-addressbrrandomrndmaxaddressbrrandomize-seedaddress">save the current state</a>.</p>
+</li>
+</ul>
+<p><strong>Text:</strong></p>
+<ul>
+<li><p>New command to expose the existing <a href="#message-text">overlay message API</a>:</p>
+</li>
+<li><p><code>PRINT</code> command can now <a href="#print-expression-list">word wrap before breaking word</a>.</p>
+<p>  If there is not enough space to print a word inside the window, a new line is inserted to avoid breaking the word in two.</p>
+</li>
+</ul>
+<p><strong>Other:</strong></p>
+<ul>
+<li><p>New command to <a href="#compat">support programs from the original LowRes NX</a>:</p>
+</li>
+<li><p>Reuse the <code>PAUSE</code> command to bring the <a href="#pause">internal debugger</a>.</p>
+</li>
+<li><p>Removed commands and functions: <code>PAUSE ON/OFF</code>, <code>PAUSE=</code></p>
+</li>
+<li><p>Removed reserved keywords: <code>ANIM</code>, <code>CLOSE</code>, <code>DECLARE</code>, <code>DEF</code>, <code>FLASH</code>, <code>FN</code>, <code>FUNCTION</code>, <code>LBOUND</code>, <code>OPEN</code>, <code>OUTPUT</code>, <code>SHARED</code>, <code>STATIC</code>, <code>TEMPO</code>, <code>VOICE</code>, <code>WRITE</code>.</p>
+</li>
+</ul>
+<p><strong>Memory:</strong></p>
+<ul>
+<li><p>An almost compatible memory mapping.</p>
+<p>  The total addressable memory has increased from 64 Kibit to 128 Kibit.</p>
+<p>  Lowres NX:</p>
 <table>
 <thead>
 <tr>
-<th>addr</th>
+<th style="text-align:right">addr</th>
 <th>size</th>
 <th>purpose</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>$0000</td>
+<td style="text-align:right"><code>$0000</code></td>
 <td>32 Kibit</td>
 <td>Cartridge ROM</td>
 </tr>
 <tr>
-<td>$8000</td>
+<td style="text-align:right"><code>$8000</code></td>
 <td>4 Kibit</td>
 <td>Character Data</td>
 </tr>
 <tr>
-<td>$9000</td>
+<td style="text-align:right"><code>$9000</code></td>
 <td>2 Kibit</td>
 <td>BG0 Data</td>
 </tr>
 <tr>
-<td>$9800</td>
+<td style="text-align:right"><code>$9800</code></td>
 <td>2 Kibit</td>
 <td>BG1 Data</td>
 </tr>
 <tr>
-<td>$A000</td>
+<td style="text-align:right"><code>$A000</code></td>
 <td>16 Kibit</td>
 <td>Working RAM</td>
 </tr>
 <tr>
-<td>$E000</td>
+<td style="text-align:right"><code>$E000</code></td>
 <td>4 Kibit</td>
 <td>Persistent RAM</td>
 </tr>
 <tr>
-<td>$FE00</td>
+<td style="text-align:right"><code>$FE00</code></td>
 <td>256 Bytes</td>
 <td>Sprite Registers</td>
 </tr>
 <tr>
-<td>$FF00</td>
+<td style="text-align:right"><code>$FF00</code></td>
 <td>32 Bytes</td>
 <td>Color Registers</td>
 </tr>
 <tr>
-<td>$FF20</td>
+<td style="text-align:right"><code>$FF20</code></td>
 <td></td>
 <td>Video Registers</td>
 </tr>
 <tr>
-<td>$FF40</td>
+<td style="text-align:right"><code>$FF40</code></td>
 <td></td>
 <td>Audio Registers</td>
 </tr>
 <tr>
-<td>$FF70</td>
+<td style="text-align:right"><code>$FF70</code></td>
 <td></td>
 <td>I/O Registers</td>
 </tr>
@@ -408,184 +254,190 @@ PRINT A
 <table>
 <thead>
 <tr>
-<th>addr</th>
+<th style="text-align:right">addr</th>
 <th>size</th>
 <th>purpose</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>$0000</td>
+<td style="text-align:right"><code>$0000</code></td>
 <td>8 Kibit</td>
 <td>BG0 data</td>
 </tr>
 <tr>
-<td>$2000</td>
+<td style="text-align:right"><code>$2000</code></td>
 <td>8 Kibit</td>
 <td>BG1 data</td>
 </tr>
 <tr>
-<td>$4000</td>
+<td style="text-align:right"><code>$4000</code></td>
 <td>8 Kibit</td>
 <td>BG2 data</td>
 </tr>
 <tr>
-<td>$6000</td>
+<td style="text-align:right"><code>$6000</code></td>
 <td>8 Kibit</td>
 <td>BG3 data</td>
 </tr>
 <tr>
-<td>$8000</td>
+<td style="text-align:right"><code>$8000</code></td>
 <td>4 Kibit</td>
 <td>Character Data</td>
 </tr>
 <tr>
-<td>$9000</td>
+<td style="text-align:right"><code>$9000</code></td>
 <td>20 Kibit</td>
 <td>Working RAM</td>
 </tr>
 <tr>
-<td>$E000</td>
+<td style="text-align:right"><code>$E000</code></td>
 <td>6 Kibit</td>
 <td>Persisent RAM</td>
 </tr>
 <tr>
-<td>$FB00</td>
+<td style="text-align:right"><code>$FB00</code></td>
 <td>1020 Bytes</td>
 <td>Sprite registers</td>
 </tr>
 <tr>
-<td>$FF00</td>
+<td style="text-align:right"><code>$FF00</code></td>
 <td>32 Bytes</td>
 <td>Color registers</td>
 </tr>
 <tr>
-<td>$FF20</td>
+<td style="text-align:right"><code>$FF20</code></td>
 <td>10 Bytes</td>
 <td>Video registers</td>
 </tr>
 <tr>
-<td>$FF40</td>
+<td style="text-align:right"><code>$FF40</code></td>
 <td>48 Bytes</td>
 <td>Audio registers</td>
 </tr>
 <tr>
-<td>$FF70</td>
+<td style="text-align:right"><code>$FF70</code></td>
 <td>40 Bytes</td>
 <td>I/O registers</td>
 </tr>
 <tr>
-<td>$FFA0</td>
+<td style="text-align:right"><code>$FFA0</code></td>
 <td>6 Bytes</td>
 <td>DMA registers</td>
 </tr>
 <tr>
-<td>$10000</td>
+<td style="text-align:right"><code>$10000</code></td>
 <td>64 Kibit</td>
 <td>Cartridge ROM</td>
 </tr>
 </tbody>
 </table>
-<p>TODO: Add particle/emitter registers</p>
-<hr/>
-<p>New command and registers for fast memory copying:</p>
-<p><code>DMA COPY</code><br/>
-<code>DMA COPY ROM</code></p>
-<p>Performs a fast memory copy that can only be executed during interrupt calls.</p>
-<p>It uses the following registers as data:</p>
-<table>
-<thead>
-<tr>
-<th>addr</th>
-<th>purpose</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>$FFA0</td>
-<td>Source address</td>
-</tr>
-<tr>
-<td>$FFA2</td>
-<td>Bytes count</td>
-</tr>
-<tr>
-<td>$FFA4</td>
-<td>Destination address</td>
-</tr>
-</tbody>
-</table>
+</li>
+</ul>
+<ul>
+<li><p>New command and registers for <a href="#dma-copy-rom">fast memory copying</a>:</p>
+</li>
+<li><p>The <code>COPY</code> command is now slightly faster. Other command that operates on memory are not affected.</p>
+</li>
+</ul>
+<p><strong>The BASIC language:</strong></p>
+<ul>
+<li><p>A colon <code>:</code> can be used to <a href="#instructions-separator">separate multiple instructions</a> on the same line.</p>
+</li>
+<li><p>Program code is not forced to be uppercase anymore.</p>
+</li>
+</ul>
+<p><strong>The iOS app:</strong></p>
+<ul>
+<li>The size of the program thumbnails are 128x128 pixels.</li>
+</ul>
+<p><strong>The fantasy hardware:</strong></p>
+<ul>
+<li><p>The number of tokens, symbols a program can have has been increased.</p>
+</li>
+<li><p>The number of CPU-cycles a program can execute per frame, per vbl and per raster has been increased to accommodate with the bigger screen size.</p>
+</li>
+</ul>
+<p><strong>Particles:</strong></p>
+<p>TODO: redo it</p>
 <blockquote>
-<p>This will only work in a subprogram that has been called during an interrupt, including <code>RASTER</code>, <code>VBL</code>, and <code>PARTICLE</code>.</p>
+<p>Work-in-progress: everything will changes</p>
 </blockquote>
-<hr/>
-<p>The <code>COPY</code> command is now slightly faster.</p>
-<h4 id="particles">Particles</h4>
 <p>The particles library reuses sprites to make them appear, disappear, change their character data, and move them across the screen.</p>
-<hr/>
+<hr>
 <p><code>PARTICLE first,count AT address</code></p>
 <p>Declare the use of <code>count</code> sprites starting from <code>first</code> and store the internal data at <code>address</code>.</p>
 <p>Each sprite will consume 6 bytes of memory. For each sprite:</p>
 <table>
 <thead>
 <tr>
-<th>addr</th>
+<th style="text-align:right">addr</th>
 <th>size</th>
 <th>purpose</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>+0</td>
+<td style="text-align:right">+0</td>
 <td>2 Bytes</td>
 <td>Speed on x axis</td>
 </tr>
 <tr>
-<td>+2</td>
+<td style="text-align:right">+2</td>
 <td>2 Bytes</td>
 <td>Speed on y axis</td>
 </tr>
+<tr>
+<td style="text-align:right">+4</td>
+<td>1 Byte</td>
+<td>Appearence</td>
+</tr>
+<tr>
+<td style="text-align:right">+5</td>
+<td>1 Byte</td>
+<td>Current frame</td>
+</tr>
+<tr>
+<td style="text-align:right">+4</td>
+<td>2 Bytes</td>
+<td>Lifetime</td>
+</tr>
 </tbody>
 </table>
-<blockquote>
-<p>| +4   | 1 Byte  | Appearence      |
-| +5   | 1 Byte  | Current frame   |
-| +4   | 2 Bytes | Lifetime        |</p>
-</blockquote>
 <p>e.g.:</p>
 <pre><code>PARTICLE <span class="hljs-number">1</span>,<span class="hljs-number">20</span> AT $<span class="hljs-number">9000</span>
 'Will use sprite <span class="hljs-number">1</span> to <span class="hljs-number">20</span> included.
 'Store internal data from $<span class="hljs-number">9000</span> to $<span class="hljs-number">9078</span> excluded.
-</code></pre><h2 id="-">&lt;!--</h2>
+</code></pre><hr>
 <p><code>PARTICLE appearance DATA label</code></p>
 <p>Declare a <code>label</code> that contains data for the particle <code>appearance</code>.</p>
 <p><code>appearance</code> is a number between <code>0</code> and <code>23</code>.</p>
 <p>The associated data must contain a list of character numbers that will be used to draw the particle. Using a negative number will loop back to the previous data value.</p>
-<p>A common example is to use zero <code>0</code> and minus one <code>-1</code> for the last two data values, which allows the particle to disappear until the sprite is reused.</p>
+<p>A common example is to use zero (0) and minus one (-1) for the last two data values, which allows the particle to disappear until the sprite is reused.</p>
 <p>e.g.:</p>
-<pre><code>MY_APPEARANCE:
-DATA <span class="hljs-number">1</span>,<span class="hljs-number">2</span>,<span class="hljs-number">3</span>,<span class="hljs-number">4</span>,<span class="hljs-number">0</span>,-<span class="hljs-number">1</span>
-<span class="hljs-symbol">'Will</span> show the <span class="hljs-built_in">character</span> <span class="hljs-number">1</span> <span class="hljs-keyword">to</span> <span class="hljs-number">4</span>, each per frame.
-<span class="hljs-symbol">'And</span> <span class="hljs-keyword">loop</span> <span class="hljs-keyword">with</span> the <span class="hljs-built_in">character</span> <span class="hljs-number">0</span>. <span class="hljs-comment">--&gt;</span>
-</code></pre><hr/>
+<pre><code>my_appearance:
+data <span class="hljs-number">1</span>,<span class="hljs-number">2</span>,<span class="hljs-number">3</span>,<span class="hljs-number">4</span>,<span class="hljs-number">0</span>,-<span class="hljs-number">1</span>
+<span class="hljs-symbol">'will</span> show the <span class="hljs-built_in">character</span> <span class="hljs-number">1</span> <span class="hljs-keyword">to</span> <span class="hljs-number">4</span>, each per frame.
+<span class="hljs-symbol">'and</span> <span class="hljs-keyword">loop</span> <span class="hljs-keyword">with</span> the <span class="hljs-built_in">character</span> <span class="hljs-number">0</span>.
+</code></pre><hr>
 <p><code>PARTICLE OFF</code></p>
 <p>Clear all sprite positions and reset all particle appearances.</p>
-<hr/>
+<hr>
 <p><code>ON PARTICLE CALL subprogram</code></p>
 <p>For each particle, the system will call the subprogram using an interrupt.</p>
 <p>The target <code>subprogram</code> will receive two arguments:</p>
 <ol>
 <li>The <code>sprite</code> number,</li>
-<li>The particle <code>address</code>.</li>
+<li><p>The particle <code>address</code>.</p>
+<p> sub mypart(spr,addr)</p>
+<pre><code> sy=peekw(addr+<span class="hljs-number">2</span>)
+ pokew addr+<span class="hljs-number">2</span>,sy<span class="hljs-number">-5</span>
+ 'change the speed in y axis
+</code></pre><p> end sub</p>
+</li>
 </ol>
-<p>e.g.:</p>
-<pre><code><span class="hljs-keyword">SUB</span> MYPART(SPR,ADDR)
-    SY=PEEKW(ADDR+<span class="hljs-number">2</span>)
-    POKEW ADDR+<span class="hljs-number">2</span>,SY<span class="hljs-number">-5</span>
-    <span class="hljs-comment">'Change the speed in y axis</span>
-<span class="hljs-keyword">END</span> <span class="hljs-keyword">SUB</span>
-</code></pre><p>TODO: specify the number of cycles available.</p>
-<hr/>
+<p>TODO: specify the number of cycles available.</p>
+<hr>
 <p><code>EMITTER count AT address</code></p>
 <p>Declare the use of <code>count</code> emitters and store the internal data at <code>address</code>.</p>
 <p><code>count</code> is a number between <code>0</code> and <code>15</code>.</p>
@@ -621,8 +473,7 @@ DATA <span class="hljs-number">1</span>,<span class="hljs-number">2</span>,<span
 </tr>
 </tbody>
 </table>
-<!-- FIXME: spell checked end -->
-<hr/>
+<hr>
 <p><code>EMITTER emitter DATA label</code></p>
 <p>Declare a <code>label</code> that contains DATA for the <code>emitter</code>.</p>
 <p>The associated data must follow this list:</p>
@@ -641,37 +492,43 @@ DATA <span class="hljs-number">1</span>,<span class="hljs-number">2</span>,<span
 <li>how many times to <code>repeat</code> the emittion.</li>
 </ol>
 <p>When a particle get spawn, a random position is computed between the <code>outer</code> and <code>inner</code> ring.</p>
-<hr/>
+<hr>
 <p><code>EMITTER emitter ON x,y</code></p>
 <p>Tell the <code>emitter</code> to emit particle staring at position <code>x</code> and <code>y</code>.</p>
 <p>It will automaticly end when <code>repeat</code> reach 0.</p>
-<hr/>
+<hr>
 <p><code>EMITTER emitter OFF</code></p>
 <p>Manually stop the <code>emitter</code>.</p>
-<h2 id="how-does-it-works">How does it works</h2>
-<!--FIXME: spell checked NOW -->
-<p>LowResRMX does not have a framebuffer where users paint pixels. Instead, it simulates an NES/Gameboy PPU chip, which traverses its memory to generate output pixels based on characters, backgrounds, sprites, palettes and register information.</p>
+<h2 id="how-does-it-work">How does it work</h2>
+<p>LowResRMX does not have a framebuffer where users paint pixels like in Pico-8. Instead, it simulates an NES/Gameboy PPU chip, which traverses its memory to generate output pixels based on characters, backgrounds, sprites, palettes and register information.</p>
+<h3 id="screen">Screen</h3>
+<p>The fantasy screen has a maximum resolution of 216x384 pixels.</p>
+<p>It features perfectly square pixels, a fixed portrait orientation, and always fills the entire device screen.</p>
+<p>Depending on the device's screen ratio, the number of visible virtual pixels may vary from 216x288 on 4:3 devices to 177x384 on 19.5:9 devices (and maybe more).</p>
+<p>That's why LowResRMX provides an API to request the <a href="#widthshownwheightshownh">actual visible dimension of the screen</a>.</p>
+<p>Addionally, the device can possess notch and bottom inset full-width buttons. For that LowResRMX provides an API to request the offset from the visible dimension to the <a href="#leftsafeltopsafetrightsaferbottomsafeb">safe area</a>.</p>
 <h3 id="colors">Colors</h3>
-<p>LowResRMX provides the user with a fixed set of 64 colors.
-The colors are grouped into sets of 4 called palette, with 8 palettes available for users to colorize their creations.</p>
+<p>LowResRMX provides the user with a fixed set of <a href="#64-colors">64 colors</a>.</p>
+<p>The colors are grouped into sets of 4 called palette, with 8 palettes available for users to colorize their creations.</p>
 <p>The 1st color of the 1st palette will be used as the background color for the whole program. For the following palettes (2nd to 8th), the 1st color is transparent.</p>
 <blockquote>
-<p>But this can be altered by the <code>SYSTEM</code> command.</p>
+<p>This can be altered by the <a href="#system-setting-value"><code>SYSTEM</code> command</a>.</p>
 </blockquote>
 <p>From now on, the terms:</p>
 <ul>
 <li><strong>a palette</strong> apply to one of the 8 palettes with 4 colors inside,</li>
-<li><strong>a color</strong> means one of the 4 colors within a palette.</li>
+<li><strong>a color</strong> means one of the 4 colors within a palette or one of the 64 available colors.</li>
 </ul>
-<p>Check color <a href="#Registers">registers</a> for information about the memory mapping and data format.</p>
+<p>Check <a href="#color-registers">color registers</a>.</p>
+<p>Sauce: <a href="https://lospec.com/palette-list/famicube">FAMICUBE palette created by Arne</a>.</p>
 <h3 id="characters">Characters</h3>
-<p>The 256 characters available in the dedicated memory are 8x8 pixels each and are assigned a number from 0 to 255.
-Whenever this number is encountered in the background or sprite, the rendering process will draw the corresponding block of 8x8 pixels.</p>
+<p>The 256 characters are block of 8x8 pixels and are assigned to a number from 0 to 255.
+Whenever this number is use to be drawn in a background layer or a sprite, the rendering process will draw the corresponding block of 8x8 pixels.</p>
 <p>From now on, the term:</p>
 <ul>
 <li><strong>a character</strong> is a block of 8x8 pixels and take 16 bytes.</li>
 </ul>
-<p>Check character <a href="#Registers">registers</a> for information about the memory mapping and data format.</p>
+<p>Check the <a href="#character-data">character data format</a> and <a href="#character-registers">character registers</a>.</p>
 <h3 id="backgrounds">Backgrounds</h3>
 <p>LowResRMX has 4 background layers, each with an independent:</p>
 <ul>
@@ -679,12 +536,12 @@ Whenever this number is encountered in the background or sprite, the rendering p
 <li>and 64x64 character cells.</li>
 </ul>
 <p>The 4 layers are drawn in order from 4th to 1st. Cells of the 1st background will be visible above the others unless the priority flag is used.</p>
-<p>Each cells have it&#39;s own:</p>
+<p>Each cells have it's own:</p>
 <ul>
 <li>character number,</li>
 <li>palette,</li>
 <li>horizontal and vertical flip,</li>
-<li>priority to alter which layer&#39;s cell is drawn on top of another and on top of sprites.</li>
+<li>priority to alter which layer's cell is drawn on top of another and on top of sprites.</li>
 </ul>
 <p>Layers are not framebuffers; you CANNOT easily paint pixels directly. Instead, every cell references a character number, and those hold the pixel color information.</p>
 <p>Each layer can be shifted using the position in the X and Y axes. When reaching the edges, the cells will wrap around and remain visible.
@@ -695,8 +552,8 @@ Put another way, when the rendering process tries to draw the 65th cell of a row
 </blockquote>
 <p>From now on, the terms:</p>
 <ul>
-<li><strong>a bg</strong> is a layer of 64x64 cells,</li>
-<li><strong>a cell</strong> is a region of a bg that shows a character.</li>
+<li><strong>a layer</strong> is a background layer of 64x64 cells,</li>
+<li><strong>a cell</strong> is a square of a layer that shows one character, so 8x8 pixel.</li>
 </ul>
 <p>Check background <a href="#Registers">registers</a> for information about the memory mapping and data format.</p>
 <blockquote>
@@ -706,24 +563,42 @@ Put another way, when the rendering process tries to draw the 65th cell of a row
 <p>LowResRMX offers 170 sprites, each with:</p>
 <ul>
 <li>X and Y position,</li>
-<li>a size of 8x8, 16x16, 24x24 or 32x32 pixels,</li>
+<li>a dimension of 8x8, 16x16, 24x24 or 32x32 pixels,</li>
 <li>a character number for the top left one,</li>
 <li>a palette,</li>
 <li>horizontal and vertical flip,</li>
 <li>and priority to show the sprite on top of bg cells with priorities.</li>
 </ul>
 <p>The 170 sprites are drawn in order from 170th (bottom) to 1st (top).
-The sprite numbers range start at zero <code>0</code>,so the last one is <code>169</code>.</p>
-<p>Sprites are groups of characters ranging from 1x1 to 4x4. The difference with bg is that you only choose the top-left character. The other character numbers are dependent on the top-left one.</p>
+The sprite numbers range start at zero 0, so the last one is 169.</p>
+<p>Sprites are groups of characters ranging from 1x1 to 4x4. The difference with background is that you only choose the top-left character. The other character numbers are dependent on the top-left one. To compute it, add 16 from the first one to reach the character at the right, and add 16 from the first one to get the one below.</p>
+<p>Example with a 2x2 sprite with the first character to be 1:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>2</td>
+</tr>
+<tr>
+<td>16</td>
+<td>17</td>
+</tr>
+</tbody>
+</table>
 <p>A sprite can be freely placed anywhere on the screen with 1/16 sub-pixel precision. This means you can add 0.5 to its position even if there will be no change visually.</p>
-<!--FIXME: spell checked END -->
 <h3 id="todo-layer-and-prio">TODO: layer and prio</h3>
 <h3 id="rendering">Rendering</h3>
 <p>The fantasy screen is rendered line by line, this is called a raster.</p>
 <p>During raster, the pixels from background layers and sprites are drawn according to priority flags and the palette is applied. All impacted parameters are not fixed, and a sub-routine can be used between each line to alter some parameters and create interessing visual effect, see <a href="#on-raster-call-s"><code>ON RASTER CALL s</code></a> and <a href="#raster"><code>=RASTER</code></a>.</p>
 <h3 id="todo-sound">TODO: sound</h3>
 <h3 id="cpu-cycles">CPU &amp; cycles</h3>
-<p>LowResRMX simulate a fantasy console with limitation, on of them is about the number of instruction the CPU can execute before the next frame MUST be drawn and presented to the player.</p>
+<p>LowResRMX simulate a fantasy console with limitation, one of them is about the number of instruction the CPU can execute before the next frame MUST be drawn and presented to the player.</p>
 <p>This is obtained by a set of different rules applied to an internal CPU cycle counter. When the maximum is reached, the next frame is drawn no matter what. This can have the following effect:</p>
 <ol>
 <li><p>the execution of the main program is halted and will continu after the frame is drawn. The program will run slower.</p>
@@ -731,10 +606,30 @@ The sprite numbers range start at zero <code>0</code>,so the last one is <code>1
 <li><p>if the maximum cycles is reach during a RASTER interrupt, the next line is not drawn.</p>
 </li>
 </ol>
+<h3 id="cartridge">Cartridge</h3>
+<p>A LowResRMX cartridge is a text file containing the program code and 16 virtual files after the text.</p>
+<p>The virtual files data are encoded in hexadecimal and should respect a specific format.</p>
+<blockquote>
+<p>Manually editing the virtual files data is not recommended as it can lead to unexpected behavior. Instead, use the provided tools and APIs to manipulate the virtual files.</p>
+</blockquote>
+<h3 id="virtual-file">Virtual file</h3>
+<p>There is 16 virtual files are identified by a number (<code>id</code>) and can contain a <code>comment$</code>.</p>
+<pre><code><span class="hljs-meta">#id:comment$</span>
+<span class="hljs-class"><span class="hljs-keyword">data</span></span>
+</code></pre><ul>
+<li><code>id</code> is a number between (0..15).</li>
+<li><code>comment$</code> is a string <strong>without double quote</strong> of 32 characters max.</li>
+<li><code>data</code> are a list of hexadecimal literals.</li>
+</ul>
+<p>When the program is started, the content of the files are loaded and <a href="#memory-mapping">mapped to the memory</a>.</p>
+<p>The memory address for the files start at $10000, and the best way to know this address is to use the <a href="#rom-file"><code>ROM(file)</code></a> command.</p>
+<blockquote>
+<p>Check the <a href="#file-api">file API</a>.</p>
+</blockquote>
 <h2 id="program-language">Program Language</h2>
-<p>The programming language follow the path of the original Lowres NX. It&#39;s a BASIC type language and here&#39;s how to use it.</p>
+<p>The programming language follow the path of the original Lowres NX. It's a BASIC type language and here's how to use it.</p>
 <h3 id="program">Program</h3>
-<p>A program is a list of so called instructions and executed by the fantasy console one by one from top to bottom. The simplest and iconic program could be:</p>
+<p>A program is a list of so called instructions and executed by the fantasy hardware one by one from top to bottom. The simplest and iconic program could be:</p>
 <pre><code><span class="hljs-built_in">print</span> <span class="hljs-string">"hello world!"</span>
 </code></pre><p>Users are invited to create a new program, types the instructions above and run it.</p>
 <p>Keywords and values are separated by spaces and instructions with new line.</p>
@@ -743,24 +638,32 @@ The sprite numbers range start at zero <code>0</code>,so the last one is <code>1
 </code></pre><blockquote>
 <p>The program do not care about upper or lower case, use the one you prefers.</p>
 </blockquote>
+<h3 id="instructions">Instructions</h3>
+<p>Instructions are something to tell the fantasy hardware to do something.</p>
+<ul>
+<li>Assigning a <a href="#literals">literal</a> or an <a href="#expressions">expression</a> to a <a href="#variables">variable</a>.</li>
+<li>Executing a <a href="#commands">command</a> or a <a href="#functions">function</a>.</li>
+<li>Calling a <a href="#procedures">procedure</a> with or without <a href="#parameter-arguments-and-scopes">argument</a>.</li>
+<li>Jumping to a <a href="#labels">label</a> or going back from the stack TODO: link</li>
+</ul>
 <h3 id="identifiers">Identifiers</h3>
 <ol>
-<li><p>An identifier is a word defined by the and they are used to declare variables, labels or procedures (more on those terms later), e.g.: <code>hero</code>, <code>enemies</code>, <code>HP</code>, <code>score</code>, <code>spawn_monsters</code>, <code>update_screen</code>, <code>collect_coins</code>, <code>level12</code>…</p>
+<li><p>An identifier is a word defined by the user and are used to declare variables, labels or procedures (more on those terms later), e.g.: <code>hero</code>, <code>enemies</code>, <code>HP</code>, <code>score</code>, <code>spawn_monsters</code>, <code>updateScreen</code>, <code>CollectCoins</code>, <code>level12</code>…</p>
 </li>
-<li><p>An identifier can also be a built-in function name provided by LowResNX as part of the <a href="#api-instructions">API</a>.</p>
+<li><p>An identifier can also be a built-in function name provided by LowResRMX as part of the <a href="#api-instructions">API</a>.</p>
 </li>
 </ol>
-<p>Valid characters for identifiers art ASCII letters, digits and the underscore <code>_</code>. But they CANNOT start by a digits and they CANNOT have more than 21 characters.</p>
+<p>Valid characters for identifiers are: ASCII letters, digits and the underscore <code>_</code>. But they CANNOT start by a digits and they CANNOT have more than 21 characters.</p>
 <blockquote>
 <p>Important: Not all identifiers are valid because some of them are reserved by the language itself, check the <a href="#keywords">list of reserved keywords</a> and learn them to avoid common mistakes</p>
 </blockquote>
 <h3 id="variables">Variables</h3>
-<p>A variables is a value that retains in the memory fantasy console as long as the program is running. They can be used to store positions, scores, HP and all sort of information that users can think of. The purpose of variable is to store a value inside to get it back later.</p>
+<p>A variables is a value that retains in the memory fantasy hardware as long as the program is running. They can be used to store positions, scores, HP and all sort of information that users can think of. The purpose of variable is to store a value inside to get it back later.</p>
 <p>Example: think of a score counter that start at zero and increment every time a plumber hero jump on enemies heads. A nice name for this value can be <code>score</code> and can be declared like this:</p>
 <pre><code><span class="hljs-attr">score</span>=<span class="hljs-number">0</span>
 </code></pre><p>And to increment it:</p>
 <pre><code><span class="hljs-attr">score</span>=score+<span class="hljs-number">1</span>
-</code></pre><p>As you can see, variables are declared using an identifier, that why user should take care of giving them a nice name that help them remember what&#39;s inside.</p>
+</code></pre><p>As you can see, variables are declared using an identifier, that why user should take care of giving them a nice name that help them remember what's inside.</p>
 <p>As real example, this is a program that increment and print a score every time the player tap the device screen.</p>
 <pre><code><span class="hljs-keyword">score</span>=0
 <span class="hljs-keyword">do</span>
@@ -788,7 +691,7 @@ start:
     <span class="hljs-built_in">score</span>=<span class="hljs-built_in">score</span>+<span class="hljs-number">1</span>
 <span class="hljs-built_in">goto</span> start
 </code></pre><p>A label is declared by an identifier followed by a coma <code>:</code>.</p>
-<hr/>
+<hr>
 <p>About using label identifier as <a href="#lvalue-and-rvalue">rvalue</a>. This feature allow use label name that lead to <a href="#data-rom-and-files">constant string value</a> directly instead of having to store the value in a varible.</p>
 <p>Example, instead of writing:</p>
 <pre><code>data <span class="hljs-string">"chocolate"</span>
@@ -798,9 +701,13 @@ start:
 <pre><code><span class="hljs-keyword">like</span>: data <span class="hljs-string">"chocolate"</span>
 print <span class="hljs-string">"I like"</span>,<span class="hljs-keyword">like</span>
 </code></pre><p>And it working with in all <a href="#expression">expression</a> that involve <a href="#literals">literal string</a> or <a href="#variables">string variable</a>.</p>
-<h3 id="procedures">Procedures</h3>
+<pre><code><span class="hljs-built_in">test</span>1: data <span class="hljs-string">"entanglem"</span>
+<span class="hljs-built_in">print</span> <span class="hljs-built_in">test</span>1+left$(<span class="hljs-built_in">test</span>1,3)
+<span class="hljs-built_in">test</span>2: data 1234.5
+<span class="hljs-built_in">print</span> <span class="hljs-built_in">test</span>2*2
+</code></pre><h3 id="procedures">Procedures</h3>
 <p>The last usage of identifiers are procedures. They means to be reusable sub-part of a program.</p>
-<p>Here&#39;s a quick example:</p>
+<p>Here's a quick example:</p>
 <pre><code><span class="hljs-keyword">sub </span><span class="hljs-keyword">addition(a,b,c)
 </span>    c<span class="hljs-symbol">=a</span>+<span class="hljs-keyword">b
 </span><span class="hljs-symbol">end</span> <span class="hljs-keyword">sub</span>
@@ -816,14 +723,14 @@ print <span class="hljs-string">"result"</span>,<span class="hljs-keyword">resul
 <p>TODO: link to SUB/EXIT SUB/END SUB</p>
 <p>TODO: link to CALL</p>
 <h3 id="parameters-arguments-and-scopes">Parameters, arguments and scopes</h3>
-<p>An other concept that came with procedures are the parameters and the arguments but first, users have to learn as thing about variable&#39;s scope.</p>
+<p>An other concept that came with procedures are the parameters and the arguments but first, users have to learn as thing about variable's scope.</p>
 <p>By default, when declaring a variable in a program is scope is limited and are unknown inside a procedure. e.g.:</p>
 <pre><code><span class="hljs-keyword">score=0
 </span><span class="hljs-keyword">sub </span>print_score
     print <span class="hljs-string">"score"</span>,<span class="hljs-keyword">score
 </span>end <span class="hljs-keyword">sub
 </span>call print_score
-</code></pre><p>This program will produce an error by running it: <code>variable not initialized</code>. The program can&#39;t access the variable <code>score</code> inside the <code>print_score</code> proceduce.</p>
+</code></pre><p>This program will produce an error by running it: <code>variable not initialized</code>. The program can't access the variable <code>score</code> inside the <code>print_score</code> proceduce.</p>
 <p>One option is to <em>pass</em> the variable to the proceduce. Two changes must be made for that.</p>
 <ol>
 <li><p>User need to add a parameter to the proceduce declaration:</p>
@@ -837,8 +744,8 @@ print <span class="hljs-string">"result"</span>,<span class="hljs-keyword">resul
 </ol>
 <p>When the proceduce <code>print_score</code> is called, the argument <code>score</code> is <em>passed</em> to the proceduce inside the <code>s</code> argument.</p>
 <p>The variable <code>s</code> inside the proceduce is called a <em>local</em> variable and again, it is not accessible from the program out of the proceduce.</p>
-<p>Other subject, parameters are passed by reference, it&#39;s means that a variable passed to a proceduce and being modified by this procedure will stay modified by the execute exit the proceduce.</p>
-<p>Here&#39;s an example:</p>
+<p>Other subject, parameters are passed by reference, it's means that a variable passed to a proceduce and being modified by this procedure will stay modified by the execute exit the proceduce.</p>
+<p>Here's an example:</p>
 <pre><code>sub modify_it(<span class="hljs-name">a</span>)
     a=123
 end sub
@@ -882,7 +789,7 @@ loop
 <pre><code>'get <span class="hljs-section">touch</span> position in cells coordinates
 tx=<span class="hljs-section">touch</span>.x\<span class="hljs-number">8</span>
 </code></pre><blockquote>
-<p>Avoid Captain Obvious comment</p>
+<p>Avoid <a href="https://en.wikipedia.org/wiki/Captain_Obvious">Captain Obvious</a> comment!</p>
 </blockquote>
 <h3 id="grammar">Grammar</h3>
 <p>As say earlier, a program is a list of instructions read and executed one by one. To make it easier to read, developer use a set of spaces, identations, new lines, comments, proceduces…</p>
@@ -891,16 +798,16 @@ tx=<span class="hljs-section">touch</span>.x\<span class="hljs-number">8</span>
 <li><p>an instruction cannot be split on two lines.</p>
 <p>  This will not work:</p>
 <pre><code>  <span class="hljs-comment">🐞a=</span>
-    <span class="hljs-comment">123</span>
+  <span class="hljs-comment">123</span>
 </code></pre></li>
 <li><p>label are not instruction, user can place instruction on the same line.</p>
-<p>  ✅This will work:</p>
+<p>  ✅ This will work:</p>
 <pre><code>  <span class="hljs-built_in">test</span>: <span class="hljs-built_in">print</span> 123
   <span class="hljs-built_in">wait</span> tap
   goto <span class="hljs-built_in">test</span>
 </code></pre></li>
 <li><p>the only way to squiz two instructions on one line is to use the <code>:</code> colon separator.</p>
-<p>  ✅This will work:</p>
+<p>  ✅ This will work:</p>
 <pre><code>  x=<span class="hljs-keyword">touch</span>.x : y=<span class="hljs-keyword">touch</span>.y
 </code></pre><blockquote>
 <p>I recommand to place spaces before and after the <code>:</code> colon until I fix the parsing issue</p>
@@ -909,26 +816,30 @@ tx=<span class="hljs-section">touch</span>.x\<span class="hljs-number">8</span>
 <li><p><code>IF...THEN</code> use a different syntax for on line instruction, and <code>:</code> colon as instruction separator will not work correctly.</p>
 <p>  This will not work as intended:</p>
 <pre><code>  <span class="hljs-keyword">do</span>
-  x=<span class="hljs-number">0</span> : y=<span class="hljs-number">0</span>
-  <span class="hljs-keyword">if</span> tap <span class="hljs-keyword">then</span> x=<span class="hljs-keyword">touch</span>.x : ❓y=<span class="hljs-keyword">touch</span>.y
-  <span class="hljs-built_in">print</span> x,y
-  <span class="hljs-keyword">wait</span> tap
+      x=<span class="hljs-number">0</span> : y=<span class="hljs-number">0</span>
+      <span class="hljs-keyword">if</span> tap <span class="hljs-keyword">then</span> x=<span class="hljs-keyword">touch</span>.x : y=<span class="hljs-keyword">touch</span>.y
+      <span class="hljs-built_in">print</span> x,y
+      <span class="hljs-keyword">wait</span> tap
   loop
 </code></pre><p>  <code>y=touch.y</code> will always be executed.</p>
 </li>
 <li><p>Comment can be placed after the <code>:</code> colon instruction separator.</p>
-<p>  ✅This will work:</p>
+<p>  ✅ This will work:</p>
 <pre><code>  a=<span class="hljs-number">123</span> :<span class="hljs-symbol">'Default</span> <span class="hljs-keyword">value</span>
 </code></pre></li>
+</ul>
+<ul>
 <li><p>Identation as no meaning, user can place them whatever they want.</p>
-<p>  ✅This will work:</p>
-<pre><code>              <span class="hljs-built_in">print</span>       <span class="hljs-string">"far"</span>
+<p>  ✅ This will work:</p>
+<pre><code>  <span class="hljs-built_in">test</span>:
+          <span class="hljs-built_in">print</span>       <span class="hljs-string">"far"</span>
   <span class="hljs-built_in">print</span> <span class="hljs-string">"near"</span>
 </code></pre></li>
-<li><p>Check the <a href="#keywords">list of reserved keywords</a>, as user cannot use them for identifiers.</p>
-</li>
 </ul>
-<h3 id="expression">Expression</h3>
+<ul>
+<li>Check the <a href="#keywords">list of reserved keywords</a>, as user cannot use them for identifiers.</li>
+</ul>
+<h3 id="expressions">Expressions</h3>
 <p>Expression are used to compute values, be assigned to identifier or passed to function as arguments. Expression can be one of:</p>
 <ul>
 <li><p>A <a href="#literals">literal value</a>:</p>
@@ -955,55 +866,55 @@ tx=<span class="hljs-section">touch</span>.x\<span class="hljs-number">8</span>
 </code></pre></li>
 </ul>
 <h3 id="operators">Operators</h3>
-<p>Operator are used inside <a href="#expression">expression</a> to compute or alter it&#39;s value.</p>
+<p>Operator are used inside <a href="#expression">expression</a> to compute or alter it's value.</p>
 <p><strong>Arithmetic operators.</strong></p>
 <p>Operate on two numeric values to produce a new one.</p>
 <table>
 <thead>
 <tr>
-<th>symbol</th>
+<th style="text-align:right">symbol</th>
 <th>example</th>
 <th>purpose</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>-</code></td>
+<td style="text-align:right"><code>-</code></td>
 <td><code>-42</code></td>
 <td>negation</td>
 </tr>
 <tr>
-<td><code>^</code></td>
+<td style="text-align:right"><code>^</code></td>
 <td><code>x^3</code></td>
 <td>exponentation</td>
 </tr>
 <tr>
-<td><code>*</code></td>
+<td style="text-align:right"><code>*</code></td>
 <td><code>2*y</code></td>
 <td>multiplication</td>
 </tr>
 <tr>
-<td><code>/</code></td>
+<td style="text-align:right"><code>/</code></td>
 <td><code>x/2</code></td>
 <td>division</td>
 </tr>
 <tr>
-<td><code>\</code></td>
+<td style="text-align:right"><code>\</code></td>
 <td><code>x\2</code></td>
 <td>integer division</td>
 </tr>
 <tr>
-<td><code>mod</code></td>
+<td style="text-align:right"><code>mod</code></td>
 <td><code>x mod 2</code></td>
 <td>modulo</td>
 </tr>
 <tr>
-<td><code>+</code></td>
+<td style="text-align:right"><code>+</code></td>
 <td><code>c+2</code></td>
 <td>addition</td>
 </tr>
 <tr>
-<td><code>-</code></td>
+<td style="text-align:right"><code>-</code></td>
 <td><code>100-d</code></td>
 <td>subtraction</td>
 </tr>
@@ -1012,45 +923,44 @@ tx=<span class="hljs-section">touch</span>.x\<span class="hljs-number">8</span>
 <p>The priority of execution respect the mathematical rules.</p>
 <p><strong>Group operator.</strong></p>
 <p>Rounded parentheses <code>()</code> are used to counter the operator priority.</p>
-<p>TODO: difference between <code>/</code> and <code>\</code></p>
 <p><strong>Comparison operator.</strong></p>
-<p>Used to compair two numeric or string values and produce <code>-1</code> if the test succeed or <code>0</code> otherwise. Generally used as expression in <a href="#flow-control"><code>IF</code> flow control</a>.</p>
+<p>Used to compair two numeric or string values and produce <code>-1</code> if the test succeed or <code>0</code> otherwise. Generally used as <a href="#expressions">expression</a> in <a href="#control-flow">conditional flow control</a>.</p>
 <table>
 <thead>
 <tr>
-<th>symbol</th>
+<th style="text-align:right">symbol</th>
 <th>example</th>
 <th>purpose</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>=</code></td>
+<td style="text-align:right"><code>=</code></td>
 <td><code>a=10</code></td>
 <td>equal</td>
 </tr>
 <tr>
-<td><code>&lt;&gt;</code></td>
+<td style="text-align:right"><code>&lt;&gt;</code></td>
 <td><code>a&lt;&gt;100</code></td>
 <td>not equal</td>
 </tr>
 <tr>
-<td><code>&gt;</code></td>
+<td style="text-align:right"><code>&gt;</code></td>
 <td><code>b&gt;c</code></td>
 <td>greater</td>
 </tr>
 <tr>
-<td><code>&lt;</code></td>
+<td style="text-align:right"><code>&lt;</code></td>
 <td><code>5&lt;x</code></td>
 <td>less</td>
 </tr>
 <tr>
-<td><code>&gt;=</code></td>
+<td style="text-align:right"><code>&gt;=</code></td>
 <td><code>X&gt;=20</code></td>
 <td>greater or eqal</td>
 </tr>
 <tr>
-<td><code>&lt;=</code></td>
+<td style="text-align:right"><code>&lt;=</code></td>
 <td><code>X&lt;=30</code></td>
 <td>less or eqal</td>
 </tr>
@@ -1061,31 +971,31 @@ tx=<span class="hljs-section">touch</span>.x\<span class="hljs-number">8</span>
 <table>
 <thead>
 <tr>
-<th>symbol</th>
+<th style="text-align:right">symbol</th>
 <th>example</th>
 <th>purpose</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>not</code></td>
-<td><code>not (x=15)</code><br/><code>not 0</code></td>
-<td>Bits that are 0 become 1,<br/>and those that are 1 become 0.</td>
+<td style="text-align:right"><code>not</code></td>
+<td><code>not (x=15)</code><br><code>not 0</code></td>
+<td>Bits that are 0 become 1,<br>and those that are 1 become 0.</td>
 </tr>
 <tr>
-<td><code>and</code></td>
-<td><code>a=1 and b=12</code><br/><code>170 and 15</code></td>
-<td>If both bits are 1, the<br/>result is 1, 0 otherwise.</td>
+<td style="text-align:right"><code>and</code></td>
+<td><code>a=1 and b=12</code><br><code>170 and 15</code></td>
+<td>If both bits are 1, the<br>result is 1, 0 otherwise.</td>
 </tr>
 <tr>
-<td><code>or</code></td>
-<td><code>x=10 or y=0</code><br/><code>128 or 2</code></td>
-<td>The result is 0 if both<br/>bits are 0, 1 otherwise.</td>
+<td style="text-align:right"><code>or</code></td>
+<td><code>x=10 or y=0</code><br><code>128 or 2</code></td>
+<td>The result is 0 if both<br>bits are 0, 1 otherwise.</td>
 </tr>
 <tr>
-<td><code>xor</code></td>
+<td style="text-align:right"><code>xor</code></td>
 <td><code>a xor b</code></td>
-<td>The resulst is 1 if only<br/>one bit is 1, 0 otherwise.</td>
+<td>The resulst is 1 if only<br>one bit is 1, 0 otherwise.</td>
 </tr>
 </tbody>
 </table>
@@ -1094,27 +1004,27 @@ tx=<span class="hljs-section">touch</span>.x\<span class="hljs-number">8</span>
 <table>
 <thead>
 <tr>
-<th>symbol</th>
+<th style="text-align:right">symbol</th>
 <th>example</th>
 <th>purpose</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>+</code></td>
+<td style="text-align:right"><code>+</code></td>
 <td><code>&quot;ab&quot;+&quot;c&quot;</code></td>
 <td>Concatenate two strings into one.</td>
 </tr>
 </tbody>
 </table>
 <h3 id="commands">Commands</h3>
-<p>LowResNX provide a bunch of built-in function to manipulate the fantasy device hardware such as the graphic or sound. You&#39;ll find them by consulting the <a href="#api-instructions">list of API instructions</a>.</p>
-<p>To execute a command, use it&#39;s identifier followed by a list of coma-separated arguments or other reserved keywords. The exact syntax depends on the command.</p>
+<p>LowResNX provide a bunch of built-in commands to manipulate the fantasy device hardware such as the graphic or sound. You'll find them by consulting the <a href="#api-instructions">list of API instructions</a>.</p>
+<p>To execute a command, use it's identifier followed by a list of coma-separated arguments or other reserved keywords. The exact syntax depends on the command.</p>
 <pre><code>sprite off <span class="hljs-number">0</span> to <span class="hljs-number">169</span>
 sprite <span class="hljs-number">0</span>,<span class="hljs-number">40</span>,<span class="hljs-number">60</span>,<span class="hljs-number">1</span>
 </code></pre><h3 id="functions">Functions</h3>
-<p>LowResNX provide a bunch of built-in function to manipulate the fantasy device hardware such as the graphic or sound. You&#39;ll find them by consulting the <a href="#api-instructions">list of API instructions</a>.</p>
-<p>To execute a function, use it&#39;s identifier followed by a list of coma-separated arguments surrounded by rounded parenthesis.</p>
+<p>LowResNX provide a bunch of built-in function to manipulate the fantasy device hardware such as the graphic or sound. You'll find them by consulting the <a href="#api-instructions">list of API instructions</a>.</p>
+<p>To execute a function, use it's identifier followed by a list of coma-separated arguments surrounded by rounded parenthesis.</p>
 <pre><code><span class="hljs-keyword">print</span> mid$(<span class="hljs-string">"test"</span>,3,1) :'<span class="hljs-keyword">print</span> <span class="hljs-built_in">s</span>
 </code></pre><p>A function will always return something and MUST be used as <a href="#lvalue-and-rvalue">rvalue</a> inside an <a href="#expression">expression</a>.</p>
 <h3 id="lvalue-and-rvalue">Lvalue and Rvalue</h3>
@@ -1124,54 +1034,69 @@ sprite <span class="hljs-number">0</span>,<span class="hljs-number">40</span>,<s
 <table>
 <thead>
 <tr>
-<th>expression</th>
+<th style="text-align:right">expression</th>
 <th>type of value</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><a href="#variables">variable</a></td>
+<td style="text-align:right"><a href="#variables">variable</a></td>
 <td>lvalue or rvalue</td>
 </tr>
 <tr>
-<td><a href="#literals">literal</a></td>
+<td style="text-align:right"><a href="#literals">literal</a></td>
 <td>rvalue</td>
 </tr>
 <tr>
-<td>function call</td>
+<td style="text-align:right"><a href="#functions">function call</a></td>
 <td>rvalue</td>
 </tr>
 <tr>
-<td>any operator</td>
+<td style="text-align:right"><a href="#operators">any operator</a></td>
 <td>rvalue</td>
 </tr>
 <tr>
-<td>label</td>
+<td style="text-align:right"><a href="#labels">label</a></td>
 <td>rvalue</td>
 </tr>
 </tbody>
 </table>
+<h3 id="instructions-separator">Instructions separator</h3>
+<p>An instruction generally end by a new line <code>\n</code>.</p>
+<p>It's possible to put multiple instructions using a colon <code>:</code> on one line but with limitation:</p>
+<ol>
+<li><p>Can be miss-interpreted as a label declaration. So the best way is to add a space between the idenfier and the colon.</p>
+<p> This will not work:</p>
+<pre><code> <span class="hljs-built_in">test</span>: data 123
+ 🐞restore <span class="hljs-built_in">test</span>: <span class="hljs-built_in">wait</span> vbl
+</code></pre><p> ✅ This will work:</p>
+<pre><code> <span class="hljs-built_in">test</span>: data 123
+ restore <span class="hljs-built_in">test</span> : <span class="hljs-built_in">wait</span> vbl
+</code></pre></li>
+<li><p>Does not work with the one line syntaxe of <a href="#ifthenelse-ifthelendf-ififthen">the <code>IF/THEN</code> command</a>.</p>
+<pre><code> <span class="hljs-keyword">if</span> expression <span class="hljs-keyword">then</span> instruction1 : <span class="hljs-type">instruction2</span>
+</code></pre><p> <code>instruction2</code> will always be executed.</p>
+</li>
+</ol>
 <h2 id="basic-instructions">BASIC instructions</h2>
 <p>TODO: continue</p>
 <h3 id="control-flow">Control flow</h3>
-<p><code>END</code></p>
-<p><strong>Stop the execution of the program.</strong></p>
+<h4 id="-end-"><code>END</code></h4>
+<p>Stop the execution of the program.</p>
 <p>It has the same effect as the execution reach the end of the program.</p>
-<hr/>
-<p><code>IF/THEN/ELSE IF/ELSE/END IF</code></p>
-<p><strong>Conditionnaly execute instructions.</strong></p>
-<p>Syntax:</p>
-<pre><code><span class="hljs-keyword">IF</span> expression <span class="hljs-keyword">THEN</span>
+<h4 id="-if-then-else-if-else-end-if-br-if-then-"><code>IF/THEN/ELSE IF/ELSE/END IF</code><br><code>IF/THEN</code></h4>
+<p>Conditionnaly execute instructions.</p>
+<pre><code><span class="hljs-keyword">if</span> expression <span class="hljs-keyword">then</span>
     instruction...
-[<span class="hljs-keyword">ELSE</span> <span class="hljs-keyword">IF</span> expression <span class="hljs-keyword">THEN</span>
+[<span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> expression <span class="hljs-keyword">then</span>
     instruction...]
-[<span class="hljs-keyword">ELSE</span> <span class="hljs-keyword">IF</span>...]
-[<span class="hljs-keyword">ELSE</span>
+[<span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span>...]
+[<span class="hljs-keyword">else</span>
     instruction]
-<span class="hljs-keyword">END</span> <span class="hljs-keyword">IF</span>
+<span class="hljs-keyword">end</span> <span class="hljs-keyword">if</span>
 </code></pre><p>Will execute the list of <code>instruction...</code> if the above <code>expression</code> is true.
 An <a href="#expression">expression</a> is evaluated as <code>true</code> if the result of the expression is different that <code>0</code> zero.</p>
-<p>It&#39;s possible to have multiple <code>ELSE IF</code> blocks but a maximum of one <code>ELSE</code> block is authorized.</p>
+<p>It's possible to have multiple <code>ELSE IF</code> blocks but a maximum of one <code>ELSE</code> block is authorized.</p>
 <p>Real example of a game that ask playre to guess a number:</p>
 <pre><code>again: <span class="hljs-keyword">print</span> <span class="hljs-string">"guess the number"</span>
 answer=<span class="hljs-keyword">rnd</span>(<span class="hljs-number">100</span>)
@@ -1190,9 +1115,10 @@ retry: <span class="hljs-keyword">input</span> <span class="hljs-string">"1-100:
     <span class="hljs-keyword">print</span> <span class="hljs-string">"too high"</span>
     <span class="hljs-keyword">goto</span> retry
 <span class="hljs-keyword">end</span> <span class="hljs-keyword">if</span>
-</code></pre><p>Syntax:</p>
+</code></pre><hr>
+<p>Syntax:</p>
 <pre><code><span class="hljs-keyword">IF</span> condition <span class="hljs-keyword">THEN</span> instruction
-</code></pre><p>This form only allow one instruction, but it&#39;s also shorter.</p>
+</code></pre><p>This form only allow one instruction, but it's also shorter.</p>
 <p>Real example of the same game with less lines:</p>
 <pre><code>again: <span class="hljs-keyword">print</span> <span class="hljs-string">"guess the number"</span>
 answer=<span class="hljs-keyword">rnd</span>(<span class="hljs-number">100</span>)
@@ -1206,14 +1132,13 @@ retry: <span class="hljs-keyword">input</span> <span class="hljs-string">"1-100:
 <span class="hljs-keyword">if</span> guess&lt;answer then <span class="hljs-keyword">print</span> <span class="hljs-string">"too low"</span>
 <span class="hljs-keyword">if</span> guess&gt;answer then <span class="hljs-keyword">print</span> <span class="hljs-string">"too high"</span>
 <span class="hljs-keyword">goto</span> retry
-</code></pre><hr/>
-<p><code>DO/LOOP/EXIT</code></p>
+</code></pre><h4 id="-do-loop-exit-"><code>DO/LOOP/EXIT</code></h4>
 <p><strong>Infinite loop</strong></p>
 <p>Syntax:</p>
-<pre><code><span class="hljs-keyword">DO</span>
+<pre><code><span class="hljs-keyword">do</span>
     instruction...
-    [<span class="hljs-keyword">EXIT</span>]
-<span class="hljs-keyword">LOOP</span>
+    [<span class="hljs-keyword">exit</span>]
+loop
 </code></pre><p>Continuously execute the list of <code>instruction...</code>.</p>
 <p>Possible way to get out of the loop is using <code>EXIT</code> or <code>GOTO</code>.</p>
 <p>Real example of non stop moving square that bounce on the device screen:</p>
@@ -1235,14 +1160,14 @@ print <span class="hljs-string">"done"</span>
 <span class="hljs-number">00000000000000000000000000000000</span>
 <span class="hljs-number">0000000000000000</span>FFFFFFFFFFFFFFFF
 </code></pre><p><code>EXIT</code> instruction will exit one level of <code>DO/LOOP</code>.</p>
-<hr/>
-<p><code>REPEAT/UNTIL/EXIT</code></p>
+<hr>
+<h3 id="-repeat-until-exit-"><code>REPEAT/UNTIL/EXIT</code></h3>
 <p><strong>Condition-controlled loop*</strong></p>
 <p>Syntax:</p>
-<pre><code><span class="hljs-keyword">REPEAT</span>
+<pre><code>repeat
     instruction...
-    [<span class="hljs-keyword">EXIT</span>]
-<span class="hljs-keyword">UNTIL</span> expression
+    [<span class="hljs-keyword">exit</span>]
+until expression
 </code></pre><p>Repeat the list of <code>instruction...</code> until the <code>expression</code> ahead became true.
 An <a href="#expression">expression</a> is evaluated as <code>true</code> if the result of the expression is different that <code>0</code> zero.</p>
 <p><code>EXIT</code> instruction will exit one level of <code>REPEAT/UNTIL</code>.</p>
@@ -1253,45 +1178,43 @@ An <a href="#expression">expression</a> is evaluated as <code>true</code> if the
 <span class="hljs-keyword">repeat</span>
     <span class="hljs-keyword">print</span> <span class="hljs-string">"do it anyway"</span>
 <span class="hljs-keyword">until</span> stop_now
-</code></pre><hr/>
-<p><code>WHILE/WEND/EXIT</code></p>
+</code></pre><p><code>EXIT</code> instruction will exit one level of <code>REPEAT/UNTIL</code>.</p>
+<h4 id="-while-wend-exit-"><code>WHILE/WEND/EXIT</code></h4>
 <p><strong>Condition-controlled loop</strong></p>
 <p>Syntax:</p>
-<pre><code><span class="hljs-keyword">WHILE</span> expression
+<pre><code><span class="hljs-keyword">while</span> expression
     instruction...
-    [<span class="hljs-keyword">EXIT</span>]
-<span class="hljs-keyword">WEND</span>
+    [<span class="hljs-keyword">exit</span>]
+wend
 </code></pre><p>Repeat the list of <code>instruction...</code> while the <code>expression</code> above is true.
 An <a href="#expression">expression</a> is evaluated as <code>true</code> if the result of the expression is different that <code>0</code> zero.</p>
 <p><code>EXIT</code> instruction will exit one level of <code>WHILE/WEND</code>.</p>
 <blockquote>
-<p>It different from <code>REPEAT/UNTIL</code> because <code>expression</code> is evaluated before the list <code>instruction...</code> is executed.</p>
+<p>It different from <code>REPEAT/UNTIL</code> because <code>expression</code> is evaluated before the <code>instruction...</code> list is executed.</p>
 </blockquote>
 <pre><code><span class="hljs-keyword">count</span>=<span class="hljs-number">0</span>
 <span class="hljs-keyword">while</span> <span class="hljs-keyword">count</span>
 <span class="hljs-keyword">print</span> <span class="hljs-string">"not executed"</span>
 wend
-</code></pre><hr/>
-<p><code>FOR/TO/NEXT/EXIT</code></p>
+</code></pre><h4 id="-for-to-next-exit-"><code>FOR/TO/NEXT/EXIT</code></h4>
 <p><strong>Count-controlled loop</strong></p>
 <p>Syntax:</p>
-<pre><code><span class="hljs-keyword">FOR</span> identifier=begin <span class="hljs-keyword">TO</span> ended [<span class="hljs-keyword">STEP</span> incr]
+<pre><code><span class="hljs-keyword">for</span> identifier=begin TO ended [step incr]
     instruction...
-    [<span class="hljs-keyword">EXIT</span>]
-<span class="hljs-keyword">NEXT</span> identifier
-</code></pre><p>Repeat the list of <code>instruction...</code> while varying the value of the <code>identifier</code> starting at <code>begin</code> until it reach <code>ended</code> included.
+    [<span class="hljs-keyword">exit</span>]
+<span class="hljs-keyword">next</span> identifier
+</code></pre><p>Repeat the <code>instruction...</code> list while varying the value of the <code>identifier</code> starting at <code>begin</code> until it reach <code>ended</code> included.
 The increment can be changed using <code>incr</code>, allowing to iterates in reverse.</p>
 <p>Real example that print numbers from 1 to 9 in ascending and descending order.</p>
 <pre><code><span class="hljs-keyword">for</span> i=<span class="hljs-number">1</span> <span class="hljs-keyword">to</span> <span class="hljs-number">9</span>
-<span class="hljs-built_in">print</span> i;
+    <span class="hljs-built_in">print</span> i;
 <span class="hljs-keyword">next</span> i
 <span class="hljs-built_in">print</span>
 <span class="hljs-keyword">for</span> i=<span class="hljs-number">9</span> <span class="hljs-keyword">to</span> <span class="hljs-number">1</span> <span class="hljs-keyword">step</span> -<span class="hljs-number">1</span>
-<span class="hljs-built_in">print</span> i;
+    <span class="hljs-built_in">print</span> i;
 <span class="hljs-keyword">next</span> i
 </code></pre><p><code>EXIT</code> instruction will exit one level of <code>FOR/TO/NEXT</code>.</p>
-<hr/>
-<p><code>GOTO</code></p>
+<h4 id="-goto-"><code>GOTO</code></h4>
 <p><strong>Jump to instruction</strong></p>
 <p>Syntax:</p>
 <pre><code><span class="hljs-keyword">GOTO</span> <span class="hljs-keyword">label</span>
@@ -1314,8 +1237,7 @@ tails:
 edge:
     <span class="hljs-keyword">print</span> <span class="hljs-string">"edge of the coin!"</span>
     <span class="hljs-keyword">goto</span> again
-</code></pre><hr/>
-<p><code>GOSUB/RETURN</code></p>
+</code></pre><h4 id="-gosub-return-"><code>GOSUB/RETURN</code></h4>
 <p><strong>Jump to sub-routine</strong></p>
 <p>Expect to found a <code>RETURN</code> instruction to go back where it was right after the <code>GOSUB</code>.</p>
 <p>The return location is store in a stack allow user to jump to sub-routine inside sub-routine. But the stack is limited. A good habit is to always have one <code>RETURN</code> for each <code>GOSUB</code>.</p>
@@ -1339,10 +1261,9 @@ increase:
     <span class="hljs-built_in">text</span> <span class="hljs-number">2</span>,<span class="hljs-number">2</span>,<span class="hljs-string">"score:"</span>+<span class="hljs-keyword">str</span>$(score)
     <span class="hljs-keyword">return</span>
 </code></pre><p>This example is tricky, there is one <code>RETURN</code>, two labels and three <code>GOSUB</code>. The good habit explain above is broken here, but here is the explaination.</p>
-<p>The important things is not the number of <code>RETURN</code> is the number of times the instruction is executed. User have to understand that one <code>GOSUB</code> execution will increase by one the size of the stack, and one execution of <code>RETURM</code> will reduce the same stack by exactly one. Every time the <code>WAIT VBL</code> instruction is reach, the stack size is empty, and that&#39;s is good sign. It means that the stack will not be overflowed.</p>
+<p>The important things is not the number of <code>RETURN</code> is the number of times the instruction is executed. User have to understand that one <code>GOSUB</code> execution will increase by one the size of the stack, and one execution of <code>RETURM</code> will reduce the same stack by exactly one. Every time the <code>WAIT VBL</code> instruction is reach, the stack size is empty, and that's is good sign. It means that the stack will not be overflowed.</p>
 <p>TODO: Difference with SUB</p>
-<hr/>
-<p><code>ON GOTO</code></p>
+<h4 id="-on-goto-"><code>ON GOTO</code></h4>
 <p><strong>Jump table.</strong></p>
 <p>Jump to one of the listed label according to a value.</p>
 <p>Syntax:</p>
@@ -1363,22 +1284,20 @@ zero:
 one:
     <span class="hljs-keyword">print</span> <span class="hljs-string">"one"</span>
     <span class="hljs-keyword">goto</span> again
-</code></pre><hr/>
-<p><code>ON GOSUB</code></p>
+</code></pre><h4 id="-on-gosub-"><code>ON GOSUB</code></h4>
 <p><strong>Jump table to a sub-routine.</strong></p>
 <p>Similar to <code>ON GOTO</code> but expect to encounter a <code>RETURN</code>.</p>
-<hr/>
-<p><code>SUB/END SUB/EXIT SUB</code></p>
+<h4 id="-sub-end-sub-exit-sub-"><code>SUB/END SUB/EXIT SUB</code></h4>
 <p><strong>Defining a proceduce.</strong></p>
 <p>TODO: check for remaining function, this term should be reserve for built-in function only.</p>
 <p>Syntax:</p>
-<pre><code><span class="hljs-keyword">SUB</span> name [(parameters...)]
+<pre><code><span class="hljs-keyword">sub</span> name [(parameters...)]
     instruction...
-<span class="hljs-keyword">END</span> <span class="hljs-keyword">SUB</span>
+<span class="hljs-keyword">end</span> <span class="hljs-keyword">sub</span>
 </code></pre><p>This will define a procedure called <code>name</code> and can optionnaly received a list of values from the <code>parameters</code> list.</p>
 <p>Syntax of the <code>parameters</code> list:</p>
 <pre><code>(identifier[<span class="hljs-string">$</span>][<span class="hljs-symbol">()</span>], identifier[<span class="hljs-string">$</span>][<span class="hljs-symbol">()</span>]...)
-</code></pre><p>Hm, it&#39;s a mess, let&#39;s explain this. A parameter is always a <code>identifier</code> and can be followed by the type of value it contains. The list of possibilities are:</p>
+</code></pre><p>Hm, it's a mess, let's explain this. A parameter is always a <code>identifier</code> and can be followed by the type of value it contains. The list of possibilities are:</p>
 <ul>
 <li>a number: <code>my_num</code></li>
 <li>a string: <code>my_str$</code></li>
@@ -1386,7 +1305,7 @@ one:
 <li>an array of string: <code>my_str_array$()</code></li>
 </ul>
 <p>An empty list of <code>parameters</code> is not valid. Simply remove the parenthesis <code>()</code>.</p>
-<p>Proceduces are isolated small program that can be executed using the <a href="#CALL"><code>CALL</code> instruction</a>. Isolated because the variables declared inside it&#39;s body are local, learn more on <a href="#Parameters, arguments and scopes">scopes</a>. For comparison, the body of sub-routines reached using <code>GOSUB</code> are not isolated.</p>
+<p>Proceduces are isolated small program that can be executed using the <a href="#CALL"><code>CALL</code> instruction</a>. Isolated because the variables declared inside it's body are local, learn more on <a href="#Parameters, arguments and scopes">scopes</a>. For comparison, the body of sub-routines reached using <code>GOSUB</code> are not isolated.</p>
 <p>An other different with the sub-routines is that, the definitions of them are only executed throughout the <a href="#CALL"><code>CALL</code> instruction</a>, so, it is safe to place them anywhere inside the program.</p>
 <p>Real example, a game where player need to enter a sequence of digits and computer try to prevent it:</p>
 <pre><code><span class="hljs-comment">'perturb player input</span>
@@ -1440,11 +1359,11 @@ randomize timer
 </blockquote>
 <p><strong>Exiting early.</strong></p>
 <p>Syntax:</p>
-<pre><code><span class="hljs-keyword">EXIT</span> <span class="hljs-keyword">SUB</span>
+<pre><code><span class="hljs-keyword">exit</span> sub
 </code></pre><p>TODO: wait for next do loop repeat until while wend exit sub end sub call exit sub global dim</p>
 <p>TODO: GOTO inside SUB</p>
 <p>TODO: playing with GOSUB and RETURN</p>
-<h3 id="data-rom-and-files">Data, ROM and files</h3>
+<h3 id="embeded-data">Embeded data</h3>
 <p>LowResRMX provide two ways to storing data or assets inside a program.</p>
 <ol>
 <li><p>Use the combinaison of <code>DATA</code> and <code>READ</code> to store readable number and string and access it when you need it.</p>
@@ -1461,36 +1380,23 @@ randomize timer
  next i
 </code></pre><p> Internaly it will use a read pointer that iterates all constant values.</p>
 </li>
-<li><p>TODO: continue</p>
+<li><p>Use the <a href="#virtual-file">virtual file</a> system accessible throughout the <a href="#file-api">file API</a>.</p>
 </li>
 </ol>
-<hr/>
-<p><code>DATA/READ</code></p>
-<p><strong>Declare constant values.</strong></p>
-<p>Syntax:</p>
-<pre><code>DATA <span class="hljs-keyword">constant</span>[,<span class="hljs-keyword">constant</span>...]
-</code></pre><p>A comma separated list of constant values (numbers or strings) that can accessed using the <code>READ</code> command.</p>
-<p><strong>Read constant values.</strong></p>
-<p>Syntax:</p>
-<pre><code>READ identifier<span class="hljs-string">[,identifier...]</span>
-</code></pre><p>Read one or more constant values that was declared using <code>DATA</code> into variables.</p>
-<hr/>
-<p><code>RESTORE/SKIP</code></p>
-<p><strong>Move the read pointer.</strong></p>
-<p>Syntax:</p>
-<pre><code>RESTORE [<span class="hljs-keyword">label</span><span class="bash">]</span>
-</code></pre><p>Move the read pointer to a specified label. The declared constant values that appear below the label will be read next.</p>
-<p><strong>Skip a number of constant value.</strong></p>
-<p>Syntax:</p>
-<pre><code><span class="hljs-keyword">SKIP </span>number
-</code></pre><p>Allow to skip a <code>number</code> of constant values by moving the read pointer.</p>
+<h4 id="-data-constant-constant-"><code>DATA constant[,constant...]</code></h4>
+<p>A list of <code>constant</code> values (numbers or strings) that can be accessed using the <a href="#read-variablevariable"><code>READ</code></a> command.</p>
+<h4 id="-read-variable-variable-"><code>READ variable[,variable...]</code></h4>
+<p>Read a list of values inside <code>variable</code> that was declared using <a href="#data-constantconstant"><code>DATA</code></a>.</p>
+<h4 id="-restore-label-"><code>RESTORE [label]</code></h4>
+<p>Move the read pointer to a specified <code>label</code>. The declared constant values that appear after the label will be read next. When ommited, restore at the beginning of the program.</p>
+<h4 id="-skip-number-"><code>SKIP number</code></h4>
+<p>Allow to skip a <code>number</code> of constant values by moving the read pointer.</p>
 <pre><code>data "failure"
 data "success"
 <span class="hljs-keyword">skip </span>1
 read word$
 print word$
-</code></pre><hr/>
-<p><code>ON RESTORE</code></p>
+</code></pre><h4 id="-on-restore-"><code>ON RESTORE</code></h4>
 <p><strong>Move table for the read pointer.</strong></p>
 <p>Similar to <code>ON GOTO</code> but move the read pointer instead of jumping.</p>
 <h3 id="variable-related">Variable related</h3>
@@ -1504,53 +1410,49 @@ print <span class="hljs-built_in">name</span>$;<span class="hljs-string">":"</sp
 </code></pre><blockquote>
 <p>Learn more about <a href="#identifiers">identifiers</a>, <a href="#literals">literals</a> and <a href="#variables">variables</a>.</p>
 </blockquote>
-<hr/>
-<p><code>GLOBAL</code></p>
+<h4 id="-global-"><code>GLOBAL</code></h4>
 <p><strong>Scalar global declaration</strong></p>
 <p>Syntax:</p>
-<pre><code><span class="hljs-function"><span class="hljs-title">DIM</span></span> identifier...
+<pre><code><span class="hljs-function"><span class="hljs-title">global</span></span> identifier...
 </code></pre><p>Declare a list of number or string variables to be globaly accessible in all scopes.
 <code>GLOBAL</code> keywords are illegal inside a <code>SUB/END SUB</code> subroutine body.</p>
 <blockquote>
 <p>Learn more about <a href="#global-scope">global scope</a>.</p>
 </blockquote>
-<hr/>
-<p><code>DIM</code></p>
+<h4 id="-dim-"><code>DIM</code></h4>
 <p><strong>Array declaration</strong></p>
 <p>Syntax:</p>
-<pre><code><span class="hljs-selector-tag">DIM</span> <span class="hljs-selector-tag">identifier</span>(highest) <span class="hljs-selector-attr">[,identifier(highest)]</span>...
+<pre><code><span class="hljs-selector-tag">dim</span> <span class="hljs-selector-tag">identifier</span>(highest) <span class="hljs-selector-attr">[,identifier(highest)]</span>...
 </code></pre><p>Will declare one or more arrays with <code>highest</code>+1 number of elements.
 Array of numbers or strings MUST be declared before reading or writing it.</p>
 <pre><code>dim scores(<span class="hljs-number">1</span>),names<span class="hljs-variable">$(</span><span class="hljs-number">1</span>)
 <span class="hljs-keyword">for</span> i=<span class="hljs-number">0</span> to <span class="hljs-number">1</span>
     print names<span class="hljs-variable">$(</span>i);<span class="hljs-string">":"</span>,scores(i)
 <span class="hljs-keyword">next</span> i
-</code></pre><hr/>
-<p><code>DIM GLOBAL</code></p>
+</code></pre><h4 id="-dim-global-"><code>DIM GLOBAL</code></h4>
 <p><strong>Global array declaration</strong></p>
 <p>Syntax:</p>
-<pre><code><span class="hljs-keyword">DIM</span> <span class="hljs-keyword">GLOBAL</span> identifier(highest) [,identifier(highest)]...
+<pre><code><span class="hljs-keyword">dim</span> <span class="hljs-keyword">global</span> identifier(highest) [,identifier(highest)]...
 </code></pre><p>Similar to <code>DIM</code> but will declare the arrays globally accessible.
 <code>GLOBAL</code> keywords are illegal inside a <code>SUB/END SUB</code> subroutine body.</p>
 <blockquote>
 <p>Learn more about <a href="#identifiers">identifiers</a>, <a href="#arrays">arrays</a> and <a href="#global-scope">global scope</a>.</p>
 </blockquote>
-<hr/>
-<p><code>=UBOUND</code></p>
+<h4 id="-ubound-"><code>=UBOUND</code></h4>
 <p><strong>Array highest index</strong></p>
 <p>Syntax:</p>
-<pre><code>=UBOUND(identifier[,dimension])
-</code></pre><p>Return the highest index of the array variable <code>identifier</code> at specified <code>dimension</code>.</p>
+<pre><code>highest=<span class="hljs-built_in">ubound</span>(identifier[,<span class="hljs-keyword">dimension</span>])
+</code></pre><p>Return the <code>highest</code> index of the array variable <code>identifier</code> at specified <code>dimension</code>.</p>
+<h4 id="-swap-a-b-"><code>SWAP a,b</code></h4>
+<p>Swap the values of the variable <code>a</code> and <code>b</code>. They have to share same type.</p>
 <h2 id="api-instructions">API instructions</h2>
-<p>LowResRMX provide a bunch of built-in <a href="#commands">commands</a> and <a href="#functions">functions</a> to communicates with the differents features provided by the fantasy console: input, graphics, sound and memory access.</p>
+<p>LowResRMX provide a bunch of built-in <a href="#commands">commands</a> and <a href="#functions">functions</a> to communicates with the differents features provided by the fantasy console: input, graphics, sound, memory and more.</p>
 <h3 id="sprite-api">Sprite API</h3>
-<blockquote>
-<p><a href="#sprites">How sprites works</a>.</p>
-</blockquote>
 <p>Sprite are limited in numbers and should be used to show moving objects above background layers. It not an oblication and cool things can be made by infringe this rules.</p>
-<h4 id="-sprite-n-x-y-c-"><code>SPRITE n,[x],[y],[c]</code></h4>
-<p>Sets the position <code>x</code>,<code>y</code> in pixel coordinates and character <code>c</code> number of the sprite <code>n</code>.</p>
-<p><code>x</code>,<code>y</code> and <code>c</code> can be ommited to keep their current value.</p>
+<p>Check <a href="#sprites">how sprites works</a> and <a href="#sprite-registers">sprites registers</a>.</p>
+<h4 id="-sprite-sprite-x-y-character-"><code>SPRITE sprite,[x],[y],[character]</code></h4>
+<p>Sets the position <code>x</code> and <code>y</code> in pixel coordinates and <code>character</code> number of the <code>sprite</code>.</p>
+<p><code>x</code>,<code>y</code> and <code>character</code> can be ommited to keep their current value.</p>
 <p>An example that show a smiley sprite moving in circle:</p>
 <pre><code>i=0
 <span class="hljs-keyword">do</span>
@@ -1562,15 +1464,16 @@ Array of numbers or strings MUST be declared before reading or writing it.</p>
 <span class="hljs-number">00000000000000000000000000000000</span>
 <span class="hljs-number">007</span>EFFFFEDFFFF7E0000003636000000
 </code></pre><p>Omitted parameters will keep their previous values.</p>
-<h4 id="-sprite-n-pal-pal-flip-h-v-prio-pri-size-s-"><code>SPRITE n [PAL pal] [FLIP h,v] [PRIO pri] [SIZE s]</code></h4>
-<p>Sets one or more attributes for the sprite <code>n</code>:</p>
+<h4 id="-sprite-sprite-pal-palette-flip-horizontal-vertical-prio-priority-size-size-"><code>SPRITE sprite [PAL palette] [FLIP horizontal,vertical] [PRIO priority] [SIZE size]</code></h4>
+<p>Sets one or more attributes for the <code>sprite</code>:</p>
 <ul>
-<li><code>PAL pal</code> Change the palette to <code>pal</code>.</li>
-<li><code>FLIP h,v</code> Flip the sprite on horizontal <code>h</code> and vertical <code>v</code> axis.</li>
-<li><code>PRIO pri</code> Change the priority to <code>pri</code>.</li>
+<li><code>PAL palette</code> Change the <code>palette</code> (0..7).</li>
+<li><code>FLIP horizontal,vertical</code> Flip the sprite on <code>horizontal</code> and <code>vertical</code> axis.</li>
+<li><code>PRIO priority</code> Change the <code>priority</code> (0..1).</li>
 <li><code>SIZE s</code> Change the size, a.k.a.: the number of characters width and height.</li>
 </ul>
-<p>Example of a sprite that get flipped according to it&#39;s position on the screen:</p>
+<p>Omitted parameters will keep their previous values.</p>
+<p>Example of a sprite that get flipped according to it's position on the screen:</p>
 <pre><code><span class="hljs-keyword">do</span>
     sprite <span class="hljs-number">0</span>,<span class="hljs-keyword">touch</span>.x,<span class="hljs-keyword">touch</span>.y,<span class="hljs-number">1</span>
     sprite <span class="hljs-number">0</span> pal <span class="hljs-number">6</span>
@@ -1580,11 +1483,9 @@ loop
 #<span class="hljs-number">2</span>:MAIN CHARACTERS
 <span class="hljs-number">00000000000000000000000000000000</span>
 0A0D0E8F4D0E818C06030180C305808
-</code></pre><p>Omitted parameters will keep their previous values.</p>
-<p>TODO: link to sprite references</p>
-<h4 id="-sprite-x-n-br-sprite-y-n-"><code>=SPRITE.X(n)</code><br/><code>=SPRITE.Y(n)</code></h4>
-<p>Return the position of the sprite <code>n</code>. With <code>n</code> between 0 and 169 inclusive.</p>
-<p>Example of a sprite smoothly follow the finger touch:</p>
+</code></pre><h4 id="-x-sprite-x-sprite-br-y-sprite-y-sprite-"><code>x=SPRITE.X(sprite)</code><br><code>y=SPRITE.Y(sprite)</code></h4>
+<p>Return the position <code>x</code> or <code>y</code> of the <code>sprite</code> (0..169) in pixels.</p>
+<p>Example of a sprite smoothly following the finger touch:</p>
 <pre><code>sprite <span class="hljs-number">0</span>,shown<span class="hljs-selector-class">.w</span>,shown<span class="hljs-selector-class">.h</span>,<span class="hljs-number">1</span>
 do
     x=sprite.x(<span class="hljs-number">0</span>)+(touch<span class="hljs-selector-class">.x-sprite</span><span class="hljs-selector-class">.x</span>(<span class="hljs-number">0</span>))/<span class="hljs-number">4</span>
@@ -1595,13 +1496,13 @@ loop
 #<span class="hljs-number">2</span>:MAIN CHARACTERS
 <span class="hljs-number">00000000000000000000000000000000</span>
 <span class="hljs-number">007</span>E7E66667E7E00FF81BDA5A5BD81FF
-</code></pre><h4 id="-sprite-c-n-"><code>=SPRITE.C(n)</code></h4>
-<p>Return the first character number of the sprite <code>n</code>. With <code>n</code> between 0 and 169 inclusive.</p>
-<h4 id="-sprite-a-n-a-"><code>SPRITE.A n,a</code></h4>
-<p>Sets all attributes at once for sprite <code>n</code>.</p>
-<p>TODO: link to sprite references</p>
-<h4 id="-sprite-a-n-"><code>=SPRITE.A(n)</code></h4>
-<p>Return the whole attributes flags of the sprite <code>n</code>. With <code>n</code> between 0 and 169 inclusive.</p>
+</code></pre><h4 id="-character-sprite-c-sprite-"><code>character=SPRITE.C(sprite)</code></h4>
+<p>Return the first <code>character</code> number of the <code>sprite</code> (0..169).</p>
+<h4 id="-sprite-a-sprite-attributes-"><code>SPRITE.A sprite,attributes</code></h4>
+<p>Sets all <code>attributes</code> at once for the <code>sprite</code>.</p>
+<p>Check <a href="#character-attributes">Character attributes</a>.</p>
+<h4 id="-attributes-sprite-a-sprite-"><code>attributes=SPRITE.A(sprite)</code></h4>
+<p>Return the whole <code>attributes</code> flags of the <code>sprite</code> (0..169).</p>
 <p>Example: that show how to read sprite attributes:</p>
 <pre><code>sprite <span class="hljs-number">0</span>,<span class="hljs-number">80</span>,<span class="hljs-number">80</span>,<span class="hljs-number">1</span>
 sprite.<span class="hljs-keyword">a</span> <span class="hljs-number">0</span>,<span class="hljs-number">255</span>
@@ -1617,8 +1518,8 @@ loop
 <span class="hljs-number">40</span>A0D0E8F4D0E818C06030180C305808
 </code></pre><h4 id="-sprite-off-"><code>SPRITE OFF</code></h4>
 <p>Hides all sprites.</p>
-<h4 id="-sprite-off-n-"><code>SPRITE OFF n</code></h4>
-<p>Hide the sprite <code>n</code>.</p>
+<h4 id="-sprite-off-sprite-"><code>SPRITE OFF sprite</code></h4>
+<p>Hide one <code>sprite</code>.</p>
 <p>Example that hide a sprite at each tap:</p>
 <pre><code><span class="hljs-keyword">for</span> i=<span class="hljs-number">0</span> to <span class="hljs-number">159</span>
     sprite <span class="hljs-selector-tag">i</span>,rnd(shown.w-<span class="hljs-number">8</span>),rnd(shown.h-<span class="hljs-number">8</span>),<span class="hljs-number">1</span>
@@ -1632,11 +1533,11 @@ wend
 #<span class="hljs-number">2</span>:MAIN CHARACTERS
 <span class="hljs-number">00000000000000000000000000000000</span>
 <span class="hljs-number">0000000000000000</span>FFFFFFFFFFFFFFFF
-</code></pre><h4 id="-sprite-off-n1-to-n2-"><code>SPRITE OFF n1 to n2</code>.</h4>
-<p>Hides all sprites from range <code>n1</code> to <code>n2</code> included.</p>
-<h4 id="-sprite-hit-n-"><code>=SPRITE.HIT(n)</code></h4>
-<p>Return if the sprite <code>n</code> collides with another sprite. Collision detection is not by checking overlapping pixels that are not transparent (not using the color <code>0</code>). With <code>n</code> between 0 and 169 inclusive.</p>
-<p>Example of a ball that bounce on the wall and fall into holes using <code>=SPRITE.HIT(n)</code> detection:</p>
+</code></pre><h4 id="-sprite-off-sprite1-to-sprite2-"><code>SPRITE OFF sprite1 TO sprite2</code>.</h4>
+<p>Hides all sprites from range <code>sprite1</code> to <code>sprite2</code> included.</p>
+<h4 id="-collides-sprite-hit-sprite-"><code>collides=SPRITE HIT(sprite)</code></h4>
+<p>Return if the <code>sprite</code> (0..169) <code>collides</code> (0/-1) with another sprite. Collision detection is done by checking overlapping pixels that are not transparent (a.k.a.: not using the color 0).</p>
+<p>Example of a ball that bounce on the wall and fall into holes:</p>
 <pre><code>again:
 for <span class="hljs-attr">i=1</span> to <span class="hljs-number">20</span>
     sprite i,rnd(shown.w)-<span class="hljs-number">8</span>,rnd(shown.h)-<span class="hljs-number">8</span>,<span class="hljs-number">2</span>
@@ -1663,8 +1564,9 @@ loop
 <span class="hljs-number">00000000000000000000000000000000</span>
 <span class="hljs-number">003</span>C7E7A72623C00000030240C1C0000
 <span class="hljs-number">000000010101021</span>C003C7E7F7F7F3E1C
-</code></pre><h4 id="-sprite-hit-n-n1-"><code>=SPRITE.HIT(n,n1)</code></h4>
-<p>Return if the sprite <code>n</code> collides with the sprite <code>n1</code>. With <code>n</code> and <code>n1</code> between 0 and 169 inclusive.</p>
+</code></pre><p>Use <a href="#sprite-hit"><code>sprite=HIT</code></a> to the colliding <code>sprite</code>.</p>
+<h4 id="-collides-sprite-hit-sprite-sprite1-"><code>collides=SPRITE HIT(sprite,sprite1)</code></h4>
+<p>Return if the <code>sprite</code> (0..169) <code>collides</code> (0/-1) with the <code>sprite1</code>.</p>
 <p>Example of two owerlapping sprites:</p>
 <pre><code>sprite 20,46,46,1
 <span class="hljs-keyword">do</span>
@@ -1679,14 +1581,13 @@ sprite <span class="hljs-number">10</span>,<span class="hljs-number">40</span>+(
 #<span class="hljs-number">2</span>:<span class="hljs-keyword">MAIN</span> <span class="hljs-keyword">CHARACTERS</span>
 <span class="hljs-number">00000000000000000000000000000000</span>
 FFFFFFFFF0F0F0F00000000000000000
-</code></pre><h4 id="-sprite-hit-n-n1-to-n2-"><code>=SPRITE.HIT(n,n1 to n2)</code></h4>
-<p>Return if the sprite <code>n</code> collides with any of the sprite from the range <code>n1</code> to <code>n2</code> included.</p>
-<blockquote>
-<p>See <code>=HIT</code> below for an example.</p>
-</blockquote>
-<h4 id="-hit-"><code>=HIT</code></h4>
-<p>Return the sprite number of the one that collides with the sprite <code>n</code> from any of the last <code>=SPRITE.HIT()</code> function call.</p>
-<p>Example of a ball that bounce on the wall and destroy the obstable using <code>=HIT</code>:</p>
+</code></pre><p>Use <a href="#sprite-hit"><code>sprite=HIT</code></a> to the colliding <code>sprite</code>.</p>
+<h4 id="-sprite-hit-sprite-sprite1-to-sprite2-"><code>=SPRITE.HIT(sprite,sprite1 to sprite2)</code></h4>
+<p>Return if the <code>sprite</code> (0..169) <code>collides</code> with any other from the range <code>sprite1</code> to <code>sprite2</code> included (0..169).</p>
+<p>Use <a href="#sprite-hit"><code>sprite=HIT</code></a> to the colliding <code>sprite</code>.</p>
+<h4 id="-sprite-hit-"><code>sprite=HIT</code></h4>
+<p>Return the <code>sprite</code> which collided, resulting of the last <code>=SPRITE.HIT()</code> function call (any of the three form).</p>
+<p>Example of a ball that bounce on the wall and destroy the obstable:</p>
 <pre><code>for <span class="hljs-attr">i=1</span> to <span class="hljs-number">20</span>
     sprite i,rnd(shown.w)-<span class="hljs-number">8</span>,rnd(shown.h)-<span class="hljs-number">8</span>,<span class="hljs-number">2</span>
 next i
@@ -1715,26 +1616,24 @@ loop
 <span class="hljs-number">003</span>C7E7A72623C00000030240C1C0000
 <span class="hljs-number">000000010101021</span>C003C7E7F7F7F3E1C
 </code></pre><h3 id="background-api">Background API</h3>
-<blockquote>
-<p><a href="#backgrounds">How backgrounds works</a>.</p>
-</blockquote>
-<p>The most basic way of drawing using the background API is to, first, <a href="#draw-state">choose which cell&#39;s attribute</a> to use, then <a href="#draw-cells">paint the cells</a> with a characters number.</p>
-<p>Another way of doing is to <a href="#background-copy">copy attributes and character</a> number from a ROM.</p>
-<p>Aside to that, there are API for accessing the scrolling value of each layers in pixels, getting character numbers or attributes directly from layers or draw in memory instead of layers.</p>
-<p>Text generally use background mechanics as well, there are dedicated commands for that too.</p>
+<p>The most basic way of drawing using the background API is to, first, choose which cell's attribute to use, then paint the cells with a characters number.</p>
+<p>Another way of doing is to copy attributes and characters from memory.</p>
+<p>Aside to that, there is an API to scroll the layers.</p>
+<p>Text generally use background mechanics as well, there is an <a href="#text-api">API to draw text</a> too.</p>
+<p>Check <a href="#backgrounds">How backgrounds works</a> and <a href="#background-data">background data</a>.</p>
 <h4 id="-cls-"><code>CLS</code></h4>
-<p>Clear all background layers with character zero <code>0</code>, resets the current window to the default and the layer scrolling values.</p>
+<p>Clear all background layers with character zero 0, resets the current window to the default and the layer scrolling values.</p>
 <h4 id="-cls-layer-"><code>CLS layer</code></h4>
-<p>Only clear the background layer numbered <code>layer</code> with character zero <code>0</code>. Do not alter the scrolling value.</p>
+<p>Only clear the background layer numbered <code>layer</code> with character zero 0. Do not alter the scrolling value.</p>
 <h4 id="-scroll-layer-x-y-"><code>SCROLL layer,[x],[y]</code></h4>
-<p>Set the scroll offset of the <code>layer</code> in pixels coordinates.</p>
+<p>Set the scroll offset on <code>x</code> and <code>y</code> axis of the <code>layer</code> in pixels.</p>
 <pre><code>text <span class="hljs-number">10</span>,<span class="hljs-number">10</span>,<span class="hljs-string">"hello!"</span>
 bg <span class="hljs-number">1</span>
 text <span class="hljs-number">10</span>,<span class="hljs-number">10</span>,<span class="hljs-string">"hello!"</span>
 scroll <span class="hljs-number">0</span>,<span class="hljs-number">0</span>,<span class="hljs-number">-4</span>
 </code></pre><p>Omitted parameters will keep their previous values.</p>
-<h4 id="-scroll-x-layer-br-scroll-y-layer-"><code>=SCROLL.X(layer)</code><br/><code>=SCROLL.Y(layer)</code></h4>
-<p>Return the scroll offset of the <code>layer</code> in pixels coordinates.</p>
+<h4 id="-x-scroll-x-layer-br-y-scroll-y-layer-"><code>x=SCROLL.X(layer)</code><br><code>y=SCROLL.Y(layer)</code></h4>
+<p>Return the scroll offset on <code>x</code> and <code>y</code> axis of the <code>layer</code> in pixels.</p>
 <p>Example of getting the scroll offset of the background layer:</p>
 <pre><code><span class="hljs-keyword">for</span> x=<span class="hljs-number">0</span> to <span class="hljs-number">63</span>
 <span class="hljs-keyword">for</span> y=<span class="hljs-number">0</span> to <span class="hljs-number">63</span>
@@ -1753,49 +1652,48 @@ FFFFFFFFFFFFFFFF0000000000000000
 <span class="hljs-number">0000000000000000</span>FFFFFFFFFFFFFFFF
 FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
 </code></pre><h4 id="-bg-layer-"><code>BG layer</code></h4>
-<p>Change the current layer to <code>layer</code> for further cells draw operations.</p>
-<p>With <code>layer</code> a number from <code>0</code> to <code>3</code>.</p>
-<pre><code>text <span class="hljs-number">10</span>,<span class="hljs-number">10</span>,<span class="hljs-string">"<span class="hljs-subst">\"</span>
+<p>Change the current <code>layer</code> (0..3) for further cells draw operations.</p>
+<pre><code>bg <span class="hljs-number">0</span>
+text <span class="hljs-number">10</span>,<span class="hljs-number">10</span>,<span class="hljs-string">"<span class="hljs-subst">\"</span>
 bg 1
 text 10,10,"</span>/<span class="hljs-string">"</span>
-</code></pre><h4 id="-pal-p-"><code>PAL p</code></h4>
-<p>Change the current palette to <code>p</code> for further cells draw operations.</p>
+</code></pre><h4 id="-pal-palette-"><code>PAL palette</code></h4>
+<p>Change the current <code>palette</code> for further cells draw operations.</p>
 <pre><code><span class="hljs-built_in">print</span> <span class="hljs-string">"hello"</span>,
 pal <span class="hljs-number">1</span>
 <span class="hljs-built_in">print</span> <span class="hljs-string">"world"</span>
-</code></pre><h4 id="-flip-h-v-"><code>FLIP h,v</code></h4>
-<p>Change the horizontal and vertical flip attributes to <code>h</code> and <code>v</code> respectively for further cells draw operations.</p>
+</code></pre><h4 id="-flip-horizontal-vertical-"><code>FLIP [horizontal],[vertical]</code></h4>
+<p>Change the <code>horizontal</code> and <code>vertical</code> flip attributes for further cells draw operations, considering 0 as not flipped and something else as flipped.</p>
 <pre><code>flip <span class="hljs-number">1</span>,<span class="hljs-number">0</span>
 print <span class="hljs-string">"dlrow olleh"</span>
-</code></pre><h4 id="-prio-p-"><code>PRIO p</code></h4>
-<p>Change the priority to <code>p</code> for further cells draw operations.</p>
+</code></pre><p>Omitted parameters will keep their previous values.</p>
+<h4 id="-prio-priority-"><code>PRIO priority</code></h4>
+<p>Change the <code>priority</code> for further cells draw operations.</p>
 <pre><code>sprite <span class="hljs-number">0</span>,<span class="hljs-number">78</span>,<span class="hljs-number">78</span>,<span class="hljs-number">1</span>
 prio <span class="hljs-number">1</span>
 <span class="hljs-built_in">text</span> <span class="hljs-number">10</span>,<span class="hljs-number">10</span>,<span class="hljs-string">"s"</span>
 <span class="hljs-comment">#2:main characters</span>
 <span class="hljs-number">00000000000000000000000000000000</span>
 <span class="hljs-number">003</span>C7E6A7E7E3C000000183C00000000
-</code></pre><h4 id="-attr-a-"><code>ATTR a</code></h4>
-<p>Sets the palette, flip and priority attributes all at once using <code>a</code> for further cells draw operations.</p>
-<p>TODO: link to background reference</p>
-<h4 id="-cell-x-y-c-"><code>CELL x,y,[c]</code></h4>
-<p>Sets the cell of the current background at <code>x</code>,<code>y</code> coordinates to the character number <code>c</code> with the <a href="#cells-attributes">current attributes</a>.</p>
+</code></pre><h4 id="-attr-attributes-"><code>ATTR attributes</code></h4>
+<p>Sets the palette, flip and priority <code>attributes</code> all at once for further cells draw operations.</p>
+<p>Check the <a href="#cell-attributes">cell attributes reference</a>.</p>
+<h4 id="-cell-x-y-character-"><code>CELL x,y,[character]</code></h4>
+<p>Draw to the <code>x</code>,<code>y</code> cell of the current layer with the <code>character</code> using the current attributes.</p>
+<p>By omiting the <code>character</code> argument, the command will only alter the attributes: palette, flip and priority.</p>
+<p>Use <a href="#bg-layer"><code>BG layer</code></a>, <a href="#pal-palette"><code>PAL palette</code></a>, <a href="#flip-horizontal-vertical"><code>FLIP horizontal,vertical</code></a>, <a href="#prio-priority"><code>PRIO priority</code></a> and <a href="#attr-attributes"><code>ATTR attributes</code></a> to alter the <a href="#cells-attributes">current attributes</a>.</p>
 <p>E.g. draw a face:</p>
 <pre><code><span class="hljs-selector-tag">cell</span> 10,10,1
 <span class="hljs-selector-id">#2</span><span class="hljs-selector-pseudo">:main</span> <span class="hljs-selector-tag">characters</span>
 00000000000000000000000000000000
 003<span class="hljs-selector-tag">C7E6A7E7E3C000000183C00000000</span>
-</code></pre><p>By omiting the <code>c</code> argument, the command will only alter the palette, flip and priority, but not change the character number.</p>
-<p>E.g. draw an inverted blue r letter:</p>
+</code></pre><p>E.g. draw an inverted blue r letter:</p>
 <pre><code>cell <span class="hljs-number">10</span>,<span class="hljs-number">10</span>,<span class="hljs-number">242</span>
 flip <span class="hljs-number">1</span>,<span class="hljs-number">0</span>
 pal <span class="hljs-number">1</span>
 cell <span class="hljs-number">10</span>,<span class="hljs-number">10</span>,
-</code></pre><blockquote>
-<p>Use <code>BG</code>, <code>PAL</code>, <code>FLIP</code>, <code>PRIO</code> and <code>ATTR</code> to alter the <a href="#cells-attributes">current attributes</a>.</p>
-</blockquote>
-<h4 id="-cell-c-x-y-"><code>=CELL.C(x,y)</code></h4>
-<p>Return the character number of the current background at <code>x</code>,<code>y</code> cell coordinates.</p>
+</code></pre><h4 id="-character-cell-c-x-y-"><code>character=CELL.C(x,y)</code></h4>
+<p>Return the <code>character</code> of the <code>x</code>,<code>y</code> cell from the current layer.</p>
 <p>Example of a (silly) way to read the ASCII code of a char:</p>
 <pre><code>bg <span class="hljs-number">2</span>
 <span class="hljs-keyword">for</span> x=<span class="hljs-number">0</span> <span class="hljs-keyword">to</span> shown.w<span class="hljs-string">\8</span>
@@ -1805,6 +1703,7 @@ next y
 next x
 bg <span class="hljs-number">1</span>
 bg copy <span class="hljs-number">0</span>,<span class="hljs-number">0</span>,<span class="hljs-number">6</span>,<span class="hljs-number">4</span> <span class="hljs-keyword">to</span> <span class="hljs-number">4</span>,<span class="hljs-number">4</span>
+
 <span class="hljs-keyword">do</span>
     bg <span class="hljs-number">2</span>
     c=cell.c(touch.x<span class="hljs-string">\8,touch.y\8)</span>
@@ -1812,18 +1711,20 @@ bg copy <span class="hljs-number">0</span>,<span class="hljs-number">0</span>,<s
     text <span class="hljs-number">5</span>,<span class="hljs-number">5</span>,<span class="hljs-string">"$"</span>+right$(<span class="hljs-string">"0"</span>+hex$(c-<span class="hljs-number">192</span>),<span class="hljs-number">2</span>)
     wait vbl
 <span class="hljs-keyword">loop</span>
+
 <span class="hljs-comment">#2:MAIN CHARACTERS</span>
 <span class="hljs-number">00000000000000000000000000000000</span>
 FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
 <span class="hljs-number">0000000000000000</span>FFFFFFFFFFFFFFFF
+
 <span class="hljs-comment">#3:MAIN BG</span>
 <span class="hljs-number">00000604010001000100010001000000</span>
 <span class="hljs-number">01000100010001000100020001000100</span>
 <span class="hljs-number">01000100010002000000020002000200</span>
 <span class="hljs-number">02000200</span>
-</code></pre><h4 id="-cell-a-x-y-"><code>=CELL.A(x,y)</code></h4>
-<p>Return the attributes of the current background at <code>x</code>,<code>y</code> cell coordinates</p>
-<p>Example that display cell&#39;s attributes:</p>
+</code></pre><h4 id="-attributes-cell-a-x-y-"><code>attributes=CELL.A(x,y)</code></h4>
+<p>Return the <code>attributes</code> of the <code>x</code>,<code>y</code> call from current layer.</p>
+<p>Example that display cell's attributes:</p>
 <pre><code>bg <span class="hljs-number">2</span>
 <span class="hljs-keyword">for</span> x=<span class="hljs-number">0</span> <span class="hljs-built_in">to</span> shown.w\<span class="hljs-number">8</span>
 <span class="hljs-keyword">for</span> y=<span class="hljs-number">0</span> <span class="hljs-built_in">to</span> shown.h\<span class="hljs-number">8</span>
@@ -1854,50 +1755,93 @@ loop
 <span class="hljs-number">00000000000000000000000000000000</span>
 FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
 <span class="hljs-number">0000000000000000</span>FFFFFFFFFFFFFFFF
-</code></pre><p>TODO: link to background reference</p>
-<h4 id="-bg-fill-x1-y1-to-x2-y2-char-c-"><code>BG FILL x1,y1 TO x2,y2 CHAR c</code></h4>
-<p>Fills all cells from <code>x1</code>,<code>y1</code> coordinates to <code>x2</code>,<code>y2</code> with character <code>c</code> and the <a href="#cells-attributes">current attributes</a>.</p>
+</code></pre><p>Check the <a href="#cell-attributes">cell attributes reference</a>.</p>
+<h4 id="-bg-fill-x1-y1-to-x2-y2-char-character-"><code>BG FILL x1,y1 TO x2,y2 CHAR character</code></h4>
+<p>Fills all cells from <code>x1</code>,<code>y1</code> coordinates to <code>x2</code>,<code>y2</code> with <code>character</code> and the current attributes.</p>
 <pre><code>bg<span class="hljs-built_in"> fill </span>1,1 to 5,5 char 1
 bg<span class="hljs-built_in"> fill </span>2,2 to 4,4 char 2
 <span class="hljs-comment">#2:main characters</span>
 00000000000000000000000000000000
 FFFFFFFFFFFFFFFF0000000000000000
 0000000000000000FFFFFFFFFFFFFFFF
-</code></pre><p>Similar to <code>CELL x,y,c</code> but with a rectangle of cells instead of just one cell.</p>
-<h4 id="-tint-y-y-pal-pal-flip-h-v-prio-p-"><code>TINT y,y [PAL pal] [FLIP h,v] [PRIO p]</code></h4>
-<p>Changes one or more <a href="TODO: link to cells attributes reference">attributes of the cell</a> at <code>x</code>,<code>y</code> coordinates without changing the character number.</p>
-<p>E.g.: Yellow exclamation mark</p>
+</code></pre><h4 id="-tint-y-y-pal-palette-flip-horizontal-vertical-prio-priority-"><code>TINT y,y [PAL palette] [FLIP horizontal,vertical] [PRIO priority]</code></h4>
+<p>Sets to the cell <code>x</code>,<code>y</code> (0..63) of the current layer, one or more attributes: <code>palette</code> (0..3), <code>horizontal</code> (0/1) and <code>vertical</code> (0/1) flip and <code>priority</code> (0/1).</p>
 <pre><code>print <span class="hljs-string">"hello!"</span>
 tint <span class="hljs-number">5</span>,<span class="hljs-number">0</span> pal <span class="hljs-number">7</span>
-</code></pre><h4 id="-bg-tint-y1-y1-to-x2-y2-pal-pal-flip-h-v-prio-p-"><code>BG TINT y1,y1 TO x2,y2 [PAL pal] [FLIP h,v] [PRIO p]</code></h4>
-<p>Changes one or more <a href="TODO: link to cells attributes reference">attributes</a> for all cells from <code>x1</code>,<code>y1</code> coordinates to <code>x2</code>,<code>y2</code> without changing the character number.</p>
+</code></pre><h4 id="-bg-tint-y1-y1-to-x2-y2-pal-palette-flip-horizontal-vertical-prio-priority-"><code>BG TINT y1,y1 TO x2,y2 [PAL palette] [FLIP horizontal,vertical] [PRIO priority]</code></h4>
+<p>Sets to the cells from the rectangle <code>x1</code>,<code>y1</code> to <code>x2</code>,<code>y2</code> (0..63), one or more attributes: <code>palette</code> (0..3), <code>horizontal</code> (0/1) and <code>vertical</code> (0/1) flip and <code>priority</code> (0/1).</p>
 <p>Similar to <code>TINT y,y [PAL pal] [FLIP h,v] [PRIO p]</code> but with a rectangle of cells instead of just one.</p>
 <h4 id="-bg-scroll-x1-y1-to-x2-y2-step-x3-y3-"><code>BG SCROLL x1,y1 to x2,y2 step x3,y3</code></h4>
-<p>Move a rectangle of cell&#39;s attributes and character numbers of the current layer by <code>x3</code>,<code>y3</code> in cell coordinates.</p>
-<p>The rectangle is defined using the top-left corner <code>x1</code>,<code>y2</code> and the bottom-right corner <code>x2</code>,<code>y2</code>.</p>
+<p>Move the cell's attributes and character from the rectangle <code>x1</code>,<code>y1</code> to <code>x2</code>,<code>y2</code> (0..63) of the current layer by <code>x3</code>,<code>y3</code> in cell coordinates.</p>
 <blockquote>
 <p>This feature is internally used to scroll text when it reach the bottom of the window. TODO: link to window.</p>
 </blockquote>
-<h4 id="-bg-source-a-w-h-"><code>BG SOURCE a[,w,h]</code></h4>
-<p>Set the address <code>a</code> in the cartridge to use as source for <code>BG COPY</code> operations.</p>
-<p>When <code>w</code> and <code>h</code> are specified, they are used as indiquating the number of cells in width and height of the source.</p>
-<p>If they are not specified, the <a href="#background-source-data">official background format data</a> are used to store the width and the height.</p>
+<h4 id="-bg-source-address-width-height-"><code>BG SOURCE address[,width,height]</code></h4>
+<p>Set the memory <code>address</code> to use as source for <a href="#bg-copy-x1-y1-width-height-to-x2-y2"><code>BG COPY x1,y1,width,height TO x2,y2</code></a> operations.</p>
+<p>When <code>width</code> and <code>height</code> are specified, they are used as indiquating the number of cells in the source.</p>
+<p>If they are not specified, the <a href="#background-source-data">official background data format</a> are used to retrieve the width and the height.</p>
 <blockquote>
-<p>If not specified the default address is taken by internally executing <code>=ROM(3)</code></p>
+<p>When the program is stared the default address is taken by internally executing <code>BG SOURCE ROM(3)</code></p>
 </blockquote>
-<p>TODO: example</p>
-<h4 id="-bg-copy-x1-y1-w-h-to-x2-y2-"><code>BG COPY x1,y1,w,h TO x2,y2</code></h4>
-<p>Copy a rectangle of cell&#39;s attributes and character numbers from background source specified previously using <code>BG SOURCE a[,w,h]</code> at <code>x2</code>,<code>y2</code> coordinates of the current background layer.</p>
-<p>The rectangle is defined using the top-left corner <code>x1</code>,<code>y2</code> plus the width <code>w</code> and height <code>h</code>.</p>
-<h4 id="-mcell-x-y-c-"><code>MCELL x,y,c</code></h4>
-<p>Similar to <code>CELL x,y,c</code> but modify the source in memory instead of the current layer.</p>
-<p>The source must point to writable memory, so it will not work with <code>BG SOURCE ROM(3)</code>.</p>
-<h4 id="-mcell-c-x-y-"><code>=MCELL.C(x,y)</code></h4>
-<p>Similar to <code>=CELL.C(x,y)</code> but read the current layer instead of the source in memory.</p>
-<h4 id="-mcell-a-x-y-"><code>=MCELL.A(x,y)</code></h4>
-<p>Similar to <code>=CELL.A(x,y)</code> but read the current layer instead of the source in memory.</p>
+<p>Example that generate background using random numbers:</p>
+<pre><code>a=$<span class="hljs-number">9000</span>
+for r=<span class="hljs-number">0</span> to <span class="hljs-number">63</span>
+    for c=<span class="hljs-number">0</span> to <span class="hljs-number">63</span>
+        poke a,<span class="hljs-number">1</span>
+        inc a
+        poke a,rnd(<span class="hljs-number">1</span>)*<span class="hljs-number">8</span>
+        inc a
+    next c
+next r
+
+bg source $<span class="hljs-number">9000</span>,<span class="hljs-number">64</span>,<span class="hljs-number">64</span>
+bg copy <span class="hljs-number">0</span>,<span class="hljs-number">0</span>,<span class="hljs-number">64</span>,<span class="hljs-number">64</span> to <span class="hljs-number">0</span>,<span class="hljs-number">0</span>
+
+do
+x=<span class="hljs-number">0</span>
+add x,sin(<span class="hljs-section">timer</span>/<span class="hljs-number">600</span>)*cos(<span class="hljs-section">timer</span>/<span class="hljs-number">6000</span>)*<span class="hljs-number">200</span>
+add x,sin(<span class="hljs-section">timer</span>/<span class="hljs-number">500</span>)*<span class="hljs-number">50</span>
+
+y=<span class="hljs-number">0</span>
+add y,cos(<span class="hljs-section">timer</span>/<span class="hljs-number">400</span>)*sin(<span class="hljs-section">timer</span>/<span class="hljs-number">4000</span>)*<span class="hljs-number">200</span>
+add y,cos(<span class="hljs-section">timer</span>/<span class="hljs-number">700</span>)*<span class="hljs-number">50</span>
+
+scroll <span class="hljs-number">0</span>,x,y
+wait vbl
+loop
+</code></pre><h4 id="-bg-copy-x1-y1-width-height-to-x2-y2-"><code>BG COPY x1,y1,width,height TO x2,y2</code></h4>
+<p>Copy from the rectangle <code>x1</code>,<code>y1</code> (0..63) with <code>width</code>,<code>height</code> (0..63) the cell's attributes and character numbers from background source specified previously using <a href="#bg-source-address-width-height"><code>BG SOURCE address[,width,height]</code></a> to <code>x2</code>,<code>y2</code> (0..63) of the current background layer.</p>
+<h4 id="-mcell-x-y-character-"><code>MCELL x,y,character</code></h4>
+<p>Draw to the <code>x</code>,<code>y</code> cell to the background source specified previously using <a href="#bg-source-address-width-height"><code>BG SOURCE address[,width,height]</code></a> with the <code>character</code> using the current attributes.</p>
+<p>Similar to <a href="#cell-x-y-character"><code>CELL x,y,character</code></a> but modify the source in memory instead of the current layer.</p>
+<blockquote>
+<p>The source must point to writable memory. It will not work with <code>BG SOURCE ROM(3)</code>.</p>
+</blockquote>
+<p>Example that continously draw to the background source:</p>
+<pre><code>text 4,4,"touch to copy"
+bg 1
+bg source $a000,64,64
+
+<span class="hljs-keyword">do</span>
+    pal rnd(<span class="hljs-number">7</span>)
+    mcell rnd(<span class="hljs-keyword">ceil</span>(shown.w/<span class="hljs-number">8</span>)),rnd(<span class="hljs-keyword">ceil</span>(shown.h/<span class="hljs-number">8</span>)),rnd(<span class="hljs-number">1</span>)
+    <span class="hljs-keyword">if</span> touch <span class="hljs-keyword">then</span>
+        bg copy <span class="hljs-number">0</span>,<span class="hljs-number">0</span>,<span class="hljs-keyword">ceil</span>(shown.w/<span class="hljs-number">8</span>),<span class="hljs-keyword">ceil</span>(shown.h/<span class="hljs-number">8</span>) <span class="hljs-keyword">to</span> <span class="hljs-number">0</span>,<span class="hljs-number">0</span>
+    <span class="hljs-keyword">end</span> <span class="hljs-keyword">if</span>
+    <span class="hljs-keyword">wait</span> vbl
+<span class="hljs-keyword">loop</span>
+
+#<span class="hljs-number">2</span>:<span class="hljs-keyword">MAIN</span> <span class="hljs-keyword">CHARACTERS</span>
+<span class="hljs-number">00000000000000000000000000000000</span>
+FFFFFFFFFFFFFFFF0000000000000000
+</code></pre><h4 id="-character-mcell-c-x-y-"><code>character=MCELL.C(x,y)</code></h4>
+<p>Return the <code>character</code> of the <code>x</code>,<code>y</code> cell from the background source.</p>
+<p>Similar to <a href="#character-cell-c-x-y"><code>character=CELL.C(x,y)</code></a> but modify the source in memory instead of the current layer.</p>
+<h4 id="-attributes-mcell-a-x-y-"><code>attributes=MCELL.A(x,y)</code></h4>
+<p>Return the <code>attributes</code> of the <code>x</code>,<code>y</code> call from the background source.</p>
+<p>Similar to <a href="#attributes-cell-a-x-y"><code>attributes=CELL.A(x,y</code></a> but modify the source in memory instead of the current layer.</p>
 <h4 id="-text-x-y-text-"><code>TEXT x,y,text$</code></h4>
-<p>Will print <code>text$</code> on the current layer starting at <code>x</code>,<code>y</code> using the current background attributes.</p>
+<p>Will print <code>text$</code> on the current layer starting at <code>x</code>,<code>y</code> cell using the current background attributes.</p>
 <p>  data &quot;ga&quot;,&quot;bu&quot;,&quot;zo&quot;,&quot;meu&quot;
   for i=0 to 3
     pal i
@@ -1905,33 +1849,33 @@ tint <span class="hljs-number">5</span>,<span class="hljs-number">0</span> pal <
     text 8+i*2,10,c$
   next i</p>
 <h4 id="-number-x-y-number-count-"><code>NUMBER x,y,number,count</code></h4>
-<p>Similar to <code>TEXT x,y,text$</code> but dedicated to print <code>number</code> instead of text. Will always show <code>count</code> digits by prefixing with <code>0</code> characters.</p>
+<p>Will print the latest <code>count</code> digits of the <code>number</code> on the current layer starting at <code>x</code>,<code>y</code> cell using the current background attributes.</p>
+<p>Similar to <a href="#text-x-y-text-"><code>TEXT x,y,text$</code></a> but dedicated to print number instead of text.</p>
 <pre><code>score=<span class="hljs-number">123</span>
 number <span class="hljs-number">10</span>,<span class="hljs-number">10</span>,score,<span class="hljs-number">6</span>
 </code></pre><h4 id="-font-first-"><code>FONT first</code></h4>
-<p>Sets the characters range used for <code>TEXT</code>, <code>NUMBER</code> and <code>PRINT</code> commands. Sets <code>first</code> to be the character number where the range begin, it correspond to the space according to the ASCII reference. TODO: link</p>
-<p>The default value is 192, which points to where the default font is loaded at the beginning of the program. It might be overriden by <code>LOAD</code> operation.</p>
+<p>Sets the <code>first</code> character number that will defines the range of ASCII characters used for <code>TEXT</code>, <code>NUMBER</code> and <code>PRINT</code> commands.</p>
+<p>The default value is 192, which points to where the default font is loaded at the beginning of the program if the characters are not used. It MAY be overriden by <code>LOAD</code> operation.</p>
 <h3 id="text-api">Text API</h3>
-<p>To print text on screen, LowResRMX actually use the <a href="#background-api">background API</a>.</p>
-<h4 id="-window-x-y-w-h-layer-"><code>WINDOW x,y,w,h,layer</code></h4>
-<p>Sets the current window where to draw text characters. <code>x</code>, <code>y</code> are the cell position where to start drawing on the background number <code>layer</code> while <code>w</code>, <code>h</code> are the width and height also in number of cells.</p>
+<p>Commands dedicated to draw text on layers using characters data.</p>
+<h4 id="-window-x-y-width-heigh-layer-"><code>WINDOW x,y,width,heigh,layer</code></h4>
+<p>Sets the current window at <code>x</code>,<code>y</code> with <code>width</code>,<code>height</code> and on <code>layer</code> where text will be drawn.</p>
 <pre><code>window <span class="hljs-number">4</span>,<span class="hljs-number">8</span>,shown.w\<span class="hljs-number">8</span><span class="hljs-number">-8</span>,<span class="hljs-number">20</span>,<span class="hljs-number">0</span>
-print <span class="hljs-string">"Why do things simply when you can make them complicated?"</span>
+print <span class="hljs-string">"Oh my god! There's a tremendous amount of work to do. Can I do a little bit of it today."</span>
 </code></pre><blockquote>
-<p>By default, the window is sets inside the safe area delimited by the safe functions (<code>=SAFE.L</code>...)</p>
+<p>By default, the window is sets inside the safe area delimited by the safe functions. TODO: link</p>
 </blockquote>
 <h4 id="-clw-"><code>CLW</code></h4>
-<p>Clears the window but replacing all the cells by the space character. It also reset the cursor position.</p>
+<p>Clears the window by replacing all the cells by the character 0. It also reset the cursor position.</p>
 <h4 id="-locate-x-y-"><code>LOCATE x,y</code></h4>
 <p>Move the cursor location at <code>x</code>,<code>y</code> in cells coordinates inside the window.</p>
 <pre><code><span class="hljs-keyword">for</span> <span class="hljs-built_in">i</span>=<span class="hljs-number">1</span> to <span class="hljs-number">9</span>
-locate <span class="hljs-built_in">i</span>,<span class="hljs-built_in">i</span>
-print str$(<span class="hljs-built_in">i</span>);
+    locate <span class="hljs-built_in">i</span>,<span class="hljs-built_in">i</span>
+    print str$(<span class="hljs-built_in">i</span>);
 next <span class="hljs-built_in">i</span>
-<span class="hljs-keyword">end</span>
-</code></pre><h4 id="-cursor-x-br-cursor-y-"><code>=CURSOR.X</code><br/><code>=CURSOR.Y</code></h4>
-<p>Return the cursor location <code>x</code> and <code>y</code> in cells coordinates inside the window.</p>
-<h4 id="-print-expression-list-br-"><code>PRINT expression-list</code><br/></h4>
+</code></pre><h4 id="-cursor-x-br-cursor-y-"><code>=CURSOR.X</code><br><code>=CURSOR.Y</code></h4>
+<p>Return the cursor location <code>x</code>,<code>y</code> in cells coordinates inside the window.</p>
+<h4 id="-print-expression-list-"><code>PRINT expression-list</code></h4>
 <p>Outputs string <code>expression-list</code> onto the current window.</p>
 <p><code>expression-list</code> can be one or more of:</p>
 <ul>
@@ -1952,24 +1896,27 @@ txt: data <span class="hljs-string">"data"</span>
 <span class="hljs-built_in">print</span> <span class="hljs-string">"sepa"</span>,<span class="hljs-string">"rated"</span>
 
 <span class="hljs-built_in">do</span>
-wait <span class="hljs-number">2</span>
-<span class="hljs-built_in">print</span> <span class="hljs-string">"."</span>;
+    wait <span class="hljs-number">2</span>
+    <span class="hljs-built_in">print</span> <span class="hljs-string">"."</span>;
 <span class="hljs-built_in">loop</span>
-</code></pre><h4 id="-print-br-"><code>PRINT</code><br/></h4>
+</code></pre><h4 id="-print-"><code>PRINT</code></h4>
 <p>Outputs a new line.</p>
 <h3 id="input-api">Input API</h3>
-<p>LowResRMX do not support gamepad, user are forced to rely on touch only to implement a interface that allow to control their application.</p>
+<p>LowResRMX support touch input with float-point precision (but not multi-touches), and limited keyboard input.</p>
 <p>User can also rely on the OS virtual keyboard to capture typed characters.</p>
-<h4 id="-touch-"><code>=TOUCH</code></h4>
-<p>Return <code>-1</code> if the device screen is currently touched.</p>
+<h4 id="-touched-touch-"><code>touched=TOUCH</code></h4>
+<p>Return -1 if the device fantasy screen is currently <code>touched</code>.</p>
 <p>Example that print a text only when device screen is touched:</p>
 <pre><code><span class="hljs-keyword">do</span>
     cls
     <span class="hljs-keyword">if</span> touch <span class="hljs-keyword">then</span> <span class="hljs-built_in">text</span> <span class="hljs-number">4</span>,<span class="hljs-number">4</span>,<span class="hljs-string">"touched"</span>
     <span class="hljs-keyword">wait</span> vbl
 <span class="hljs-keyword">loop</span>
-</code></pre><h4 id="-tap-"><code>=TAP</code></h4>
-<p>Similar to <code>=TOUCH</code> but return <code>true</code> for one frame only. Ideal to trigger event on your program.</p>
+</code></pre><h4 id="-touched-tap-"><code>touched=TAP</code></h4>
+<p>Return -1 for exactly one frame, if the device fantasy screen is <code>touched</code>.</p>
+<blockquote>
+<p>Ideal to trigger event on your program.</p>
+</blockquote>
 <p>Example of a flappy letter going down by gravity and up when tapping on the screen:</p>
 <pre><code>sprite <span class="hljs-number">0</span>,<span class="hljs-number">0</span>,shown.h/<span class="hljs-number">2</span>,<span class="hljs-number">226</span>
 gravity=<span class="hljs-number">3</span>
@@ -1982,21 +1929,22 @@ do
     gravity=min(<span class="hljs-number">3</span>,gravity+<span class="hljs-number">1</span>)
     sprite <span class="hljs-number">0</span>,x,y,
 loop
-</code></pre><h4 id="-touch-x-br-touch-y-"><code>=TOUCH.X</code><br/><code>=TOUCH.Y</code></h4>
-<p>Returns the last pixel position touched. It returns a float numeric value, with a 1/16 pixel precisions, allowing for smooth pan or drag gesture.</p>
-<p>Example that display the float position on x and y axis:</p>
+</code></pre><h4 id="-x-touch-x-br-y-touch-y-"><code>x=TOUCH.X</code><br><code>y=TOUCH.Y</code></h4>
+<p>Returns the last pixel position <code>x</code>,<code>y</code> touched. It returns a floating-point number, with a 1/16 pixel precisions.</p>
+<blockquote>
+<p>Ideal for smooth pan or drag gesture.</p>
+</blockquote>
 <pre><code><span class="hljs-keyword">do</span>
     <span class="hljs-keyword">cls</span>
-    <span class="hljs-keyword">print</span> touch.x
-    <span class="hljs-keyword">print</span> touch.y
-    <span class="hljs-keyword">wait</span> vbl
-<span class="hljs-keyword">loop</span>
-</code></pre><h4 id="-keyboard-on-br-keyboard-off-"><code>KEYBOARD ON</code><br/><code>KEYBOARD OFF</code></h4>
+    <span class="hljs-keyword">print</span> touch.x;<span class="hljs-string">","</span>;touch.y
+    <span class="hljs-built_in">wait</span> vbl
+loop
+</code></pre><h4 id="-keyboard-on-br-keyboard-off-"><code>KEYBOARD ON</code><br><code>KEYBOARD OFF</code></h4>
 <p>Show or hide the device virtual keyboard. Because user can hide the keybord using a dedicated key, do not assume the keyboard is visible. Use <code>KEYBOARD ON</code> inside a loop or rely on <code>=KEYBOARD</code> to detect when the keyboard is shown or not.</p>
-<h4 id="-keyboard-"><code>=KEYBOARD</code></h4>
-<p>Returns <code>-1</code> when the device virtual keyboard is visible.</p>
-<h4 id="-inkey-"><code>=INKEY$</code></h4>
-<p>Returns only once the last pressed key. The returned value is a string containing one character, one of the supported by LowResRMX. If no key was pressed or if the pressed key is not supported, it returns an empty string.</p>
+<h4 id="-height-keyboard-"><code>height=KEYBOARD</code></h4>
+<p>Return the <code>height</code> of the virtual screen that has been occluded by the keyboard.</p>
+<h4 id="-pressed-inkey-"><code>pressed$=INKEY$</code></h4>
+<p>Returns only once the last <code>pressed$</code> key. It's a string containing one ASCII character supported by LowResRMX. If no key was pressed or if the pressed key is not supported, it returns an empty string. TODO: link</p>
 <p>Example that output the pressed key:</p>
 <pre><code><span class="hljs-keyword">do</span>
     keyboard on
@@ -2006,11 +1954,11 @@ loop
     <span class="hljs-keyword">end</span> <span class="hljs-keyword">if</span>
     wait vbl
 loop
-</code></pre><p>TODO: link to reference</p>
-<h4 id="-timer-"><code>=TIMER</code></h4>
-<p>Returns the number of frames since LowResRMX was launched. The value wraps to 0 when 5184000 is reached, which is about 24 hours.</p>
+</code></pre><h4 id="-frames-timer-"><code>frames=TIMER</code></h4>
+<p>Returns the number of <code>frames</code> since LowResRMX was launched. The value wraps to 0 when 5184000 is reached, which is about 24 hours.</p>
 <h4 id="-wait-tap-"><code>WAIT TAP</code></h4>
 <p>Will stop execution of the program until a touch is made.</p>
+<p>UOUPoeuoeuaoeuaoeuaoeuaoeuaoeuchatchat</p>
 <blockquote>
 <p>While waiting for a tap, interrupt sub-routines for <code>VBL/RASTER/PARTICLE/EMITTER</code> are still executed.</p>
 </blockquote>
@@ -2019,11 +1967,16 @@ loop
 <p>Sets the four colors on the height available <code>palette</code> (0..7). The color 0 of the palette 0 is generally used as backdrop color. (It can be change using the <code>SYSTEM</code> command.) <code>c0</code>, <code>c1</code>, <code>c2</code>, <code>c3</code> can accept a numeric value between 0 and 63, omit them to keep the current value. Consult the <a href="#64-colors">64 colors reference</a> to choose the color you want.</p>
 <h4 id="-color-palette-color-"><code>=COLOR(palette,color)</code></h4>
 <p>Returns one of the <a href="#64-colors">64 colors</a> associated to the pair <code>palette</code> (0..7), <code>color</code> (0..3).</p>
-<h4 id="-sprite-view-on-br-sprite-view-off-"><code>SPRITE VIEW ON</code><br/><code>SPRITE VIEW OFF</code></h4>
+<h4 id="-width-shown-w-br-height-shown-h-"><code>width=SHOWN.W</code><br><code>height=SHOWN.H</code></h4>
+<p>Returns the <code>width</code> and <code>height</code> in pixels of the visible area of the fantasy screen.</p>
+<h4 id="-left-safe-l-br-top-safe-t-br-right-safe-r-br-bottom-safe-b-"><code>left=SAFE.L</code><br><code>top=SAFE.T</code><br><code>right=SAFE.R</code><br><code>bottom=SAFE.B</code></h4>
+<p>Returns the <code>left</code>, <code>top</code>, <code>right</code> and <code>bottom</code> offset in pixels to apply from the boundary of the fantasy device screen to reach the inner safe area specified by the device's operating system.</p>
+<p>These functions can be used to avoid the top camera notch or the bottom inset full-width buttons.</p>
+<h4 id="-sprite-view-on-br-sprite-view-off-"><code>SPRITE VIEW ON</code><br><code>SPRITE VIEW OFF</code></h4>
 <p>Enable or disable the rendering of all sprites.</p>
-<h4 id="-bg-view-on-br-bg-view-off-"><code>BG VIEW ON</code><br/><code>BG VIEW OFF</code></h4>
+<h4 id="-bg-view-on-br-bg-view-off-"><code>BG VIEW ON</code><br><code>BG VIEW OFF</code></h4>
 <p>Enable or disable the rendering of all background layers.</p>
-<h4 id="-wait-vbl-br-wait-frame-"><code>WAIT VBL</code><br/><code>WAIT frame</code></h4>
+<h4 id="-wait-vbl-br-wait-frame-"><code>WAIT VBL</code><br><code>WAIT frame</code></h4>
 <p>Wait for a number of <code>frame</code> to be drawn. Keyword <code>VBL</code> is similar to 1. This is used to:</p>
 <ul>
 <li>draw frames at 60 FPS,</li>
@@ -2107,7 +2060,203 @@ loop
 <p>Return the fantasy screen line number currently rendered.</p>
 <h4 id="-on-raster-off-"><code>ON RASTER OFF</code></h4>
 <p>Will stop the execution of a sub-routine during RASTER interrupt.</p>
-<h3 id="sound-api">Sound API</h3>
+<h3 id="math-api">Math API</h3>
+<h4 id="-pi-pi-"><code>pi=PI</code></h4>
+<p>Return the constant π.</p>
+<h4 id="-cosine-cos-number-br-sine-sin-number-"><code>cosine=COS(number)</code><br><code>sine=SIN(number)</code></h4>
+<p>Return the <code>cosine</code> or <code>sine</code> (0..1) value of a <code>number</code>.</p>
+<p><code>COS()</code> and <code>SIN()</code> take (0..1) instead of (0..π*2), and <code>SIN()</code> is inverted.</p>
+<h4 id="-arc-atan-x-y-"><code>arc=ATAN(x,y)</code></h4>
+<p>Return the <code>arc</code> tangent value of a <code>x</code>,<code>y</code> vector.</p>
+<p><code>ATAN()</code> returns an value between (-0.5..0.5) making it suitable for use with <code>COS()</code> and <code>SIN()</code>.</p>
+<p>Example that show how to compute an angle from a position, and a position from an angle:</p>
+<pre><code>'<span class="hljs-built_in">get</span> the <span class="hljs-built_in">center</span> <span class="hljs-built_in">position</span> of the screen
+cx=shown.w/<span class="hljs-number">2</span>-<span class="hljs-number">4</span>
+cy=shown.h/<span class="hljs-number">2</span>-<span class="hljs-number">4</span>
+sprite <span class="hljs-number">50</span>,cx,cy,<span class="hljs-number">1</span>
+
+'initial <span class="hljs-built_in">position</span> from the <span class="hljs-built_in">center</span>
+dx=<span class="hljs-number">40</span>
+dy=<span class="hljs-number">20</span>
+sprite <span class="hljs-number">40</span>,cx+dx,cy+dy,<span class="hljs-number">1</span>
+sprite <span class="hljs-number">40</span> pal <span class="hljs-number">1</span>
+sprite <span class="hljs-number">30</span> pal <span class="hljs-number">2</span>
+
+<span class="hljs-keyword">do</span>
+    '<span class="hljs-built_in">new</span> <span class="hljs-built_in">position</span> from touch
+    dx=touch.x-cx
+    dy=touch.y-cy
+    sprite <span class="hljs-number">40</span>,cx+dx,cy+dy,<span class="hljs-number">1</span>
+
+    '<span class="hljs-built_in">get</span> angle from <span class="hljs-built_in">vector</span>
+    a=<span class="hljs-built_in">atan</span>(dx,dy)
+
+    '<span class="hljs-built_in">get</span> <span class="hljs-built_in">position</span> from angle
+    x=<span class="hljs-built_in">cos</span>(a)*<span class="hljs-number">30</span>
+    y=<span class="hljs-built_in">sin</span>(a)*<span class="hljs-number">30</span>
+
+    sprite <span class="hljs-number">30</span>,cx+x,cy+y,<span class="hljs-number">1</span>
+    wait vbl
+loop
+
+#<span class="hljs-number">2</span>:MAIN CHARACTERS
+<span class="hljs-number">00000000000000000000000000000000</span>
+3C7EFFFFFFFF7E3C0000000000000000
+</code></pre><h4 id="-absolute-abs-number-"><code>absolute=ABS(number)</code></h4>
+<p>Return the <code>absolute</code> value of a <code>number</code>.</p>
+<h4 id="-exponential-exp-number-"><code>exponential=EXP(number)</code></h4>
+<p>Return the <code>exponential</code> value of a <code>number</code>.</p>
+<h4 id="-logarithm-log-number-"><code>logarithm=LOG(number)</code></h4>
+<p>Return the <code>logarithm</code> value of a <code>number</code>.</p>
+<h4 id="-square-sqr-number-"><code>square=SQR(number)</code></h4>
+<p>Return the <code>square</code> root value of a <code>number</code>.</p>
+<h4 id="-sign-sgn-number-"><code>sign=SGN(number)</code></h4>
+<p>Return the <code>sign</code> (+1/-1) of a <code>number</code>.</p>
+<h4 id="-floor-floor-number-br-floor-int-number-"><code>floor=FLOOR(number)&lt;br&gt;floor=INT(number)</code></h4>
+<p>Return the <code>floor</code> value of a <code>number</code>.</p>
+<h4 id="-ceil-ceil-number-"><code>ceil=CEIL(number)</code></h4>
+<p>Return the <code>ceil</code> value of a <code>number</code>.</p>
+<h4 id="-inc-variable-br-dec-variable-"><code>INC variable</code><br><code>DEC variable</code></h4>
+<p>Increment or decrement by 1 the value of a <code>variable</code>.</p>
+<h4 id="-add-variable-value-br-add-variable-increment-min-to-max-"><code>ADD variable,value</code><br>ADD variable,increment,min TO max`</h4>
+<p>Add a <code>value</code> to a <code>variable</code>.</p>
+<p>Optionally make it wrap around between <code>min</code> and <code>max</code>.</p>
+<h4 id="-minimal-min-a-b-br-maximal-max-a-b-"><code>minimal=MIN(a,b)</code><br><code>maximal=MAX(a,b)</code></h4>
+<p>Return the <code>minimal</code> or <code>maximal</code> value between <code>a</code> and <code>b</code>.</p>
+<h4 id="-clamped-clamp-value-min-max-"><code>clamped=CLAMP(value,min,max)</code></h4>
+<p>Return the <code>value</code> <code>clamped</code> between <code>min</code> and <code>max</code>.</p>
+<h4 id="-length-len-x-y-"><code>length=LEN(x,y)</code></h4>
+<p>Return the <code>length</code> of a <code>x</code>,<code>y</code> vector.</p>
+<h4 id="-interpolation-ease-function-mode-value-"><code>interpolation=EASE(function,mode,value)</code></h4>
+<p>This returns the <code>interpolation</code> of <code>value</code> between 0.0 and 1.0, using the specified easing <code>function</code> and <code>mode</code>.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:right"></th>
+<th>function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right">0</td>
+<td>linear</td>
+</tr>
+<tr>
+<td style="text-align:right">1</td>
+<td>sine</td>
+</tr>
+<tr>
+<td style="text-align:right">2</td>
+<td>quad</td>
+</tr>
+<tr>
+<td style="text-align:right">3</td>
+<td>cubic</td>
+</tr>
+<tr>
+<td style="text-align:right">4</td>
+<td>quart</td>
+</tr>
+<tr>
+<td style="text-align:right">5</td>
+<td>quint</td>
+</tr>
+<tr>
+<td style="text-align:right">6</td>
+<td>circ</td>
+</tr>
+<tr>
+<td style="text-align:right">7</td>
+<td>back</td>
+</tr>
+<tr>
+<td style="text-align:right">8</td>
+<td>elastic</td>
+</tr>
+<tr>
+<td style="text-align:right">9</td>
+<td>bounce</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th style="text-align:right"></th>
+<th>mode</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right">-1</td>
+<td>in</td>
+</tr>
+<tr>
+<td style="text-align:right">0</td>
+<td>inout</td>
+</tr>
+<tr>
+<td style="text-align:right">+1</td>
+<td>out</td>
+</tr>
+</tbody>
+</table>
+<h4 id="-random-rnd-"><code>random=RND</code></h4>
+<p>Return a <code>random</code> floating-point number (0..1).</p>
+<h4 id="-random-rnd-max-"><code>random=RND(max)</code></h4>
+<p>Return a <code>random</code> integer number (0..max).</p>
+<h4 id="-randomize-seed-"><code>RANDOMIZE seed</code></h4>
+<p>Initialize the random generator with a different <code>seed</code> (0..16777216).</p>
+<p>TODO: link to floating point precision loss</p>
+<p>Setting a specific <code>seed</code> will guarantee to return the same sequence of random numbers.</p>
+<pre><code><span class="hljs-keyword">randomize</span> <span class="hljs-number">123456</span>
+<span class="hljs-keyword">for</span> i=<span class="hljs-number">0</span> to <span class="hljs-number">5</span>
+    <span class="hljs-keyword">print</span> <span class="hljs-keyword">rnd</span>(<span class="hljs-number">100</span>)
+<span class="hljs-keyword">next</span> i
+
+<span class="hljs-keyword">print</span>
+
+<span class="hljs-keyword">randomize</span> <span class="hljs-number">123456</span>
+<span class="hljs-keyword">for</span> i=<span class="hljs-number">0</span> to <span class="hljs-number">5</span>
+    <span class="hljs-keyword">print</span> <span class="hljs-keyword">rnd</span>(<span class="hljs-number">100</span>)
+<span class="hljs-keyword">next</span> i
+</code></pre><h4 id="-random-rnd-address-br-random-rnd-max-address-br-randomize-seed-address-"><code>random=RND address&lt;br&gt;random=RND(max,address)&lt;br&gt;RANDOMIZE seed[,address]</code></h4>
+<p>Similar to the original functions with a addional <code>address</code> parameter, where the current generator state will be stored.</p>
+<p>This is usefull if you want to keep multiple generator that still need to be determistic.</p>
+<p>The generator state consume 16 Bytes of memory.</p>
+<h3 id="string-api">String API</h3>
+<h4 id="-lenght-len-text-"><code>lenght=LEN(text)</code></h4>
+<p>Return the <code>lenght</code> in ascii7 character of a <code>text</code> string.</p>
+<h4 id="-ascii7-asc-character-"><code>ascii7=ASC(character)</code></h4>
+<p>Converts the first <code>character</code> of a string to an <code>ascii7</code> code.</p>
+<p>TODO: link to ascii7 table</p>
+<h4 id="-character-chr-ascii7-"><code>character=CHR$(ascii7)</code></h4>
+<p>Converts an <code>ascii7</code> code to a one <code>character</code> string.</p>
+<h4 id="-text-str-number-"><code>text=STR$(number)</code></h4>
+<p>Converts a <code>number</code> to a <code>text</code> string.</p>
+<pre><code><span class="hljs-keyword">print</span> <span class="hljs-keyword">str</span>$(<span class="hljs-number">123.456</span>)
+</code></pre><h4 id="-number-val-text-"><code>number=VAL(text)</code></h4>
+<p>Converts a <code>text</code> string that starts with digits (and maybe one point <code>.</code>) into a <code>number</code>.</p>
+<pre><code><span class="hljs-built_in">print</span> val(<span class="hljs-string">"3.5abc"</span>)
+</code></pre><h4 id="-hexadecimal-hex-number-digits-br-binary-bin-number-digits-"><code>hexadecimal=HEX$(number,[digits])</code><br><code>binary=BIN$(number,[digits])</code></h4>
+<p>Converts a <code>number</code> to an <code>hexadecimal</code> or <code>binary</code> string with an optional minimal number of <code>digits</code>.</p>
+<h4 id="-leading-left-text-length-br-trailing-right-text-length-"><code>leading$=LEFT$(text,length)</code><br><code>trailing$=RIGHT$(text,length)</code></h4>
+<p>Return the <code>length</code> number of characters from the beginning or the end of the <code>text</code> string.</p>
+<pre><code>shadok: data <span class="hljs-string">"gabuzomeu"</span>
+<span class="hljs-keyword">print</span> left$(shadok,<span class="hljs-number">4</span>)
+<span class="hljs-keyword">print</span> right$(shadok,<span class="hljs-number">5</span>)
+</code></pre><h4 id="-left-text-length-replacement-br-right-text-length-replacement-"><code>LEFT$(text,length)=replacement$</code><br><code>RIGHT$(text,length)=replacement$</code></h4>
+<p>Overwrites the <code>length</code> number of characters at the beginning or the end of the <code>text</code> string by the <code>length</code> first characters of the <code>replacement$</code> string.</p>
+<h4 id="-extract-mid-text-position-length-"><code>extract$=MID(text,position,length)</code></h4>
+<p>Return the <code>length</code> number of characters starting at <code>position</code> (1..) from the <code>text</code> string.</p>
+<h4 id="-mid-text-position-length-replacement-"><code>mid$(text,position,length)=replacement$</code></h4>
+<p>Overwrites the <code>length</code> number of characters starting at <code>position</code> (1..) from the <code>text</code> string by the <code>length</code> first characters of the <code>replacement$</code> string.</p>
+<pre><code>six<span class="hljs-symbol">$</span>=<span class="hljs-string">"hexakosioihexekontahexaphobie"</span>
+mid<span class="hljs-symbol">$</span>(six<span class="hljs-symbol">$</span>,<span class="hljs-number">1</span>,<span class="hljs-number">4</span>)=<span class="hljs-string">"-66-"</span>
+mid<span class="hljs-symbol">$</span>(six<span class="hljs-symbol">$</span>,<span class="hljs-number">11</span>,<span class="hljs-number">4</span>)=<span class="hljs-string">"-66-"</span>
+mid<span class="hljs-symbol">$</span>(six<span class="hljs-symbol">$</span>,<span class="hljs-number">20</span>,<span class="hljs-number">4</span>)=<span class="hljs-string">"-66-"</span>
+print six<span class="hljs-symbol">$</span>
+</code></pre><h3 id="sound-api">Sound API</h3>
 <p>TODO: Link to how sound work</p>
 <h4 id="-play-voice-pitch-length-sound-sound-"><code>PLAY voice,pitch[,length] [SOUND sound]</code></h4>
 <p>Play a note at the <code>pitch</code> on the <code>voice</code> with an optional <code>length</code> and <code>sound</code>.</p>
@@ -2115,8 +2264,8 @@ loop
 <p>Check <a href="manual#Pitch values">pitch references</a> to learn which pitch conrespond to which notes.</p>
 </blockquote>
 <p><code>length</code> use 1/60 of seconds as units with the maximum being 255, so 4.25 seconds. A length of 0 means that the sound will not stop until another sound is played on the same <code>voice</code>.</p>
-<p><code>sound</code> is a number representing a group of settings that define the sound&#39;s characteristics. It requires the usage of the <a href="manual#`SOUND SOURCE [address]`"><code>SOUND SOURCE</code></a> command.</p>
-<h4 id="-stop-br-stop-voice-"><code>STOP</code><br/><code>STOP [voice]</code></h4>
+<p><code>sound</code> is a number representing a group of settings that define the sound's characteristics. It requires the usage of the <a href="manual#`SOUND SOURCE [address]`"><code>SOUND SOURCE</code></a> command.</p>
+<h4 id="-stop-br-stop-voice-"><code>STOP</code><br><code>STOP [voice]</code></h4>
 <p>Stops the sound and track on the <code>voice</code> or all the voices if omitted.</p>
 <p>Release duration of envelope are not stop but fade out instead.</p>
 <h4 id="-volume-voice-volume-mix-"><code>VOLUME voice,[volume],[mix]</code></h4>
@@ -2131,17 +2280,17 @@ loop
 <tbody>
 <tr>
 <td style="text-align:right"><code>volume</code></td>
-<td>0 .. 15</td>
+<td><code>0</code> .. <code>15</code></td>
 </tr>
 <tr>
 <td style="text-align:right"><code>mix</code></td>
-<td>0 Muted<br/>1 Left<br/>2 Right<br/>3 Both</td>
+<td><code>0</code> Muted<br><code>1</code> Left<br><code>2</code> Right<br><code>3</code> Both</td>
 </tr>
 </tbody>
 </table>
 <p>All parameters can be omitted to keep their current settings.</p>
 <h4 id="-sound-voice-wave-width-length-"><code>SOUND voice,[wave],[width],[length]</code></h4>
-<p>Sets the sound&#39;s characteristics for the <code>voice</code>.</p>
+<p>Sets the sound's characteristics for the <code>voice</code>.</p>
 <p><code>wave</code> control the waveform. With a waveform of Pulse, the <code>width</code> control the pulse width. A value of 8 means a square wave.</p>
 <p><code>length</code> control the length of the sound. A length of 0 means that the sound will not stop until another sound is played on the same <code>voice</code>. This value can be overriden by the parameter <code>length</code> of the <a href="#play-voice-pitch-length-sound-sound"><code>PLAY</code> command</a>.</p>
 <table>
@@ -2154,22 +2303,22 @@ loop
 <tbody>
 <tr>
 <td style="text-align:right"><code>wave</code></td>
-<td>0 Sawtooth<br/>1 Triangle<br/>2 Pulse<br/>3 Noise</td>
+<td><code>0</code> Sawtooth<br><code>1</code> Triangle<br><code>2</code> Pulse<br><code>3</code> Noise</td>
 </tr>
 <tr>
 <td style="text-align:right"><code>width</code></td>
-<td>0 .. 15</td>
+<td><code>0</code> .. <code>15</code></td>
 </tr>
 <tr>
 <td style="text-align:right"><code>length</code></td>
-<td>0 infinite<br/>1 .. 255<br/>16.67ms .. 4.25s</td>
+<td><code>0</code> Infinite<br>1 16.67ms .. <code>255</code> 4.25s</td>
 </tr>
 </tbody>
 </table>
 <p>Omitted parameters will keep their previous values.</p>
 <h4 id="-envelope-voice-attack-decay-sustain-release-"><code>ENVELOPE voice,[attack],[decay],[sustain],[release]</code></h4>
 <p>Set the volume envelope for the <code>voice</code>.</p>
-<p>Allow to change the <code>attack</code> time, the <code>decay</code> time and the <code>release</code> time.</p>
+<p>Allow to change the <code>attack</code>, <code>decay</code> and <code>release</code> duration.</p>
 <p><code>sustain</code> control the volume after the decay and before the release.</p>
 <table>
 <thead>
@@ -2181,19 +2330,19 @@ loop
 <tbody>
 <tr>
 <td style="text-align:right"><code>attack</code></td>
-<td>0 .. 15<br/>2ms .. 12s</td>
+<td><code>0</code> 2ms .. <code>15</code> 12s</td>
 </tr>
 <tr>
 <td style="text-align:right"><code>decay</code></td>
-<td>0 .. 15<br/>2ms .. 12s</td>
+<td><code>0</code> 2ms .. <code>15</code> 12s</td>
 </tr>
 <tr>
 <td style="text-align:right"><code>release</code></td>
-<td>0 .. 15<br/>2ms .. 12s</td>
+<td><code>0</code> 2ms .. <code>15</code> 12s</td>
 </tr>
 <tr>
 <td style="text-align:right"><code>sustain</code></td>
-<td>0 .. 15</td>
+<td><code>0</code> .. <code>15</code></td>
 </tr>
 </tbody>
 </table>
@@ -2211,62 +2360,375 @@ loop
 <tbody>
 <tr>
 <td style="text-align:right"><code>rate</code></td>
-<td>0 .. 15<br/>0.12Hz .. 18Hz</td>
+<td><code>0</code> 0.12Hz .. <code>15</code> 18Hz</td>
 </tr>
 <tr>
 <td style="text-align:right"><code>frequency</code></td>
-<td>0 .. 15</td>
+<td><code>0</code> .. <code>15</code></td>
 </tr>
 <tr>
 <td style="text-align:right"><code>volume</code></td>
-<td>0 .. 15</td>
+<td><code>0</code> .. <code>15</code></td>
 </tr>
 <tr>
 <td style="text-align:right"><code>width</code></td>
-<td>0 .. 15</td>
+<td><code>0</code> .. <code>15</code></td>
 </tr>
 </tbody>
 </table>
 <p>All parameters can be omitted to keep their current settings.</p>
 <h4 id="-lfo-wave-voice-wave-invert-env-trigger-"><code>LFO WAVE voice,[wave],[invert],[env],[trigger]</code></h4>
-<p>Set options for the LFO wave for the <code>voice</code>.</p>
+<p>Set options for the a second Low Frequency Oscillator (LFO) for the <code>voice</code>.</p>
+<p>Allow to change the <code>wave</code> and enable or disable <code>invert</code>, <code>env</code> and <code>trigger</code>.</p>
+<p>With <code>invert</code> off, the wave is added (+) to the output signal. With <code>invert</code> on, the wave is substracted (-).</p>
+<p>When <code>env</code> on, this second LFO will be played once. Will implictly set <code>trigger</code> on.</p>
+<p>With <code>trigger</code> on, this second LFO is restarted at every <code>PLAY</code>, otherwise the LFO is continously applied.</p>
 <table>
 <thead>
 <tr>
 <th style="text-align:right">parameter</th>
-<th>value and range</th>
+<th>value</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td style="text-align:right"><code>wave</code></td>
-<td>0 Triangle<br/>1 Sawtooth<br/>2 Square<br/>3 Random</td>
+<td><code>0</code> Triangle<br><code>1</code> Sawtooth<br><code>2</code> Square<br><code>3</code> Random</td>
 </tr>
 <tr>
 <td style="text-align:right"><code>invert</code></td>
-<td>0 Off .. 1 On<br/>off .. on</td>
+<td><code>0</code> Off<br><code>1</code> On</td>
 </tr>
 <tr>
 <td style="text-align:right"><code>env</code></td>
-<td>0 .. 1<br/>off .. on</td>
+<td><code>0</code> Off<br><code>1</code> On</td>
+</tr>
+<tr>
+<td style="text-align:right"><code>trigger</code></td>
+<td><code>0</code> Off<br><code>1</code> On</td>
 </tr>
 </tbody>
 </table>
+<p>All parameters can be omitted to keep their current settings.</p>
 <h4 id="-sound-source-address-"><code>SOUND SOURCE [address]</code></h4>
-<h4 id="-music-p-"><code>MUSIC [p]</code></h4>
-<h4 id="-music-n-"><code>=MUSIC(n)</code></h4>
-<h4 id="-track-n-v-"><code>TRACK n,v</code></h4>
-<p>TODO: SYSTEM</p>
-<p>TODO: continue</p>
-<p>TODO: API</p>
-<p>TODO: touch screen</p>
-<p>TODO: about memory</p>
-<p>TODO: about sound</p>
-<p>TODO: about priority</p>
-<p>TODO: about keywords</p>
-<p>TODO: about numeric technical</p>
-<p>TODO: how window not updated when on-resized</p>
-<p>TODO: explain API notation <code>[optional]</code></p>
+<p>Set the <code>address</code> on memory to use as source for <code>MUSIC</code>, <code>TRACK</code> and <code>PLAY</code> commands. The <a href="">official sound data format</a> TODO: link is used to decode the informations.</p>
+<blockquote>
+<p>This will not affect already started playback.</p>
+<p>If not specified the default address is taken by internally executing <code>=ROM(15)</code></p>
+</blockquote>
+<h4 id="-music-pattern-"><code>MUSIC [pattern]</code></h4>
+<p>Starts playing at the <code>pattern</code>. If omitted, it starts at pattern <code>0</code>.</p>
+<blockquote>
+<p>This will consider that the data respects the <a href="">official soud data format</a> TODO: link.</p>
+</blockquote>
+<h4 id="-music-what-"><code>=MUSIC(what)</code></h4>
+<p>Question the current playback.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:right"><code>what</code></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right">0</td>
+<td>The current pattern</td>
+</tr>
+<tr>
+<td style="text-align:right">1</td>
+<td>The current row</td>
+</tr>
+<tr>
+<td style="text-align:right">2</td>
+<td>The current tick</td>
+</tr>
+<tr>
+<td style="text-align:right">3</td>
+<td>The current speed<br><code>0</code> when stopped</td>
+</tr>
+</tbody>
+</table>
+<h4 id="-track-track-voice-"><code>TRACK track,voice</code></h4>
+<p>Starts playing the <code>track</code> on <code>voice</code>.</p>
+<blockquote>
+<p>This will consider that the data respects the <a href="">official soud data format</a> TODO: link.</p>
+</blockquote>
+<h3 id="memory-api">Memory API</h3>
+<h4 id="-poke-address-value-"><code>POKE address,value</code></h4>
+<p>Write an 8bits <code>value</code> (0..255) in memory at <code>address</code>.</p>
+<p>The <code>address</code> must be writable. TODO: link</p>
+<p>Example that change the background color:</p>
+<pre><code>c=<span class="hljs-number">0</span>
+do
+    poke $ff00,C
+    add c,<span class="hljs-number">1</span>,<span class="hljs-number">0</span> to <span class="hljs-number">63</span>
+    wait <span class="hljs-number">5</span>
+loop
+</code></pre><h4 id="-peek-address-"><code>=PEEK(address)</code></h4>
+<p>Read and return a 8bits value (0..255) from memory at <code>address</code>.</p>
+<p>Example that print the last pressed ASCII key code:</p>
+<pre><code><span class="hljs-keyword">do</span>
+    keyboard <span class="hljs-keyword">on</span>
+    <span class="hljs-keyword">print</span> <span class="hljs-keyword">str</span>$(<span class="hljs-keyword">peek</span>($ff84))
+    <span class="hljs-keyword">wait</span> <span class="hljs-number">5</span>
+<span class="hljs-keyword">loop</span>
+</code></pre><h4 id="-pokew-address-value-"><code>POKEW address,value</code></h4>
+<p>Write a 16bits <code>value</code> (-32768..32767) in memory at <code>address</code>.</p>
+<h4 id="-peekw-address-"><code>=PEEKW(address)</code></h4>
+<p>Read and return a 16bits value (-32768..32767) from memory at <code>address</code>.</p>
+<p>Example that print the width and height of the visible pixels:</p>
+<pre><code><span class="hljs-keyword">print</span> <span class="hljs-string">"width"</span>,peekw(<span class="hljs-variable">$ff78</span>),shown.<span class="hljs-built_in">w</span>
+<span class="hljs-keyword">print</span> <span class="hljs-string">"height"</span>,peekw(<span class="hljs-variable">$ff7a</span>),shown.<span class="hljs-built_in">h</span>
+</code></pre><h4 id="-pokel-address-value-"><code>POKEL address,value</code></h4>
+<p>Write a 32bits <code>value</code> value (-16777216..16777216) in memory at <code>address</code>.</p>
+<p>TODO: link to floating-point precision loss</p>
+<h4 id="-peekl-address-"><code>=PEEKL(address)</code></h4>
+<p>Read and return a 32bits value (-16777216..16777216) from memory at <code>address</code>.</p>
+<p>TODO: link to floating-point precision loss</p>
+<h4 id="-address-rom-file-"><code>address=ROM(file)</code></h4>
+<p>Return the <code>address</code> in memory of the virtual <code>file</code>.</p>
+<h4 id="-size-size-file-"><code>size=SIZE(file)</code></h4>
+<p>Return the <code>size</code> in bytes of the virtual <code>file</code>.</p>
+<h4 id="-copy-source-count-to-destination-"><code>COPY source,count TO destination</code></h4>
+<p>Copies <code>count</code> bytes from <code>source</code> address from memory to <code>destination</code> address in memory.</p>
+<blockquote>
+<p>The <code>source</code> and <code>destination</code> CAN overlap.</p>
+</blockquote>
+<h4 id="-fill-address-count-value-"><code>FILL address,count[,value]</code></h4>
+<p>Sets <code>count</code> bytes from <code>address</code> in memory with the <code>value</code> or 0 when not specified.</p>
+<h4 id="-rol-address-places-br-ror-address-places-"><code>ROL address,places</code><br><code>ROR address,places</code></h4>
+<p>Rotates the bits of the byte stored at <code>address</code> by a number of <code>places</code> to the left or the right.</p>
+<pre><code>poke $9000,%00001111
+again:
+<span class="hljs-keyword">print</span> right$(<span class="hljs-string">"0000000"</span>+bin$(peek($9000)),<span class="hljs-number">8</span>)
+wait tap
+rol $9000,<span class="hljs-number">2</span>
+goto again
+</code></pre><h4 id="-dma-copy-rom-"><code>DMA COPY [ROM]</code></h4>
+<p>Performs a fast memory copy that can only be done during interrupt calls: <code>VBL/RASTER/EMITTER/PARTICLE</code>.</p>
+<p>It uses the following registers as data:</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:right">addr</th>
+<th>size</th>
+<th>purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right">$FFA0</td>
+<td>2 Bytes</td>
+<td>Source address</td>
+</tr>
+<tr>
+<td style="text-align:right">$FFA2</td>
+<td>2 Bytes</td>
+<td>Bytes count</td>
+</tr>
+<tr>
+<td style="text-align:right">$FFA4</td>
+<td>2 Bytes</td>
+<td>Destination address</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>To copy from an address greater or equal than $10000, the optional <code>[ROM]</code> argument must be used.</p>
+</blockquote>
+<h3 id="file-api">File API</h3>
+<p>Give access to the <a href="#virtual-file">virtual file embeded</a> in the cartridge.</p>
+<h4 id="-files-"><code>FILES</code></h4>
+<p>Enable the access to the files, allowing to use the other commands of the file API.</p>
+<p>Getting access to files allow to create editor program, like characters, map or custom editor. The official GFX and SFX use this command.</p>
+<p>When the <code>FILES</code> command is called, it will map the data stored in the fantasy cartridge to virtual files indexed from 0 to 15.</p>
+<h4 id="-comment-file-file-"><code>comment$=FILE$(file)</code></h4>
+<p>Return the <code>comment$</code> string of the <code>file</code>.</p>
+<blockquote>
+<p>The command <a href="#files"><code>FILES</code> MUST be called</a> before.</p>
+</blockquote>
+<h4 id="-size-fsize-file-"><code>size=FSIZE(file)</code></h4>
+<p>Return the <code>size</code> in bytes stored in the <code>file</code>.</p>
+<blockquote>
+<p>The command <a href="#files"><code>FILES</code> MUST be called</a> before.</p>
+</blockquote>
+<h4 id="-load-file-address-limit-offset-"><code>LOAD file,address[,limit[,offset]]</code></h4>
+<p>Load the virtual <code>file</code> at <code>address</code>. Optionnaly <code>limit</code> the number of bytes read and start at <code>offset</code>.</p>
+<blockquote>
+<p>The command <a href="#files"><code>FILES</code> MUST be called</a> before.</p>
+</blockquote>
+<h4 id="-save-file-comment-address-size-"><code>SAVE file,comment$,address,size</code></h4>
+<p>Save <code>size</code> bytes from <code>address</code> to the <code>file</code> and <strong>erase previous data</strong>. The <code>comment$</code> is just a reminder of what is stored.</p>
+<blockquote>
+<p>The command <a href="#files"><code>FILES</code> MUST be called</a> before.</p>
+</blockquote>
+<h3 id="other-api">Other API</h3>
+<h4 id="-message-text-"><code>MESSAGE text</code></h4>
+<p>Output <code>text</code> in the bottom-left corner of the fantasy screen, in the <a href="#overlay">overlay</a>.</p>
+<h4 id="-system-setting-value-"><code>SYSTEM setting,value</code></h4>
+<p>Sets the <code>value</code> to system <code>setting</code>.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:right">setting</th>
+<th style="text-align:left">purpose</th>
+<th style="text-align:left">values</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right">0</td>
+<td style="text-align:left">energy saving mode</td>
+<td style="text-align:left">0 or 1</td>
+</tr>
+<tr>
+<td style="text-align:right">1</td>
+<td style="text-align:left">color 0 opacity for layer 0</td>
+<td style="text-align:left">0 or 1</td>
+</tr>
+<tr>
+<td style="text-align:right">2</td>
+<td style="text-align:left">color 0 opacity for layer 1</td>
+<td style="text-align:left">0 or 1</td>
+</tr>
+<tr>
+<td style="text-align:right">3</td>
+<td style="text-align:left">color 0 opacity for layer 2</td>
+<td style="text-align:left">0 or 1</td>
+</tr>
+<tr>
+<td style="text-align:right">4</td>
+<td style="text-align:left">color 0 opacity for layer 3</td>
+<td style="text-align:left">0 or 1</td>
+</tr>
+<tr>
+<td style="text-align:right">5</td>
+<td style="text-align:left">double size for layer 0</td>
+<td style="text-align:left">0 or 1</td>
+</tr>
+<tr>
+<td style="text-align:right">6</td>
+<td style="text-align:left">double size for layer 1</td>
+<td style="text-align:left">0 or 1</td>
+</tr>
+<tr>
+<td style="text-align:right">7</td>
+<td style="text-align:left">double size for layer 2</td>
+<td style="text-align:left">0 or 1</td>
+</tr>
+<tr>
+<td style="text-align:right">8</td>
+<td style="text-align:left">double size for layer</td>
+<td style="text-align:left">0 or 1</td>
+</tr>
+</tbody>
+</table>
+<p>Enabling the <em>energy saving mode</em> setting will reduce the refresh rate whenever there is no user input. The CPU cycles are not affected.</p>
+<p>Enabling the <em>color 0 opacity</em> will make the color 0 of each palette non transparent.</p>
+<blockquote>
+<p>It's make no sens for layer 0.</p>
+</blockquote>
+<p>Enabling the <em>double size</em> will make the background layer rendered at twice the size. The scrolling values are not affected.</p>
+<h4 id="-haptic-pattern-"><code>HAPTIC pattern</code></h4>
+<p>Trigger an haptic feedback on the device make it vibrate using a <code>pattern</code> (0..9).</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:right">pattern</th>
+<th>feeling</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right">0</td>
+<td></td>
+</tr>
+<tr>
+<td style="text-align:right">1</td>
+<td>tok-tirti</td>
+</tr>
+<tr>
+<td style="text-align:right">2</td>
+<td>tok-tik</td>
+</tr>
+<tr>
+<td style="text-align:right">3</td>
+<td>took-ti</td>
+</tr>
+<tr>
+<td style="text-align:right">4</td>
+<td>took</td>
+</tr>
+<tr>
+<td style="text-align:right">5</td>
+<td>tik</td>
+</tr>
+<tr>
+<td style="text-align:right">6</td>
+<td>tok</td>
+</tr>
+<tr>
+<td style="text-align:right">7</td>
+<td>ti</td>
+</tr>
+<tr>
+<td style="text-align:right">8</td>
+<td>tf</td>
+</tr>
+<tr>
+<td style="text-align:right">9</td>
+<td>t</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>Not supported on all devices.</p>
+</blockquote>
+<h4 id="-compat-"><code>COMPAT</code></h4>
+<p>Enables compatibility mode:</p>
+<ul>
+<li>Forces the rendering process to keep the original device screen.</li>
+<li>Reverts the <code>RND</code> command and <code>=RND()</code> function to their original behavior.</li>
+<li>Maybe other things I can't remember.</li>
+</ul>
+<p>This does not guarantee full compatibility but can help with some aspects. For instance:</p>
+<ul>
+<li>Commands and functions that have been removed will still be unavailable.</li>
+<li>Double cell support for background is not emulated.</li>
+</ul>
+<blockquote>
+<p>This command will be removed at some point.</p>
+</blockquote>
+<h4 id="-pause-"><code>PAUSE</code></h4>
+<p>Halt the execution of bring the debugger console.</p>
+<p>Check the <a href="#debugger-instructions">debugger instructions</a> to learn what you can to do with it.</p>
+<h2 id="debugger-instructions">Debugger instructions</h2>
+<h4 id="-pause-"><code>PAUSE</code></h4>
+<p>Enter the debugger. It bring a console where user can enter debugger specific commands. The scope used in the debugger is the same as the one in the program where the <code>PAUSE</code> appear.</p>
+<h4 id="a-variable-name">a variable name</h4>
+<p>By typing the name of a variable, the debugger will print it's value. The variable use the same syntax as inside a program: <code>$</code> for string, <code>()</code> for array.</p>
+<p>The variable must be accessible throughout the scope of where the <code>PAUSE</code> has been used to enter the debugger. Global variables are still available everywhere.</p>
+<h4 id="a-variable-name-new-value">a variable name <code>=</code> new value</h4>
+<p>Allow to change the value of a variable.</p>
+<p>Number literal use the same syntax as inside a program, it support integer, float, <code>$</code> hexadecimal and <code>%</code> binary.</p>
+<p>String literal should use the same syntax as inside a program: <code>&quot;</code>.</p>
+<h4 id="an-address">an address</h4>
+<p>By typing a memory address, the debugger will print it's value as if it was read by <code>peek()</code>.</p>
+<p>The address can be indiquated using the <code>$</code> hexadecimal or by any other valid numeric literal.</p>
+<h4 id="an-address-a-value">an address <code>=</code> a value</h4>
+<p>Will try to modify the value store inside a memory address.</p>
+<pre><code>`$FF00=<span class="hljs-number">3</span>`
+</code></pre><h4 id="-cls-"><code>CLS</code></h4>
+<p>Clear the debugger console.</p>
+<h4 id="-wait-"><code>WAIT</code></h4>
+<p>Resume execution until a <code>WAIT</code> command is found in the program, the scope may change.</p>
+<h4 id="-dim-filter-pagination-"><code>DIM [filter] [pagination]</code></h4>
+<p>Print the list of accessible variable at the current scope.</p>
+<p>Allow to limit the output to the variables that matchs the <code>[filter]</code>.</p>
+<p>Allow to output more variables using the <code>[pagination]</code> with an index that start at <code>0</code> zero.</p>
+<h4 id="-trace-"><code>TRACE</code></h4>
+<p>Print the current call stack in order: label and procedure names.</p>
 <h2 id="references">References</h2>
 <h3 id="64-colors">64 Colors</h3>
 <p><style>
@@ -2352,92 +2814,93 @@ loop
 <table>
 <thead>
 <tr>
-<th>addr</th>
+<th style="text-align:right">address</th>
 <th>size</th>
 <th>purpose</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>$00000</code></td>
+<td style="text-align:right"><code>$00000</code></td>
 <td>8 Kibibyte</td>
 <td>Layer 0 data</td>
 </tr>
 <tr>
-<td><code>$02000</code></td>
+<td style="text-align:right"><code>$02000</code></td>
 <td>8 Kibibyte</td>
 <td>Layer 1 data</td>
 </tr>
 <tr>
-<td><code>$04000</code></td>
+<td style="text-align:right"><code>$04000</code></td>
 <td>8 Kibibyte</td>
 <td>Layer 2 data</td>
 </tr>
 <tr>
-<td><code>$06000</code></td>
+<td style="text-align:right"><code>$06000</code></td>
 <td>8 Kibibyte</td>
 <td>Layer 3 data</td>
 </tr>
 <tr>
-<td><code>$08000</code></td>
+<td style="text-align:right"><code>$08000</code></td>
 <td>4 Kibibyte</td>
 <td>Character data</td>
 </tr>
 <tr>
-<td><code>$09000</code></td>
+<td style="text-align:right"><code>$09000</code></td>
 <td>20 Kibibyte</td>
 <td>Working RAM</td>
 </tr>
 <tr>
-<td><code>$0E000</code></td>
+<td style="text-align:right"><code>$0E000</code></td>
 <td>6 Kibibyte</td>
 <td>Persisent RAM</td>
 </tr>
 <tr>
-<td><code>$0FB00</code></td>
+<td style="text-align:right"><code>$0FB00</code></td>
 <td>1020 Bytes</td>
 <td>Sprite registers</td>
 </tr>
 <tr>
-<td><code>$0FF00</code></td>
+<td style="text-align:right"><code>$0FF00</code></td>
 <td>32 Bytes</td>
 <td>Color registers</td>
 </tr>
 <tr>
-<td><code>$0FF20</code></td>
+<td style="text-align:right"><code>$0FF20</code></td>
 <td>10 Bytes</td>
 <td>Video registers</td>
 </tr>
 <tr>
-<td><code>$0FF40</code></td>
+<td style="text-align:right"><code>$0FF40</code></td>
 <td>48 Bytes</td>
 <td>Audio registers</td>
 </tr>
 <tr>
-<td><code>$0FF70</code></td>
+<td style="text-align:right"><code>$0FF70</code></td>
 <td>28 Bytes</td>
 <td>I/O registers</td>
 </tr>
 <tr>
-<td><code>$0FFA0</code></td>
+<td style="text-align:right"><code>$0FFA0</code></td>
 <td>6 Bytes</td>
 <td>DMA registers</td>
 </tr>
 <tr>
-<td><code>$0FFA6</code></td>
+<td style="text-align:right"><code>$0FFA6</code></td>
 <td>10 Bytes</td>
 <td>Internal registers</td>
 </tr>
 <tr>
-<td><code>$10000</code></td>
+<td style="text-align:right"><code>$10000</code></td>
 <td>64 Kibibyte</td>
 <td>Cartridge ROM</td>
 </tr>
 </tbody>
 </table>
 <p>TODO: Add particle/emitter registers</p>
+<h3 id="todo-color-data">TODO: Color data</h3>
 <h3 id="background-data">Background data</h3>
-<p>The 4 layers use the same background format:</p>
+<p>The 4 background layers use the following format:</p>
 <ul>
 <li>64x64 cells</li>
 <li>2 bytes per cell</li>
@@ -2446,18 +2909,18 @@ loop
 <table>
 <thead>
 <tr>
-<th>addr</th>
+<th style="text-align:right">address</th>
 <th>purpose</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>a+0</td>
+<td style="text-align:right">addr+0</td>
 <td>character number (0..255)</td>
 </tr>
 <tr>
-<td>a+2</td>
-<td>character attributes</td>
+<td style="text-align:right">addr+2</td>
+<td>cell attributes</td>
 </tr>
 </tbody>
 </table>
@@ -2465,70 +2928,32 @@ loop
 <table>
 <thead>
 <tr>
-<th>bit mask</th>
+<th style="text-align:right">bit mask</th>
 <th>purpose</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>%00000111</td>
+<td style="text-align:right"><code>%00000111</code></td>
 <td>palette number (0..7)</td>
 </tr>
 <tr>
-<td>%00001000</td>
+<td style="text-align:right"><code>%00001000</code></td>
 <td>horizontal flip (0..1)</td>
 </tr>
 <tr>
-<td>%00010000</td>
+<td style="text-align:right"><code>%00010000</code></td>
 <td>vertical flip (0..1)</td>
 </tr>
 <tr>
-<td>%00100000</td>
+<td style="text-align:right"><code>%00100000</code></td>
 <td>priority flag (0..1)</td>
 </tr>
 </tbody>
 </table>
 <p><em>the last 2 bits are unused</em></p>
-<h3 id="background-source-data">Background source data</h3>
-<p>When using <a href="#bg-source-awh"><code>BG SOURCE a[,w,h]</code></a> without specifing <code>w,h</code> width and height, LowResRMX will use a specific data format:</p>
-<table>
-<thead>
-<tr>
-<th>addr</th>
-<th>size</th>
-<th>purpose</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>a+0</td>
-<td>1 Byte</td>
-<td>always zero</td>
-</tr>
-<tr>
-<td>a+1</td>
-<td>1 Byte</td>
-<td>always zero</td>
-</tr>
-<tr>
-<td>a+2</td>
-<td>1 Byte</td>
-<td>width in cell</td>
-</tr>
-<tr>
-<td>a+3</td>
-<td>1 Byte</td>
-<td>height in cell</td>
-</tr>
-<tr>
-<td>a+4</td>
-<td>...</td>
-<td>cell&#39;s data</td>
-</tr>
-</tbody>
-</table>
 <h3 id="character-data">Character data</h3>
-<p>The 255 characters use the same character format:</p>
+<p>The 256 characters use the following format:</p>
 <ul>
 <li>8x8 pixels</li>
 <li>2 bits per pixel</li>
@@ -2537,13 +2962,169 @@ loop
 </ul>
 <p>The pixels are encoded bit per bit, from left to right, then top to bottom, one plane at a time.
 The 1st 8 bytes store the low bit for all the 8x8 pixels. The 2nd 8 bytes store the high bit.</p>
+<h3 id="background-source-format-data">Background source format data</h3>
+<p>When using <a href="#bg-source-address-width-height"><code>BG SOURCE address[,width,height]</code></a> without specifing <code>width</code> and <code>height</code>, A specific header is added before the regular <a href="#background-data">background data</a>:</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:right">address</th>
+<th>size</th>
+<th>purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right">addr+0</td>
+<td>1 Byte</td>
+<td>always zero</td>
+</tr>
+<tr>
+<td style="text-align:right">addr+1</td>
+<td>1 Byte</td>
+<td>always zero</td>
+</tr>
+<tr>
+<td style="text-align:right">addr+2</td>
+<td>1 Byte</td>
+<td>width in cell</td>
+</tr>
+<tr>
+<td style="text-align:right">addr+3</td>
+<td>1 Byte</td>
+<td>height in cell</td>
+</tr>
+<tr>
+<td style="text-align:right">addr+4</td>
+<td>...</td>
+<td>background data</td>
+</tr>
+</tbody>
+</table>
+<h3 id="sound-source-format-data">Sound source format data</h3>
+<p>When using <a href="manual#`SOUND SOURCE [address]`"><code>SOUND SOURCE</code></a>, LowResRMX will use the following data format to store sounds, patterns and tracks.</p>
+<p>TODO: continue</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:right">address</th>
+<th>purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right">addr+0</td>
+<td>16 sound presets</td>
+</tr>
+<tr>
+<td style="text-align:right">addr+128</td>
+<td>64 patterns</td>
+</tr>
+<tr>
+<td style="text-align:right">addr+384</td>
+<td>64 tracks</td>
+</tr>
+</tbody>
+</table>
+<p>For each sound preset:</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:right">address</th>
+<th>size</th>
+<th>purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right">addr+0</td>
+<td>1</td>
+<td><a href="manual#Attributes bits:">Attributes</a></td>
+</tr>
+<tr>
+<td style="text-align:right">addr+1</td>
+<td>1</td>
+<td>Length</td>
+</tr>
+<tr>
+<td style="text-align:right">addr+2</td>
+<td>2</td>
+<td><a href="manual#Envelope bits:">Envelope</a></td>
+</tr>
+<tr>
+<td style="text-align:right">addr+4</td>
+<td>1</td>
+<td>LFO attributes</td>
+</tr>
+<tr>
+<td style="text-align:right">addr+5</td>
+<td>2</td>
+<td>LFO settings</td>
+</tr>
+<tr>
+<td style="text-align:right">addr+7</td>
+<td>1</td>
+<td>Not used</td>
+</tr>
+</tbody>
+</table>
+<h4 id="attributes-bits-">Attributes bits:</h4>
+<table>
+<thead>
+<tr>
+<th style="text-align:right">bits</th>
+<th>purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right">0..3</td>
+<td>Pulse width</td>
+</tr>
+<tr>
+<td style="text-align:right">4..5</td>
+<td>Wave<br><code>0</code> Sawtooth<br><code>1</code> Triangle<br><code>2</code> Pulse<br><code>3</code> Noise</td>
+</tr>
+<tr>
+<td style="text-align:right">6</td>
+<td>Timeout enabled</td>
+</tr>
+</tbody>
+</table>
+<h4 id="envelope-bits-">Envelope bits:</h4>
+<table>
+<thead>
+<tr>
+<th style="text-align:right">bits</th>
+<th>purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right">0..3</td>
+<td>Attack duration</td>
+</tr>
+<tr>
+<td style="text-align:right">4..7</td>
+<td>Decay duration</td>
+</tr>
+<tr>
+<td style="text-align:right">8..11</td>
+<td>Sustain volume</td>
+</tr>
+<tr>
+<td style="text-align:right">12..15</td>
+<td>Decay volume</td>
+</tr>
+</tbody>
+</table>
+<p>TODO: every attributes and settings</p>
 <h3 id="pitch-values">Pitch values</h3>
 <table>
 <thead>
 <tr>
-<th>Alpha</th>
-<th>Sylla</th>
-<th>Pitch per octave</th>
+<th>alpha</th>
+<th>sylla</th>
+<th>pitch per octave</th>
 </tr>
 </thead>
 <tbody>
@@ -2610,44 +3191,87 @@ The 1st 8 bytes store the low bit for all the 8x8 pixels. The 2nd 8 bytes store 
 </tbody>
 </table>
 <h3 id="registers">Registers</h3>
-<p>Sprite Registers:</p>
-<p>There are 170 sprites, each occupies 6 bytes:</p>
+<h4 id="character-registers">Character Registers</h4>
+<p>Each one of the 256 character occupies 16 bytes.</p>
 <table>
 <thead>
 <tr>
-<th>addr</th>
+<th style="text-align:right">address</th>
 <th>size</th>
 <th>purpose</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>$FB00</td>
+<td style="text-align:right"><code>$8000</code></td>
+<td>16 Bytes</td>
+<td>1st character</td>
+</tr>
+<tr>
+<td style="text-align:right"><code>$8010</code></td>
+<td>16 Bytes</td>
+<td>2nd character</td>
+</tr>
+<tr>
+<td style="text-align:right"><code>$8020</code></td>
+<td>16 Bytes</td>
+<td>3rd character</td>
+</tr>
+<tr>
+<td style="text-align:right">…</td>
+<td>16 Bytes</td>
+<td>…</td>
+</tr>
+<tr>
+<td style="text-align:right"><code>$8FE0</code></td>
+<td>16 Bytes</td>
+<td>255th character</td>
+</tr>
+<tr>
+<td style="text-align:right"><code>$8FF0</code></td>
+<td>16 Bytes</td>
+<td>256th character</td>
+</tr>
+</tbody>
+</table>
+<h4 id="sprite-registers">Sprite Registers</h4>
+<p>There are 170 sprites, each occupies 6 bytes:</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:right">address</th>
+<th>size</th>
+<th>purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right"><code>$FB00</code></td>
 <td>6 Bytes</td>
 <td>1st sprite</td>
 </tr>
 <tr>
-<td>$FB06</td>
+<td style="text-align:right"><code>$FB06</code></td>
 <td>6 Bytes</td>
 <td>2nd sprite</td>
 </tr>
 <tr>
-<td>$FB0C</td>
+<td style="text-align:right"><code>$FB0C</code></td>
 <td>6 Bytes</td>
 <td>3rd sprite</td>
 </tr>
 <tr>
-<td>…</td>
+<td style="text-align:right">…</td>
 <td></td>
 <td>…</td>
 </tr>
 <tr>
-<td>$FEF6</td>
+<td style="text-align:right"><code>$FEF6</code></td>
 <td>6 Bytes</td>
 <td>170th sprite</td>
 </tr>
 <tr>
-<td>$FEFC</td>
+<td style="text-align:right"><code>$FEFC</code></td>
 <td>4 Bytes</td>
 <td>Not used</td>
 </tr>
@@ -2657,29 +3281,29 @@ The 1st 8 bytes store the low bit for all the 8x8 pixels. The 2nd 8 bytes store 
 <table>
 <thead>
 <tr>
-<th>offset</th>
+<th style="text-align:right">offset</th>
 <th>size</th>
 <th>purpose</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>+0</td>
+<td style="text-align:right">+0</td>
 <td>2 Bytes</td>
 <td>Position on X axis</td>
 </tr>
 <tr>
-<td>+2</td>
+<td style="text-align:right">+2</td>
 <td>2 Bytes</td>
 <td>Position on Y axis</td>
 </tr>
 <tr>
-<td>+4</td>
+<td style="text-align:right">+4</td>
 <td>1 Byte</td>
 <td>Character number</td>
 </tr>
 <tr>
-<td>+5</td>
+<td style="text-align:right">+5</td>
 <td>1 Byte</td>
 <td>Character attributes</td>
 </tr>
@@ -2687,33 +3311,33 @@ The 1st 8 bytes store the low bit for all the 8x8 pixels. The 2nd 8 bytes store 
 </table>
 <p>Both position on x and y axis use sub-pixels values. To advance by 1 pixel, the values should get increased by 16.
 Also, they are both offseted by 32 pixels. To place a sprite in the 0x0 coordinates, the values should be 512x512.</p>
-<h4 id="attributes-bits-">Attributes bits:</h4>
+<h4 id="character-attributes">Character attributes</h4>
 <table>
 <thead>
 <tr>
-<th>bits</th>
+<th style="text-align:right">bits</th>
 <th>purpose</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>0..2</td>
+<td style="text-align:right">0..2</td>
 <td>Palette number</td>
 </tr>
 <tr>
-<td>3</td>
+<td style="text-align:right">3</td>
 <td>Horizontal flip</td>
 </tr>
 <tr>
-<td>4</td>
+<td style="text-align:right">4</td>
 <td>Vertical flip</td>
 </tr>
 <tr>
-<td>5</td>
+<td style="text-align:right">5</td>
 <td>Priority</td>
 </tr>
 <tr>
-<td>6..7</td>
+<td style="text-align:right">6..7</td>
 <td>Size</td>
 </tr>
 </tbody>
@@ -2722,42 +3346,42 @@ Also, they are both offseted by 32 pixels. To place a sprite in the 0x0 coordina
 <table>
 <thead>
 <tr>
-<th>binary</th>
+<th style="text-align:right">binary</th>
 <th>purpose</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>%00</td>
+<td style="text-align:right">%00</td>
 <td>8x8 pixels or 1x1 character</td>
 </tr>
 <tr>
-<td>%01</td>
+<td style="text-align:right">%01</td>
 <td>16x16 pixels or 2x2 characters</td>
 </tr>
 <tr>
-<td>%10</td>
+<td style="text-align:right">%10</td>
 <td>24x24 pixels or 3x3 characters</td>
 </tr>
 <tr>
-<td>%11</td>
+<td style="text-align:right">%11</td>
 <td>32x32 pixels or 4x4 characters</td>
 </tr>
 </tbody>
 </table>
-<h4 id="color-registers-">Color registers:</h4>
+<h4 id="color-registers">Color registers</h4>
 <p>There are 8 palettes with 4 colors each:</p>
 <table>
 <thead>
 <tr>
-<th>addr</th>
+<th style="text-align:right">addr</th>
 <th>size</th>
 <th>purpose</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>$FF00</td>
+<td style="text-align:right">$FF00</td>
 <td>32 Bytes</td>
 <td>Color registers</td>
 </tr>
@@ -2767,206 +3391,206 @@ Also, they are both offseted by 32 pixels. To place a sprite in the 0x0 coordina
 <table>
 <thead>
 <tr>
-<th>offset</th>
+<th style="text-align:right">offset</th>
 <th>size</th>
 <th>purpose</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>+0</td>
+<td style="text-align:right">+0</td>
 <td>1 Byte</td>
 <td>1st color value</td>
 </tr>
 <tr>
-<td>+1</td>
+<td style="text-align:right">+1</td>
 <td>1 Byte</td>
 <td>2nd color value</td>
 </tr>
 <tr>
-<td>+2</td>
+<td style="text-align:right">+2</td>
 <td>1 Byte</td>
 <td>3rd color value</td>
 </tr>
 <tr>
-<td>+3</td>
+<td style="text-align:right">+3</td>
 <td>1 Byte</td>
 <td>4th color value</td>
 </tr>
 </tbody>
 </table>
-<h4 id="video-registers-">Video registers:</h4>
+<h4 id="video-registers">Video registers</h4>
 <table>
 <thead>
 <tr>
-<th>addr</th>
+<th style="text-align:right">addr</th>
 <th>size</th>
 <th>purpose</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>$FF20</td>
+<td style="text-align:right">$FF20</td>
 <td>2 Bytes</td>
 <td>Background layer 0 scroll X</td>
 </tr>
 <tr>
-<td>$FF22</td>
+<td style="text-align:right">$FF22</td>
 <td>2 Bytes</td>
 <td>Background layer 0 scroll Y</td>
 </tr>
 <tr>
-<td>$FF24</td>
+<td style="text-align:right">$FF24</td>
 <td>2 Bytes</td>
 <td>Background layer 1 scroll X</td>
 </tr>
 <tr>
-<td>$FF26</td>
+<td style="text-align:right">$FF26</td>
 <td>2 Bytes</td>
 <td>Background layer 1 scroll Y</td>
 </tr>
 <tr>
-<td>$FF28</td>
+<td style="text-align:right">$FF28</td>
 <td>2 Bytes</td>
 <td>Background layer 2 scroll X</td>
 </tr>
 <tr>
-<td>$FF2A</td>
+<td style="text-align:right">$FF2A</td>
 <td>2 Bytes</td>
 <td>Background layer 2 scroll Y</td>
 </tr>
 <tr>
-<td>$FF2C</td>
+<td style="text-align:right">$FF2C</td>
 <td>2 Bytes</td>
 <td>Background layer 3 scroll X</td>
 </tr>
 <tr>
-<td>$FF2E</td>
+<td style="text-align:right">$FF2E</td>
 <td>2 Bytes</td>
 <td>Background layer 3 scroll Y</td>
 </tr>
 <tr>
-<td>$FF30</td>
+<td style="text-align:right">$FF30</td>
 <td>2 Bytes</td>
 <td>Raster line number</td>
 </tr>
 <tr>
-<td>$FF32</td>
+<td style="text-align:right">$FF32</td>
 <td>1 Byte</td>
 <td>Display attributes</td>
 </tr>
 <tr>
-<td>$FF33</td>
+<td style="text-align:right">$FF33</td>
 <td>12 Bytes</td>
 <td>Not used</td>
 </tr>
 </tbody>
 </table>
-<h4 id="display-attributes-">Display attributes:</h4>
+<h4 id="display-attributes">Display attributes</h4>
 <table>
 <thead>
 <tr>
-<th>bits</th>
+<th style="text-align:right">bits</th>
 <th>purpose</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>0</td>
+<td style="text-align:right">0</td>
 <td>Sprites enabled</td>
 </tr>
 <tr>
-<td>1</td>
+<td style="text-align:right">1</td>
 <td>Background layer 0 enabled</td>
 </tr>
 <tr>
-<td>2</td>
+<td style="text-align:right">2</td>
 <td>Background layer 1 enabled</td>
 </tr>
 <tr>
-<td>3</td>
+<td style="text-align:right">3</td>
 <td>Background layer 2 enabled</td>
 </tr>
 <tr>
-<td>4</td>
+<td style="text-align:right">4</td>
 <td>Background layer 3 enabled</td>
 </tr>
 </tbody>
 </table>
-<h4 id="todo-audio-registers-">TODO: Audio registers:</h4>
+<h4 id="todo-audio-registers">TODO: Audio registers</h4>
 <table>
 <thead>
 <tr>
-<th>addr</th>
+<th style="text-align:right">addr</th>
 <th>size</th>
 <th>purpose</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>$FF40</td>
+<td style="text-align:right">$FF40</td>
 <td>48 Bytes</td>
 <td>Audio registers</td>
 </tr>
 </tbody>
 </table>
-<h4 id="i-o-registers-">I/O registers:</h4>
+<h4 id="i-o-registers">I/O registers</h4>
 <table>
 <thead>
 <tr>
-<th>addr</th>
+<th style="text-align:right">addr</th>
 <th>size</th>
 <th>purpose</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>$FF70</td>
+<td style="text-align:right">$FF70</td>
 <td>4 Bytes</td>
 <td>Last touch position X</td>
 </tr>
 <tr>
-<td>$FF74</td>
+<td style="text-align:right">$FF74</td>
 <td>4 Bytes</td>
 <td>Last touch position Y</td>
 </tr>
 <tr>
-<td>$FF78</td>
+<td style="text-align:right">$FF78</td>
 <td>2 Bytes</td>
 <td>Pixels shown in width</td>
 </tr>
 <tr>
-<td>$FF7a</td>
+<td style="text-align:right">$FF7a</td>
 <td>2 Bytes</td>
 <td>Pixels shown in height</td>
 </tr>
 <tr>
-<td>$FF7c</td>
+<td style="text-align:right">$FF7c</td>
 <td>2 Bytes</td>
 <td>Pixels outside the safe zone</td>
 </tr>
 <tr>
-<td>$FF7e</td>
+<td style="text-align:right">$FF7e</td>
 <td>2 Bytes</td>
 <td>Pixels outside the safe zone</td>
 </tr>
 <tr>
-<td>$FF80</td>
+<td style="text-align:right">$FF80</td>
 <td>2 Bytes</td>
 <td>Pixels outside the safe zone</td>
 </tr>
 <tr>
-<td>$FF82</td>
+<td style="text-align:right">$FF82</td>
 <td>2 Bytes</td>
 <td>Pixels outside the safe zone</td>
 </tr>
 <tr>
-<td>$FF84</td>
+<td style="text-align:right">$FF84</td>
 <td>1 Byte</td>
 <td>ASCII code of last pressed key</td>
 </tr>
 <tr>
-<td>$FF85</td>
+<td style="text-align:right">$FF85</td>
 <td>1 Byte</td>
 <td>Other I/O status bits</td>
 </tr>
@@ -2975,84 +3599,57 @@ Also, they are both offseted by 32 pixels. To place a sprite in the 0x0 coordina
 <p>Last touch position X and Y are stored as float and currently LowResRMX do not have a way to peek float from memory, use TOUCH.X and TOUCH.Y function instead.</p>
 <p>Pixels shown represent the number of fantasy pixels that is visible by the user according to their device screen ratio. TODO: link See: SHOWN.W/H</p>
 <p>Pixels outsied the safe zone represent the number of fantasy pixels that are visible but should be considered unsafe for touch input as they are outside the safe area. TODO: link See: SAFE.L/T/R/B</p>
-<h4 id="other-i-o-status-bits-">Other I/O status bits:</h4>
+<h4 id="other-i-o-status-bits">Other I/O status bits</h4>
 <table>
 <thead>
 <tr>
-<th>bits</th>
+<th style="text-align:right">bits</th>
 <th>purpose</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>0</td>
+<td style="text-align:right">0</td>
 <td>Pause currently active</td>
 </tr>
 <tr>
-<td>1</td>
+<td style="text-align:right">1</td>
 <td>Fantasy screen currently touched</td>
 </tr>
 <tr>
-<td>2</td>
+<td style="text-align:right">2</td>
 <td>Device virtual keyboard currently visible</td>
 </tr>
 </tbody>
 </table>
-<h4 id="dma-registers-">DMA registers:</h4>
+<h4 id="dma-registers">DMA registers</h4>
 <table>
 <thead>
 <tr>
-<th>addr</th>
+<th style="text-align:right">addr</th>
 <th>size</th>
 <th>purpose</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>$FFA0</td>
+<td style="text-align:right">$FFA0</td>
 <td>2 Bytes</td>
 <td>Source address</td>
 </tr>
 <tr>
-<td>$FFA2</td>
+<td style="text-align:right">$FFA2</td>
 <td>2 Bytes</td>
 <td>Number of bytes to copy</td>
 </tr>
 <tr>
-<td>$FFA4</td>
+<td style="text-align:right">$FFA4</td>
 <td>2 Bytes</td>
 <td>Destination address</td>
 </tr>
 </tbody>
 </table>
-<h3 id="debugger">Debugger</h3>
-<p>TODO: link
-When [<code>PAUSE</code>] command is executed, LowResRMX will stop the execution and display a command line interface where user can interact with.</p>
-<p>The is a simple interface, do not expect to run code with it.</p>
-<p>To quit the debugger, type the command <code>PAUSE</code> again.</p>
-<h4 id="read-and-write-a-variable">Read and write a variable</h4>
-<p>Syntaxe: <code>variable</code></p>
-<p>Print the <code>value</code> of a <code>variable</code>.</p>
-<p>Syntaxe: <code>variable = value</code></p>
-<p>Set the <code>value</code> of a <code>variable</code>.</p>
-<p>The <code>variable</code> respect the same BASIC syntaxe rules:</p>
-<ul>
-<li><code>$</code> suffix for a string</li>
-<li><code>()</code> indexing for array</li>
-</ul>
-<h4 id="list-the-accessible-variables">List the accessible variables</h4>
-<p>Syntaxe: <code>DIM [filter] [pagination]</code></p>
-<p>Print the list of accessible variable at the current scope (global or subroutine).</p>
-<p>Allow to limit the output to the variables that matchs the <code>[filter]</code>.</p>
-<p>Allow to output more variables using the <code>[pagination]</code>.</p>
-<h4 id="read-and-write-memory-byte">Read and write memory byte</h4>
-<p>Syntaxe: <code>address</code></p>
-<p>Print the <code>value</code> stored at memory <code>address</code>, it support decimal or hexadecimal literal.</p>
-<p>Syntaxe: <code>address = value</code></p>
-<p>Set the <code>value</code> stored at at memory <code>address</code>.</p>
-<pre><code><span class="hljs-meta"><span class="hljs-meta-keyword">$8000</span>=%01010101</span>
-<span class="hljs-meta"><span class="hljs-meta-keyword">$8001</span>=%10101010</span>
-</code></pre><h3 id="cycles">Cycles</h3>
+<h3 id="cycles">Cycles</h3>
 <p>Limit of cycles a program can execute:</p>
 <ul>
 <li>52668 per frames</li>
@@ -3064,6 +3661,7 @@ When [<code>PAUSE</code>] command is executed, LowResRMX will stop the execution
 <li>51 per particle for PARTICLE interrupt</li>
 <li>102 per emitter for EMITTER interrupt</li>
 </ul>
+
 
 
 

@@ -58,8 +58,8 @@ if(in_array($urlPath,[
 	'/favicon.ico',
 	'/logo.png',
 	'/privacy-policy.html',
-	'/terms-of-service.html'
-
+	'/terms-of-service.html',
+	'/documentation.html',
 ]))
 {
 	header("Content-Type: ".[
