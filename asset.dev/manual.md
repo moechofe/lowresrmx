@@ -1,4 +1,7 @@
 TODO: backquote should be reserve to command or parameters names, not values
+TODO: fix missing SUB/END SUB and things that appear in the ##Program Language that contains keyword, and make sure a link is pointing to it in the ##Reserved keywords list
+TODO: make sure each appearenc of a keyword in the syntax things are upper case.
+TODO: make sure to add space between parameters `=instr(text, occurence [,position])`
 
 # Retro Game Creator - Documentation
 
@@ -33,9 +36,9 @@ The original LowRes NX, despite being an excellent development environment, lack
 
     Removed syntaxes: <del>`CELL SIZE`</del>.
 
-- The [`FLIP` command now takes optional arguments](#flip-horizontalvertical).
+- The [`FLIP` command now takes optional arguments](#flip-horizontal-vertical).
 
-- New settings with the `SYSTEM` command to [render a layer at double size](#system-settingvalue).
+- New settings with the [`SYSTEM` command to render a layer at double size](#system-setting-value).
 
 - Internal scroll offset is no longer capped at 512, but at 0xFFFF.
 
@@ -43,19 +46,19 @@ The original LowRes NX, despite being an excellent development environment, lack
 
 - A new [fantasy screen](#screen) with a maximum resolution of 216x384 pixels.
 
-- New functions to [retrieve the visible fantasy display size](#widthshownwheightshownh).
+- New functions to [retrieve the visible fantasy display size](#width-shownwheight-shownh).
 
-- New functions to [query the safe area offset](#leftsafeltopsafetrightsaferbottomsafeb).
+- New functions to [query the safe area offset](#left-safeltop-safetright-saferbottom-safeb).
 
-- Removed commands and functions: <del>`DISPLAY`</del>.
+- Removed command: <del>`DISPLAY`</del>.
 
 **Colors:**
 
-- The 64 available colors [do not follow the original EGA style](#colors) of LowRes NX.
+- The 64 available colors [do not follow the original EGA style](#64-colors) of LowRes NX.
 
     > This makes using the color chooser from the original "Gfx Designer" in LowRes NX a bit more challenging.
 
-- New settings with the `SYSTEM` command to make [color `0` for a layer opaque](#system-settingvalue) instead of transparent.
+- New settings with the [`SYSTEM` command to make color `0` for a layer opaque](#system-setting-value) instead of transparent.
 
 **Sprites:**
 
@@ -67,35 +70,35 @@ The original LowRes NX, despite being an excellent development environment, lack
 
 **Input/Output:**
 
-- [Touch coordinates return floating-point](#xtouchxytouchy) values instead of integers.
+- [`=TOUCH.X/Y` coordinates return floating-point](#x-touchxy-touchy) values instead of integers.
 
 - The virtual controller and the ability to use a Bluetooth controller have been removed.
 
-    Removed gamepad related functions: <del>`=BUTTON(p,n)`</del>, <del>`=UP(p)`</del>, <del>`=DOWN(p)`</del>, <del>`=LEFT(p)`</del>, <del>`=RIGHT(p)`</del>, <del>`GAMEPAD n`</del>.
+    Removed gamepad related functions and commands: <del>`=BUTTON`</del>, <del>`=UP`</del>, <del>`=DOWN`</del>, <del>`=LEFT`</del>, <del>`=RIGHT`</del>, <del>`GAMEPAD n`</del>.
 
     Removed useless commands: <del>`TOUCHSCREEN`</del>, <del>`KEYBOARD OPTIONAL`</del>
 
 - When the device's virtual keyboard is hidden by the user, the corresponding I/O [Registers](#registers) flag is updated (see [Other I/O status bits](#other-io-status-bits)).
 
-- New syntax to [wait until device screen is tapped](#wait-tap).
+- New syntax to [`WAIT` until device screen is tapped](#wait-tap).
 
-- New function that returns [the height taken by the device virtual keyboard](#heightkeyboard) in pixels when it's visible.
+- New function that returns [the height taken by the device virtual `=KEYBOARD`](#height-keyboard) in pixels when it's visible.
 
-- New `HAPTIC` command to [trigger haptic feedback](#haptic-pattern) on the device.
+- New [`HAPTIC` command to trigger haptic feedback](#haptic-pattern) on the device.
 
 **Control flow:**
 
-- New program control flow: [`ON GOTO`](#on-goto), [`ON GOSUB`](#on-gosub) and [`ON RESTORE`](#on-restore).
+- New program control flow: [`ON GOTO`](#on-gotoon-gosub), [`ON GOSUB`](#on-gotoon-gosub) and [`ON RESTORE`](#on-restore).
 
 **Data:**
 
-- New keyword to [skip read data](#skip-number).
+- New keyword to [`SKIP` read data](#skip-number).
 
-- It's now possible to [access data directly using its label](#labels) without the need to `READ` them.
+- It's now possible to [access data directly using its label](#labels-jumps-and-embedded-data) without the need to [`READ`](#read-variable-variable) them.
 
 **Math:**
 
-- [Cosine, sine](#cosinecosnumbersinesinnumber) and [arc tangent](#arcatanxy) functions internally replace π with 0.5.
+- Trigonometric functions [`=COS`, `=SIN`](#cosine-cosnumbersine-sinnumber) and [`ATAN`](#arc-atanx-y) internally replace π with 0.5.
 
     > Pico-8 uses the same approach.
 
@@ -104,37 +107,38 @@ The original LowRes NX, despite being an excellent development environment, lack
     - An angle of 0.25 represents the top direction.
     - An angle of -0.25 represents the bottom direction.
 
-- Removed trigonometric functions: <del>`ACOS`</del>, <del>`ASIN`</del>, <del>`HCOS`</del>, <del>`HSIN`</del>, <del>`HTAN`</del>.
+- Removed trigonometric functions: <del>`=ACOS`</del>, <del>`=ASIN`</del>, <del>`=HCOS`</del>, <del>`=HSIN`</del>, <del>`=HTAN`</del>.
 
-- New function to return the [ceiling value](#ceilceilnumber) of a numerical value.
+- New function [`=CEIL` to return the ceiling value](#ceil-ceilnumber) of a numerical value.
 
-- New function to return the [flooring value](#floorfloornumber) of a numerical value.
+- New function [`=FLOOR` to return the flooring value](#floor-floornumberfloo-intnumber) of a numerical value.
 
-- New function to [clamp a numerical value](#clampedclampvalueminmax).
+- New function to [`=CLAMP` a numerical value](#clamped-clampvalue-min-max).
 
-- New syntax to compute [vector length](#lengthlengthxy).
+- New syntax to compute [vector length](#length-lenx-y).
 
-- New function to compute [easing function](#interpolationeasefunctionmodevalue).
+- New function [`EASE` to compute easing function](#interpolation-easefunction-mode-value).
 
 - New random generator using 🌐[PCG](https://www.pcg-random.org/). It produces better randomness.
 
-- New syntax to generate random numbers that allows [saving the current state](#randomrnd-addressbrrandomrndmaxaddressbrrandomize-seedaddress).
+- New syntax for [`=RND` that save the state](#random-rnd-addressrandom-rndmax-addressrandomize-seed-address) of random generator.
 
 **Text:**
 
-- New command to expose the existing [overlay message API](#message-text).
+- New command to expose the existing [overlay `MESSAGE` API](#message-text).
 
-- `PRINT` command can now [word wrap before breaking words](#print-expression-list).
+- New behavior for the [`PRINT` command to word wrap before breaking words](#print-expression).
 
     If there is not enough space to print a word inside the window, a new line is inserted to avoid breaking the word in two.
 
 **Other:**
 
-- New command to [support programs from the original LowRes NX](#compat).
+- New [`COMPAT` command to support programs from the original LowRes NX](#compat).
 
-- Reuse the `PAUSE` command to access the [internal debugger](#pause).
+- Reuse the [`PAUSE` command to access the internal debugger](#pause
+).
 
-- Removed commands and functions: <del>`PAUSE ON/OFF`</del>, <del>`PAUSE=`</del>.
+- Removed commands and functions and commands: <del>`PAUSE ON/OFF`</del>, <del>`PAUSE=`</del>.
 
 - Removed reserved keywords: <del>`ANIM`</del>, <del>`CLOSE`</del>, <del>`DECLARE`</del>, <del>`DEF`</del>, <del>`FLASH`</del>, <del>`FN`</del>, <del>`FUNCTION`</del>, <del>`LBOUND`</del>, <del>`OPEN`</del>, <del>`OUTPUT`</del>, <del>`SHARED`</del>, <del>`STATIC`</del>, <del>`TEMPO`</del>, <del>`VOICE`</del>, <del>`WRITE`</del>.
 
@@ -146,46 +150,44 @@ The original LowRes NX, despite being an excellent development environment, lack
 
     Lowres NX:
 
-|    addr | size      | purpose          |
-| -------:| --------- | ---------------- |
-| `$0000` | 32 Kibit  | Cartridge ROM    |
-| `$8000` | 4 Kibit   | Character Data   |
-| `$9000` | 2 Kibit   | BG0 Data         |
-| `$9800` | 2 Kibit   | BG1 Data         |
-| `$A000` | 16 Kibit  | Working RAM      |
-| `$E000` | 4 Kibit   | Persistent RAM   |
-| `$FE00` | 256 Bytes | Sprite Registers |
-| `$FF00` | 32 Bytes  | Color Registers  |
-| `$FF20` |           | Video Registers  |
-| `$FF40` |           | Audio Registers  |
-| `$FF70` |           | I/O Registers    |
+|  addr | size      | purpose          |
+| -----:| --------- | ---------------- |
+| $0000 | 32 Kibit  | Cartridge ROM    |
+| $8000 | 4 Kibit   | Character Data   |
+| $9000 | 2 Kibit   | BG0 Data         |
+| $9800 | 2 Kibit   | BG1 Data         |
+| $A000 | 16 Kibit  | Working RAM      |
+| $E000 | 4 Kibit   | Persistent RAM   |
+| $FE00 | 256 Bytes | Sprite Registers |
+| $FF00 | 32 Bytes  | Color Registers  |
+| $FF20 |           | Video Registers  |
+| $FF40 |           | Audio Registers  |
+| $FF70 |           | I/O Registers    |
 
 Retro Game Creator:
 
-|     addr | size       | purpose          |
-| --------:| ---------- | ---------------- |
-|  `$0000` | 8 Kibit    | BG0 data         |
-|  `$2000` | 8 Kibit    | BG1 data         |
-|  `$4000` | 8 Kibit    | BG2 data         |
-|  `$6000` | 8 Kibit    | BG3 data         |
-|  `$8000` | 4 Kibit    | Character Data   |
-|  `$9000` | 20 Kibit   | Working RAM      |
-|  `$E000` | 6 Kibit    | Persistent RAM   |
-|  `$FB00` | 1020 Bytes | Sprite registers |
-|  `$FF00` | 32 Bytes   | Color registers  |
-|  `$FF20` | 10 Bytes   | Video registers  |
-|  `$FF40` | 48 Bytes   | Audio registers  |
-|  `$FF70` | 40 Bytes   | I/O registers    |
-|  `$FFA0` | 6 Bytes    | DMA registers    |
-| `$10000` | 64 Kibit   | Cartridge ROM    |
+|   addr | size       | purpose          |
+| ------:| ---------- | ---------------- |
+|  $0000 | 8 Kibit    | BG0 data         |
+|  $2000 | 8 Kibit    | BG1 data         |
+|  $4000 | 8 Kibit    | BG2 data         |
+|  $6000 | 8 Kibit    | BG3 data         |
+|  $8000 | 4 Kibit    | Character Data   |
+|  $9000 | 20 Kibit   | Working RAM      |
+|  $E000 | 6 Kibit    | Persistent RAM   |
+|  $FB00 | 1020 Bytes | Sprite registers |
+|  $FF00 | 32 Bytes   | Color registers  |
+|  $FF20 | 10 Bytes   | Video registers  |
+|  $FF40 | 48 Bytes   | Audio registers  |
+|  $FF70 | 40 Bytes   | I/O registers    |
+|  $FFA0 | 6 Bytes    | DMA registers    |
+| $10000 | 64 Kibit   | Cartridge ROM    |
 
-- New command and registers for [fast memory copying](#dma-copy-rom):
-
-- The `COPY` command is now slightly faster. Other command that operates on memory are not affected.
+- New registers and [`DMA COPY` command for fast memory copying](#dma-copy-rom):
 
 **The BASIC language:**
 
-- A colon `:` can be used to [separate multiple instructions](#instructions-separator) on the same line.
+- A colon symbol (:) can be used to [separate multiple instructions](#instructions-separator) on the same line.
 
 - Program code is not forced to be uppercase anymore.
 
@@ -221,8 +223,6 @@ Each sprite will consume 6 bytes of memory. For each sprite:
 |   +5 | 1 Byte  | Current frame   |
 |   +4 | 2 Bytes | Lifetime        |
 
-e.g.:
-
 	PARTICLE 1,20 AT $9000
 	'Will use sprite 1 to 20 included.
 	'Store internal data from $9000 to $9078 excluded.
@@ -233,13 +233,11 @@ e.g.:
 
 Declare a `label` that contains data for the particle `appearance`.
 
-`appearance` is a number between `0` and `23`.
+`appearance` is a number between 0 and 23.
 
 The associated data MUST contain a list of character numbers that will be used to draw the particle. Using a negative number will loop back to the previous data value.
 
 A common example is to use zero (0) and minus one (-1) for the last two data values, which allows the particle to disappear until the sprite is reused.
-
-e.g.:
 
 	my_appearance:
 	data 1,2,3,4,0,-1
@@ -277,7 +275,7 @@ The number of available cycles will be specified in a future version.
 
 Declare the use of `count` emitters and store the internal data at `address`.
 
-`count` is a number between `0` and `15`.
+`count` is a number between 0 and 15.
 
 Each emitter will consume 6 bytes of memory. For each emitter:
 
@@ -336,15 +334,15 @@ It features perfectly square pixels, a fixed portrait orientation, and always fi
 
 Depending on the device's screen ratio, the number of visible virtual pixels may vary from 216x288 on 4:3 devices to 177x384 on 19.5:9 devices.
 
-That's why Retro Game Creator provides an API to request the [actual visible dimension of the screen](#widthshownwheightshownh).
+That's why Retro Game Creator provides an API to request the [actual visible dimension of the screen](#width-shownwheight-shownh).
 
-Additionally, the device can have a notch and bottom inset full-width buttons. Retro Game Creator provides an API to request the offset from the visible dimension to the [safe area](#leftsafeltopsafetrightsaferbottomsafeb).
+Additionally, the device can have a notch and bottom inset full-width buttons. Retro Game Creator provides an API to request the offset from the visible dimension to the [safe area](#left-safeltop-safetright-saferbottom-safeb).
 
 ### Colors
 
 Retro Game Creator provides the user with a fixed set of [64 colors](#64-colors).
 
-The colors are grouped into sets of 4 called palettes, with 8 palettes available for users to colorize their creations.
+The colors are grouped into sets of 4 called palettes, with (TODO: check link) [8 palettes available](#color-data) for users to colorize their creations.
 
 The 1st color of the 1st palette is used as the background color for the whole program. For the following palettes (2nd to 8th), the 1st color is transparent.
 
@@ -358,7 +356,7 @@ Sauce: 🌐[FAMICUBE palette created by Arne](https://lospec.com/palette-list/fa
 
 ### Characters
 
-The 256 characters are blocks of 8x8 pixels assigned to numbers from 0 to 255.
+The 256 characters are [blocks of 8x8 pixels](#character-data) assigned to numbers from 0 to 255.
 When a number is used to draw in a background layer or sprite, the rendering process draws the corresponding 8x8 pixel block.
 
 From now on, the term:
@@ -366,7 +364,7 @@ From now on, the term:
 
 ### Backgrounds
 
-Retro Game Creator has 4 background layers, each with an independent:
+Retro Game Creator has 4 [background layers](#background-data), each with an independent:
 - X and Y position,
 - and 64x64 character cells.
 
@@ -391,7 +389,7 @@ From now on, the terms:
 - **a layer** is a background layer of 64x64 cells,
 - **a cell** is a square of a layer that shows one character, so 8x8 pixel.
 
-Check background [registers](#registers) for information about the memory mapping and data format.
+Check [background registers](#background-registers) for more information.
 
 ### Sprites
 
@@ -417,11 +415,13 @@ Example with a 2x2 sprite with the first character to be 1:
 
 A sprite can be freely placed anywhere on the screen with 1/16 sub-pixel precision. This means you can add 0.5 to its position even if there will be no visual change.
 
+Check [sprites registers](#sprite-registers) for more information.
+
 ### Rendering
 
 The fantasy screen is rendered line by line; this is called a raster.
 
-During raster, the pixels from background layers and sprites are drawn according to priority flags and the palette is applied. All impacted parameters are not fixed, and a sub-routine can be used between each line to alter some parameters and create interesting visual effects, see [`ON RASTER CALL s`](#on-raster-call-s) and [`=RASTER`](#raster).
+During raster, the pixels from background layers and sprites are drawn according to priority flags and the palette is applied. All impacted parameters are not fixed, and a sub-routine can be used between each line to alter some parameters and create interesting visual effects, see [`ON RASTER CALL`](#on-raster-call-routine) and [`=RASTER`](#line-raster).
 
 Check the [sprite API](#sprite-api) and the [background API](#background-api).
 
@@ -456,7 +456,7 @@ There are 16 virtual files identified by a number (`id`) and can contain a `comm
 
 When the program is started, the content of the files is loaded and [mapped to the memory](#memory-mapping).
 
-The memory address for the files starts at $10000, and the best way to know this address is to use the [`ROM(file)`](#addressromfile) function.
+The memory address for the files starts at $10000, and the best way to know this address is to use the [`=ROM`](#address-romfile) function.
 
 Check the [file API](#file-api).
 
@@ -484,7 +484,7 @@ When the program is running, there is an option in the device application that e
 
 This screen shows the simulated CPU usage by counting how many [fantasy CPU cycles](#cycles) have been consumed already.
 
-It also shows any message that has been printed on the overlay using the [`TRACE` command](#trace-expressionexpression).
+It also shows any message that has been printed on the overlay using the [`TRACE` command](#trace-expression-expression).
 
 ### Keyboard
 
@@ -522,11 +522,11 @@ Instructions tell the fantasy hardware to do something.
 
 ### Identifiers
 
-1. An identifier is a word defined by the user and is used to declare variables, labels or procedures (more on those terms later), e.g.: `hero`, `enemies`, `HP`, `score`, `spawn_monsters`, `updateScreen`, `CollectCoins`, `level12`…
+1. An identifier is a word defined by the user and is used to declare variables, labels or procedures (more on those terms later), e.g.: hero, enemies, HP, score, spawn_monsters, updateScreen, CollectCoins, level12…
 
 2. An identifier can also be a built-in function name provided by Retro Game Creator as part of the [API](#api-instructions).
 
-Valid characters for identifiers are: ASCII letters, digits and the underscore `_`. However, they cannot start with a digit and they cannot have more than 21 characters.
+Valid characters for identifiers are: ASCII letters, digits and the underscore (_). However, they cannot start with a digit and they cannot have more than 21 characters.
 
 **Important:** Not all identifiers are valid because some of them are reserved by the language itself. Check the [list of reserved keywords](#reserved-keywords) and learn them to avoid common mistakes.
 
@@ -534,7 +534,7 @@ Valid characters for identifiers are: ASCII letters, digits and the underscore `
 
 A variable is a value that is retained in the fantasy hardware memory as long as the program is running. Variables can be used to store positions, scores, HP and all sorts of information. The purpose of a variable is to store a value to retrieve it later.
 
-Example: a score counter that starts at zero and increments every time a plumber hero jumps on enemies' heads. An appropriate name for this value is `score` and it can be declared and assigned like this:
+Example: a score counter that starts at zero and increments every time a plumber hero jumps on enemies' heads. An appropriate name for this value is score and it can be declared and assigned like this:
 
     score=0
 
@@ -564,20 +564,20 @@ Variable syntax:
 
 This allows variables to have 4 different forms:
 
-- `my_number`
-- `my_string$`
-- `my_number_array()`
-- `my_string_array$()`
+- my_number
+- my_string$
+- my_number_array()
+- my_string_array$()
 
 ### Literals
 
 Identifiers can store two types of values: numbers and strings.
 
-Numbers can be integers or decimals, e.g.: `123`, `-45`, `0.01`, `12345.6789`
+Numbers can be integers or decimals, e.g.: 123, -45, 0.01, 12345.6789
 
-Strings can only contain ASCII7 characters: letters, digits, some punctuation and some control characters: `"hello WORLD! 123"`
+Strings can only contain ASCII7 characters: letters, digits, some punctuation and some control characters: "hello WORLD! 123"
 
-Learn more about the technical information about [number type](#number-limits) and [string type](#string).
+Learn more about the technical information about [number type](#number-limits) and [ASCII7 characters](#ascii-table).
 
 ### Arrays
 
@@ -595,7 +595,8 @@ Arrays can also store strings:
     player_name$(0)="Untel"
     player_name$(1)="John Doe"
 
-See [`DIM`](#dim) and [`=UBOUND`](#ubound) for more information.
+See [`DIM`](#dim
+) and [`=UBOUND`](#ubound) for more information.
 
 ### Labels, jumps and embedded data
 
@@ -610,11 +611,11 @@ Here is an example that demonstrates how to recreate the program above using lab
         score=score+1
     goto start
 
-A label is declared by an identifier followed by a colon `:` (here "start"), and the `GOTO` command will make the program execution "jump" to the previous label "start", creating an infinite loop.
+A label is declared by an identifier followed by a colon : (here "start"), and the [`GOTO`](#goto) command will make the program execution "jump" to the previous label "start", creating an infinite loop.
 
 ---
 
-About using label identifiers as [rvalue](#lvalue-and-rvalue): This feature allows using label names that lead to [constant string values](#data-rom-and-files) directly instead of having to store the value in a variable.
+About using label identifiers as [rvalue](#lvalue-and-rvalue): This feature allows using label names that lead to [constant string values](#data-constant-constant) directly instead of having to store the value in a variable.
 
 Example, instead of writing:
 
@@ -636,9 +637,9 @@ And it works in all [expressions](#expressions) that involve [literal strings](#
 
 ### Stack, sub-routine and return
 
-Using the `GOTO` command to jump to another part of the program is very useful to organize the code and create loops. Sometimes this is not enough, introducing the `GOSUB` command.
+Using the [`GOTO`](#goto) command to jump to another part of the program is very useful to organize the code and create loops. Sometimes this is not enough, introducing the [`GOSUB`](#gosubreturn) command.
 
-The stack is a place inside the fantasy hardware that tracks where a program was before jumping to a label, allowing you to `RETURN` to the previous location.
+The stack is a place inside the fantasy hardware that tracks where a program was before jumping to a label, allowing you to [`RETURN`](#gosubreturn) to the previous location.
 
 This allows reaching the same label from different parts of the code, while being able to return to it later.
 
@@ -666,7 +667,7 @@ Here's a quick example:
         c=a+b
     end sub
 
-By running this program, nothing will happen because procedures do not get executed automatically. Instead the user MUST use a dedicated command for it:
+By running this program, nothing will happen because procedures do not get executed automatically. Instead the user MUST use a dedicated command for it.
 
     result=0
     call addition(120,3,result)
@@ -695,7 +696,7 @@ By default, when declaring a variable in a program, its scope is limited and the
     end sub
     call print_score
 
-This program will produce the error: "variable not initialized". The program can't access the variable `score` inside the `print_score` procedure.
+This program will produce the error: "variable not initialized". The program can't access the variable score inside the print_score procedure.
 
 One option is to pass the variable to the procedure. Two changes MUST be made for that.
 
@@ -709,7 +710,7 @@ One option is to pass the variable to the procedure. Two changes MUST be made fo
 
         call print_score(score)
 
-When the procedure `print_score` is called, the argument `score` is passed to the procedure inside the `s` parameter.
+When the procedure print_score is called, the argument score is passed to the procedure inside the s parameter.
 
 Corrected program:
 
@@ -732,9 +733,9 @@ Arguments are passed by reference. This means that a variable passed to a proced
     call modify_it(my_value)
     print my_value
 
-It will print `123`.
+It will print 123.
 
-To avoid this behavior, encapsulate the argument in round brackets `(identifier)`.
+To avoid this behavior, encapsulate the argument in round brackets (identifier).
 
     sub modify_it(a)
         a=123
@@ -743,7 +744,7 @@ To avoid this behavior, encapsulate the argument in round brackets `(identifier)
     call modify_it((my_value))
     print my_value
 
-It will print `0`.
+It will print 0.
 
 ### Local and global scope
 
@@ -802,7 +803,7 @@ Here is a set of rules on how it works:
         wait tap
         goto test
 
-- The only way to squeeze two instructions on one line is to use the `:` colon separator.
+- The only way to squeeze two instructions on one line is to use the : colon separator.
 
     ✅ This will work:
 
@@ -810,7 +811,7 @@ Here is a set of rules on how it works:
 
     > I recommend placing spaces before and after the `:` colon until I fix the parsing issue.
 
-- `IF...THEN` uses a different syntax for one-line instructions, and `:` colon as instruction separator will not work correctly.
+- `IF...THEN` uses a different syntax for one-line instructions, and : colon as instruction separator will not work correctly.
 
     This will not work as intended:
 
@@ -823,7 +824,7 @@ Here is a set of rules on how it works:
 
     `y=touch.y` will always be executed.
 
-- Comments can be placed after the `:` colon instruction separator.
+- Comments can be placed after the : colon instruction separator.
 
     ✅ This will work:
 
@@ -880,54 +881,54 @@ Operators are used inside [expressions](#expressions) to compute or alter their 
 
 Operate on two numeric values to produce a new one.
 
-| symbol | example   | purpose          |
-| ------:| --------- | ---------------- |
-|    `-` | `-42`     | negation         |
-|    `^` | `x^3`     | exponentiation   |
-|    `*` | `2*y`     | multiplication   |
-|    `/` | `x/2`     | division         |
-|    `\` | `x\2`     | integer division |
-|  `mod` | `x mod 2` | modulo           |
-|    `+` | `c+2`     | addition         |
-|    `-` | `100-d`   | subtraction      |
+| symbol | example | purpose          |
+| ------:| ------- | ---------------- |
+|      - | -42     | negation         |
+|      ^ | x^3     | exponentiation   |
+|      * | 2*y     | multiplication   |
+|      / | x/2     | division         |
+|      \ | x\2     | integer division |
+|    mod | x mod 2 | modulo           |
+|      + | c+2     | addition         |
+|      - | 100-d   | subtraction      |
 
 The priority of execution respects the mathematical rules.
 
 **Group operator:**
 
-Rounded parentheses `()` are used to counter the operator priority.
+Rounded parentheses () are used to counter the operator priority.
 
 **Comparison operator:**
 
-Used to compare two numeric or string values and produce `-1` if the test succeeds or `0` otherwise. Generally used as [expressions](#expressions) in [conditional flow control](#control-flow).
+Used to compare two numeric or string values and produce -1 if the test succeeds or 0 otherwise. Generally used as [expressions](#expressions) in [conditional flow control](#control-flow).
 
-| symbol | example  | purpose          |
-| ------:| -------- | ---------------- |
-|    `=` | `a=10`   | equal            |
-|   `<>` | `a<>100` | not equal        |
-|    `>` | `b>c`    | greater          |
-|    `<` | `5<x`    | less             |
-|   `>=` | `X>=20`  | greater or equal |
-|   `<=` | `X<=30`  | less or equal    |
+| symbol | example | purpose          |
+| ------:| ------- | ---------------- |
+|      = | a=10    | equal            |
+|     <> | a<>100  | not equal        |
+|      > | b>c     | greater          |
+|      < | 5<x     | less             |
+|     >= | X>=20   | greater or equal |
+|     <= | X<=30   | less or equal    |
 
 **Bitwise operator:**
 
 Used to manipulate each bit of numeric values.
 
-| symbol | example                        | purpose                                                     |
-| ------:| ------------------------------ | ----------------------------------------------------------- |
-|  `not` | `not (x=15)`<br>`not 0`        | Bits that are 0 become 1,<br>and those that are 1 become 0. |
-|  `and` | `a=1 and b=12`<br>`170 and 15` | If both bits are 1, the<br>result is 1, 0 otherwise.        |
-|   `or` | `x=10 or y=0`<br>`128 or 2`    | The result is 0 if both<br>bits are 0, 1 otherwise.         |
-|  `xor` | `a xor b`                      | The result is 1 if only<br>one bit is 1, 0 otherwise.       |
+| symbol | example                    | purpose                                                     |
+| ------:| -------------------------- | ----------------------------------------------------------- |
+|    NOT | not (x=15)<br>not 0        | Bits that are 0 become 1,<br>and those that are 1 become 0. |
+|    AND | a=1 and b=12<br>170 and 15 | If both bits are 1, the<br>result is 1, 0 otherwise.        |
+|     OR | x=10 or y=0<br>128 or 2    | The result is 0 if both<br>bits are 0, 1 otherwise.         |
+|    XOR | a xor b                    | The result is 1 if only<br>one bit is 1, 0 otherwise.       |
 
 **Concatenation operator:**
 
 Copy a string at the end of another string.
 
-| symbol | example    | purpose                           |
-| ------:| ---------- | --------------------------------- |
-|    `+` | `"ab"+"c"` | Concatenate two strings into one. |
+| symbol | example  | purpose                           |
+| ------:| -------- | --------------------------------- |
+|      + | "ab"+"c" | Concatenate two strings into one. |
 
 ### Commands
 
@@ -950,7 +951,7 @@ A function will always return something and MUST be used as [rvalue](#lvalue-and
 
 ### Lvalue and Rvalue
 
-The equal `=` sign is used both as variable assignement and comparison operator, and It can lead to some confusion. Here is a tip to help you:
+The equal = sign is used both as variable assignement and comparison operator, and It can lead to some confusion. Here is a tip to help you:
 
 - If the line start by the variable name, it's [a variable assignation](#variables-and-assignation).
 
@@ -958,19 +959,19 @@ The equal `=` sign is used both as variable assignement and comparison operator,
 
 An lvalue appears on the left side of an assignment, and an rvalue appears on the right side of an assignment. Also, rvalue is used as an argument of [functions](#functions) or [procedures](#procedures).
 
-|                  expression | type of value    |
-| ---------------------------:| ---------------- |
-|      [variable](#variables) | lvalue or rvalue |
-|        [literal](#literals) | rvalue           |
-| [function call](#functions) | rvalue           |
-|  [any operator](#operators) | rvalue           |
-|            [label](#labels) | rvalue           |
+|                               expression | type of value    |
+| ----------------------------------------:| ---------------- |
+|   [variable](#variables-and-assignation) | lvalue or rvalue |
+|                     [literal](#literals) | rvalue           |
+|              [function call](#functions) | rvalue           |
+|               [any operator](#operators) | rvalue           |
+| [label](#labels-jumps-and-embedded-data) | rvalue           |
 
 ### Instructions separator
 
-An instruction generally end by a new line `\n`.
+An instruction generally end by a new line \n.
 
-It's possible to put multiple instructions using a colon `:` on one line but with limitation:
+It's possible to put multiple instructions using a colon : on one line but with limitation:
 
 1. Can be miss-interpreted as a label declaration. So the best way is to add a space between the idenfier and the colon.
 
@@ -984,7 +985,7 @@ It's possible to put multiple instructions using a colon `:` on one line but wit
         test: data 123
         restore test : wait vbl
 
-2. Does not work with the one line syntaxe of [the `IF/THEN` command](#ifthenelse-ifthelendf-ififthen).
+2. Does not work with the one line syntaxe of [the `IF/THEN` command](#ifthenelse-ifelseend-ififthen).
 
         if expression then instruction1 : instruction2
 
@@ -994,7 +995,7 @@ It's possible to put multiple instructions using a colon `:` on one line but wit
 
 Some identifier cannot be used by the user for variables, proceduce or label name because they are keywords reserved by the language and it's API:
 
-`ABS`, `ADD`, `AND`, `ASC`, `ATAN`, `ATTR`, `AT`, `BG`, `BIN$`, `CALL`, `CEIL`, `CELL.A`, `CELL.C`, `CELL`, `CHAR`, `CHR$`, `CLAMP`, `CLS`, `CLW`, `COLOR`, `COMPAT`, `COPY`, `COS`, `CURSOR.X`, `CURSOR.Y`, `DATA`, `DEC`, `DIM`, `DMA`, `DO`, `EASE`, `ELSE`, `EMITTER`, `END`, `ENVELOPE`, `EXIT`, `EXP`, `FILE$`, `FILES`, `FILL`, `FLIP`, `FLOOR`, `FONT`, `FOR`, `FSIZE`, `GLOBAL`, `GOSUB`, `GOTO`, `HAPTIC`"  `HEX$`, `HIT`, `IF`, `INC`, `INKEY$`, `INPUT`, `INSTR`, `INT`, `KEYBOARD`, `LEFT$`, `LEN`, `LET`, `LFO.A`, `LFO`, `LOAD`, `LOCATE`, `LOG`, `LOOP`, `MAX`, `MCELL.A`, `MCELL.C`, `MCELL`, `MESSAGE`, `MID$`, `MIN`, `MOD`, `MUSIC`, `NEXT`, `NOT`, `NUMBER`, `OFF`, `ON`, `OR`, `PALETTE`, `PAL`, `PARTICLE`, `PAUSE`, `PEEKL`, `PEEKW`, `PEEK`, `PI`, `PLAY`, `POKEL`, `POKEW`, `POKE`, `PRINT`, `PRIO`, `RANDOMIZE`, `RASTER`, `READ`, `REPEAT`, `RESTORE`, `RETURN`, `RIGHT$`, `RND`, `ROL`, `ROM`, `ROR`, `SAFE.B`, `SAFE.L`, `SAFE.R`, `SAFE.T`, `SAVE`, `SCROLL.X`, `SCROLL.Y`, `SCROLL`, `SGN`, `SHOWN.H`, `SHOWN.W`, `SIN`, `SIZE`, `SKIP`, `SOUND`, `SOURCE`, `SPRITE.A`, `SPRITE.C`, `SPRITE.X`, `SPRITE.Y`, `SPRITE`, `SQR`, `STEP`, `STOP`, `STR$`, `SUB`, `SWAP`, `SYSTEM`, `TAN`, `TAP`, `TEXT`, `THEN`, `TIMER`, `TINT`, `TOUCH.X`, `TOUCH.Y`, `TOUCH`, `TO`, `TRACE`, `TRACK`, `UBOUND`, `UNTIL`, `VAL`, `VBL`, `VIEW`, `VOLUME`, `WAIT`, `WAVE`, `WEND`, `WHILE`, `WINDOW`, `XOR`.
+`ABS`, `ADD`, `AND`, `ASC`, `ATAN`, `ATTR`, `AT`, `BG`, `=BIN$`, `CALL`, `=CEIL`, `=CELL.A`, `=CELL.C`, `CELL`, `CHAR`, `=CHR$`, `=CLAMP`, `CLS`, `CLW`, `=COLOR`, `COMPAT`, `COPY`, `=COS`, `CURSOR.X`, `CURSOR.Y`, `DATA`, `DEC`, `DIM`, `DMA`, `DO`, `EASE`, `ELSE`, `EMITTER`, `END`, `ENVELOPE`, `EXIT` & `EXIT` & `EXIT` & `EXIT` & `EXIT`, `EXP`, `=FILE$`, `FILES`, `FILL`, `FLIP`, `FLOOR`, `FONT`, `FOR`, `FSIZE`, `GLOBAL`, `GOSUB`, `GOTO`, `HAPTIC`, `=HEX$`, `HIT`, `IF`, `INC`, `=INKEY$`, `INPUT`, `=INSTR`, `INT`, `KEYBOARD`, `LEFT$`, `LEN`, `LET`, `LFO.A`, `LFO`, `LOAD`, `LOCATE`, `LOG`, `LOOP`, `MAX`, `MCELL.A`, `MCELL.C`, `MCELL`, `MESSAGE`, `MID$`, `MIN`, `MOD`, `MUSIC`, `NEXT`, `NOT`, `NUMBER`, `OFF`, `ON`, `OR`, `PALETTE`, `PAL`, `PARTICLE`, `PAUSE`, `PEEKL`, `PEEKW`, `PEEK`, `PI`, `PLAY`, `POKEL`, `POKEW`, `POKE`, `PRINT`, `PRIO`, `RANDOMIZE`, `RASTER`, `READ`, `REPEAT`, `RESTORE`, `RETURN`, `RIGHT$`, `RND`, `ROL`, `ROM`, `ROR`, `SAFE.B`, `SAFE.L`, `SAFE.R`, `SAFE.T`, `SAVE`, `SCROLL.X`, `SCROLL.Y`, `SCROLL`, `SGN`, `SHOWN.H`, `SHOWN.W`, `SIN`, `SIZE`, `SKIP`, `SOUND`, `SOURCE`, `SPRITE.A`, `SPRITE.C`, `SPRITE.X`, `SPRITE.Y`, `SPRITE`, `SQR`, `STEP`, `STOP`, `STR$`, `SUB`, `SWAP`, `SYSTEM`, `TAN`, `TAP`, `TEXT`, `THEN`, `TIMER`, `TINT`, `TOUCH.X`, `TOUCH.Y`, `TOUCH`, `TO`, `TRACE`, `TRACK`, `UBOUND`, `UNTIL`, `VAL`, `VBL`, `VIEW`, `VOLUME`, `WAIT`, `WAVE`, `WEND`, `WHILE`, `WINDOW`, `XOR`.
 
 ## BASIC instructions
 
@@ -1031,7 +1032,7 @@ It has the same effect as the execution reach the end of the program.
         instruction]
     end if
 
-Will execute the list of `instruction...` if the above `expression` is true.
+Will execute the list of instruction... if the above `expression` is true.
 An [expression](#expression) is evaluated as `true` if the result of the expression is different from 0.
 
 It's possible to have multiple `ELSE IF` blocks but a maximum of one `ELSE` block is authorized.
@@ -1084,9 +1085,9 @@ Real example of the same game with less lines:
         [exit/goto]
     loop
 
-Continuously execute the list of `instruction...`.
+Continuously execute the list of instruction....
 
-Possible way to get out of the loop is using `EXIT` or `GOTO`.
+Possible way to get out of the loop is using `EXIT` or [`GOTO`](#goto).
 
 Real example of non stop moving square that bounce on the device screen:
 
@@ -1109,28 +1110,28 @@ Real example of non stop moving square that bounce on the device screen:
     00000000000000000000000000000000
     0000000000000000FFFFFFFFFFFFFFFF
 
-`EXIT` command will exit one level of `DO/LOOP`.
+`EXIT` command will exit one level of DO/LOOP.
 
 #### `REPEAT/UNTIL/EXIT`
 
-    repeat
+    REPEAT
         instruction...
-        [exit/goto]
-    until expression
+        [EXIT/GOTO]
+    UNTIL expression
 
 Repeat the list of `instruction...` until the `expression` ahead became true.
 An [expression](#expressions) is evaluated as `true` if the result of the expression is different from 0.
 
-`EXIT` command will exit one level of `REPEAT/UNTIL`.
+`EXIT` command will exit one level of REPEAT/UNTIL.
 
-It different from `WHILE/WEND` because `expression` is evaluated after the list of `instruction...` is executed.
+It different from WHILE/WEND because `expression` is evaluated after the list of instruction... is executed.
 
     stop_now=-1
     repeat
         print "do it anyway"
     until stop_now
 
-`EXIT` command will exit one level of `REPEAT/UNTIL`.
+`EXIT` command will exit one level of REPEAT/UNTIL.
 
 #### `WHILE/WEND/EXIT`
 
@@ -1139,12 +1140,12 @@ It different from `WHILE/WEND` because `expression` is evaluated after the list 
         [exit]
     wend
 
-Repeat the list of `instruction...` while the `expression` above is true.
+Repeat the list of instruction... while the `expression` above is true.
 An [expression](#expressions) is evaluated as `true` if the result of the expression is different from 0.
 
-`EXIT` instruction will exit one level of `WHILE/WEND`.
+`EXIT` instruction will exit one level of WHILE/WEND.
 
-It different from `REPEAT/UNTIL` because `expression` is evaluated before the `instruction...` list is executed.
+It different from REPEAT/UNTIL because `expression` is evaluated before the instruction... list is executed.
 
     count=0
     while count
@@ -1158,7 +1159,7 @@ It different from `REPEAT/UNTIL` because `expression` is evaluated before the `i
         [exit]
     next identifier
 
-Repeat the `instruction...` list while varying the value of the `variable` starting at `begin` [expression](#expressions) until it reach `ended` expression included.
+Repeat the instruction... list while varying the value of the `variable` starting at `begin` [expression](#expressions) until it reach `ended` expression included.
 The increment can be changed using `incr`, allowing to iterates in reverse.
 
 Real example that print numbers from 1 to 9 in ascending and descending order.
@@ -1171,7 +1172,7 @@ Real example that print numbers from 1 to 9 in ascending and descending order.
         print i;
     next i
 
-`EXIT` command will exit one level of `FOR/TO/NEXT`.
+`EXIT` command will exit one level of FOR/TO/NEXT.
 
 #### `GOTO`
 
@@ -1238,7 +1239,7 @@ Real example. A score is incremented using time and tap:
 
 This example has one `RETURN`, two labels and three `GOSUB`. The best practice mentioned above is not followed here, but here is the explanation.
 
-The important thing is not the number of `RETURN` statements in the code but the number of times the command is executed. Users need to understand that one `GOSUB` execution will [increase by one the size of the stack](#stack-subroutine-and-return), and one execution of `RETURN` will reduce the same stack by exactly one. If the stack size is empty every time the `WAIT VBL` instruction is executed, it's a good sign. It means that the stack will not overflow.
+The important thing is not the number of `RETURN` statements in the code but the number of times the command is executed. Users need to understand that one `GOSUB` execution will [increase by one the size of the stack](#stack-subroutine-and-return), and one execution of `RETURN` will reduce the same stack by exactly one. If the stack size is empty every time the [`WAIT VBL`](#wait-vbl) instruction is executed, it's a good sign. It means that the stack will not overflow.
 
 Users can print the current stack using the [debugger `TRACE` command](#dbg-trace).
 
@@ -1248,7 +1249,7 @@ Users can print the current stack using the [debugger `TRACE` command](#dbg-trac
 
 Jump to one of the listed `label` according to a `value`.
 
-With `ON GOSUB` will store the current program location on top of the stack before jumping, allowing to `RETURN` to this location later.
+With [`ON GOSUB`](#on-raster-off) will store the current program location on top of the stack before jumping, allowing to `RETURN` to this location later.
 
 Will read the `value` and jump to:
 - the first label if `value` equal 0,
@@ -1270,26 +1271,27 @@ Real example:
 
 #### `SUB/END SUB/EXIT SUB`
 
-Syntax:
+Syntax for a [procedure definition](#procedures):
 
-    sub name [(parameters...)]
+    SUB procedure [(parameters...)]
         instruction...
-    end sub
+        [EXIT SUB]
+    END SUB
 
-This will define a procedure called `name` and can optionnaly received a list of `parameters`.
+This will define a `procedure` and can optionnaly received a list of `parameters`.
+
+An empty list of `parameters` is not valid. Simply remove the parentheses ().
 
 Syntax of the `parameters` list:
 
     (identifier[$][()], identifier[$][()]...)
 
-Hm, it's a mess! Let me explain this. A parameter is always a `identifier` and can be followed by the type of value it contains. The list of possibilities are:
+Hm, it's a mess! Let me explain this. A parameter is always an `identifier` and can be followed by the type of value it contains. The list of possibilities are:
 
-- a number: `my_num`
-- a string: `my_str$`
-- an array of number: `my_num_array()`
-- an array of string: `my_str_array$()`
-
-An empty list of `parameters` is not valid. Simply remove the parentheses `()`.
+- a number: my_num
+- a string: my_str$
+- an array of number: my_num_array()
+- an array of string: my_str_array$()
 
 Procedures are isolated small programs that can be executed using the `CALL` command. They are isolated because [variables declared inside are local](#local-and-global-scope).
 
@@ -1346,15 +1348,44 @@ Real example, a game where the player needs to enter a sequence of digits while 
 
 `EXIT SUB` command will exit the `SUB`.
 
-> Using `GOTO` inside a procedure is NOT RECOMMENDED, especially if the destination target is outside of the body. It will permanently increase the stack size without any possibility to reduce it.
+> Using [`GOTO`](#goto) inside a procedure is NOT RECOMMENDED, especially if the destination target is outside of the body. It will permanently increase the stack size without any possibility to reduce it.
 
 > Using `GOSUB` inside a procedure that jumps to a label outside of the body is NOT RECOMMENDED because the scope of the procedure will be used to execute the instructions.
+
+#### `CALL`
+
+Syntax for a [procedure call](#procedures):
+
+    CALL procedure [(parameters)]
+
+This will call the `procedure` and optionnally pass a list of `parameters`.
+
+Syntax of the `parameters` list:
+
+    (identifier[$][([items...])], identifier[$][([items...])]...)
+
+Hm, it's a mess! Let me explain this. A parameter is always an `identifier` and can be followed by the type of value it contains. If the value is an array, an `expression` can be added to get one `item` instead of the whole array.
+
+Syntax of the `items` list:
+
+    expression, expresion...
+
+This allow to get any items in the array according to its number of dimensions.
+
+ The list of possibilities are:
+
+- a number: my_num
+- a string: my_str$
+- an array of number: my_num_array()
+- an array of string: my_str_array$()
+- one number from an array: my_num_array(1,2)
+- one string from an array: my_str_array$(1,2)
 
 ### Embedded data
 
 Retro Game Creator provides two ways to store data or assets inside a program.
 
-1. Use the combination of `DATA` and `READ` to store readable number and string and access it when you need it.
+1. Use the combination of [`DATA`](#data-constant-constant) and [`READ`](#read-variable-variable) to store readable number and string and access it when you need it.
 
     Real example that list the Straw Hat Pirates members:
 
@@ -1373,11 +1404,11 @@ Retro Game Creator provides two ways to store data or assets inside a program.
 
 2. Use the [virtual file](#virtual-file) system accessible throughout the [file API](#file-api).
 
-#### `DATA constant[,constant...]`
+#### `DATA constant [,constant...]`
 
 A list of `constant` values (numbers or strings) that can be accessed using the [`READ`](#read-variablevariable) command.
 
-#### `READ variable[,variable...]`
+#### `READ variable [,variable...]`
 
 Read a list of values inside `variable` that was declared using [`DATA`](#data-constantconstant).
 
@@ -1409,7 +1440,7 @@ Move the read pointer to one of the listed `label` according to a `value`.
 
 Declare a list of number or string variables to be globally [accessible in all scopes](#local-and-global-scope).
 
-`GLOBAL` are illegal inside a `SUB/END SUB` subroutine body.
+[`GLOBAL`](#global) are illegal inside a SUB/END SUB subroutine body.
 
 #### `DIM`
 
@@ -1428,9 +1459,9 @@ Arrays of numbers or strings MUST be declared before reading or writing them.
 
     dim global identifier(highest) [,identifier(highest)]...
 
-Similar to `DIM` but will [declare the arrays](#arrays) [globally accessible](#local-and-global-scope).
+Similar to [`DIM`](#dim-global) but will [declare the arrays](#arrays) [globally accessible](#local-and-global-scope).
 
-`DIM GLOBAL` are illegal inside a `SUB/END SUB` subroutine body.
+[`DIM GLOBAL`](#dim-global) are illegal inside a SUB/END SUB subroutine body.
 
 #### `=UBOUND`
 
@@ -1438,7 +1469,7 @@ Similar to `DIM` but will [declare the arrays](#arrays) [globally accessible](#l
 
 Return the `highest` index of the array variable `identifier` at specified `dimension`.
 
-#### `SWAP a,b`
+#### `SWAP a, b`
 
 Swap the values of the variable `a` and `b`. They have to share same type.
 
@@ -1456,7 +1487,7 @@ Sprites are limited in numbers and SHOULD be used to show moving objects above b
 
 Check [how sprites works](#sprites) and [sprites registers](#sprite-registers).
 
-#### `SPRITE sprite,[x],[y],[character]`
+#### `SPRITE sprite, [x], [y], [character]`
 
 Sets the position `x` and `y` in pixel coordinates and `character` number of the `sprite`.
 
@@ -1477,14 +1508,14 @@ An example that show a smiley sprite moving in circle:
 
 Omitted parameters will keep their previous values.
 
-#### `SPRITE sprite [PAL palette] [FLIP horizontal,vertical] [PRIO priority] [SIZE size]`
+#### `SPRITE sprite [PAL palette] [FLIP horizontal, vertical] [PRIO priority] [SIZE size]`
 
 Sets one or more attributes for the `sprite`:
 
-- `PAL palette` Change the `palette` (0..7).
-- `FLIP horizontal,vertical` Flip the sprite on `horizontal` and `vertical` axis.
-- `PRIO priority` Change the `priority` (0..1).
-- `SIZE s` Change the size, a.k.a.: the number of characters width and height.
+- [`PAL palette`](#pal-palette) Change the `palette` (0..7).
+- [`FLIP horizontal,vertical`](#flip-horizontal-vertical) Flip the sprite on `horizontal` and `vertical` axis.
+- [`PRIO priority`](#prio-priority) Change the `priority` (0..1).
+- [`SIZE s`](#size-size-file) Change the size, a.k.a.: the number of characters width and height.
 
 Omitted parameters will keep their previous values.
 
@@ -1501,7 +1532,7 @@ Example of a sprite that get flipped according to it's position on the screen:
     00000000000000000000000000000000
     40A0D0E8F4D0E818C06030180C305808
 
-#### `x=SPRITE.X(sprite)`<br>`y=SPRITE.Y(sprite)`
+#### `x =SPRITE.X(sprite)`<br>`y =SPRITE.Y(sprite)`
 
 Return the position `x` or `y` of the `sprite` (0..169) in pixels.
 
@@ -1519,17 +1550,17 @@ Example of a sprite smoothly following the finger touch:
     00000000000000000000000000000000
     007E7E66667E7E00FF81BDA5A5BD81FF
 
-#### `character=SPRITE.C(sprite)`
+#### `character =SPRITE.C(sprite)`
 
 Return the first `character` number of the `sprite` (0..169).
 
-#### `SPRITE.A sprite,attributes`
+#### `SPRITE.A sprite, attributes`
 
 Sets all `attributes` at once for the `sprite`.
 
 Check [Character attributes](#character-attributes).
 
-#### `attributes=SPRITE.A(sprite)`
+#### `attributes =SPRITE.A(sprite)`
 
 Return the whole `attributes` flags of the `sprite` (0..169).
 
@@ -1573,11 +1604,11 @@ Example that hide a sprite at each tap:
     00000000000000000000000000000000
     0000000000000000FFFFFFFFFFFFFFFF
 
-#### `SPRITE OFF sprite1 TO sprite2`.
+#### `SPRITE OFF sprite1 TO sprite2`.`
 
 Hides all sprites from range `sprite1` to `sprite2` included.
 
-#### `collides=SPRITE HIT(sprite)`
+#### `collides =SPRITE HIT(sprite)`
 
 Return if the `sprite` (0..169) `collides` (0/-1) with another sprite. Collision detection is done by checking overlapping pixels that are not transparent (a.k.a.: not using the color 0).
 
@@ -1614,7 +1645,7 @@ Example of a ball that bounce on the wall and fall into holes:
 
 Use [`sprite=HIT`](#sprite-hit) to the colliding `sprite`.
 
-#### `collides=SPRITE HIT(sprite,sprite1)`
+#### `collides =SPRITE HIT(sprite, sprite1)`
 
 Return if the `sprite` (0..169) `collides` (0/-1) with the `sprite1`.
 
@@ -1637,13 +1668,13 @@ Example of two owerlapping sprites:
 
 Use [`sprite=HIT`](#sprite-hit) to the colliding `sprite`.
 
-#### `=SPRITE.HIT(sprite,sprite1 to sprite2)`
+#### `collides =SPRITE.HIT(sprite, sprite1 to sprite2)`
 
 Return if the `sprite` (0..169) `collides` with any other from the range `sprite1` to `sprite2` included (0..169).
 
 Use [`sprite=HIT`](#sprite-hit) to the colliding `sprite`.
 
-#### `sprite=HIT`
+#### `sprite =HIT`
 
 Return the `sprite` which collided, resulting of the last `=SPRITE.HIT()` function call (any of the three form).
 
@@ -1699,7 +1730,7 @@ Clear all background layers with character zero 0, resets the current window to 
 
 Only clear the background layer numbered `layer` with character zero 0. Do not alter the scrolling value.
 
-#### `SCROLL layer,[x],[y]`
+#### `SCROLL layer, [x], [y]`
 
 Set the scroll offset on `x` and `y` axis of the `layer` in pixels.
 
@@ -1710,7 +1741,7 @@ Set the scroll offset on `x` and `y` axis of the `layer` in pixels.
 
 Omitted parameters will keep their previous values.
 
-#### `x=SCROLL.X(layer)`<br>`y=SCROLL.Y(layer)`
+#### `x =SCROLL.X(layer)`<br>`y =SCROLL.Y(layer)`
 
 Return the scroll offset on `x` and `y` axis of the `layer` in pixels.
 
@@ -1751,7 +1782,7 @@ Change the current `palette` for further cells draw operations.
     pal 1
     print "world"
 
-#### `FLIP [horizontal],[vertical]`
+#### `FLIP [horizontal], [vertical]`
 
 Change the `horizontal` and `vertical` flip attributes for further cells draw operations, considering 0 as not flipped and something else as flipped.
 
@@ -1778,7 +1809,7 @@ Sets the palette, flip and priority `attributes` all at once for further cells d
 
 Check the [cell attributes reference](#cell-attributes).
 
-#### `CELL x,y,[character]`
+#### `CELL x, y, [character]`
 
 Draw to the `x`,`y` cell of the [`current layer`](#bg-layer) with the `character` using the current attributes.
 
@@ -1802,7 +1833,7 @@ E.g. draw an inverted blue r letter:
     cell 10,10,
 
 
-#### `character=CELL.C(x,y)`
+#### `character =CELL.C(x, y)`
 
 Return the `character` of the `x`,`y` cell from the [`current layer`](#bg-layer).
 
@@ -1836,7 +1867,7 @@ Example of reading the ASCII code of a character:
     01000100010002000000020002000200
     02000200
 
-#### `attributes=CELL.A(x,y)`
+#### `attributes =CELL.A(x, y)`
 
 Return the `attributes` of the `x`,`y` call from [`current layer`](#bg-layer).
 
@@ -1876,7 +1907,7 @@ Example that display cell's attributes:
 
 Check the [cell attributes reference](#cell-attributes).
 
-#### `BG FILL x1,y1 TO x2,y2 CHAR character`
+#### `BG FILL x1, y1 TO x2, y2 CHAR character`
 
 Fills all cells from `x1`,`y1` coordinates to `x2`,`y2` with `character` and the current attributes.
 
@@ -1888,26 +1919,26 @@ Fills all cells from `x1`,`y1` coordinates to `x2`,`y2` with `character` and the
     FFFFFFFFFFFFFFFF0000000000000000
     0000000000000000FFFFFFFFFFFFFFFF
 
-#### `TINT y,y [PAL palette] [FLIP horizontal,vertical] [PRIO priority]`
+#### `TINT y, y [PAL palette] [FLIP horizontal, vertical] [PRIO priority]`
 
 Sets to the cell `x`,`y` (0..63) of the [`current layer`](#bg-layer), one or more attributes: `palette` (0..3), `horizontal` (0/1) and `vertical` (0/1) flip and `priority` (0/1).
 
     print "hello!"
     tint 5,0 pal 7
 
-#### `BG TINT y1,y1 TO x2,y2 [PAL palette] [FLIP horizontal,vertical] [PRIO priority]`
+#### `BG TINT y1, y1 TO x2, y2 [PAL palette] [FLIP horizontal, vertical] [PRIO priority]`
 
 Sets to the cells from the rectangle `x1`,`y1` to `x2`,`y2` (0..63), one or more attributes: `palette` (0..3), `horizontal` (0/1) and `vertical` (0/1) flip and `priority` (0/1).
 
-Similar to `TINT y,y [PAL pal] [FLIP h,v] [PRIO p]` but with a rectangle of cells instead of just one.
+Similar to [`TINT y,y [PAL pal] [FLIP h,v] [PRIO p]`](#tint-y-y-pal-palette-flip-horizontal-vertical-prio-priority) but with a rectangle of cells instead of just one.
 
-#### `BG SCROLL x1,y1 to x2,y2 step x3,y3`
+#### `BG SCROLL x1, y1 to x2, y2 step x3, y3`
 
 Move the cell's attributes and character from the rectangle `x1`,`y1` to `x2`,`y2` (0..63) of the [`current layer`](#bg-layer) by `x3`,`y3` in cell coordinates.
 
 This feature is internally used to scroll text when it reach the bottom of the [window](#window-xywidthheightlayer).
 
-#### `BG SOURCE address[,width,height]`
+#### `BG SOURCE address [,width, height]`
 
 Set the memory `address` to use as source for [`BG COPY x1,y1,width,height TO x2,y2`](#bg-copy-x1-y1-width-height-to-x2-y2) operations.
 
@@ -1915,7 +1946,7 @@ When `width` and `height` are specified, they are used as indiquating the number
 
 If they are not specified, the [official background data format](#background-source-data) are used to retrieve the width and the height.
 
-> When the program is stared the default address is taken by internally executing `BG SOURCE ROM(3)`
+> When the program is stared the default address is taken by internally executing [`BG SOURCE ROM(3)`](#bg-view-on)
 
 Example that generate background using random numbers:
 
@@ -1945,17 +1976,17 @@ Example that generate background using random numbers:
     wait vbl
     loop
 
-#### `BG COPY x1,y1,width,height TO x2,y2`
+#### `BG COPY x1, y1, width, height TO x2, y2`
 
 Copy from the rectangle `x1`,`y1` (0..63) with `width`,`height` (0..63) the cell's attributes and character numbers from background source specified previously using [`BG SOURCE address[,width,height]`](#bg-source-address-width-height) to `x2`,`y2` (0..63) of the current background layer.
 
-#### `MCELL x,y,character`
+#### `MCELL x, y,character`
 
 Draw to the `x`,`y` cell to the background source specified previously using [`BG SOURCE address[,width,height]`](#bg-source-address-width-height) with the `character` using the current attributes.
 
 Similar to [`CELL x,y,character`](#cell-x-y-character) but modify the source in memory instead of the [`current layer`](#bg-layer).
 
-The source MUST point to writable memory. It will NOT work with `BG SOURCE ROM(3)`.
+The source MUST point to writable memory. It will NOT work with [`BG SOURCE ROM(3)`](#bg-view-on).
 
 Example that continously draw to the background source:
 
@@ -1976,19 +2007,19 @@ Example that continously draw to the background source:
     00000000000000000000000000000000
     FFFFFFFFFFFFFFFF0000000000000000
 
-#### `character=MCELL.C(x,y)`
+#### `character =MCELL.C(x, y)`
 
 Return the `character` of the `x`,`y` cell from the background source.
 
 Similar to [`character=CELL.C(x,y)`](#character-cell-c-x-y) but modify the source in memory instead of the [`current layer`](#bg-layer).
 
-#### `attributes=MCELL.A(x,y)`
+#### `attributes =MCELL.A(x, y)`
 
 Return the `attributes` of the `x`,`y` call from the background source.
 
 Similar to [`attributes=CELL.A(x,y`](#attributes-cell-a-x-y) but modify the source in memory instead of the [`current layer`](#bg-layer).
 
-#### `TEXT x,y,text$`
+#### `TEXT x, y,text$`
 
 Will print `text$` on the [`current layer`](#bg-layer) starting at `x`,`y` cell using the current background attributes on the [`current layer`](#bg-layer).
 
@@ -1999,7 +2030,7 @@ Will print `text$` on the [`current layer`](#bg-layer) starting at `x`,`y` cell 
     text 8+i*2,10,c$
   next i
 
-#### `NUMBER x,y,number,count`
+#### `NUMBER x, y,number, count`
 
 Will print the latest `count` digits of the `number` on the current layer starting at `x`,`y` cell using the current background attributes on the [`current layer`](#bg-layer).
 
@@ -2010,15 +2041,15 @@ Similar to [`TEXT x,y,text$`](#text-xytext) but dedicated to print number instea
 
 #### `FONT first`
 
-Sets the `first` character number that will defines the range of ASCII characters used for `TEXT`, `NUMBER` and `PRINT` commands.
+Sets the `first` character number that will defines the range of ASCII characters used for [`TEXT`](#text-x-y-text), [`NUMBER`](#number-x-y-number-count) and [`PRINT`](#print) commands.
 
-The default value is 192, which points to where the default font is loaded at the beginning of the program if the characters are not used. It MAY be overridden by `LOAD` operation.
+The default value is 192, which points to where the default font is loaded at the beginning of the program if the characters are not used. It MAY be overridden by [`LOAD`](#load-file-address-limit-offset) operation.
 
 ### Text API
 
 Commands dedicated to draw text on layers using characters data. 64 characters can be reserved to print characters on screen. By default those characters number are (192..255) but can be changed using the [`FONT` command](#font-first).
 
-#### `WINDOW x,y,width,height,layer`
+#### `WINDOW x, y,width, height, layer`
 
 Sets the current window at `x`,`y` with `width`,`height` and on `layer` where text will be drawn.
 
@@ -2031,7 +2062,7 @@ By default, the window is sets inside the safe area delimited by the safe functi
 
 Clears the window by replacing all the cells by the character 0. It also reset the cursor position.
 
-#### `LOCATE x,y`
+#### `LOCATE x, y`
 
 Move the cursor location at `x`,`y` in cells coordinates inside the window.
 
@@ -2040,22 +2071,22 @@ Move the cursor location at `x`,`y` in cells coordinates inside the window.
         print str$(i);
     next i
 
-#### `=CURSOR.X`<br>`=CURSOR.Y`
+#### `x =CURSOR.X`<br>`y =CURSOR.Y`
 
 Return the cursor location `x`,`y` in cells coordinates inside the window.
 
-#### `PRINT expression-list`
+#### `PRINT expression...`
 
-Outputs string `expression-list` onto the current window.
+Outputs string `expression...` onto the current window.
 
-`expression-list` can be one or more of:
+`expression...` can be one or more of:
 - a string or numeric literal,
 - a variable identifier,
 - a label that point to a string data.
 
-When two items are separated by a coma `,` a space will be inserted between them.
-
-When two items are separated by semicolon `;` no space is inserted.
+`expression...` items can be seperated by:
+- a coma (,) to add a space between items,
+- a semicolon (;) to not add space e
 
 Example with different expressions:
 
@@ -2085,7 +2116,7 @@ Retro Game Creator support touch input with float-point precision (but not multi
 
 User can also rely on the OS virtual keyboard to capture typed characters.
 
-#### `touched=TOUCH`
+#### `touched =TOUCH`
 
 Return -1 if the device fantasy screen is currently `touched`.
 
@@ -2097,7 +2128,7 @@ Example that print a text only when device screen is touched:
         wait vbl
     loop
 
-#### `touched=TAP`
+#### `touched =TAP`
 
 Return -1 for exactly one frame, if the device fantasy screen is `touched`.
 
@@ -2115,7 +2146,7 @@ Example of a flappy letter going down by gravity and up when tapping on the scre
         sprite 0,x,y,
     loop
 
-#### `x=TOUCH.X`<br>`y=TOUCH.Y`
+#### `x =TOUCH.X`<br>`y =TOUCH.Y`
 
 Returns the last pixel position `x`,`y` touched. It returns a floating-point number, with a 1/16 pixel precisions.
 
@@ -2127,13 +2158,13 @@ Returns the last pixel position `x`,`y` touched. It returns a floating-point num
 
 #### `KEYBOARD ON`<br>`KEYBOARD OFF`
 
-Show or hide the device virtual keyboard. Because user can hide the keybord using a dedicated key, do not assume the keyboard is visible. Use `KEYBOARD ON` inside a loop or rely on `=KEYBOARD` to detect when the keyboard is shown or not.
+Show or hide the device virtual keyboard. Because user can hide the keybord using a dedicated key, do not assume the keyboard is visible. Use [`KEYBOARD ON`](#height-keyboard) inside a loop or rely on `=KEYBOARD` to detect when the keyboard is shown or not.
 
-#### `height=KEYBOARD`
+#### `height =KEYBOARD`
 
 Return the `height` of the virtual screen that has been occluded by the keyboard.
 
-#### `INPUT [prompt;]variable`<br>`INPUT [prompt;]variable$`
+#### `INPUT [prompt;] variable`<br>`INPUT [prompt;] variable$`
 
 Wait for the user to type a text or a number and store it to the `variable` or `variable$`.
 
@@ -2149,7 +2180,7 @@ Optionally, a `prompt` can be printed on the screen before the user input.
     loop
     pass: print "you may pass"
 
-#### `pressed$=INKEY$`
+#### `pressed$ =INKEY$`
 
 Returns only once the last `pressed$` key. It's a string containing one ASCII character supported by Retro Game Creator. If no key was pressed or if the pressed key is not supported, it returns an empty string. See [ASCII table](#ascii-table).
 
@@ -2164,7 +2195,7 @@ Example that output the pressed key:
         wait vbl
     loop
 
-#### `frames=TIMER`
+#### `frames =TIMER`
 
 Returns the number of `frames` since Retro Game Creator was launched. The value wraps to 0 when 5184000 is reached, which is about 24 hours.
 
@@ -2172,23 +2203,23 @@ Returns the number of `frames` since Retro Game Creator was launched. The value 
 
 Will stop execution of the program until a touch is made.
 
-While waiting for a tap, interrupt sub-routines for `VBL/RASTER/PARTICLE/EMITTER` are still executed.
+While waiting for a tap, interrupt sub-routines for VBL/RASTER/PARTICLE/EMITTER are still executed.
 
 ### Display API
 
-#### `PALETTE palette,[c0],[c1],[c2],[c3]`
+#### `PALETTE palette, [c0], [c1], [c2], [c3]`
 
-Sets the four colors on the height available `palette` (0..7). The color 0 of the palette 0 is generally used as backdrop color. (It can be change using the `SYSTEM` command.) `c0`, `c1`, `c2`, `c3` can accept a numeric value between 0 and 63, omit them to keep the current value. Consult the [64 colors reference](#64-colors) to choose the color you want.
+Sets the four colors on the height available `palette` (0..7). The color 0 of the palette 0 is generally used as backdrop color. (It can be change using the [`SYSTEM`](#system-setting-value) command.) `c0`, `c1`, `c2`, `c3` can accept a numeric value between 0 and 63, omit them to keep the current value. Consult the [64 colors reference](#64-colors) to choose the color you want.
 
-#### `=COLOR(palette,color)`
+#### `available =COLOR(palette, color)`
 
-Returns one of the [64 colors](#64-colors) associated to the pair `palette` (0..7), `color` (0..3).
+Returns one of the `available` [64 colors](#64-colors) associated to the pair `palette` (0..7), `color` (0..3).
 
-#### `width=SHOWN.W`<br>`height=SHOWN.H`
+#### `width =SHOWN.W`<br>`height =SHOWN.H`
 
 Returns the `width` and `height` in pixels of the visible area of the fantasy screen.
 
-#### `left=SAFE.L`<br>`top=SAFE.T`<br>`right=SAFE.R`<br>`bottom=SAFE.B`
+#### `left =SAFE.L`<br>`top =SAFE.T`<br>`right =SAFE.R`<br>`bottom =SAFE.B`
 
 Returns the `left`, `top`, `right` and `bottom` offset in pixels to apply from the boundary of the fantasy device screen to reach the inner safe area specified by the device's operating system.
 
@@ -2209,7 +2240,7 @@ Wait for a number of `frame` to be drawn. Keyword `VBL` is similar to 1. This is
 - reduce device CPU usage,
 - preserve device battery.
 
-It is RECOMMENDED to place at least one `WAIT VBL` inside every loop that waits for player input or presents something to the player.
+It is RECOMMENDED to place at least one [`WAIT VBL`](#wait-vbl) inside every loop that waits for player input or presents something to the player.
 
 Example that show the effect:
 
@@ -2225,7 +2256,7 @@ Example that show the effect:
         if touch then wait vbl
     loop
 
-`WAIT VBL` is equal `WAIT 1`
+[`WAIT VBL`](#wait-vbl) is equal [`WAIT 1`](#wait-vbl)
 
 #### `ON VBL CALL s`
 
@@ -2292,9 +2323,9 @@ This can be used to change colors or scroll background layers, example:
         palette 0,,,0,
     loop
 
-#### `=RASTER`
+#### `line =RASTER`
 
-Return the fantasy screen line number currently rendered.
+Return the fantasy screen `line` number currently rendered.
 
 #### `ON RASTER OFF`
 
@@ -2302,21 +2333,21 @@ Will stop the execution of a sub-routine during RASTER interrupt.
 
 ### Math API
 
-#### `pi=PI`
+#### `pi =PI`
 
 Return the constant π.
 
-#### `cosine=COS(number)`<br>`sine=SIN(number)`
+#### `cosine =COS(number)`<br>`sine =SIN(number)`
 
 Return the `cosine` or `sine` (0..1) value of a `number`.
 
-`COS()` and `SIN()` take (0..1) instead of (0..π*2), and `SIN()` is inverted.
+[`COS()`](#cosine-cos-number) and SIN() take (0..1) instead of (0..π*2), and SIN() is inverted.
 
-#### `arc=ATAN(x,y)`
+#### `arc =ATAN(x, y)`
 
 Return the `arc` tangent value of a `x`,`y` vector.
 
-`ATAN()` returns an value between (-0.5..0.5) making it suitable for use with `COS()` and `SIN()`.
+[`ATAN()`](#arc-atan-x-y) returns an value between (-0.5..0.5) making it suitable for use with [`COS()`](#cosine-cos-number) and SIN().
 
 Example that show how to compute an angle from a position, and a position from an angle:
 
@@ -2353,31 +2384,31 @@ Example that show how to compute an angle from a position, and a position from a
     00000000000000000000000000000000
     3C7EFFFFFFFF7E3C0000000000000000
 
-#### `absolute=ABS(number)`
+#### `absolute =ABS(number)`
 
 Return the `absolute` value of a `number`.
 
-#### `exponential=EXP(number)`
+#### `exponential =EXP(number)`
 
 Return the `exponential` value of a `number`.
 
-#### `logarithm=LOG(number)`
+#### `logarithm =LOG(number)`
 
 Return the `logarithm` value of a `number`.
 
-#### `square=SQR(number)`
+#### `square =SQR(number)`
 
 Return the `square` root value of a `number`.
 
-#### `sign=SGN(number)`
+#### `sign =SGN(number)`
 
 Return the `sign` (+1/-1) of a `number`.
 
-#### `floor=FLOOR(number)<br>floor=INT(number)`
+#### `floor =FLOOR(number)`<br>`floo =INT(number)`
 
 Return the `floor` value of a `number`.
 
-#### `ceil=CEIL(number)`
+#### `ceil =CEIL(number)`
 
 Return the `ceil` value of a `number`.
 
@@ -2385,25 +2416,25 @@ Return the `ceil` value of a `number`.
 
 Increment or decrement by 1 the value of a `variable`.
 
-#### `ADD variable,value`<br>ADD variable,increment,min TO max`
+#### `ADD variable, value`<br>`ADD variable, increment, min TO max`
 
 Add a `value` to a `variable`.
 
 Optionally make it wrap around between `min` and `max`.
 
-#### `minimal=MIN(a,b)`<br>`maximal=MAX(a,b)`
+#### `minimal =MIN(a, b)`<br>`maximal =MAX(a, b)`
 
 Return the `minimal` or `maximal` value between `a` and `b`.
 
-#### `clamped=CLAMP(value,min,max)`
+#### `clamped =CLAMP(value, min, max)`
 
 Return the `value` `clamped` between `min` and `max`.
 
-#### `length=LEN(x,y)`
+#### `length =LEN(x, y)`
 
 Return the `length` of a `x`,`y` vector.
 
-#### `interpolation=EASE(function,mode,value)`
+#### `interpolation =EASE(function, mode, value)`
 
 This returns the `interpolation` of `value` between 0.0 and 1.0, using the 🌐[specified easing](https://easings.net/) `function` and `mode`.
 
@@ -2426,11 +2457,11 @@ This returns the `interpolation` of `value` between 0.0 and 1.0, using the 🌐[
 |   0 | inout |
 |  +1 | out   |
 
-#### `random=RND`
+#### `random =RND`
 
 Return a `random` floating-point number (0..1).
 
-#### `random=RND(max)`
+#### `random =RND(max)`
 
 Return a `random` integer number (0..max).
 
@@ -2454,7 +2485,7 @@ Setting a specific `seed` will guarantee to return the same sequence of random n
         print rnd(100)
     next i
 
-#### `random=RND address<br>random=RND(max,address)<br>RANDOMIZE seed[,address]`
+#### `random =RND address`<br>`random =RND(max, address)`<br>`RANDOMIZE seed [,address]`
 
 Similar to the original functions with a additional `address` parameter, where the current generator state will be stored.
 
@@ -2464,35 +2495,35 @@ The generator state consume 16 Bytes of memory.
 
 ### String API
 
-#### `length=LEN(text)`
+#### `length =LEN(text)`
 
 Return the `length` in ascii7 character of a `text` string.
 
-#### `ascii7=ASC(character)`
+#### `ascii7 =ASC(character)`
 
 Converts the first `character` of a string to an `ascii7` code. See [ASCII table](#ascii-table).
 
-#### `character=CHR$(ascii7)`
+#### `character =CHR$(ascii7)`
 
 Converts an `ascii7` code to a one `character` string.
 
-#### `text=STR$(number)`
+#### `text =STR$(number)`
 
 Converts a `number` to a `text` string.
 
     print str$(123.456)
 
-#### `number=VAL(text)`
+#### `number =VAL(text)`
 
-Converts a `text` string that starts with digits (and optionally one decimal point `.`) into a `number`.
+Converts a `text` string that starts with digits (and optionally one decimal point .) into a `number`.
 
     print val("3.5abc")
 
-#### `hexadecimal=HEX$(number,[digits])`<br>`binary=BIN$(number,[digits])`
+#### `hexadecimal =HEX$(number, [digits])`<br>`binary =BIN$(number, [digits])`
 
 Converts a `number` to an `hexadecimal` or `binary` string with an optional minimal number of `digits`.
 
-#### `leading$=LEFT$(text,length)`<br>`trailing$=RIGHT$(text,length)`
+#### `leading$ =LEFT$(text, length)`<br>`trailing$ =RIGHT$(text, length)`
 
 Return the `length` number of characters from the beginning or the end of the `text` string.
 
@@ -2500,15 +2531,15 @@ Return the `length` number of characters from the beginning or the end of the `t
     print left$(shadok,4)
     print right$(shadok,5)
 
-#### `LEFT$(text,length)=replacement$`<br>`RIGHT$(text,length)=replacement$`
+#### `LEFT$(text, length) =replacement$`<br>`RIGHT$(text, length) =replacement$`
 
 Overwrites the `length` number of characters at the beginning or the end of the `text` string by the `length` first characters of the `replacement$` string.
 
-#### `extract$=MID(text,position,length)`
+#### `extract$ =MID(text, position, length)`
 
 Return the `length` number of characters starting at `position` (1..) from the `text` string.
 
-#### `mid$(text,position,length)=replacement$`
+#### `MID$(text, position, length) =replacement$`
 
 Overwrites the `length` number of characters starting at `position` (1..) from the `text` string by the `length` first characters of the `replacement$` string.
 
@@ -2518,11 +2549,15 @@ Overwrites the `length` number of characters starting at `position` (1..) from t
     mid$(six$,20,4)="-66-"
     print six$
 
+#### `found =INSTR(text, occurence [,position])`
+
+Search for the first `occurence` inside `text` and return the `found` position. Return 0 if not found. Optionally, start the search at `position`.
+
 ### Sound API
 
 The fantasy hardware simulates 4 voices to play sound effects and music. See [Sound](#sound) for an overview.
 
-#### `PLAY voice,pitch[,length] [SOUND sound]`
+#### `PLAY voice, pitch [,length] [SOUND sound]`
 
 Play a note at the `pitch` on the `voice` with an optional `length` and `sound`.
 
@@ -2530,7 +2565,7 @@ Check the [pitch references](#pitch-values) to learn which pitch correspond to w
 
 `length` use 1/60 of seconds as units with the maximum being 255, so 4.25 seconds. A length of 0 means that the sound will not stop until another sound is played on the same `voice`.
 
-`sound` is a number representing a group of settings that define the sound's characteristics. It requires the usage of the [`SOUND SOURCE`](<manual#`SOUND SOURCE [address]`>) command.
+`sound` is a number representing a group of settings that define the sound's characteristics. It requires the usage of the [`SOUND SOURCE`](<manual#[`SOUND SOURCE [address]`](#sound-source-address)>) command.
 
 #### `STOP`<br>`STOP [voice]`
 
@@ -2538,18 +2573,18 @@ Stops the sound and track on the `voice` or all the voices if omitted.
 
 Release duration of envelope are not stop but fade out instead.
 
-#### `VOLUME voice,[volume],[mix]`
+#### `VOLUME voice, [volume], [mix]`
 
 Sets the `volume` and `mix` of `voice`.
 
 | parameter | value and range                                |
 |----------:|------------------------------------------------|
-|  `volume` | `0` .. `15`                                    |
-|     `mix` | `0` Muted<br>`1` Left<br>`2` Right<br>`3` Both |
+|  `volume` | 0 .. 15                                    |
+|     `mix` | 0 Muted<br>1 Left<br>2 Right<br>3 Both |
 
 All parameters can be omitted to keep their current settings.
 
-#### `SOUND voice,[wave],[width],[length]`
+#### `SOUND voice, [wave], [width], [length]`
 
 Sets the sound's characteristics for the `voice`.
 
@@ -2559,13 +2594,13 @@ Sets the sound's characteristics for the `voice`.
 
 | parameter | value and range                                        |
 |----------:|--------------------------------------------------------|
-|    `wave` | `0` Sawtooth<br>`1` Triangle<br>`2` Pulse<br>`3` Noise |
-|   `width` | `0` .. `15`                                            |
-|  `length` | `0` Infinite<br>1 16.67ms .. `255` 4.25s               |
+|    `wave` | 0 Sawtooth<br>1 Triangle<br>2 Pulse<br>3 Noise |
+|   `width` | 0 .. 15                                            |
+|  `length` | 0 Infinite<br>1 16.67ms .. 255 4.25s               |
 
 Omitted parameters will keep their previous values.
 
-#### `ENVELOPE voice,[attack],[decay],[sustain],[release]`
+#### `ENVELOPE voice, [attack], [decay], [sustain], [release]`
 
 Set the volume envelope for the `voice`.
 
@@ -2575,14 +2610,14 @@ Allow to change the `attack`, `decay` and `release` duration.
 
 | parameter | range               |
 |----------:|---------------------|
-|  `attack` | `0` 2ms .. `15` 12s |
-|   `decay` | `0` 2ms .. `15` 12s |
-| `release` | `0` 2ms .. `15` 12s |
-| `sustain` | `0` .. `15`         |
+|  `attack` | 0 2ms .. 15 12s |
+|   `decay` | 0 2ms .. 15 12s |
+| `release` | 0 2ms .. 15 12s |
+| `sustain` | 0 .. 15         |
 
 All parameters can be omitted to keep their current settings.
 
-#### `LFO voice,[rate],[frequency],[volume],[width]`
+#### `LFO voice, [rate], [frequency], [volume], [width]`
 
 Set the Low Frequency Oscillator (LFO) for the `voice`.
 
@@ -2590,14 +2625,14 @@ Allow to change the `rate`, the `frequency`, the `volume` and the `width` for Pu
 
 |   parameter | range                   |
 |------------:|-------------------------|
-|      `rate` | `0` 0.12Hz .. `15` 18Hz |
-| `frequency` | `0` .. `15`             |
-|    `volume` | `0` .. `15`             |
-|     `width` | `0` .. `15`             |
+|      `rate` | 0 0.12Hz .. 15 18Hz |
+| `frequency` | 0 .. 15             |
+|    `volume` | 0 .. 15             |
+|     `width` | 0 .. 15             |
 
 All parameters can be omitted to keep their current settings.
 
-#### `LFO WAVE voice,[wave],[invert],[env],[trigger]`
+#### `LFO WAVE voice, [wave], [invert], [env], [trigger]`
 
 Set options for the a second Low Frequency Oscillator (LFO) for the `voice`.
 
@@ -2607,20 +2642,20 @@ With `invert` off, the wave is added (+) to the output signal. With `invert` on,
 
 When `env` on, this second LFO will be played once. Will implictly set `trigger` on.
 
-With `trigger` on, this second LFO is restarted at every `PLAY`, otherwise the LFO is continously applied.
+With `trigger` on, this second LFO is restarted at every [`PLAY`](#play-voice-pitch-length-sound-sound), otherwise the LFO is continously applied.
 
 | parameter | value                                                    |
 |----------:|----------------------------------------------------------|
-|    `wave` | `0` Triangle<br>`1` Sawtooth<br>`2` Square<br>`3` Random |
-|  `invert` | `0` Off<br>`1` On                                        |
-|     `env` | `0` Off<br>`1` On                                        |
-| `trigger` | `0` Off<br>`1` On                                        |
+|    `wave` | 0 Triangle<br>1 Sawtooth<br>2 Square<br>3 Random |
+|  `invert` | 0 Off<br>1 On                                        |
+|     `env` | 0 Off<br>1 On                                        |
+| `trigger` | 0 Off<br>1 On                                        |
 
 All parameters can be omitted to keep their current settings.
 
 #### `SOUND SOURCE [address]`
 
-Set the `address` on memory to use as source for `MUSIC`, `TRACK` and `PLAY` commands. The [sound source format data](#sound-source-format-data) is used to decode the information.
+Set the `address` on memory to use as source for [`MUSIC`](#value-music-what), [`TRACK`](#track-track-voice) and [`PLAY`](#play-voice-pitch-length-sound-sound) commands. The [sound source format data](#sound-source-format-data) is used to decode the information.
 
 This will not affect already started playback.
 
@@ -2628,22 +2663,22 @@ If not specified the default address is taken by internally executing `=ROM(15)`
 
 #### `MUSIC [pattern]`
 
-Starts playing at the `pattern`. If omitted, it starts at pattern `0`.
+Starts playing at the `pattern`. If omitted, it starts at pattern 0.
 
 This will consider that the data respects the [sound source format data](#sound-source-format-data).
 
-#### `=MUSIC(what)`
+#### `value =MUSIC(what)`
 
 Question the current playback.
 
-| `what` |                                       |
+| `what` | `value`                               |
 |-------:|---------------------------------------|
 |      0 | The current pattern                   |
 |      1 | The current row                       |
 |      2 | The current tick                      |
-|      3 | The current speed<br>`0` when stopped |
+|      3 | The current speed<br>0 when stopped |
 
-#### `TRACK track,voice`
+#### `TRACK track, voice`
 
 Starts playing the `track` on `voice`.
 
@@ -2651,7 +2686,7 @@ This will consider that the data respects the [sound source format data](#sound-
 
 ### Memory API
 
-#### `POKE address,value`
+#### `POKE address, value`
 
 Write an 8bits `value` (0..255) in memory at `address`.
 
@@ -2666,9 +2701,9 @@ Example that change the background color:
         wait 5
     loop
 
-#### `=PEEK(address)`
+#### `value =PEEK(address)`
 
-Read and return a 8bits value (0..255) from memory at `address`.
+Read and return a 8bits `value` (0..255) from memory at `address`.
 
 Example that print the last pressed ASCII key code:
 
@@ -2678,50 +2713,50 @@ Example that print the last pressed ASCII key code:
         wait 5
     loop
 
-#### `POKEW address,value`
+#### `POKEW address, value`
 
 Write a 16bits `value` (-32768..32767) in memory at `address`.
 
-#### `=PEEKW(address)`
+#### `value =PEEKW(address)`
 
-Read and return a 16bits value (-32768..32767) from memory at `address`.
+Read and return a 16bits `value` (-32768..32767) from memory at `address`.
 
 Example that print the width and height of the visible pixels:
 
     print "width",peekw($ff78),shown.w
     print "height",peekw($ff7a),shown.h
 
-#### `POKEL address,value`
+#### `POKEL address, value`
 
 Write a 32bits `value` value (-16777216..16777216) in memory at `address`.
 
 Note: Values are stored as floating-point. See [number limits](#number-limits) for precision details.
 
-#### `=PEEKL(address)`
+#### `value =PEEKL(address)`
 
-Read and return a 32bits value (-16777216..16777216) from memory at `address`.
+Read and return a 32bits `value` (-16777216..16777216) from memory at `address`.
 
 Note: Values are stored as floating-point. See [number limits](#number-limits) for precision details.
 
-#### `address=ROM(file)`
+#### `address =ROM(file)`
 
 Return the `address` in memory of the virtual `file`.
 
-#### `size=SIZE(file)`
+#### `size =SIZE(file)`
 
 Return the `size` in bytes of the virtual `file`.
 
-#### `COPY source,count TO destination`
+#### `COPY source, count TO destination`
 
 Copies `count` bytes from `source` address from memory to `destination` address in memory.
 
 The `source` and `destination` CAN overlap.
 
-#### `FILL address,count[,value]`
+#### `FILL address, count [,value]`
 
 Sets `count` bytes from `address` in memory with the `value` or 0 when not specified.
 
-#### `ROL address,places`<br>`ROR address,places`
+#### `ROL address, places`<br>`ROR address, places`
 
 Rotates the bits of the byte stored at `address` by a number of `places` to the left or the right.
 
@@ -2734,7 +2769,7 @@ Rotates the bits of the byte stored at `address` by a number of `places` to the 
 
 #### `DMA COPY [ROM]`
 
-Performs a fast memory copy that can only be done during interrupt calls: `VBL/RASTER/EMITTER/PARTICLE`.
+Performs a fast memory copy that can only be done during interrupt calls: VBL/RASTER/EMITTER/PARTICLE.
 
 It uses the following registers as data:
 
@@ -2744,7 +2779,7 @@ It uses the following registers as data:
 | `$FFA2` | 2 Bytes | Bytes count         |
 | `$FFA4` | 2 Bytes | Destination address |
 
-To copy from an address greater or equal than `$10000`, the OPTIONAL `[ROM]` argument MUST be used.
+To copy from an address greater or equal than `$10000`, the OPTIONAL [`[ROM]`](#address-rom-file) argument MUST be used.
 
 ### File API
 
@@ -2756,27 +2791,27 @@ Enable the access to the files, allowing to use the other commands of the file A
 
 Getting access to files allow to create editor program, like characters, map or custom editor. The official GFX and SFX use this command.
 
-When the `FILES` command is called, it will map the data stored in the fantasy cartridge to virtual files indexed from 0 to 15.
+When the [`FILES`](#files) command is called, it will map the data stored in the fantasy cartridge to virtual files indexed from 0 to 15.
 
-#### `comment$=FILE$(file)`
+#### `comment$ =FILE$(file)`
 
 Return the `comment$` string of the `file`.
 
 The command [`FILES`](#files) MUST be called before.
 
-#### `size=FSIZE(file)`
+#### `size =FSIZE(file)`
 
 Return the `size` in bytes stored in the `file`.
 
 The command [`FILES`](#files) MUST be called before.
 
-#### `LOAD file,address[,limit[,offset]]`
+#### `LOAD file, address [,limit [,offset]]`
 
 Load the virtual `file` at `address`. Optionnaly `limit` the number of bytes read and start at `offset`.
 
 The command [`FILES`](#files) MUST be called before.
 
-#### `SAVE file,comment$,address,size`
+#### `SAVE file, comment$, address, size`
 
 Save `size` bytes from `address` to the `file` and **erase previous data**. The `comment$` is just a reminder of what is stored.
 
@@ -2784,7 +2819,7 @@ The command [`FILES`](#files) MUST be called before.
 
 ### Other API
 
-#### `TRACE expression[,expression...]`
+#### `TRACE expression [,expression...]`
 
 Output the evaluated `expression` on the [overlay](#overlay).
 
@@ -2792,7 +2827,7 @@ Output the evaluated `expression` on the [overlay](#overlay).
 
 Output `text` in the bottom-left corner of the fantasy screen, in the [overlay](#overlay).
 
-#### `SYSTEM setting,value`
+#### `SYSTEM setting, value`
 
 Sets the `value` to system `setting`.
 
@@ -2840,7 +2875,7 @@ Not supported on all devices.
 Enables compatibility mode:
 
 - Forces the rendering process to keep the original device screen.
-- Reverts the `RND` command and `=RND()` function to their original behavior.
+- Reverts the [`RND`](#random-rnd-address-br-random-rnd-max-address-br-randomize-seed-address) command and `=RND()` function to their original behavior.
 
 This does not guarantee full compatibility but can help with some aspects. For instance:
 - Commands and functions that have been removed will still be unavailable.
@@ -2858,13 +2893,13 @@ Check the [debugger instructions](#debugger-instructions) to learn what you can 
 
 #### dbg: `PAUSE`
 
-Enter the debugger. It bring a console where user can enter debugger specific commands. The scope used in the debugger is the same as the one in the program where the `PAUSE` appear.
+Enter the debugger. It bring a console where user can enter debugger specific commands. The scope used in the debugger is the same as the one in the program where the [`PAUSE`](#pause) appear.
 
 #### dbg: a variable name
 
-By typing the name of a variable, the debugger will print it's value. The variable use the same syntax as inside a program: `$` for string, `()` for array.
+By typing the name of a variable, the debugger will print it's value. The variable use the same syntax as inside a program: `$` for string, () for array.
 
-The variable MUST be accessible throughout the scope of where the `PAUSE` has been used to enter the debugger. Global variables are still available everywhere.
+The variable MUST be accessible throughout the scope of where the [`PAUSE`](#pause) has been used to enter the debugger. Global variables are still available everywhere.
 
 #### dbg: a variable name `=` new value
 
@@ -2872,7 +2907,7 @@ Allow to change the value of a variable.
 
 Number literal use the same syntax as inside a program, it support integer, float, `$` hexadecimal and `%` binary.
 
-String literal SHOULD use the same syntax as inside a program: `"`.
+String literal SHOULD use the same syntax as inside a program: ".
 
 #### dbg: an address
 
@@ -2892,15 +2927,15 @@ Clear the debugger console.
 
 #### dbg: `WAIT`
 
-Resume execution until a `WAIT` command is found in the program, the scope may change.
+Resume execution until a [`WAIT`](#wait-vbl) command is found in the program, the scope may change.
 
 #### dbg: `DIM [filter] [pagination]`
 
 Print the list of accessible variable at the current scope.
 
-Allow to limit the output to the variables that matchs the `[filter]`.
+Allow to limit the output to the variables that matchs the [filter].
 
-Allow to output more variables using the `[pagination]` with an index that start at `0` zero.
+Allow to output more variables using the [pagination] with an index that start at 0 zero.
 
 #### dbg: `TRACE`
 
@@ -3064,7 +3099,7 @@ When using [`BG SOURCE address[,width,height]`](#bg-source-addresswidthheight) w
 
 ### Sound source format data
 
-When using [`SOUND SOURCE`](<manual#`SOUND SOURCE [address]`>), Retro Game Creator will use the following data format to store sounds, patterns and tracks.
+When using [`SOUND SOURCE`](<manual#[`SOUND SOURCE [address]`](#sound-source-address)>), Retro Game Creator will use the following data format to store sounds, patterns and tracks.
 
 TODO: continue
 
@@ -3090,7 +3125,7 @@ For each sound preset:
 | bits | purpose                                                        |
 | ----:| -------------------------------------------------------------- |
 | 0..3 | Pulse width                                                    |
-| 4..5 | Wave<br>`0` Sawtooth<br>`1` Triangle<br>`2` Pulse<br>`3` Noise |
+| 4..5 | Wave<br>0 Sawtooth<br>1 Triangle<br>2 Pulse<br>3 Noise |
 |    6 | Timeout enabled                                                |
 
 #### Envelope bits:
@@ -3399,8 +3434,8 @@ The fantasy hardware simulates CPU cycles. A cycle a fixed time duration that ca
 - 1 cycle per command execution,
 - 8 cycles for copying sound data for each sound play,
 - 1 cycle per character for string creation, modification, concatenation,
-- 1 cycle per byte for memory copy or modification (except `DMA COPY`),
-- almost 1/32 cycle per byte copied using `DMA COPY`,
+- 1 cycle per byte for memory copy or modification (except [`DMA COPY`](#dma-copy-rom)),
+- almost 1/32 cycle per byte copied using [`DMA COPY`](#dma-copy-rom),
 - 2 cycles per cells modification including text.
 
 Limit of cycles a program can execute:
@@ -3466,3 +3501,5 @@ With floating-point numbers, the maximum precision varies depending on the magni
 9. 4 max dimensions per array.
 
 10. 32768 max items per array in all dimensions.
+
+## Index
