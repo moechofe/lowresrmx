@@ -145,7 +145,7 @@ const int bootIntroStateAddress = 0xA000;
 
 // const char *bootIntroSourceCode = "VER$=\"" CORE_VERSION "\"\n\nGLOBAL JIN\n\nFONT 64\n\nENVELOPE 0,0,10,0,6\nENVELOPE 1,0,10,0,6\nENVELOPE 2,0,7,0,7\nENVELOPE 3,0,7,0,7\nLFO 0,5,4,0,0\nLFO 1,5,4,0,0\nVOLUME 0,15,%10\nVOLUME 1,15,%01\nVOLUME 2,15,%10\nVOLUME 3,15,%01\n\nSPRITE.A 0,(3,0,0,0,1)\nSPRITE.A 1,(0,0,0,0,1)\nSPRITE.A 2,(0,0,0,0,3)\nSPRITE.A 3,(1,0,0,0,0)\nSPRITE.A 4,(2,0,0,0,1)\n\nSPRITE 1,72,56,5\nSPRITE 2,64,56,1\n\nPAL 2\nCELL 0,15,39\nCELL 1,15,40\nCELL 2,15,41\nCELL 3,15,42\nCELL 4,15,43\nCELL 5,15,44\n\nTEXT 20-LEN(VER$),15,VER$\n\n\nDO\n SPRITE 3,76,40,7\n WAIT 30\n FOR Y=40 TO 56\n  SPRITE 3,76,Y,7\n  WAIT 2\n NEXT Y\n FOR I=1 TO 30\n  WAIT VBL\n  IF PEEK($A000)=1 THEN GOTO LOADING\n NEXT I\nLOOP\n\nLOADING:\nON VBL CALL JINGLE\nFOR Y=56 TO 49 STEP -1\n SPRITE 0,72,Y,37\n SPRITE 1,,Y,\n WAIT 4\nNEXT Y\nWAIT 60\n\nPOKE $A000,2\nDO\n N=N+1\n SPRITE 4,76,80,8+(N MOD 4)*2\n WAIT 10\nLOOP\n\nSUB JINGLE\n IF JIN=0 THEN\n  PLAY 0,52,0\n  PLAY 1,48,0\n ELSE IF JIN=15 THEN\n  STOP\n  PLAY 2,50,1\n  PLAY 3,46,1\n ELSE IF JIN=30 THEN\n  ON VBL OFF\n END IF\n JIN=JIN+1\nEND SUB\n\n#1:MAIN PALETTES\n0A2A150030381500003F2F0F003F0A34\n003F2A15003F2A15003F2A15003F2A15\n\n#2:MAIN CHARACTERS\n00000000000000000000000000000000\n3F7FC0809CBEBEBE3F40BFFFFFFFFFFF\nFF80808080808080FFFFFFFFFFFFFFFF\nFF01010101010101FFFFFFFFFFFFFFFF\nFCFE0321210D6D61FC02FDDFFFFFFFFF\n7FFF809F9F9F9F9F7F80FFFFFFFFFFFF\nFEFF01F9F9F9F9F9FE01FFFFFFFFFFFF\n7EBDBDBDBD8181FF7EC3DBC3C3FFFFFF\n08090200C100204800412200C1002241\n00000000800000000000000080000000\n00412200C100224108482000C1000209\n00000000800000000000000080000000\n08482000C10002090849220000002249\n00000000800000000000000000000000\n084922000000224908090200C1002048\n00000000000000000000000080000000\n00000000000000000000000000000000\n9C8088948880403FFFFFFFFFFFFF7F3F\n80B6929B89B692FFFFC9FFE4FFC9FFFF\n01D9496D25D949FFFF27FF93FF27FFFF\n01011129110102FCFFFFFFFFFFFFFEFC\n9F9F9F80FFFF80FFFFFFFFFFFF80FFFF\nF9F9F901FFFF01FFFFFFFFFFFF01FFFF\n00000000000000000000000000000000\n08000000000000000000000000000000\n00000000000000000000000000000000\n00000000000000000800000000000000\n00000000000000000000000000000000\n08000000000000000800000000000000\n00000000000000000000000000000000\n08000000000000000800000000000000\n00000000000000000000000000000000\n00000000000000000000000000000000\n00000000000000000000000000000000\n00000000000000000000000000000000\n00000000000000000000000000000000\n00000000000000000000000000000000\n0000000000000301000000000F0F0C0F\n000000000000C08000000000F0F030F0\n00004344444473000000434444447300\n000022A2AAB62200000022A2AAB62200\n0000E794E79497000000E794E7949700\n00009C201804B80000009C201804B800\n00004564544C450000004564544C4500\n000010A040A01000000010A040A01000\n00000000000000000000000000000000\n00000000000000000000000000000000\n00000000000000000000000000000000\n00000000000000000000000000000000\n00000000000000000000000000000000\n00000000000000000000000000000000\n00000000000000000000000000000000\n00000000000000000000000000000000\n00000000000000000F0F000000000000\n0000000000000000F0F0000000000000\n00000000000000000000000000000000\n00000000000000000000000000000000\n00000000000000000000000000000000\n00000000000000000000000000000000\n00000000000000000000000000000000\n00000000000000000000000000000000\n00000000000000000000000000000000\n00000000000000000000000000000000\n00000000000000000000000000000000\n00000000000000000000000000000000\n00181818180018000000000000000000\n006C6C24000000000000000000000000\n00247E24247E24000000000000000000\n00083E380E3E08000000000000000000\n00626408102646000000000000000000\n001C34386E643A000000000000000000\n00181830000000000000000000000000\n00000408080804000000040808080400\n00001008080810000000100808081000\n000024187E1824000000000000000000\n000018187E1818000000000000000000\n00000000181830000000000000000000\n000000007E0000000000000000000000\n00000000000010000000000000001000\n00060C18306040000000000000000000\n00001C2222221C0000001C2222221C00\n0000380808083E000000380808083E00\n00003C021C203E0000003C021C203E00\n00003C021C023C0000003C021C023C00\n00002020283E080000002020283E0800\n00003E203C023C0000003E203C023C00\n00001C203C221C0000001C203C221C00\n00003E040810200000003E0408102000\n00001C221C221C0000001C221C221C00\n00001C221E023C0000001C221E023C00\n00000018001800000000000000000000\n00000018001830000000000000000000\n00000C1830180C000000000000000000\n0000007E007E00000000000000000000\n000030180C1830000000000000000000\n003C660C180018000000000000000000\n003C666E6E603C000000000000000000\n00183C667E6666000000000000000000\n007C667C66667C000000000000000000\n003C666060663C000000000000000000\n00786C66666C78000000000000000000\n007E607860607E000000000000000000\n007E6078606060000000000000000000\n003C606E66663C000000000000000000\n0066667E666666000000000000000000\n003C181818183C000000000000000000\n001E060606663C000000000000000000\n00666C78786C66000000000000000000\n0060606060607E000000000000000000\n0042667E7E6666000000000000000000\n0066767E6E6666000000000000000000\n003C666666663C000000000000000000\n007C667C606060000000000000000000\n003C66666A6C3E000000000000000000\n007C667C786C66000000000000000000\n003E603C06067C000000000000000000\n007E1818181818000000000000000000\n0066666666663C000000000000000000\n00666666663C18000000000000000000\n0066667E7E6642000000000000000000\n00663C183C6666000000000000000000\n0066663C181818000000000000000000\n007E0C1830607E000000000000000000\n003C303030303C000000000000000000\n006030180C0602000000000000000000\n003C0C0C0C0C3C000000000000000000\n00183C66000000000000000000000000\n0000000000007E000000000000000000\n";
 
-const char *bootIntroSourceCode = "POKE $A000,2\nSTOP";
+const char *bootIntroSourceCode = "POKE $A000,2\nSTOP\n";
 //
 // Copyright 2016-2020 Timo Kloss
 //
@@ -207,8 +207,6 @@ void core_init(struct Core *core)
 	core->overlay = calloc(1, sizeof(struct Overlay));
 	if (!core->overlay)
 		exit(EXIT_FAILURE);
-
-	struct IORegisters *ioRegisters = &core->machine->ioRegisters;
 
 	machine_init(core);
 	itp_init(core);
@@ -326,8 +324,8 @@ void core_handleInput(struct Core *core, struct CoreInput *input)
 			{
 				int sw = ioRegisters->shown.width != 0 ? ioRegisters->shown.width : SCREEN_WIDTH;
 				int sh = ioRegisters->shown.height != 0 ? ioRegisters->shown.height : SCREEN_HEIGHT;
-				x -= (sw - 160) / 2;
-				y -= (sh - 128) / 2;
+				x -= (int)((sw - 160) / 2.0);
+				y -= (int)((sh - 128) / 2.0);
 				// if (x < 0) x = 0; else if (x >= 160) x = 160 - 1;
 				// if (y < 0) y = 0; else if (y >= 128) y = 128 - 1;
 			}
@@ -389,6 +387,7 @@ void core_willSuspendProgram(struct Core *core)
 void core_setDebug(struct Core *core, bool enabled)
 {
 	core->interpreter->debug = enabled;
+	if(!enabled) overlay_clear(core);
 	overlay_updateState(core);
 }
 
@@ -410,6 +409,12 @@ void core_setKeyboardEnabled(struct Core *core, bool enabled)
 void core_setKeyboardHeight(struct Core *core, int height)
 {
 	core->machine->ioRegisters.keyboardHeight = height;
+}
+
+void core_orientationChanged(struct Core *core)
+{
+	overlay_clear(core);
+	overlay_updateState(core);
 }
 
 bool core_shouldRender(struct Core *core)
@@ -975,6 +980,185 @@ void data_setEntry(struct DataManager *manager, int index, const char *comment, 
         struct DataEntry *prevEntry = &manager->entries[i - 1];
         thisEntry->start = prevEntry->start + prevEntry->length;
     }
+}
+/*
+ * robust glob pattern matcher
+ * ozan s. yigit/dec 1994
+ * public domain
+ *
+ * glob patterns:
+ *	*	matches zero or more characters
+ *	?	matches any single character
+ *	[set]	matches any character in the set
+ *	[^set]	matches any character NOT in the set
+ *		where a set is a group of characters or ranges. a range
+ *		is written as two characters seperated with a hyphen: a-z denotes
+ *		all characters between a to z inclusive.
+ *	[-set]	set matches a literal hypen and any character in the set
+ *	[]set]	matches a literal close bracket and any character in the set
+ *
+ *	char	matches itself except where char is '*' or '?' or '['
+ *	\char	matches char, including any pattern character
+ *
+ * examples:
+ *	a*c		ac abc abbc ...
+ *	a?c		acc abc aXc ...
+ *	a[a-z]c		aac abc acc ...
+ *	a[-a-z]c	a-c aac abc ...
+ *
+ * $Log: not supported by cvs2svn $
+ * Revision 1.4sl  2007/06/18  12:47:00  ct
+ * Rename globmatch to sl_globmatch for integration into libslink.
+ *
+ * Revision 1.4  2004/12/26  12:38:00  ct
+ * Changed function name (amatch -> globmatch), variables and
+ * formatting for clarity.  Also add matching header globmatch.h.
+ *
+ * Revision 1.3  1995/09/14  23:24:23  oz
+ * removed boring test/main code.
+ *
+ * Revision 1.2  94/12/11  10:38:15  oz
+ * charset code fixed. it is now robust and interprets all
+ * variations of charset [i think] correctly, including [z-a] etc.
+ *
+ * Revision 1.1  94/12/08  12:45:23  oz
+ * Initial revision
+ */
+
+#include "core.h"
+
+#ifndef SL_GLOBMATCH_NEGATE
+#define SL_GLOBMATCH_NEGATE '^'       /* std char set negation char */
+#endif
+
+#define SL_GLOBMATCH_TRUE 1
+#define SL_GLOBMATCH_FALSE 0
+
+/******************************************************************/ /**
+ * @brief Check if a string matches a globbing pattern.
+ *
+ * @param string  The string to check.
+ * @param pattern The globbing pattern to match.
+ *
+ * @returns 0 if string does not match pattern and non-zero otherwise.
+ **********************************************************************/
+int
+sl_globmatch (char *string, char *pattern)
+{
+  int negate;
+  int match;
+  int c;
+
+  while (*pattern)
+  {
+    if (!*string && *pattern != '*')
+      return SL_GLOBMATCH_FALSE;
+
+    switch (c = *pattern++)
+    {
+
+    case '*':
+      while (*pattern == '*')
+        pattern++;
+
+      if (!*pattern)
+        return SL_GLOBMATCH_TRUE;
+
+      if (*pattern != '?' && *pattern != '[' && *pattern != '\\')
+        while (*string && *pattern != *string)
+          string++;
+
+      while (*string)
+      {
+        if (sl_globmatch (string, pattern))
+          return SL_GLOBMATCH_TRUE;
+        string++;
+      }
+      return SL_GLOBMATCH_FALSE;
+
+    case '?':
+      if (*string)
+        break;
+      return SL_GLOBMATCH_FALSE;
+
+    /* set specification is inclusive, that is [a-z] is a, z and
+	   * everything in between. this means [z-a] may be interpreted
+	   * as a set that contains z, a and nothing in between.
+	   */
+    case '[':
+      if (*pattern != SL_GLOBMATCH_NEGATE)
+        negate = SL_GLOBMATCH_FALSE;
+      else
+      {
+        negate = SL_GLOBMATCH_TRUE;
+        pattern++;
+      }
+
+      match = SL_GLOBMATCH_FALSE;
+
+      while (!match && (c = *pattern++))
+      {
+        if (!*pattern)
+          return SL_GLOBMATCH_FALSE;
+
+        if (*pattern == '-') /* c-c */
+        {
+          if (!*++pattern)
+            return SL_GLOBMATCH_FALSE;
+          if (*pattern != ']')
+          {
+            if (*string == c || *string == *pattern ||
+                (*string > c && *string < *pattern))
+              match = SL_GLOBMATCH_TRUE;
+          }
+          else
+          { /* c-] */
+            if (*string >= c)
+              match = SL_GLOBMATCH_TRUE;
+            break;
+          }
+        }
+        else /* cc or c] */
+        {
+          if (c == *string)
+            match = SL_GLOBMATCH_TRUE;
+          if (*pattern != ']')
+          {
+            if (*pattern == *string)
+              match = SL_GLOBMATCH_TRUE;
+          }
+          else
+            break;
+        }
+      }
+
+      if (negate == match)
+        return SL_GLOBMATCH_FALSE;
+
+      /*
+	   * if there is a match, skip past the charset and continue on
+	   */
+      while (*pattern && *pattern != ']')
+        pattern++;
+      if (!*pattern++) /* oops! */
+        return SL_GLOBMATCH_FALSE;
+      break;
+
+    case '\\':
+      if (*pattern)
+        c = *pattern++;
+      break;
+
+      default:
+      if (c != *string)
+        return SL_GLOBMATCH_FALSE;
+      break;
+    }
+
+    string++;
+  }
+
+  return !*string;
 }
 //
 // Copyright 2017 Timo Kloss
@@ -2824,8 +3008,6 @@ enum ErrorCode cmd_WAIT(struct Core *core)
 	if (interpreter->pass == PassRun && interpreter->mode == ModeInterrupt)
 		return ErrorNotAllowedInInterrupt;
 
-	struct Token *save = interpreter->pc;
-
 	// WAIT
 	++interpreter->pc;
 
@@ -3464,7 +3646,6 @@ enum ErrorCode cmd_SKIP(struct Core *core)
     struct Interpreter *interpreter = core->interpreter;
 
     // SKIP
-    struct Token *tokenSKIP = interpreter->pc;
     ++interpreter->pc;
 
     // skip value
@@ -3837,8 +4018,8 @@ enum ErrorCode cmd_PAUSE(struct Core *core)
 		// overlay_updateState(core);
 		core->machine->ioRegisters.key = 0;
 		struct TextLib *lib = &core->overlay->textLib;
-		txtlib_printText(lib, "\nlowresrmx debugger\n");
-		txtlib_printText(lib, "==================\n\n");
+		txtlib_printText(lib, "\nDebugger\n");
+		txtlib_printText(lib,   "========\n\n");
 		txtlib_printText(lib, "  'PAUSE' to resume\n\n");
 		txtlib_scrollWindowIfNeeded(lib);
 	}
@@ -4001,272 +4182,257 @@ struct TypedValue fnc_SAFE(struct Core *core)
 
 #define _USE_MATH_DEFINES
 #ifndef __USE_MISC
-  #define __USE_MISC
+#define __USE_MISC
 #endif
 
-#include <math.h>
 #include <assert.h>
+#include <math.h>
 #include <stdlib.h>
 
 #ifndef M_PI
-    #define M_PI 3.14159265358979323846
+#define M_PI 3.14159265358979323846
 #endif
 
-struct TypedValue fnc_math0(struct Core *core)
-{
-    struct Interpreter *interpreter = core->interpreter;
+struct TypedValue fnc_math0(struct Core *core) {
+  struct Interpreter *interpreter = core->interpreter;
 
-    // function
-    enum TokenType type = interpreter->pc->type;
-    ++interpreter->pc;
+  // function
+  enum TokenType type = interpreter->pc->type;
+  ++interpreter->pc;
 
-    struct TypedValue value;
-    value.type = ValueTypeFloat;
+  struct TypedValue value;
+  value.type = ValueTypeFloat;
 
-    if (interpreter->pass == PassRun)
-    {
-        switch (type)
-        {
-            case TokenPI:
-                value.v.floatValue = 3.14159265358979323846264338327950288;
-                break;
+  if (interpreter->pass == PassRun) {
+    switch (type) {
+    case TokenPI:
+      value.v.floatValue = 3.14159265358979323846264338327950288;
+      break;
 
-            default:
-                assert(0);
-                break;
-        }
+    default:
+      assert(0);
+      break;
     }
-    return value;
+  }
+  return value;
 }
 
-struct TypedValue fnc_math1(struct Core *core)
-{
-    struct Interpreter *interpreter = core->interpreter;
+struct TypedValue fnc_math1(struct Core *core) {
+  struct Interpreter *interpreter = core->interpreter;
 
-    // function
-    enum TokenType type = interpreter->pc->type;
-    ++interpreter->pc;
+  // function
+  enum TokenType type = interpreter->pc->type;
+  ++interpreter->pc;
 
-    // bracket open
-    if (interpreter->pc->type != TokenBracketOpen) return val_makeError(ErrorSyntax);
-    ++interpreter->pc;
+  // bracket open
+  if (interpreter->pc->type != TokenBracketOpen)
+    return val_makeError(ErrorSyntax);
+  ++interpreter->pc;
 
-    // expression
-    struct TypedValue xValue = itp_evaluateExpression(core, TypeClassNumeric);
-    if (xValue.type == ValueTypeError) return xValue;
+  // expression
+  struct TypedValue xValue = itp_evaluateExpression(core, TypeClassNumeric);
+  if (xValue.type == ValueTypeError)
+    return xValue;
 
-    // bracket close
-    if (interpreter->pc->type != TokenBracketClose) return val_makeError(ErrorSyntax);
-    ++interpreter->pc;
+  // bracket close
+  if (interpreter->pc->type != TokenBracketClose)
+    return val_makeError(ErrorSyntax);
+  ++interpreter->pc;
 
-    struct TypedValue value;
-    value.type = ValueTypeFloat;
+  struct TypedValue value;
+  value.type = ValueTypeFloat;
 
-    if (interpreter->pass == PassRun)
-    {
-        switch (type)
-        {
-            case TokenABS:
-                value.v.floatValue = fabsf(xValue.v.floatValue);
-                break;
+  if (interpreter->pass == PassRun) {
+    switch (type) {
+    case TokenABS:
+      value.v.floatValue = fabsf(xValue.v.floatValue);
+      break;
 
-            case TokenACOS:
-                if (xValue.v.floatValue < -1.0 || xValue.v.floatValue > 1.0) return val_makeError(ErrorInvalidParameter);
-                value.v.floatValue = acosf(xValue.v.floatValue);
-                break;
+    case TokenCOS:
+      value.v.floatValue = cosf(xValue.v.floatValue * M_PI * 2);
+      break;
 
-            case TokenASIN:
-                if (xValue.v.floatValue < -1.0 || xValue.v.floatValue > 1.0) return val_makeError(ErrorInvalidParameter);
-                value.v.floatValue = asinf(xValue.v.floatValue);
-                break;
+    case TokenEXP:
+      value.v.floatValue = expf(xValue.v.floatValue);
+      break;
 
-            case TokenATAN:
-                value.v.floatValue = atanf(xValue.v.floatValue);
-                break;
+    case TokenINT:
+      value.v.floatValue = floorf(xValue.v.floatValue);
+      break;
 
-            case TokenCOS:
-                value.v.floatValue = cosf(xValue.v.floatValue * M_PI * 2);
-                break;
+    case TokenLOG:
+      if (xValue.v.floatValue <= 0)
+        return val_makeError(ErrorInvalidParameter);
+      value.v.floatValue = logf(xValue.v.floatValue);
+      break;
 
-            case TokenEXP:
-                value.v.floatValue = expf(xValue.v.floatValue);
-                break;
+    case TokenSGN:
+      value.v.floatValue = (xValue.v.floatValue > 0)   ? 1
+                           : (xValue.v.floatValue < 0) ? BAS_TRUE
+                                                       : BAS_FALSE;
+      break;
 
-            case TokenHCOS:
-                value.v.floatValue = coshf(xValue.v.floatValue * M_PI * 2);
-                break;
+    case TokenSIN:
+      value.v.floatValue = -sinf(xValue.v.floatValue * M_PI * 2);
+      break;
 
-            case TokenHSIN:
-                value.v.floatValue = sinhf(xValue.v.floatValue * M_PI * 2);
-                break;
+    case TokenSQR:
+      if (xValue.v.floatValue < 0)
+        return val_makeError(ErrorInvalidParameter);
+      value.v.floatValue = sqrtf(xValue.v.floatValue);
+      break;
 
-            case TokenHTAN:
-                value.v.floatValue = tanhf(xValue.v.floatValue);
-                break;
+    case TokenTAN:
+      value.v.floatValue = tanf(xValue.v.floatValue * M_PI * 2);
+      break;
 
-            case TokenINT:
-                value.v.floatValue = floorf(xValue.v.floatValue);
-                break;
+    case TokenCEIL:
+      value.v.floatValue = ceilf(xValue.v.floatValue);
+      break;
 
-            case TokenLOG:
-                if (xValue.v.floatValue <= 0) return val_makeError(ErrorInvalidParameter);
-                value.v.floatValue = logf(xValue.v.floatValue);
-                break;
+    case TokenFLOOR:
+      value.v.floatValue = floorf(xValue.v.floatValue);
+      break;
 
-            case TokenSGN:
-                value.v.floatValue = (xValue.v.floatValue > 0) ? 1 : (xValue.v.floatValue < 0) ? BAS_TRUE : BAS_FALSE;
-                break;
-
-            case TokenSIN:
-                value.v.floatValue = sinf(xValue.v.floatValue * M_PI * 2);
-                break;
-
-            case TokenSQR:
-                if (xValue.v.floatValue < 0) return val_makeError(ErrorInvalidParameter);
-                value.v.floatValue = sqrtf(xValue.v.floatValue);
-                break;
-
-            case TokenTAN:
-                value.v.floatValue = tanf(xValue.v.floatValue * M_PI * 2);
-                break;
-
-            case TokenCEIL:
-								value.v.floatValue = ceilf(xValue.v.floatValue);
-								break;
-
-						case TokenFLOOR:
-								value.v.floatValue = floorf(xValue.v.floatValue);
-								break;
-
-            default:
-                assert(0);
-                break;
-        }
+    default:
+      assert(0);
+      break;
     }
-    return value;
+  }
+  return value;
 }
 
-struct TypedValue fnc_math2(struct Core *core)
-{
-    struct Interpreter *interpreter = core->interpreter;
+struct TypedValue fnc_math2(struct Core *core) {
+  struct Interpreter *interpreter = core->interpreter;
 
-    // function
-    enum TokenType type = interpreter->pc->type;
-    ++interpreter->pc;
+  // function
+  enum TokenType type = interpreter->pc->type;
+  ++interpreter->pc;
 
-    // bracket open
-    if (interpreter->pc->type != TokenBracketOpen) return val_makeError(ErrorSyntax);
-        ++interpreter->pc;
+  // bracket open
+  if (interpreter->pc->type != TokenBracketOpen)
+    return val_makeError(ErrorSyntax);
+  ++interpreter->pc;
 
-    // x expression
-    struct TypedValue xValue = itp_evaluateExpression(core, TypeClassNumeric);
-    if (xValue.type == ValueTypeError) return xValue;
+  // x expression
+  struct TypedValue xValue = itp_evaluateExpression(core, TypeClassNumeric);
+  if (xValue.type == ValueTypeError)
+    return xValue;
 
-    // comma
-    if (interpreter->pc->type != TokenComma) return val_makeError(ErrorSyntax);
-    ++interpreter->pc;
+  // comma
+  if (interpreter->pc->type != TokenComma)
+    return val_makeError(ErrorSyntax);
+  ++interpreter->pc;
 
-    // y expression
-    struct TypedValue yValue = itp_evaluateExpression(core, TypeClassNumeric);
-    if (yValue.type == ValueTypeError) return yValue;
+  // y expression
+  struct TypedValue yValue = itp_evaluateExpression(core, TypeClassNumeric);
+  if (yValue.type == ValueTypeError)
+    return yValue;
 
-    // bracket close
-    if (interpreter->pc->type != TokenBracketClose) return val_makeError(ErrorSyntax);
-    ++interpreter->pc;
+  // bracket close
+  if (interpreter->pc->type != TokenBracketClose)
+    return val_makeError(ErrorSyntax);
+  ++interpreter->pc;
 
-    struct TypedValue value;
-    value.type = ValueTypeFloat;
+  struct TypedValue value;
+  value.type = ValueTypeFloat;
 
-    if (interpreter->pass == PassRun)
-    {
-        float x = xValue.v.floatValue;
-        float y = yValue.v.floatValue;
+  if (interpreter->pass == PassRun) {
+    float x = xValue.v.floatValue;
+    float y = yValue.v.floatValue;
 
-        switch (type)
-        {
-            case TokenMAX:
-                value.v.floatValue = (x > y) ? x : y;
-                break;
+    switch (type) {
+    case TokenMAX:
+      value.v.floatValue = (x > y) ? x : y;
+      break;
 
-            case TokenMIN:
-                value.v.floatValue = (x < y) ? x : y;
-                break;
+    case TokenMIN:
+      value.v.floatValue = (x < y) ? x : y;
+      break;
 
-            default:
-                assert(0);
-                break;
-        }
+    case TokenATAN:
+			value.v.floatValue = - atan2f(y, x) / M_PI / 2;
+      break;
+
+    default:
+      assert(0);
+      break;
     }
-    return value;
+  }
+  return value;
 }
 
-struct TypedValue fnc_math3(struct Core *core)
-{
-    struct Interpreter *interpreter = core->interpreter;
+struct TypedValue fnc_math3(struct Core *core) {
+  struct Interpreter *interpreter = core->interpreter;
 
-    // function
-    enum TokenType type = interpreter->pc->type;
-    ++interpreter->pc;
+  // function
+  enum TokenType type = interpreter->pc->type;
+  ++interpreter->pc;
 
-    // bracket open
-    if (interpreter->pc->type != TokenBracketOpen) return val_makeError(ErrorSyntax);
-        ++interpreter->pc;
+  // bracket open
+  if (interpreter->pc->type != TokenBracketOpen)
+    return val_makeError(ErrorSyntax);
+  ++interpreter->pc;
 
-    // x expression
-    struct TypedValue xValue = itp_evaluateExpression(core, TypeClassNumeric);
-    if (xValue.type == ValueTypeError) return xValue;
+  // x expression
+  struct TypedValue xValue = itp_evaluateExpression(core, TypeClassNumeric);
+  if (xValue.type == ValueTypeError)
+    return xValue;
 
-    // comma
-    if (interpreter->pc->type != TokenComma) return val_makeError(ErrorSyntax);
-    ++interpreter->pc;
+  // comma
+  if (interpreter->pc->type != TokenComma)
+    return val_makeError(ErrorSyntax);
+  ++interpreter->pc;
 
-    // y expression
-    struct TypedValue yValue = itp_evaluateExpression(core, TypeClassNumeric);
-    if (yValue.type == ValueTypeError) return yValue;
+  // y expression
+  struct TypedValue yValue = itp_evaluateExpression(core, TypeClassNumeric);
+  if (yValue.type == ValueTypeError)
+    return yValue;
 
-    // comma
-    if (interpreter->pc->type != TokenComma) return val_makeError(ErrorSyntax);
-    ++interpreter->pc;
+  // comma
+  if (interpreter->pc->type != TokenComma)
+    return val_makeError(ErrorSyntax);
+  ++interpreter->pc;
 
-    // z expression
-    struct TypedValue zValue = itp_evaluateExpression(core, TypeClassNumeric);
-    if (zValue.type == ValueTypeError) return zValue;
+  // z expression
+  struct TypedValue zValue = itp_evaluateExpression(core, TypeClassNumeric);
+  if (zValue.type == ValueTypeError)
+    return zValue;
 
-    // bracket close
-    if (interpreter->pc->type != TokenBracketClose) return val_makeError(ErrorSyntax);
-    ++interpreter->pc;
+  // bracket close
+  if (interpreter->pc->type != TokenBracketClose)
+    return val_makeError(ErrorSyntax);
+  ++interpreter->pc;
 
-    struct TypedValue value;
-    value.type = ValueTypeFloat;
+  struct TypedValue value;
+  value.type = ValueTypeFloat;
 
-    if (interpreter->pass == PassRun)
-    {
-        float x = xValue.v.floatValue;
-        float y = yValue.v.floatValue;
-        float z = zValue.v.floatValue;
+  if (interpreter->pass == PassRun) {
+    float x = xValue.v.floatValue;
+    float y = yValue.v.floatValue;
+    float z = zValue.v.floatValue;
 
-        switch (type)
-        {
-            case TokenCLAMP:
-                value.v.floatValue = (x < y) ? y : (x > z) ? z : x;
-                break;
+    switch (type) {
+    case TokenCLAMP:
+      value.v.floatValue = (x < y) ? y : (x > z) ? z : x;
+      break;
 
-            default:
-                assert(0);
-                break;
-        }
+    default:
+      assert(0);
+      break;
     }
-    return value;
+  }
+  return value;
 }
 
 float easeOutBounce(float x) {
 
-  if (x < 1 / 2.75) return (7.5625 * x * x);
+  if (x < 1 / 2.75)
+    return (7.5625 * x * x);
   if (x < 2 / 2.75) {
     x = x - (1.5 / 2.75);
     return (7.5625 * x * x + 0.75);
-  }
-  else if (x < 2.5 / 2.75) {
+  } else if (x < 2.5 / 2.75) {
     x = x - (2.25 / 2.75);
     return (7.5625 * x * x + 0.9375);
   }
@@ -4274,330 +4440,376 @@ float easeOutBounce(float x) {
   return (7.5625 * x * x + 0.984375);
 }
 
-float easeInBounce(float x) {
-  return 1 - easeOutBounce(1 - x);
-}
+float easeInBounce(float x) { return 1 - easeOutBounce(1 - x); }
 
 float easeInOutBounce(float x) {
-  return x < 0.5
-    ? (1 - easeOutBounce(1 - 2 * x)) / 2
-    : (1 + easeOutBounce(2 * x - 1)) / 2;
+  return x < 0.5 ? (1 - easeOutBounce(1 - 2 * x)) / 2
+                 : (1 + easeOutBounce(2 * x - 1)) / 2;
 }
 
-struct TypedValue fnc_EASE(struct Core *core)
-{
-    struct Interpreter *interpreter = core->interpreter;
+struct TypedValue fnc_EASE(struct Core *core) {
+  struct Interpreter *interpreter = core->interpreter;
 
-    // function
-    enum TokenType type = interpreter->pc->type;
-    ++interpreter->pc;
+  // function
+  ++interpreter->pc;
 
-    // bracket open
-    if (interpreter->pc->type != TokenBracketOpen) return val_makeError(ErrorSyntax);
-        ++interpreter->pc;
+  // bracket open
+  if (interpreter->pc->type != TokenBracketOpen)
+    return val_makeError(ErrorSyntax);
+  ++interpreter->pc;
 
-    // easing value
-    struct TypedValue easing = itp_evaluateNumericExpression(core, 0, 9);
-    if (easing.type == ValueTypeError) return easing;
+  // easing value
+  struct TypedValue easing = itp_evaluateNumericExpression(core, 0, 9);
+  if (easing.type == ValueTypeError)
+    return easing;
 
-    // comma
-    if (interpreter->pc->type != TokenComma) return val_makeError(ErrorSyntax);
-    ++interpreter->pc;
+  // comma
+  if (interpreter->pc->type != TokenComma)
+    return val_makeError(ErrorSyntax);
+  ++interpreter->pc;
 
-    // inout value
-    struct TypedValue inout = itp_evaluateNumericExpression(core, -1, 1);
-    if (inout.type == ValueTypeError) return inout;
+  // inout value
+  struct TypedValue inout = itp_evaluateNumericExpression(core, -1, 1);
+  if (inout.type == ValueTypeError)
+    return inout;
 
-    // comma
-    if (interpreter->pc->type != TokenComma) return val_makeError(ErrorSyntax);
-    ++interpreter->pc;
+  // comma
+  if (interpreter->pc->type != TokenComma)
+    return val_makeError(ErrorSyntax);
+  ++interpreter->pc;
 
-    // x expression
-    struct TypedValue xValue = itp_evaluateExpression(core, TypeClassNumeric);
-    if (xValue.type == ValueTypeError) return xValue;
+  // x expression
+  struct TypedValue xValue = itp_evaluateExpression(core, TypeClassNumeric);
+  if (xValue.type == ValueTypeError)
+    return xValue;
 
-    // bracket close
-    if (interpreter->pc->type != TokenBracketClose) return val_makeError(ErrorSyntax);
-    ++interpreter->pc;
+  // bracket close
+  if (interpreter->pc->type != TokenBracketClose)
+    return val_makeError(ErrorSyntax);
+  ++interpreter->pc;
 
-    int e=(int)easing.v.floatValue;
-    int io=(int)inout.v.floatValue;
-    float x=xValue.v.floatValue;
-    float v;
+  int e = (int)easing.v.floatValue;
+  int io = (int)inout.v.floatValue;
+  float x = xValue.v.floatValue;
+  float v;
 
-    x = x>1.0f ? 1.0f : x<0.0f ? 0.0f : x;
+  x = x > 1.0f ? 1.0f : x < 0.0f ? 0.0f : x;
 
-    const float c1 = 1.70158;
-    const float c2 = c1 * 1.525;
-    const float c3 = c1 + 1;
-    const float c4 = (2 * M_PI) / 3;
-    const float c5 = (2 * M_PI) / 4.5;
+  const float c1 = 1.70158;
+  const float c2 = c1 * 1.525;
+  const float c3 = c1 + 1;
+  const float c4 = (2 * M_PI) / 3;
+  const float c5 = (2 * M_PI) / 4.5;
 
-    // linear
-    if (e==0) v = xValue.v.floatValue;
+  // linear
+  if (e == 0)
+    v = xValue.v.floatValue;
 
-    // sine
-    else if(e==1 && io<0) v = 1 - cosf((x * M_PI) / 2);
-    else if(e==1 && io==0) v = -(cosf(M_PI * x) - 1) / 2;
-    else if(e==1 && io>0) v = sinf((x * M_PI) / 2);
+  // sine
+  else if (e == 1 && io < 0)
+    v = 1 - cosf((x * M_PI) / 2);
+  else if (e == 1 && io == 0)
+    v = -(cosf(M_PI * x) - 1) / 2;
+  else if (e == 1 && io > 0)
+    v = sinf((x * M_PI) / 2);
 
-    // quad
-    else if(e==2 && io<0) v =  x * x;
-    else if(e==2 && io==0) v = x < 0.5 ? 2 * x * x : 1 - pow(-2 * x + 2, 2) / 2;
-    else if(e==2 && io>0) v = 1 - (1 - x) * (1 - x);
+  // quad
+  else if (e == 2 && io < 0)
+    v = x * x;
+  else if (e == 2 && io == 0)
+    v = x < 0.5 ? 2 * x * x : 1 - pow(-2 * x + 2, 2) / 2;
+  else if (e == 2 && io > 0)
+    v = 1 - (1 - x) * (1 - x);
 
-    // cubic
-    else if(e==3 && io<0) v = x * x * x;
-    else if(e==3 && io==0) v = x < 0.5 ? 4 * x * x * x : 1 - pow(-2 * x + 2, 3) / 2;
-    else if(e==3 && io>0) v = 1 - pow(1 - x, 3);
+  // cubic
+  else if (e == 3 && io < 0)
+    v = x * x * x;
+  else if (e == 3 && io == 0)
+    v = x < 0.5 ? 4 * x * x * x : 1 - pow(-2 * x + 2, 3) / 2;
+  else if (e == 3 && io > 0)
+    v = 1 - pow(1 - x, 3);
 
-    // quart
-    else if(e==4 && io<0) v = x * x * x * x;
-    else if(e==4 && io==0) v = x < 0.5 ? 8 * x * x * x * x : 1 - pow(-2 * x + 2, 4) / 2;
-    else if(e==4 && io>0) v = 1 - pow(1 - x, 4);
+  // quart
+  else if (e == 4 && io < 0)
+    v = x * x * x * x;
+  else if (e == 4 && io == 0)
+    v = x < 0.5 ? 8 * x * x * x * x : 1 - pow(-2 * x + 2, 4) / 2;
+  else if (e == 4 && io > 0)
+    v = 1 - pow(1 - x, 4);
 
-    // quint
-    else if(e==5 && io<0) v =  x * x * x * x * x;
-    else if(e==5 && io==0) v = x < 0.5 ? 16 * x * x * x * x * x : 1 - pow(-2 * x + 2, 5) / 2;
-    else if(e==5 && io>0) v = 1 - pow(1 - x, 5);
+  // quint
+  else if (e == 5 && io < 0)
+    v = x * x * x * x * x;
+  else if (e == 5 && io == 0)
+    v = x < 0.5 ? 16 * x * x * x * x * x : 1 - pow(-2 * x + 2, 5) / 2;
+  else if (e == 5 && io > 0)
+    v = 1 - pow(1 - x, 5);
 
-    // circ
-    else if(e==6 && io<0) v = 1 - sqrt(1 - pow(x, 2));
-    else if(e==6 && io==0) v = x < 0.5 ? (1 - sqrt(1 - pow(2 * x, 2))) / 2 : (sqrt(1 - pow(-2 * x + 2, 2)) + 1) / 2;
-    else if(e==6 && io>0) v = sqrt(1 - pow(x - 1, 2));
+  // circ
+  else if (e == 6 && io < 0)
+    v = 1 - sqrt(1 - pow(x, 2));
+  else if (e == 6 && io == 0)
+    v = x < 0.5 ? (1 - sqrt(1 - pow(2 * x, 2))) / 2
+                : (sqrt(1 - pow(-2 * x + 2, 2)) + 1) / 2;
+  else if (e == 6 && io > 0)
+    v = sqrt(1 - pow(x - 1, 2));
 
-    // back
-    else if(e==7 && io<0) v = c3 * x * x * x - c1 * x * x;
-    else if(e==7 && io==0) v = x < 0.5 ? (pow(2 * x, 2) * ((c2 + 1) * 2 * x - c2)) / 2 : (pow(2 * x - 2, 2) * ((c2 + 1) * (x * 2 - 2) + c2) + 2) / 2;
-    else if(e==7 && io>0) v = 1 + c3 * pow(x - 1, 3) + c1 * pow(x - 1, 2);
+  // back
+  else if (e == 7 && io < 0)
+    v = c3 * x * x * x - c1 * x * x;
+  else if (e == 7 && io == 0)
+    v = x < 0.5 ? (pow(2 * x, 2) * ((c2 + 1) * 2 * x - c2)) / 2
+                : (pow(2 * x - 2, 2) * ((c2 + 1) * (x * 2 - 2) + c2) + 2) / 2;
+  else if (e == 7 && io > 0)
+    v = 1 + c3 * pow(x - 1, 3) + c1 * pow(x - 1, 2);
 
-    // elastic
-    else if(e==8 && io<0) v = x == 0 ? 0 : x == 1 ? 1 : -pow(2, 10 * x - 10) * sinf((x * 10 - 10.75) * c4);
-    else if(e==8 && io==0) v = x == 0 ? 0 : x == 1 ? 1 : x < 0.5 ? -(pow(2, 20 * x - 10) * sinf((20 * x - 11.125) * c5)) / 2 : (pow(2, -20 * x + 10) * sinf((20 * x - 11.125) * c5)) / 2 + 1;
-    else if(e==8 && io>0) v = x == 0 ? 0 : x == 1 ? 1 : pow(2, -10 * x) * sinf((x * 10 - 0.75) * c4) + 1;
+  // elastic
+  else if (e == 8 && io < 0)
+    v = x == 0   ? 0
+        : x == 1 ? 1
+                 : -pow(2, 10 * x - 10) * sinf((x * 10 - 10.75) * c4);
+  else if (e == 8 && io == 0)
+    v = x == 0   ? 0
+        : x == 1 ? 1
+        : x < 0.5
+            ? -(pow(2, 20 * x - 10) * sinf((20 * x - 11.125) * c5)) / 2
+            : (pow(2, -20 * x + 10) * sinf((20 * x - 11.125) * c5)) / 2 + 1;
+  else if (e == 8 && io > 0)
+    v = x == 0   ? 0
+        : x == 1 ? 1
+                 : pow(2, -10 * x) * sinf((x * 10 - 0.75) * c4) + 1;
 
-    // bounce
-    else if(e==9 && io<0) v = easeInBounce(x);
-    else if(e==9 && io==0) v = easeInOutBounce(x);
-    else if(e==9 && io>0) v = easeOutBounce(x);
+  // bounce
+  else if (e == 9 && io < 0)
+    v = easeInBounce(x);
+  else if (e == 9 && io == 0)
+    v = easeInOutBounce(x);
+  else if (e == 9 && io > 0)
+    v = easeOutBounce(x);
 
-    struct TypedValue value;
-    value.type = ValueTypeFloat;
-    value.v.floatValue = v;
+  else
+    v = xValue.v.floatValue;
 
-    return value;
+  struct TypedValue value;
+  value.type = ValueTypeFloat;
+  value.v.floatValue = v;
+
+  return value;
 }
 
-enum ErrorCode cmd_RANDOMIZE(struct Core *core)
-{
-    struct Interpreter *interpreter = core->interpreter;
+enum ErrorCode cmd_RANDOMIZE(struct Core *core) {
+  struct Interpreter *interpreter = core->interpreter;
 
-    // RANDOMIZE
+  // RANDOMIZE
+  ++interpreter->pc;
+
+  struct TypedValue yValue;
+  yValue.type = ValueTypeNull;
+
+  pcg32_random_t *rng = &interpreter->defaultRng;
+
+  // RANDOMIZE seed
+  struct TypedValue xValue = itp_evaluateExpression(core, TypeClassNumeric);
+  if (xValue.type == ValueTypeError)
+    return xValue.v.errorCode;
+  // XXX: if (xValue.type != ValueTypeNull)
+
+  // RANDOMIZE seed [,]
+  if (interpreter->pc->type == TokenComma && !core->interpreter->compat) {
     ++interpreter->pc;
 
-    struct TypedValue yValue;
-    yValue.type = ValueTypeNull;
+    // RANDOMIZE seed [, addr]
+    yValue = itp_evaluateExpression(core, TypeClassNumeric);
+    if (yValue.type == ValueTypeError)
+      return yValue.v.errorCode;
 
-    pcg32_random_t *rng = &interpreter->defaultRng;
+    if (interpreter->pass == PassRun) {
+      int addr = yValue.v.floatValue;
+      rng = (pcg32_random_t *)(((uint8_t *)core->machine) + addr);
+    }
+  }
 
-    // RANDOMIZE seed
-    struct TypedValue xValue = itp_evaluateExpression(core, TypeClassNumeric);
-    if (xValue.type == ValueTypeError) return xValue.v.errorCode;
-    // XXX: if (xValue.type != ValueTypeNull)
+  if (interpreter->pass == PassRun) {
+    if (interpreter->compat)
+      interpreter->seed = xValue.v.floatValue;
+    else {
+      pcg32_srandom_r(rng, (uint32_t)xValue.v.floatValue, (intptr_t)rng);
+    }
+  }
 
-    // RANDOMIZE seed [,]
-    if(interpreter->pc->type == TokenComma && !core->interpreter->compat) {
+  return itp_endOfCommand(interpreter);
+}
+
+struct TypedValue fnc_RND(struct Core *core) {
+  struct Interpreter *interpreter = core->interpreter;
+
+  // RND
+  ++interpreter->pc;
+
+  struct TypedValue xValue;
+  xValue.type = ValueTypeNull;
+  pcg32_random_t *rng = &interpreter->defaultRng;
+  if (interpreter->pc->type == TokenBracketOpen) {
+    // RND(
+    ++interpreter->pc;
+
+    // RND(bound
+    xValue = itp_evaluateOptionalExpression(core, TypeClassNumeric);
+    if (xValue.type == ValueTypeError)
+      return xValue;
+
+    // RND(bound [,]
+    if (interpreter->pc->type == TokenComma && !core->interpreter->compat) {
       ++interpreter->pc;
 
-      // RANDOMIZE seed [, addr]
-      yValue = itp_evaluateExpression(core, TypeClassNumeric);
-      if (yValue.type == ValueTypeError) return yValue.v.errorCode;
+      // RND(bound [, addr]
+      struct TypedValue yValue = itp_evaluateExpression(core, TypeClassNumeric);
+      if (yValue.type == ValueTypeError)
+        return yValue;
 
-      if (interpreter->pass == PassRun)
-      {
-          int addr = yValue.v.floatValue;
-          rng = (pcg32_random_t *)(((uint8_t*)core->machine)+addr);
+      if (interpreter->pass == PassRun) {
+        int addr = yValue.v.floatValue;
+        rng = (pcg32_random_t *)((uint8_t *)(core->machine) + addr);
       }
     }
 
-    if (interpreter->pass == PassRun)
-    {
-        if(interpreter->compat) interpreter->seed = xValue.v.floatValue;
-        else {
-          pcg32_srandom_r(rng, (uint32_t)xValue.v.floatValue, (intptr_t)rng);
-        }
-    }
+    // RND(bound)
+    // RND(bound [, addr])
+    if (interpreter->pc->type != TokenBracketClose)
+      return val_makeError(ErrorSyntax);
+    ++interpreter->pc;
+  }
 
-    return itp_endOfCommand(interpreter);
+  struct TypedValue value;
+  value.type = ValueTypeFloat;
+
+  if (interpreter->pass == PassRun) {
+    if (core->interpreter->compat) {
+      int seed = (1140671485 * interpreter->seed + 12820163) & 0xFFFFFF;
+      interpreter->seed = seed;
+      float rnd = seed / (float)0x1000000;
+
+      if (xValue.type != ValueTypeNull && xValue.v.floatValue >= 0) {
+        // integer 0...x
+        value.v.floatValue = floorf(rnd * (xValue.v.floatValue + 1));
+      } else {
+        // float 0..<1
+        value.v.floatValue = rnd;
+      }
+    } else {
+
+      if (xValue.type == ValueTypeNull) {
+        value.v.floatValue = (float)ldexp(pcg32_random_r(rng), -32);
+      } else {
+        value.v.floatValue =
+            (float)pcg32_boundedrand_r(rng, (uint32_t)xValue.v.floatValue + 1);
+      }
+    }
+  }
+  return value;
 }
 
-struct TypedValue fnc_RND(struct Core *core)
-{
-    struct Interpreter *interpreter = core->interpreter;
+enum ErrorCode cmd_ADD(struct Core *core) {
+  struct Interpreter *interpreter = core->interpreter;
 
-    // RND
+  // ADD
+  ++interpreter->pc;
+
+  enum ErrorCode errorCode = ErrorNone;
+
+  // Variable
+  enum ValueType valueType = ValueTypeNull;
+  union Value *varValue = itp_readVariable(core, &valueType, &errorCode, false);
+  if (!varValue)
+    return errorCode;
+  if (valueType != ValueTypeFloat)
+    return ErrorTypeMismatch;
+
+  if (interpreter->pc->type != TokenComma)
+    return ErrorSyntax;
+  ++interpreter->pc;
+
+  // n vale
+  struct TypedValue nValue = itp_evaluateExpression(core, TypeClassNumeric);
+  if (nValue.type == ValueTypeError)
+    return nValue.v.errorCode;
+
+  bool hasRange = false;
+  float base = 0;
+  float top = 0;
+
+  if (interpreter->pc->type == TokenComma) {
+    // comma
     ++interpreter->pc;
 
-    struct TypedValue xValue;
-    xValue.type=ValueTypeNull;
-    pcg32_random_t *rng = &interpreter->defaultRng;
-    if (interpreter->pc->type == TokenBracketOpen)
-    {
-        // RND(
-        ++interpreter->pc;
+    // base value
+    struct TypedValue baseValue =
+        itp_evaluateExpression(core, TypeClassNumeric);
+    if (baseValue.type == ValueTypeError)
+      return baseValue.v.errorCode;
+    base = baseValue.v.floatValue;
 
-        // RND(bound
-        xValue = itp_evaluateOptionalExpression(core, TypeClassNumeric);
-        if (xValue.type == ValueTypeError) return xValue;
+    // TO
+    if (interpreter->pc->type != TokenTO)
+      return ErrorSyntax;
+    ++interpreter->pc;
 
-        // RND(bound [,]
-        if(interpreter->pc->type == TokenComma && !core->interpreter->compat) {
-          ++interpreter->pc;
+    // top value
+    struct TypedValue topValue = itp_evaluateExpression(core, TypeClassNumeric);
+    if (topValue.type == ValueTypeError)
+      return topValue.v.errorCode;
+    top = topValue.v.floatValue;
 
-          // RND(bound [, addr]
-          struct TypedValue yValue = itp_evaluateExpression(core, TypeClassNumeric);
-          if (yValue.type == ValueTypeError) return yValue;
+    hasRange = true;
+  }
 
-          if (interpreter->pass == PassRun) {
-              int addr = yValue.v.floatValue;
-              rng = (pcg32_random_t *)((uint8_t*)(core->machine)+addr);
-          }
-        }
-
-        // RND(bound)
-        // RND(bound [, addr])
-        if (interpreter->pc->type != TokenBracketClose) return val_makeError(ErrorSyntax);
-        ++interpreter->pc;
+  if (interpreter->pass == PassRun) {
+    varValue->floatValue += nValue.v.floatValue;
+    if (hasRange) {
+      if (varValue->floatValue < base)
+        varValue->floatValue = top;
+      if (varValue->floatValue > top)
+        varValue->floatValue = base;
     }
+  }
 
-    struct TypedValue value;
-    value.type = ValueTypeFloat;
-
-    if (interpreter->pass == PassRun)
-    {
-        if(core->interpreter->compat) {
-            int seed = (1140671485 * interpreter->seed + 12820163) & 0xFFFFFF;
-            interpreter->seed = seed;
-            float rnd = seed / (float)0x1000000;
-
-            if (xValue.type!=ValueTypeNull && xValue.v.floatValue >= 0)
-            {
-                // integer 0...x
-                value.v.floatValue = floorf(rnd * (xValue.v.floatValue + 1));
-            }
-            else
-            {
-                // float 0..<1
-                value.v.floatValue = rnd;
-            }
-        } else {
-
-            if (xValue.type==ValueTypeNull) {
-                value.v.floatValue = (float)ldexp(pcg32_random_r(rng), -32);
-            } else {
-                value.v.floatValue = (float)pcg32_boundedrand_r(rng, (uint32_t)xValue.v.floatValue + 1);
-            }
-        }
-    }
-    return value;
+  return itp_endOfCommand(interpreter);
 }
 
-enum ErrorCode cmd_ADD(struct Core *core)
-{
-    struct Interpreter *interpreter = core->interpreter;
+enum ErrorCode cmd_INC_DEC(struct Core *core) {
+  struct Interpreter *interpreter = core->interpreter;
 
-    // ADD
-    ++interpreter->pc;
+  // INC/DEC
+  enum TokenType type = interpreter->pc->type;
+  ++interpreter->pc;
 
-    enum ErrorCode errorCode = ErrorNone;
+  enum ErrorCode errorCode = ErrorNone;
 
-    // Variable
-    enum ValueType valueType = ValueTypeNull;
-    union Value *varValue = itp_readVariable(core, &valueType, &errorCode, false);
-    if (!varValue) return errorCode;
-    if (valueType != ValueTypeFloat) return ErrorTypeMismatch;
+  // Variable
+  enum ValueType valueType = ValueTypeNull;
+  union Value *varValue = itp_readVariable(core, &valueType, &errorCode, false);
+  if (!varValue)
+    return errorCode;
+  if (valueType != ValueTypeFloat)
+    return ErrorTypeMismatch;
 
-    if (interpreter->pc->type != TokenComma) return ErrorSyntax;
-    ++interpreter->pc;
+  if (interpreter->pass == PassRun) {
+    switch (type) {
+    case TokenINC:
+      ++varValue->floatValue;
+      break;
 
-    // n vale
-    struct TypedValue nValue = itp_evaluateExpression(core, TypeClassNumeric);
-    if (nValue.type == ValueTypeError) return nValue.v.errorCode;
+    case TokenDEC:
+      --varValue->floatValue;
+      break;
 
-    bool hasRange = false;
-    float base = 0;
-    float top = 0;
-
-    if (interpreter->pc->type == TokenComma)
-    {
-        // comma
-        ++interpreter->pc;
-
-        // base value
-        struct TypedValue baseValue = itp_evaluateExpression(core, TypeClassNumeric);
-        if (baseValue.type == ValueTypeError) return baseValue.v.errorCode;
-        base = baseValue.v.floatValue;
-
-        // TO
-        if (interpreter->pc->type != TokenTO) return ErrorSyntax;
-        ++interpreter->pc;
-
-        // top value
-        struct TypedValue topValue = itp_evaluateExpression(core, TypeClassNumeric);
-        if (topValue.type == ValueTypeError) return topValue.v.errorCode;
-        top = topValue.v.floatValue;
-
-        hasRange = true;
+    default:
+      assert(0);
+      break;
     }
+  }
 
-    if (interpreter->pass == PassRun)
-    {
-        varValue->floatValue += nValue.v.floatValue;
-        if (hasRange)
-        {
-            if (varValue->floatValue < base) varValue->floatValue = top;
-            if (varValue->floatValue > top) varValue->floatValue = base;
-        }
-    }
-
-    return itp_endOfCommand(interpreter);
-}
-
-enum ErrorCode cmd_INC_DEC(struct Core *core)
-{
-    struct Interpreter *interpreter = core->interpreter;
-
-    // INC/DEC
-    enum TokenType type = interpreter->pc->type;
-    ++interpreter->pc;
-
-    enum ErrorCode errorCode = ErrorNone;
-
-    // Variable
-    enum ValueType valueType = ValueTypeNull;
-    union Value *varValue = itp_readVariable(core, &valueType, &errorCode, false);
-    if (!varValue) return errorCode;
-    if (valueType != ValueTypeFloat) return ErrorTypeMismatch;
-
-    if (interpreter->pass == PassRun)
-    {
-        switch (type)
-        {
-            case TokenINC:
-                ++varValue->floatValue;
-                break;
-
-            case TokenDEC:
-                --varValue->floatValue;
-                break;
-
-            default:
-                assert(0);
-                break;
-        }
-    }
-
-    return itp_endOfCommand(interpreter);
+  return itp_endOfCommand(interpreter);
 }
 //
 // Copyright 2017 Timo Kloss
@@ -4717,7 +4929,7 @@ enum ErrorCode cmd_POKE(struct Core *core)
 
             case TokenPOKEW:
             {
-                long value = (long)pokeValue.v.floatValue;
+                int16_t value = (int16_t)pokeValue.v.floatValue;
 								bool poke = machine_poke_short(core, addressValue.v.floatValue, value);
 								if (!poke) return ErrorIllegalMemoryAccess;
                 break;
@@ -4725,7 +4937,7 @@ enum ErrorCode cmd_POKE(struct Core *core)
 
             case TokenPOKEL:
             {
-                long value = (long)pokeValue.v.floatValue;
+                int32_t value = (int32_t)pokeValue.v.floatValue;
 								bool poke = machine_poke_long(core, addressValue.v.floatValue, value);
 								if (!poke) return ErrorIllegalMemoryAccess;
                 break;
@@ -4926,7 +5138,6 @@ enum ErrorCode cmd_DMA_COPY(struct Core *core)
     int base_addr = 0;
 
     // DMA
-    enum TokenType type = interpreter->pc->type;
     ++interpreter->pc;
 
     // DMA COPY
@@ -5150,6 +5361,7 @@ enum ErrorCode cmd_EMITTER(struct Core *core)
 #include <assert.h>
 #include <stdint.h>
 #include "core.h"
+#include "core.h"
 
 enum ErrorCode cmd_PALETTE(struct Core *core)
 {
@@ -5223,7 +5435,7 @@ enum ErrorCode cmd_SCROLL(struct Core *core)
     ++interpreter->pc;
 
     // x value
-    struct TypedValue xValue = itp_evaluateExpression(core, TypeClassNumeric);
+    struct TypedValue xValue = itp_evaluateOptionalExpression(core, TypeClassNumeric);
     if (xValue.type == ValueTypeError) return xValue.v.errorCode;
 
     // comma
@@ -5231,17 +5443,17 @@ enum ErrorCode cmd_SCROLL(struct Core *core)
     ++interpreter->pc;
 
     // y value
-    struct TypedValue yValue = itp_evaluateExpression(core, TypeClassNumeric);
+    struct TypedValue yValue = itp_evaluateOptionalExpression(core, TypeClassNumeric);
     if (yValue.type == ValueTypeError) return yValue.v.errorCode;
 
     if (interpreter->pass == PassRun)
     {
         struct VideoRegisters *reg = &core->machine->videoRegisters;
         int bg = bgValue.v.floatValue;
-        int x = (int)xValue.v.floatValue;
-        int y = (int)yValue.v.floatValue;
         if (bg == 0)
         {
+            int x = (xValue.type == ValueTypeNull)?(int)reg->scrollAX:(int)xValue.v.floatValue;
+            int y = (yValue.type == ValueTypeNull)?(int)reg->scrollAY:(int)yValue.v.floatValue;
             reg->scrollAX = x & 0xffFF;
             reg->scrollAY = y & 0xffFF;
             // reg->scrollMSB.aX = (x >> 8) & 1;
@@ -5249,6 +5461,8 @@ enum ErrorCode cmd_SCROLL(struct Core *core)
         }
         else if(bg == 1)
         {
+        		int x = (xValue.type == ValueTypeNull)?(int)reg->scrollBX:(int)xValue.v.floatValue;
+            int y = (yValue.type == ValueTypeNull)?(int)reg->scrollBY:(int)yValue.v.floatValue;
             reg->scrollBX = x & 0xffFF;
             reg->scrollBY = y & 0xffFF;
             // reg->scrollMSB.bX = (x >> 8) & 1;
@@ -5256,6 +5470,8 @@ enum ErrorCode cmd_SCROLL(struct Core *core)
         }
         else if(bg == 2)
         {
+        		int x = (xValue.type == ValueTypeNull)?(int)reg->scrollCX:(int)xValue.v.floatValue;
+            int y = (yValue.type == ValueTypeNull)?(int)reg->scrollCY:(int)yValue.v.floatValue;
             reg->scrollCX = x & 0xffFF;
             reg->scrollCY = y & 0xffFF;
             // reg->scrollMSB.cX = (x >> 8) & 1;
@@ -5263,6 +5479,8 @@ enum ErrorCode cmd_SCROLL(struct Core *core)
         }
         else if(bg == 3)
         {
+        		int x = (xValue.type == ValueTypeNull)?(int)reg->scrollDX:(int)xValue.v.floatValue;
+            int y = (yValue.type == ValueTypeNull)?(int)reg->scrollDY:(int)yValue.v.floatValue;
             reg->scrollDX = x & 0xffFF;
             reg->scrollDY = y & 0xffFF;
             // reg->scrollMSB.dX = (x >> 8) & 1;
@@ -5938,6 +6156,11 @@ struct TypedValue fnc_BIN_HEX(struct Core *core)
 	if (interpreter->pass == PassRun)
 	{
 		int x = xValue.v.floatValue;
+		if (x<0)
+		{
+			long int i=pow(16,width>0?width:maxLen)-1;
+			x=(unsigned int)x&i;
+		}
 
 		struct RCString *rcstring = rcstring_new(NULL, maxLen);
 		if (!rcstring)
@@ -6168,6 +6391,7 @@ struct TypedValue fnc_LEFTStr_RIGHTStr(struct Core *core)
 	return resultValue;
 }
 
+// TODO: this should be in fnc_math2
 struct TypedValue fnc_LEN(struct Core *core)
 {
 	struct Interpreter *interpreter = core->interpreter;
@@ -7040,11 +7264,9 @@ enum ErrorCode cmd_EXIT_SUB(struct Core *core)
 #include <assert.h>
 #include "core.h"
 #include "core.h"
-#include "core.h"
 
 enum ErrorCode cmd_PRINT(struct Core *core)
 {
-	log_debug("cmd_PRINT %s",core->interpreter->pass==PassRun?"PassRun":"PassPrepare");
 	struct Interpreter *interpreter = core->interpreter;
 	if (interpreter->pass == PassRun && interpreter->mode == ModeInterrupt)
 		return ErrorNotAllowedInInterrupt;
@@ -7061,8 +7283,6 @@ enum ErrorCode cmd_PRINT(struct Core *core)
 		struct TypedValue value = itp_evaluateExpression(core, TypeClassAny);
 		if (value.type == ValueTypeError)
 			return value.v.errorCode;
-
-		log_debug("  value type %s",value.type==ValueTypeString?"ValueTypeString":"ValueTypeFloat");
 
 		if (interpreter->pass == PassRun)
 		{
@@ -7532,7 +7752,6 @@ enum ErrorCode cmd_TRACE(struct Core *core)
 enum ErrorCode cmd_MESSAGE(struct Core *core)
 {
 	struct Interpreter *interpreter = core->interpreter;
-	struct TextLib *lib = &core->overlay->textLib;
 
 	// MESSAGE
 	++interpreter->pc;
@@ -8922,12 +9141,18 @@ struct TypedValue itp_evaluateExpressionLevel(struct Core *core, int level)
 			}
 			case TokenEq:
 			{
-				newValue.v.floatValue = (value.v.floatValue == rightValue.v.floatValue) ? BAS_TRUE : BAS_FALSE;
+				if(is_equal_approx(value.v.floatValue, rightValue.v.floatValue))
+					newValue.v.floatValue = BAS_TRUE;
+				else
+					newValue.v.floatValue = BAS_FALSE;
 				break;
 			}
 			case TokenUneq:
 			{
-				newValue.v.floatValue = (value.v.floatValue != rightValue.v.floatValue) ? BAS_TRUE : BAS_FALSE;
+				if(is_equal_approx(value.v.floatValue, rightValue.v.floatValue))
+					newValue.v.floatValue = BAS_FALSE;
+				else
+					newValue.v.floatValue = BAS_TRUE;
 				break;
 			}
 			case TokenGr:
@@ -9316,14 +9541,9 @@ struct TypedValue itp_evaluateFunction(struct Core *core)
 		return fnc_math0(core);
 
 	case TokenABS:
-	case TokenACOS:
-	case TokenASIN:
-	case TokenATAN:
 	case TokenCOS:
 	case TokenEXP:
-	case TokenHCOS:
-	case TokenHSIN:
-	case TokenHTAN:
+
 	case TokenINT:
 	case TokenLOG:
 	case TokenSGN:
@@ -9332,6 +9552,7 @@ struct TypedValue itp_evaluateFunction(struct Core *core)
 	case TokenTAN:
 		return fnc_math1(core);
 
+	case TokenATAN:
 	case TokenMAX:
 	case TokenMIN:
 		return fnc_math2(core);
@@ -9844,6 +10065,16 @@ enum ErrorCode itp_labelStackError(struct LabelStackItem *item)
 		// should not happen in compile time
 		return ErrorSyntax;
 	}
+}
+
+bool is_zero_approx(float x)
+{
+  return fabsf(x) < FLT_EPSILON*2;
+}
+
+bool is_equal_approx(float x, float y)
+{
+	return fabsf(x - y) < FLT_EPSILON*2;
 }
 //
 // Copyright 2017-2018 Timo Kloss
@@ -10504,10 +10735,8 @@ const char *TokenStrings[] = {
 
     // Commands/Functions
     "ABS",
-    "ACOS",
     "ADD",
     "ASC",
-    "ASIN",
     "ATAN",
     "ATTR",
     "BG",
@@ -10549,10 +10778,7 @@ const char *TokenStrings[] = {
     "GOSUB",
     "GOTO",
     "HEX$",
-    "HCOS",
     "HIT",
-    "HSIN",
-    "HTAN",
     "IF",
     "INC",
     "INKEY$",
@@ -12476,7 +12702,6 @@ void runStartupSequence(struct Core *core)
 #include "core.h"
 #include <string.h>
 #include <assert.h>
-#include "core.h"
 
 struct Plane *txtlib_getBackground(struct TextLib *lib, int bg)
 {
@@ -12505,7 +12730,6 @@ struct Plane *txtlib_getBackground(struct TextLib *lib, int bg)
 
 void txtlib_setCellAt(struct Plane *plane, int x, int y, int character, union CharacterAttributes attr)
 {
-	log_debug("txtlib_setCellAt %dx%d %d", x, y, character);
 	struct Cell *cell = &plane->cells[y & ROWS_MASK][x & COLS_MASK];
 	if (character >= 0)
 	{
@@ -12595,8 +12819,6 @@ void txtlib_scrollWindowIfNeeded(struct TextLib *lib)
 
 void txtlib_printText(struct TextLib *lib, const char *text)
 {
-	log_debug("txtlib_printText \"%s\"",text);
-
 	struct Plane *plane = txtlib_getBackground(lib, lib->windowBg);
 	const char *letter = text;
 	size_t word_len;
@@ -12627,7 +12849,6 @@ count_word_len:
 			{
 				printableLetter -= 32;
 			}
-			log_debug("txtlib_printText cursor %dx%d window %dx%d",lib->cursorX,lib->cursorY,lib->windowX,lib->windowY);
 			txtlib_setCellAt(plane, lib->cursorX + lib->windowX, lib->cursorY + lib->windowY, lib->fontCharOffset + (printableLetter - 32), lib->charAttr);
 			if (lib->windowBg != OVERLAY_BG)
 			{
@@ -14113,7 +14334,6 @@ void video_renderScreen(struct Core *core, uint32_t *outputRGB)
 
 void overlay_init(struct Core *core)
 {
-	struct IORegisters *io = &core->machine->ioRegisters;
 	struct TextLib *lib = &core->overlay->textLib;
 	lib->core = core;
 	lib->bg = OVERLAY_BG;
@@ -14157,8 +14377,8 @@ void overlay_updateState(struct Core *core)
 
 	if (!core->interpreter->debug)
 	{
-		core->overlay->textLib.cursorX = 0;
-		core->overlay->textLib.cursorY = 0;
+		core->overlay->textLib.cursorX = core->overlay->textLib.windowX;
+		core->overlay->textLib.cursorY = core->overlay->textLib.windowY;
 	}
 }
 
@@ -14361,6 +14581,10 @@ uint8_t overlayCharacters[] = {
 #include "core.h"
 #include "core.h"
 #include "core.h"
+#include "core.h"
+#include "core.h"
+#include "core.h"
+#include "core.h"
 #include <string.h>
 
 void new_line(struct Core *core)
@@ -14496,8 +14720,6 @@ void process_command_line(struct Core *core)
 			}
 			else if (array && t->type == TokenEol)
 			{
-				int a = 123;
-
 				// TODO: what to do here?
 			}
 			else if (array && t->type == TokenBracketOpen)
@@ -14581,12 +14803,17 @@ void process_command_line(struct Core *core)
 		// list variables
 		else if (t->type == TokenDIM)
 		{
-			t = &toks.tokens[i++];
+			char filter[SYMBOL_NAME_SIZE+2] = "*";
 			int pagination = 0;
-			if (t->type == TokenFloat && t->floatValue >= 1)
-				pagination = (int)t->floatValue;
+			t = &toks.tokens[i++];
+			if (t->type == TokenIdentifier || t->type == TokenStringIdentifier)
+			{
+				strcat(filter, toks.symbols[t->symbolIndex].name);
+				strcat(filter, "*");
+				t = &toks.tokens[i++];
+			}
+			if (t->type == TokenFloat && t->floatValue >= 1) pagination = (int)t->floatValue;
 			struct Tokenizer *tokenizer = &core->interpreter->tokenizer;
-			struct IORegisters *ioRegisters = &core->machine->ioRegisters;
 			int canPrint = (core->overlay->textLib.windowHeight - 3);
 			int printed = 0;
 			// TODO: get shown.h and safe.top and keyboard.height
@@ -14609,14 +14836,14 @@ void process_command_line(struct Core *core)
 					pagination--;
 					printed = 0;
 				}
-				if (simple && pagination == 0)
+				if (simple && pagination == 0 && sl_globmatch(tokenizer->symbols[i].name, filter)>0)
 				{
 					txtlib_printText(&core->overlay->textLib, "  ");
 					txtlib_printText(&core->overlay->textLib, tokenizer->symbols[i].name);
 					new_line(core);
 					printed++;
 				}
-				else if (array && pagination == 0)
+				else if (array && pagination == 0 && sl_globmatch(tokenizer->symbols[i].name, filter)>0)
 				{
 					txtlib_printText(&core->overlay->textLib, "  ");
 					txtlib_printText(&core->overlay->textLib, tokenizer->symbols[i].name);
@@ -14680,6 +14907,32 @@ void process_command_line(struct Core *core)
 			}
 		}
 
+		// show stack trace
+		else if (t->type == TokenTRACE)
+		{
+			char buffer[20];
+			for(int i=0; i<core->interpreter->numLabelStackItems; ++i)
+			{
+				txtlib_printText(&core->overlay->textLib,"  ");
+
+				char *ptr=(char*)(&core->interpreter->sourceCode[core->interpreter->labelStackItems[i].token->sourcePosition-1]);
+				while((*ptr>='a' && *ptr<='z')
+				|| (*ptr>='A' && *ptr<='Z')
+				|| (*ptr>='0' && *ptr<='9')
+				|| *ptr=='_')
+				{
+					ptr--;
+				}
+				size_t len=&core->interpreter->sourceCode[core->interpreter->labelStackItems[i].token->sourcePosition-1]-ptr;
+				if(len>20) len=20;
+				buffer[len]='\0';
+				memcpy(&buffer,ptr+1,len);
+				txtlib_printText(&core->overlay->textLib,buffer);
+				new_line(core);
+			}
+			new_line(core);
+		}
+
 		else
 		{
 			txtlib_printText(&core->overlay->textLib, "  unsupported keyword");
@@ -14740,14 +14993,17 @@ void overlay_debugger(struct Core *core)
 		}
 		else if (key == CoreInputKeyReturn)
 		{
-			print_command_line(core);
-			new_line(core);
-			strcpy(overlay->previousCommandLine[overlay->previouscommandLineWriteIndex++], overlay->commandLine);
-			if (overlay->previouscommandLineWriteIndex >= 9)
-				overlay->previouscommandLineWriteIndex = 0;
-			overlay->previouscommandLineReadIndex = overlay->previouscommandLineWriteIndex;
-			process_command_line(core);
-			memset(core->overlay->commandLine, 0, 27);
+			if (strlen(overlay->commandLine) > 0)
+			{
+				print_command_line(core);
+				new_line(core);
+				strcpy(overlay->previousCommandLine[overlay->previouscommandLineWriteIndex++], overlay->commandLine);
+				if (overlay->previouscommandLineWriteIndex >= 9)
+					overlay->previouscommandLineWriteIndex = 0;
+				overlay->previouscommandLineReadIndex = overlay->previouscommandLineWriteIndex;
+				process_command_line(core);
+				memset(core->overlay->commandLine, 0, 27);
+			}
 		}
 		else if (key == CoreInputKeyUp)
 		{
@@ -14755,7 +15011,7 @@ void overlay_debugger(struct Core *core)
 			{
 				overlay->previouscommandLineReadIndex = (overlay->previouscommandLineReadIndex + 9 - 1) % 9;
 				strcpy(overlay->commandLine, overlay->previousCommandLine[overlay->previouscommandLineReadIndex]);
-				lib->cursorX = strlen(overlay->commandLine);
+				lib->cursorX = (int)strlen(overlay->commandLine);
 				print_command_line(core);
 			}
 		}
@@ -14765,7 +15021,7 @@ void overlay_debugger(struct Core *core)
 			{
 				overlay->previouscommandLineReadIndex = (overlay->previouscommandLineReadIndex + 1) % 9;
 				strcpy(overlay->commandLine, overlay->previousCommandLine[overlay->previouscommandLineReadIndex]);
-				lib->cursorX = strlen(overlay->commandLine);
+				lib->cursorX = (int)strlen(overlay->commandLine);
 				print_command_line(core);
 			}
 		}
@@ -14774,7 +15030,9 @@ void overlay_debugger(struct Core *core)
 			// insert char into the command line buffer
 			if (lib->cursorX < 26)
 			{
-				memcpy(overlay->commandLine + lib->cursorX + 1, overlay->commandLine + lib->cursorX, strlen(overlay->commandLine) - lib->cursorX);
+				char tmp[27];
+				strncpy(tmp, overlay->commandLine, 27);
+				memcpy(overlay->commandLine + lib->cursorX + 1, tmp + lib->cursorX, strlen(tmp) - lib->cursorX);
 				overlay->commandLine[lib->cursorX++] = key;
 				print_command_line(core);
 			}
@@ -14844,12 +15102,12 @@ uint32_t pcg32_random_r(pcg32_random_t* rng)
 {
     uint64_t oldstate = rng->state;
     rng->state = oldstate * 6364136223846793005ULL + rng->inc;
-    uint32_t xorshifted = ((oldstate >> 18u) ^ oldstate) >> 27u;
+    uint32_t xorshifted = (uint32_t)(((oldstate >> 18u) ^ oldstate) >> 27u);
     uint32_t rot = oldstate >> 59u;
     return (xorshifted >> rot) | (xorshifted << ((-rot) & 31));
 }
 
-uint32_t pcg32_random()
+uint32_t pcg32_random(void)
 {
     return pcg32_random_r(&pcg32_global);
 }
@@ -14896,4 +15154,3 @@ uint32_t pcg32_boundedrand(uint32_t bound)
 {
     return pcg32_boundedrand_r(&pcg32_global, bound);
 }
-

@@ -35,11 +35,3 @@ function generateEntryToken():string
 }
 
 $MATCH_ENTRY_TOKEN='[a-z\']{2,15}-[a-z\']{2,15}-[0-9a-fA-F]{16}';
-
-// TODO: Is it useful?
-function validateEntryToken(string $token):string|null
-{
-	global $MATCH_ENTRY_TOKEN;
-	if(preg_match("/^$MATCH_ENTRY_TOKEN}\$/",$token)) return $token;
-	return null;
-}

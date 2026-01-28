@@ -6,8 +6,10 @@ require_once __DIR__.'/token.php';
 // API to upvote/downvote an entry
 if(preg_match("/^\/($MATCH_ENTRY_TOKEN)\/vote$/",$urlPath,$matches)&&$isGet)
 {
-	$user_id=validateSessionAndGetUserId();
+	list($user_id,$csrf_token)=validateSessionAndGetUserId();
 	if(!$user_id) forbidden("Fail to read user");
+	if(!validateCSRF($csrf_token)) forbidden("Fail to read token");
+	if(!checkRateLimit('vote',$user_id)) tooManyRequests("Fail to respect limit");
 
 	$first_id=$matches[1];
 	if(!$first_id) badRequest("Fail to read entry");

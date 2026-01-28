@@ -78,6 +78,22 @@
     [self.findTextField becomeFirstResponder];
 }
 
+- (void)updateFontSize:(CGFloat)fontSize
+{
+    // Scale the search toolbar font size relative to the editor font
+    // Use a slightly smaller size for the search fields (multiply by 0.9)
+    CGFloat searchFontSize = fontSize * 0.9;
+    
+    // Set minimum font size of 12pt for readability
+    if (searchFontSize < 12.0) {
+        searchFontSize = 12.0;
+    }
+    
+    UIFont *font = [UIFont systemFontOfSize:searchFontSize];
+    self.findTextField.font = font;
+    self.replaceTextField.font = font;
+}
+
 - (void)textFieldDidBeginEditing:(UITextField *)textField
 {
     self.activeTextField = textField;

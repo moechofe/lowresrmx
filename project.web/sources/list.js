@@ -38,14 +38,27 @@ const setupProgramList=(prg_list,config)=>{return new Promise(async(res,rej)=>{
 		const item=instanciate(item_tpl);
 		const a=find(item,'a');
 
-		dataset(item,'pid',data.pid);
+		dataset(item,'pid',encodeURI(data.pid));
 
-		find(item,'.name').textContent=data.title||data.name||"Untitled";
-		find(item,'.picture').style.backgroundImage="url(\"./"+data.pid+".png\")";
-		find(item,'.author').textContent=data.author||"Unknown";
+		text(find(item,'.name'),data.title||data.name||"Untitled");
+
+		if(config.isShare && !data.eid) get(`${encodeURI(data.pid)}.png`,{
+			[HEADER_TOKEN]:csrf
+		}).then((ans)=>{
+			if(!ans.ok) return Promise.reject();
+			return ans.blob();
+		}).then((blob)=>{
+			if(!blob) return Promise.reject();
+			const url=URL.createObjectURL(blob);
+			find(item,'.picture').style.backgroundImage=`url("${url}")`;
+		});
+		else if(config.isShare) find(item,'.picture').style.backgroundImage=`url(\"./${encodeURI(data.eid)}.png\")`;
+		else find(item,'.picture').style.backgroundImage=`url(\"./${encodeURI(data.pid)}.png\")`;
+
+		text(find(item,'.author'),data.author||"Unknown");
 		humanDate(find(item,'.date'),data.ut||data.ct);
 
-		if(config.isPost)	find(item,'.points').textContent=data.points||"?";
+		if(config.isPost)	text(find(item,'.points'),data.points||"?");
 		else hide(find(item,'.points'));
 
 		if(config.isPost) attr(a,"href",`./${encodeURI(data.pid)}.html`);
@@ -55,8 +68,14 @@ const setupProgramList=(prg_list,config)=>{return new Promise(async(res,rej)=>{
 
 		if(config.isShare && data.eid && data.pts) text(find(item,'.already'),`${data.pts}pts`);
 
-		if(config.isShare && data.eid) showAll(item,'.already');
+		if(config.isShare && data.eid)
+		{
+			showAll(item,'.already');
+			attr(find(item,'a.already'),'href',`./${encodeURI(data.eid)}.html`);
+		}
 		if(config.isShare && !data.eid) showAll(item,'.notyet');
+
+		if(!config.isShare) remove(find(item,'details'));
 
 		dataset(find(item,'.publish'),'pid',data.pid);
 
@@ -140,201 +159,6 @@ const setupPostList=(prg_list,config)=>{return new Promise(async(res,rej)=>{
 	res(list);
 })};
 
-
-/**
- * @brief Prepare the dialog to delete a program.
- * @return {(pid:string,program_name:string,on_delete:()=>void)=>void} Function to open the dialog.
- */
-const setupProgramDelete=()=>{
-	const program_delete=query('#program-delete');
-	const dialog=instanciate(program_delete);
-	const body=query('body');
-
-	/** @type {string|null} */
-	let pid=null;
-
-	/** @type {function():void} */
-	let cb=null;
-
-	const close=()=>{
-		dialogOff(dialog,()=>{
-			pid=null;
-			cb=null;
-			text(find(dialog,'.name'),"");
-		});
-	};
-
-	click(find(dialog,'button.cancel'),close);
-
-	click(find(dialog,'button.delete'),()=>{
-		if(!pid) return;
-		post('/delete',JSON.stringify({
-			p:pid,
-		}),null);
-		if(cb)cb();
-		close();
-	});
-
-	append(body,dialog);
-
-	return (pid_,name,on_delete)=>{
-		pid=pid_;
-		cb=on_delete;
-		text(find(dialog,'.name'),name||"Untitled");
-		dialogOn(dialog);
-	};
-};
-
-/**
- * @brief Prepare the dialog to publish a program.
- * @return {(pid:string,program_name:string,on_published:(fid:string)=>void)=>void} Function to open the dialog.
- */
-const setupPublishDialog=()=>{
-	const publish_dialog=query('#publish-dialog');
-	const dialog=instanciate(publish_dialog);
-	const body=query('body');
-
-	/** @type {string|null} */
-	let pid=null;
-
-	/** @type {function():void} */
-	let cb=null;
-
-	const showLimit=()=>{
-		const limit=find(dialog,'.limit');
-		const ta=find(dialog,'textarea');
-		const max=dataget(limit,'limit');
-		if(!max) return;
-		limit.textContent=`${ta.value.length}/${max}`;
-	};
-
-	const close=function(){
-		dialogOff(dialog,()=>{
-			pid=null;
-			cb=null;
-			find(dialog,'select.where').value="";
-			find(dialog,'input.title').value="";
-			find(dialog,'textarea.text').value="";
-		});
-	};
-
-	click(find(dialog,'button.cancel'),close);
-
-	input(find(dialog,'textarea'),(event)=>{
-		const max=dataget(find(dialog,'.limit'),'limit');
-		const ta=find(dialog,'textarea');
-		if(ta.value.length>max) ta.value=ta.value.substring(0,max);
-		showLimit();
-		autoHeight(event.target,214);
-		event.target.scrollIntoView(true);
-	});
-	showLimit();
-	autoHeight(find(dialog,'textarea'),214);
-
-	click(find(dialog,'button.publish'),event=>{
-		const where=find(dialog,'select.where').value;
-		const title=find(dialog,'input.title').value;
-		const text=find(dialog,'textarea.text').value;
-		if(!where||!title||!text) return;
-		if(!pid) return;
-		disable(event.target);
-		post('/publish',JSON.stringify({
-			p:pid,
-			w:where,
-			i:title,
-			x:text,
-		})).then((res)=>res.json()).then((fid)=>{
-			if(cb)cb(fid);
-		}).catch((_)=>{
-			showError();
-		});
-	});
-
-	append(body,dialog);
-
-	return (pid_,name,on_published)=>{
-		pid=pid_;
-		cb=on_published;
-		find(dialog,'input.title').value=name||"Untitled";
-		dialogOn(dialog);
-	};
-};
-
-/**
- * @brief Prepare the dialog to replace a program of a topic.
- * @return {(pid:string,program_name:string,on_replaced:(fid:string)=>void)=>void} Function to open the dialog.
- */
-const setupReplaceDialog=()=>{
-	const replace_dialog=query('#replace-dialog');
-	const dialog=instanciate(replace_dialog);
-	const body=query('body');
-
-	// /** @type {string|null} */
-	// let pid=null;
-
-	// /** @type {function():void} */
-	// let cb=null;
-
-	// const showLimit=()=>{
-	// 	const limit=find(dialog,'.limit');
-	// 	const ta=find(dialog,'textarea');
-	// 	const max=dataget(limit,'limit');
-	// 	if(!max) return;
-	// 	limit.textContent=`${ta.value.length}/${max}`;
-	// };
-
-	// const close=function(){
-	// 	dialogOff(dialog,()=>{
-	// 		pid=null;
-	// 		cb=null;
-	// 		find(dialog,'select.where').value="";
-	// 		find(dialog,'input.title').value="";
-	// 		find(dialog,'textarea.text').value="";
-	// 	});
-	// };
-
-	// click(find(dialog,'button.cancel'),close);
-
-	// input(find(dialog,'textarea'),(event)=>{
-	// 	const max=dataget(find(dialog,'.limit'),'limit');
-	// 	const ta=find(dialog,'textarea');
-	// 	if(ta.value.length>max) ta.value=ta.value.substring(0,max);
-	// 	showLimit();
-	// 	autoHeight(event.target,214);
-	// 	event.target.scrollIntoView(true);
-	// });
-	// showLimit();
-	// autoHeight(find(dialog,'textarea'),214);
-
-	// click(find(dialog,'button.publish'),event=>{
-	// 	const where=find(dialog,'select.where').value;
-	// 	const title=find(dialog,'input.title').value;
-	// 	const text=find(dialog,'textarea.text').value;
-	// 	if(!where||!title||!text) return;
-	// 	if(!pid) return;
-	// 	disable(event.target);
-	// 	post('/publish',JSON.stringify({
-	// 		p:pid,
-	// 		w:where,
-	// 		i:title,
-	// 		x:text,
-	// 	})).then((res)=>res.json()).then((fid)=>{
-	// 		if(cb)cb(fid);
-	// 	}).catch((_)=>{
-	// 		showError();
-	// 	});
-	// });
-
-	append(body,dialog);
-
-	return (pid_,name,on_replaced)=>{
-		pid=pid_;
-		cb=on_replaced;
-		// find(dialog,'input.title').value=name||"Untitled";
-		dialogOn(dialog);
-	};
-};
-
 /**
  * @brief Prepare the dialog to post a topic.
  * @param {string} where
@@ -349,6 +173,7 @@ const setupPostDialog=(where)=>{
 	/** @type {function():void} */
 	let cb=null;
 
+	/** @type {function():void} */
 	const close=function(){
 		dialogOff(dialog,()=>{
 			cb=null;
@@ -358,6 +183,7 @@ const setupPostDialog=(where)=>{
 		});
 	};
 
+	/** @type {function():void} */
 	const showLimit=()=>{
 		const limit=find(content,'.limit');
 		const ta=find(content,'textarea');
@@ -389,7 +215,9 @@ const setupPostDialog=(where)=>{
 			w:where,
 			i:title,
 			x:text,
-		})).then((res)=>res.json()).then((fid)=>{
+		}),{
+			[HEADER_TOKEN]:csrf
+		}).then((res)=>res.json()).then((fid)=>{
 			if(cb)cb(fid);
 		}).catch((_)=>{
 			showError();

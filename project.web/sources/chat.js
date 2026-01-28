@@ -3,8 +3,8 @@
 }))().then(async()=>{
 
 <?php
+	require_once __DIR__.'/dom.js';
 	require_once __DIR__.'/common.js';
-	require_once __DIR__.'/header.js';
 	require_once __DIR__.'/list.js';
 ?>
 

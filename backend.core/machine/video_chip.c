@@ -197,6 +197,9 @@ void video_renderSprites(struct SpriteRegisters *reg, struct VideoRam *ram, int 
     }
 }
 
+static int old_width=-1,old_height;
+static bool old_compat;
+
 void video_renderScreen(struct Core *core, uint32_t *outputRGB)
 {
     uint8_t scanlineBuffer[SCREEN_WIDTH];
@@ -210,19 +213,32 @@ void video_renderScreen(struct Core *core, uint32_t *outputRGB)
     struct IORegisters *io = &core->machine->ioRegisters;
 		struct MachineInternals *mi = core->machineInternals;
 
+		int sw=io->shown.width!=0?io->shown.width:SCREEN_WIDTH;
+    int sh=io->shown.height!=0?io->shown.height:SCREEN_HEIGHT;
+
+		// // orientation change in compat mode creates artifacts, so clear the screen
+		// if (old_width != sw || old_height != sh || old_compat != core->interpreter->compat)
+		// {
+		// 	old_width = sw;
+		// 	old_height = sh;
+		// 	old_compat = core->interpreter->compat;
+		// 	memset(outputRGB, 127, sw * sh * 4);
+		// }
+
     int width=SCREEN_WIDTH;
     int height=SCREEN_HEIGHT;
     int skip_before=0;
     int skip_after=0;
     if (core->interpreter->compat)
     {
-        int sw=io->shown.width!=0?io->shown.width:SCREEN_WIDTH;
-        int sh=io->shown.height!=0?io->shown.height:SCREEN_HEIGHT;
         width=160;
         height=128;
         skip_before=(sw-width)/2;
-        skip_after=SCREEN_WIDTH-width-skip_before;
-        outputPixel+=SCREEN_WIDTH*(sh-height)/2;
+        skip_after=sw-width-skip_before;
+        outputPixel+=(sh-height)/2*sw;
+
+				int count=(sh-height)/2*sw;
+				while(count-->0) *outputPixel++=better_palette[5];
     }
     for (int y = 0; y<height; y++)
     {

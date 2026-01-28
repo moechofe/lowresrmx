@@ -1,0 +1,6 @@
+<?php
+require_once __DIR__.'/header.css';
+require_once __DIR__.'/footer.css';
+?>
+fieldset:last-of-type { margin-bottom: 0; }
+.noselect { user-select: none; }

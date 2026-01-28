@@ -5,7 +5,10 @@ body .message a { color: #fff; text-decoration-color: #fff; }
 
 header { user-select:none; }
 header .burger { display:none; }
-@media (max-width:840px) { header .burger { display:flex; } header .links { display:none; } }
+@media (max-width:840px) {
+	header .burger { display:flex; }
+	header .links { display:none; }
+}
 
 body.community a:not(.community) { color: var(--pico-secondary); }
 body.chat a:not(.chat) { color: var(--pico-secondary); }
@@ -25,7 +28,18 @@ header .forum img { border-radius:50%; height: 24px; }
 details.dropdown summary { display: flex; white-space: nowrap; }
 details.dropdown * { cursor:pointer; }
 
+ul.burger details.dropdown > summary + ul,
+ul.menu details.dropdown > summary + ul { width: 15em; }
+
+@-moz-document url-prefix() {
+	ul.is-not-signed details.dropdown > summary + ul,
+	ul.is-signed details.dropdown > summary + ul { right: 1.5em; }
+	ul.forum details.dropdown > summary + ul { left: 1.0em; }
+}
+
 /* nav a { white-space: nowrap; } */
+
+dialog.error { user-select: none; }
 
 ul.new button.new-topic::after { content: "New Topic"; }
 @media (max-width:940px) { ul.new button.new-topic::after { content: "New"; } }

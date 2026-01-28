@@ -13,6 +13,7 @@
 @property NSString *currentTag;
 @property NSString *currentTagId;
 @property NSString *currentTagName;
+@property HelpChapter *currentChapter;
 @end
 
 @implementation HelpContent
@@ -51,7 +52,7 @@
 
 - (void)parser:(NSXMLParser *)parser didStartElement:(NSString *)elementName namespaceURI:(NSString *)namespaceURI qualifiedName:(NSString *)qName attributes:(NSDictionary *)attributeDict
 {
-    // NSLog(@"tag: %@",elementName);
+    //NSLog(@"tag: %@",elementName);
     if ([self.headerTags indexOfObject:elementName.lowercaseString] != NSNotFound)
     {
         self.currentTag = elementName;
@@ -64,12 +65,19 @@
 {
     if (self.currentTag)
     {
-        HelpChapter *chapter = [[HelpChapter alloc] init];
-        chapter.title = string;
-        chapter.htmlChapter = self.currentTagId;
-        chapter.keywords = [self.currentTagName componentsSeparatedByString:@","];
-        chapter.level = (int)[self.headerTags indexOfObject:self.currentTag.lowercaseString];
-        [self.chapters addObject:chapter];
+				if (_currentChapter == nil)
+				{
+						_currentChapter = [[HelpChapter alloc] init];
+						_currentChapter.title = string;
+						_currentChapter.htmlChapter = self.currentTagId;
+						_currentChapter.keywords = [self.currentTagName componentsSeparatedByString:@","];
+						_currentChapter.level = (int)[self.headerTags indexOfObject:self.currentTag.lowercaseString];
+				}
+				else
+				{
+						_currentChapter.title = [_currentChapter.title stringByAppendingString: string];
+				}
+        //
     }
 }
 
@@ -77,6 +85,8 @@
 {
     if ([elementName isEqualToString:self.currentTag])
     {
+				[self.chapters addObject:_currentChapter];
+				self.currentChapter = nil;
         self.currentTag = nil;
         self.currentTagId = nil;
         self.currentTagName = nil;

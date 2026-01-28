@@ -1,9 +1,12 @@
+<?php
+require_once __DIR__.'/common.php';
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Share program</title>
+<title>Share program — Retro Game Creator</title>
 <link rel="stylesheet" href="pico.min.css">
 <link rel="stylesheet" href="share.css">
 <script src="share.js"></script>
@@ -14,9 +17,83 @@ require_once __DIR__.'/header.html';
 ?>
 <main class="program-list container-fluid">
 	<div class="program-item what">
-		<p>The programs you uploaded to the website may be private until you publish them and post about them on a forum.</p>
+		<p>The programs you upload to the website may be private until you publish them and post about them on a forum.</p>
+		<p>But first, upload a program using the sharing feature from the iOS app.</p>
 	</div>
 </main>
+<template id="program-delete">
+
+	<dialog class="program-delete"><article>
+		<header class="container-fluid">
+			<h2>Delete program</h2>
+		</header>
+		<main class="container">
+			<fieldset>
+				<p>Are you sure you want to delete this program?</p>
+				<h3 class="name"></h3>
+			</fieldset>
+			<fieldset class="grid">
+				<button class="delete">Delete</button>
+				<button class="cancel outline">Cancel</button>
+			</fieldset>
+		</main>
+	</article></dialog>
+
+</template>
+<template id="publish-dialog">
+
+	<dialog class="publish-dialog"><article>
+		<header class="container">
+			<h2>Publish program</h2>
+		</header>
+		<main class="container">
+			<fieldset>
+				<select class="where" required>
+					<option selected disabled value="">
+						Where to post&hellip;
+					</option>
+					<option value="show">Showcase / Work in progress</option>
+					<option value="chat">Chat / News / Blog / Unrelated</option>
+					<option value="help">Help / Example / Documentation</option>
+				</select>
+				<input type="text" class="title" required placeholder="Program title" />
+				<div class="limit" data-limit="<?=MAX_POST_TEXT?>"></div>
+				<textarea class="text" placeholder="Message&hellip;" ></textarea>
+			</fieldset>
+			<fieldset class="grid">
+				<button class="publish">Publish</button>
+				<button class="cancel outline">Cancel</button>
+			</fieldset>
+		</main>
+	</article></dialog>
+
+</template>
+<template id="own-item">
+
+	<option class="own-item"></option>
+
+</template>
+<template id="replace-dialog">
+
+	<dialog class="replace-dialog"><article>
+		<header class="container"><h2>Replace existing post</h2></header>
+		<main class="container">
+			<fieldset>
+				<select class="own-list" aria-label="Select an existing post" required aria-busy="true">
+  				<option selected disabled value="" aria-busy="true">Select an existing post</option>
+				</select>
+				<input type="text" class="title" required placeholder="Program title" />
+				<div class="limit" data-limit="<?=MAX_POST_TEXT?>"></div>
+				<textarea class="text" placeholder="Message&hellip;" aria-busy="true"></textarea>
+			</fieldset>
+			<fieldset class="grid">
+				<button class="publish">Publish</button>
+				<button class="cancel outline">Cancel</button>
+			</fieldset>
+		</main>
+	</article></dialog>
+
+</template>
 <?php
 require_once __DIR__.'/list.html';
 require_once __DIR__.'/footer.html';

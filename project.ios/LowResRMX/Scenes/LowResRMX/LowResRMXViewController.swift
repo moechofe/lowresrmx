@@ -247,7 +247,7 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
       core_willSuspendProgram(&coreWrapper.core)
     }
   }
-  
+
 	override func viewWillTransition(to size: CGSize, with coordinator: any UIViewControllerTransitionCoordinator) {
 		if let coreWrapper = coreWrapper {
 			core_orientationChanged(&coreWrapper.core)
@@ -275,6 +275,8 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
 
   override func viewDidLayoutSubviews() {
     super.viewDidLayoutSubviews()
+
+		self.view.backgroundColor = .black
 
     let top: CGFloat
     let left: CGFloat

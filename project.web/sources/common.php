@@ -56,6 +56,18 @@ const POINTS_GIVEN=[
 
 const APPLE_APP_STORE="#";
 
+const RATE_LIMIT=[
+	'publish'=>['max'=>5,'window'=>60*60],  // 5 publishes per hour
+	'post'=>['max'=>10,'window'=>60*60],    // 10 posts per hour
+	'comment'=>['max'=>30,'window'=>60*60], // 30 comments per hour
+	'vote'=>['max'=>100,'window'=>60*60],   // 100 votes per hour
+	'upload'=>['max'=>60,'window'=>60*60],  // 60 uploads per hour
+	'share'=>['max'=>20,'window'=>60*60],   // 20 shares per hour
+	'search'=>['max'=>100,'window'=>60],    // 100 searches per minute
+	'login'=>['max'=>5,'window'=>60*15],    // 5 login attempts per 15 minutes (per IP)
+	'setting'=>['max'=>40,'window'=>60*60], // 40 changes per hour
+];
+
 require_once __DIR__.'/redis.php';
 
 function backtrace()
@@ -87,6 +99,14 @@ function internalServerError(string $reason):void
 	exit;
 }
 
+function tooManyRequests(string $reason):void
+{
+	header("HTTP/1.1 429 Too Many Requests",true,429);
+	trigger_error($reason);
+	backtrace();
+	exit;
+}
+
 function redis():Client
 {
 	static $client=null;
@@ -113,26 +133,72 @@ function revokeSession(string $session_id):void
 	if($user_id) redis()->lrem("u:$user_id:s",0,$session_id);
 }
 
-function validateSessionAndGetUserId():string
+function validateSessionAndGetUserId():Array
 {
 	$session_id=@hex2bin(@$_COOKIE[HEADER_SESSION_COOKIE]);
-	if(!$session_id) return "";
+	if(!$session_id) return ["",""];
 
-	list($status,$user_id)=redis()->hmget("s:$session_id","status","uid");
+	list($status,$user_id,$csrf_token)=redis()->hmget("s:$session_id","status","uid","csrf");
+
 	switch($status)
 	{
 	case "revoked":
 		revokeSession($session_id);
-		return "";
+		return ["",""];
 
 	case "banned":
-		revokeSession($session_id);
-		forbidden("User is banned");
+		forbidden("Session is banned");
 
 	case "allowed": default:
-		if(!$user_id) $user_id="";
-		return $user_id;
+		if(empty($user_id) || empty($csrf_token)) forbidden("Empty user");
+		redis()->hset("s:$session_id","at",date(DATE_ATOM));
+		return [$user_id,$csrf_token];
 	}
+}
+
+function validateCSRF(string $stored_token):bool
+{
+	if(!$stored_token) return false;
+	$submitted_token=@hex2bin(@getallheaders()[HEADER_TOKEN]);
+	if(!$submitted_token) return false;
+	if(strlen($stored_token)!==strlen($submitted_token)) return false;
+	return hash_equals($stored_token,$submitted_token);
+}
+
+function checkRateLimit(string $action,string $identifier):bool
+{
+	if(!isset(RATE_LIMIT[$action])) return true;
+	$limit=RATE_LIMIT[$action]['max'];
+	$window=RATE_LIMIT[$action]['window'];
+	$key="rl:$action:$identifier";
+	$now=time();
+	$window_start=$now-$window;
+	// Remove old entries outside the sliding window
+  redis()->zremrangebyscore($key,0,$window_start);
+	// Count events within the window
+  $count=intval(redis()->zcount($key,$window_start,$now));
+	if($count>=$limit)return false;
+	// Add current event with unique member id to avoid collisions
+  $member=$now.'-'.bin2hex(random_bytes(4));
+  redis()->zadd($key,$now,$member);
+	// Ensure key expires eventually so inactive keys are removed
+	redis()->expire($key,$window+5);
+	return true;
+}
+
+function getClientIP(): string
+{
+	// Check for proxy headers (if you're behind a proxy/CDN)
+	if(!empty($_SERVER['HTTP_X_FORWARDED_FOR']))
+	{
+		$ips=explode(',',$_SERVER['HTTP_X_FORWARDED_FOR']);
+		return trim($ips[0]);
+	}
+	if(!empty($_SERVER['HTTP_X_REAL_IP']))
+	{
+		return $_SERVER['HTTP_X_REAL_IP'];
+	}
+	return $_SERVER['REMOTE_ADDR']??'0.0.0.0';
 }
 
 function getServerQueryString():string
@@ -147,31 +213,39 @@ function getServerQueryString():string
 	return "";
 }
 
-function getQueryParams(string $query):array
-{
-	$params=[];
-	parse_str($query,$params);
-	return $params;
-}
+// function getQueryParams(string $query):array
+// {
+// 	$params=[];
+// 	parse_str($query,$params);
+// 	return $params;
+// }
 
-if(!defined("STDERR") or !posix_isatty(STDERR))
+if(php_sapi_name()!=="cli")
 {
 	$request=$_SERVER['REQUEST_URI'];
 	$url=parse_url($request);
 	$urlPath=rawurldecode($url['path']);
 	$info=pathinfo($urlPath);
 	$query=getServerQueryString();
-	$domain=$_SERVER['SERVER_NAME'];
-	$params=getQueryParams($query);
+	// $params=getQueryParams($query);
 	$isGet=$_SERVER['REQUEST_METHOD']==='GET';
 	$isPost=$_SERVER['REQUEST_METHOD']==='POST';
+	$isHttps=@$_SERVER['HTTPS']==="on";
+	$baseUrl=(@$_SERVER['REQUEST_SCHEME']?:($isHttps?"https":"http")).'://'.$_SERVER['HTTP_HOST'];
+	$isProd=$_SERVER['HTTP_HOST']=="ret.ro.it";
 
 	header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
 	header("Cache-Control: post-check=0, pre-check=0", false);
 	header("Pragma: no-cache");
 	header("Server: lowresrmx",true);
+	if($isHttps) header("Strict-Transport-Security: max-age=31536000; includeSubDomains",true);
+	header("X-Frame-Options: DENY",true);
+	header("X-Content-Type-Options: nosniff",true);
+	header("Referrer-Policy: no-referrer-when-downgrade",true);
+	header("Permissions-Policy: disable",true);
+	header("Content-Security-Policy: default-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; connect-src 'self';",true);
 
-	if($_SERVER['HTTP_HOST']=='localhost' || $_SERVER['HTTP_HOST']=='localhost')
+	if(!$isProd)
 	{
 		error_log("");
 		error_log("");
@@ -184,7 +258,7 @@ if(!defined("STDERR") or !posix_isatty(STDERR))
 		error_log("Cookie: ".json_encode($_COOKIE));
 		error_log("Body: ".file_get_contents('php://input'));
 		error_log("Params: ".json_encode(array_keys($params)));
-		error_log("Outders: ".json_encode(headers_list()));
+		error_log("Headers: ".json_encode(headers_list()));
 		error_log("Server: ".json_encode($_SERVER));
 	}
 }

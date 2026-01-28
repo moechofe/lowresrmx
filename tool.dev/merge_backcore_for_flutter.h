@@ -1,3 +1,6 @@
+#ifndef SL_GLOBMATCH_NEGATE
+#define SL_GLOBMATCH_NEGATE '^'       /* std char set negation char */
+#endif
 
 #include "error.h"
 #include "core.h"

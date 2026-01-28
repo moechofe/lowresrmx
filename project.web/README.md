@@ -45,6 +45,8 @@
     phpize && ./configure --with-libzstd && make clean && make && sudo make install
     ```
 
+    > For debian 12: sudo pecl install -f libsodium
+
 6. Enable extensions for php cli on Ubuntu:
 
     ```bash
@@ -169,10 +171,11 @@ Create and fill the `sources/private.php` file using the given `private.sample.p
     - _(str)_ `["uid"]` `USER_ID` user id
     - _(str)_ `["status"]` one of the following:
       - `"allowed"`
-      - `"revoked"`
-      - `"banned"`
+      - `"revoked"` will remove this session
+      - `"banned"` prevent to login with this session
     - _(str)_ `["ct"]` ATOM timestamp for creation time
     - _(str)_ `["at"]` ATOM timestamp for access time
+    - _(str)_ `["csrf"]` CRSF token
 
 - _(list)_ `"u:USER_ID:s"` list allowed session
 
@@ -225,10 +228,18 @@ Create and fill the `sources/private.php` file using the given `private.sample.p
 
         > TODO: `["ut"]` not used, is it usefull?
 
+#### Admin related
+
+- _(list)_ `"adm:de"` list of users marked to delete everything
+
+    - _(str)_ `USER_ID`
+
 ## Create a fake session
 
 ```
-redis-cli hmset s:infdev status allowed uid 123
+redis-cli hmset s:infdev status allowed uid 123 csrf 123
 redis-cli rpush u:123:s infdev
 redis-cli hmset u:123 name infdev picture "" locale en author infdev
 ```
+
+Create a cookie sid with 696e66646576 inside

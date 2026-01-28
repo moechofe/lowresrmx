@@ -6,6 +6,7 @@ require_once __DIR__.'/common.php';
 require_once __DIR__.'/token.php';
 
 require_once __DIR__.'/sign.php';
+require_once __DIR__.'/setting.php';
 
 require_once __DIR__.'/player.php';
 
@@ -14,15 +15,12 @@ require_once __DIR__.'/download.php';
 
 require_once __DIR__.'/share.php';
 require_once __DIR__.'/list.php';
-require_once __DIR__.'/delete.php';
 
-require_once __DIR__.'/publish.php';
-require_once __DIR__.'/post.php';
 require_once __DIR__.'/entry.php';
 require_once __DIR__.'/comment.php';
 require_once __DIR__.'/score.php';
 
-// server static files
+// server static files maybe
 if(in_array($urlPath,[
 	'/community.html',
 	'/community.js',
@@ -42,6 +40,9 @@ if(in_array($urlPath,[
 	'/share.html',
 	'/share.js',
 	'/share.css',
+	'/setting.html',
+	'/setting.js',
+	'/setting.css'
 ]))
 {
 	header("Content-Type: ".[
@@ -49,9 +50,12 @@ if(in_array($urlPath,[
 		'css'=>'text/css',
 		'js'=>'text/javascript',
 	][$info['extension']]);
-	require_once __DIR__.$urlPath;
+	if($isProd) readfile(__DIR__.$urlPath);
+	else require_once __DIR__.$urlPath;
 	exit;
 }
+
+// server static files
 if(in_array($urlPath,[
 	'/pico.min.css',
 	'/player.wasm',
@@ -60,6 +64,9 @@ if(in_array($urlPath,[
 	'/privacy-policy.html',
 	'/terms-of-service.html',
 	'/documentation.html',
+	'/documentation.css',
+	'/robots.txt',
+	'/sitemap.xml',
 ]))
 {
 	header("Content-Type: ".[
@@ -67,7 +74,9 @@ if(in_array($urlPath,[
 		'wasm'=>'application/wasm',
 		'ico'=>'image/x-icon',
 		'png'=>'image/png',
-		'css'=>'text/css'
+		'css'=>'text/css',
+		'txt'=>'text/plain',
+		'xml'=>'application/xml',
 	][$info['extension']]);
 	readfile(__DIR__.$urlPath);
 	exit;

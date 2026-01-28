@@ -35,6 +35,7 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
 
     private var documentStateChangedObserver: Any?
     private var fontSizeObserver: Any?
+    private var lastAppliedFontSize: CGFloat = 0
     var document: ProjectDocument!
     var keyboardRect = CGRect()
 
@@ -45,7 +46,9 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
 
         let startItem = UIBarButtonItem(barButtonSystemItem: .play, target: self, action: #selector(onRunTapped))
         let searchItem = UIBarButtonItem(image: UIImage(named:"search"), style: .plain, target: self, action: #selector(onSearchTapped))
+        searchItem.title = "Editors"
         let toolsItem = UIBarButtonItem(image: UIImage(named:"tools"), style: .plain, target: self, action: #selector(onToolsTapped))
+        toolsItem.title = "Search"
         let projectItem = UIBarButtonItem(barButtonSystemItem: .action, target: self, action: #selector(onProjectTapped))
 
         navigationItem.rightBarButtonItems = [startItem, searchItem, toolsItem, projectItem]
@@ -154,6 +157,24 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
 
         // Ensure font size is applied when view appears
         applyFontSize()
+    }
+
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        
+        // Reapply font size when trait collection changes (orientation, split screen, etc.)
+        applyFontSize()
+    }
+
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        
+        // Reapply font size after layout to ensure it persists through split screen and other layout changes
+        // Only apply if the current font size doesn't match the expected size
+        let expectedFontSize = AppController.shared.editorFontSize
+        if sourceCodeTextView.font?.pointSize != expectedFontSize {
+            applyFontSize()
+        }
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -704,6 +725,9 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
         let fontSize = AppController.shared.editorFontSize
         let font = UIFont(name: "Menlo", size: fontSize) ?? UIFont.monospacedSystemFont(ofSize: fontSize, weight: .regular)
         sourceCodeTextView.font = font
+        
+        // Also update the search toolbar font size
+        searchToolbar.updateFontSize(fontSize)
     }
 
 

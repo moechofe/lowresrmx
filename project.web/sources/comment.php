@@ -10,8 +10,10 @@ if(preg_match("/\/($MATCH_ENTRY_TOKEN)\/comment$/",$urlPath,$matches)&&$isPost)
 	$first_id=$matches[1];
 	if(!$first_id) badRequest("Fail to read entry");
 
-	$user_id=validateSessionAndGetUserId();
+	list($user_id,$csrf_token)=validateSessionAndGetUserId();
 	if(!$user_id) forbidden("Fail to read user");
+	if(!validateCSRF($csrf_token)) forbidden("Fail to read token");
+	if(!checkRateLimit('comment',$user_id)) tooManyRequests("Fail to respect limit");
 
 	$text=@file_get_contents('php://input');
 	$text=mb_substr(@trim(@$text),0,MAX_POST_TEXT);
@@ -33,6 +35,11 @@ if(preg_match("/\/($MATCH_ENTRY_TOKEN)\/comment$/",$urlPath,$matches)&&$isPost)
 		"text",$text,
 		"ct",date(DATE_ATOM),
 		"author",$author,
+	);
+
+	// Update date
+	redis()->hset("f:$first_id:f",
+		"ut",date(DATE_ATOM),
 	);
 
 	// Add to the user comment post list

@@ -15,7 +15,7 @@ if(preg_match("/^\/($MATCH_ENTRY_TOKEN)\.html$/",$urlPath,$matches))
 	if(!empty($text)) $text=zstd_uncompress($text);
 	$points=redis()->hget("r:$first_id:d","pts");
 
-	$user_id=validateSessionAndGetUserId();
+	list($user_id,$csrf_token)=validateSessionAndGetUserId();
 	$upvoted=false;
 	if($user_id) $upvoted=redis()->sismember("r:$first_id:v",$user_id)==1?true:false;
 

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Setting — Retro Game Creator</title>
+<link rel="stylesheet" href="pico.min.css">
+<link rel="stylesheet" href="setting.css">
+<script src="setting.js"></script>
+</head>
+<body class="setting">
+<?php
+require_once __DIR__.'/header.html';
+?>
+<main class="container">
+	<article>
+	<h4>Settings</h4>
+		<fieldset>
+			<label class="author">Public author name</label>
+			<input class="author" id="author" />
+		</fieldset>
+		<fieldset hidden>
+			<label class="delete">Delete shared programs, published post, comment, login information</label>
+			<button class="delete contrast outline">Delete everything</button>
+		</fieldset>
+	</article>
+</main>
+<template id="delete-everything">
+
+	<dialog class="delete-everything"><article>
+		<header class="container-fluid">
+			<h2><code>DANGER ZONE</code></h2>
+		</header>
+		<main class="container">
+			<fieldset>
+				<p>This will delete everything that as been stored related to your account:</p>
+				<ul>
+					<li>Shared programs</li>
+					<li>Published posts</li>
+					<li>Comments</li>
+					<li>Login information</li>
+				</ul>
+				<p>If your sure to want to do that, type "<span class="noselect">delete everything</span>" in the input box below.</p>
+				<input class="delete-everything" placeholder="Are you sure?" />
+			</fieldset>
+			<fieldset class="grid">
+				<button class="delete-everything contrast">Yes, delete everything!</button>
+				<button class="cancel">Cancel</button>
+			</fieldset>
+		</main>
+	</article></dialog>
+
+</template>
+<?php
+require_once __DIR__.'/footer.html';
+?>
+</body>
+</html>

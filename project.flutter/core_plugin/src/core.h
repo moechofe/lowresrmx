@@ -729,7 +729,7 @@ struct Overlay
 	int timer;
 	int messageTimer;
 	char commandLine[27];
-	char previousCommandLine[27][9];
+	char previousCommandLine[9][27];
 	int previouscommandLineWriteIndex, previouscommandLineReadIndex;
 };
 
@@ -886,10 +886,8 @@ enum TokenType
 
 	// Commands/Functions
 	TokenABS,
-	TokenACOS,
 	TokenADD,
 	TokenASC,
-	TokenASIN,
 	TokenATAN,
 	TokenATTR,
 	TokenBG,
@@ -931,10 +929,7 @@ enum TokenType
 	TokenGOSUB,
 	TokenGOTO,
 	TokenHEX,
-	TokenHCOS,
 	TokenHIT,
-	TokenHSIN,
-	TokenHTAN,
 	TokenIF,
 	TokenINC,
 	TokenINKEY,
@@ -1701,6 +1696,8 @@ uint32_t pcg32_boundedrand_r(pcg32_random_t* rng, uint32_t bound);
 #ifndef interpreter_h
 #define interpreter_h
 
+#include <math.h>
+#include <float.h>
 #include <stdio.h>
 #include <stdbool.h>
 
@@ -1819,6 +1816,9 @@ struct TypedValue itp_evaluateOptionalNumericExpression(struct Core *core, int m
 bool itp_isEndOfCommand(struct Interpreter *interpreter);
 enum ErrorCode itp_endOfCommand(struct Interpreter *interpreter);
 enum ErrorCode itp_labelStackError(struct LabelStackItem *item);
+
+bool is_equal_approx(float x, float y);
+bool is_zero_approx(float x);
 
 #endif /* interpreter_h */
 //
@@ -2020,6 +2020,7 @@ bool core_isKeyboardEnabled(struct Core *core);
 void core_setKeyboardEnabled(struct Core *core, bool enabled);
 void core_setKeyboardHeight(struct Core *core, int height);
 bool core_shouldRender(struct Core *core);
+void core_orientationChanged(struct Core *core);
 
 void core_setInputGamepad(struct CoreInput *input, int player, bool up, bool down, bool left, bool right, bool buttonA, bool buttonB);
 

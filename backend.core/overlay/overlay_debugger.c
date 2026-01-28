@@ -14,6 +14,7 @@
 #include "machine.h"
 #include "globmatch.h"
 #include <string.h>
+#include <stdlib.h>
 
 void new_line(struct Core *core)
 {
@@ -339,6 +340,10 @@ void process_command_line(struct Core *core)
 		else if (t->type == TokenTRACE)
 		{
 			char buffer[20];
+			int number = lineNumber(core->interpreter->sourceCode, core->interpreter->pc->sourcePosition);
+			sprintf(buffer, "  %d", number);
+			txtlib_printText(&core->overlay->textLib, buffer);
+			new_line(core);
 			for(int i=0; i<core->interpreter->numLabelStackItems; ++i)
 			{
 				txtlib_printText(&core->overlay->textLib,"  ");

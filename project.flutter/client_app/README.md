@@ -14,3 +14,11 @@ A few resources to get you started if this is your first Flutter project:
 For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
+
+I manually added a namespace for sw_rend in the .pub-cache folder
+
+I manually fixed the missing macro in core_plugin/src/core.c
+
+    #ifndef SL_GLOBMATCH_NEGATE
+    #define SL_GLOBMATCH_NEGATE '^'       /* std char set negation char */
+    #endif

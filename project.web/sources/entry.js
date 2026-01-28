@@ -1,10 +1,14 @@
+<?php
+	require_once __DIR__.'/common.php';
+?>
 (()=>new Promise(function(ready){
 	document.addEventListener('readystatechange',ready)
 }))().then(async()=>{
 
 <?php
-require_once __DIR__.'/common.js';
-require_once __DIR__.'/header.js';
+	require_once __DIR__.'/config.js';
+	require_once __DIR__.'/dom.js';
+	require_once __DIR__.'/common.js';
 ?>
 
 /**
@@ -33,7 +37,7 @@ const setupCommentForm=()=>{
 		const ta=find(form,'textarea');
 		const max=dataget(limit,'limit');
 		if(!max) return;
-		limit.textContent=`${ta.value.length}/${max}`;
+		text(limit,`${ta.value.length}/${max}`);
 	};
 
 	input(find(form,'textarea'),(event)=>{
@@ -51,7 +55,9 @@ const setupCommentForm=()=>{
 		if(!eid) return;
 		const text=find(form,'textarea').value.trim();
 		if(!text) return;
-		if(await post(`${eid}/comment`,text,null))
+		if(await post(`${eid}/comment`,text,{
+			[HEADER_TOKEN]:csrf
+		}))
 		{
 			find(form,'textarea').value='';
 			window.location.reload();
@@ -106,7 +112,16 @@ const setupVote=()=>{
 		}
 		enable(vote);
 	});
-}
+};
+
+const setupEntry=()=>{
+	const open=query('#open');
+	on(open,'click',()=>{
+		const id=dataget(open,'id');
+		const name=dataget(open,'name');
+		if(id && name) window.open(`<?=APP_SCHEME?>\/\/?i=${encodeURIComponent(id)}&n=${encodeURIComponent(name)}`);
+	});
+};
 
 setupDate();
 setupSign();
@@ -114,6 +129,7 @@ setupMobile();
 setupVote();
 setupError();
 setupCommentForm();
+setupEntry();
 
 // TODO: show a loading stuff
 const first_comment=await(await get(`/${eid}/${cid}`)).json();

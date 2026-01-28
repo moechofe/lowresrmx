@@ -55,7 +55,5 @@ align-content:space-between; }
 .date::before { content:"the "; }
 
 dialog header { border: none; }
-.publish-dialog fieldset.grid, .post-dialog fieldset.grid { grid-template-columns: 1fr 1fr; }
 
 dialog fieldset .limit { display: none; float: right; }
-

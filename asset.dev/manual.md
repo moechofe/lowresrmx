@@ -1,5 +1,4 @@
 TODO: layer registers?
-TODO: link do not work: lead to [constant string values] directly
 
 # Retro Game Creator - Documentation
 
@@ -2828,7 +2827,7 @@ Load the virtual `file` at `address`. Optionnaly `limit` the number of bytes rea
 
 The command `FILES` MUST be called before.
 
-#### `SAVE file, comment$,   address, size`
+#### `SAVE file, comment$, address, size`
 
 Save `size` bytes from `address` to the `file` and **erase previous data**. The `comment$` is just a reminder of what is stored.
 
@@ -3525,16 +3524,25 @@ With floating-point numbers, the maximum precision varies depending on the magni
 
 **`ABS`**:
 - [`absolute =ABS(number)`](#-absolute-abs-number-)
+
 **`ADD`**:
 - [`ADD variable, value`<br>`ADD variable, increment, min TO max`](#-add-variable-value-br-add-variable-increment-min-to-max-)
+
 **`AND`**:
 - [`AND`](#operators)
+
 **`ASC`**:
 - [`ascii7 =ASC(character)`](#-ascii7-asc-character-)
+
+**`AT`**:
+- [`AT`](#operators)
+
 **`ATAN`**:
 - [`arc =ATAN(x, y)`](#-arc-atan-x-y-)
+
 **`ATTR`**:
 - [`ATTR attributes`](#-attr-attributes-)
+
 **`BG`**:
 - [`BG layer`](#-bg-layer-)
 - [`BG FILL x1, y1 TO x2, y2 CHAR character`](#-bg-fill-x1-y1-to-x2-y2-char-character-)
@@ -3543,198 +3551,252 @@ With floating-point numbers, the maximum precision varies depending on the magni
 - [`BG SOURCE address [,width, height]`](#-bg-source-address-width-height-)
 - [`BG COPY x1, y1, width, height TO x2, y2`](#-bg-copy-x1-y1-width-height-to-x2-y2-)
 - [`BG VIEW ON`<br>`BG VIEW OFF`](#-bg-view-on-br-bg-view-off-)
+
 **`BIN`**:
 - [`hexadecimal =HEX$(number, [digits])`<br>`binary =BIN$(number, [digits])`](#-hexadecimal-hex-number-digits-br-binary-bin-number-digits-)
+
 **`CALL`**:
 - [`CALL`](#-call-)
 - [`ON VBL CALL procedure`](#-on-vbl-call-procedure-)
 - [`ON RASTER CALL procedure`](#-on-raster-call-procedure-)
+
 **`CEIL`**:
 - [`ceil =CEIL(number)`](#-ceil-ceil-number-)
+
 **`CELL`**:
 - [`CELL x, y, [character]`](#-cell-x-y-character-)
 - [`character =CELL.C(x, y)`](#-character-cell-c-x-y-)
 - [`attributes =CELL.A(x, y)`](#-attributes-cell-a-x-y-)
+
 **`CELL.A`**:
 - [`attributes =CELL.A(x, y)`](#-attributes-cell-a-x-y-)
+
 **`CELL.C`**:
 - [`character =CELL.C(x, y)`](#-character-cell-c-x-y-)
+
 **`CHAR`**:
 - [`BG FILL x1, y1 TO x2, y2 CHAR character`](#-bg-fill-x1-y1-to-x2-y2-char-character-)
+
 **`CHR`**:
 - [`character =CHR$(ascii7)`](#-character-chr-ascii7-)
+
 **`CLAMP`**:
 - [`clamped =CLAMP(value, min, max)`](#-clamped-clamp-value-min-max-)
+
 **`CLS`**:
 - [`CLS`](#-cls-)
 - [`CLS layer`](#-cls-layer-)
+
 **`CLW`**:
 - [`CLW`](#-clw-)
+
 **`COLOR`**:
 - [`available =COLOR(palette, color)`](#-available-color-palette-color-)
+
 **`COMPAT`**:
 - [`COMPAT`](#-compat-)
+
 **`COPY`**:
 - [`BG COPY x1, y1, width, height TO x2, y2`](#-bg-copy-x1-y1-width-height-to-x2-y2-)
 - [`COPY source, count TO destination`](#-copy-source-count-to-destination-)
 - [`DMA COPY [ROM]`](#-dma-copy-rom-)
+
 **`COS`**:
 - [`cosine =COS(number)`<br>`sine =SIN(number)`](#-cosine-cos-number-br-sine-sin-number-)
+
 **`CURSOR.X`**:
 - [`x =CURSOR.X`<br>`y =CURSOR.Y`](#-x-cursor-x-br-y-cursor-y-)
+
 **`CURSOR.Y`**:
 - [`x =CURSOR.X`<br>`y =CURSOR.Y`](#-x-cursor-x-br-y-cursor-y-)
+
 **`DATA`**:
 - [`DATA constant [,constant...]`](#-data-constant-constant-)
+
 **`DEC`**:
 - [`INC variable`<br>`DEC variable`](#-inc-variable-br-dec-variable-)
+
 **`DIM`**:
 - [`DIM`](#-dim-)
 - [`DIM GLOBAL`](#-dim-global-)
+
 **`DMA`**:
 - [`DMA COPY [ROM]`](#-dma-copy-rom-)
+
 **`DO`**:
 - [`DO/LOOP/EXIT`](#-do-loop-exit-)
+
 **`EASE`**:
 - [`interpolation =EASE(function, mode, value)`](#-interpolation-ease-function-mode-value-)
+
 **`ELSE`**:
 - [`IF/THEN/ELSE IF/ELSE/END IF`<br>`IF/THEN`](#-if-then-else-if-else-end-if-br-if-then-)
+
+**`EMITTER`**:
+- [`EMITTER`](#operators)
+
 **`END`**:
 - [`END`](#-end-)
 - [`IF/THEN/ELSE IF/ELSE/END IF`<br>`IF/THEN`](#-if-then-else-if-else-end-if-br-if-then-)
 - [`SUB/END SUB/EXIT SUB`](#-sub-end-sub-exit-sub-)
+
 **`ENVELOPE`**:
 - [`ENVELOPE voice, [attack], [decay], [sustain], [release]`](#-envelope-voice-attack-decay-sustain-release-)
+
 **`EXIT`**:
 - [`DO/LOOP/EXIT`](#-do-loop-exit-)
 - [`REPEAT/UNTIL/EXIT`](#-repeat-until-exit-)
 - [`WHILE/WEND/EXIT`](#-while-wend-exit-)
 - [`FOR/TO/STEP/NEXT/EXIT`](#-for-to-step-next-exit-)
 - [`SUB/END SUB/EXIT SUB`](#-sub-end-sub-exit-sub-)
-**`EXIT`**:
-- [`DO/LOOP/EXIT`](#-do-loop-exit-)
-- [`REPEAT/UNTIL/EXIT`](#-repeat-until-exit-)
-- [`WHILE/WEND/EXIT`](#-while-wend-exit-)
-- [`FOR/TO/STEP/NEXT/EXIT`](#-for-to-step-next-exit-)
-- [`SUB/END SUB/EXIT SUB`](#-sub-end-sub-exit-sub-)
-**`EXIT`**:
-- [`DO/LOOP/EXIT`](#-do-loop-exit-)
-- [`REPEAT/UNTIL/EXIT`](#-repeat-until-exit-)
-- [`WHILE/WEND/EXIT`](#-while-wend-exit-)
-- [`FOR/TO/STEP/NEXT/EXIT`](#-for-to-step-next-exit-)
-- [`SUB/END SUB/EXIT SUB`](#-sub-end-sub-exit-sub-)
-**`EXIT`**:
-- [`DO/LOOP/EXIT`](#-do-loop-exit-)
-- [`REPEAT/UNTIL/EXIT`](#-repeat-until-exit-)
-- [`WHILE/WEND/EXIT`](#-while-wend-exit-)
-- [`FOR/TO/STEP/NEXT/EXIT`](#-for-to-step-next-exit-)
-- [`SUB/END SUB/EXIT SUB`](#-sub-end-sub-exit-sub-)
-**`EXIT`**:
-- [`DO/LOOP/EXIT`](#-do-loop-exit-)
-- [`REPEAT/UNTIL/EXIT`](#-repeat-until-exit-)
-- [`WHILE/WEND/EXIT`](#-while-wend-exit-)
-- [`FOR/TO/STEP/NEXT/EXIT`](#-for-to-step-next-exit-)
-- [`SUB/END SUB/EXIT SUB`](#-sub-end-sub-exit-sub-)
+
 **`EXP`**:
 - [`exponential =EXP(number)`](#-exponential-exp-number-)
+
 **`FILE`**:
 - [`comment$ =FILE$(file)`](#-comment-file-file-)
+
 **`FILES`**:
 - [`FILES`](#-files-)
+
 **`FILL`**:
 - [`BG FILL x1, y1 TO x2, y2 CHAR character`](#-bg-fill-x1-y1-to-x2-y2-char-character-)
 - [`FILL address, count [,value]`](#-fill-address-count-value-)
+
 **`FLIP`**:
 - [`SPRITE sprite [PAL palette] [FLIP horizontal, vertical] [PRIO priority] [SIZE size]`](#-sprite-sprite-pal-palette-flip-horizontal-vertical-prio-priority-size-size-)
 - [`FLIP [horizontal], [vertical]`](#-flip-horizontal-vertical-)
 - [`TINT y, y [PAL palette] [FLIP horizontal, vertical] [PRIO priority]`](#-tint-y-y-pal-palette-flip-horizontal-vertical-prio-priority-)
 - [`BG TINT y1, y1 TO x2, y2 [PAL palette] [FLIP horizontal, vertical] [PRIO priority]`](#-bg-tint-y1-y1-to-x2-y2-pal-palette-flip-horizontal-vertical-prio-priority-)
+
 **`FLOOR`**:
 - [`floor =FLOOR(number)`<br>`floo =INT(number)`](#-floor-floor-number-br-floo-int-number-)
+
 **`FONT`**:
 - [`FONT first`](#-font-first-)
+
 **`FOR`**:
 - [`FOR/TO/STEP/NEXT/EXIT`](#-for-to-step-next-exit-)
+
 **`FSIZE`**:
 - [`size =FSIZE(file)`](#-size-fsize-file-)
+
 **`GLOBAL`**:
 - [`GLOBAL`](#-global-)
 - [`DIM GLOBAL`](#-dim-global-)
+
 **`GOSUB`**:
 - [`GOSUB/RETURN`](#-gosub-return-)
 - [`ON GOTO`<br>`ON GOSUB`](#-on-goto-br-on-gosub-)
+
 **`GOTO`**:
 - [`GOTO`](#-goto-)
 - [`ON GOTO`<br>`ON GOSUB`](#-on-goto-br-on-gosub-)
+
 **`HAPTIC`**:
 - [`HAPTIC pattern`](#-haptic-pattern-)
+
 **`HEX`**:
 - [`hexadecimal =HEX$(number, [digits])`<br>`binary =BIN$(number, [digits])`](#-hexadecimal-hex-number-digits-br-binary-bin-number-digits-)
+
 **`HIT`**:
 - [`collides =SPRITE HIT(sprite)`](#-collides-sprite-hit-sprite-)
 - [`collides =SPRITE HIT(sprite, sprite1)`](#-collides-sprite-hit-sprite-sprite1-)
 - [`collides =SPRITE.HIT(sprite, sprite1 to sprite2)`](#-collides-sprite-hit-sprite-sprite1-to-sprite2-)
 - [`sprite =HIT`](#-sprite-hit-)
+
 **`IF`**:
 - [`IF/THEN/ELSE IF/ELSE/END IF`<br>`IF/THEN`](#-if-then-else-if-else-end-if-br-if-then-)
+
 **`INC`**:
 - [`INC variable`<br>`DEC variable`](#-inc-variable-br-dec-variable-)
+
 **`INKEY`**:
 - [`pressed$ =INKEY$`](#-pressed-inkey-)
+
 **`INPUT`**:
 - [`INPUT [prompt;] variable`<br>`INPUT [prompt;] variable$`](#-input-prompt-variable-br-input-prompt-variable-)
+
 **`INSTR`**:
 - [`found =INSTR(text, occurence [,position])`](#-found-instr-text-occurence-position-)
+
 **`INT`**:
 - [`floor =FLOOR(number)`<br>`floo =INT(number)`](#-floor-floor-number-br-floo-int-number-)
+
 **`KEYBOARD`**:
 - [`KEYBOARD ON`<br>`KEYBOARD OFF`](#-keyboard-on-br-keyboard-off-)
 - [`height =KEYBOARD`](#-height-keyboard-)
+
 **`LEFT`**:
 - [`leading$ =LEFT$(text, length)`<br>`trailing$ =RIGHT$(text, length)`](#-leading-left-text-length-br-trailing-right-text-length-)
 - [`LEFT$(text, length) =replacement$`<br>`RIGHT$(text, length) =replacement$`](#-left-text-length-replacement-br-right-text-length-replacement-)
+
 **`LEN`**:
 - [`length =LEN(x, y)`](#-length-len-x-y-)
 - [`length =LEN(text)`](#-length-len-text-)
+
+**`LET`**:
+- [`LET`](#operators)
+
 **`LFO`**:
 - [`LFO voice, [rate], [frequency], [volume], [width]`](#-lfo-voice-rate-frequency-volume-width-)
 - [`LFO WAVE voice, [wave], [invert], [env], [trigger]`](#-lfo-wave-voice-wave-invert-env-trigger-)
+
+**`LFO.A`**:
+- [`LFO.A`](#operators)
+
 **`LOAD`**:
 - [`LOAD file, address [,limit [,offset]]`](#-load-file-address-limit-offset-)
+
 **`LOCATE`**:
 - [`LOCATE x, y`](#-locate-x-y-)
+
 **`LOG`**:
 - [`logarithm =LOG(number)`](#-logarithm-log-number-)
+
 **`LOOP`**:
 - [`DO/LOOP/EXIT`](#-do-loop-exit-)
+
 **`MAX`**:
 - [`minimal =MIN(a, b)`<br>`maximal =MAX(a, b)`](#-minimal-min-a-b-br-maximal-max-a-b-)
+
 **`MCELL`**:
 - [`MCELL x, y, character`](#-mcell-x-y-character-)
 - [`character =MCELL.C(x, y)`](#-character-mcell-c-x-y-)
 - [`attributes =MCELL.A(x, y)`](#-attributes-mcell-a-x-y-)
+
 **`MCELL.A`**:
 - [`attributes =MCELL.A(x, y)`](#-attributes-mcell-a-x-y-)
+
 **`MCELL.C`**:
 - [`character =MCELL.C(x, y)`](#-character-mcell-c-x-y-)
+
 **`MESSAGE`**:
 - [`MESSAGE text`](#-message-text-)
+
 **`MID`**:
 - [`extract$ =MID(text, position, length)`](#-extract-mid-text-position-length-)
 - [`MID$(text, position, length) =replacement$`](#-mid-text-position-length-replacement-)
+
 **`MIN`**:
 - [`minimal =MIN(a, b)`<br>`maximal =MAX(a, b)`](#-minimal-min-a-b-br-maximal-max-a-b-)
+
 **`MOD`**:
 - [`MOD`](#operators)
+
 **`MUSIC`**:
 - [`MUSIC [pattern]`](#-music-pattern-)
 - [`value =MUSIC(what)`](#-value-music-what-)
+
 **`NEXT`**:
 - [`FOR/TO/STEP/NEXT/EXIT`](#-for-to-step-next-exit-)
+
 **`NOT`**:
 - [`NOT`](#operators)
+
 **`NUMBER`**:
 - [`NUMBER x, y, number, count`](#-number-x-y-number-count-)
+
 **`OFF`**:
 - [`SPRITE OFF`](#-sprite-off-)
 - [`SPRITE OFF sprite`](#-sprite-off-sprite-)
@@ -3744,6 +3806,7 @@ With floating-point numbers, the maximum precision varies depending on the magni
 - [`BG VIEW ON`<br>`BG VIEW OFF`](#-bg-view-on-br-bg-view-off-)
 - [`ON VBL OFF`](#-on-vbl-off-)
 - [`ON RASTER OFF`](#-on-raster-off-)
+
 **`ON`**:
 - [`ON GOTO`<br>`ON GOSUB`](#-on-goto-br-on-gosub-)
 - [`ON RESTORE`](#-on-restore-)
@@ -3754,109 +3817,154 @@ With floating-point numbers, the maximum precision varies depending on the magni
 - [`ON VBL OFF`](#-on-vbl-off-)
 - [`ON RASTER CALL procedure`](#-on-raster-call-procedure-)
 - [`ON RASTER OFF`](#-on-raster-off-)
+
 **`OR`**:
 - [`OR`](#operators)
+
 **`PAL`**:
 - [`SPRITE sprite [PAL palette] [FLIP horizontal, vertical] [PRIO priority] [SIZE size]`](#-sprite-sprite-pal-palette-flip-horizontal-vertical-prio-priority-size-size-)
 - [`PAL palette`](#-pal-palette-)
 - [`TINT y, y [PAL palette] [FLIP horizontal, vertical] [PRIO priority]`](#-tint-y-y-pal-palette-flip-horizontal-vertical-prio-priority-)
 - [`BG TINT y1, y1 TO x2, y2 [PAL palette] [FLIP horizontal, vertical] [PRIO priority]`](#-bg-tint-y1-y1-to-x2-y2-pal-palette-flip-horizontal-vertical-prio-priority-)
+
 **`PALETTE`**:
 - [`PALETTE palette, [c0], [c1], [c2], [c3]`](#-palette-palette-c0-c1-c2-c3-)
+
+**`PARTICLE`**:
+- [`PARTICLE`](#operators)
+
 **`PAUSE`**:
 - [`PAUSE`](#-pause-)
+
 **`PEEK`**:
 - [`value =PEEK(address)`](#-value-peek-address-)
+
 **`PEEKL`**:
 - [`value =PEEKL(address)`](#-value-peekl-address-)
+
 **`PEEKW`**:
 - [`value =PEEKW(address)`](#-value-peekw-address-)
+
 **`PI`**:
 - [`pi =PI`](#-pi-pi-)
+
 **`PLAY`**:
 - [`PLAY voice, pitch [,length] [SOUND sound]`](#-play-voice-pitch-length-sound-sound-)
+
 **`POKE`**:
 - [`POKE address, value`](#-poke-address-value-)
+
 **`POKEL`**:
 - [`POKEL address, value`](#-pokel-address-value-)
+
 **`POKEW`**:
 - [`POKEW address, value`](#-pokew-address-value-)
+
 **`PRINT`**:
 - [`PRINT expression...`](#-print-expression-)
 - [`PRINT`](#-print-)
+
 **`PRIO`**:
 - [`SPRITE sprite [PAL palette] [FLIP horizontal, vertical] [PRIO priority] [SIZE size]`](#-sprite-sprite-pal-palette-flip-horizontal-vertical-prio-priority-size-size-)
 - [`PRIO priority`](#-prio-priority-)
 - [`TINT y, y [PAL palette] [FLIP horizontal, vertical] [PRIO priority]`](#-tint-y-y-pal-palette-flip-horizontal-vertical-prio-priority-)
 - [`BG TINT y1, y1 TO x2, y2 [PAL palette] [FLIP horizontal, vertical] [PRIO priority]`](#-bg-tint-y1-y1-to-x2-y2-pal-palette-flip-horizontal-vertical-prio-priority-)
+
 **`RANDOMIZE`**:
 - [`RANDOMIZE seed`](#-randomize-seed-)
 - [`random =RND address`<br>`random =RND(max, address)`<br>`RANDOMIZE seed [,address]`](#-random-rnd-address-br-random-rnd-max-address-br-randomize-seed-address-)
+
 **`RASTER`**:
 - [`ON RASTER CALL procedure`](#-on-raster-call-procedure-)
 - [`line =RASTER`](#-line-raster-)
 - [`ON RASTER OFF`](#-on-raster-off-)
+
 **`READ`**:
 - [`READ variable [,variable...]`](#-read-variable-variable-)
+
 **`REPEAT`**:
 - [`REPEAT/UNTIL/EXIT`](#-repeat-until-exit-)
+
 **`RESTORE`**:
 - [`RESTORE [label]`](#-restore-label-)
 - [`ON RESTORE`](#-on-restore-)
+
 **`RETURN`**:
 - [`GOSUB/RETURN`](#-gosub-return-)
+
 **`RIGHT`**:
 - [`leading$ =LEFT$(text, length)`<br>`trailing$ =RIGHT$(text, length)`](#-leading-left-text-length-br-trailing-right-text-length-)
 - [`LEFT$(text, length) =replacement$`<br>`RIGHT$(text, length) =replacement$`](#-left-text-length-replacement-br-right-text-length-replacement-)
+
 **`RND`**:
 - [`random =RND`](#-random-rnd-)
 - [`random =RND(max)`](#-random-rnd-max-)
 - [`random =RND address`<br>`random =RND(max, address)`<br>`RANDOMIZE seed [,address]`](#-random-rnd-address-br-random-rnd-max-address-br-randomize-seed-address-)
+
 **`ROL`**:
 - [`ROL address, places`<br>`ROR address, places`](#-rol-address-places-br-ror-address-places-)
+
 **`ROM`**:
 - [`address =ROM(file)`](#-address-rom-file-)
 - [`DMA COPY [ROM]`](#-dma-copy-rom-)
+
 **`ROR`**:
 - [`ROL address, places`<br>`ROR address, places`](#-rol-address-places-br-ror-address-places-)
+
 **`SAFE.B`**:
 - [`left =SAFE.L`<br>`top =SAFE.T`<br>`right =SAFE.R`<br>`bottom =SAFE.B`](#-left-safe-l-br-top-safe-t-br-right-safe-r-br-bottom-safe-b-)
+
 **`SAFE.L`**:
 - [`left =SAFE.L`<br>`top =SAFE.T`<br>`right =SAFE.R`<br>`bottom =SAFE.B`](#-left-safe-l-br-top-safe-t-br-right-safe-r-br-bottom-safe-b-)
+
 **`SAFE.R`**:
 - [`left =SAFE.L`<br>`top =SAFE.T`<br>`right =SAFE.R`<br>`bottom =SAFE.B`](#-left-safe-l-br-top-safe-t-br-right-safe-r-br-bottom-safe-b-)
+
 **`SAFE.T`**:
 - [`left =SAFE.L`<br>`top =SAFE.T`<br>`right =SAFE.R`<br>`bottom =SAFE.B`](#-left-safe-l-br-top-safe-t-br-right-safe-r-br-bottom-safe-b-)
+
 **`SAVE`**:
-- [`SAVE file, comment$,   address, size`](#-save-file-comment-address-size-)
+- [`SAVE file, comment$,    address, size`](#-save-file-comment-address-size-)
+
 **`SCROLL`**:
 - [`SCROLL layer, [x], [y]`](#-scroll-layer-x-y-)
 - [`x =SCROLL.X(layer)`<br>`y =SCROLL.Y(layer)`](#-x-scroll-x-layer-br-y-scroll-y-layer-)
 - [`BG SCROLL x1, y1 to x2, y2 step x3, y3`](#-bg-scroll-x1-y1-to-x2-y2-step-x3-y3-)
+
 **`SCROLL.X`**:
 - [`x =SCROLL.X(layer)`<br>`y =SCROLL.Y(layer)`](#-x-scroll-x-layer-br-y-scroll-y-layer-)
+
 **`SCROLL.Y`**:
 - [`x =SCROLL.X(layer)`<br>`y =SCROLL.Y(layer)`](#-x-scroll-x-layer-br-y-scroll-y-layer-)
+
 **`SGN`**:
 - [`sign =SGN(number)`](#-sign-sgn-number-)
+
 **`SHOWN.H`**:
 - [`width =SHOWN.W`<br>`height =SHOWN.H`](#-width-shown-w-br-height-shown-h-)
+
 **`SHOWN.W`**:
 - [`width =SHOWN.W`<br>`height =SHOWN.H`](#-width-shown-w-br-height-shown-h-)
+
 **`SIN`**:
 - [`cosine =COS(number)`<br>`sine =SIN(number)`](#-cosine-cos-number-br-sine-sin-number-)
+
 **`SIZE`**:
 - [`SPRITE sprite [PAL palette] [FLIP horizontal, vertical] [PRIO priority] [SIZE size]`](#-sprite-sprite-pal-palette-flip-horizontal-vertical-prio-priority-size-size-)
 - [`size =SIZE(file)`](#-size-size-file-)
+
 **`SKIP`**:
 - [`SKIP number`](#-skip-number-)
+
 **`SOUND`**:
 - [`PLAY voice, pitch [,length] [SOUND sound]`](#-play-voice-pitch-length-sound-sound-)
 - [`SOUND voice, [wave], [width], [length]`](#-sound-voice-wave-width-length-)
 - [`SOUND SOURCE [address]`](#-sound-source-address-)
+
 **`SOURCE`**:
 - [`BG SOURCE address [,width, height]`](#-bg-source-address-width-height-)
 - [`SOUND SOURCE [address]`](#-sound-source-address-)
+
 **`SPRITE`**:
 - [`SPRITE sprite, [x], [y], [character]`](#-sprite-sprite-x-y-character-)
 - [`SPRITE sprite [PAL palette] [FLIP horizontal, vertical] [PRIO priority] [SIZE size]`](#-sprite-sprite-pal-palette-flip-horizontal-vertical-prio-priority-size-size-)
@@ -3871,41 +3979,61 @@ With floating-point numbers, the maximum precision varies depending on the magni
 - [`collides =SPRITE HIT(sprite, sprite1)`](#-collides-sprite-hit-sprite-sprite1-)
 - [`collides =SPRITE.HIT(sprite, sprite1 to sprite2)`](#-collides-sprite-hit-sprite-sprite1-to-sprite2-)
 - [`SPRITE VIEW ON`<br>`SPRITE VIEW OFF`](#-sprite-view-on-br-sprite-view-off-)
+
 **`SPRITE.A`**:
 - [`SPRITE.A sprite, attributes`](#-sprite-a-sprite-attributes-)
 - [`attributes =SPRITE.A(sprite)`](#-attributes-sprite-a-sprite-)
+
 **`SPRITE.C`**:
 - [`character =SPRITE.C(sprite)`](#-character-sprite-c-sprite-)
+
 **`SPRITE.X`**:
 - [`x =SPRITE.X(sprite)`<br>`y =SPRITE.Y(sprite)`](#-x-sprite-x-sprite-br-y-sprite-y-sprite-)
+
 **`SPRITE.Y`**:
 - [`x =SPRITE.X(sprite)`<br>`y =SPRITE.Y(sprite)`](#-x-sprite-x-sprite-br-y-sprite-y-sprite-)
+
 **`SQR`**:
 - [`square =SQR(number)`](#-square-sqr-number-)
+
 **`STEP`**:
 - [`FOR/TO/STEP/NEXT/EXIT`](#-for-to-step-next-exit-)
+
 **`STOP`**:
 - [`STOP`<br>`STOP [voice]`](#-stop-br-stop-voice-)
+
 **`STR`**:
 - [`text =STR$(number)`](#-text-str-number-)
+
 **`SUB`**:
 - [`SUB/END SUB/EXIT SUB`](#-sub-end-sub-exit-sub-)
+
 **`SWAP`**:
 - [`SWAP a, b`](#-swap-a-b-)
+
 **`SYSTEM`**:
 - [`SYSTEM setting, value`](#-system-setting-value-)
+
+**`TAN`**:
+- [`TAN`](#operators)
+
 **`TAP`**:
 - [`touched =TAP`](#-touched-tap-)
 - [`WAIT TAP`](#-wait-tap-)
+
 **`TEXT`**:
 - [`TEXT x, y, text$`](#-text-x-y-text-)
+
 **`THEN`**:
 - [`IF/THEN/ELSE IF/ELSE/END IF`<br>`IF/THEN`](#-if-then-else-if-else-end-if-br-if-then-)
+
 **`TIMER`**:
 - [`frames =TIMER`](#-frames-timer-)
+
 **`TINT`**:
 - [`TINT y, y [PAL palette] [FLIP horizontal, vertical] [PRIO priority]`](#-tint-y-y-pal-palette-flip-horizontal-vertical-prio-priority-)
 - [`BG TINT y1, y1 TO x2, y2 [PAL palette] [FLIP horizontal, vertical] [PRIO priority]`](#-bg-tint-y1-y1-to-x2-y2-pal-palette-flip-horizontal-vertical-prio-priority-)
+
 **`TO`**:
 - [`FOR/TO/STEP/NEXT/EXIT`](#-for-to-step-next-exit-)
 - [`SPRITE OFF sprite1 TO sprite2`](#-sprite-off-sprite1-to-sprite2-)
@@ -3914,42 +4042,59 @@ With floating-point numbers, the maximum precision varies depending on the magni
 - [`BG COPY x1, y1, width, height TO x2, y2`](#-bg-copy-x1-y1-width-height-to-x2-y2-)
 - [`ADD variable, value`<br>`ADD variable, increment, min TO max`](#-add-variable-value-br-add-variable-increment-min-to-max-)
 - [`COPY source, count TO destination`](#-copy-source-count-to-destination-)
+
 **`TOUCH`**:
 - [`touched =TOUCH`](#-touched-touch-)
 - [`x =TOUCH.X`<br>`y =TOUCH.Y`](#-x-touch-x-br-y-touch-y-)
+
 **`TOUCH.X`**:
 - [`x =TOUCH.X`<br>`y =TOUCH.Y`](#-x-touch-x-br-y-touch-y-)
+
 **`TOUCH.Y`**:
 - [`x =TOUCH.X`<br>`y =TOUCH.Y`](#-x-touch-x-br-y-touch-y-)
+
 **`TRACE`**:
 - [`TRACE expression [,expression...]`](#-trace-expression-expression-)
+
 **`TRACK`**:
 - [`TRACK track, voice`](#-track-track-voice-)
+
 **`UBOUND`**:
 - [`=UBOUND`](#-ubound-)
+
 **`UNTIL`**:
 - [`REPEAT/UNTIL/EXIT`](#-repeat-until-exit-)
+
 **`VAL`**:
 - [`number =VAL(text)`](#-number-val-text-)
+
 **`VBL`**:
 - [`WAIT VBL`<br>`WAIT frame`](#-wait-vbl-br-wait-frame-)
 - [`ON VBL CALL procedure`](#-on-vbl-call-procedure-)
 - [`ON VBL OFF`](#-on-vbl-off-)
+
 **`VIEW`**:
 - [`SPRITE VIEW ON`<br>`SPRITE VIEW OFF`](#-sprite-view-on-br-sprite-view-off-)
 - [`BG VIEW ON`<br>`BG VIEW OFF`](#-bg-view-on-br-bg-view-off-)
+
 **`VOLUME`**:
 - [`VOLUME voice, [volume], [mix]`](#-volume-voice-volume-mix-)
+
 **`WAIT`**:
 - [`WAIT TAP`](#-wait-tap-)
 - [`WAIT VBL`<br>`WAIT frame`](#-wait-vbl-br-wait-frame-)
+
 **`WAVE`**:
 - [`LFO WAVE voice, [wave], [invert], [env], [trigger]`](#-lfo-wave-voice-wave-invert-env-trigger-)
+
 **`WEND`**:
 - [`WHILE/WEND/EXIT`](#-while-wend-exit-)
+
 **`WHILE`**:
 - [`WHILE/WEND/EXIT`](#-while-wend-exit-)
+
 **`WINDOW`**:
 - [`WINDOW x, y, width, height, layer`](#-window-x-y-width-height-layer-)
+
 **`XOR`**:
 - [`XOR`](#operators)

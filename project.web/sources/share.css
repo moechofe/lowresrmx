@@ -2,3 +2,5 @@
 require_once __DIR__.'/header.css';
 require_once __DIR__.'/list.css';
 require_once __DIR__.'/footer.css';
+?>
+.publish-dialog fieldset.grid, .post-dialog fieldset.grid { grid-template-columns: 1fr 1fr; }

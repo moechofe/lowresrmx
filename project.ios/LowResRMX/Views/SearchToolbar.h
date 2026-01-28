@@ -14,6 +14,7 @@
 
 @property (weak) id<SearchToolbarDelegate> searchDelegate;
 - (void)activate;
+- (void)updateFontSize:(CGFloat)fontSize;
 
 @end
 

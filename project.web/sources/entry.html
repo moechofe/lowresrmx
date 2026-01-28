@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title><?=$title?> - A LowResRMX project</title>
+<title><?=htmlspecialchars($title,ENT_QUOTES,'UTF-8')?> — Retro Game Creator</title>
 <link rel="stylesheet" href="pico.min.css">
 <link rel="stylesheet" href="entry.css">
 <script src="entry.js"></script>
@@ -19,23 +19,23 @@
 	</template>
 
 	<article data-eid="<?=rawurlencode($eid)?>">
-		<h4><?=strip_tags($title)?></h4>
+		<h4><?=htmlspecialchars($title,ENT_QUOTES,'UTF-8')?></h4>
 		<div class="info">
-			<div class="points"><?=strip_tags($points)?></div>
-			<div class="author"><?=strip_tags($author)?></div>
-			<div class="date" data-ct="<?=strip_tags($ut)?>"></div>
+			<div class="points"><?=htmlspecialchars($points,ENT_QUOTES,'UTF-8')?></div>
+			<div class="author"><?=htmlspecialchars($author,ENT_QUOTES,'UTF-8')?></div>
+			<div class="date" data-ct="<?=htmlspecialchars($ut,ENT_QUOTES,'UTF-8')?>"></div>
 		</div>
 		<input type="checkbox" id="vote" <?=$upvoted?"checked":""?> class="is-signed" hidden/><label id="set" for="vote" class="is-signed" hidden>
 			<span class="up is-signed" hidden>▲ upvoted</span><span class="down is-signed" hidden>▲ vote now</span>
 		</label>
 		<hr/>
-		<p><?=strip_tags($text)?></p>
+		<p><?=htmlspecialchars($text,ENT_QUOTES,'UTF-8')?></p>
 		<div class="visual">
-			<div class="picture" style="background-image:url('./<?=rawurlencode($eid)?>.png');"></div>
+			<img class="picture" alt="<?=htmlspecialchars($title,ENT_QUOTES,'UTF-8')?>" src="./<?=rawurlencode($eid)?>.png"/>
 		</div>
 		<nav>
 			<ul>
-				<li class="is-mobile" hidden><button class="secondary" id="open" onclick="window.open('<?=APP_SCHEME?>\/\/?i=<?=rawurlencode($eid)?>&n=<?=rawurlencode(strip_tags($name))?>')">Open in App</button></li>
+				<li class="is-mobile" hidden><button class="secondary" id="open" data-id="<?=htmlspecialchars($eid,ENT_QUOTES,'UTF-8')?>" data-name="<?=htmlspecialchars($name,ENT_QUOTES,'UTF-8')?>">Open in App</button></li>
 			</ul>
 		</nav>
 		<hr class="is-signed" hidden/>
@@ -48,7 +48,9 @@
 			<button class="comment">Comment</button>
 		</fieldset>
 	</article>
-
+<?php
+require_once __DIR__.'/footer.html';
+?>
 </main>
 <template id="comment-item">
 
