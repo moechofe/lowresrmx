@@ -260,16 +260,6 @@
 		92FAB24D1FC07D1C002E45FB /* LowResRMXView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92FAB24C1FC07D1B002E45FB /* LowResRMXView.swift */; };
 /* End PBXBuildFile section */
 
-/* Begin PBXContainerItemProxy section */
-		9227989C25272523004F6E1A /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 92EA93B21F744572007BEFB1 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 922798902527251F004F6E1A;
-			remoteInfo = WidgetsExtension;
-		};
-/* End PBXContainerItemProxy section */
-
 /* Begin PBXCopyFilesBuildPhase section */
 		9227989F25272523004F6E1A /* Embed App Extensions */ = {
 			isa = PBXCopyFilesBuildPhase;
@@ -970,7 +960,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				9227989D25272523004F6E1A /* PBXTargetDependency */,
 			);
 			name = App;
 			productName = "LowRes CoderRMX";
@@ -995,7 +984,6 @@
 					};
 					92EA93B91F744572007BEFB1 = {
 						CreatedOnToolsVersion = 8.3.3;
-						DevelopmentTeam = YWZ55H4QT9;
 						LastSwiftMigration = 0900;
 						ProvisioningStyle = Automatic;
 						SystemCapabilities = {
@@ -1309,14 +1297,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
-
-/* Begin PBXTargetDependency section */
-		9227989D25272523004F6E1A /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 922798902527251F004F6E1A /* Widgets */;
-			targetProxy = 9227989C25272523004F6E1A /* PBXContainerItemProxy */;
-		};
-/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		922798A025272523004F6E1A /* Debug */ = {
