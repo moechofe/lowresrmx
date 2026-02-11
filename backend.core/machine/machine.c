@@ -27,6 +27,7 @@
 #include "io_chip.h"
 #include "audio_chip.h"
 #include "pcg_basic.h"
+#include "overlay_debugger.h"
 
 void machine_init(struct Core *core)
 {
@@ -102,6 +103,8 @@ int machine_peek(struct Core *core, int address)
 	else if (address == 0x0ffae) return core->interpreter->numLabelStackItems & 0xff;
 	else if (address == 0x0ffaf) return (core->interpreter->numLabelStackItems >> 8) & 0xff;
 
+	machine_checkForTrakedMemoryAccess(core, (uint16_t)address, true, false);
+
 	// read byte
 	return *(uint8_t *)((uint8_t *)core->machine + address);
 }
@@ -158,6 +161,8 @@ bool machine_poke(struct Core *core, int address, int value)
 		else return false; // read only
 	}
 
+	machine_checkForTrakedMemoryAccess(core, (uint16_t)address, false, true);
+
 	// write byte
 	*(uint8_t *)((uint8_t *)core->machine + address) = value & 0xFF;
 
@@ -206,5 +211,45 @@ void machine_suspendEnergySaving(struct Core *core, int numUpdates)
 	if (core->machineInternals->energySavingTimer < numUpdates)
 	{
 		core->machineInternals->energySavingTimer = numUpdates;
+	}
+}
+
+void machine_trackMemory(struct Core *core, uint16_t address, bool read, bool write)
+{
+	// modify existing track
+	for (int i = 0; i < core->machineInternals->numMemoryTracks; i++)
+	{
+		struct MemoryTrack *track = &core->machineInternals->memoryTracks[i];
+		if (track->address == address)
+		{
+			if (read) track->read = true;
+			if (write) track->write = true;
+			return;
+		}
+	}
+	// add new track
+	if (core->machineInternals->numMemoryTracks < MAX_MEMORY_TRACK)
+	{
+		struct MemoryTrack *track = &core->machineInternals->memoryTracks[core->machineInternals->numMemoryTracks++];
+		track->address = address;
+		track->read = read;
+		track->write = write;
+	}
+}
+
+void machine_checkForTrakedMemoryAccess(struct Core *core, uint16_t address, bool read, bool write)
+{
+	if (core->interpreter->pass == StatePaused) return;
+	for (int i = 0; i < core->machineInternals->numMemoryTracks; i++)
+	{
+		struct MemoryTrack *track = &core->machineInternals->memoryTracks[i];
+		if (track->address == address)
+		{
+			if ((read && track->read) || (write && track->write))
+			{
+				trigger_debugger(core);
+			}
+			return;
+		}
 	}
 }

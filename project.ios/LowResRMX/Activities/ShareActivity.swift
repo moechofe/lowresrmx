@@ -15,8 +15,6 @@ class ShareActivity: UIActivity {
 	private var viewController: UIViewController?
 
 	private var didPrepare = false
-	// static var baseURL: String = "http://10.10.35.216:8080"
-	static var baseURL: String = "https://ret.ro.it"
 
 	override var activityType: UIActivity.ActivityType? {
 		return ShareActivity.postToForum
@@ -34,6 +32,18 @@ class ShareActivity: UIActivity {
 		return true
 	}
 
+	private func showErrorAlert(code: String) {
+		let alert = UIAlertController(
+			title: "POKE 53280,1",
+			message: "Feature 1 has been defeated. #\(code)",
+			preferredStyle: .alert
+		)
+		alert.addAction(UIAlertAction(title: "Ok", style: .default) { [weak self] _ in
+			self?.activityDidFinish(false)
+		})
+		viewController = alert
+	}
+
 	override func prepare(withActivityItems activityItems: [Any]) {
 		guard !didPrepare else { return }
 		didPrepare = true
@@ -42,89 +52,124 @@ class ShareActivity: UIActivity {
 
 		if let path = activityItems.first as? URL {
 			let programUrl = path
-			let imageUrl = path.deletingPathExtension().appendingPathExtension("png")
-			let programName = path.deletingPathExtension().lastPathComponent
+			let imageUrl = programUrl.deletingPathExtension().appendingPathExtension("png")
 
-			var programDataToSend: Data? = nil
-			if let programData = try? Data(contentsOf: programUrl) {
-				if let compressed = try? ZStd.compress(programData) {
-					programDataToSend = compressed
-				}
+			if !FileManager.default.fileExists(atPath: imageUrl.path) {
+				let alert = UIAlertController(
+					title: "No Program Icon",
+					message:
+						"Please capture a program icon before sharing. You can do this from the menu while the program is running.",
+					preferredStyle: .alert)
+				alert.addAction(UIAlertAction(title: "OK", style: .default) { [weak self] _ in
+					self?.activityDidFinish(false)
+				})
+				viewController = alert
+				return
 			}
 
-			let url = URL(string: "\(ShareActivity.baseURL)/upload")!
+			let programName = programUrl.deletingPathExtension().lastPathComponent
+
+			var programDataToSend: Data? = nil
+			guard let programData = try? Data(contentsOf: programUrl) else {
+				showErrorAlert(code: "LPD") // Load Program Data
+				return
+			}
+			guard let compressed = try? ZStd.compress(programData) else {
+				showErrorAlert(code: "CPD") // Compress Program Data
+				return
+			}
+			programDataToSend = compressed
+
+			guard let url = URL(string: "\(AppDelegate.baseURL)/upload") else {
+				showErrorAlert(code: "CBU") // Create Base URL
+				return
+			}
 			var request = URLRequest(url: url)
 			request.httpMethod = "POST"
 
 			// Prepare JSON body
 			var json: [String: Any] = ["n": programName]
-			if let programDataToSend = programDataToSend {
-				json["p"] = programDataToSend.base64EncodedString()
+			json["p"] = programDataToSend?.base64EncodedString()
+
+			guard let imageData = try? Data(contentsOf: imageUrl) else {
+				showErrorAlert(code: "LID") // Load Image Data
+				return
 			}
-			if let imageData = try? Data(contentsOf: imageUrl) {
-				json["i"] = imageData.base64EncodedString()
-			}
+			json["i"] = imageData.base64EncodedString()
+
 			do {
 				let jsonData = try JSONSerialization.data(withJSONObject: json, options: [])
-				if let jsonString = String(data: jsonData, encoding: .utf8) {
-					// print("jsonData: \(jsonString)")
-				} else {
-					print("Failed to convert jsonData to String")
-				}
 				request.httpBody = jsonData
 				request.setValue("application/json", forHTTPHeaderField: "Content-Type")
 			} catch {
 				print("Failed to encode JSON: \(error)")
+				showErrorAlert(code: "EJS") // Encode JSON
 				return
 			}
 
+			let semaphore = DispatchSemaphore(value: 0)
+			var networkError: String?
+
 			let task = URLSession.shared.dataTask(with: request) { data, response, error in
+				defer { semaphore.signal() }
+
 				if let error = error {
 					print("Error: \(error)")
-				} else if let response = response as? HTTPURLResponse {
-					// print("Status code: \(response.statusCode)")
-					if let data = data {
-						do {
-							let uploadToken = try JSONSerialization.jsonObject(with: data, options: .fragmentsAllowed)
-							// print("Response JSON: \(uploadToken)")
+					networkError = "NWE" // Network Error
+					return
+				}
 
-							if let uploadToken = uploadToken as? String,
-							   let encodedToken = uploadToken.addingPercentEncoding(withAllowedCharacters: .alphanumerics.union(CharacterSet(charactersIn: "-")))
-							{
-								// print("Encoded upload token: \(encodedToken)")
+				guard let httpResponse = response as? HTTPURLResponse, (200 ... 299).contains(httpResponse.statusCode) else {
+					print("Invalid response: \(String(describing: response))")
+					networkError = "IVR" // Invalid Response
+					return
+				}
 
-								if var components = URLComponents(string: "\(ShareActivity.baseURL)/share") {
-									components.queryItems = [URLQueryItem(name: "uptoken", value: encodedToken)]
-									if let url = components.url {
-										DispatchQueue.main.async {
-											UIApplication.shared.open(url, options: [:], completionHandler: { success in
-												if success {
-													// print("Opened URL: \(url)")
-												} else {
-													print("Failed to open URL")
-												}
-											})
-										}
-									} else {
-										print("Failed to create URL from components")
-									}
-								} else {
-									print("Failed to create URL components")
-								}
+				guard let data = data else {
+					print("No data received in response")
+					networkError = "NDA" // No Data
+					return
+				}
 
-							} else {
-								print("Failed to encode upload token")
-							}
+				do {
+					let uploadToken = try JSONSerialization.jsonObject(with: data, options: .fragmentsAllowed)
 
-						} catch {
-							print("Failed to parse JSON response: \(error)")
-						}
-					} else {
-						print("No data received in response")
+					guard let uploadTokenStr = uploadToken as? String,
+					      let encodedToken = uploadTokenStr.addingPercentEncoding(withAllowedCharacters: .alphanumerics.union(CharacterSet(charactersIn: "-")))
+					else {
+						networkError = "IVT" // Invalid Token
+						return
 					}
+
+					guard var components = URLComponents(string: "\(AppDelegate.baseURL)/share") else {
+						networkError = "FUC" // Failed URL Components
+						return
+					}
+
+					components.queryItems = [URLQueryItem(name: "uptoken", value: encodedToken)]
+					guard let url = components.url else {
+						networkError = "FUC"
+						return
+					}
+
+					DispatchQueue.main.async {
+						UIApplication.shared.open(url, options: [:]) { success in
+							self.activityDidFinish(success)
+						}
+					}
+				} catch {
+					print("Failed to parse JSON response: \(error)")
+					networkError = "PJE" // Parse JSON Error
 				}
 			}
 			task.resume()
+			semaphore.wait()
+
+			if let errorCode = networkError {
+				showErrorAlert(code: errorCode)
+			}
+		} else {
+			showErrorAlert(code: "FPU") // Failed to get Program URL
 		}
 	}
 

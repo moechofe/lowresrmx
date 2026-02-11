@@ -46,6 +46,7 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
   var coreWrapper: CoreWrapper?
   var imageData: Data?
 	var screenScale: Double = 1.0
+	var isCompatMode: Bool = false
 
   var isDebugEnabled = false {
     didSet {
@@ -125,7 +126,7 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
       group.notify(queue: .main) {
         if let sourceCode = sourceCode {
           if let topicId = webSource.topicId {
-            self.countPlay(topicId: topicId)
+//            self.countPlay(topicId: topicId)
           }
           let error = self.compileAndStartProgram(sourceCode: sourceCode)
           if let error = error {
@@ -311,6 +312,11 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
     } else {
       height = h
       screenScale = height / 384.0
+//      if (isCompatMode && screenScale > screenScale.rounded(.towardZero))
+//      {
+//				screenScale = screenScale.rounded(.towardZero)
+//				height = 384.0 / screenScale;
+//			}
       width = 216.0 * screenScale
     }
 
@@ -320,6 +326,10 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
       width: width,
       height: height
     )
+
+    // NSLog("nxView: \(width)x\(height)")
+    // NSLog("wrapper: \(Int32(w / screenScale))x\(Int32(h / screenScale))")
+    // NSLog("screenScale: \(screenScale)")
 
     // send shown and safe size
 
@@ -453,17 +463,17 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
       self.exit()
     }
   }
-
-  func countPlay(topicId: String) {
-    var urlRequest = URLRequest(
-      url: URL(string: "\(ShareViewController.baseUrl)ajax/count_play.php")!)
-    urlRequest.httpMethod = "POST"
-    urlRequest.httpBody = "topic_id=\(topicId)".data(using: .utf8)
-    let task = URLSession.shared.dataTask(with: urlRequest) { (data, response, error) in
-      print("count play \(topicId):", error ?? "ok")
-    }
-    task.resume()
-  }
+//
+//  func countPlay(topicId: String) {
+//    var urlRequest = URLRequest(
+//      url: URL(string: "\(ShareViewController.baseURL)ajax/count_play.php")!)
+//    urlRequest.httpMethod = "POST"
+//    urlRequest.httpBody = "topic_id=\(topicId)".data(using: .utf8)
+//    let task = URLSession.shared.dataTask(with: urlRequest) { (data, response, error) in
+//      print("count play \(topicId):", error ?? "ok")
+//    }
+//    task.resume()
+//  }
 
   @objc func update(displaylink: CADisplayLink) {
     guard let coreWrapper = coreWrapper else {
@@ -806,6 +816,10 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
       } else if controlsInfo.hapticMode == Selection {
         UISelectionFeedbackGenerator().selectionChanged()
       }
+      if controlsInfo.isCompatMode {
+				self.isCompatMode = true;
+				self.view.setNeedsLayout();
+			}
     }
   }
 

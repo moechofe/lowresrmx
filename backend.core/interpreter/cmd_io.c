@@ -20,6 +20,7 @@
 
 #include "cmd_io.h"
 #include "core.h"
+#include "overlay_debugger.h"
 #include <assert.h>
 
 enum ErrorCode cmd_KEYBOARD(struct Core *core)
@@ -73,15 +74,7 @@ enum ErrorCode cmd_PAUSE(struct Core *core)
 
 	if (interpreter->pass == PassRun)
 	{
-		core->interpreter->debug = true;
-		interpreter->state = StatePaused;
-		// overlay_updateState(core);
-		core->machine->ioRegisters.key = 0;
-		struct TextLib *lib = &core->overlay->textLib;
-		txtlib_printText(lib, "\nDebugger\n");
-		txtlib_printText(lib,   "========\n\n");
-		txtlib_printText(lib, "  'PAUSE' to resume\n\n");
-		txtlib_scrollWindowIfNeeded(lib);
+		trigger_debugger(core);
 	}
 
 	return itp_endOfCommand(interpreter);

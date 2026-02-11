@@ -47,6 +47,10 @@
 
     > For debian 12: sudo pecl install -f libsodium
 
+5. Install markdown extensions:
+
+    pecl install markdown
+
 6. Enable extensions for php cli on Ubuntu:
 
     ```bash
@@ -146,7 +150,7 @@ Create and fill the `sources/private.php` file using the given `private.sample.p
 
 - _(list)_ `"u:USER_ID:f"` list of first entries ID
 
-    - _(str)_ `[…]` `PROGRAM_ID`
+    - _(str)_ `[…]` `ENTRY_TOKEN_ID`
 
 #### Forum related
 
@@ -205,7 +209,7 @@ Create and fill the `sources/private.php` file using the given `private.sample.p
 
 #### Rank related
 
-- _(zset)_ `"r:WHERE_ID` `ENTRY_TOKEN_ID` list the first message entries
+- _(zset)_ `"r:WHERE_ID` list the first message entries
 
     - _(str)_ `[…]` `ENTRY_TOKEN_ID`
 

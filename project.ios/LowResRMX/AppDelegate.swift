@@ -12,7 +12,13 @@ import UIKit
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
-  var window: UIWindow?
+	static var baseURL: String {
+		let key="USE_SHARE_HOST"
+		guard ProcessInfo.processInfo.environment.contains(where: {$0.key==key}) else { return "https://ret.ro.it" }
+		return ProcessInfo.processInfo.environment[key]!
+	}
+	
+	var window: UIWindow?
 
   func application(
     _ application: UIApplication,
@@ -78,10 +84,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 						if let topicId = topicId?.removingPercentEncoding,
 							!topicId.isEmpty
             {
-							let baseUrl="https://ret.ro.it/"
-							// let baseUrl="http://lowresrmx.top:8080/"
-              program = URL(string: "\(baseUrl)\(topicId).rmx")
-              image = URL(string: "\(baseUrl)\(topicId).png")
+              program = URL(string: "\(AppDelegate.baseURL)\(topicId).rmx")
+              image = URL(string: "\(AppDelegate.baseURL)\(topicId).png")
             }
           }
         }

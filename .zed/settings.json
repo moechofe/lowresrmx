@@ -4,6 +4,8 @@
 // see the documentation: https://zed.dev/docs/configuring-zed#settings-files
 {
     "file_types": {
-        "C": ["c","h"]
-    }
+        "C": ["c", "h"]
+    },
+    "format_on_save": "off",
+    "remove_trailing_whitespace_on_save": true
 }

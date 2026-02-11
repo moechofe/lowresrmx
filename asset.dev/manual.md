@@ -329,7 +329,7 @@ The fantasy screen has a maximum resolution of 216x384 pixels.
 
 It features perfectly square pixels, a fixed portrait orientation, and always fills the entire device screen.
 
-Depending on the device's screen ratio, the number of visible virtual pixels may vary from 216x288 on 4:3 devices to 177x384 on 19.5:9 devices.
+Depending on the device's screen ratio, the number of visible virtual pixels may vary from 216x288 on 4:3 devices to 177x384 on 19.5:9 devices. Even taller resolutions are possible by splitting the screen on an iPad.
 
 That's why Retro Game Creator provides an API to request the [actual visible dimension of the screen using the `=SHOWN.W` and `=SHOWN.H` functions](#-width-shown-w-br-height-shown-h-).
 
@@ -2955,7 +2955,11 @@ Allow to output more variables using the `pagination` with an index that start a
 
 #### dbg: `TRACE`
 
-Print the current call stack in order: label and procedure names.
+Print the current call stack in reverse order: last line number followed by label `GOSUB`'ed and procedure `CALL`'ed.
+
+#### dbg: `TRACK PEEK address`<br> dbg: `TRACK POKE address`
+
+Enter the debugger when the program `=PEEK` or `POKE` the `address`.
 
 ## References
 

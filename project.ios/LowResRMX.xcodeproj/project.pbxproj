@@ -417,6 +417,7 @@
 		5B3C38732E8E64320048C9FE /* FontSizePickerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FontSizePickerViewController.swift; sourceTree = "<group>"; };
 		5B572CB12DE710BA00196C83 /* globmatch.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = globmatch.h; sourceTree = "<group>"; };
 		5B572CB22DE710BA00196C83 /* globmatch.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = globmatch.c; sourceTree = "<group>"; };
+		5BE6C6562F2CFC3C00A5EEA7 /* overlay_debugger.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = overlay_debugger.h; sourceTree = "<group>"; };
 		5BF536CD2D848C1F00548D6A /* overlay_debugger.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = overlay_debugger.c; sourceTree = "<group>"; };
 		920E1B191F77FF7A00664382 /* ExplorerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExplorerViewController.swift; sourceTree = "<group>"; };
 		920E1B1B1F78000800664382 /* ExplorerItemCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExplorerItemCell.swift; sourceTree = "<group>"; };
@@ -712,6 +713,7 @@
 		5B34ECDD2AC5835600220A80 /* overlay */ = {
 			isa = PBXGroup;
 			children = (
+				5BE6C6562F2CFC3C00A5EEA7 /* overlay_debugger.h */,
 				5BF536CD2D848C1F00548D6A /* overlay_debugger.c */,
 				5B34ECDE2AC5835600220A80 /* overlay.bc */,
 				5B34ECDF2AC5835600220A80 /* overlay_data.c */,
@@ -1490,7 +1492,7 @@
 				DEVELOPMENT_TEAM = YWZ55H4QT9;
 				INFOPLIST_FILE = "$(SRCROOT)/LowResRMX/Info.plist";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
-				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.5;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1516,7 +1518,7 @@
 				DEVELOPMENT_TEAM = YWZ55H4QT9;
 				INFOPLIST_FILE = "$(SRCROOT)/LowResRMX/Info.plist";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
-				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.5;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

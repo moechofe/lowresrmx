@@ -44,11 +44,11 @@
 #if __APPLE__
 #include <TargetConditionals.h>
 #if TARGET_OS_IPHONE
-#define BGR 1
+#define ABGR 1
 #endif
 #endif
 #if __ANDROID__
-#define BGR 0
+#define ABGR 0
 #endif
 #if __linux__
 #endif

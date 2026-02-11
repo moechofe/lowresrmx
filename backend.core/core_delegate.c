@@ -69,6 +69,7 @@ void delegate_controlsDidChange(struct Core *core)
         }
         info.isAudioEnabled = core->machineInternals->audioInternals.audioEnabled;
 				info.hapticMode = core->machine->ioRegisters.haptic;
+				info.isCompatMode = core->interpreter->compat;
 				core->machine->ioRegisters.haptic=0;
         core->delegate->controlsDidChange(core->delegate->context, info);
     }

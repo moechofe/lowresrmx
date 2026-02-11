@@ -50,6 +50,7 @@ struct ControlsInfo {
 		enum HapticMode hapticMode;
     bool isAudioEnabled;
 		bool isInputState;
+		bool isCompatMode;
 };
 
 struct CoreDelegate {
@@ -67,7 +68,7 @@ struct CoreDelegate {
     /** Called when a disk data entry was tried to be saved, but the disk is full */
     void (*diskDriveIsFull)(void *context, struct DataManager *diskDataManager);
 
-    /** Called when keyboard or gamepad settings changed */
+    /** Called when keyboard settings changed */
     void (*controlsDidChange)(void *context, struct ControlsInfo controlsInfo);
 
     /** Called when persistent RAM will be accessed the first time */

@@ -10,11 +10,8 @@ import UIKit
 import WebKit
 
 class ShareViewController: UIViewController, WKNavigationDelegate {
-
-    //static let baseUrl = URL(string: "https://lowresnx.inutilis.com/")!
-    static let baseUrl = URL(string: "http://10.10.35.216:8080/")!
-
-    weak var activity: ShareActivity?
+	
+	  weak var activity: ShareActivity?
     var programUrl: URL?
     var imageUrl: URL?
 
@@ -66,7 +63,8 @@ class ShareViewController: UIViewController, WKNavigationDelegate {
         activityView.sizeToFit()
         navigationItem.rightBarButtonItem = UIBarButtonItem(customView: activityView)
 
-        let urlRequest = URLRequest(url: ShareViewController.baseUrl.appendingPathComponent("share.html"))
+				let url = URL(string: "\(AppDelegate.baseURL)/share.html")!
+        let urlRequest = URLRequest(url: url)
         webView.load(urlRequest)
     }
 
@@ -74,29 +72,30 @@ class ShareViewController: UIViewController, WKNavigationDelegate {
         webView.stopLoading()
         activity?.activityDidFinish(false)
     }
-
-    func uploadProgram() {
-        guard let programUrl = programUrl, let imageUrl = imageUrl else {
-            showError()
-            return
-        }
-
-        let programData = try? Data(contentsOf: programUrl)
-        let imageData = try? Data(contentsOf: imageUrl)
-
-        var urlRequest = URLRequest(url: ShareViewController.baseUrl.appendingPathComponent("app_posting.php"))
-        urlRequest.httpMethod = "POST"
-
-        var parameters: [String: Any] = [:]
-        if let programData = programData {
-            parameters["program_file"] = MultipartFile(filename: programUrl.lastPathComponent, data: programData, mime: "text/plain")
-        }
-        if let imageData = imageData {
-            parameters["image_file"] = MultipartFile(filename: imageUrl.lastPathComponent, data: imageData, mime: "image/png")
-        }
-        urlRequest.setMultipartBody(parameters: parameters)
-        webView.load(urlRequest)
-    }
+//
+//    func uploadProgram() {
+//        guard let programUrl = programUrl, let imageUrl = imageUrl else {
+//            showError()
+//            return
+//        }
+//
+//        let programData = try? Data(contentsOf: programUrl)
+//        let imageData = try? Data(contentsOf: imageUrl)
+//
+//				let url = URL(string: "\(AppDelegate.baseURL)/share.html")!
+//        var urlRequest = URLRequest(url: AppDelegate.baseURL.appendingPathComponent("app_posting.php"))
+//        urlRequest.httpMethod = "POST"
+//
+//        var parameters: [String: Any] = [:]
+//        if let programData = programData {
+//            parameters["program_file"] = MultipartFile(filename: programUrl.lastPathComponent, data: programData, mime: "text/plain")
+//        }
+//        if let imageData = imageData {
+//            parameters["image_file"] = MultipartFile(filename: imageUrl.lastPathComponent, data: imageData, mime: "image/png")
+//        }
+//        urlRequest.setMultipartBody(parameters: parameters)
+//        webView.load(urlRequest)
+//    }
 
     func showError(_ error: Error? = nil) {
         showAlert(withTitle: "Something Went Wrong", message: error?.localizedDescription) {
@@ -135,21 +134,21 @@ class ShareViewController: UIViewController, WKNavigationDelegate {
         }
         decisionHandler(.allow)
     }
-
-    func webView(_ webView: WKWebView, decidePolicyFor navigationResponse: WKNavigationResponse, decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void) {
-        decisionHandler(.allow)
-
-        if let response = navigationResponse.response as? HTTPURLResponse {
-            if  let userId = response.allHeaderFields["x-lowresnx-user-id"] as? String,
-                let username = response.allHeaderFields["x-lowresnx-username"] as? String {
-
-                AppController.shared.didLogIn(userId: userId, username: username)
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    self.uploadProgram()
-                }
-            }
-        }
-    }
+//
+//    func webView(_ webView: WKWebView, decidePolicyFor navigationResponse: WKNavigationResponse, decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void) {
+//        decisionHandler(.allow)
+//
+//        if let response = navigationResponse.response as? HTTPURLResponse {
+//            if  let userId = response.allHeaderFields["x-lowresnx-user-id"] as? String,
+//                let username = response.allHeaderFields["x-lowresnx-username"] as? String {
+//
+//                AppController.shared.didLogIn(userId: userId, username: username)
+//                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+//                    self.uploadProgram()
+//                }
+//            }
+//        }
+//    }
 
     func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
         activityView.startAnimating()

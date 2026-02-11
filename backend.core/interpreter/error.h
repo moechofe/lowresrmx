@@ -85,6 +85,7 @@ enum ErrorCode {
     ErrorAutomaticPauseNotDisabled,
     ErrorNotAllowedOutsideOfInterrupt,
 		ErrorUserDeviceDiskFull,
+		ErrorRandAddressNotSeeded,
 
 		ErrorMax
 };

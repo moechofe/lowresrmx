@@ -1,0 +1,4029 @@
+version$="0.167"
+'offical graphics editor for Retro Game Creator (LowResRMX) for iOS
+'author: martin mauchauffee
+
+'the editor is separated in 3 main parts:
+'1. the top canvas where user can edit characters and backgrounds
+'2. the floating content where user can select characters or colors
+'3. the bottom toolbar where user can select tools and options
+
+
+'todo: is fltshow needed? floe -1 can be enough as long as oldfloe is set, and it's a mess, fltshow is set to -1 but floe stay -1
+'todo: add sentence on top of the file selector to indicate which type of file
+'todo: can i remove the variable editor?, fedmode is pretty usefull
+'todo: there is some `bg source beda` and some `bg source usraddr(layfile(3))`, who win?
+'todo: actually, it should never be `layfile(3)`
+
+
+files
+
+
+'beta version intro
+palette 0,2,8,8,2
+shownw=0 :shownh=0
+do
+  if shownw<>shown.w or shownh<>shown.h then
+    shownw=shown.w :shownh=shown.h
+    cls
+    window 2,3,shownw/8-4,shownh/8-6,0
+    print "work in progress."
+    print "gfx ";version$
+    print
+    print "- include a basic background editor."
+    print
+    print "- include a palette editor."
+    print
+    print "- characters must exists in file#2,"
+    print
+    print "- background must exists in file#3."
+    print
+    print "tap to continue..."
+  end if
+  wait vbl
+  if tap then goto eon
+loop
+eon: cls: palette 0,4,4,4,4
+wait vbl
+shownw=0 :shownh=0
+
+
+'file#1 ui palettes
+'file#2 ui characters
+'file#3 ui backgrounds
+'file#4 charalist backgrounds
+'file#5 ui palettes backgrounds
+
+'spr#124..159 ui chara list cursor
+
+'ram$9000..9003 file signature
+'ram$9004..9043 all colors for kolorlist fast copy during raster
+global wramstart,wramend
+wramstart=$9044
+wramend=$e000
+
+
+
+'====================== settings:
+'this settings are supposed to be saved in the persistent memory
+
+'editor= current editor
+'=1 backed the background editor
+
+'pale= current user palette
+'cole= current user color, the index in the palette
+'laye= current edited layer
+'care= current edited character
+'kole= current choosen color, from the 64 available
+global pale,cole,laye,care,kole
+laye=-1
+cole=1
+
+'address of the user's loaded palette and characters
+global pala,cara
+
+'address of the user's current palette
+'use to speed up raster interrupt
+global pcla
+
+'cane= current canvas
+'=0 backed
+'=1 filed
+'=2 chared
+'=3 sheeted
+'tole= current toolbar
+'=0 backed first
+'=1 backed second
+'=2 backed file
+'=3 backed palette
+'=4 filer
+'...
+'floe= current floating bar
+'=0 user's chara list
+'=1 64 available colors
+global cane,tole,floe
+
+
+
+
+'about background editor or backed or bed
+'bedlife= current edited file
+'bedtool= backed current tool
+'=0 pan the canvas
+'=1 draw the canvas
+'=2 draw rect the canvas
+'=3 pan layer start
+'=4 pan layer size
+'=5 pan layer dest
+'bedoldt= old value for bedtool
+'bedzoom= zoomed layer on backed
+'bedscale= similar to bedzoom but store the zoom factor (1 or 2)
+'bedhoriz,bedverti= horizontal and vertical flip
+'bedx,bedy= global layers position, used to pan the canvas, in float pixel coords
+'bedatt= current selected attribute to draw
+'bedsetm= bit mask for draw operation
+'bedbot= which bottom bar is shown /!\ less than 16
+'=0 main menu
+'=1 palette chooser menu
+'=2 drawing tool chooser menu
+'=3 file menu
+'=4 more menu
+'=5 layer menu
+'=6 color chooser menu
+global bedlife
+'bedtool,bedzoom,bedscale,bedhoriz,bedverti,bedprio,bedx,bedy,bedbot
+
+'temp:
+bedzoom=0 :bedscale=1
+bedhoriz=0 :bedverti=0 :bedprio=0
+bedx=0 :bedy=0
+bedtool=0 :bedoldt=1
+bedatt=0
+bedsetm=%111111
+bedbot=0
+
+'about currently edited layer in backed
+'laybgl,laybgt,laybgr,laybgb= bounding box of the current layer relative to the loaded background, in cell coordinates
+'bedw,bedh= width and height of the currently editer loaded background in cell coordinates
+'beda= address of the currently editer loaded background
+'laym,layn= to convert layer coordinates to background coordinates
+global laybgl,laybgt,laybgr,laybgb,bedw,bedh,beda
+
+'laym,layn
+
+'canvas layer for backed, mapped to the fantasy bg. 0 is not used.
+'layx,layy= cell coords to where the layer start from the bg source
+'layw,layh= cell dimension of the layer from the bg source
+'layu,layv= cell coords to offset the layer from the canvas
+'laym,layn= to convert a canvas coords to a layer coords, in cells
+'layl,layt,layr,layb= bounding box in canvas coords
+dim global layfile(3),layx(3),layy(3),layw(3),layh(3),layu(3),layv(3),laym(3),layn(3),layl(3),layt(3),layr(3),layb(3)
+for i=0 to 3 :layfile(i)=-1 :next i
+
+'about chara list
+'lstchara= currently selected chara num in the chara list
+'lstsize= size of the cursor in number of selected cells
+'lstcursor= if the chara list cursor is shown
+'lstscroll= the horizontal scroll value
+'lstx,lsty= scroll position of the charalist
+'kolx,koly= scroll position of the kolorlist
+global lstchara,lstsize,lstcursor,lstscroll,lstx,lsty,kolx,koly
+lstsize=1
+lstcursor=0
+lstscroll=0
+
+'about kolor list
+'kolcolor= current selected color in the kolor list
+global kolcolor
+
+'lstx,lsty= scroll position of the charalist
+'kolx,koly= scroll position of the kolorlist
+lstx=0 :lsty=0
+kolx=0 :koly=0
+
+'about file menu inside other editor
+'fedlife= current edited file
+'fedscroll= current scroll position off the file list
+'fedselected= file has been selected
+global fedlife,fedscroll
+fedscroll=-8
+fedselected=0
+fedtitle$=""
+
+'about palette editor or paled or pal
+'pallife= current edited file
+global pallife
+
+'about characters editor or chared or car
+'carlife= current edited file
+global carlife
+
+sub usepalettes(f)
+'set the current file as source for paletters
+  pallife=f
+end sub
+
+sub usecharacter(f)
+'set the current file as source for characters
+  carlife=f
+end sub
+
+sub usebackground(f)
+'set the current file as source for background
+  bedlife=f
+end sub
+
+sub usepal(p)
+'set the current palette to use for draw operation
+  pale=p
+  pcla=pala+4*pale
+end sub
+
+sub usecolor(c)
+'set the current color to use for draw operation
+  fcccol(cole)=3
+  cole=c
+  fcccol(cole)=46
+  fccdir=1
+  fccdelay=6
+  kolcolor=peek(pcla+cole)
+end sub
+
+sub uselayer(l)
+'mark layer as currently edited
+  bedlife=layfile(l)
+  laye=l
+  laybgl=layx(l)
+  laybgt=layy(l)
+  laybgr=laybgl+layw(l)-1
+  laybgb=laybgt+layh(l)-1
+  bedw=usrdime(layfile(laye),0)
+  bedh=usrdime(layfile(laye),1)
+  beda=usraddr(layfile(laye))
+end sub
+
+sub updlayer(l)
+'prepare layer parameters to speed up drawing, panning on the canvas
+  laym(l)=-layu(l)+layx(l)
+  layn(l)=-layv(l)+layy(l)
+  layl(l)=layu(l)+layx(l)
+  layt(l)=layv(l)+layy(l)
+  layr(l)=layl(l)+layw(l)-1
+  layb(l)=layt(l)+layh(l)-1
+end sub
+
+sub stplayer(l,f)
+'setup a layer to use a loaded background file
+  layfile(l)=f
+  layw(l)=usrdime(f,0)
+  layh(l)=usrdime(f,1)
+  layx(l)=0
+  layy(l)=0
+  layu(l)=0
+  layv(l)=0
+end sub
+
+sub islayerfileused(f,yes)
+'check if a file is currently used in a layer
+  yes=0
+  for l=0 to 3
+    if layfile(l)=f then yes=-1
+  next l
+end sub
+
+
+'oobe= enable usage of out-of-bounds cells from the editor
+'oobc= character number for out-of-bounds cells, mandatory
+'oobp= palette number for out-of-bound cells
+global oobe,oobc,oobp
+oobe=0
+oobc=255
+oobp=7
+
+sub canoob
+  a=cara+oobc*16
+  for i=0 to 7
+    if peekw(a)<>0 then exit sub
+    add a,2
+  next i
+  oobe=-1
+end sub
+
+
+
+
+'========================== math:
+
+sub dragdist(dist,mult)
+'modify a float to get an integer depending to it's sign
+  if dist<0 then
+    dist=ceil(dist/mult)
+  else if dist>0 then
+    dist=int(dist/mult)
+  end if
+end sub
+
+sub dragcap(value,prev,pressed,touched,mini,maxi)
+'used to cap a value that is modified using a drag gesture, and make sur it reset the drag when the value hit the bounds.
+  if value<mini then
+    value=mini
+    prev=value
+    pressed=touched
+  else if value>maxi then
+    value=maxi
+    prev=value
+    pressed=touched
+  end if
+end sub
+
+sub clampscroll(v,s,i,a)
+'used to limit the position of an element scrolled inside another one. It works when the element inside is bigger or smaller that the other one.
+'(inout) v position of the scrolling element
+'(in) s size of the scrolling element
+'(in) i,a min and max of for the scrolled position
+  if a<i then
+    v=i
+  else
+    if v<i then v=i
+    if v>a then v=a
+  end if
+end sub
+
+'data packed into string as hexadecimal
+
+data 0,1,2,3,4,5,6,7,8,9,0,0,0,0,0,0,0,10,11,12,13,14,15
+dim global asc2dec(22)
+for i=0 to 22
+read asc2dec(i)
+next i
+
+sub readhex(h$,i,v)
+  v=asc2dec(asc(mid$(h$,i,1))-48)*16+asc2dec(asc(mid$(h$,i+1,1))-48)
+  add i,2
+end sub
+
+sub readchr(h$,i,c$)
+  c$=mid$(h$,i,1)
+  inc i
+end sub
+
+
+
+'======================== layout:
+
+'used to detect if the layout has changed
+global shownw,shownh,resized
+
+'used to signal than the "canvas" has been resized
+'this is not equivalent to 'resized' that detect layout change
+'canvasr is used to signal that the bottom
+' global canvasr
+
+'used to indiquate if a tall toolbar can fit
+global tall,short,wide
+
+sub checkresize
+'check if layout has changed, orientation changed, screed splitted
+'call this after 'wait vbl' and check var 'resized'
+  if shownw<>shown.w or shownh<>shown.h-safe.b then
+    resized=-1
+    shownw=shown.w : shownh=shown.h-safe.b
+    'compute ratio and size of ui element
+    tall=0 : short=0 : wide=0
+    r=shownw/shownh
+    if r>0.7 then short=1
+    if r<0.5 then tall=1
+    if r>0.9 then wide=-1
+    ' short=1
+  else
+    resized=0
+  end if
+  'for capturing program icon
+  'shownw=180 : shownh=180-safe.b : resized=0
+
+end sub
+call checkresize : resized=0
+
+
+
+'======================= gesture:
+'gesture detection: tap, press, drag, release
+
+global pressed,tapped,dragged,released,pressedt,pressedx,pressedy,draggedx,draggedy,justed
+tapped=0
+
+sub gesture
+  tapped=0
+  released=0
+  draggedx=0
+  draggedy=0
+  justed=0
+  if tap then
+    pressedt=timer
+    pressed=-1
+    justed=-1
+    pressedx=touch.x
+    pressedy=touch.y
+  else if not touch and pressed and timer-pressedt<=12 then
+    released=-1
+    tapped=-1
+    pressed=0
+  else if (not touch and dragged) or resized then
+    released=-1
+    pressed=0
+    dragged=0
+    draggedx=touch.x-pressedx
+    draggedy=touch.y-pressedy
+  else if touch and pressed and (not dragged and (timer-pressedt>12 or len(touch.x-pressedx,touch.y-pressedy)>8)) or dragged then
+    if not dragged then justed=-1
+    dragged=-1
+    pressed=0
+    draggedx=touch.x-pressedx
+    draggedy=touch.y-pressedy
+  end if
+end sub
+
+sub ungesture
+  tapped=0
+  released=0
+  draggedx=0
+  draggedy=0
+  justed=0
+end sub
+
+
+
+'===================== userdata:
+'keep info about loaded files in memory
+
+'usraddr(f)= the memory address where the file is loaded
+'usrsize(f)= the size of the file loaded
+'usrname$(f)= the name of the file loaded
+'usrtype(f)= the type of file loaded
+'=0 nothing
+'=1 palettes
+'=2 characters
+'=3 backgrounds
+'usrdime(f,)= for background, the width and height
+'usrchanged(f)= something has changed
+dim global usraddr(15),usrsize(15),usrname$(15),usrtype(15),usrdime(15,1),usrchanged(15)
+
+'to report loading and saving error
+'TODO: not used, remove?
+global usrerr :usrerr=0
+'=0 ok
+'=1 not a background data format compatible
+'=2 file already loaded, can't save on it
+
+sub usrlook(space,start,low,hig,addr)
+'look for enough space in bytes in memory to load a file
+'will look at each already loaded files, and search for available space above and below them recursively
+'(in) space in byte
+'(in) start the file number where to start looking, must be 0
+'(in) low,hig to low and high address boundary where to look
+'(out) the address, 0 if not enough space
+  'when this function exit: an addr greater than zero mean there is enough space to load the file.
+  addr=0
+  'not enough space
+  if space>hig-low then exit sub
+  for i=start to 15
+    if usrsize(i)>0 then
+      'look below this file
+      call usrlook(space,i+1,low,usraddr(i),addr)
+      if addr then exit sub
+      call usrlook(space,i+1,usraddr(i)+usrsize(i),hig,addr)
+      exit sub
+    end if
+  next i
+  'space found
+  addr=low
+end sub
+
+sub usrload(f,t,a,minz)
+'load a file in memory
+'(in) f file number
+'(in) t file type
+'(in) a start addr
+'(in) minz minimal size required
+  usraddr(f)=a
+  usrsize(f)=max(fsize(f),minz)
+  usrname$(f)=file$(f)
+  usrtype(f)=t
+  usrdime(f,0)=0 :usrdime(f,1)=0
+  usrchanged(f)=0
+  load f,a
+  usrerr=0
+  if t=3 then
+    if peekw(a)<>0 then usrerr=1
+    usrdime(f,0)=peek(a+2)
+    usrdime(f,1)=peek(a+3)
+  end if
+  'trace "load",f,hex$(usraddr(f)),hex$(usrsize(f))
+end sub
+
+' sub usrreload(f)
+'   call usrload(f,(usrtype(f)),(usraddr(f),0))
+' end sub
+
+sub usrtype(f,t,t$)
+'try to determine the type of the file
+'(in) f file number
+'(out) t$ type
+  t$="" :t=0
+  if fsize(f)=0 then exit sub
+  t$="pal?" :t=1
+  if fsize(f)=32 then exit sub
+  load f,$9000,4
+  t$="back?" :t=3
+  if peekw($9000)=0 and peek($9002)>0 and peek($9003)>0 and peek($9002)*peek($9003)*2+4=fsize(f) then exit sub
+  t$="chara?" :t=2
+end sub
+
+sub usrlife(o,n)
+'may change the loaded file o by a new one n
+'used when user want (for instance) to load a file and save the data to another file
+'(inout) o old loaded file number
+'(in) n new file number
+  err=0
+  if o=n then exit sub
+  'what to do if the file is already loaded?
+  if usrsize(n)>0 then
+    err=2
+    exit sub
+  end if
+  usraddr(n)=usraddr(o)
+  usrsize(n)=usrsize(o)
+  usrname$(n)=usrname$(o)
+  usrtype(n)=usrtype(o)
+  usrdime(n,0)=usrdime(o,0)
+  usrdime(n,1)=usrdime(o,1)
+  usrchanged(n)=usrchanged(o)
+  usraddr(o)=0
+  usrsize(o)=0
+  usrname$(o)=""
+  usrtype(o)=0
+  usrdime(o,0)=0
+  usrdime(o,1)=0
+  usrchanged(o)=0
+  o=n
+end sub
+
+sub usrsave(f)
+'save a file from memory
+'(in) f file number
+  save f,usrname$(f),usraddr(f),usrsize(f)
+end sub
+
+sub usrfree(f)
+'unload a file from memory
+'(in) f file number
+  usraddr(f)=0
+  usrsize(f)=0
+  usrname$(f)=""
+  usrtype(f)=0
+  usrdime(f,0)=0
+  usrdime(f,1)=0
+  usrchanged(f)=0
+end sub
+
+sub usrloadimpl(new,old,dst,addr,minz)
+'implementation of file loading
+'(in) new file number of the file to load
+'(in) old file number to free before load
+'(out) dst destination variable that will contains the loaded file number at success
+'(out) addr address where the file has been loaded
+'(in) minz minimal size required
+  'unload previous loaded file
+  if old>=0 then call usrfree(old)
+  addr=0
+  call usrlook(max(minz,fsize(new)),0,wramstart,wramend,addr)
+  if addr=0 then
+    message "not enough memory"
+    exit sub
+  end if
+  t=0 : t$=""
+  call usrtype(new,t,t$)
+  call usrload(new,t,addr,minz)
+  message "file #"+hex$(new)+" loaded"
+  'fill remaining space with zeroes
+  if fsize(new)<minz then
+    fill addr+fsize(new),minz-fsize(new)
+  end if
+  dst=new
+end sub
+
+sub usrloadbg(new,old,dst)
+'helper to load a background file
+'(in) new file number of the file to load
+'(in) old file number to free before load
+'(out) dst destination variable that will contains the loaded file number at success
+  if fsize(new)=0 then
+    message "empty file"
+    exit sub
+  end if
+  t=0 :t$="" :call usrtype(new,t,t$)
+  if t<>3 then
+    message "not a background"
+    exit sub
+  end if
+  'todo: check for changes not saved
+  'temp: do something else when layers are working
+  addr=0
+  call usrloadimpl(new,old,dst,addr,4)
+end sub
+
+sub usrdefaultbg
+  addr=0
+  call usrlook(132,0,wramstart,wramend,addr)
+  'because it's the start of the program, we can be sure there is enough memory
+  usraddr(3)=addr
+  usrsize(3)=132
+  usrname$(3)="DEFAULT BACKGROUND"
+  usrtype(3)=3
+  usrdime(3,0)=4 :usrdime(3,1)=4
+  usrchanged(3)=0
+  copy rom(13),132 to addr
+  call usebackground(3)
+end sub
+
+sub usrloadpal(new,old,dst)
+'helper to load a palette file
+'(in) new file number of the file to load
+'(in) old file number to free before load
+'(out) dst destination variable that will contains the loaded file number at success
+  if fsize(new)=0 then
+    message "empty file"
+    exit sub
+  end if
+  t=0 :t$="" :call usrtype(new,t,t$)
+  if t<>1 then
+    message "not a palette"
+    exit sub
+  end if
+  addr=0
+  call usrloadimpl(new,old,dst,addr,32)
+  if addr then
+    pala=addr
+    call usepalettes(dst)
+    call usepal((pale))
+    call usecolor((cole))
+  end if
+end sub
+
+sub usrdefaultpal
+  addr=0
+  call usrlook(32,0,wramstart,wramend,addr)
+  'because it's the start of the program, we can be sure there is enough memory
+  usraddr(1)=addr
+  usrsize(1)=32
+  usrname$(1)="DEFAULT PALETTES"
+  usrtype(1)=1
+  usrdime(1,0)=0 :usrdime(1,1)=0
+  usrchanged(1)=0
+  copy rom(11),32 to addr
+  pala=addr
+  call usepalettes(1)
+  call usepal(0)
+  call usecolor(1)
+end sub
+
+sub usrloadchr(new,old,dst)
+'helper to load a palette file
+'(in) new file number of the file to load
+'(in) old file number to free before load
+'(out) dst destination variable that will contains the loaded file number at success
+  if fsize(new)=0 then
+    message "empty file"
+    exit sub
+  end if
+  t=0 :t$="" :call usrtype(new,t,t$)
+  if t<>2 then
+    message "not characters"
+    exit sub
+  end if
+  addr=0
+  call usrloadimpl(new,old,dst,addr,4096)
+  if addr then
+    cara=addr
+  end if
+end sub
+
+sub usrdefaultchr
+  addr=0
+  call usrlook(4096,0,wramstart,wramend,addr)
+  'because it's the start of the program, we can be sure there is enough memory
+  usraddr(2)=addr
+  usrsize(2)=4096
+  usrname$(2)="DEFAULT CHARACTERS"
+  usrtype(2)=1
+  usrdime(2,0)=0 :usrdime(2,1)=0
+  usrchanged(2)=0
+  copy rom(12),9*16 to addr
+  cara=addr
+  call usecharacter(2)
+end sub
+
+
+
+'==================== charalist:
+'the character list is displayed above the bottom bar, it consume 32x4 cells (or 32x2) in the bg#0.
+
+'fltshow= show or hide the charalist
+'lststart,lstend= raster of where the charalist start and end
+'lstcurr= current raster of where the charalist start
+'lstrow= number of rows of user's characters drawn in the chara list
+'lstdouble= is the charalist is displayed at double size
+'         =1 when not double
+'         =2 when doubled
+'lstchanged= something has changed
+'lstoldscr= old value for lstscroll, used during dragging operation
+'lstui= chara num used for the ui chara during raster of chara list
+global fltshow,lststart,lstend,lstcurr,lstrow,lstdouble,lstchanged,lstoldscr,lstui,lstoldx,lstoldy
+
+'sprite used for the chara list cursor
+sprite 159 pal 4 prio 1 flip 0,0
+sprite 158 pal 4 prio 1 flip 1,0
+sprite 157 pal 4 prio 1 flip 0,1
+sprite 156 pal 4 prio 1 flip 1,1
+for i=0 to 7
+sprite 155-i pal 4 prio 1 flip 0,0
+sprite 147-i pal 4 prio 1 flip 0,0
+sprite 139-i pal 4 prio 1 flip 0,1
+sprite 131-i pal 4 prio 1 flip 1,0
+next i
+
+txt_lstchara: data " chara: "
+txt_kolcolor: data " color: "
+
+
+
+'==================== kolorlist:
+'replace the charalist with a colorlist to help users choose their color.
+
+'setup color list data for fast copy during raster
+for i=0 to 63 : poke $9004+i,i : next i
+
+'kolraster= current color for the kolor list raster
+'kolcol= current lowresrmx color (0..63)
+'kolchanged= something has changed
+global kolraster,kolcol,kolchanged
+kolcol=0
+
+
+'======================= bottom:
+'a bottom bar for ui widgets
+'all cells must have prio flag
+'can drag horizontally to show hidden widgets
+'can fold vertically to give more space
+
+'botstart,botend= raster position of where the bottom bar start
+'botcurr= current raster position of where the bottom bar start
+'botdrag= drag position of the bottom bar of x axis
+'botw= width in pixels of the bottom bar
+'wid= interacted widget index
+'botfold= fold offset for the bottom bar (and charalist)
+'botfini= temporary initial botfold value during fold gesture
+global botstart,botend,botcurr,botdrag,botw,wid,botfold,botfini
+
+botact=0
+'botfold=0
+wid=-1
+
+sub repaintwidget(b,p0,p1,test)
+'repaint a widget with a palette
+'restore must have been called before
+  p=p0
+  if test then p=p1
+  read l : skip b*4
+  read x1,y1,x2,y2
+  bg 0 : bg tint x1,y1 to x2,y2 pal p
+end sub
+
+
+
+
+
+
+
+
+'========================= undo:
+
+'push a state to a undo list
+'in a$() the list
+'inout i the last pushed state index
+'in s$ the state string
+sub statepush(a$(),i,s$)
+  add i,1,0 to ubound(a$)
+  trace "push",i,s$
+  a$(i)=s$
+  a$((i+1)mod(ubound(a$)+1))=""
+end sub
+
+'push or append a setting ("s") only if the setting t$ is not already present in the state
+sub statepushsetting(a$(),i,t$,v)
+  s$=t$+hex$(v,2)
+  if i<0 then
+    call statepush(a$(),i,"01s"+s$)
+    exit sub
+  else if mid$(a$(i),3,1)<>"s" then
+    call statepush(a$(),i,"01s"+s$)
+    exit sub
+  else
+    for j=4 to len(a$(i)) step 3
+      if mid$(a$(i),j,1)=t$ then exit sub
+    next j
+    call stateappend(a$(),i,s$)
+  end if
+end sub
+
+sub stateappend(a$(),i,a$)
+  c=0
+  s$=a$(i)
+  call readhex(s$,1,c)
+  if c>=255 then
+    call statepush(a$(),i,"01"+a$)
+    exit sub
+  end if
+  s$=mid$(s$,3,len(s$))
+  a$(i)=hex$(c+1,2)+s$+a$
+end sub
+
+sub statereplace(a$(),i,s$)
+  if i<0 then i=0
+  trace "replace",i
+  a$(i)=s$
+  a$((i+1)mod(ubound(a$)+1))=""
+end sub
+
+sub staterewind(a$(),i,s$)
+  s$=""
+  trace "rewind",i
+  s$=a$(i)
+  if s$="" then exit sub
+  add i,-1,0 to ubound(a$)
+end sub
+
+'bgundolst= store a list of undo action as encoded string
+'bgundoidx= index of the last stacked item
+dim global bgundolst$(50)
+global bgundoidx
+bgundoidx=-1
+
+'syntaxe:
+'hex number of sub-state, followed per one or more of:
+'"d" draw operation
+'  hex x cell coordinate
+'  hex y cell coordinate
+'  hex character number
+'  hex cell attribute
+'"r" rect operation
+'  hex x1 cell coordinate
+'  hex y1 cell coordinate
+'  hex x2 of cell changed
+'  hex y2 of cell changed
+'  ... repeat for each cell
+'    hex character number
+'    hex cell attribute
+'"s" settings
+'  ... list of pair:
+'    "l"
+'    hex layer number
+'    "p"
+'    hex palette number
+'    "f"
+'    hex horiz and verti flag flip
+'    "c"
+'    hex chara num
+'    "t"
+'    current and old tool
+'    "r"
+'    hex prio flag
+
+
+
+'========================= main:
+
+'tedchanged= a new editor has been requested by the toolbar
+'=0 no change
+'>0 go back to editor
+'<0 change for file selector
+tedchanged=0
+
+'usedfreed= a used file has been freed, background, characters, palette.
+usedfreed=0
+
+'backup editor params
+'oldtole= old value for tole
+'oldfloe= old value for floe
+
+'enable or disable low energy mode
+'energytool= editing tool is used
+'energylist= dragging list
+'energyfold= (un)folding toolbar
+'energyredraw= redrawing canvas
+global energytool,energylist,energyfold,energyredraw
+energytool=1 :energylist=1 :energyfold=1 :energyredraw=1
+
+'needed by the raster function
+'fltstart,fltend,fltcurr= raster position of where the floating content start, end and the current value, in pixels
+'tlbstart,tlbend,tlbcurr= raster position of where the toolbar start, end and the current value, in pixels
+'tlbdrag= dragging positon of the toolbar, in pixels
+'tlbraster1,tlbraster2= raster position of where the toolbar is shortened relative to tlbcurr, in pixels
+global fltstart,fltend,fltcurr,tlbstart, tlbend,tlbcurr,tlbdrag,tlbraster1,tlbraster2
+fltstart=999 :fltend=999 :fltcurr=999
+tlbstart=999 :tlbend=999 :tlbcurr=999
+tlbraster1=999 :tlbraster2=999
+
+'needed by the toolbar
+'tlbrow,tlbcol= dimension of the toolbar, in cells
+'tlbw= width of the toolbar, in pixels
+'tlbfold= fold offset of the toolbar (and floating content), in pixels
+'tlbrow1,tlbrow2= when the toolbar is shortened, use those to indiquate which rows relative to the toolbar, in cells
+'tlbg= toolbar gesture,
+'=0 nothing
+'=1 pressed
+'=2 (un)folding
+'=3 dragging
+tlbg=0
+
+'needed by the floating content
+'fltrow= number of rows of user's characters drawn in the charalist
+'fltoldx,fltoldy= old scroll value of the charalist or kolorlist
+'fltchanged= a selection has been made in charalist or kolorlist
+'fltcursor= cursor visibility
+'fltg= floating gesture
+'=0 nothing
+'=1 dragging
+'fltui= chara num used for the ui cursor during raster for floating
+global fltui, fltcursor
+fltui=0 :fltg=0
+
+'needed by the canvas
+'bedg= canvas gesture
+'=0 nothing or tapping
+'=1 pressing or dragging
+'bedchanged= layers has been panned or layout has changed and canvas and must be redrawn
+'beddrawn= layers has been drawn
+bedg=0
+bedchanged=0
+
+'needed for the file toolbar
+'fedmode= file load/save mode
+'=0 background
+'=1 palette
+
+'flashing colored cursor
+global fccdir,fccdelay
+fccdelay=6
+fccdir=1
+dim global fcccol(4)
+for i=0 to 3 : fcccol(i)=3 : next i
+
+
+botdrag=0
+firselected=0
+
+
+'system 0,1
+
+'load user's palettes from file 1 or load default palettes
+pallife=-1
+call usrloadpal(1,-1,pallife)
+if pallife=-1 then
+  call usrdefaultpal
+end if
+
+'load user's characters from file 2 or load default characters
+carlife=-1
+call usrloadchr(2,-1,carlife)
+if carlife=-1 then
+  call usrdefaultchr
+end if
+
+'load user's background from file 3 or load default background
+bedlife=-1
+call usrloadbg(3,-1,bedlife)
+if bedlife=-1 then
+  call usrdefaultbg
+  bedzoom=-1
+end if
+call stplayer(3,3)
+call uselayer(3)
+call updlayer(laye)
+
+
+
+
+care=1
+
+lstchara=care
+
+'addr=0
+'call usrlook($1000,0,$9004,$e000,addr)
+
+
+'bedzoom=-1
+'bedscale=2
+
+'todo get from pram
+cane=0 :tole=0 :floe=0
+
+on raster call r
+on vbl call v
+
+'goto filer
+goto backed
+'goto memed
+
+message "end reached! not good!"
+end
+
+sub r2
+'change what is shown on the screen using raster interrupt.
+'the screen is divide in 3 parts for canvas, floating content and bottom toolbar. during the division a black bar of 4 pixel is shown allow to do computation heavy things.
+'canvas backed:
+'  chr$8000..$8fff user's character
+'  pal#0..#7 user's palette
+'  bg#1..#3 user's background
+'canvas filed:
+'  chr$8000..$842f ui font and ui button border
+'  pal#1,2 ui button
+'  bg#0 ui file list ============= cells
+'floating charalist:
+'  chr$8000..$8fff user's character (-3 charas for ui cursor)
+'  chr#253..#255 or #64..66 ui cursor
+'  pal#0 user's current palette
+'  pal#4 ui cursor
+'floating kololist:
+
+'  ui cursor?
+
+'  bg#0 kolorlist colors ============= cells
+'  pal#0,1 kolorlist colors
+'  pal#4 ui cursor
+
+' ...
+
+
+end sub
+
+
+sub r
+  if raster=0 then
+    copy pala,32 to $ff00
+    if cane=0 then
+      poke $ff32,%11100
+      call canoob
+    else if cane=1 then
+      bg view on 0
+      bg view off 1
+      bg view off 2
+      bg view off 3
+      scroll 0,32*8,fedscroll
+      copy rom(1),32 to $ff00
+    end if
+
+  else if raster=tlbcurr-8 then
+    'black border
+    fill $ff00,8
+    'palette 0,0,0,0,0
+    'palette 1,0,0,0,0
+    'hide user's layers, but keep sprite
+    poke $ff32,%100011
+    'copy ui character
+    pokew $ffa2,$400
+    pokew $ffa4,$8000
+    pokew $ffa0,rom(2)
+    dma copy rom
+
+  else if raster=tlbcurr-4 then
+    'gray border
+    fill $ff00,16,3
+    'copy back user's chara that was erased by the ui chara for the chara list cursor
+    if cane=0 then copy cara+fltui*16,48 to $8000+fltui*16
+    if tole=0 then copy cara+fltui*16,48 to $8000+fltui*16
+    'unzoom bg
+    system 5,0
+    'show ui bg
+    bg view on 0
+    'place the bottom bar at the right position, for the filed title
+    scroll 0,tlbdrag,-tlbcurr
+
+  else if raster=tlbcurr then
+    'place the bottom bar at the right position
+    scroll 0,tlbdrag,-tlbcurr
+    'copy the ui palette
+    copy rom(1),32 to $ff00
+    'todo: palette 3,,5,,3, I think I already change the color in ROM(1)
+    'hide floating content cursor
+    sprite view off
+    ' 'copy the user current selected palette
+    ' if cane=0 then copy pala+pala*4,4 to $ff00
+
+  else if raster=shownh-2 and cane=0 then
+    'gray border
+    fill $ff00,32,3
+    'copy first half of user's character
+    pokew $ffa0,cara
+    pokew $ffa2,$700
+    pokew $ffa4,$8000
+    dma copy
+
+  else if raster=shownh-1 and cane=0 then
+    'copy second half of user's character
+    pokew $ffa0,cara+$700
+    pokew $ffa2,$900
+    pokew $ffa4,$8700
+    dma copy
+    'copy out-of-bound character
+    if oobe then copy rom(2)+1008,16 to $8000+oobc*16
+
+  else if raster=shownh-2 and cane=1 then
+    pokew $ffa0,rom(2)
+    pokew $ffa2,$1000
+    pokew $ffa4,$8000
+    dma copy rom
+
+  end if
+
+  'shorten the height of the bottom bar
+  if (raster=tlbcurr+tlbraster1 or raster=tlbcurr+tlbraster2) and short then
+    pokew $ff22,peekw($ff22)+8
+  end if
+
+  'show a title for the file toolbar
+  if tole=2 then
+    if raster=tlbcurr-4 then
+      palette 1,,,,0
+      pokew $ff22,peekw($ff22)+4
+    else if raster=tlbcurr then
+      palette 1,,,,0
+      pokew $ff22,peekw($ff22)+4
+    else if raster=tlbcurr+4 then
+      palette 1,,,,3
+      pokew $ff22,peekw($ff22)-4
+    else if raster=tlbcurr+8 then
+      palette 1,,,,5
+    end if
+  end if
+
+  'hide the last filed button at the top of the screen
+  if cane=1 and raster=0 and fedscroll<0 then fill $ff00,12,3
+  if cane=1 and raster+fedscroll=0 then copy rom(1),12 to $ff00
+
+  'floating content and toolbar specific raster handling
+  if fltshow and floe>=0 then on floe gosub r_floe_0,r_floe_1
+  on tole gosub r_tole_0, r_tole_, r_tole_ ,r_tole_3, r_tole_, r_tole_5, r_tole_
+
+  exit sub
+
+r_floe_0:
+  if raster=fltcurr-4 then
+    'black border
+    palette 0,0,0,0,0
+    ' bg view off 1
+    ' bg view off 2
+    ' bg view off 3
+    ' trace bin$(peek($ff32),8)
+    poke $ff32,0
+    'copy back the user's chara that was overiddden by a ui chara for out-of-bound visiblity cells
+    if oobe then copy cara+oobc*16,16 to $8000+oobc*16
+    'copy chara for the charalist cursor
+    copy rom(2)+64*16,48 to $8000+fltui*16
+    'color for the ui cursor
+    palette 4,,2,,0
+    'copy chara for the kolorlist
+    'if floe=1 then trace "fffffffff"
+    'if floe=1 then copy rom(2),4*16 to $8000
+    'show floating content cursor
+    if fltcursor then sprite view on
+
+  'draw the charalist in floating content part
+  else if raster=fltcurr then
+    'show ui bg
+    bg view on 0
+    'place the charalist at the right position
+    scroll 0,lstx,-fltcurr+512+lsty
+    'double the cells render size of the chara list
+    system 5,1
+    'make the background opaque
+    system 1,1
+    'copy the user current selected palette, keep the backdrop color
+    'palette 0,peek(pala),,,
+    'copy pala+pale*4+1,3 to $ff01
+    copy pala+pale*4,4 to $ff00
+
+  end if
+  return
+
+r_floe_1:
+  if raster=fltcurr-4 then
+    'black border
+    palette 0,0,0,0,0
+    poke $ff32,0
+    'copy back the user's chara that was overiddden by a ui chara for out-of-bound visiblity cells
+    'if oobe then copy cara+oobc*16,16 to $8000+oobc*16
+    'copy chara for the charalist cursor
+    copy rom(2)+64*16,48 to $8000+fltui*16
+    'color for the ui cursor
+    palette 4,,2,,0
+    'copy chara for the kolorlist
+    if floe=1 then copy rom(2),4*16 to $8000
+    'show floating content cursor
+    if fltcursor then sprite view on
+
+  'draw the kolorlist in floating content part
+  else if raster=fltcurr then
+    'show ui bg
+    bg view on 0
+    'place the charalist at the right position
+    scroll 0,kolx,-fltcurr+512+koly
+    'double the cells render size of the chara list
+    system 5,1
+    'make the background opaque
+    system 1,1
+    'copy the user current selected palette, keep the backdrop color
+    'palette 0,peek(pala),,,
+    'copy pala+pale*4+1,3 to $ff01
+    'copy pala+pale*4,4 to $ff00
+    kolraster=((raster-fltcurr+koly)\24)*8
+    copy $9004+kolraster,8 to $ff00
+
+  else if raster>fltcurr and raster<tlbcurr-8 then
+    if ((raster-fltcurr+koly) mod 24)=0 then
+      add kolraster,8
+      copy $9004+kolraster,8 to $ff00
+    end if
+  end if
+
+  return
+
+r_tole_: return
+
+r_tole_0:
+  'copy the user current selected palette
+  if raster=tlbcurr+tlbraster1 then
+    'trace hex$(pala+pale*4)
+    copy pala+pale*4,4 to $ff00
+    'fill $ff00,4,0
+  'else if raster=tlbcurr+33 then
+    'copy pala+pale*4,4 to $ff00
+  end if
+  return
+
+r_tole_3:
+  'colorize palette chooser button
+  if raster=tlbcurr+8 then
+    copy pala,16 to $ff10
+  else if raster=tlbcurr+32 then
+    copy pala+16,16 to $ff10
+  end if
+  return
+
+r_tole_5:
+  if raster=tlbcurr then
+    'colorize color chooser button
+    palette 4,,,peek(pcla),fcccol(0)
+    palette 5,,,peek(pcla+1),fcccol(1)
+    palette 6,,,peek(pcla+2),fcccol(2)
+    palette 7,,,peek(pcla+3),fcccol(3)
+
+  end if
+  return
+
+end sub
+
+sub v
+  if fccdir=0 then exit sub
+  dec fccdelay
+  if fccdelay>0 then exit sub
+  fccdelay=6
+  add fcccol(cole),fccdir
+  if fcccol(cole)=46 or fcccol(cole)=54 then fccdir=-fccdir
+end sub
+
+
+
+'======================= backed:
+
+
+
+
+
+' bedold_draw:
+' 'draw on canvas bedg=9
+'   'if released then bedg=0
+'   if not pressed and not dragged then return
+'   'gosub bedold_detectcell
+'   'check for changes
+'   if not bedold_has then return
+'   'check for out of layer
+'   if bedold_ex<laybgl or bedold_ex>laybgr or bedold_ey<laybgt or bedold_ey>laybgb then return
+'   'check for out of background data
+'   if bedold_ex<0 or bedold_ex>=bedw or bedold_ey<0 or bedold_ey>=bedh then return
+'   'draw cells
+'   bg laye :bg source beda
+
+'   d$="d"+hex$(bedold_ex,2)+hex$(bedold_ey,2)+hex$(mcell.a(bedold_ex,bedold_ey),2)+hex$(mcell.c(bedold_ex,bedold_ey),2)
+'   if first then
+'     call statepush(bgundolst$(),bgundoidx,"01"+d$)
+'   else
+'     call stateappend(bgundolst$(),bgundoidx,d$)
+'   end if
+
+'   attr bedattr
+'   'draw in loaded background
+'   mcell bedold_ex,bedold_ey,care
+'   'draw in canvas layer
+'   cell bedold_ex-laym(laye),bedold_ey-layn(laye),care
+'   'gosub bedold_drlayer
+
+'   first=0
+
+'   usrchanged(bedlife)=-1
+
+'   return
+
+' bedold_rect:
+' 'draw rect in canvas bedg=10
+' 'if released then bedg=0
+'   if not pressed and not dragged then return
+'   'gosub bedold_detectcell
+'   if not bedold_has then return
+'   'look for most left,right,top and bottom drawn cells relative to loaded background
+'   l=min(bedold_ex,bedold_sx) :r=max(bedold_ex,bedold_sx)
+'   t=min(bedold_ey,bedold_sy) :b=max(bedold_ey,bedold_sy)
+'   'check if out-of layer
+'   if r<laybgl or l>laybgr or b<laybgt or t>laybgb then return
+'   'cap the most left,right,bottom to prevent drawing outside of the layer
+'   l=max(l,laybgl) :r=min(r,laybgr) :t=max(t,laybgt) :b=min(b,laybgb)
+'   bg laye :bg source beda :attr bedattr
+'   'prepare undo state
+'   r$="01r"+hex$(l,2)+hex$(t,2)+hex$(r,2)+hex$(b,2)
+'   for y=t to b
+'     for x=l to r
+'       'prepare undo state
+'       r$=r$+hex$(mcell.a(x,y),2)+hex$(mcell.c(x,y),2)
+'       'draw in loaded background
+'       mcell x,y,care
+'     next x
+'   next y
+'   'draw in layer canvas
+'   bg fill l-laym(laye),t-layn(laye) to r-laym(laye),b-layn(laye) char care
+'   'push undo state
+'   if first then
+'     call statepush(bgundolst$(),bgundoidx,r$)
+'   else
+'     gosub bedold_undo
+'     call statepush(bgundolst$(),bgundoidx,r$)
+'     'call statereplace(bgundolst$(),bgundoidx,r$)
+'   end if
+'   first=0
+'   usrchanged(bedlife)=-1
+'   return
+
+' bedold_undo:
+'   tapped=0
+'   s$="" :i=1 :v=0 :l=0 :c$="" :x1=0 :y1=0 :x2=0 :y2=0
+'   if bgundoidx<0 then return
+'   call staterewind(bgundolst$(),bgundoidx,s$)
+'   if s$="" then return
+'   call readhex(s$,i,l)
+'   while l>0
+'     dec l
+'     call readchr(s$,i,c$)
+
+'     if c$="d" then
+'       'redo draw characters
+'       call readhex(s$,i,x1)
+'       call readhex(s$,i,y1)
+'       call readhex(s$,i,v)
+'       attr v
+'       call readhex(s$,i,v)
+'       bg laye :bg source beda
+'       mcell x1,y1,v
+'       cell x1-laym(laye),y1-layn(laye),v
+
+'       'todo: should be able to draw the char on the layer
+'       'gosub bedold_drlayer
+'     else if c$="r" then
+'       'redo draw rect
+'       call readhex(s$,i,x1)
+'       call readhex(s$,i,y1)
+'       call readhex(s$,i,x2)
+'       call readhex(s$,i,y2)
+'       'trace x1,y1,x2,y2
+'       bg laye :bg source beda
+'       for y=y1 to y2
+'         for x=x1 to x2
+'           call readhex(s$,i,v)
+'           attr v
+'           call readhex(s$,i,v)
+'           'trace x,y,v
+'           mcell x,y,v
+'           cell x-laym(laye),y-layn(laye),v
+'         next x
+'       next y
+
+
+'  '"r" rect operation
+' '  hex x1 cell coordinate
+' '  hex y1 cell coordinate
+' '  hex x2 of cell changed
+' '  hex y2 of cell changed
+' '  ... repeat for each cell
+' '    hex character number
+' '    hex cell attribute
+
+
+
+
+'       trace "redo rect"
+'     else if c$="s" then
+'       gosub bedold_load_settings
+'     end if
+'   wend
+'   return
+
+' 'restore all backed settings at once
+' bedold_load_settings:
+'   i=4 :c$="" :l=len(s$) :v=0
+'   while i<l
+'     call readchr(s$,i,c$)
+'     call readhex(s$,i,v)
+'     'undo layer changes
+'     if c$="l" then
+'       call uselayer(v)
+'       gosub tlb_0_layer
+'     'undo palette changes
+'     else if c$="p" then
+'       pale=v
+'       gosub bedold_btn_pal
+'     'undo flip changes
+'     else if c$="f" then
+'       bedhoriz=v\2
+'       bedverti=v and %1
+'       gosub tlb_0_horiz
+'       gosub tlb_0_verti
+'     'undo character changes
+'     else if c$="c" then
+'       care=v
+'     'undo editor too
+'     else if c$="t" then
+'       bedtool=v\16
+'       bedoldt=v and %1111
+'     'undo prio changes
+'     else if c$="r" then
+'       bedprio=v
+'       gosub tlb_0_prio
+'     end if
+'     if c$="c" or c$="t" then
+'       if bedtool=0 then
+'         gosub tlb_0_draw
+'         gosub tlb_0_pan
+'       else if bedtool=1 then
+'         gosub bedold_draw
+'       else if bedbot=2 then
+'         gosub tlb_1_draw
+'       end if
+'       if bedtool>=1 and bedtool<=3 then
+'         lstcursor=-1
+'         lstchara=care
+'       end if
+'     end if
+'   wend
+'   return
+
+' bedold_btn_undo: 'wid=8
+' 'undo last pushed operation
+'   if tapped then
+'     message "not finished"
+'     return
+'     gosub bedold_undo
+'   end if
+'   return
+
+' bedold_btn_file: 'wid=9
+' 'show the drawing tool selection in the bottom bar
+'   if tapped then
+'     pressed=0
+'     bedbot=3
+'     'do not store layer related bedtool (start,size,dest)
+'     if bedtool>=0 and bedtool<6 then bedoldt=bedtool
+'     bedtool=0
+'     gosub bedold_bot_file
+'   else
+'     restore tlb_0_data
+'     'bg 0 :bg source rom(6)
+'     'bg copy (bedoldt-1)*4,0,4,1 to 8,1
+'     'call repaintwidget(7,1,2,bedtool>=1 and bedtool<=3)
+'   end if
+'   return
+
+' bedold_btn_more: 'wid=10
+' 'show the "more" menu in bottom bar
+'   if tapped then
+'     message "not implemented"
+'     pressed=0
+'     'bedbot=4
+'     'if bedtool>0 then bedoldt=bedtool
+'     'gosub bedold_bot_tool
+'   end if
+'   return
+
+' bedold_btn_chared: 'wid=11
+'   if tapped then
+'     message "not implemented"
+'   end if
+'   return
+
+
+
+
+' bedold_data_file:
+' 'touch zone for button on file layout of bottom bar
+'   data 7 :'number of widget
+'   data 21,8,26,10 :'0= back
+'   data 21,3,26,5 :'1= save
+'   data 14,3,19,5 :'2= load
+'   data 8,8,13,10 :'3= layer
+'   data 14,8,19,10 :'4= font
+'   data 2,8,7,10 :'5= size
+'   data 7,3,12,5 :'6= free
+
+' bedold_btn_save: 'wid=1
+'   if tapped then
+'     trace "save fedlife",fedlife,"bedlife",bedlife
+'     call usrlife(bedlife,fedlife)
+'     call usrsave(bedlife)
+'     message "file #"+hex$(bedlife)+" saved"
+'   end if
+'   return
+
+' bedold_btn_load: 'wid=2
+'   if tapped then
+'     if fsize(fedlife)=0 then return
+'     t=0 :t$="" :call usrtype(fedlife,t,t$)
+'     if t<>3 then
+'       message "not a background"
+'       return
+'     end if
+
+'     'temp: remove when layers are working
+'     call usrfree(bedlife)
+
+'     'todo: what to do about previously loaded file?
+'     'todo: check for changes not saved
+'     'todo: if previous loaded file was edited one, free it
+
+'     a=0
+'     call usrlook(fsize(fedlife),0,$9004,$e000,a)
+'     if a=0 then
+'       message "not enough memory"
+'       return
+'     end if
+'     trace "a",hex$(a,4)
+'     t=0 : t$=""
+'     call usrtype(fedlife,t,t$)
+'     call usrload(fedlife,t,a)
+'     'call uselayer
+'     'bedlife=fedlife
+'     message "file #"+hex$(bedlife)+" loaded"
+
+'     trace "file",fedlife
+'     trace "dime",usrdime(fedlife,0),usrdime(fedlife,1)
+'     trace "layer",laye
+
+'     'temp: do something when layers are available
+'     layfile(laye)=fedlife
+'     layw(laye)=usrdime(fedlife,0)
+'     layh(laye)=usrdime(fedlife,1)
+'     layx(laye)=0
+'     layy(laye)=0
+'     layu(laye)=0
+'     layv(laye)=0
+
+'     call updlayer(laye)
+'     call uselayer((laye))
+'     'gosub bedold_drlayer
+
+'     goto backed
+
+'   end if
+'   return
+
+' tlb_0_layer2: 'wid=3
+'   if tapped then
+'     message "not finished"
+'     return
+'     pressed=0
+'     bedbot=5
+'     'if bedtool>0 then bedoldt=bedtool
+'     gosub bedold_bot_layer
+'   end if
+'   return
+
+' bedold_btn_font: 'wid=4
+'   if tapped then
+'     message "not implemented"
+'   end if
+'   return
+
+' bedold_btn_size2: 'wid=5
+'   if tapped then
+'     message "not implemented"
+'   end if
+'   return
+
+' bedold_btn_free: 'wid=6
+'   if tapped then
+'     message "not implemented"
+'   end if
+'   return
+
+' bedold_bot_layer:
+' 'draw the layer bottom bar
+'   'draw bottom bar
+'   bg 0 :bg source rom(3)
+'   bg copy 0,55,29,12 to 0,0
+'   'update btn colorized
+'   tapped=0
+'   gosub tlb_0_layer4
+'   call bottomsize(26,13,short)
+'   fltshow=0
+'   pause
+'   lstcurr=botcurr
+'   return
+
+' bedold_data_layer:
+' 'touch zone for button on layer layout of bottom bar
+'   data 5 :'number of widget
+'   data 8,8,13,10 :'0= back
+'   data 7,0,13,2 :'1= start
+'   data 14,0,19,2 :'2= size
+'   data 21,0,26,2 :'3= dest
+'   data 2,0,5,2 :'4= layer
+
+' bedold_btn_start: 'wid=1
+'   if tapped and bedtool<>6 then
+'     bedtool=6
+'   else if tapped then
+'     bedtool=0
+'   end if
+'   goto tlb_0_layer3
+
+' bedold_btn_size: 'wid=2
+'   if tapped and bedtool<>7 then
+'     bedtool=7
+'   else if tapped then
+'     bedtool=0
+'   end if
+'   goto tlb_0_layer3
+
+' bedold_btn_dest: 'wid=3
+'   if tapped and bedtool<>8 then
+'     bedtool=8
+'   else if tapped then
+'     bedtool=0
+'   end if
+'   goto tlb_0_layer3
+
+' tlb_0_layer3:
+'   restore bedold_data_layer
+'   call repaintwidget(1,1,2,bedtool=6)
+'   restore bedold_data_layer
+'   call repaintwidget(2,1,2,bedtool=7)
+'   restore bedold_data_layer
+'   call repaintwidget(3,1,2,bedtool=8)
+'   return
+
+' tlb_0_layer4: 'wid=4
+'   if tapped then
+'     pause
+'   end if
+'   restore bedold_data_layer
+'   'todo: copy this behavior code to bottom bar of pal chooser
+'   skip 4*4+1 :read x1,y1
+'   bg 0 :pal 1
+'   text x1+2,y1+1,str$(laye)
+'   return
+
+' bedold_crop:
+' 'resize layer bedg=11,12,13
+'   if pressed and justed then
+'     ox=layx(laye)
+'     oy=layy(laye)
+'     ow=layw(laye)
+'     oh=layh(laye)
+'   end if
+'   if released then
+'     call uselayer(laye)
+'     'bedg=0
+'   end if
+'   if not dragged then return
+'   if draggedx=0 or draggedy=0 then return
+'   call dragdist(draggedx,8*bedscale)
+'   call dragdist(draggedy,8*bedscale)
+
+'   'trace "bedtool",bedtool
+'   if bedtool=6 then :'start
+'     layx(laye)=clamp(ox+draggedx,0,ox+ow-1)
+'     layy(laye)=clamp(oy+draggedy,0,oy+oh-1)
+'     tw=ow+ox-layx(laye) : th=oh+oy-layy(laye)
+'     if tw>0 then layw(laye)=tw
+'     if th>0 then layh(laye)=th
+'     call updlayer(laye)
+'     'gosub bedold_drlayer
+'     trace "u",layx(laye)
+'   else if bedtool=7 then :'size
+'     layw(laye)=clamp(ow+draggedx,1,usrdime(layfile(laye),0)-ox)
+'     layh(laye)=clamp(oh+draggedy,1,usrdime(layfile(laye),1)-oy)
+'     call updlayer(laye)
+'     'gosub bedold_drlayer
+'   end if
+
+'   return
+
+
+'======================== filed:
+'a file selector
+'it shows a list of files that can be scrolled and a tool bar with buttons to select a file to load or save.
+
+'for canvas part:
+
+'for toolbar part:
+'chr#0..63 ui
+'bg#0 bottom bar
+
+filed:
+  system 0,0 :sprite view off
+
+  'grey screen
+  fill $ff00,32,3
+
+  'make sure to display the right canvas, floating content and toolbar
+  tole=4
+  cane=1
+  gosub tlb_redraw
+  gosub cnv_redraw
+
+  'store old file to cancel selection
+  oldlife=fedlife
+
+  'copy rom(1),32 to $ff00
+
+  'fedscroll=-8
+  'TODO: is it possible to center to the current selected files?
+
+fed_loop:
+  call checkresize :if resized then goto filed
+  call gesture
+  'detect interaction on each part
+  gosub tlb_input
+  gosub cnv_input
+  'editor was requested back from the bottom bar
+  if tedchanged>0 then
+    editor=tedchanged
+    call ungesture
+    'a new file was selected
+    if not fedselected then fedlife=oldlife
+    fedselected=0
+    goto backed
+
+  end if
+
+  wait vbl
+  goto fed_loop
+
+  'scroll position of the file list
+  'fedscroll=-8
+
+  'current gesture
+  'firg=0 :'no gesture yet
+  '=1 file list panned
+  '=2 main bottom tapped
+
+  'bg 0
+
+  'draw bottom bar
+  'gosub fir_bot_main
+
+  'on raster call filer_r
+
+  'copy ui char
+  copy rom(2),130*16 to $8000
+
+  ' gosub fir_drfiles
+  system 0,1
+
+  pressed=0 : tapped=0
+  draggedx=0 : draggedy=0
+
+  firselected=0
+  wid=-1
+
+fed_redraw:
+'redraw the file list
+  bg 0
+  bg fill 32,0 to 63,63 char 1
+  w=shownw\8
+  bg source rom(7)
+  pal 1 :font 67
+  t$="" :t=0
+  for f=0 to 15
+    y=4*f
+    bg copy 0,0,w-2,4 to 32,y
+    bg copy 25,0,3,4 to 32+w-2,y
+    call usrtype(f,t,t$)
+    text 32+2,y+1,"#"+hex$(f)
+    number 37,y+1,fsize(f),5
+    text 42,y+1,"b"
+    text 44,y+1,left$(t$,w-14)
+    text 32+2,y+2,left$(file$(f),w-4)
+    if f=fedlife then bg tint 32,y to 32+w,y+3 pal 2
+    'todo: may not wait if out of screen
+    wait vbl
+  next f
+  return
+
+fed_input:
+'handle input on the canvas for file selection
+  'energytool=1
+  if pressed then firprevs=fedscroll
+  if released then firg=0
+  if tapped then
+    f=touch.y+fedscroll
+    if f>=0 then
+      call dragdist(f,32)
+      y=fedlife*4
+      bg tint 32,y to 32+w,y+3 pal 1
+      fedlife=f
+      y=fedlife*4
+      bg tint 32,y to 32+w,y+3 pal 2
+    end if
+  end if
+  if not dragged then return
+  call dragdist(draggedy,1)
+  fedscroll=firprevs-draggedy
+  call dragcap(fedscroll,firprevs,pressedy,touch.y,-8,520-tlbcurr)
+  return
+
+
+
+'======================= canvas:
+'main interactive area
+'for backed, it shows 3 layers of user's map
+'for filed, it shows a list of files
+
+cnv_redraw:
+'repaint the canvas
+  on cane goto bed_redraw, fed_redraw
+
+cnv_update:
+  'fed_update not needed yet
+  on cane goto bed_update, fed_update
+
+cnv_input:
+'detect interaction on the canvas according to cane
+  if released then bedg=0
+  if (pressed or dragged) and bedg=1 then
+  else if (pressed or dragged) and justed and pressedy<fltcurr-8 and pressedy<tlbcurr-8 then
+    bedg=1
+  else if not tapped then
+    return
+  end if
+  on cane goto bed_input, fed_input
+
+
+
+'======================= backed:
+'a background editor
+'it shows 3 layers of user's map in the canvas part
+
+'for canvas part:
+'chr#0..255 user's characters
+'chr#0/255 user's character, /!\ one can be used to draw out-of-bounds cells.
+'bg#1..3 layer for showing user's background
+'pal0..7 user's palettes
+
+'for floating part:
+'chr#0..63 user's characters
+'chr#64 or #253 ui cursor
+'spr#131..159 ui cursor
+'bg#0 charalist
+'pal#0 user's palette
+'pal#4 ui cursor
+
+
+
+'to avoid 100% CPU, during panning and redrawing the user's layers, backed use a progressive rendering that start from the center of the canvas, and expand until it reach the last visible cells of each layers.
+
+backed:
+  system 0,0 :font 0 :sprite view off
+  'todo: should be set before
+  editor=1
+  first=-1
+
+  'copy user's chara for first draw
+  copy cara,$400 to $8000
+  'redraw the whole screen
+  gosub tlb_redraw
+  gosub flt_redraw
+  gosub cnv_redraw
+  gosub flt_update
+
+backed_loop:
+  call checkresize :if resized then goto backed
+  call gesture
+  'detect interaction on each part
+  gosub tlb_input
+  'detect loaded files changed
+  if usedfreed then
+    usedfreed=0
+    goto backed
+  end if
+
+  if floe>=0 then gosub flt_input
+  gosub cnv_input
+  gosub cnv_update
+  'user's chara was selected from the charalist
+  if lstchanged then
+    lstchanged=0 :bedtool=bedoldt
+    call ungesture
+    if tole=0 then
+      gosub tlb_0_draw
+      gosub tlb_0_pan
+    end if
+  end if
+  if kolchanged then
+    kolchanged=0
+    usrchanged(pallife)=-1
+    call ungesture
+    if tole=5 then
+      poke pcla+cole,kolcolor
+      gosub tlb_5_color
+    end if
+  end if
+  'file selector was requested from the bottom bar
+  if tedchanged<0 then
+    editor=tedchanged
+    call ungesture
+    goto filed
+  end if
+  'enable battery saving mode
+  system 0,energytool and energylist and energyfold and energyredraw
+  'copy cara,4096 to $8000
+  wait vbl
+
+  if 0 then
+    cls
+    on raster off
+    on vbl off
+    bg view off 1
+    bg view off 2
+    bg view off 3
+    copy cara,4096 to $8000
+    bg source rom(4)
+    bg 0
+    bg copy 0,0,16,16 to 0,0
+    palette 0,0,2,4,6
+
+    do
+    wait tap
+    loop
+  end if
+
+
+
+
+  goto backed_loop
+
+bed_redraw:
+'redraw the layers entirely
+  gosub bed_limit
+  gosub bed_initrender
+  gosub bed_attr
+  return
+
+bed_update:
+'only redraw missing part of the layers
+  if bedchanged then gosub bed_uddraw
+  return
+
+'todo: is bed_limit called twice per frame?
+bed_limit:
+'make sure the canvas is still visible
+  'compute space needed to show the selected layer
+  s=8*bedscale
+  w=layw(3)*s+safe.l+safe.r+40 :h=layh(3)*s+safe.t+safe.b+40
+  'compute current position of the floating content or toolbar
+  if floe>=0 then
+    curr=min(fltcurr,tlbcurr)-8
+  else
+    curr=tlbcurr-8
+  end if
+  if w>shownw then
+    l=layl(laye)*s-safe.l-20
+    r=(layr(laye)+1)*s-shownw+safe.r+20
+    'limit when panning right or left
+    if bedx<l then bedx=l
+    if bedx>r then bedx=r
+  else
+    'not enough space in width, center if
+    bedx=-(shownw-layw(3)*s)/2
+  end if
+  if h>curr then
+    t=layt(laye)*s-safe.t-20
+    b=(layb(laye)+1)*s-curr+safe.b+20
+    'limit when panning down or up
+    if bedy<t then bedy=t
+    if bedy>b then bedy=b
+  else
+    'not enough space in height, center it
+    bedy=-(curr-layh(3)*s)/2
+  end if
+  scroll 1,bedx,bedy
+  scroll 2,bedx,bedy
+  scroll 3,bedx,bedy
+  return
+
+bed_initrender:
+'initialize progressive render
+  bedcl=0 :bedcr=0 :bedct=0 :bedcb=0
+  gosub bed_initcanvas
+  'init for 1st draw, fill the canvas
+  bedpl=max(bedcl,layl(3))
+  bedpt=max(bedct,layt(3))
+  bedpr=min(bedcr,layr(3))
+  bedpb=min(bedcb,layb(3))
+  bedol=bedpl :bedot=bedpt :bedor=bedpr :bedob=bedpb
+  system 6,bedzoom
+  system 7,bedzoom
+  system 8,bedzoom
+  if bedlife>=0 then
+  'XXX: not working without background
+    bg 3
+    bg source usraddr(layfile(3))
+  end if
+  pal oobp :bg fill 0,0 to 63,63 char oobc
+  bg copy bedpl,bedpt,bedpr-bedpl+1,bedpb-bedpt+1 to bedpl,bedpt
+  return
+
+bed_initcanvas:
+'recompute the rect of visible cells for the canvas
+  ol=bedcl :ot=bedct :orr=bedcr :ob=bedcb
+  d=8
+  if bedzoom then d=16
+  bedcl=int(bedx/d) :bedct=int(bedy/d)
+  bedcr=int((bedx+shownw)/d)
+  if fltshow then
+    bedcb=int((bedy+fltcurr)/d)
+  else
+    bedcb=int((bedy+tlbcurr)/d)
+  end if
+  if ol<>bedcl or ot<>bedct or orr<>bedcr or ob<>bedcb then energyredraw=0
+  return
+
+bed_uddraw:
+'continue draw missing layer's cells until the whole canvas has been redraw
+  energyredraw=1 :bedchanged=0
+  bg 3
+  bg source usraddr(layfile(3))
+  pal oobp
+  'render missing cells at left
+  if bedcl<bedpl and bedpl>layl(3) then
+    dec bedpl :bedol=bedpl
+    'trace "left",timer
+    if bedpr-bedpl>=64 then dec bedpr
+    bedor=bedpr
+    bg copy bedpl,bedpt,1,bedpb-bedpt+1 to bedpl,bedpt
+    energyredraw=0 :bedchanged=-1
+  else if bedcl<bedol then
+    dec bedol
+    if bedor-bedol>=64 then dec bedor
+    bedpr=min(bedor,layr(3))
+    'trace "min",timer
+    pal oobp :bg fill bedol,0 to bedol,63 char oobc
+    energyredraw=0 :bedchanged=-1
+  end if
+  'render missing cells at right
+  if bedcr>bedpr and bedpr<layr(3) then
+    inc bedpr :bedor=bedpr
+    'trace "bedpr++,bedpl",bedpr,bedpl
+    if bedpr-bedpl>=64 then inc bedpl
+    'trace "64=",timer
+    bedol=bedpl
+    bg copy bedpr,bedpt,1,bedpb-bedpt+1 to bedpr,bedpt
+    energyredraw=0 :bedchanged=-1
+  else if bedcr>bedor then
+    inc bedor
+    'trace "bedor,bedol",bedor,bedol
+    if bedor-bedol>=64 then inc bedol
+    bedpl=max(bedol,layl(3))
+    'trace "gni=",timer
+    bg fill bedor,0 to bedor,63 char oobc
+    energyredraw=0 :bedchanged=-1
+  end if
+  'render missing cells at top
+  if bedct<bedpt and bedpt>layt(3)  then
+    dec bedpt :bedot=bedpt
+    if bedpb-bedpt>=64 then dec bedpb
+    bedob=bedpb
+    'already done, ne?
+    'bg source usraddr(layfile(3))
+    bg copy bedpl,bedpt,bedpr-bedpl+1,1 to bedpl,bedpt
+    energyredraw=0 :bedchanged=-1
+  else if bedct<bedot then
+    dec bedot
+    if bedob-bedot>=64 then dec bedob
+    bedpb=min(bedob,layb(3))
+    bg fill 0,bedot to 63,bedot char oobc
+    energyredraw=0 :bedchanged=-1
+  end if
+  'render missing cells at bottom
+  if bedcb>bedpb and bedpb<layb(3) then
+    'trace timer,"r",bedpl,bedpb
+    inc bedpb :bedob=bedpb
+    if bedpb-bedpt>=64 then inc bedpt
+    bedot=bedpt
+    bg copy bedpl,bedpb,bedpr-bedpl+1,1 to bedpl,bedpb
+    energyredraw=0 :bedchanged=-1
+  else if bedcb>bedob then
+    'trace timer,"=r","bedcb>bedob",bedcb>bedob
+    inc bedob
+    if bedob-bedot>=64 then inc bedot
+    bedpt=max(bedot,layt(3))
+    bg fill 0,bedob to 63,bedob char oobc
+    energyredraw=0 :bedchanged=-1
+  end if
+  return
+
+bed_input:
+'handle input on the canvas depending of the current tool
+  on bedtool goto bed_0_input, bed_1_input, bed_2_input, bed_3_input, bed_4_input, bed_5_input
+
+bed_0_input:
+'handle canvas pan
+  if tapped then return
+  energytool=1
+  if pressed and justed then
+    'store starting coordinates and old coordinates
+    bedxs=bedx :bedys=bedy :bedox=bedx :bedoy=bedy
+  end if
+  'compute pan distance
+  bedx=bedxs-draggedx : bedy=bedys-draggedy
+  gosub bed_limit
+  if bedox<>bedx or bedoy<>bedy then
+    gosub bed_initcanvas
+    bedox=bedx :bedoy=bedy
+    energytool=0 :bedchanged=-1
+  end if
+  return
+
+bed_1_input:
+'handle layer draw using a pen
+  if tapped then return
+  energytool=1
+  gosub bed_detectcell
+  if not beddrawn then return
+  'check for out of layer
+  if bed_ex<laybgl or bed_ex>laybgr or bed_ey<laybgt or bed_ey>laybgb then return
+  'check for out of background data
+  if bed_ex<0 or bed_ex>=bedw or bed_ey<0 or bed_ey>=bedh then return
+  if justed then gosub bed_attr
+  'draw cells
+  trace "bg source",hex$(beda)
+  bg laye :bg source beda
+
+  d$="d"+hex$(bed_ex,2)+hex$(bed_ey,2)+hex$(mcell.a(bed_ex,bed_ey),2)+hex$(mcell.c(bed_ex,bed_ey),2)
+  if first then
+    call statepush(bgundolst$(),bgundoidx,"01"+d$)
+  else
+    call stateappend(bgundolst$(),bgundoidx,d$)
+  end if
+
+  attr bedattr
+  'draw in loaded background
+  trace bed_ex,bed_ey,lstchara
+  mcell bed_ex,bed_ey,lstchara
+  'draw in canvas layer
+  trace bed_ex-laym(laye),bed_ey-layn(laye)
+  cell bed_ex-laym(laye),bed_ey-layn(laye),lstchara
+
+  'gosub bed_drlayer
+
+  first=0
+  usrchanged(bedlife)=-1
+  return
+
+bed_detectcell:
+'determine which cells are drawn. because each layer can have a different position relative to the canvas.
+  'compute cell coords of touch relative to the canvas
+  x=floor((touch.x+bedx)/8/bedscale)
+  y=floor((touch.y+bedy)/8/bedscale)
+  'draw did not changes anything yes
+  beddrawn=0
+  if tap then
+    'compute cell coords for where the draw operation begin relative to the loaded background
+    bed_sx=x-layu(laye)+layx(laye) :bed_sy=y-layv(laye)+layy(laye)
+    'ditto for where the draw operation ended
+    bed_ex=bed_sx :bed_ey=bed_sy
+    'used to detect changed
+    lx=x :ly=y
+    beddrawn=-1
+  else if x<>lx or y<>ly then
+    'compute cell coords for where the draw operation ended relative to the loaded background
+    bed_ex=x-layu(laye)+layx(laye) :bed_ey=y-layv(laye)+layy(laye)
+    'used to detect changed
+    lx=x :ly=y
+    beddrawn=-1
+  end if
+  return
+
+'todo: I think it should be in backed
+bed_attr:
+'recompute draw attribute and mask
+  bedattr=pale
+  if bedhoriz then bedattr=bedattr or %1000
+  if bedverti then bedattr=bedattr or %10000
+  if bedprio then bedattr=bedattr or %100000
+  'trace "attr",bin$(bedattr)
+  return
+
+'===================== floating:
+'a floating content area above the toolbar and below the canvas
+
+'bg#0 [0x32..31x63]
+'pal#0 user palette
+'pal#4 ui cursor
+
+flt_redraw:
+  if floe>=0 then
+    on floe gosub flt_0_redraw, flt_1_redraw
+  else
+    fltstart=999 : fltend=999 : fltcurr=999
+    fltshow=0
+  end if
+  return
+
+flt_setup:
+  fltstart=tlbstart-fltrow*16-8
+  fltend=tlbstart-8
+  fltcurr=fltstart
+  fltui=253
+  fltshow=-1
+  return
+
+flt_input:
+'detect interaction on floating content according to floe
+  if floe<0 then return
+  if released then fltg=0
+  if dragged and fltg=1 then
+    call dragdist(draggedx,1)
+    call dragdist(draggedy,1)
+  else if dragged and justed and pressedy>=fltcurr and pressedy<fltend then
+    fltg=1
+  else if tapped and pressedy>=fltcurr and pressedy<fltend then
+  else
+    return
+  end if
+  on floe gosub flt_0_input, flt_1_input
+  return
+
+flt_show:
+'show the cursor
+'(in) x,y position of the cursor
+  fltcursor=-1
+flt_update:
+  if floe>=0 then on floe goto flt_0_update, flt_1_update
+
+
+
+'==================== charalist:
+'user's character selector in floating content
+
+flt_0_redraw:
+  bg 0 :bg source rom(4)
+  bg copy 0,0,16,16 to 0,32
+
+
+  'palette 0,0,2,4,6
+  'bg copy 0,0,16,16 to 0,0
+  'on raster off
+  'on vbl off
+  'scroll 0,0,0
+  'copy rom(8),4096 to $8000
+  'bg view off 1
+  'bg view off 2
+  'bg view off 3
+  'sprite view off
+  'do
+  'wait tap
+  'loop
+
+  fltrow=(wide+2)*2
+  gosub flt_setup
+  return
+
+flt_0_input:
+  on fltg gosub fltg_0_none,fltg_0_dragging
+  return
+
+fltg_0_none:
+'handle user's character selection
+  if not tapped then return
+  'detect character number
+  x=(touch.x+lstx)\16
+  y=(touch.y+lsty-fltcurr)\16
+  lstchara=x+y*16
+  'report to other part of the code
+  lstchanged=-1
+  'report to user
+  message flt_0_t_chara+str$(lstchara)+" $"+hex$(lstchara)
+  goto flt_show
+
+fltg_0_dragging:
+'handle dragging of the charalist
+  if justed then
+    fltoldx=lstx :fltoldy=lsty
+  end if
+  lstx=fltoldx-draggedx
+  lsty=fltoldy-draggedy
+  call dragcap(lstx,fltoldx,pressedx,touch.x,0,256-shownw)
+  call dragcap(lsty,fltoldy,pressedy,touch.y,0,256-(fltend-fltstart))
+  'store the 3 chara used by the chara list cursor where user can't see it
+  if draggedy<0 and lsty>256-(lstend-lststart)-16 and fltui=253 then
+    fltui=64
+  else if draggedy>0 and lsty<=80 and fltui=64 then
+    fltui=253
+  end if
+  goto flt_0_update
+
+flt_0_update:
+  x=(lstchara and $f)
+  y=floor(lstchara/16)
+  'clamp the value and make it still visible on the side of the floating content
+  x=clamp(x*16-lstx,-16,shownw)
+  y=clamp(y*16-lsty,-16,fltend-fltstart)+fltcurr
+  'draw cursor corners
+  l=x-4 :t=y-4 :r=x+16-4 :b=y+16-4
+  sprite 159,l,t,fltui
+  sprite 158,r,t,fltui
+  sprite 157,l,b,fltui
+  sprite 156,r,b,fltui
+  'draw cursor sides
+  x=l+8 :y=t+8
+  for i=0 to 0
+  sprite 155-i,x+i*8,t,fltui+1
+  sprite 147-i,l,y+i*8,fltui+2
+  sprite 139-i,x+i*8,b,fltui+1
+  sprite 131-i,r,y+i*8,fltui+2
+  next i
+  return
+
+
+flt_0_t_chara: data "chara: "
+
+'==================== kolorlist:
+'system color selector in floating content
+
+flt_1_redraw:
+  bg 0
+  pal 0
+  bg fill 0,32 to 1,63 char 0
+  bg fill 2,32 to 3,63 char 1
+  bg fill 4,32 to 5,63 char 2
+  bg fill 6,32 to 7,63 char 3
+  pal 1
+  bg fill 8,32 to 9,63 char 0
+  bg fill 10,32 to 11,63 char 1
+  bg fill 12,32 to 13,63 char 2
+  bg fill 14,32 to 15,63 char 3
+  gosub flt_setup
+  gosub flt_show
+  return
+
+flt_1_input:
+  on fltg gosub fltg_1_none, fltg_1_dragging
+  return
+
+fltg_1_none:
+'handle system color selection
+  if not tapped then return
+  x=(touch.x+kolx)\32
+  y=(touch.y+koly-fltcurr)\24
+  kolcolor=x+y*8
+  'report to other part of the code
+  kolchanged=-1
+  goto flt_show
+
+fltg_1_dragging:
+'handle dragging of the colorlist
+  if justed then
+    fltoldx=kolx :fltoldy=koly
+  end if
+  kolx=fltoldx-draggedx
+  koly=fltoldy-draggedy
+  call dragcap(kolx,fltoldx,pressedx,touch.x,0,256-shownw)
+  call dragcap(koly,fltoldy,pressedy,touch.y,0,192-(fltend-fltstart))
+  'store the 3 chara used by the chara list cursor where user can't see it
+  if draggedy<0 and lsty>256-(lstend-lststart)-16 and fltui=253 then
+    fltui=64
+  else if draggedy>0 and lsty<=80 and fltui=64 then
+    fltui=253
+  end if
+  goto flt_1_update
+  'goto flt_show
+
+flt_1_update:
+  x=(kolcolor and $7)
+  y=floor(kolcolor/8)
+  x=clamp(x*32-kolx,-32,shownw)
+  y=clamp(y*24-koly,-24,fltend-fltstart)+fltcurr
+  'draw cursor corners
+  l=x-4 :t=y-4 :r=x+32-4 :b=y+24-4
+  sprite 159,l,t,fltui
+  sprite 158,r,t,fltui
+  sprite 157,l,b,fltui
+  sprite 156,r,b,fltui
+  'draw cursor sides
+  x=l+8 :y=t+8
+  for i=0 to 2
+  sprite 155-i,x+i*8,t,fltui+1
+  sprite 139-i,x+i*8,b,fltui+1
+  next i
+  for i=0 to 1
+  sprite 147-i,l,y+i*8,fltui+2
+  sprite 131-i,r,y+i*8,fltui+2
+  next i
+  return
+
+
+
+
+'====================== toolbar:
+'bg#0 [0x0..31x31]
+
+tlb_setup:
+'setup variables used by toolbar input and raster
+  tlbend=shownh-8
+  tlbstart=shownh-tlbrow*8
+  tlbcurr=tlbstart
+  tlbw=tlbcol*8
+  tlbfold=0
+  tlbdrag=0
+  call clampscroll(tlbdrag,tlbw,8,tlbw-shownw+16)
+  'TODO: are you sure?
+  'during transition/loading, frames may be drawn
+  'scroll 0,tlbdrag,-tlbcurr
+  return
+
+tlb_redraw:
+'redraw the content of the toolbar according to tole
+  if tapped then
+    trace "tapped should be false"
+    trace "you may forgot to call"
+    trace "call ungesture"
+    pause
+  end if
+
+  on tole gosub tlb_0_redraw, tlb_1_redraw, tlb_2_redraw, tlb_3_redraw, tlb_4_redraw, tlb_5_redraw, tlb_6_redraw
+  return
+
+tlb_input:
+'detect interaction on toolbar widgets according to tole
+  wid=-1 :'no widget
+  energyfold=1
+  on tlbg goto tlbg_none,tlbg_dragging,tlbg_folding
+tlbg_none:
+'nothing happens yet
+  if dragged and released then pause
+  if dragged and justed and pressedy>=tlbcurr then
+    if abs(draggedx)>abs(draggedy) then
+      tlbg=1
+    else
+      tlbg=2
+      tlbfini=tlbfold
+    end if
+  end if
+  if not tapped or pressedy<tlbcurr then return
+  'detect button tap
+  on tole restore tlb_0_data, tlb_1_data, tlb_2_data, tlb_3_data, tlb_4_data, tlb_5_data
+
+  read l :'number of widgets
+  while l>0
+    inc wid :dec l
+    read x1,y1,x2,y2
+    if touch.y>=tlbcurr and touch.y<tlbend then
+      x=(touch.x+tlbdrag)\8 :y=(touch.y-tlbcurr)\8
+      'fix y position when bottom is shorten
+      if short and y1>=tlbrow1 then
+        if y1>=tlbrow2 then dec y1 :dec y2
+        dec y1 :dec y2
+      end if
+      'tap was inside widget
+      if x>=x1 and x<=x2 and y>=y1 and y<=y2 then
+
+        on tole goto tlb_0_input, tlb_1_input, tlb_2_input, tlb_3_input, tlb_4_input, tlb_5_input
+
+      end if
+    end if
+  wend
+  'nothing was tapped
+  wid=-1
+  trace "no widget at",(touch.x+tlbdrag)\8,(touch.y-tlbcurr)\8
+  'message "not implemented"
+  return
+tlbg_dragging:
+'horizontal drag of the toolbar
+  tlbdrag=tlbdrag-draggedx
+  pressedx=touch.x
+  call clampscroll(tlbdrag,tlbw,8,tlbw-shownw+16)
+  if released then tlbg=0
+  return
+tlbg_folding:
+'vertical drag and (un)fold of the toolbar
+  tlbfold=int(clamp(draggedy+tlbfini,0,shownh-32-tlbstart))
+  energyfold=0
+  'limit and snap position
+  if released then
+    tlbg=0
+    a=shownh-32-tlbstart
+    if draggedy>0 and tlbfold>=8 then
+      tlbfold=a
+    else if draggedy<0 and tlbfold<a-8 then
+      tlbfold=0
+    else
+      tlbfold=tlbfini
+    end if
+  end if
+  tlbcurr=tlbstart+tlbfold
+  if fltshow then
+    fltcurr=fltstart+tlbfold
+    fltend=tlbcurr-8
+  end if
+  'make sure the floating content ui cursor will follow
+  gosub flt_update
+  return
+
+
+'================= backed_first:
+'first toolbar for backed
+'tools, zoom, undo
+'cells modifier
+'editors, second toolbar for backed, files
+
+'for toolbar part:
+'chr#0..63 ui
+'bg#0 bottom bar
+'pal#0 user's palette
+'pal#1,2,3 ui
+
+tlb_0_redraw:
+  bg 0 :bg source rom(3) :attr %100001
+  bg fill 0,0 to 31,31 char 1
+  bg copy 0,0,29,3 to 0,0
+  bg copy 0,3,29,3 to 0,4
+  bg copy 0,6,29,3 to 0,8
+  gosub tlb_0_pan
+  gosub tlb_0_zoom
+  gosub tlb_0_horiz
+  gosub tlb_0_verti
+  gosub tlb_0_prio
+  gosub tlb_0_layer
+  gosub tlb_0_draw
+  tlbrow=13-short*3 :tlbcol=26
+  tlbraster1=24 :tlbraster2=48
+  tlbrow1=4 :tlbrow2=7
+  gosub tlb_setup
+  return
+tlb_0_data:
+  data 12 :'number of widget
+  data 2,0,6,2 :'wid=0 pan
+  data 14,0,19,2 :'wid=1 zoom
+  data 14,4,16,6 :'wid=2 horiz flip
+  data 17,4,19,6 :'wid=3 verti flip
+  data 21,4,26,6 :'wid=4 prio
+  data 7,4,12,6 :'wid=5 palette
+  data 2,4,5,6 :'wid=6 layer
+  data 7,0,12,2 :'wid=7 draw
+  data 21,0,26,2 :'wid=8 undo
+  data 21,8,26,10 :'wid=9 file
+  data 15,8,20,10 :'wid=10 more
+  data 2,8,7,10 :'wid=11 chared
+tlb_0_input:
+  on wid goto tlb_0_pan, tlb_0_zoom, tlb_0_horiz, tlb_0_verti, tlb_0_prio, tlb_0_pal, tlb_0_layer, tlb_0_draw, tlb_0_undo, tlb_0_file, tlb_0_more, tlb_0_chared
+tlb_0_pan: 'wid=0
+'enable panning tool
+  if tapped then
+    tapped=0
+    call statepushsetting(bgundolst$(),bgundoidx,"t",bedtool*16+bedoldt)
+    bedtool=0
+    fltcursor=0
+    gosub tlb_0_draw
+  end if
+  restore tlb_0_data
+  call repaintwidget(0,1,2,bedtool=0)
+  return
+tlb_0_zoom: 'wid=1
+'toggle zoom level
+  if tapped then
+    curr=min(fltcurr,tlbcurr)-8
+    x=(bedx+shownw/2)/bedscale
+    y=(bedy+curr/2)/bedscale
+    bedzoom=not bedzoom
+    bedscale=abs(bedzoom)+1
+    bedx=x*bedscale-shownw/2
+    bedy=y*bedscale-curr/2
+    gosub bed_limit
+    gosub bed_redraw
+  end if
+  restore tlb_0_data
+  call repaintwidget(1,1,2,bedzoom)
+  return
+tlb_0_horiz: 'wid=2
+'toogle horizontal flip
+  if tapped then
+    call statepushsetting(bgundolst$(),bgundoidx,"f",bedhoriz*2+bedverti)
+    bedhoriz=not bedhoriz
+  end if
+  restore tlb_0_data
+  call repaintwidget(2,1,2,bedhoriz)
+  return
+tlb_0_verti: 'wid=3
+'toggle vertical flip
+  if tapped then
+    call statepushsetting(bgundolst$(),bgundoidx,"f",bedhoriz*2+bedverti)
+    bedverti=not bedverti
+  end if
+  restore tlb_0_data
+  call repaintwidget(3,1,2,bedverti)
+  return
+tlb_0_prio: 'wid=4
+'toggle priority over sprites
+  if tapped then
+    call statepushsetting(bgundolst$(),bgundoidx,"r",bedhoriz*2+bedverti)
+    bedprio=not bedprio
+  end if
+  restore tlb_0_data
+  call repaintwidget(4,1,2,bedprio)
+  return
+tlb_0_pal: 'wid=5
+'show palette chooser
+  if tapped then
+    call ungesture :tole=3 :goto tlb_redraw
+  end if
+  return
+tlb_0_layer: 'wid=6
+'show layer chooser
+  if tapped then
+    message "not implemented"
+    return
+    ' call statepushsetting(bgundolst$(),bgundoidx,"l",laye)
+    ' for i=0 to 2
+    '   add laye,1,1 to 3
+    '   if layfile(laye)>=0 then exit
+    ' next i
+    ' call uselayer((laye))
+  end if
+  restore tlb_0_data
+  skip 6*4+1 :read x1,y1
+  bg 0 :pal 1 :prio 1 :flip 0,0
+  text x1+2,y1+1,str$(laye)
+  return
+tlb_0_draw: 'wid=7
+'the current drawing tool
+  if tapped then
+    bedbot=2
+    if bedtool>0 then bedoldt=bedtool
+    call ungesture :tole=1 :goto tlb_redraw
+  else if bedoldt>0 then
+    'copy the right text for the button
+    bg 0 :bg source rom(6)
+    bg copy (bedoldt-1)*4,0,4,1 to 8,1
+    restore tlb_0_data
+    call repaintwidget(7,1,2,bedtool>=1 and bedtool<=3)
+  end if
+  return
+tlb_0_undo: 'wid=8
+'undo last action
+  if tapped then
+    message "undo not implemented"
+  end if
+  return
+tlb_0_file: :'wid=9
+'show the file menu
+  if tapped then
+    fedlife=bedlife
+    call ungesture
+    fedtitle$="background"
+    fedmode=0
+    tole=2 :gosub tlb_redraw
+    floe=-1 :gosub flt_redraw
+    gosub bed_limit
+    'disable drawing tool
+    bedoldt=bedtool :bedtool=0
+  end if
+  return
+tlb_0_more: 'wid=10
+'show the second toolbar for backed
+  if tapped then
+    message "not implemented"
+  end if
+  return
+tlb_0_chared: 'wid=11
+'switch to character editor
+  if tapped then
+    message "not implemented"
+  end if
+  return
+
+
+
+'================ backed_second:
+'tool selection for backed
+'dot/pan tool, zoom, undo
+'draw tool, rectangle tool, copy paste tool
+'filter out cells attributes and enable view mode
+
+'for toolbar part:
+'chr#0..63 ui
+'bg#0 bottom bar
+'pal#0 user's palette
+'pal#1,2,3 ui
+
+tlb_1_redraw:
+  bg 0 :bg source rom(3) :attr %100001
+  bg fill 0,0 to 31,31 char 1
+  bg copy 0,18,29,3 to 0,0
+  bg copy 0,21,29,3 to 0,4
+  bg copy 0,24,29,3 to 0,8
+  gosub tlb_0_zoom
+  gosub tlb_1_draw
+  gosub tlb_1_rect
+  tlbrow=13-short*3 :tlbcol=26
+  tlbraster1=24 :tlbraster2=48
+  tlbrow1=4 :tlbrow2=7
+  gosub tlb_setup
+  return
+tlb_1_data:
+  data 4 :'number of widget
+  data 7,0,12,2 :'wid=0 back
+  data 14,0,19,2 :'wid=1 zoom
+  data 2,4,7,6 :'wid=2 draw
+  data 8,4,13,6 :'wid=3 rect
+tlb_1_input:
+  on wid goto tlb_1_back, tlb_0_zoom, tlb_1_draw, tlb_1_rect
+tlb_1_back: 'wid=0
+'go back to the first toolbar of backed
+  bedbot=0
+  call ungesture :tole=0 :gosub tlb_redraw
+  if bedtool>=1 and bedtool<=3 then
+    fltcursor=-1
+    gosub flt_update
+  end if
+  return
+tlb_1_draw: 'wid=2
+'the current drawing tool
+  if tapped then
+    bedtool=1 :bedoldt=1
+    goto tlb_1_back
+  else
+    restore tlb_1_data
+    call repaintwidget(2,1,2,bedtool=1)
+  end if
+  return
+tlb_1_rect: 'wid=3
+'select rectangle drawing tool
+  if tapped then
+    message "not finished"
+    return
+    bedtool=2 :bedoldt=2
+    goto tlb_1_back
+  else
+    restore tlb_1_data
+    call repaintwidget(3,1,2,bedtool=2)
+  end if
+  return
+
+
+
+'========================= file:
+'file management toolbar for any editor
+'file selector, loaded information,
+'new, free, load, save
+
+'for toolbar part:
+'chr#0..63 ui
+'bg#0 bottom bar
+'pal#0 user's palette
+'pal#1,2,3 ui
+
+tlb_2_redraw:
+  bg 0 :bg source rom(3) :attr %100001
+  bg fill 0,0 to 31,31 char 1
+  pal 1 : text 3,0,fedtitle$
+  bg copy 0,27,29,3 to 0,1
+  bg copy 0,30,29,3 to 0,5
+  bg copy 0,33,29,3 to 0,9
+  gosub tlb_2_file
+  tlbrow=14-short*3 :tlbcol=26
+  tlbraster1=32 :tlbraster2=56
+  tlbrow1=5 :tlbrow2=8
+  gosub tlb_setup
+  return
+tlb_2_data:
+  data 6 :'number of widget
+  data 21,9,26,11 :'0= back
+  data 21,4,26,6 :'1= save
+  data 14,4,19,6 :'2= load
+  data 2,1,9,3 :'3= file
+  data 7,4,12,6 :'4= free
+  data 2,5,6,7 :'5= new
+tlb_2_input:
+  on wid goto tlb_2_back, tlb_2_save, tlb_2_load, tlb_2_file, tlb_2_free, tlb_2_new
+tlb_2_back: 'wid=0
+'go back to the previous toolbar
+  if tapped then
+    if editor=1 then
+      call ungesture
+      'go back to the previous toolbar
+      if fedmode=0 then tole=0
+      if fedmode=1 then tole=3
+      gosub tlb_redraw
+      floe=0 :gosub flt_redraw
+      gosub bed_limit
+      'restore drawing tool
+      if bedoldt>0 then bedtool=bedoldt
+    end if
+  end if
+  return
+tlb_2_save: 'wid=1
+'save currently edited user's data to file
+  if tapped then
+    if fedmode=0 then
+      call usrlife(bedlife,fedlife)
+      call usrsave(bedlife)
+      message "file #"+hex$(bedlife)+" saved"
+    else if fedmode=1 then
+      call usrlife(pallife,fedlife)
+      call usrsave(pallife)
+      message "palette #"+hex$(pallife)+" saved"
+    end if
+    call ungesture
+    gosub tlb_redraw
+  end if
+  return
+tlb_2_load: 'wid=2
+'load currently edited user's data from file
+  if tapped then
+    if fedmode=0 then
+      call usrloadbg(fedlife,bedlife,bedlife)
+      call stplayer(3,bedlife)
+      call uselayer(3)
+      call updlayer(laye)
+      call ungesture
+      goto backed
+    else if fedmode=1 then
+      call usrloadpal(fedlife,pallife,pallife)
+      call ungesture
+    end if
+  end if
+  return
+tlb_2_file: 'wid=3
+'swith to file selector
+'show loaded file information
+  if tapped then
+    tedchanged=-1
+    'save toolbar and floating content
+    oldtole=tole
+    oldfloe=floe
+  else
+    bg 0 :attr 1
+    text 8,2,hex$(fedlife)
+    if usrsize(fedlife) then
+      pal 3
+      text 12,2,hex$(usrsize(fedlife),4)
+      text 18,2,hex$(usraddr(fedlife),4)
+      text 23,2,hex$(usraddr(fedlife)+usrsize(fedlife)-1,4)
+      pal 2
+      text 17,3,"loaded"
+    else
+      pal 3
+      text 12,2,hex$(fsize(fedlife),4)
+      pal 1
+      text 17,3,"not" :text 21,3,"loaded"
+    end if
+  end if
+  return
+tlb_2_free:
+  message "not implemented"
+  return
+  'TODO: this is working but it make no sens if layers is not implemented
+  if tapped then
+    trace "fedmode",fedmode
+    if fedmode=0 then
+      for l=1 to 3
+        if layfile(l)=fedlife then
+          message "file #"+hex$(fedlife)+" is used"
+          goto tlb_2_free_cancel
+        end if
+      next l
+      if usrsize(fedlife)>0 then
+        call usrfree(fedlife)
+        message "file #"+hex$(fedlife)+" freed"
+        goto tlb_2_reaction
+      else
+        message "file #"+hex$(fedlife)+" not loaded"
+      end if
+    else if fedmode=1 then
+      'TODO: implement me
+    end if
+tlb_2_free_cancel:
+    call ungesture
+    gosub tlb_redraw
+  end if
+  return
+tlb_2_reaction:
+  'used background freed
+  if fedlife=bedlife then
+    call usrdefaultbg
+    trace "bedlife",bedlife
+    call stplayer(3,3)
+    call uselayer(3)
+    call updlayer(laye)
+    usedfreed=-1
+  'used characters freed
+  else if fedlife=carlife then
+  'used palette freed
+  else if fedlife=pallife then
+  end if
+  call ungesture
+  gosub tlb_redraw
+  return
+tlb_2_new:
+  if tapped then
+    call ungesture
+    tole=6
+    goto tlb_redraw
+  end if
+  return
+
+
+'=============== backed_palette:
+'palettes selector toolbar for backed
+'8 palette buttons
+'edit palette, file
+
+'for toolbar part:
+'chr#0..63 ui
+'bg#0 bottom bar
+'pal#0 user's palette
+'pal#1,2,3 ui
+
+tlb_3_redraw:
+  bg 0 :bg source rom(3) :attr %100001
+  bg fill 0,0 to 31,31 char 1
+  bg copy 0,9,29,3 to 0,0
+  bg copy 0,12,29,3 to 0,4
+  bg copy 0,15,29,3 to 0,8
+  tlbrow=13-short*3 :tlbcol=25
+  tlbraster1=24 :tlbraster2=48
+  tlbrow1=4 :tlbrow2=7
+  gosub tlb_setup
+  gosub tlb_3_pal
+  trace "tlbrow",tlbrow
+  return
+tlb_3_data:
+  data 11 :'number of widget
+  data 2,0,7,2 :'0= pal #0
+  data 8,0,13,2 :'1= pal #1
+  data 14,0,19,2 :'2= pal #2
+  data 20,0,25,2 :'3= pal #3
+  data 2,4,7,6 :'4= pal #4
+  data 8,4,13,6 :'5= pal #5
+  data 14,4,19,6 :'6= pal #6
+  data 20,4,25,6 :'7= pal #7
+  data 2,8,7,10 :'8= back
+  data 14,8,19,10 :'9= edit
+  data 20,8,25,10 :'10= file
+tlb_3_input:
+  if wid>=0 and wid<8 then goto tlb_3_pal
+  if wid>=8 then on wid-8 goto tlb_3_back, tlb_3_edit, tlb_3_file
+tlb_3_pal: 'wid=0..7
+'one of the 8 palette buttons
+  bg 0 :bg source rom(5)
+  if tapped then
+    'if editor=0 then
+      'call statepushsetting(bgundolst$(),bgundoidx,"p",pale)
+    'end if
+    'paint old button to grey
+    bg copy pale*6,0,6,3 to (pale mod 4)*6+2,(pale\4)*4
+    call usepal(wid)
+    if editor=1 then gosub bed_attr
+  end if
+  'paint new button
+  trace "pale",pale
+  bg copy pale*6,3,6,3 to (pale mod 4)*6+2,(pale\4)*4
+  'update palette number
+  pal 3 :text 12,9,str$(pale)
+  return
+tlb_3_back: 'wid=8
+'go back to the first toolbar of backed
+  if tapped then
+    if editor=1 then
+      call ungesture :tole=0 :goto tlb_redraw
+    end if
+  end if
+  return
+tlb_3_edit: 'wid=9
+'show the colors selector floating content
+  if tapped then
+    call ungesture
+    tole=5 :gosub tlb_redraw
+    floe=1 :gosub flt_redraw
+  end if
+  return
+tlb_3_file: 'wid=10
+'switch to file selector
+  if tapped then
+    fedlife=pallife
+    call ungesture
+    fedtitle$="palette"
+    fedmode=1
+    tole=2 :gosub tlb_redraw
+    floe=-1 :gosub flt_redraw
+    gosub bed_limit
+    'disable drawing tool
+    bedoldt=bedtool :bedtool=0
+  end if
+  return
+
+
+
+'================ filed_select:
+'toolbar for filed
+'select, cancel
+
+'for toolbar part:
+'chr#0..63 ui
+'bg#0 bottom bar
+'pal#0 user's palette
+'pal#1,2,3 ui
+
+tlb_4_redraw:
+  bg 0 :bg source rom(3) :attr %100001
+  bg fill 0,0 to 31,31 char 1
+  bg copy 0,39,29,3 to 0,0
+  tlbrow=4 :tlbcol=26
+  tlbraster1=999 :tlbraster2=999
+  tlbrow1=999 :tlbrow2=999
+  gosub tlb_setup
+  return
+tlb_4_data:
+  data 2 :'number of widget
+  data 2,0,7,2 :'wid=0 back
+  data 8,0,15,2 :'wid=1 select
+tlb_4_input:
+  on wid goto tlb_4_back, tlb_4_select
+tlb_4_back: 'wid=0
+'cancel selection, go back to the previous toolbar
+  if tapped then
+    tedchanged=-tedchanged
+    tole=oldtole
+    floe=oldfloe
+    cane=0
+  end if
+  return
+tlb_4_select: 'wid=1
+'confirm selection, go back to the previous toolbar
+  if tapped then
+    tedchanged=-tedchanged
+    tole=oldtole
+    floe=oldfloe
+    cane=0
+    fedselected=-1
+  end if
+  return
+
+
+
+'================== color_edit:
+'toolbar to edit current user's palette
+'4 colors button
+'current color number, current palette number
+
+'for toolbar part:
+'chr#0..63 ui
+'bg#0 bottom bar
+'pal#0 user's palette
+'pal#1,2,3 ui
+
+tlb_5_redraw:
+  bg 0 :bg source rom(3) :attr %100001
+  bg fill 0,0 to 31,31 char 1
+  bg copy 0,42,29,5 to 0,0
+  bg copy 0,47,29,3 to 0,6
+  tlbrow=11-short*3 :tlbcol=25
+  tlbraster1=24 :tlbraster2=32
+  tlbrow1=2 :tlbrow2=4
+  gosub tlb_setup
+  'update palette number
+  pal 3 :text 12,7,str$(pale)
+  gosub tlb_5_color
+  return
+tlb_5_data:
+  data 5 :'number of widget
+  data 2,0,7,3 :'wid=0 color 0
+  data 9,0,12,3 :'wid=1 color 1
+  data 14,0,18,3 :'wid=2 color 2
+  data 21,0,24,3 :'wid=3 color 3
+  data 14,6,19,8 :'wid=4 back
+tlb_5_input:
+  on wid goto tlb_5_color, tlb_5_color, tlb_5_color, tlb_5_color, tlb_5_back
+  return
+tlb_5_color: 'wid=0..3
+'select one of the 4 colors of the current palette
+  if tapped then
+    call usecolor(wid)
+    gosub flt_show
+    end if
+  'update color number
+  pal 3 :text 5,7,right$("0"+str$(peek(pcla+cole)),2)
+  return
+tlb_5_back: 'wid=4
+'go back to the previous toolbar
+  if tapped then
+    call ungesture
+    'XXX: do not tlb_redraw before flt_redraw
+    floe=0 :gosub flt_redraw
+    tole=3 :gosub tlb_redraw
+    gosub flt_setup
+  end if
+  return
+
+'================= backed_more:
+'i don't know what to put here, i can't remember
+
+
+'================== backed_new:
+'width, height, back
+
+tlb_6_redraw:
+  bg 0 :bg source rom(3) :attr %100001
+  bg fill 0,0 to 31,31 char 1
+  bg copy 0,50,29,3 to 0,0
+  bg copy 0,53,29,3 to 0,4
+  bg copy 0,56,29,3 to 0,8
+  tlbrow=13-short*3 :tlbcol=26
+  tlbraster1=24 :tlbraster2=48
+  tlbrow1=4 :tlbrow2=7
+  gosub tlb_setup
+  return
+
+' TODO: ui asset are not copied when floe is not drawn by sub r
+
+' width   height   memory needed
+'(     ) (      )
+'(   64) (   128)  memory avail
+'(     ) (      )
+'back create
+
+
+
+
+#1:ui palettes
+03040404010301050103013001050303
+00031D3000033C300003173000032C30
+
+#2:ui characters
+00000000000000000000000000000000
+FFFFFFFFFFFFFFFF0000000000000000
+0000000000000000FFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFF3F3F3F3F3F3F3F3F
+FFFFFFFFFFFFFFFF0000FFFFFFFFFFFF
+FFFFFFFFFFFFFFFF0000071F1F3F3F3F
+FFFFFFFFFFFFFFFFFFFFE7E7FFE7E7FF
+FFFFFFFFFFFFFFFFFFDB99181899DBFF
+FFFFFFFFFFFFFFFFE7C381FFFF81C3E7
+FFFFFFFFFFFFFEFC0000071F1F3C393B
+FFFFFFFFFFFF00000000FFFFFF00FFFF
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+FFFFFFFFFFFFFFFF0000071F18303333
+FFFFFFFFFFFFFFFFFFC399918999C3FF
+FFFFFFFFFFFFFFFFFFE7C7E7E7E781FF
+FFFFFFFFFFFFFFFFFFC399F3E7CF81FF
+FFFFFFFFFFFFFFFFFFC399F3F999C3FF
+FFFFFFFFFFFFFFFFFF999981F9F9F9FF
+FFFFFFFFFFFFFFFFFF819F83F9F983FF
+FFFFFFFFFFFFFFFFFFE3CF839999C3FF
+FFFFFFFFFFFFFFFFFF81F9F3E7CFCFFF
+FFFFFFFFFFFFFFFFFFC399C39999C3FF
+FFFFFFFFFFFFFFFFFFC399C1F999C3FF
+FCFCFCFCFCFCFCFC3B3B3B3B3B3B3B3B
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+FFFFFFFFFFFFFFFF3333333333333333
+FFFFFFFFFFFFFFFFFFF7C1C7F1C1F7FF
+FFFFFFFFFFFFFFFFFFE7C399819999FF
+FFFFFFFFFFFFFFFFFF839983999983FF
+FFFFFFFFFFFFFFFFFFC3999F9F99C3FF
+FFFFFFFFFFFFFFFFFF879399999387FF
+FFFFFFFFFFFFFFFFFF819F879F9F81FF
+FFFFFFFFFFFFFFFFFF819F879F9F9FFF
+FFFFFFFFFFFFFFFFFFC39F919999C3FF
+FFFFFFFFFFFFFFFFFF999981999999FF
+FFFFFFFFFFFFFFFFFFC3E7E7E7E7C3FF
+FFFFFFFFFFFFFFFFFFE1F9F9F999C3FF
+FFFFFFFFFFFFFFFFFF999387879399FF
+FFFFFFFFFFFFFFFFFF9F9F9F9F9F81FF
+FFFFFFFFFFFFFFFFFFBD9981819999FF
+FFFFFFFFFFFFFFFFFF998981919999FF
+FFFFFFFFFFFFFFFFFFC399999999C3FF
+FFFFFFFFFFFFFFFFFF8399839F9F9FFF
+FFFFFFFFFFFFFFFFFFC399999593C1FF
+FFFFFFFFFFFFFFFFFF839983879399FF
+FFFFFFFFFFFFFFFFFFC19FC3F9F983FF
+FFFFFFFFFFFFFFFFFF81E7E7E7E7E7FF
+FFFFFFFFFFFFFFFFFF9999999999C3FF
+FFFFFFFFFFFFFFFFFF99999999C3E7FF
+FFFFFFFFFFFFFFFFFF9999818199BDFF
+FFFFFFFFFFFFFFFFFF99C3E7C39999FF
+FFFFFFFFFFFFFFFFFF9999C3E7E7E7FF
+FFFFFFFFFFFFFFFFFF81F3E7CF9F81FF
+FFFFFFFFFFFFFFFFFFDB81DBDB81DBFF
+FFFFFFFFFFFFFFFF0000FFFF0000FFFF
+FFFFFFFFFFFFFFFF0000FFFF0F0FFFFF
+FFFFFFFFFFFFFFFFFFFFFFFFFF9999FF
+271C72C1271C72C1DEEFEDFEDEEFEDFE
+FFFFFFFFF0F0F0F0FF80809F90909090
+FFFFFFFF00000000FF0000FF00000000
+F0F0F0F0F0F0F0F09090909090909090
+FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFFFFE7E7E7E7FFE7FF
+FFFFFFFFFFFFFFFFFF9393DBFFFFFFFF
+FFFFFFFFFFFFFFFFFFDB81DBDB81DBFF
+FFFFFFFFFFFFFFFFFFF7C1C7F1C1F7FF
+FFFFFFFFFFFFFFFFFF9D9BF7EFD9B9FF
+FFFFFFFFFFFFFFFFFFE3CBC7919BC5FF
+FFFFFFFFFFFFFFFFFFE7E7CFFFFFFFFF
+FFFFFFFFFFFFFFFFFFF3E7CFCFE7F3FF
+FFFFFFFFFFFFFFFFFFCFE7F3F3E7CFFF
+FFFFFFFFFFFFFFFFFFFFDBE781E7DBFF
+FFFFFFFFFFFFFFFFFFFFE7E781E7E7FF
+FFFFFFFFFFFFFFFFFFFFFFFFE7E7CFFF
+FFFFFFFFFFFFFFFFFFFFFFFF81FFFFFF
+FFFFFFFFFFFFFFFFFFFFFFFFFFE7E7FF
+FFFFFFFFFFFFFFFFFFF9F3E7CF9FBFFF
+FFFFFFFFFFFFFFFFFFC399918999C3FF
+FFFFFFFFFFFFFFFFFFE7C7E7E7E781FF
+FFFFFFFFFFFFFFFFFFC399F3E7CF81FF
+FFFFFFFFFFFFFFFFFFC399F3F999C3FF
+FFFFFFFFFFFFFFFFFF999981F9F9F9FF
+FFFFFFFFFFFFFFFFFF819F83F9F983FF
+FFFFFFFFFFFFFFFFFFE3CF839999C3FF
+FFFFFFFFFFFFFFFFFF81F9F3E7CFCFFF
+FFFFFFFFFFFFFFFFFFC399C39999C3FF
+FFFFFFFFFFFFFFFFFFC399C1F999C3FF
+FFFFFFFFFFFFFFFFFFFFFFE7FFE7FFFF
+FFFFFFFFFFFFFFFFFFFFFFE7FFE7CFFF
+FFFFFFFFFFFFFFFFFFFFF3E7CFE7F3FF
+FFFFFFFFFFFFFFFFFFFFFF81FF81FFFF
+FFFFFFFFFFFFFFFFFFFFCFE7F3E7CFFF
+FFFFFFFFFFFFFFFFFFC399F3E7FFE7FF
+FFFFFFFFFFFFFFFFFFC39991919FC3FF
+FFFFFFFFFFFFFFFFFFE7C399819999FF
+FFFFFFFFFFFFFFFFFF839983999983FF
+FFFFFFFFFFFFFFFFFFC3999F9F99C3FF
+FFFFFFFFFFFFFFFFFF879399999387FF
+FFFFFFFFFFFFFFFFFF819F879F9F81FF
+FFFFFFFFFFFFFFFFFF819F879F9F9FFF
+FFFFFFFFFFFFFFFFFFC39F919999C3FF
+FFFFFFFFFFFFFFFFFF999981999999FF
+FFFFFFFFFFFFFFFFFFC3E7E7E7E7C3FF
+FFFFFFFFFFFFFFFFFFE1F9F9F999C3FF
+FFFFFFFFFFFFFFFFFF999387879399FF
+FFFFFFFFFFFFFFFFFF9F9F9F9F9F81FF
+FFFFFFFFFFFFFFFFFFBD9981819999FF
+FFFFFFFFFFFFFFFFFF998981919999FF
+FFFFFFFFFFFFFFFFFFC399999999C3FF
+FFFFFFFFFFFFFFFFFF8399839F9F9FFF
+FFFFFFFFFFFFFFFFFFC399999593C1FF
+FFFFFFFFFFFFFFFFFF839983879399FF
+FFFFFFFFFFFFFFFFFFC19FC3F9F983FF
+FFFFFFFFFFFFFFFFFF81E7E7E7E7E7FF
+FFFFFFFFFFFFFFFFFF9999999999C3FF
+FFFFFFFFFFFFFFFFFF99999999C3E7FF
+FFFFFFFFFFFFFFFFFF9999818199BDFF
+FFFFFFFFFFFFFFFFFF99C3E7C39999FF
+FFFFFFFFFFFFFFFFFF9999C3E7E7E7FF
+FFFFFFFFFFFFFFFFFF81F3E7CF9F81FF
+FFFFFFFFFFFFFFFFFFC3CFCFCFCFC3FF
+FFFFFFFFFFFFFFFFFF9FCFE7F3F9FDFF
+FFFFFFFFFFFFFFFFFFC3F3F3F3F3C3FF
+FFFFFFFFFFFFFFFFFFE7C399FFFFFFFF
+FFFFFFFFFFFFFFFFFFFFFFFFFFFF81FF
+FFFFFFFFFFFFFFFF3F3F3F3F3F3F3F3F
+FFFFFFFFFFFFFFFF0000FFFFFFFFFFFF
+FFFFFFFFFFFFFFFF0000071F1F3F3F3F
+
+#3:ui backgrounds
+00001D50012101210621052105210521
+06290621052105210521052106290121
+06210521052105210521062901210621
+05210521052105210629012101210121
+01210421302121212E21042904212421
+3221212137210429012104213A212F21
+2F212D2104290121042135212E212421
+2F210429012101210121012106310531
+053105310639063105313C313C310531
+06390121063105310531053105310639
+01210631053105310531053106390121
+01210121012106210521052106290121
+06210521052105210521062901210621
+05210521052105210629012106210521
+05210521052106290121012101210121
+04212C21030104290121042100200120
+02200320042901210421082103210321
+09210429012104213021322129212F21
+04290121012101210121063105310531
+06390121063105313C313C3105310639
+01210631053105310531053106390121
+06310531053105310531063901210121
+01210121062105210521052105210629
+06220522052205220522062A01210621
+05210521052105210629062105210521
+05210521062901210121012101210421
+2321282121213221042904222C222122
+39223222042A012104212D212F213221
+252104290421262129212C2125210429
+01210121012101210631053105310531
+0531063906320532053205320532063A
+0121063105313C313C31053106390631
+05313C313C3105310639012101210121
+01210621052105210521052106290621
+05210521052105210629062105210521
+05210521062906210521052105210521
+06290121012101210121012104211021
+01240224032404290421112101250225
+03250429042112210126022603260429
+04211321012702270327042901210121
+01210121012106310531053105310531
+06390631053105310531053106390631
+05310531053105310639063105310531
+05310531063901210121012101210121
+06210521052105210521062906210521
+05210521052106290621052105210521
+05210629062105210521052105210629
+01210121012101210121042114210124
+02240324042904211521012502250325
+04290421162101260226032604290421
+17210127022703270429012101210121
+01210121063105310531053105310639
+06310531053105310531063906310531
+05310531053106390631053105310531
+05310639012101210121012101210F21
+3C213C213C213C210F29012101210121
+01210121012106210521052105210521
+06290621052105210521052106290121
+01210121012101211F21222121212321
+2B211F290121302321233B2301210121
+04212521242129213421042904212621
+29212C21252104290121012101210121
+01210F313C313C313C313C310F390121
+01210121012101210121063105310531
+053105310639063105313C313C310531
+06390121012101210121012106210521
+0521052106290F213C213C213C213C21
+0F290121062105210521052105210629
+01210621052105210521052106290121
+012101210121042124212F2134210429
+1F212221212123212B211F2901210421
+3A212F212F212D210429012104213521
+2E2124212F2104290121012101210121
+063105310531053106390F313C313C31
+3C313C310F3901210631053105310531
+05310639012106310531053105310531
+06390121012101210121062105210521
+05210521062906210521052105210521
+06290121062105210521052105210629
+06210521052105210521062901210121
+01210121042124213221212137210429
+04213221252123213421042901210421
+23212F21302139210429042130212121
+33213421042901210121012101210631
+05310531053105310639063105310531
+05310531063901210631053105310531
+05310639063105310531053105310639
+01210121012101210621052105210521
+05210629012106210521052105210629
+01210621052105210521052106290121
+06210521052105210629012101210121
+01210421232128212121322104290121
+0421302121212C210429012104212621
+2C212921302104290121042130213221
+29210429012101210121012106310531
+05310531053106390121063105310531
+05310639012106310531053105310531
+06390121063105310531053106390121
+01210121012106210521052105210521
+0521052106290121332329233A232523
+072301212D2325232D232F2332233923
+07230121012101210121012101210121
+0421262129212C2125213B2103210429
+01212023012101210121012101212023
+01210121012101213E23012101210121
+01210121012101210121063105313C31
+3C313C313C3105310639012122233923
+34232523332301210121012101210121
+01210121012101210121012101210121
+01210121062105210521052106290621
+05210521052105210629012106210521
+05210521052106290121062105210521
+05210521062901210121012101210421
+2E212521372104290421262132212521
+25210429012104212C212F2121212421
+04290121042133212121362125210429
+01210121012101210631053105310531
+06390631053105310531053106390121
+06310531053105310531063901210631
+05310531053105310639012101210121
+01210121012101210121012101210121
+01210121012101210121012101210121
+01210121012101210F213C213C213C21
+3C210F29012101210121012101210121
+01210121012101210121012101210121
+01210121012101210121012101210121
+01211F212221212123212B211F290121
+01210121012101210121012101210121
+01210121012101210121012101210121
+0121012101210121012101210F313C31
+3C313C313C310F390121012101210121
+06210521052105210521062906210521
+05210521052106290621052105210521
+0521062901210F213C213C213C213C21
+0F290121012101210121042133212921
+3A212521042904212C21212139213221
+0429042126212F212E21342104290121
+1F212221212123212B211F2901210121
+01210121063105310531053105310639
+063105313C313C310531063906310531
+053105310531063901210F313C313C31
+3C313C310F3901210121012101210F21
+3C213C213C213C210F29062105210521
+05210521052105210629012101210121
+01210121012101210121012101210121
+01210121012101211F21222121212321
+2B211F290421332125212C2125212321
+34210429012101210121012101210121
+01210121012101210121012101210121
+01210F313C313C313C313C310F390631
+05310531053105310531053106390121
+01210121012101210121012101210121
+0121012101210121012101210A240B24
+0B240B240B240A2C0A250B250B250B25
+0B250A2D0A260B260B260B260B260A2E
+0A270B270B270B270B270A2F01210121
+0121012101211A240224022402240224
+1A2C1A2502250225022502251A2D1A26
+02260226022602261A2E1A2702270227
+022702271A2F01210121012101210121
+1A2402240224022402241A2C1A250225
+0225022502251A2D1A26022602260226
+02261A2E1A2702270227022702271A2F
+012101210121012101211A2402240224
+022402241A2C1A250225022502250225
+1A2D1A2602260226022602261A2E1A27
+02270227022702271A2F012101210121
+012101210A340B340B340B340B340A3C
+0A350B350B350B350B350A3D0A360B36
+0B360B360B360A3E0A370B370B370B37
+0B370A3F012101210121012101210121
+01210121012101210121012101210121
+0121012101210F213C213C213C213C21
+0F290121012101210121012101210121
+0121012101210121012123233B230323
+032301210121302321233B2301210121
+1F212221212123212B211F2901210121
+01210121012101210121012101210121
+01210121012101210121012101210121
+012101210121012101210F313C313C31
+3C313C310F3901210121012101210121
+01210121012101210121012101210121
+01210121012101210A210B210B210B21
+0A290121012101210121012101210121
+012101210A210B210B210B210A290121
+0121012101217A236C23672377232823
+01211A210221022102211A2901210121
+282325236C2327236B23342301211A21
+0221022102211A290121012101210121
+0121012101210121012101210A310B31
+0B310B310A3901210121012101210121
+01210121012101210A310B310B310B31
+0A390121012101210121012101210121
+01210121012101210121012133232923
+3A232523072301212D2325232D232F23
+32233923072301210121012101210121
+01210121012101210121012101210121
+01210121012120230121012101210121
+0121202301210121012101213E230121
+01210121012101210121012101210121
+01210121012101210121012101210121
+22233923342325233323012101210121
+01210121012101210121012101210121
+01210121012101210F213C213C213C21
+3C210F29062105210521052106290121
+01210121012101210121012101210121
+01210121012101210121012101210121
+01211F212221212123212B211F290421
+2E212521372104290121012101210121
+01210121012101210121012101210121
+0121012101210121012101210F313C31
+3C313C313C310F390631053105310531
+06390121012101210121012101210121
+01210121012101210121012101210121
+01213F213F213F213F213F213F213F21
+3F213F213F213F213F213F213F213F21
+3F213F213F213F213F213F213F213F21
+3F213F213F213F213F213F213F213F21
+3F213F213F213F213F213F213F213F21
+3F213F213F213F213F213F213F213F21
+3F213F213F213F213F213F213F213F21
+3F213F213F213F213F213F213F213F21
+3F213F213F213F213F213F213F213F21
+3F213F213F213F213F213F213F213F21
+3F213F213F213F213F213F213F213F21
+3F213F213F213F213F213F213F213F21
+3F213F213F213F213F213F213F213F21
+3F213F213F213F213F213F213F213F21
+3F213F213F213F213F213F213F213F21
+3F213F213F213F213F213F213F213F21
+3F213F213F213F213F213F213F213F21
+3F213F213F213F213F213F213F213F21
+3F213F21012101210621052105210629
+01210621052105210521052105210629
+06210521052105210521062901210621
+05210521052105210629012101210121
+012104212C2103210429012104213321
+34212121322134210429042133212921
+3A212521042901210421242125213321
+34210429012101210121012106310531
+05310639012106310531053105310531
+05310639063105310531053105310639
+01210631053105310531053106390121
+01210121012101210121012101210121
+01210121012101210121012101210121
+01210121012101210131012101210121
+0121012101210121012101213F213F21
+3F213F213F213F213F213F213F213F21
+3F213F213F213F213F213F213F213F21
+3F213F213F213F213F213F213F213F21
+3F213F213F213F213F213F213F213F21
+3F213F213F213F213F213F213F213F21
+3F213F213F213F213F213F213F213F21
+3F213F213F213F213F213F213F213F21
+01210121012101210121012101210121
+01210121012101210121012101210121
+01210121012101210121012101210121
+01210121012101210121000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000
+
+#4:charalist backgrounds
+00001010002001200220032004200520
+06200720082009200A200B200C200D20
+0E200F20102011201220132014201520
+16201720182019201A201B201C201D20
+1E201F20202021202220232024202520
+26202720282029202A202B202C202D20
+2E202F20302031203220332034203520
+36203720382039203A203B203C203D20
+3E203F20402041204220432044204520
+46204720482049204A204B204C204D20
+4E204F20502051205220532054205520
+56205720582059205A205B205C205D20
+5E205F20602061206220632064206520
+66206720682069206A206B206C206D20
+6E206F20702071207220732074207520
+76207720782079207A207B207C207D20
+7E207F20802081208220832084208520
+86208720882089208A208B208C208D20
+8E208F20902091209220932094209520
+96209720982099209A209B209C209D20
+9E209F20A020A120A220A320A420A520
+A620A720A820A920AA20AB20AC20AD20
+AE20AF20B020B120B220B320B420B520
+B620B720B820B920BA20BB20BC20BD20
+BE20BF20C020C120C220C320C420C520
+C620C720C820C920CA20CB20CC20CD20
+CE20CF20D020D120D220D320D420D520
+D620D720D820D920DA20DB20DC20DD20
+DE20DF20E020E120E220E320E420E520
+E620E720E820E920EA20EB20EC20ED20
+EE20EF20F020F120F220F320F420F520
+F620F720F820F920FA20FB20FC20FD20
+FE20FF20
+
+#5:ui palettes backgrounds
+00003006062105210521052105210629
+06210521052105210521062906210521
+05210521052106290621052105210521
+05210629062105210521052105210629
+06210521052105210521062906210521
+05210521052106290621052105210521
+05210629042110210124022403240429
+04211121012502250325042904211221
+01260226032604290421132101270227
+03270429042114210124022403240429
+04211521012502250325042904211621
+01260226032604290421172101270227
+03270429063105310531053105310639
+06310531053105310531063906310531
+05310531053106390631053105310531
+05310639063105310531053105310639
+06310531053105310531063906310531
+05310531053106390631053105310531
+0531063906220522052205220522062A
+06220522052205220522062A06220522
+052205220522062A0622052205220522
+0522062A06220522052205220522062A
+06220522052205220522062A06220522
+052205220522062A0622052205220522
+0522062A04221022012402240324042A
+04221122012502250325042A04221222
+012602260326042A0422132201270227
+0327042A04221422012402240324042A
+04221522012502250325042A04221622
+012602260326042A0422172201270227
+0327042A06320532053205320532063A
+06320532053205320532063A06320532
+053205320532063A0632053205320532
+0532063A06320532053205320532063A
+06320532053205320532063A06320532
+053205320532063A0632053205320532
+0532063A
+
+#6:DRAW TEXT BG
+00000C01242132212121372132212521
+2321342124212F2134213E21
+
+#7:BG
+00002010010106010501050105010501
+05010501050105010501050105010501
+05010501050105010501050105010501
+05010501050106090101010100000000
+00000000010104010301030103010301
+03010301030103010301030103010301
+03010301030103010301030103010301
+03010301030104090101010100000000
+00000000010104010301030103010301
+03010301030103010301030103010301
+03010301030103010301030103010301
+03010301030104090101010100000000
+00000000010106110511051105110511
+05110511051105110511051105110511
+05110511051105110511051105110511
+05110511051106190101010100000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000
+
+#8:debug character
+00000000000000000000000000000000
+00000000000000000076525252770000
+00000000000000000077515754770000
+00000000000000000077515751770000
+00000000000000000075555751710000
+00705050507000000007040701070000
+00705050507020000007040705070000
+00705050505070000007010202020000
+00705050507000000007050705070000
+00705050507000000007050701070000
+00705050507000000002050705050000
+00705050507040000006050605060000
+00705050507000000003040404030000
+00705050507000000006050505060000
+00705050507000000007040604070000
+00705050507000000007040604040000
+00602020207000000007050505070000
+00602020207000000006020202070000
+00602020207000000007010704070000
+00602020207000000007010701070000
+00602020207000000005050701010000
+00602020207000000007040701070000
+00602020207000000007040705070000
+00602020207000000007010202020000
+00602020207000000007050705070000
+00602020207000000007050701070000
+00602020207000000002050705050000
+00602020207000000006050605060000
+00602020207000000003040404030000
+00602020207000000006050505060000
+00602020207000000007040604070000
+00602020207000000007040604040000
+00701070407000000007050505070000
+00701070407000000006020202070000
+00701070407000000007010704070000
+00701070407000000007010701070000
+00701070407000000005050701010000
+00701070407000000007040701070000
+00701070407000000007040705070000
+00701070407000000007010202020000
+00701070407000000007050705070000
+00701070407000000007050701070000
+00701070407000000002050705050000
+00701070407000000006050605060000
+00701030107000000003040404030000
+00701070407000000006050505060000
+00701070407000000007040604070000
+00701070407000000007040604040000
+00701030107000000007050505070000
+00701030107000000006020202070000
+00701030107000000007010704070000
+00701030107000000007010701070000
+00701030107000000005050701010000
+00701030107000000007040701070000
+00701030107000000007040705070000
+00701030107000000007010202020000
+00701030107000000007050705070000
+00701030107000000007050701070000
+00701030107000000002050705050000
+00701030107000000006050605060000
+00701030107000000003040404030000
+00701030107000000006050505060000
+00701030107000000007040604070000
+00701030107000000007040604040000
+00505070101000000007050505070000
+00505070101000000006020202070000
+00505070101000000007010704070000
+00505070101000000007010701070000
+00505070101000000005050701010000
+00505070101000000007040701070000
+00505070101000000007040705070000
+00505070101000000007010202020000
+00505070101000000007050705070000
+00505070101000000007050701070000
+00505070101000000002050705050000
+00505070101000000006050605060000
+00505070101000000003040404030000
+00505070101000000006050505060000
+00505070101000000007040604070000
+00505070101000000007040604040000
+00704070107000000007050505070000
+00704070107000000006020202070000
+00704070107000000007010704070000
+00704070107000000007010701070000
+00704070107000000005050701010000
+00704070107000000007040701070000
+00704070107000000007040705070000
+00704070107000000007010202020000
+00704070107000000007050705070000
+00704070107000000007050701070000
+00704070107000000002050705050000
+00704070107000000006050605060000
+00704070107000000003040404030000
+00704070107000000006050505060000
+00704070107000000007040604070000
+00704070107000000007040604040000
+00704070507000000007050505070000
+00704070507000000006020202070000
+00704070507000000007010704070000
+00704070507000000007010701070000
+00704070507000000005050701010000
+00704070507000000007040701070000
+00704070507000000007040705070000
+00704070507000000007010202020000
+00704070507000000007050705070000
+00704070507000000007050701070000
+00704070507000000002050705050000
+00704070507000000006050605060000
+00704070507000000003040404030000
+00704070507000000006050505060000
+00704070507000000007040604070000
+00704070507000000007040604040000
+00701030202000000007050505070000
+00701020202000000006020202070000
+00701020202000000007010704070000
+00701020202000000007010701070000
+00701020202000000005050701010000
+00701020202000000007040701070000
+00701020202000000007040705070000
+00701020202000000007010202020000
+00701020202000000007050705070000
+00701020202000000007050701070000
+00701020202000000002050705050000
+00701020202000000006050605060000
+00701020202000000003040404030000
+00701020202000000006050505060000
+00701020202000000007040604070000
+00701020202000000007040604040000
+00705070507000000007050505070000
+00705070507000000006020202070000
+00705070507000000007010704070000
+00705070507000000007010701070000
+00705070507000000005050701010000
+00705070507000000007040701070000
+00705070507000000007040705070000
+00705070507000000007010202020000
+00705070507000000007050705070000
+00705070507000000007050701070000
+00705070507000000002050705050000
+00705070507000000006050605060000
+00705070507000000003040404030000
+00705070507000000006050505060000
+00705070507000000007040604070000
+00705070507000000007040604040000
+00705070107000000007050505070000
+00705070107000000006020202070000
+00705070107000000007010704070000
+00705070107000000007010701070000
+00705070107000000005050701010000
+00705070107000000007040701070000
+00705070107000000007040705070000
+00705070107000000007010202020000
+00705070107000000007050705070000
+00705070107000000007050701070000
+00705070107000000002050705050000
+00705070107000000006050605060000
+00705070107000000003040404030000
+00705070107000000006050505060000
+00705070107000000007040604070000
+00705070107000000007040604040000
+00205070505000000007050505070000
+00205070505000000006020202070000
+00205070505000000007010704070000
+00205070505000000007010701070000
+00205070505000000005050701010000
+00205070505000000007040701070000
+00605070505000000007040705070000
+00205070505000000007010202020000
+00205070505000000007050705070000
+00205070505000000007050701070000
+00205070505000000002050705050000
+00205070505000000006050605060000
+00205070505000000003040404030000
+00205070505000000006050505060000
+00205070505000000007040604070000
+00205070505000000007040604040000
+00605060506000000007050505070000
+00605060506000000006020202070000
+00605060506000000007010704070000
+00605060506000000007010701070000
+00705060506000000005050701010000
+00605060506000000007040701070000
+00605060506000000007040705070000
+00605060506000000007010202020000
+00605060506000000007050705070000
+00605060407000000007050701070000
+00605060506000000002050705050000
+00605060506000000006050605060000
+00605060506000000003040404030000
+00605060506000000006050505060000
+00605060506000000007040604070000
+00605060506000000007040604040000
+00304040403000000007050505070000
+00304040403000000006020202070000
+00304040403000000007010704070000
+00304040403000000007010701070000
+00304040403000000005050701010000
+00304040403000000007040701070000
+00304040403000000007040705070000
+00304040403000000007010202020000
+00304040403000000007050705070000
+00304040403000000007050701070000
+00304040403000000002050705050000
+00304040403000000006050605060000
+00304040403000000003040404030000
+00304040403000000006050505060000
+00304040403000000007040604070000
+00304040403000000007040604040000
+00605050506000000007050505070000
+00605050506000000006020202070000
+00605050506000000007010704070000
+00605050506000000007010701070000
+00605050507000000005050701010000
+00605050506000000007040701070000
+00605050506000000007040705070000
+00605050506000000007010202020000
+00605050507000000007050705070000
+00605050506000000007050701070000
+00605050506000000002050705050000
+00605050506000000006050605060000
+00605050506000000003040404030000
+00705050507000000006050505060000
+00605050506000000007040604070000
+00605050506000000007040604040000
+00704060407000000007050505070000
+00704060407000000006020202070000
+00704060407000000007010704070000
+00704060407000000007010701070000
+00704060407000000005050701010000
+00704070407000000007040701070000
+00704060407000000007040705070000
+00704060407000000007010202020000
+00704060407000000007050705070000
+00704060407000000007050701070000
+00704060407000000002050705050000
+00704060407000000006050605060000
+00704060407000000003040404030000
+00704060407000000006050505060000
+00704060407000000007040604070000
+00704060407000000007040604040000
+00704060404000000007050505070000
+00704060404000000006020202070000
+00704060404000000007010704070000
+00704060404000000007010701070000
+00704060404000000005050701010000
+00704060404000000007040701070000
+00704060404000000007040705070000
+00704060404000000007010202020000
+00704060404000000007050705070000
+00704060404000000007050701070000
+00704060404000000002050705050000
+00704060404000000006050605060000
+00704060404000000003040404030000
+00704060404000000006050505060000
+00704060404000000007040604070000
+00704060404000000007040604040000
+
+#11:DEFAULT PALETTE
+0903050600131512003F3E3D002E2D2C
+0022201F00363534001E190200060504
+
+#12:DEFAULT CHARACTERS
+00000000000000000000000000000000
+0000006C6C003000007CFEDADAFEFEFE
+1F172F375F4CBFE61F38307860F3C0FF
+FCFCFC3CFAEEFD67E42424FE061F03FF
+00000000307800000000000030483000
+0000143E2200000000001C223E1C0000
+FF7F7F7F7F7F7F00FF7F5EDEDED2C0FF
+FFFEFEFEFEFEFE00FFFE5203530303FF
+000C1E0000000000000C120C00000000
+
+#13:DEFAULT BAGKGROUND
+00000404000000000000050000000200
+03000000040006000700080000000000
+00000000
+

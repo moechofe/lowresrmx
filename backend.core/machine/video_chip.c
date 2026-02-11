@@ -197,8 +197,8 @@ void video_renderSprites(struct SpriteRegisters *reg, struct VideoRam *ram, int 
     }
 }
 
-static int old_width=-1,old_height;
-static bool old_compat;
+// static int old_width=-1,old_height;
+// static bool old_compat;
 
 void video_renderScreen(struct Core *core, uint32_t *outputRGB)
 {
@@ -216,30 +216,42 @@ void video_renderScreen(struct Core *core, uint32_t *outputRGB)
 		int sw=io->shown.width!=0?io->shown.width:SCREEN_WIDTH;
     int sh=io->shown.height!=0?io->shown.height:SCREEN_HEIGHT;
 
-		// // orientation change in compat mode creates artifacts, so clear the screen
-		// if (old_width != sw || old_height != sh || old_compat != core->interpreter->compat)
-		// {
-		// 	old_width = sw;
-		// 	old_height = sh;
-		// 	old_compat = core->interpreter->compat;
-		// 	memset(outputRGB, 127, sw * sh * 4);
-		// }
-
     int width=SCREEN_WIDTH;
     int height=SCREEN_HEIGHT;
     int skip_before=0;
     int skip_after=0;
+		int overflow_x=0;
     if (core->interpreter->compat)
     {
+				if(sw<160) { overflow_x=160-sw; sw=160; }
+				if(sh<128) sh=128;
+
         width=160;
         height=128;
         skip_before=(sw-width)/2;
         skip_after=sw-width-skip_before;
-        outputPixel+=(sh-height)/2*sw;
 
+				// draw original lowresnx background color
 				int count=(sh-height)/2*sw;
-				while(count-->0) *outputPixel++=better_palette[5];
+#if ABGR
+				// AABBGGRR
+				while(count-->0) *outputPixel++=0xff4c6001;
+#else
+				while(count-->0) *outputPixel++=0xff01604c;
+#endif
     }
+
+		// if(old_width!=io->shown.width || old_height!=io->shown.height || old_compat!=core->interpreter->compat)
+		// {
+		// 		old_width=io->shown.width;
+		// 		old_height=io->shown.height;
+		// 		old_compat=core->interpreter->compat;
+		// 		printf("sw=%d, sh=%d, skip_before=%d, skip_after=%d\n", sw, sh, skip_before, skip_after);
+		// 		printf("io->shown.width=%d, io->shown.height=%d\n", io->shown.width, io->shown.height);
+		// 		printf("width=%d, height=%d\n", width, height);
+		// 		printf("overflow_x=%d\n",overflow_x);
+		// }
+
     for (int y = 0; y<height; y++)
     {
         reg->rasterLine = y;
@@ -302,16 +314,24 @@ void video_renderScreen(struct Core *core, uint32_t *outputRGB)
         // overlay
         video_renderPlane((struct Character *)overlayCharacters, &core->overlay->plane, 0, y, 0, 0, OVERLAY_FLAG, scanlineBuffer, 0, 0, 0);
 
-        outputPixel+=skip_before;
+				if (core->interpreter->compat)
+				{
+#if ABGR
+				for(int i=0;i<skip_before;++i) *outputPixel++=0xff4c6001;
+#else
+				for(int i=0;i<skip_before;++i) *outputPixel++=0xff01604c;
+#endif
+				}
+        // outputPixel+=skip_before;
 
-        for (int x = 0; x < width; x++)
+        for (int x = 0; x < width/* - overflow_x*/; x++)
         {
             int colorIndex = scanlineBuffer[x] & 0x1F;
             int color = (scanlineBuffer[x] & OVERLAY_FLAG) ? overlayColors[colorIndex] : skip ? 0 : creg->colors[colorIndex];
 
             uint32_t c = better_palette[color & 63];
 
-#if BGR
+#if ABGR
             uint32_t a=(c>>24)&0xff;
             uint32_t r=(c>>16)&0xff;
             uint32_t g=(c>>8)&0xff;
@@ -322,6 +342,38 @@ void video_renderScreen(struct Core *core, uint32_t *outputRGB)
             ++outputPixel;
         }
 
-        outputPixel+=skip_after;
+				if (core->interpreter->compat)
+				{
+#if ABGR
+				for(int i=0;i<skip_after;++i) *outputPixel++=0xff4c6001;
+#else
+				for(int i=0;i<skip_after;++i) *outputPixel++=0xff01604c;
+#endif
+				}
+        // outputPixel+=skip_after;
     }
+
+		if (core->interpreter->compat)
+		{
+			uint32_t *endPixel=outputRGB+sw*sh;
+			while(outputPixel<endPixel)
+			{
+	#if ABGR
+				*outputPixel++=0xff4c6001;
+	#else
+				*outputPixel++=0xff01604c;
+	#endif
+			}
+		}
+
+		// Debug, draw red diagonal line
+		// uint32_t *ptr=outputRGB;
+		// uint32_t *end=outputRGB+sw*sh;
+
+		// // uint32_t x=0,y=0;
+		// while(ptr<end)
+		// {
+		// 	*ptr=0xff0000ff;
+		// 	ptr+=sw+1;
+		// }
 }

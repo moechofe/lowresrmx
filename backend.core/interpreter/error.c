@@ -82,6 +82,7 @@ const char *ErrorStrings[] = {
     "Automatic Pause Not Disabled",
     "Not Allowed Outside Of Interrupt",
 		"Not enough storage space on the device",
+		"Random using address not needed",
 
 		"Out of error"
 };

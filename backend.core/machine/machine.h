@@ -32,11 +32,18 @@
 #define VM_SIZE 0x20000
 #define VM_MAX 0x1FFFF
 #define PERSISTENT_RAM_SIZE 6144
+#define MAX_MEMORY_TRACK 32
 
 struct DmaRegisters {
   uint16_t src_addr; // Support RAM or ROM
   uint16_t bytes_count;
   uint16_t dst_addr; // Only RAM
+};
+
+struct MemoryTrack {
+	uint16_t address;
+	int read:1;
+	int write:1;
 };
 
 struct Core;
@@ -89,10 +96,12 @@ struct Machine {
 
 struct MachineInternals {
     struct AudioInternals audioInternals;
+		struct MemoryTrack memoryTracks[MAX_MEMORY_TRACK];
+    int energySavingTimer;
+		int numMemoryTracks;
     bool hasAccessedPersistent;
     bool hasChangedPersistent;
     bool isEnergySaving;
-    int energySavingTimer;
 		bool planeColor0IsOpaque[4];
 };
 
@@ -106,5 +115,7 @@ bool machine_poke_short(struct Core *core, int address, int16_t value);
 bool machine_poke_long(struct Core *core, int address, int32_t value);
 void machine_enableAudio(struct Core *core);
 void machine_suspendEnergySaving(struct Core *core, int numUpdates);
+void machine_trackMemory(struct Core *core, uint16_t address, bool read, bool write);
+void machine_checkForTrakedMemoryAccess(struct Core *core, uint16_t address, bool read, bool write);
 
 #endif /* machine_h */

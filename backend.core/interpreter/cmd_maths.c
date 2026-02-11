@@ -512,6 +512,12 @@ struct TypedValue fnc_RND(struct Core *core) {
 
       if (interpreter->pass == PassRun) {
         int addr = yValue.v.floatValue;
+				// validate memory address
+				enum ErrorCode errorCode;
+				int32_t test = machine_peek_long(core, addr, &errorCode);
+				if (errorCode > 0) return val_makeError(ErrorIllegalMemoryAccess);
+				if (!machine_poke_long(core, addr, test)) return val_makeError(ErrorIllegalMemoryAccess);
+				if (test==0) return val_makeError(ErrorRandAddressNotSeeded);
         rng = (pcg32_random_t *)((uint8_t *)(core->machine) + addr);
       }
     }

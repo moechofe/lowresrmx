@@ -1,6 +1,5 @@
 'draw all available colors
 
-
 'used to detect if the layout has changed
 global shownw,shownh,resized
 
@@ -55,7 +54,7 @@ do
   end if
   wait vbl
   call checkresize
-  
+
   if tap then
     x=clamp(int((touch.x+scroll.x(3)+32)/8/w)-2,0,5)
     y=clamp(int((touch.y-safe.t)/rasteradd),0,10)

@@ -35,20 +35,14 @@
 
     A mobile app modified from the original LowResNX app by "Timo".
 
-    It's actually usable.
-
 - 📂 `project.web`
 
     A makefile project to build the web player.
 
 - 📂 `test.programs`
 
-    A collection of programs to test the features.
+    A collection of programs to test the features. It's generally a mess.
 
 - 📂 `tool.dev`
 
-    Original script to export image as characters binary format.
-
-- 📂 `web.community`
-
-    The community website source code.
+    Developer script.

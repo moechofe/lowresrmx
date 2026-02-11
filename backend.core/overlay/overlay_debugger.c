@@ -114,7 +114,28 @@ int get_address(struct Core *core, struct Token *t)
 	return address;
 }
 
-void process_command_line(struct Core *core)
+static void print_float(struct Core *core,union Value value)
+{
+	print_value(core, ValueTypeFloat, &value);
+	struct RCString *rcstring = rcstring_new(NULL, 16);
+	if (rcstring)
+	{
+		int width = 0;
+		int x = value.floatValue;
+		if (x<0)
+		{
+			long int i=pow(16,width>0?width:16)-1;
+			x=(unsigned int)x&i;
+		}
+		snprintf(rcstring->chars, 17, "%0*X", width, x);
+		txtlib_printText(&core->overlay->textLib, "  $");
+		txtlib_printText(&core->overlay->textLib, rcstring->chars);
+		new_line(core);
+		rcstring_release(rcstring);
+	}
+}
+
+static void process_command_line(struct Core *core)
 {
 	struct Tokenizer toks;
 	struct CoreError err;
@@ -140,7 +161,12 @@ void process_command_line(struct Core *core)
 				print_value(core, ValueTypeNull, &simple->v);
 			// read simple variable
 			else if (simple && t->type == TokenEol)
-				print_value(core, simple->type, &simple->v);
+			{
+				if (simple->type == ValueTypeFloat)
+					print_float(core, simple->v);
+				else
+					print_value(core, simple->type, &simple->v);
+			}
 			// write simple variable
 			else if (simple && t->type == TokenEq)
 			{
@@ -191,7 +217,12 @@ void process_command_line(struct Core *core)
 				union Value *value = var_getArrayValue(core->interpreter, array, &indices[0]);
 				// read array item
 				if (t->type == TokenEol)
-					print_value(core, array->type, value);
+				{
+					if (array->type == ValueTypeFloat)
+						print_float(core, *value);
+					else
+						print_value(core, array->type, value);
+				}
 				// write array item
 				else if (t->type == TokenEq)
 				{
@@ -314,7 +345,7 @@ void process_command_line(struct Core *core)
 				struct TypedValue value;
 				value.type = ValueTypeFloat;
 				value.v.floatValue = peek;
-				print_value(core, ValueTypeFloat, &value.v);
+				print_float(core, value.v);
 			}
 			// write memory
 			else if (t->type == TokenEq)
@@ -340,7 +371,7 @@ void process_command_line(struct Core *core)
 		else if (t->type == TokenTRACE)
 		{
 			char buffer[20];
-			int number = lineNumber(core->interpreter->sourceCode, core->interpreter->pc->sourcePosition);
+			int number = lineNumber(core->interpreter->sourceCode, core->interpreter->pc->sourcePosition)-1;
 			sprintf(buffer, "  %d", number);
 			txtlib_printText(&core->overlay->textLib, buffer);
 			new_line(core);
@@ -366,6 +397,38 @@ void process_command_line(struct Core *core)
 			new_line(core);
 		}
 
+		// track memory access
+		else if (t->type == TokenTRACK)
+		{
+			t = &toks.tokens[i++];
+			struct Token *addrToken;
+			if (t->type == TokenPEEK) addrToken = &toks.tokens[i++];
+			else if (t->type == TokenPOKE) addrToken = &toks.tokens[i++];
+			else
+			{
+				txtlib_printText(&core->overlay->textLib, "  syntax error");
+				new_line(core);
+				return;
+			}
+			if (addrToken->type != TokenFloat)
+			{
+				txtlib_printText(&core->overlay->textLib, "  syntax error");
+				new_line(core);
+				return;
+			}
+			int address = (int)addrToken->floatValue;
+			if (address < 0 || address >= 0x10000)
+			{
+				txtlib_printText(&core->overlay->textLib, "  out of bounds");
+				new_line(core);
+				return;
+			}
+			machine_trackMemory(core,
+				address,
+				t->type == TokenPEEK ? true : false,
+				t->type == TokenPOKE ? true : false);
+		}
+
 		else
 		{
 			txtlib_printText(&core->overlay->textLib, "  unsupported keyword");
@@ -373,6 +436,19 @@ void process_command_line(struct Core *core)
 			return;
 		}
 	}
+}
+
+void trigger_debugger(struct Core *core)
+{
+		core->interpreter->debug = true;
+		core->interpreter->state = StatePaused;
+		// overlay_updateState(core);
+		core->machine->ioRegisters.key = 0;
+		struct TextLib *lib = &core->overlay->textLib;
+		txtlib_printText(lib, "\nDebugger\n");
+		txtlib_printText(lib,   "========\n\n");
+		txtlib_printText(lib, "  'PAUSE' to resume\n\n");
+		txtlib_scrollWindowIfNeeded(lib);
 }
 
 void overlay_debugger(struct Core *core)

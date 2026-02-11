@@ -1,95 +1,53 @@
 <!doctype html>
 <html lang="en">
-    <head>
-        <meta charset="utf-8">
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-        <title>LowResRMX</title>
-        <style>:root
-        {
-            --screen: #999;
-        }
-        html {
-            height: 100%;
-        }
-        body {
-            background-color: #fff;
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-				.container {height: 80vh;aspect-ratio: 216/384;}
-				.case {
-					width: calc(100% + 52px);
-					height: calc(100% + 52px);
-					position: absolute;
-					pointer-events: none;
-					margin: -26px;
-					border-radius: 26px;
-					border: solid 18px purple;
-					box-sizing: border-box;
-					top: 0;
-					left: 0;
-				}
-				.device {position: relative;height: 100%;}
-        .screen {
-            height: 100%;
-        }
-        #canvas {
-            display: block;
-            image-rendering: pixelated;
-            width: 216px;
-            height: 384px;
-            width: 100%;
-            height: 100%;
-            position: relative;
-        }
-        .corner {
-            position: absolute;
-            top: -8px;
-            left: -8px;
-            border: solid 8px black;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-        }
-    </style>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<title>LowResRMX</title>
+<link rel="stylesheet" href="player.css">
+<meta property="og:logo" content="<?=WEBSITE_URL?>/logo-colored.png" />
+<meta property="og:title" content="Try: <?=htmlspecialchars($title,ENT_QUOTES,'UTF-8')?>" />
+<meta property="og:description" content="A Retro Game Creator program: <?=substr(strip_tags($text),0,140)?>" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="<?=WEBSITE_URL?>/<?=rawurlencode($eid)?>.player" />
+<meta property="og:image" content="<?=WEBSITE_URL?>/<?=rawurlencode($eid)?>.png" />
+<meta property="og:image:type" content="image/png" />
+<meta property="og:image:width" content="180" />
+<meta property="og:image:height" content="180" />
 </head>
 <body>
-    <div class="container">
-        <div class="device">
-            <div class="case"></div>
-            <div class="screen">
-                <canvas id="canvas" oncontextmenu="event.preventDefault()" onmousedown="window.focus()"></canvas>
-            </div>
-            <div class="corner"></div>
-        </div>
-    </div>
-    <script type='text/javascript'>
-        var Module = {
-            canvas: document.getElementById('canvas'),
-            arguments: ["program.rmx"],
-            print: function (t) {
-                console.log(t);
-            },
-            printErr: function (t) {
-                console.error(t);
-            }
-        };
-        (function () {
-            function onKeyDown_blocker(event) {
-                event = event || window.event;
-                if (event.keyCode == 37 || event.keyCode == 38 || event.keyCode == 39 || event.keyCode == 40)
-                    if (event.preventDefault)
-                        event.preventDefault();
+<div class="container">
+<div class="device">
+<div class="case"></div>
+<div class="screen">
+	<canvas id="canvas" oncontextmenu="event.preventDefault()" onmousedown="window.focus()"></canvas>
+</div>
+<div class="corner"></div>
+</div>
+</div>
+<script type='text/javascript'>
+var Module = {
+		canvas: document.getElementById('canvas'),
+		arguments: ["program.rmx"],
+		print: function (t) {
+				console.log(t);
+		},
+		printErr: function (t) {
+				console.error(t);
+		}
+};
+(function () {
+		function onKeyDown_blocker(event) {
+				event = event || window.event;
+				if (event.keyCode == 37 || event.keyCode == 38 || event.keyCode == 39 || event.keyCode == 40)
+						if (event.preventDefault)
+								event.preventDefault();
 
 
-            }
-            document.addEventListener('keydown', onKeyDown_blocker, false);
-        })();
-    </script>
-    <script async type="text/javascript" src="player.js"></script>
+		}
+		document.addEventListener('keydown', onKeyDown_blocker, false);
+})();
+</script>
+<script async type="text/javascript" src="player.js"></script>
 </body></html>

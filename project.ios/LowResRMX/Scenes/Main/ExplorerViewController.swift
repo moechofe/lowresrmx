@@ -237,13 +237,13 @@ class ExplorerViewController: UIViewController, UICollectionViewDelegateFlowLayo
             self?.onReinstallTapped()
         })
         alert.addAction(addAction)
-
-        if let username = AppController.shared.username {
-            let logoutAction = UIAlertAction(title: "Log Out (\(username))", style: .default, handler: { [weak self] (action) in
-                self?.logout()
-            })
-            alert.addAction(logoutAction)
-        }
+//
+//        if let username = AppController.shared.username {
+//            let logoutAction = UIAlertAction(title: "Log Out (\(username))", style: .default, handler: { [weak self] (action) in
+//                self?.logout()
+//            })
+//            alert.addAction(logoutAction)
+//        }
 
         let cancelAction = UIAlertAction(title:"Cancel", style: .cancel, handler: nil)
         alert.addAction(cancelAction)
@@ -272,17 +272,17 @@ class ExplorerViewController: UIViewController, UICollectionViewDelegateFlowLayo
             }
         }
     }
-
-    func logout() {
-        let urlString = ShareViewController.baseUrl.appendingPathComponent("logout.php").absoluteString + "?webmode=app";
-        let vc = WebViewController()
-        vc.url = URL(string: urlString)!
-        vc.title = "Log Out"
-        let nc = UINavigationController(rootViewController: vc)
-        present(nc, animated: true, completion: nil)
-
-        AppController.shared.didLogOut()
-    }
+//
+//    func logout() {
+//        let urlString = AppDelegate.baseURL.appendingPathComponent("logout.php").absoluteString + "?webmode=app";
+//        let vc = WebViewController()
+//        vc.url = URL(string: urlString)!
+//        vc.title = "Log Out"
+//        let nc = UINavigationController(rootViewController: vc)
+//        present(nc, animated: true, completion: nil)
+//
+//        AppController.shared.didLogOut()
+//    }
 
     func showFontSizePicker() {
         let fontSizePicker = FontSizePickerViewController()

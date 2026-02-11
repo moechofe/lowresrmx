@@ -1022,6 +1022,7 @@ enum ErrorCode cmd_COMPAT(struct Core *core)
 	if (interpreter->pass == PassRun)
 	{
 		interpreter->compat = true;
+		delegate_controlsDidChange(core);
 	}
 
 	return itp_endOfCommand(interpreter);

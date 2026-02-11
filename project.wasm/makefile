@@ -7,7 +7,7 @@ CC_FLAGS_MAIN = -s USE_SDL=2
 # EXEC = ../web.community/sources/player.js
 EXEC = ./player.js
 SOURCES = $(wildcard ../backend.core/*.c) $(wildcard ../backend.core/*/*.c) $(wildcard ../frontend.sdl/*.c)
-OBJECTS = $(SOURCES:.c=.bc)
+OBJECTS = $(SOURCES:.c=.o)
 
 # Main target
 $(EXEC): $(OBJECTS)
@@ -15,7 +15,7 @@ $(EXEC): $(OBJECTS)
 	$(CC) $(CC_FLAGS_MAIN) $(OBJECTS) -o $(EXEC)
 
 # To obtain object files
-%.bc: %.c
+%.o: %.c
 	$(CC) -c $(CC_FLAGS) $< -o $@
 
 # To remove generated files
