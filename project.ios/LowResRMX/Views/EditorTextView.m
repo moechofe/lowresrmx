@@ -41,7 +41,7 @@
 {
     self.keyboardToolbar = [[UIToolbar alloc] initWithFrame:CGRectMake(0, 0, 320, 32)];
     
-    NSArray *keys = @[@"=", @"<", @">", @"+", @"-", @"*", @"/", @"(", @")", @","];
+    NSArray *keys = @[@"=", @"<", @">", @"+", @"-", @"*", @"/", @"_", @"'", @"(", @")", @","];
     
     NSMutableArray *buttons = [NSMutableArray array];
     for (NSString *key in keys)
@@ -65,7 +65,7 @@
 
 - (void)initShortcutsBar
 {
-    NSArray *keys = @[@"_", @"=", @"<", @">", @"+", @"-", @"*", @"/", @"(", @")"];
+    NSArray *keys = @[@"=", @"<", @">", @"+", @"-", @"*", @"/", @"_", @"'", @"(", @")", @","];
     
     NSMutableArray *buttons = [NSMutableArray array];
     for (NSString *key in keys)
