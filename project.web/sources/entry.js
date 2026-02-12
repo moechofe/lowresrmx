@@ -79,10 +79,9 @@ const addComments=(cmnt_list)=>{
 	const items=cmnt_list.map(data=>{
 		const item=instanciate(item_tpl);
 
-		find(item,'.author').textContent=data.author;
+		find(item,'.author > span').textContent=data.author;
 		humanDate(find(item,'.date'),data.ct);
-		find(item,'p').textContent=data.text;
-
+		find(item,'.text').innerHTML=data.text;
 		return item;
 	});
 
@@ -99,7 +98,9 @@ const setupVote=()=>{
 	on(vote,'change',async()=>{
 		if(!eid) return;
 		disable(vote);
-		const resp=await get(`/${eid}/vote`);
+		const resp=await get(`/${eid}/vote`,{
+			[HEADER_TOKEN]:csrf
+		});
 		if(resp.status===200)
 		{
 			const json=await resp.json();
@@ -109,6 +110,10 @@ const setupVote=()=>{
 				for(i=0;i<20;++i)
 					append(upvoted,instanciate(upv_tpl));
 			else clear(upvoted);
+		}
+		else
+		{
+			delay(100,()=>vote.checked=!vote.checked);
 		}
 		enable(vote);
 	});
@@ -120,6 +125,11 @@ const setupEntry=()=>{
 		const id=dataget(open,'id');
 		const name=dataget(open,'name');
 		if(id && name) window.open(`<?=APP_SCHEME?>\/\/?i=${encodeURIComponent(id)}&n=${encodeURIComponent(name)}`);
+	});
+	const player=query('#player');
+	on(player,'click',()=>{
+		const id=dataget(player,'id');
+		if(id) window.open(`${encodeURIComponent(id)}.player`,'_blank');
 	});
 };
 

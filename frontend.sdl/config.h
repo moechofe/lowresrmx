@@ -22,11 +22,13 @@
 #define config_h
 
 #ifdef __EMSCRIPTEN__
+#define SIMULATED_KEYBOARD 0
 #define DEV_MENU 0
 #define SCREENSHOTS 0
 #define HOT_KEYS 0
 #define SETTINGS_FILE 0
 #else
+#define SIMULATED_KEYBOARD 1
 #define DEV_MENU 1
 #define SCREENSHOTS 1
 #define HOT_KEYS 1

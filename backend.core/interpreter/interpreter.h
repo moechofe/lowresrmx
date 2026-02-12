@@ -96,6 +96,7 @@ struct Interpreter
 	int cpuLoadTimer;
 
 	bool compat;
+	bool simulatedKeyboardOn;
 
 	struct Tokenizer tokenizer;
 

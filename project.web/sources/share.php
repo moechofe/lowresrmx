@@ -2,6 +2,9 @@
 
 require_once __DIR__.'/common.php';
 require_once __DIR__.'/admin.php';
+require_once __DIR__.'/token.php';
+require_once __DIR__.'/rank.php';
+require_once __DIR__.'/markdown.php';
 
 // Receive the upload token from /upload.php and store a program in Redis linked to the user who uploaded it.
 // Then it will redirect to /share.html
@@ -18,11 +21,13 @@ if(preg_match('/^\/share$/',$urlPath)&&$isGet)
 	// This is necessary to redirect user to the login page
 	if(!$user_id)
 	{
+		header("X-Robots-Tag: noindex", true);
 		require __DIR__.'/sign-in.html';
 		exit;
 	}
 
-	if(!validateCSRF($csrf_token)) forbidden("Fail to read token");
+	// I cant't check this because the crsf token whas not sent yet. I will later through /is-signed API request made by the browser.
+	// if(!validateCSRF($csrf_token)) forbidden("Fail to read token");
 	if(!checkRateLimit('share',$user_id)) tooManyRequests("Fail to respect limit");
 
 	// Transfer the temporary program to a persistent one
@@ -119,36 +124,6 @@ if(preg_match('/^\/delete$/',$urlPath)&&$isPost)
 	exit;
 }
 
-// // API to publish a program to the forum.
-// if(preg_match('/\/last_published$/',$urlPath)&&$isGet)
-// {
-// 	list($user_id,$csrf_token)=validateSessionAndGetUserId();
-// 	if(!$user_id) forbidden("Fail to read user");
-// 	if(!validateCSRF($csrf_token)) forbidden("Fail to read token");
-
-// 	$cursor=max(0,intval(value: @getallheaders()[HEADER_SCAN_CURSOR]));
-
-// 	$list=redis()->lrange("u:$user_id:f",-$cursor-10,$cursor-1);
-
-// 	if(count($list)==10) $published=[$cursor+10];
-
-// 	foreach($list as $first_id)
-// 	{
-// 		list($title,$ut,$name)=redis()->hmget("f:$first_id:f","title","ut","name");
-// 		if(empty($title)||empty($ut)) { cleanInvalidUserFirst($user_id,$first_id); continue; }
-// 		$points=redis()->hget("r:{$first_id}:d","pts");
-// 		if(!empty($points)) $published[]=[
-// 			'pid'=>$first_id,
-// 			'title'=>$title,
-// 			'points'=>intval($points),
-// 			'ut'=>$ut
-// 		];
-// 	}
-
-// 	header("Content-Type: application/json",true);
-// 	echo json_encode($published);
-// }
-
 // API to publish a program to the forum.
 if(preg_match('/\/publish$/',$urlPath)&&$isPost)
 {
@@ -222,12 +197,69 @@ if(preg_match('/\/publish$/',$urlPath)&&$isPost)
 	updRank($first_id);
 
 	header("Content-Type: application/json",true);
+	header("X-Robots-Tag: noindex", true);
+	echo json_encode($first_id);
+	exit;
+}
+
+// API to post a topic to the forum.
+if(preg_match('/\/post$/',$urlPath)&&$isPost)
+{
+	list($user_id,$csrf_token)=validateSessionAndGetUserId();
+	if(!$user_id) forbidden("Fail to read user");
+	if(!validateCSRF(stored_token: $csrf_token)) forbidden("Fail to read token");
+	if(!checkRateLimit('post',$user_id)) tooManyRequests("Fail to respect limit");
+
+	// Check for field from the HTML form
+	$json=json_decode(file_get_contents('php://input'),true);
+	$title=mb_substr(@trim(@$json['i']),0,MAX_POST_TITLE);
+	if(empty($title)) badRequest("Fail to read title");
+	$text=mb_substr(@trim(@$json['x']),0,MAX_POST_TEXT);
+	if(empty($text)) badRequest("Fail to read text");
+	$where=@$json['w'];
+	if(!in_array($where,TOPIC_VALID_FORUM)) badRequest("Fail to read where");
+
+	// prepare text content
+	$first_id=generateEntryToken();
+	$author=redis()->hget("u:$user_id","name");
+	$author=substr($author,0,MAX_AUTHOR_NAME);
+	$text=zstd_compress($text);
+
+	// Publish the post
+	redis()->hmset("f:$first_id:f",
+		"uid",$user_id,
+		"title",$title,
+		"text",$text,
+		"ut",date(DATE_ATOM),
+		"author",$author,
+	);
+
+	// Register the post in the forum
+	redis()->zadd("w:$where",time(),$first_id);
+
+	// Add to the user first post list
+	redis()->lpush("u:{$user_id}:f",$first_id);
+
+	// Give points to the user for the first post
+	redis()->hmset("r:$first_id:d",
+		"pts",POINTS_GIVEN['publish'],
+		"vote",0,
+		"comm",0,
+		"w",$where,
+		"ct",date(DATE_ATOM),
+	);
+
+	// Update the rank of the post
+	updRank($first_id);
+
+	header("Content-Type: application/json",true);
+	header("X-Robots-Tag: noindex", true);
 	echo json_encode($first_id);
 	exit;
 }
 
 // API that return a list of post published by a user
-if(preg_match('/\/own$/',$urlPath)&&$isGet)
+if(preg_match('/\/published$/',$urlPath)&&$isGet)
 {
 	if(!checkRateLimit('search',getClientIP())) tooManyRequests("Fail to respect limit");
 
@@ -241,9 +273,10 @@ if(preg_match('/\/own$/',$urlPath)&&$isGet)
 
 		$text=redis()->hget("f:$first_id:f","text");
 		if(empty($text)) badRequest("Fail to read text");
-		$text=zstd_decompress($text);
+		$text=zstd_uncompress($text);
 
 		header("Content-Type: application/json",true);
+		header("X-Robots-Tag: noindex", true);
 		echo json_encode($text);
 		exit;
 	}
@@ -264,6 +297,7 @@ if(preg_match('/\/own$/',$urlPath)&&$isGet)
 			];
 		}
 		header("Content-Type: application/json",true);
+		header("X-Robots-Tag: noindex", true);
 		header(HEADER_SCAN_CURSOR.":".($start+9),true);
 		echo json_encode($published);
 		exit;
@@ -326,4 +360,3 @@ if(preg_match("/\/($MATCH_ENTRY_TOKEN)\/replace$/",$urlPath,$matches)&&$isPost)
 	header("Content-Type: application/json",true);
 	exit;
 }
-

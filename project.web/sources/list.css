@@ -1,23 +1,23 @@
 .program-list { display:grid; gap:calc(var(--pico-block-spacing-vertical) * 2); }
-@media (min-width:460px) { .program-list { grid-template-columns:repeat(2, 1fr); } }
-@media (min-width:720px) { .program-list { grid-template-columns:repeat(3, 1fr); } }
-@media (min-width:980px) { .program-list { grid-template-columns:repeat(4, 1fr); } }
-@media (min-width:1240px) { .program-list { grid-template-columns:repeat(5, 1fr); } }
-@media (min-width:1500px) { .program-list { grid-template-columns:repeat(6, 1fr); } }
-@media (min-width:1760px) { .program-list { grid-template-columns:repeat(7, 1fr); } }
+@media (min-width:600px) { .program-list { grid-template-columns:repeat(2, 1fr); } }
+@media (min-width:900px) { .program-list { grid-template-columns:repeat(3, 1fr); } }
+@media (min-width:1100px) { .program-list { grid-template-columns:repeat(4, 1fr); } }
+@media (min-width:1500px) { .program-list { grid-template-columns:repeat(5, 1fr); } }
+@media (min-width:1800px) { .program-list { grid-template-columns:repeat(6, 1fr); } }
+@media (min-width:2400px) { .program-list { grid-template-columns:repeat(7, 1fr); } }
+@media (min-width:2600px) { .program-list { grid-template-columns:repeat(8, 1fr); } }
+@media (min-width:3000px) { .program-list { grid-template-columns:repeat(9, 1fr); } }
+
+.program-list blockquote, .post-list blockquote { border-left-color: #cea57c; margin-top:0; flex-grow:2; }
 
 .program-item { display:grid; grid-template-columns:1fr; grid-template-rows:max-content auto;
 align-content:space-between; }
 
-.program-item>a { display:flex; flex-direction:column; text-decoration:none; color:var(--pico-color); cursor:default; position: relative; }
+.program-item>a { display:flex; flex-direction:column; text-decoration:none; color:var(--pico-color); cursor:default; position:relative; }
 .program-item>a.is-post { cursor:pointer; }
 
 .program-item .visual { margin:calc(var(--pico-block-spacing-vertical)*-1) calc(var(--pico-block-spacing-horizontal)*-1) 0 calc(var(--pico-block-spacing-vertical)*-1); border-top-left-radius:var(--pico-border-radius); border-top-right-radius:var(--pico-border-radius); overflow:hidden; }
 .program-item .picture { height:100%; background-size:cover; aspect-ratio:1; }
-<?php if($_SERVER['HTTP_HOST']=="lowresrmx.top:8080"): ?>
-.program-item .picture::after { content:""; display:block; width:100%; height:100%; background-color:rgba(255, 255, 255, 0.95); }
-<?php endif; ?>
-
 .program-item .info>* { display:inline-block; margin-right:var(--pico-block-spacing-vertical); }
 
 .program-item .info>*:not(:last-child) { margin-bottom:0; }
@@ -27,7 +27,7 @@ align-content:space-between; }
 .program-item details { justify-self:end; margin-bottom:0; margin-top:var(--pico-block-spacing-vertical); }
 .program-item details summary+ul { bottom:calc(1rem * var(--pico-line-height) + var(--pico-form-element-spacing-vertical) * 2 + var(--pico-border-width) * 2); right:0; left:unset; }
 
-.program-item.what p { text-wrap: balance; text-align: right; }
+.program-item.what p { text-wrap: balance; text-align: right; overflow: hidden; }
 
 .program-item span.already { position: absolute; background: var(--pico-form-element-invalid-focus-color); color: #fff; padding: 0rem 0.4rem 0.1rem 0.4rem; border-radius: 0.5rem; border-style: solid; border-width: 0; user-select: none; font-weight: bold; left: -1.5em; box-shadow: #0007 0px 2px 5px 0px; }
 
@@ -41,11 +41,10 @@ align-content:space-between; }
 
 .post-item .visual { border-top-left-radius: var(--pico-border-radius); border-bottom-left-radius: var(--pico-border-radius); overflow: hidden; flex-basis: 4.3em; }
 .post-item .picture { width:100%; height:100%; background-size:cover; }
-.post-item .picture::after { content:""; display:block; width:100%; height:100%; background-color:rgba(255, 255, 255, 0.90); }
 
 .post-item .info { margin: 0.5rem 0.5rem 0.5rem 0; flex-grow:1; }
 .post-item .name { margin-bottom: 0.5em; }
-.post-item .points, .post-item .author, .post-item .date { display: inline-block; margin: 0 0.5rem 0 0; }
+.post-item .points, .post-item .author, .post-item .date, .post-item .comments { display: inline-block; margin: 0 0.5rem 0 0; }
 
 .points { color:var(--pico-primary); }
 .points::after { content:"pts"; }
@@ -53,6 +52,9 @@ align-content:space-between; }
 .author::before { content:"by "; font-weight:normal; }
 .date { color:var(--pico-secondary); }
 .date::before { content:"the "; }
+.comments { color:var(--pico-secondary); font-weight: bold; }
+.comments::before { content:"with "; font-weight: normal; }
+.comments::after { content:" comments."; font-weight: normal; }
 
 dialog header { border: none; }
 

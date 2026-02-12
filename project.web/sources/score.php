@@ -2,6 +2,7 @@
 
 require_once __DIR__.'/common.php';
 require_once __DIR__.'/token.php';
+require_once __DIR__.'/rank.php';
 
 // API to upvote/downvote an entry
 if(preg_match("/^\/($MATCH_ENTRY_TOKEN)\/vote$/",$urlPath,$matches)&&$isGet)
@@ -34,6 +35,7 @@ if(preg_match("/^\/($MATCH_ENTRY_TOKEN)\/vote$/",$urlPath,$matches)&&$isGet)
 	$points=updRank($first_id);
 
 	header("Content-Type: application/json",true);
+	header("X-Robots-Tag: noindex", true);
 	echo json_encode([
 		"upv"=>$upvoted,
 		"pts"=>$points,
@@ -41,11 +43,11 @@ if(preg_match("/^\/($MATCH_ENTRY_TOKEN)\/vote$/",$urlPath,$matches)&&$isGet)
 	exit;
 }
 
-if(preg_match("/^\/updrank$/",$urlPath)&&$isGet&&@getallheaders()[HEADER_ADMIN_ACCESS]===ADMIN_ACCESS_SECRET)
-{
-	require_once __DIR__.'/updrank.php';
+// if(preg_match("/^\/updrank$/",$urlPath)&&$isGet&&@getallheaders()[HEADER_ADMIN_ACCESS]===ADMIN_ACCESS_SECRET)
+// {
+// 	require_once __DIR__.'/updrank.php';
 
-	header("Content-Type: application/json",true);
-	echo json_encode(intval($new_cursor));
-	exit;
-}
+// 	header("Content-Type: application/json",true);
+// 	echo json_encode(intval($new_cursor));
+// 	exit;
+// }

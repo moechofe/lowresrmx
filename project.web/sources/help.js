@@ -16,7 +16,7 @@ const setupChatList=()=>{
 		if(!ans.ok) return Promise.reject("");
 		return ans.json();
 	}).then((list)=>{
-		return setupPostList(list,{isPost:true});
+		return setupPostList(list,{isPost:true,isHelp:true});
 	}).then(/** @param {!Array<!ProgramItem>} list */(list)=>{
 		// console.log(list);
 	});
@@ -24,8 +24,8 @@ const setupChatList=()=>{
 
 const setupNewTopic=()=>{
 	click(query('.new-topic'),(event)=>{
-		post_dialog((_)=>{
-
+		post_dialog((pid)=>{
+			window.location.href=`./${encodeURIComponent(pid)}.html`;
 		});
 	});
 };

@@ -210,19 +210,19 @@ void diskDriveIsFull(void *context, struct DataManager *diskDataManager)
 /** Called when keyboard or gamepad settings changed */
 void controlsDidChange(void *context, struct ControlsInfo controlsInfo)
 {
-    if (   controlsInfo.keyboardMode == KeyboardModeOn
-        || (controlsInfo.keyboardMode == KeyboardModeOptional && !SDL_HasScreenKeyboardSupport()) )
-    {
-        if (!SDL_IsTextInputActive())
-        {
-            SDL_StartTextInput();
-        }
-    }
-    else if (SDL_IsTextInputActive())
-    {
-        SDL_StopTextInput();
-    }
-    setMouseEnabled(true);
+	if (   controlsInfo.keyboardMode == KeyboardModeOn
+	|| (controlsInfo.keyboardMode == KeyboardModeOptional && !SDL_HasScreenKeyboardSupport()) )
+	{
+		if (!SDL_IsTextInputActive())
+		{
+			SDL_StartTextInput();
+		}
+	}
+	else if (SDL_IsTextInputActive())
+	{
+		SDL_StopTextInput();
+	}
+	setMouseEnabled(true);
 }
 
 /** Called when persistent RAM will be accessed the first time */

@@ -9,7 +9,6 @@
 #import "EditorTextView.h"
 
 @interface EditorTextView ()
-@property UIToolbar *keyboardToolbar;
 @end
 
 @implementation EditorTextView
@@ -17,9 +16,9 @@
 - (void)awakeFromNib
 {
     [super awakeFromNib];
-    
+
     self.textContainerInset = UIEdgeInsetsMake(8, 8, 8, 8);
-    
+
     if ([UITextInputAssistantItem class] && [UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomPad)
     {
         [self initShortcutsBar];
@@ -39,52 +38,98 @@
 
 - (void)initKeyboardToolbar
 {
-    self.keyboardToolbar = [[UIToolbar alloc] initWithFrame:CGRectMake(0, 0, 320, 32)];
-    
-    NSArray *keys = @[@"=", @"<", @">", @"+", @"-", @"*", @"/", @"(", @")", @","];
-    
-    NSMutableArray *buttons = [NSMutableArray array];
+    UIView *accessoryView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.bounds.size.width, 44)];
+    if (@available(iOS 13.0, *)) {
+        accessoryView.backgroundColor = [UIColor secondarySystemBackgroundColor];
+    } else {
+        accessoryView.backgroundColor = [UIColor colorWithWhite:0.95 alpha:1.0];
+    }
+    accessoryView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+
+    UIScrollView *scrollView = [[UIScrollView alloc] init];
+    scrollView.translatesAutoresizingMaskIntoConstraints = NO;
+    scrollView.showsHorizontalScrollIndicator = NO;
+    [accessoryView addSubview:scrollView];
+
+    UIStackView *stackView = [[UIStackView alloc] init];
+    stackView.translatesAutoresizingMaskIntoConstraints = NO;
+    stackView.axis = UILayoutConstraintAxisHorizontal;
+    stackView.spacing = 10;
+    stackView.layoutMargins = UIEdgeInsetsMake(0, 10, 0, 10);
+    stackView.layoutMarginsRelativeArrangement = YES;
+    [scrollView addSubview:stackView];
+
+    NSArray *keys = @[@"_", @"(", @")", @"=", @"+", @"-", @"*", @"/", @",", @":", @"'", @"\"", @"%", @"$"];
+
     for (NSString *key in keys)
     {
-        UIBarButtonItem *button = [[UIBarButtonItem alloc] initWithTitle:key style:UIBarButtonItemStylePlain target:self action:@selector(onSpecialKeyTapped:)];
-        [buttons addObject:button];
-        
-        UIBarButtonItem *space = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil];
-        [buttons addObject:space];
+        UIButton *button = [UIButton buttonWithType:UIButtonTypeSystem];
+        [button setTitle:key forState:UIControlStateNormal];
+        [button addTarget:self action:@selector(onSpecialKeyTapped:) forControlEvents:UIControlEventTouchUpInside];
+        button.titleLabel.font = [UIFont systemFontOfSize:20 weight:UIFontWeightLight];
+        button.tintColor = self.tintColor;
+        [stackView addArrangedSubview:button];
     }
-    
-    
-    UIBarButtonItem *doneButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(onKeyboardDoneTapped:)];
-    [buttons addObject:doneButton];
-    
-    self.keyboardToolbar.tintColor = self.tintColor;
-    
-    self.keyboardToolbar.items = buttons;
-    self.inputAccessoryView = self.keyboardToolbar;
+
+    UIButton *doneButton = [UIButton buttonWithType:UIButtonTypeSystem];
+    [doneButton setTitle:@"Done" forState:UIControlStateNormal];
+    [doneButton addTarget:self action:@selector(onKeyboardDoneTapped:) forControlEvents:UIControlEventTouchUpInside];
+    doneButton.translatesAutoresizingMaskIntoConstraints = NO;
+    doneButton.titleLabel.font = [UIFont boldSystemFontOfSize:doneButton.titleLabel.font.pointSize];
+    doneButton.tintColor = self.tintColor;
+    [accessoryView addSubview:doneButton];
+
+    [NSLayoutConstraint activateConstraints:@[
+        [scrollView.leadingAnchor constraintEqualToAnchor:accessoryView.leadingAnchor],
+        [scrollView.topAnchor constraintEqualToAnchor:accessoryView.topAnchor],
+        [scrollView.bottomAnchor constraintEqualToAnchor:accessoryView.bottomAnchor],
+        [scrollView.trailingAnchor constraintEqualToAnchor:doneButton.leadingAnchor constant:-8],
+
+        [stackView.leadingAnchor constraintEqualToAnchor:scrollView.contentLayoutGuide.leadingAnchor],
+        [stackView.trailingAnchor constraintEqualToAnchor:scrollView.contentLayoutGuide.trailingAnchor],
+        [stackView.topAnchor constraintEqualToAnchor:scrollView.contentLayoutGuide.topAnchor],
+        [stackView.bottomAnchor constraintEqualToAnchor:scrollView.contentLayoutGuide.bottomAnchor],
+        [stackView.heightAnchor constraintEqualToAnchor:scrollView.heightAnchor],
+
+        [doneButton.trailingAnchor constraintEqualToAnchor:accessoryView.trailingAnchor constant:-16],
+        [doneButton.centerYAnchor constraintEqualToAnchor:accessoryView.centerYAnchor],
+        [doneButton.widthAnchor constraintGreaterThanOrEqualToConstant:44]
+    ]];
+
+    self.inputAccessoryView = accessoryView;
 }
 
 - (void)initShortcutsBar
 {
     NSArray *keys = @[@"_", @"=", @"<", @">", @"+", @"-", @"*", @"/", @"(", @")"];
-    
+
     NSMutableArray *buttons = [NSMutableArray array];
     for (NSString *key in keys)
     {
         UIBarButtonItem *button = [[UIBarButtonItem alloc] initWithTitle:key style:UIBarButtonItemStylePlain target:self action:@selector(onSpecialKeyTapped:)];
         [buttons addObject:button];
     }
-    
+
     UIBarButtonItemGroup *group = [[UIBarButtonItemGroup alloc] initWithBarButtonItems:buttons representativeItem:nil];
     self.inputAssistantItem.trailingBarButtonGroups = @[group];
     self.inputAssistantItem.allowsHidingShortcuts = NO;
 }
 
-- (void)onSpecialKeyTapped:(UIBarButtonItem *)button
+- (void)onSpecialKeyTapped:(id)sender
 {
-    [self insertCheckedText:button.title];
+    NSString *textToInsert = nil;
+    if ([sender isKindOfClass:[UIBarButtonItem class]]) {
+        textToInsert = [sender title];
+    } else if ([sender isKindOfClass:[UIButton class]]) {
+        textToInsert = [sender currentTitle];
+    }
+
+    if (textToInsert) {
+        [self insertCheckedText:textToInsert];
+    }
 }
 
-- (void)onKeyboardDoneTapped:(UIBarButtonItem *)button
+- (void)onKeyboardDoneTapped:(id)sender
 {
     [self resignFirstResponder];
 }
@@ -133,10 +178,10 @@
     NSRange finalRange = originalRange;
     NSMutableString *subtext = [[self.text substringWithRange:originalRange] mutableCopy];
     NSInteger pos = 0;
-    
+
     NSCharacterSet *spacesSet = [NSCharacterSet whitespaceCharacterSet];
     NSCharacterSet *newlineSet = [NSCharacterSet newlineCharacterSet];
-    
+
     while (pos < subtext.length)
     {
         if (right)
@@ -165,7 +210,7 @@
                 finalRange.length -= num;
             }
         }
-        
+
         NSRange lineRange = [subtext lineRangeForRange:NSMakeRange(pos, 0)];
         pos += lineRange.length;
     }

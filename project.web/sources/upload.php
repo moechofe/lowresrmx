@@ -33,6 +33,7 @@ if(preg_match('/^\/upload$/',$urlPath)&&$isPost)
 	redis()->expire("t:$uptoken",UPLOAD_TOKEN_TTL);
 
 	header("Content-Type: application/json",true);
+	header("X-Robots-Tag: noindex", true);
 	echo json_encode($uptoken);
 	exit;
 }

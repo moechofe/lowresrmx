@@ -417,6 +417,7 @@
 		5B3C38732E8E64320048C9FE /* FontSizePickerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FontSizePickerViewController.swift; sourceTree = "<group>"; };
 		5B572CB12DE710BA00196C83 /* globmatch.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = globmatch.h; sourceTree = "<group>"; };
 		5B572CB22DE710BA00196C83 /* globmatch.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = globmatch.c; sourceTree = "<group>"; };
+		5BBE96AF2F3DC826004D9DF3 /* config.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = config.h; sourceTree = "<group>"; };
 		5BE6C6562F2CFC3C00A5EEA7 /* overlay_debugger.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = overlay_debugger.h; sourceTree = "<group>"; };
 		5BF536CD2D848C1F00548D6A /* overlay_debugger.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = overlay_debugger.c; sourceTree = "<group>"; };
 		920E1B191F77FF7A00664382 /* ExplorerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExplorerViewController.swift; sourceTree = "<group>"; };
@@ -882,6 +883,7 @@
 		92BB14BF244B0F8800611F01 /* Wrappers */ = {
 			isa = PBXGroup;
 			children = (
+				5BBE96AF2F3DC826004D9DF3 /* config.h */,
 				9294F2E11FC4BA1100A90487 /* CoreWrapper.swift */,
 				92BB14C0244B0FC700611F01 /* CoreStatsWrapper.swift */,
 			);

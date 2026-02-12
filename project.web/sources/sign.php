@@ -30,7 +30,7 @@ if(preg_match('/^\/google$/',$urlPath)&&$isGet&&!empty($_GET['code'])&&!empty($_
 	// error_log("Token request: ".json_encode($token_request));
 	$token_response=json_decode(file_get_contents($config['token_endpoint'],false,stream_context_create($token_request)),true);
 	// error_log("Token response: ".json_encode($token_response));
-	if(empty($token_response['access_token'])) internalServerError("Fail to read access token");
+	if(empty($token_response['access_token'])||empty($token_response['token_type'])) internalServerError("Fail to read access token");
 
 	$profile_request=['http'=>[
 		'method'=>'GET',
@@ -71,7 +71,7 @@ if(preg_match('/^\/google$/',$urlPath)&&$isGet&&!empty($_GET['code'])&&!empty($_
 			'domain'=>'',
 			'secure'=>$isHttps,
 			'httponly'=>true,
-			'samesite'=>'Strict'
+			'samesite'=>$isHttps?'Strict':'Lax'
 		]);
 
 	// If a upload token is passed, the user is using the iOS app to share a program.
@@ -81,7 +81,7 @@ if(preg_match('/^\/google$/',$urlPath)&&$isGet&&!empty($_GET['code'])&&!empty($_
 	exit;
 }
 
-elseif(preg_match('/^\/google$/',$urlPath)&&$isGet&&empty($query))
+elseif(preg_match('/^\/google$/',$urlPath)&&$isGet)
 {
 	if(!checkRateLimit('login',getClientIP())) tooManyRequests("Fail to respect limit");
 
@@ -123,7 +123,7 @@ if(preg_match('/^\/discord$/',$urlPath)&&$isGet&&!empty($_GET['code'])&&!empty($
 
 	// Sauce: https://discord.com/developers/docs/topics/oauth2#shared-resources-oauth2-urls
 
-	$token_request=stream_context_create(['http'=>[
+	$token_request=['http'=>[
 		'method'=>'POST',
 		'header'=>'Content-Type: application/x-www-form-urlencoded',
 		'content'=>http_build_query([
@@ -133,21 +133,21 @@ if(preg_match('/^\/discord$/',$urlPath)&&$isGet&&!empty($_GET['code'])&&!empty($
 			'grant_type'=>'authorization_code',
 			'redirect_uri'=>"{$baseUrl}{$urlPath}",
 		])
-	]]);
+	]];
 	// error_log("Token request: ".json_encode($token_request));
-	$token_response=json_decode(file_get_contents("https://discord.com/api/oauth2/token",false,$token_request),true);
+	$token_response=json_decode(file_get_contents("https://discord.com/api/oauth2/token",false,stream_context_create($token_request)),true);
 	// error_log("Token Response: ".json_encode($token_response));
 	if(empty($token_response['access_token'])) internalServerError("Fail to read access token");
 
-	$profile_request=stream_context_create(['http'=>[
+	$profile_request=['http'=>[
 		'method'=>'GET',
-		'header'=>"Authorization: {$token_response['token_type']} {$token_response['access_token']} \r\n"
-	]]);
+		'header'=>"Authorization: {$token_response['token_type']} {$token_response['access_token']}\r\n"
+	]];
 	// error_log("Profile request: ".json_encode($profile_request));
-	$profile_response=json_decode(file_get_contents("https://discord.com/api/users/@me",false,$profile_request),true);
+	$profile_response=json_decode(file_get_contents("https://discord.com/api/users/@me",false,stream_context_create($profile_request)),true);
 	// error_log("Profile response: ".json_encode($profile_response));
 
-	// TODO: check something
+	// TODO: add error here
 
 	$user_id="{$profile_response['id']}.di2";
 
@@ -171,7 +171,6 @@ if(preg_match('/^\/discord$/',$urlPath)&&$isGet&&!empty($_GET['code'])&&!empty($
 	redis()->hsetnx("u:$user_id","locale",$profile_response['locale']?:'en');
 
 	$session_id=bin2hex($session_id);
-	$csrf_token=bin2hex(random_bytes(32));
 
 	setcookie(
 		HEADER_SESSION_COOKIE,$session_id,
@@ -181,7 +180,7 @@ if(preg_match('/^\/discord$/',$urlPath)&&$isGet&&!empty($_GET['code'])&&!empty($
 			'domain'=>'',
 			'secure'=>$isHttps,
 			'httponly'=>true,
-			'samesite'=>'Strict'
+			'samesite'=>$isHttps?'Strict':'Lax'
 		]);
 
 	// If a upload token is passed, the user is using the iOS app to share a program.
@@ -206,7 +205,7 @@ elseif(preg_match('/^\/discord$/',$urlPath)&&$isGet)
 	else
 		$uptoken="";
 
-	redis()->set("l:$state",$uptoken,"ex",LOGIN_GOOGLE_TTL);
+	redis()->set("l:$state",$uptoken,"ex",LOGIN_DISCORD_TTL);
 
 	$auth_request="https://discord.com/oauth2/authorize?".http_build_query([
 		'client_id'=>DISCORD_CLIENT_ID,
@@ -221,7 +220,123 @@ elseif(preg_match('/^\/discord$/',$urlPath)&&$isGet)
 	exit;
 }
 
-if(preg_match('/^\/is_signed$/',$urlPath)&&$isPost)
+elseif(preg_match('/^\/github$/',$urlPath)&&$isGet&&!empty($_GET['code'])&&!empty($_GET['state']))
+{
+	error_log("State: ".json_encode($_GET['state']));
+	$state=hex2bin($_GET['state']);
+	if(!redis()->exists("l:$state")) forbidden("Fail to validate state");
+
+	// If a upload token is passed, the user is using the iOS app to share a program.
+	$uptoken=redis()->get("l:$state");
+	redis()->del("l:$state");
+
+	// Sauce: https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps#2-users-are-redirected-back-to-your-site-by-github
+
+	$token_request=['http'=>[
+		'method'=>'POST',
+		'header'=>
+			"Content-Type: application/x-www-form-urlencoded\r\n".
+			"Accept: application/json\r\n".
+			"User-Agent: Retro-Game-Creator\r\n".
+			"X-GitHub-Api-Version: 2022-11-28",
+		'content'=>http_build_query([
+			'client_id'=>GITHUB_CLIENT_ID,
+			'client_secret'=>GITHUB_CLIENT_SECRET,
+			'code'=>$_GET['code'],
+			'redirect_uri'=>"{$baseUrl}{$urlPath}",
+		])
+	]];
+	error_log("Token request: ".json_encode($token_request));
+
+	$token_response=json_decode(file_get_contents("https://github.com/login/oauth/access_token",false,stream_context_create($token_request)),true);
+	error_log("Token response: ".json_encode($token_response));
+	if(empty($token_response['access_token'])||empty($token_response['token_type'])) internalServerError("Fail to read access token");
+
+	$profile_request=['http'=>[
+		'method'=>'GET',
+		'header'=>
+			"Authorization: {$token_response['token_type']} {$token_response['access_token']}\r\n".
+			"Accept: application/json\r\n".
+			"User-Agent: Retro-Game-Creator\r\n".
+			"X-GitHub-Api-Version: 2022-11-28",
+		]
+	];
+	error_log("Profile request: ".json_encode($profile_request));
+
+	$profile_response=json_decode(file_get_contents("https://api.github.com/user",false,stream_context_create($profile_request)),true);
+	error_log("Profile response: ".json_encode($profile_response));
+	if(empty($profile_response['id']) || empty($profile_response['login'])) internalServerError("Fail to read github id");
+
+	$user_id="{$profile_response['id']}.gh2";
+
+	$session_id=random_bytes(32); // stored in browser cookie
+	$csrf_token=random_bytes(32); // stored in browser memory
+
+	redis()->hmset("s:$session_id",
+		"uid",$user_id,
+		"status","allowed",
+		"ct",date(DATE_ATOM),
+		"csrf",$csrf_token,
+	);
+	redis()->expire("s:$session_id",SESSION_TTL);
+
+	redis()->rpush("u:$user_id:s",$session_id);
+
+	redis()->hsetnx("u:$user_id","name",$profile_response['login']);
+	redis()->hset("u:$user_id","picture",@$profile_response['avatar_url']);
+	redis()->hsetnx("u:$user_id","author",$profile_response['login']);
+	// GitHub doesn't provide locale, so we can't set it.
+
+	$session_id=bin2hex($session_id);
+
+	setcookie(
+		HEADER_SESSION_COOKIE,$session_id,
+		[
+			'expires'=>time()+SESSION_TTL,
+			'path'=>"/",
+			'domain'=>'',
+			'secure'=>$isHttps,
+			'httponly'=>true,
+			'samesite'=>$isHttps?'Strict':'Lax'
+		]);
+
+	// If a upload token is passed, the user is using the iOS app to share a program.
+	if($uptoken) $location='/share?uptoken='.$uptoken;
+	else $location='/community.html';
+	header("Location: $location",true,302);
+	exit;
+}
+
+elseif(preg_match('/^\/github$/',$urlPath)&&$isGet)
+{
+	// if(!checkRateLimit('login',getClientIP())) tooManyRequests("Fail to respect limit");
+
+	// Sauce: https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps#1-request-a-users-github-identity
+
+	$sequence=redis()->incr('seq:github');
+	$state=sodium_crypto_shorthash(strval($sequence),LOGIN_GITHUB_KEY);
+	error_log("State: ".json_encode(bin2hex($state)));
+
+	// If a upload token is passed, the user is using the iOS app to share a program.
+	if(@preg_match("/^($MATCH_ENTRY_TOKEN)$/",@$_GET['uptoken'],$matches))
+		$uptoken=$matches[1];
+	else
+		$uptoken="";
+
+	redis()->set("l:$state",$uptoken,"ex",LOGIN_GITHUB_TTL);
+
+	$auth_request="https://github.com/login/oauth/authorize?".http_build_query([
+		'client_id'=>GITHUB_CLIENT_ID,
+		'redirect_uri'=>"{$baseUrl}{$urlPath}",
+		'state'=>bin2hex($state),
+	]);
+	error_log("Auth request: $auth_request");
+
+	header("Location: $auth_request");
+	exit;
+}
+
+elseif(preg_match('/^\/is_signed$/',$urlPath)&&$isPost)
 {
 	list($user_id,$token)=validateSessionAndGetUserId();
 	if(!$user_id)
@@ -237,7 +352,7 @@ if(preg_match('/^\/is_signed$/',$urlPath)&&$isPost)
 				'domain'=>'',
 				'secure'=>$isHttps,
 				'httponly'=>true,
-				'samesite'=>'Strict'
+				'samesite'=>$isHttps?'Strict':'Lax'
 			]);
 
 		header("Location: /community.html",true,302);
@@ -248,15 +363,16 @@ if(preg_match('/^\/is_signed$/',$urlPath)&&$isPost)
 
 	$token=bin2hex($token);
 	header("Content-Type: application/json",true);
+	header("X-Robots-Tag: noindex", true);
 	echo json_encode(compact("picture","author","token"));
 
 	exit;
 }
 
-if(preg_match('/^\/sign_out$/',$urlPath)&&$isPost)
+elseif(preg_match('/^\/sign_out$/',$urlPath)&&$isPost)
 {
 	list($user_id,$csrf_token)=validateSessionAndGetUserId();
-	if(!validateCSRF(stored_token: $csrf_token)) forbidden("Fail to read token");
+	// if(!validateCSRF(stored_token: $csrf_token)) forbidden("Fail to read token");
 
 	$session_id=@hex2bin(@$_COOKIE[HEADER_SESSION_COOKIE]);
 	if($session_id) revokeSession($session_id);
@@ -269,10 +385,11 @@ if(preg_match('/^\/sign_out$/',$urlPath)&&$isPost)
 			'domain'=>'',
 			'secure'=>$isHttps,
 			'httponly'=>true,
-			'samesite'=>'Strict'
+			'samesite'=>$isHttps?'Strict':'Lax'
 		]);
 
 	header("Content-Type: application/json",true);
+	header("X-Robots-Tag: noindex", true);
 	echo json_encode(true);
 
 	exit;

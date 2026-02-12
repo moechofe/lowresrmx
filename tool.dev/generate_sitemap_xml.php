@@ -1,5 +1,10 @@
 <?php
-require_once __DIR__.'/../project.web/sources/common.php';
+
+require_once __DIR__.'/redis.php';
+
+defined('REDIS_DSN') or define('REDIS_DSN','tcp://127.0.0.1:6379');
+$client=new Client(REDIS_DSN);
+
 $date=date('Y-m-d');
 ?>
 <?xml version="1.0" encoding="UTF-8"?>
@@ -24,7 +29,6 @@ foreach([
 <?php
 endforeach;
 
-$client=new Client(REDIS_DSN);
 list($cursor,$list)=$client->scan("0","match","f:*:f");
 while($cursor!=="0"):
 	foreach($list as $key):
@@ -33,6 +37,7 @@ while($cursor!=="0"):
 		$ut=$client->hget("$key","ut");
 		$time=strtotime($ut);
 		$date=date("Y-m-d",$time);
+		if(empty($first_id) || empty($ut)) continue;
 ?>
 	<url>
 		<loc>https://ret.ro.it/<?=rawurlencode($first_id)?>.html</loc>

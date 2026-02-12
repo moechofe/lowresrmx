@@ -42,8 +42,19 @@ const upload=(type,file,token)=>{
 
 /** @type {function():void} */
 const setupMobile=()=>{
-	if(window.matchMedia("(any-hover:none)").matches)
+	const ua=navigator.userAgent;
+	const is_ios=/iPad|iPhone|iPod/i.test(ua);
+	const is_mobile=is_ios||/Android|webOS|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua)||window.matchMedia("(any-hover:none)").matches;
+
+	if(is_mobile)
 		queryAll('.is-mobile').forEach((item)=>show(item));
+	else
+		queryAll('.is-not-mobile').forEach((item)=>show(item));
+
+	if(is_ios)
+		queryAll('.is-ios').forEach((item)=>show(item));
+	else
+		queryAll('.is-not-ios').forEach((item)=>show(item));
 }
 
 /** @type {function(!HTMLElement,string):void} */
@@ -55,6 +66,9 @@ const humanDate=(elem,timestamp)=>{
 		// Date in ISO 8601 format
 		const epoch=Date.parse(timestamp);
 		if(epoch) date=new Date(epoch);
+	}
+	if (date && elem.tagName.toLowerCase() === 'time') {
+		attr(elem, 'datetime', date.toISOString());
 	}
 	// TODO: get the locale from the user throught cookie or sessions
 	text(elem,date?date.toLocaleDateString('en-US',{
@@ -118,13 +132,16 @@ const setupSign=()=>new Promise(res=>{
 		window.location.href='/discord';
 	});
 
+	click(query('button.github-sign-in'),(_)=>{
+		window.location.href='/github';
+	});
+
 	click(query('.sign-out a'),(_)=>{
 		post('sign_out','',{
 			[HEADER_TOKEN]:csrf
 		})
 		.then((res)=>res.json())
 		.then((signed_out)=>{
-			log("signed",!signed_out);
 			window.location.href='/community.html';
 		});
 	});

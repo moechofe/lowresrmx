@@ -18,6 +18,7 @@
 // 3. This notice may not be removed or altered from any source distribution.
 //
 
+#include "config.h"
 #include "cmd_io.h"
 #include "core.h"
 #include "overlay_debugger.h"
@@ -39,7 +40,11 @@ enum ErrorCode cmd_KEYBOARD(struct Core *core)
 	if (interpreter->pass == PassRun)
 	{
 		core->machine->ioRegisters.status.keyboardVisible = (type == TokenON);
+#ifdef SIMULATED_KEYBOARD
+		interpreter->simulatedKeyboardOn = (type == TokenON);
+#else
 		delegate_controlsDidChange(core);
+#endif
 	}
 
 	return itp_endOfCommand(interpreter);
@@ -57,7 +62,11 @@ struct TypedValue fnc_KEYBOARD(struct Core *core)
 
 	if (interpreter->pass == PassRun)
 	{
+#ifdef SIMULATED_KEYBOARD
+		value.v.floatValue = interpreter->simulatedKeyboardOn ? 154 : 0;
+#else
 		value.v.floatValue = core->machine->ioRegisters.keyboardHeight;
+#endif
 	}
 	return value;
 }

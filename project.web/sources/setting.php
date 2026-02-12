@@ -38,7 +38,7 @@ if(preg_match('/\/delete_everything$/',$urlPath)&&$isPost)
 			'domain'=>'',
 			'secure'=>$isHttps,
 			'httponly'=>true,
-			'samesite'=>'Strict'
+			'samesite'=>$isHttps ? 'Strict' : 'Lax'
 		]);
 
 	header("Location: /community.html",true,302);

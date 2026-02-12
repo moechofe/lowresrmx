@@ -34,7 +34,6 @@ if(in_array($urlPath,[
 	'/help.html',
 	'/help.js',
 	'/help.css',
-	'/player.js',
 	'/entry.css',
 	'/entry.js',
 	'/share.html',
@@ -42,13 +41,17 @@ if(in_array($urlPath,[
 	'/share.css',
 	'/setting.html',
 	'/setting.js',
-	'/setting.css'
+	'/setting.css',
+	'/about.html',
+	'/about.js',
+	'/about.css',
+	// '/sign-in.html', // in DEV only
 ]))
 {
 	header("Content-Type: ".[
 		'html'=>'text/html',
 		'css'=>'text/css',
-		'js'=>'text/javascript',
+		'js'=>'application/javascript',
 	][$info['extension']]);
 	if($isProd) readfile(__DIR__.$urlPath);
 	else require_once __DIR__.$urlPath;
@@ -58,9 +61,14 @@ if(in_array($urlPath,[
 // server static files
 if(in_array($urlPath,[
 	'/pico.min.css',
+	'/sign-in.css',
+	'/sign-in.js',
 	'/player.wasm',
+	'/player.css',
+	'/player.js',
 	'/favicon.ico',
-	'/logo.png',
+	'/logo-white.png',
+	'/logo-colored.png',
 	'/privacy-policy.html',
 	'/terms-of-service.html',
 	'/documentation.html',
@@ -75,10 +83,17 @@ if(in_array($urlPath,[
 		'ico'=>'image/x-icon',
 		'png'=>'image/png',
 		'css'=>'text/css',
+		'js'=>'application/javascript',
 		'txt'=>'text/plain',
 		'xml'=>'application/xml',
 	][$info['extension']]);
 	readfile(__DIR__.$urlPath);
+	exit;
+}
+
+if($urlPath==='/info' && !$isProd)
+{
+	phpinfo();
 	exit;
 }
 

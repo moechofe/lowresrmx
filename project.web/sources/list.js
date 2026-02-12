@@ -1,3 +1,8 @@
+
+<?php
+	require_once __DIR__.'/config.js';
+?>
+
 /**
  * @typedef {{
  * pid: string,
@@ -16,6 +21,9 @@ var ProgramItem;
  * @typedef {{
  * isShare: boolean,
  * isPost: boolean,
+ * isHome: boolean,
+ * isBlog: boolean,
+ * isHelp: boolean
  * }}
  */
 var ProgramListConfig;
@@ -60,6 +68,9 @@ const setupProgramList=(prg_list,config)=>{return new Promise(async(res,rej)=>{
 
 		if(config.isPost)	text(find(item,'.points'),data.points||"?");
 		else hide(find(item,'.points'));
+
+		if(config.isPost) text(find(item,'.comments'),data.comm||"?");
+		else hide(find(item,'.comments'));
 
 		if(config.isPost) attr(a,"href",`./${encodeURI(data.pid)}.html`);
 		addClassCond(a,"is-post",config.isPost);
@@ -126,7 +137,6 @@ const setupProgramList=(prg_list,config)=>{return new Promise(async(res,rej)=>{
 const setupPostList=(prg_list,config)=>{return new Promise(async(res,rej)=>{
 	const item_tpl=query('#post-item');
 	const list=query('.post-list');
-	const body=query('body');
 
 	/** @type {!Array<!HTMLElement>} */
 	const items=prg_list.map(data=>{
@@ -136,10 +146,14 @@ const setupPostList=(prg_list,config)=>{return new Promise(async(res,rej)=>{
 		dataset(item,'pid',data.pid);
 
 		find(item,'.name').textContent=data.title||data.name||"Untitled";
-		find(item,'.picture').style.backgroundImage="url(\"./"+data.pid+".png\")";
+		if(data.name)
+			find(item,'.picture').style.backgroundImage="url(\"./"+data.pid+".png\")";
+		else
+			remove(find(item,'.picture'));
 		find(item,'.author').textContent=data.author||"Unknown";
 		humanDate(find(item,'.date'),data.ut||data.ct);
 		find(item,'.points').textContent=data.points||"?";
+		find(item,'.comments').textContent=data.comm||"?";
 
 		if(config.isShare) show(find(item,'details'));
 

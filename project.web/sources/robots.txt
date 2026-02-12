@@ -3,6 +3,7 @@ Disallow: /
 Allow: /community.html
 Allow: /show.html
 Allow: /chat.html
+Allow: /about.html
 Allow: /help.html
 Allow: /documentation.html
 Allow: /privacy-policy.html

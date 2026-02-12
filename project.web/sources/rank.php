@@ -15,14 +15,18 @@ function updRank(string $first_id):int
 	+POINTS_GIVEN['upvote']*$members['vote']
 	+POINTS_GIVEN['comment']*$members['comm']
 	;
+
 	// Compute the rank
 	$rank=($points-1)/(pow($age+2,1.8));
+	if ($rank<0.0001) $rank=0;
 
 	// Update the score
 	redis()->hset("r:$first_id:d","pts",$points);
 
+	$name=redis()->hget("f:$first_id:f","name");
+
 	// Update the rank
-	redis()->zadd("r:all",$rank,$first_id);
+	if(!empty($name)) redis()->zadd("r:all",$rank,$first_id);
 	redis()->zadd("r:$where",$rank,$first_id);
 
 	return $points;

@@ -12,7 +12,7 @@ if(preg_match("/^\/($MATCH_ENTRY_TOKEN)\.html$/",$urlPath,$matches))
 	list($title,$text,$ut,$author,$status,$name)=redis()->hmget("f:$first_id:f","title","text","ut","author","status","name");
 	if(empty($title) or empty($ut)) badRequest("Fail to read entry");
 	if($status==="banned") badRequest("Fail to validate entry");
-	if(!empty($text)) $text=zstd_uncompress($text);
+	if(!empty($text)) $text=markdown2html(zstd_uncompress($text));
 	$points=redis()->hget("r:$first_id:d","pts");
 
 	list($user_id,$csrf_token)=validateSessionAndGetUserId();

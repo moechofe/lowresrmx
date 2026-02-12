@@ -168,7 +168,7 @@ const setupReplaceDialog=()=>{
 
 	// /** @type {function(!Array<!OwnItem>):void} */
 	const populateList=()=>{
-		get('own',{
+		get('published',{
 			[HEADER_TOKEN]:csrf,
 			[HEADER_SCAN_CURSOR]:cursor
 		}).then((ans)=>{
@@ -191,7 +191,7 @@ const setupReplaceDialog=()=>{
 		loading(true);
 		title.value=option.dataset['title'];
 		delay(500,_=>{
-			get(`own?id=${encodeURI(option.dataset['eid'])}`,{
+			get(`published?id=${encodeURI(option.dataset['eid'])}`,{
 				[HEADER_TOKEN]:csrf,
 			}).then((ans)=>{
 				if(!ans.ok) return Promise.reject();

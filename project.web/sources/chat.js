@@ -15,7 +15,7 @@ const setupChatList=()=>{
 		if(!ans.ok) return Promise.reject("");
 		return ans.json();
 	}).then((list)=>{
-		return setupPostList(list,{isPost:true});
+		return setupPostList(list,{isPost:true,isBlog:true});
 	}).then(/** @param {!Array<!ProgramItem>} list */(list)=>{
 		// console.log(list);
 	});

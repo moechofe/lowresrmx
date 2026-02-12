@@ -18,6 +18,7 @@ if(preg_match("/^\/($MATCH_ENTRY_TOKEN)\.(".PRG_EXT."|".IMG_EXT.")$/",urldecode(
 	if($real_path && $real_content_folder && strpos($real_path,$real_content_folder)===0)
 	{
 		header("Content-Type: ".CONTENT_TYPE_MAP[$extension]);
+		if ($extension === PRG_EXT) header("X-Robots-Tag: noindex", true);
 		readfile($real_path);
 		exit;
 	}
@@ -35,6 +36,7 @@ if(preg_match("/^\/($MATCH_ENTRY_TOKEN)\.(".PRG_EXT."|".IMG_EXT.")$/",urldecode(
 			$file=redis()->hget("p:{$entry_token}",[PRG_EXT=>'prg',IMG_EXT=>'img'][$extension]);
 			if($extension===PRG_EXT) $file=zstd_uncompress($file);
 			header("Content-Type: ".CONTENT_TYPE_MAP[$extension]);
+			if ($extension === PRG_EXT) header("X-Robots-Tag: noindex", true);
 			echo $file;
 			exit;
 		}

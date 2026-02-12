@@ -3,6 +3,7 @@
 require_once __DIR__.'/common.php';
 require_once __DIR__.'/token.php';
 require_once __DIR__.'/rank.php';
+require_once __DIR__.'/markdown.php';
 
 // API to add a comment to a first entry post
 if(preg_match("/\/($MATCH_ENTRY_TOKEN)\/comment$/",$urlPath,$matches)&&$isPost)
@@ -54,6 +55,7 @@ if(preg_match("/\/($MATCH_ENTRY_TOKEN)\/comment$/",$urlPath,$matches)&&$isPost)
 	updRank($first_id);
 
 	header("Content-Type: application/json",true);
+	header("X-Robots-Tag: noindex", true);
 	echo json_encode(true);
 	exit;
 }
@@ -73,15 +75,17 @@ if(preg_match("/\/($MATCH_ENTRY_TOKEN)\/(\d+)$/",$urlPath,$matches)&&$isGet)
 	foreach($list as $cid)
 	{
 		list($text,$ct,$author,$status)=redis()->hmget("f:$first_id:$cid","text","ct","author","status");
+		if(empty($text)) continue;
 		if($status==="banned") continue;
 		$comments[]=[
-			"text"=>zstd_uncompress($text),
+			"text"=>markdown2html(zstd_uncompress($text)),
 			"ct"=>$ct,
 			"author"=>$author,
 		];
 	}
 
 	header("Content-Type: application/json",true);
+	header("X-Robots-Tag: noindex", true);
 	echo json_encode($comments);
 	exit;
 }

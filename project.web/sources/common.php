@@ -20,10 +20,11 @@ const HEADER_SCAN_CURSOR='X-Application-Cursor';
 const UPLOAD_TOKEN_TTL=60*60; // 1 hour
 const LOGIN_GOOGLE_TTL=60*5; // 5 minutes
 const LOGIN_DISCORD_TTL=60*5; // 5 minutes
+const LOGIN_GITHUB_TTL=60*5; // 5 minutes
 const SESSION_TTL=60*60*24*30; // 30 days
 
 defined('CONTENT_FOLDER') or define('CONTENT_FOLDER',__DIR__.'/../contents/');
-const REDIS_SCAN_CURSOR_FILE="./.updrank_cursor";
+defined('REDIS_SCAN_CURSOR_FILE') or define('REDIS_SCAN_CURSOR_FILE',"./.updrank_cursor");
 
 const SYLLABLE_LIST=['ing','er','a','ly','ed','i','es','re','tion','in','e','con','y','ter','ex','al','de','com','o','di','en','an','ty','ry','u','ti','ri','be','per','to','pro','ac','ad','ar','ers','ment','or','tions','ble','der','ma','na','si','un','at','dis','ca','cal','man','ap','po','sion','vi','el','est','la','lar','pa','ture','for','is','mer','pe','ra','so','ta','as','col','fi','ful','ger','low','ni','par','son','tle','day','ny','pen','pre','tive','car','ci','mo','on','ous','pi','se','ten','tor','ver','ber','can','dy','et','it','mu','no','ple','cu','fac','fer','gen','ic','land','light','ob','of','pos','tain','den','ings','mag','ments','set','some','sub','sur','ters','tu','af','au','cy','fa','im','li','lo','men','min','mon','op','out','rec','ro','sen','side','tal','tic','ties','ward','age','ba','but','cit','cle','co','cov','da','dif','ence','ern','eve','hap','ies','ket','lec','main','mar','mis','my','nal','ness','ning','n\'t','nu','oc','pres','sup','te','ted','tem','tin','tri','tro','up','va','ven','vis','am','bor','by','cat','cent','ev','gan','gle','head','high','il','lu','me','nore','part','por','read','rep','su','tend','ther','ton','try','um','uer','way','ate','bet','bles','bod','cap','cial','cir','cor','coun','cus','dan','dle','ef','end','ent','ered','fin','form','go','har','ish','lands','let','long','mat','meas','mem','mul','ner','play','ples','ply','port','press','sat','sec','ser','south','sun','the','ting','tra','tures','val','var','vid','wil','win','won','work','act','ag','air','als','bat','bi','cate','cen','char','come','cul','ders','east','fect','fish','fix','gi','grand','great','heav','ho','hunt','ion','its','jo','lat','lead','lect','lent','less','lin','mal','mi','mil','moth','near','nel','net','new','one','point','prac','ral','rect','ried','round','row','sa','sand','self','sent','ship','sim','sions','sis','sons','stand','sug','tel','tom','tors','tract','tray','us','vel','west','where','write'];
 
@@ -139,6 +140,7 @@ function validateSessionAndGetUserId():Array
 	if(!$session_id) return ["",""];
 
 	list($status,$user_id,$csrf_token)=redis()->hmget("s:$session_id","status","uid","csrf");
+	if(empty($status)) return ["",""];
 
 	switch($status)
 	{
@@ -213,13 +215,6 @@ function getServerQueryString():string
 	return "";
 }
 
-// function getQueryParams(string $query):array
-// {
-// 	$params=[];
-// 	parse_str($query,$params);
-// 	return $params;
-// }
-
 if(php_sapi_name()!=="cli")
 {
 	$request=$_SERVER['REQUEST_URI'];
@@ -232,7 +227,7 @@ if(php_sapi_name()!=="cli")
 	$isPost=$_SERVER['REQUEST_METHOD']==='POST';
 	$isHttps=@$_SERVER['HTTPS']==="on";
 	$baseUrl=(@$_SERVER['REQUEST_SCHEME']?:($isHttps?"https":"http")).'://'.$_SERVER['HTTP_HOST'];
-	$isProd=$_SERVER['HTTP_HOST']=="ret.ro.it";
+	$isProd=in_array($_SERVER['HTTP_HOST'],["lowresrmx.top","localhost:8080","10.10.35.216:8080"])===false;
 
 	header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
 	header("Cache-Control: post-check=0, pre-check=0", false);
@@ -243,7 +238,7 @@ if(php_sapi_name()!=="cli")
 	header("X-Content-Type-Options: nosniff",true);
 	header("Referrer-Policy: no-referrer-when-downgrade",true);
 	header("Permissions-Policy: disable",true);
-	header("Content-Security-Policy: default-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; connect-src 'self';",true);
+	header("Content-Security-Policy: default-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self'; img-src 'self' https: data: blob:; connect-src 'self';",true);
 
 	if(!$isProd)
 	{
@@ -257,7 +252,8 @@ if(php_sapi_name()!=="cli")
 		error_log("Headers: ".json_encode(getallheaders()));
 		error_log("Cookie: ".json_encode($_COOKIE));
 		error_log("Body: ".file_get_contents('php://input'));
-		error_log("Params: ".json_encode(array_keys($params)));
+		// error_log("Params: ".json_encode(array_keys($params)));
+
 		error_log("Headers: ".json_encode(headers_list()));
 		error_log("Server: ".json_encode($_SERVER));
 	}

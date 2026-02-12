@@ -2,9 +2,11 @@
 .footer .logo a { width:32px; height:32px; display:inline-block; background-size:32px 32px; }
 
 @media (max-width:750px) {
-	nav.footer { flex-direction: column; }
+	nav.footer { flex-direction: column; margin-bottom: 3em; }
+	nav.footer ul { display: initial; }
 	nav.footer ul:first-of-type { margin-left: 0.5em; }
 	nav.footer ul:last-of-type { margin-right: 0; }
+	nav.footer ul.ref li { padding-top: 0.25em; padding-bottom: 0.25em; }
 }
 
 .footer a.github { background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAAZlBMVEUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABwbJTWAAAAIXRSTlMA52nBCLcaEfA3MNbKiH9tBPXaZlYZC9BdPiDr0qKVdkVo26jqAAAA7UlEQVQ4y33TWZKDMAwE0JaNzb6EBCbJrLr/JYep4ImECP2Dq/Q+KMuNJS4Q74SCw1+i55fxcQFybgXg+DAO4RgE0DEgrIfaFyzy7uv1lMAZc0/MRdMskPoM5w2oAORljv9PZYCKBdctuGpQTFswFQo4mDgFcgtyCQg7IQHqPVALcNoDJwE42nlkCS4WXBT4sOBNAe6hY5bF7SDHQ8sStG5kpq6cH9O57IgVKG7VyEvGB2jWmbyH+42eG/mxgD+nsv36Xn8jKkDpIrJ72limHm1IFen6brAgqOJkFjjAHwGvymuBj5D1b+QaUv1/AblNTctmtpR1AAAAAElFTkSuQmCC"); }
