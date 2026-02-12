@@ -18,7 +18,7 @@ class ProjectManager: NSObject {
 
     var isCloudEnabled: Bool {
         // TODO: disable iCloud for now
-        return false
+        // return false
         return FileManager.default.ubiquityIdentityToken != nil
     }
 
