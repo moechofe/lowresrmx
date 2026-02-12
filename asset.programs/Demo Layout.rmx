@@ -21,32 +21,34 @@ do
   if tap then
     if keyboard then
       keyboard off
+      trace "keyboard off"
       shownw=0
     else
       keyboard on
+      trace "keyboard on"
       shownw=0
     end if
   end if
-  
+
   'place sprite for whole screen
   sprite 20,0,0,5
   sprite 21,shown.w-32,0,5
   sprite 22,0,shown.h-32,5
   sprite 23,shown.w-32,shown.h-32,5
-  
+
   'place sprite for safe zone
   b=shown.h-max(safe.b,keyboard)
   sprite 10,safe.l,safe.t,1
   sprite 11,shown.w-safe.r-32,safe.t,1
   sprite 12,safe.l,b-32,1
   sprite 13,shown.w-safe.r-32,b-32,1
-  
+
   if shownw<>shown.w or shownh<>shown.h then
     x=ceil(safe.l/8)+2
     y=ceil(safe.t/8)+4
     w=floor((shown.w-safe.l-safe.r)/8)-4
     h=floor((shown.h-safe.t-max(safe.b,keyboard))/8)-8
-    
+
     cls
     window x,y,w,h,0
     pal 1
@@ -56,11 +58,11 @@ do
     print black
     print
     print keyb
-    
+
     shownw=shown.w
     shownh=shown.h
   end if
-  
+
   wait vbl
 loop
 

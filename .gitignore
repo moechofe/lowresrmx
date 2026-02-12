@@ -2,16 +2,8 @@
 .stignore
 *.bc
 *.rdb
+*.o
 .DS_Store
 build*
 xcuserdata
 zig-cache
-/project.web/sources/private.php
-/project.web/contents
-/project.cmake/SDL*
-private
-/asset.dev/generate_logo_wireframe.py
-/test.programs
-TODO.md
-/package.tar.xz
-/.zed

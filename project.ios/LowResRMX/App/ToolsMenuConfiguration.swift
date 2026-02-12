@@ -11,8 +11,8 @@ import UIKit
 class ToolsMenuConfiguration: NSObject {
 
     private let defaultPrograms = [
-        "OLD GFX.rmx",
-        "GFX.163.rmx",
+        "Old GFX.rmx",
+        "GFX.169.rmx",
     ]
 
     private(set) var programUrls: [URL]!

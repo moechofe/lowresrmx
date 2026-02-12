@@ -1,4 +1,4 @@
-version$="0.167"
+version$="0.169"
 'offical graphics editor for Retro Game Creator (LowResRMX) for iOS
 'author: martin mauchauffee
 
@@ -364,9 +364,9 @@ global tall,short,wide
 sub checkresize
 'check if layout has changed, orientation changed, screed splitted
 'call this after 'wait vbl' and check var 'resized'
-  if shownw<>shown.w or shownh<>shown.h-safe.b then
+  if shownw<>shown.w or shownh<>shown.h-safe.b-keyboard then
     resized=-1
-    shownw=shown.w : shownh=shown.h-safe.b
+    shownw=shown.w : shownh=shown.h-safe.b-keyboard
     'compute ratio and size of ui element
     tall=0 : short=0 : wide=0
     r=shownw/shownh
@@ -1865,8 +1865,10 @@ cnv_update:
 cnv_input:
 'detect interaction on the canvas according to cane
   if released then bedg=0
+  curr=fltcurr-4
+  if floe>=0 and fltshow then curr=tlbcurr-4
   if (pressed or dragged) and bedg=1 then
-  else if (pressed or dragged) and justed and pressedy<fltcurr-8 and pressedy<tlbcurr-8 then
+  else if (pressed or dragged) and justed and pressedy<curr then
     bedg=1
   else if not tapped then
     return
@@ -1995,12 +1997,16 @@ bed_limit:
   'compute space needed to show the selected layer
   s=8*bedscale
   w=layw(3)*s+safe.l+safe.r+40 :h=layh(3)*s+safe.t+safe.b+40
-  'compute current position of the floating content or toolbar
-  if floe>=0 then
-    curr=min(fltcurr,tlbcurr)-8
-  else
-    curr=tlbcurr-8
-  end if
+  curr=tlbcurr-4
+  ' trace "floe",floe,"fltshow",fltshow
+  if floe>=0 and fltshow then curr=fltcurr-4
+  ' trace "curr",curr
+  ' if floe>=0 then
+  '   curr=min(fltcurr,tlbcurr)-4
+  ' else
+  '   curr=tlbcurr-4
+  ' end if
+  ' trace "curr",curr
   if w>shownw then
     l=layl(laye)*s-safe.l-20
     r=(layr(laye)+1)*s-shownw+safe.r+20
@@ -2487,7 +2493,7 @@ tlbg_none:
   end if
   if not tapped or pressedy<tlbcurr then return
   'detect button tap
-  on tole restore tlb_0_data, tlb_1_data, tlb_2_data, tlb_3_data, tlb_4_data, tlb_5_data
+  on tole restore tlb_0_data, tlb_1_data, tlb_2_data, tlb_3_data, tlb_4_data, tlb_5_data, tlb_6_data
 
   read l :'number of widgets
   while l>0
@@ -2503,7 +2509,7 @@ tlbg_none:
       'tap was inside widget
       if x>=x1 and x<=x2 and y>=y1 and y<=y2 then
 
-        on tole goto tlb_0_input, tlb_1_input, tlb_2_input, tlb_3_input, tlb_4_input, tlb_5_input
+        on tole goto tlb_0_input, tlb_1_input, tlb_2_input, tlb_3_input, tlb_4_input, tlb_5_input, tlb_6_input
 
       end if
     end if
@@ -3149,15 +3155,43 @@ tlb_5_back: 'wid=4
 'width, height, back
 
 tlb_6_redraw:
+  keyboard on
   bg 0 :bg source rom(3) :attr %100001
   bg fill 0,0 to 31,31 char 1
   bg copy 0,50,29,3 to 0,0
   bg copy 0,53,29,3 to 0,4
   bg copy 0,56,29,3 to 0,8
+  gosub tlb_6_dim
   tlbrow=13-short*3 :tlbcol=26
   tlbraster1=24 :tlbraster2=48
   tlbrow1=4 :tlbrow2=7
   gosub tlb_setup
+  return
+
+tlb_6_data:
+  data 1 :'number of widget
+  data 2,8,7,10 :'wid=0 back
+
+tlb_6_input:
+  on wid goto tlb_6_back
+
+tlb_6_back: 'wid=0
+'cancel selection, go back to the previous toolbar
+  if tapped then
+    call ungesture
+    keyboard off
+    tole=2 :gosub tlb_redraw
+  end if
+  return
+
+tlb_6_dim:
+  neww=10
+  newh=30
+  bg 0 :attr 1
+  text 8,1,str$(neww)
+  text 22,1,str$(newh)
+  return
+
   return
 
 ' TODO: ui asset are not copied when floe is not drawn by sub r
@@ -3172,7 +3206,7 @@ tlb_6_redraw:
 
 
 #1:ui palettes
-03040404010301050103013001050303
+03040404010305050103013001050303
 00031D3000033C300003173000032C30
 
 #2:ui characters
@@ -3494,16 +3528,16 @@ FFFFFFFFFFFFFFFF0000071F1F3F3F3F
 012101210121012101210F313C313C31
 3C313C310F3901210121012101210121
 01210121012101210121012101210121
-01210121012101210A210B210B210B21
+0121012101210A210B210B210B210B21
 0A290121012101210121012101210121
-012101210A210B210B210B210A290121
-0121012101217A236C23672377232823
-01211A210221022102211A2901210121
-282325236C2327236B23342301211A21
+01210A210B210B210B210B210A290121
+01210121012137232923242334232823
+1A2102210221022102211A2901210121
+2823252329232723282334231A210221
 0221022102211A290121012101210121
-0121012101210121012101210A310B31
+012101210121012101210A310B310B31
 0B310B310A3901210121012101210121
-01210121012101210A310B310B310B31
+0121012101210A310B310B310B310B31
 0A390121012101210121012101210121
 01210121012101210121012133232923
 3A232523072301212D2325232D232F23
