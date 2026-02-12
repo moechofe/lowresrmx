@@ -1,9 +1,6 @@
-.stversions
-.stignore
 *.bc
 *.rdb
 *.o
 .DS_Store
 build*
 xcuserdata
-zig-cache
