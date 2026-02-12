@@ -9,13 +9,13 @@ It _will_ include a project manager, a code editor and some tools to edit game a
 
 I want to be able to create games on the go using my iPad and eventually, put them on the App Store for free. LowRes NX can do that but come with limitation that remove appealing, like no fullscreen, and no fine touch detection.
 
-- [x] "Usable" iOS app
+- [x] iOS app
 - [ ] Usable Android app
-- [ ] Documentation
-- [ ] Good enough compatibility mode
-- [ ] Integrated graphics editor
-- [ ] Integrated sound editor
-- [ ] A community website
+- [x] Documentation
+- [x] "Good enough" compatibility mode (buggy on small screen)
+- [!] Integrated graphics editor (usable but incomplete)
+- [ ] Integrated sound editor (must use to one from LowRes-nx)
+- [x] A community website
 
 <img alt="Programs list of the iOs App" src=".github/screenshot/01_my_programs.jpg" width="33%" height="auto"><img alt="Famicube color palette" src=".github/screenshot/02_colors.jpg" width="33%" height="auto"><img alt="WIP Kaboom remake" src=".github/screenshot/03_revasion.jpg" width="33%" height="auto">
 
