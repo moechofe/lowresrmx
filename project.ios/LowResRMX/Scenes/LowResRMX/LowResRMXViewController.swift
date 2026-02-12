@@ -393,9 +393,6 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
     if let cgImage = nxView.layer.contents as! CGImage? {
       let uiImage = UIImage(cgImage: cgImage)
 
-      // crop
-      let crop = CGRect(x: 0, y: 0, width: 180, height: 180).integral
-
       // rescale
       let size = CGSize(
         width: CGFloat(216) * screenshotScaleFactor, height: CGFloat(384) * screenshotScaleFactor)

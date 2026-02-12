@@ -19,14 +19,7 @@
 
     self.textContainerInset = UIEdgeInsetsMake(8, 8, 8, 8);
 
-    if ([UITextInputAssistantItem class] && [UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomPad)
-    {
-        [self initShortcutsBar];
-    }
-    else
-    {
-        [self initKeyboardToolbar];
-    }
+    [self initKeyboardToolbar];
 
     UIMenuController *menu = [UIMenuController sharedMenuController];
     menu.menuItems = @[
@@ -99,28 +92,10 @@
     self.inputAccessoryView = accessoryView;
 }
 
-- (void)initShortcutsBar
-{
-    NSArray *keys = @[@"_", @"=", @"<", @">", @"+", @"-", @"*", @"/", @"(", @")"];
-
-    NSMutableArray *buttons = [NSMutableArray array];
-    for (NSString *key in keys)
-    {
-        UIBarButtonItem *button = [[UIBarButtonItem alloc] initWithTitle:key style:UIBarButtonItemStylePlain target:self action:@selector(onSpecialKeyTapped:)];
-        [buttons addObject:button];
-    }
-
-    UIBarButtonItemGroup *group = [[UIBarButtonItemGroup alloc] initWithBarButtonItems:buttons representativeItem:nil];
-    self.inputAssistantItem.trailingBarButtonGroups = @[group];
-    self.inputAssistantItem.allowsHidingShortcuts = NO;
-}
-
 - (void)onSpecialKeyTapped:(id)sender
 {
     NSString *textToInsert = nil;
-    if ([sender isKindOfClass:[UIBarButtonItem class]]) {
-        textToInsert = [sender title];
-    } else if ([sender isKindOfClass:[UIButton class]]) {
+    if ([sender isKindOfClass:[UIButton class]]) {
         textToInsert = [sender currentTitle];
     }
 
