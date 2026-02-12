@@ -396,16 +396,21 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
       // rescale
       let size = CGSize(
         width: CGFloat(216) * screenshotScaleFactor, height: CGFloat(384) * screenshotScaleFactor)
-      UIGraphicsBeginImageContextWithOptions(size, true, 1.0)
-      let context = UIGraphicsGetCurrentContext()
-      context?.interpolationQuality = .none
-      uiImage.draw(in: CGRect(origin: CGPoint(), size: size))
-      let scaledImage = UIGraphicsGetImageFromCurrentImageContext()!
-      UIGraphicsEndImageContext()
+
+      let format = UIGraphicsImageRendererFormat()
+      format.scale = 1.0
+      format.opaque = true
+      let renderer = UIGraphicsImageRenderer(size: size, format: format)
+      let scaledImage = renderer.image { context in
+        context.cgContext.interpolationQuality = .none
+        uiImage.draw(in: CGRect(origin: .zero, size: size))
+      }
 
       // share
+      let url = FileManager.default.temporaryDirectory.appendingPathComponent("screenshot.png")
+      try? scaledImage.pngData()?.write(to: url)
       let activityVC = UIActivityViewController(
-        activityItems: [scaledImage], applicationActivities: nil)
+        activityItems: [url], applicationActivities: nil)
       activityVC.popoverPresentationController?.sourceView = menuButton
       activityVC.popoverPresentationController?.sourceRect = menuButton.bounds
       self.present(activityVC, animated: true, completion: nil)
