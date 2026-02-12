@@ -959,7 +959,6 @@
 				92EA93B61F744572007BEFB1 /* Sources */,
 				92EA93B71F744572007BEFB1 /* Frameworks */,
 				92EA93B81F744572007BEFB1 /* Resources */,
-				5B9B29D72F3E20520035485D /* Read and set Version */,
 				9227989F25272523004F6E1A /* Embed App Extensions */,
 			);
 			buildRules = (
@@ -1142,27 +1141,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
-
-/* Begin PBXShellScriptBuildPhase section */
-		5B9B29D72F3E20520035485D /* Read and set Version */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			name = "Read and set Version";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "# Path to your version file\n# Assuming your .xcodeproj is inside 'project.ios' and 'version' is in the root\nVERSION_FILE=\"${PROJECT_DIR}/../version\"\n\nif [ -f \"$VERSION_FILE\" ]; then\n    # Read the version, removing newlines\n    MARKETING_VERSION=$(cat \"$VERSION_FILE\" | tr -d '\\n\\r')\n    \n    # Path to the Info.plist in the built app bundle\n    TARGET_PLIST=\"${TARGET_BUILD_DIR}/${INFOPLIST_PATH}\"\n    \n    # Update the version in the built Info.plist\n    if [ -f \"$TARGET_PLIST\" ]; then\n        /usr/libexec/PlistBuddy -c \"Set :CFBundleShortVersionString $MARKETING_VERSION\" \"$TARGET_PLIST\"\n        echo \"Updated Marketing Version to $MARKETING_VERSION from $VERSION_FILE\"\n    else\n        echo \"Error: Info.plist not found at $TARGET_PLIST\"\n        exit 1\n    fi\nelse\n    echo \"Error: Version file not found at $VERSION_FILE\"\n    exit 1\nfi\n\n";
-		};
-/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		9227988D2527251F004F6E1A /* Sources */ = {
@@ -1512,9 +1490,10 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = "";
 				CODE_SIGN_ENTITLEMENTS = LowResRMX/LowResRMX.entitlements;
-				CURRENT_PROJECT_VERSION = 202602121552;
+				CURRENT_PROJECT_VERSION = 202602121736;
 				DEVELOPMENT_TEAM = YWZ55H4QT9;
 				INFOPLIST_FILE = "$(SRCROOT)/LowResRMX/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Game Creator";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.5;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -1538,9 +1517,10 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = "";
 				CODE_SIGN_ENTITLEMENTS = LowResRMX/LowResRMX.entitlements;
-				CURRENT_PROJECT_VERSION = 202602121552;
+				CURRENT_PROJECT_VERSION = 202602121736;
 				DEVELOPMENT_TEAM = YWZ55H4QT9;
 				INFOPLIST_FILE = "$(SRCROOT)/LowResRMX/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Game Creator";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.5;
 				LD_RUNPATH_SEARCH_PATHS = (
