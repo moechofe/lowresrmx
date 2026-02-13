@@ -64,7 +64,7 @@ for file in chat.js community.js entry.js help.js setting.js share.js show.js si
 done
 
 # PHP files
-for file in admin.php comment.php common.php download.php entry.php favicon.ico index.php list.php logo-white.png logo-colored.png pico.min.css player.php private.php rank.php redis.php robots.txt score.php setting.php share.php sign.php token.php updrank.php upload.php markdown.php; do
+for file in admin.php comment.php common.php download.php entry.php favicon.ico index.php list.php logo-white.png logo-colored.png pico.min.css player.php rank.php redis.php robots.txt score.php setting.php share.php sign.php token.php updrank.php upload.php markdown.php; do
 	echo "copying: $file"
 	cp "$SOURCE_DIR/$file" "$TEMP_DIR/$file"
 done
