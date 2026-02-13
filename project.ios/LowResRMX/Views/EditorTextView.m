@@ -21,6 +21,11 @@
 
     [self initKeyboardToolbar];
 
+    if (@available(iOS 9.0, *)) {
+        self.inputAssistantItem.leadingBarButtonGroups = @[];
+        self.inputAssistantItem.trailingBarButtonGroups = @[];
+    }
+
     UIMenuController *menu = [UIMenuController sharedMenuController];
     menu.menuItems = @[
                        [[UIMenuItem alloc] initWithTitle:@"Help" action:@selector(help:)],
