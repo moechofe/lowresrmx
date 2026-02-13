@@ -15,7 +15,7 @@ I want to be able to create games on the go using my iPad and eventually, put th
 - [ ] Usable Android app
 - [x] Documentation
 - [x] "Good enough" compatibility mode (buggy on small screen)
-- [!] Integrated graphics editor (usable but incomplete)
+- [x] Integrated graphics editor (usable but incomplete)
 - [ ] Integrated sound editor (must use to one from LowRes-nx)
 - [x] A community website https://ret.ro.it
 
