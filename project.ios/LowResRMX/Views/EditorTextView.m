@@ -52,7 +52,41 @@
     stackView.layoutMarginsRelativeArrangement = YES;
     [scrollView addSubview:stackView];
 
-    NSArray *keys = @[@"_", @"(", @")", @"=", @"+", @"-", @"*", @"/", @",", @":", @"'", @"\"", @"%", @"$"];
+    // Edit buttons
+    UIButton *undoButton = [UIButton buttonWithType:UIButtonTypeSystem];
+    [undoButton addTarget:self action:@selector(undo:) forControlEvents:UIControlEventTouchUpInside];
+    undoButton.tintColor = self.tintColor;
+
+    UIButton *redoButton = [UIButton buttonWithType:UIButtonTypeSystem];
+    [redoButton addTarget:self action:@selector(redo:) forControlEvents:UIControlEventTouchUpInside];
+    redoButton.tintColor = self.tintColor;
+
+    UIButton *copyButton = [UIButton buttonWithType:UIButtonTypeSystem];
+    [copyButton addTarget:self action:@selector(copy:) forControlEvents:UIControlEventTouchUpInside];
+    copyButton.tintColor = self.tintColor;
+
+    UIButton *pasteButton = [UIButton buttonWithType:UIButtonTypeSystem];
+    [pasteButton addTarget:self action:@selector(paste:) forControlEvents:UIControlEventTouchUpInside];
+    pasteButton.tintColor = self.tintColor;
+
+    if (@available(iOS 13.0, *)) {
+        [undoButton setImage:[UIImage systemImageNamed:@"arrow.uturn.backward"] forState:UIControlStateNormal];
+        [redoButton setImage:[UIImage systemImageNamed:@"arrow.uturn.forward"] forState:UIControlStateNormal];
+        [copyButton setImage:[UIImage systemImageNamed:@"doc.on.doc"] forState:UIControlStateNormal];
+        [pasteButton setImage:[UIImage systemImageNamed:@"doc.on.clipboard"] forState:UIControlStateNormal];
+    } else {
+        [undoButton setTitle:@"Undo" forState:UIControlStateNormal];
+        [redoButton setTitle:@"Redo" forState:UIControlStateNormal];
+        [copyButton setTitle:@"Copy" forState:UIControlStateNormal];
+        [pasteButton setTitle:@"Paste" forState:UIControlStateNormal];
+    }
+
+    [stackView addArrangedSubview:undoButton];
+    [stackView addArrangedSubview:redoButton];
+    [stackView addArrangedSubview:copyButton];
+    [stackView addArrangedSubview:pasteButton];
+
+    NSArray *keys = @[@"_", @"(", @",", @")", @"<", @"=", @">", @"+", @"-", @"*", @"/", @".", @":", @"'", @"\"", @"%", @"$"];
 
     for (NSString *key in keys)
     {
@@ -65,31 +99,42 @@
     }
 
     UIButton *doneButton = [UIButton buttonWithType:UIButtonTypeSystem];
-    [doneButton setTitle:@"Done" forState:UIControlStateNormal];
     [doneButton addTarget:self action:@selector(onKeyboardDoneTapped:) forControlEvents:UIControlEventTouchUpInside];
-    doneButton.translatesAutoresizingMaskIntoConstraints = NO;
-    doneButton.titleLabel.font = [UIFont boldSystemFontOfSize:doneButton.titleLabel.font.pointSize];
     doneButton.tintColor = self.tintColor;
-    [accessoryView addSubview:doneButton];
+    if (@available(iOS 13.0, *)) {
+        UIImageSymbolConfiguration *config = [UIImageSymbolConfiguration configurationWithPointSize:22 weight:UIImageSymbolWeightLight];
+        UIImage *image = [[UIImage systemImageNamed:@"keyboard.chevron.compact.down"] imageWithConfiguration:config];
+        [doneButton setImage:image forState:UIControlStateNormal];
+    } else {
+        [doneButton setTitle:@"Done" forState:UIControlStateNormal];
+        doneButton.titleLabel.font = [UIFont boldSystemFontOfSize:doneButton.titleLabel.font.pointSize];
+    }
+    [stackView addArrangedSubview:doneButton];
 
     [NSLayoutConstraint activateConstraints:@[
         [scrollView.leadingAnchor constraintEqualToAnchor:accessoryView.leadingAnchor],
         [scrollView.topAnchor constraintEqualToAnchor:accessoryView.topAnchor],
         [scrollView.bottomAnchor constraintEqualToAnchor:accessoryView.bottomAnchor],
-        [scrollView.trailingAnchor constraintEqualToAnchor:doneButton.leadingAnchor constant:-8],
+        [scrollView.trailingAnchor constraintEqualToAnchor:accessoryView.trailingAnchor],
 
         [stackView.leadingAnchor constraintEqualToAnchor:scrollView.contentLayoutGuide.leadingAnchor],
         [stackView.trailingAnchor constraintEqualToAnchor:scrollView.contentLayoutGuide.trailingAnchor],
         [stackView.topAnchor constraintEqualToAnchor:scrollView.contentLayoutGuide.topAnchor],
         [stackView.bottomAnchor constraintEqualToAnchor:scrollView.contentLayoutGuide.bottomAnchor],
-        [stackView.heightAnchor constraintEqualToAnchor:scrollView.heightAnchor],
-
-        [doneButton.trailingAnchor constraintEqualToAnchor:accessoryView.trailingAnchor constant:-16],
-        [doneButton.centerYAnchor constraintEqualToAnchor:accessoryView.centerYAnchor],
-        [doneButton.widthAnchor constraintGreaterThanOrEqualToConstant:44]
+        [stackView.heightAnchor constraintEqualToAnchor:scrollView.heightAnchor]
     ]];
 
     self.inputAccessoryView = accessoryView;
+}
+
+- (void)undo:(id)sender
+{
+    [self.undoManager undo];
+}
+
+- (void)redo:(id)sender
+{
+    [self.undoManager redo];
 }
 
 - (void)onSpecialKeyTapped:(id)sender
