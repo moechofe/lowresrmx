@@ -27,7 +27,7 @@ align-content:space-between; }
 .program-item details { justify-self:end; margin-bottom:0; margin-top:var(--pico-block-spacing-vertical); }
 .program-item details summary+ul { bottom:calc(1rem * var(--pico-line-height) + var(--pico-form-element-spacing-vertical) * 2 + var(--pico-border-width) * 2); right:0; left:unset; }
 
-.program-item.what p { text-wrap: balance; text-align: right; overflow: hidden; }
+.program-item.what p { text-wrap: balance; overflow: hidden; }
 
 .program-item span.already { position: absolute; background: var(--pico-form-element-invalid-focus-color); color: #fff; padding: 0rem 0.4rem 0.1rem 0.4rem; border-radius: 0.5rem; border-style: solid; border-width: 0; user-select: none; font-weight: bold; left: -1.5em; box-shadow: #0007 0px 2px 5px 0px; }
 

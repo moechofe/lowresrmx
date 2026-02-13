@@ -55,7 +55,7 @@ const POINTS_GIVEN=[
 	'update_after_week'=>30, // maxed out at 90 points
 ];
 
-const APPLE_APP_STORE="#";
+const APPLE_APP_STORE="https://apps.apple.com/us/app/retro-game-creator/id6759056723";
 
 const RATE_LIMIT=[
 	'publish'=>['max'=>5,'window'=>60*60],  // 5 publishes per hour

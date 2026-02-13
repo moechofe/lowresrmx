@@ -1,3 +1,5 @@
+# Retro Game Creator
+
 > This is a fork of the excellent fantasy console LowRes NX by Timo "Inutilis" Kloss.
 > This is a heavily modified version and way more complicated to use, I recommend you to stay on the original app: [LowRes NX Coder on App Store](https://apps.apple.com/app/lowres-nx-coder/id1318884577).
 
@@ -15,11 +17,9 @@ I want to be able to create games on the go using my iPad and eventually, put th
 - [x] "Good enough" compatibility mode (buggy on small screen)
 - [!] Integrated graphics editor (usable but incomplete)
 - [ ] Integrated sound editor (must use to one from LowRes-nx)
-- [x] A community website
+- [x] A community website https://ret.ro.it
 
 <img alt="Programs list of the iOs App" src=".github/screenshot/01_my_programs.jpg" width="33%" height="auto"><img alt="Famicube color palette" src=".github/screenshot/02_colors.jpg" width="33%" height="auto"><img alt="WIP Kaboom remake" src=".github/screenshot/03_revasion.jpg" width="33%" height="auto">
 
 I will post my progress on a
 <img src="https://github.com/moechofe/LowResRMX/assets/79093/59453f11-9f97-4883-8c18-e16069ebfd65" height="14rem" width="auto"> [Youtube playlist](https://www.youtube.com/playlist?list=PLtmKVaz_2Cxe6pG7VbQfw5drkJsSpV3C6).
-
-
