@@ -19,7 +19,7 @@ I want to be able to create games on the go using my iPad and eventually, put th
 - [ ] Integrated sound editor (must use to one from LowRes-nx)
 - [x] A community website https://ret.ro.it
 
-<img alt="Programs list of the iOs App" src=".github/screenshot/01_my_programs.jpg" width="33%" height="auto"><img alt="Famicube color palette" src=".github/screenshot/02_colors.jpg" width="33%" height="auto"><img alt="WIP Kaboom remake" src=".github/screenshot/03_revasion.jpg" width="33%" height="auto">
+<img alt="List of programs" src=".github/screenshot/01_programs_list.webp" width="33%" height="auto"><img alt="Program editing" src=".github/screenshot/02_program_edit.webp" width="33%" height="auto"><img alt="Demo: Hello" src=".github/screenshot/03_demo_hello.webp" width="33%" height="auto"><img alt="Editor: background" src=".github/screenshot/04_background_editor.webp" width="33%" height="auto"><img alt="Demo: colors" src=".github/screenshot/05_demo_color.webp" width="33%" height="auto"><img alt="Demo: sprites" src=".github/screenshot/06_demo_sprite.webp" width="33%" height="auto">
 
 I will post my progress on a
 <img src="https://github.com/moechofe/LowResRMX/assets/79093/59453f11-9f97-4883-8c18-e16069ebfd65" height="14rem" width="auto"> [Youtube playlist](https://www.youtube.com/playlist?list=PLtmKVaz_2Cxe6pG7VbQfw5drkJsSpV3C6).
