@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 60;
+	objectVersion = 90;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -264,14 +264,12 @@
 /* Begin PBXCopyFilesBuildPhase section */
 		9227989F25272523004F6E1A /* Embed App Extensions */ = {
 			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
 			dstPath = "";
-			dstSubfolderSpec = 13;
+			dstSubfolder = PlugIns;
 			files = (
 				9227989E25272523004F6E1A /* Widgets.appex in Embed App Extensions */,
 			);
 			name = "Embed App Extensions";
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
 
@@ -510,23 +508,19 @@
 /* Begin PBXFrameworksBuildPhase section */
 		9227988E2527251F004F6E1A /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
 				922798952527251F004F6E1A /* SwiftUI.framework in Frameworks */,
 				922798932527251F004F6E1A /* WidgetKit.framework in Frameworks */,
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 		92EA93B71F744572007BEFB1 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
 				5B0223B02D410A3500344273 /* libzstd in Frameworks */,
 				5B0223B22D410A3500344273 /* zstd in Frameworks */,
 				5B7D1D7A2D43F1D200B871FA /* Clibsodium in Frameworks */,
 				5B7D1D7C2D43F1D200B871FA /* Sodium in Frameworks */,
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
@@ -948,8 +942,6 @@
 			);
 			buildRules = (
 			);
-			dependencies = (
-			);
 			name = Widgets;
 			productName = WidgetsExtension;
 			productReference = 922798912527251F004F6E1A /* Widgets.appex */;
@@ -965,8 +957,6 @@
 				9227989F25272523004F6E1A /* Embed App Extensions */,
 			);
 			buildRules = (
-			);
-			dependencies = (
 			);
 			name = App;
 			productName = "LowRes CoderRMX";
@@ -1005,7 +995,6 @@
 				};
 			};
 			buildConfigurationList = 92EA93B51F744572007BEFB1 /* Build configuration list for PBXProject "LowResRMX" */;
-			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -1017,6 +1006,7 @@
 				5B0223AE2D410A3500344273 /* XCLocalSwiftPackageReference "zstd.swift" */,
 				5B7D1D782D43F1D200B871FA /* XCRemoteSwiftPackageReference "swift-sodium" */,
 			);
+			preferredProjectObjectVersion = 90;
 			productRefGroup = 92EA93BB1F744572007BEFB1 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -1030,7 +1020,6 @@
 /* Begin PBXResourcesBuildPhase section */
 		9227988F2527251F004F6E1A /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
 				5B34ECF52AC5835600220A80 /* cmd_subs.bc in Resources */,
 				5B34ED812AC5835700220A80 /* video_chip.bc in Resources */,
@@ -1080,11 +1069,9 @@
 				5B34ECEF2AC5835600220A80 /* rcstring.bc in Resources */,
 				5B34ED612AC5835600220A80 /* text_lib.bc in Resources */,
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 		92EA93B81F744572007BEFB1 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
 				5B34ED862AC5835700220A80 /* audio_chip.bc in Resources */,
 				5B34ED562AC5835600220A80 /* disk_drive.bc in Resources */,
@@ -1141,14 +1128,12 @@
 				5B34ED062AC5835600220A80 /* interpreter_utils.bc in Resources */,
 				5B34ED602AC5835600220A80 /* text_lib.bc in Resources */,
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		9227988D2527251F004F6E1A /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
 				5B34ED7D2AC5835700220A80 /* core.c in Sources */,
 				5B34ED332AC5835600220A80 /* string_utils.c in Sources */,
@@ -1201,11 +1186,9 @@
 				5B34ED752AC5835600220A80 /* text_lib.c in Sources */,
 				5B34ED432AC5835600220A80 /* cmd_sprites.c in Sources */,
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 		92EA93B61F744572007BEFB1 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
 				923AFD811F77ED52002F6A5B /* HelpTextViewController.m in Sources */,
 				920E1B371F78024E00664382 /* GORLabel.m in Sources */,
@@ -1302,12 +1285,11 @@
 				92A001CF243780DD007AE953 /* ActionButton.swift in Sources */,
 				5B34ED182AC5835600220A80 /* labels.c in Sources */,
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
-		922798A025272523004F6E1A /* Debug */ = {
+		922798A025272523004F6E1A /* Debug configuration for PBXNativeTarget "Widgets" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -1341,7 +1323,7 @@
 			};
 			name = Debug;
 		};
-		922798A125272523004F6E1A /* Release */ = {
+		922798A125272523004F6E1A /* Release configuration for PBXNativeTarget "Widgets" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -1373,7 +1355,7 @@
 			};
 			name = Release;
 		};
-		92EA93CA1F744573007BEFB1 /* Debug */ = {
+		92EA93CA1F744573007BEFB1 /* Debug configuration for PBXProject "LowResRMX" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -1433,7 +1415,7 @@
 			};
 			name = Debug;
 		};
-		92EA93CB1F744573007BEFB1 /* Release */ = {
+		92EA93CB1F744573007BEFB1 /* Release configuration for PBXProject "LowResRMX" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -1487,7 +1469,7 @@
 			};
 			name = Release;
 		};
-		92EA93CD1F744573007BEFB1 /* Debug */ = {
+		92EA93CD1F744573007BEFB1 /* Debug configuration for PBXNativeTarget "App" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
@@ -1514,7 +1496,7 @@
 			};
 			name = Debug;
 		};
-		92EA93CE1F744573007BEFB1 /* Release */ = {
+		92EA93CE1F744573007BEFB1 /* Release configuration for PBXNativeTarget "App" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
@@ -1547,28 +1529,25 @@
 		922798A225272523004F6E1A /* Build configuration list for PBXNativeTarget "Widgets" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				922798A025272523004F6E1A /* Debug */,
-				922798A125272523004F6E1A /* Release */,
+				922798A025272523004F6E1A /* Debug configuration for PBXNativeTarget "Widgets" */,
+				922798A125272523004F6E1A /* Release configuration for PBXNativeTarget "Widgets" */,
 			);
-			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 		92EA93B51F744572007BEFB1 /* Build configuration list for PBXProject "LowResRMX" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				92EA93CA1F744573007BEFB1 /* Debug */,
-				92EA93CB1F744573007BEFB1 /* Release */,
+				92EA93CA1F744573007BEFB1 /* Debug configuration for PBXProject "LowResRMX" */,
+				92EA93CB1F744573007BEFB1 /* Release configuration for PBXProject "LowResRMX" */,
 			);
-			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 		92EA93CC1F744573007BEFB1 /* Build configuration list for PBXNativeTarget "App" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				92EA93CD1F744573007BEFB1 /* Debug */,
-				92EA93CE1F744573007BEFB1 /* Release */,
+				92EA93CD1F744573007BEFB1 /* Debug configuration for PBXNativeTarget "App" */,
+				92EA93CE1F744573007BEFB1 /* Release configuration for PBXNativeTarget "App" */,
 			);
-			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
