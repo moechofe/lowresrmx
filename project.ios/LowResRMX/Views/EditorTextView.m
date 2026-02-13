@@ -18,6 +18,9 @@
     [super awakeFromNib];
 
     self.textContainerInset = UIEdgeInsetsMake(8, 8, 8, 8);
+    self.autocapitalizationType = UITextAutocapitalizationTypeNone;
+    self.autocorrectionType = UITextAutocorrectionTypeNo;
+    self.spellCheckingType = UITextSpellCheckingTypeNo;
 
     [self initKeyboardToolbar];
 

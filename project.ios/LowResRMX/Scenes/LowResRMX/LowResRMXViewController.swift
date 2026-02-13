@@ -859,7 +859,7 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
 
     if text == "\n" {
       coreWrapper.input.key = CoreInputKeyReturn
-    } else if let key = text.uppercased().unicodeScalars.first?.value {
+    } else if let key = text.unicodeScalars.first?.value {
       if key < 127 {
         coreWrapper.input.key = Int8(key)
       }
