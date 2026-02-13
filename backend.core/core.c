@@ -134,12 +134,12 @@ void core_willRunProgram(struct Core *core, long secondsSincePowerOn)
 void core_update(struct Core *core, struct CoreInput *input)
 {
 	core_handleInput(core, input);
+	overlay_updateLayout(core, input);
 	itp_runInterrupt(core, InterruptTypeVBL);
 	prtclib_interrupt(core, &core->interpreter->particlesLib);
 	itp_runProgram(core);
 	prtclib_update(core, &core->interpreter->particlesLib);
 	itp_didFinishVBL(core);
-	overlay_updateLayout(core, input);
 	overlay_draw(core, true);
 	audio_bufferRegisters(core);
 }
