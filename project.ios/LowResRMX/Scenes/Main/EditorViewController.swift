@@ -121,6 +121,9 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(applicationWillResignActive), name: UIApplication.willResignActiveNotification, object: nil)
+        if #available(iOS 13.0, *) {
+            NotificationCenter.default.addObserver(self, selector: #selector(applicationWillResignActive), name: UIScene.willDeactivateNotification, object: nil)
+        }
         NotificationCenter.default.addObserver(self, selector: #selector(projectManagerDidAddProgram), name: .ProjectManagerDidAddProgram, object: nil)
 
     }
@@ -161,14 +164,14 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
 
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
         super.traitCollectionDidChange(previousTraitCollection)
-        
+
         // Reapply font size when trait collection changes (orientation, split screen, etc.)
         applyFontSize()
     }
 
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        
+
         // Reapply font size after layout to ensure it persists through split screen and other layout changes
         // Only apply if the current font size doesn't match the expected size
         let expectedFontSize = AppController.shared.editorFontSize
@@ -725,7 +728,7 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
         let fontSize = AppController.shared.editorFontSize
         let font = UIFont(name: "Menlo", size: fontSize) ?? UIFont.monospacedSystemFont(ofSize: fontSize, weight: .regular)
         sourceCodeTextView.font = font
-        
+
         // Also update the search toolbar font size
         searchToolbar.updateFontSize(fontSize)
     }

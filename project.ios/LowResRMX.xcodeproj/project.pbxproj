@@ -194,6 +194,7 @@
 		5B3C38742E8E64320048C9FE /* FontSizePickerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B3C38732E8E64320048C9FE /* FontSizePickerViewController.swift */; };
 		5B572CB32DE710BA00196C83 /* globmatch.c in Sources */ = {isa = PBXBuildFile; fileRef = 5B572CB22DE710BA00196C83 /* globmatch.c */; };
 		5B572CB42DE710BA00196C83 /* globmatch.c in Sources */ = {isa = PBXBuildFile; fileRef = 5B572CB22DE710BA00196C83 /* globmatch.c */; };
+		5B6334F62F3F3ECF00E8198A /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B6334F52F3F3ECF00E8198A /* SceneDelegate.swift */; };
 		5B7D1D7A2D43F1D200B871FA /* Clibsodium in Frameworks */ = {isa = PBXBuildFile; productRef = 5B7D1D792D43F1D200B871FA /* Clibsodium */; };
 		5B7D1D7C2D43F1D200B871FA /* Sodium in Frameworks */ = {isa = PBXBuildFile; productRef = 5B7D1D7B2D43F1D200B871FA /* Sodium */; };
 		5BF536CE2D848C1F00548D6A /* overlay_debugger.c in Sources */ = {isa = PBXBuildFile; fileRef = 5BF536CD2D848C1F00548D6A /* overlay_debugger.c */; };
@@ -417,6 +418,7 @@
 		5B3C38732E8E64320048C9FE /* FontSizePickerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FontSizePickerViewController.swift; sourceTree = "<group>"; };
 		5B572CB12DE710BA00196C83 /* globmatch.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = globmatch.h; sourceTree = "<group>"; };
 		5B572CB22DE710BA00196C83 /* globmatch.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = globmatch.c; sourceTree = "<group>"; };
+		5B6334F52F3F3ECF00E8198A /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		5BBE96AF2F3DC826004D9DF3 /* config.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = config.h; sourceTree = "<group>"; };
 		5BE6C6562F2CFC3C00A5EEA7 /* overlay_debugger.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = overlay_debugger.h; sourceTree = "<group>"; };
 		5BF536CD2D848C1F00548D6A /* overlay_debugger.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = overlay_debugger.c; sourceTree = "<group>"; };
@@ -915,6 +917,7 @@
 		92EA93BC1F744572007BEFB1 /* LowResRMX */ = {
 			isa = PBXGroup;
 			children = (
+				5B6334F52F3F3ECF00E8198A /* SceneDelegate.swift */,
 				92483F7C1F7C2A4300E6D476 /* LowResRMX.entitlements */,
 				92EA93C41F744573007BEFB1 /* Assets.xcassets */,
 				9227DA8F2204302F0035615C /* Boot Intro.rmx */,
@@ -1243,6 +1246,7 @@
 				5B34ED6A2AC5835600220A80 /* default_characters.c in Sources */,
 				920E1B351F78024500664382 /* UITextView+Utils.m in Sources */,
 				920E1B331F78024500664382 /* UIColor+Utils.m in Sources */,
+				5B6334F62F3F3ECF00E8198A /* SceneDelegate.swift in Sources */,
 				92A5248920697EDE00EDE7AF /* AboutViewController.swift in Sources */,
 				9276994C1F7D649800211D15 /* ExplorerItem.swift in Sources */,
 				5B34ED042AC5835600220A80 /* variables.c in Sources */,
