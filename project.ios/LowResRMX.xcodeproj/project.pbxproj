@@ -969,6 +969,7 @@
 		92EA93B21F744572007BEFB1 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
+				BuildIndependentTargetsInParallel = YES;
 				LastSwiftUpdateCheck = 1200;
 				LastUpgradeCheck = 2600;
 				ORGANIZATIONNAME = "Inutilis Software + Martin Mauchauffée";
