@@ -13,6 +13,7 @@ version$="0.170"
 'todo: can i remove the variable editor?, fedmode is pretty usefull
 'todo: there is some `bg source beda` and some `bg source usraddr(layfile(3))`, who win?
 'todo: actually, it should never be `layfile(3)`
+'todo: most of the time, I can remove `if tapped then`
 
 
 files
@@ -454,23 +455,24 @@ global usrerr :usrerr=0
 '=1 not a background data format compatible
 '=2 file already loaded, can't save on it
 
-sub usrlook(space,start,low,hig,addr)
+sub usrlook(space,start,low,hig,addr,ignore)
 'look for enough space in bytes in memory to load a file
 'will look at each already loaded files, and search for available space above and below them recursively
 '(in) space in byte
 '(in) start the file number where to start looking, must be 0
 '(in) low,hig to low and high address boundary where to look
 '(out) the address, 0 if not enough space
+'(in) ignore this file, will be replaced
   'when this function exit: an addr greater than zero mean there is enough space to load the file.
   addr=0
   'not enough space
   if space>hig-low then exit sub
   for i=start to 15
-    if usrsize(i)>0 then
+    if usrsize(i)>0 and i<>ignore then
       'look below this file
-      call usrlook(space,i+1,low,usraddr(i),addr)
+      call usrlook(space,i+1,low,usraddr(i),addr,ignore)
       if addr then exit sub
-      call usrlook(space,i+1,usraddr(i)+usrsize(i),hig,addr)
+      call usrlook(space,i+1,usraddr(i)+usrsize(i),hig,addr,ignore)
       exit sub
     end if
   next i
@@ -575,7 +577,7 @@ sub usrloadimpl(new,old,dst,addr,minz)
   'unload previous loaded file
   if old>=0 then call usrfree(old)
   addr=0
-  call usrlook(max(minz,fsize(new)),0,wramstart,wramend,addr)
+  call usrlook(max(minz,fsize(new)),0,wramstart,wramend,addr,-1)
   if addr=0 then
     message "not enough memory"
     exit sub
@@ -588,6 +590,29 @@ sub usrloadimpl(new,old,dst,addr,minz)
   if fsize(new)<minz then
     fill addr+fsize(new),minz-fsize(new)
   end if
+  dst=new
+end sub
+
+sub usrnewbg(w,h,new,dst)
+'create a new file in memory
+'(in) w,h width and height of the new file
+'(in) new file number
+'(in) old file number to free before load
+'(out) dst destination variable that will contains the create file
+  call usrfree(new)
+  addr=0
+  zise=w*h*2+4
+  call usrlook(zise,0,wramstart,wramend,addr,-1)
+  usraddr(new)=addr
+  usrsize(new)=zise
+  usrname$(new)="BACKGROUND"
+  usrtype(new)=3
+  usrdime(new,0)=w
+  usrdime(new,1)=h
+  usrchanged(new)=0
+  fill addr,zise
+  poke addr+2,w
+  poke addr+3,h
   dst=new
 end sub
 
@@ -613,7 +638,7 @@ end sub
 
 sub usrdefaultbg
   addr=0
-  call usrlook(132,0,wramstart,wramend,addr)
+  call usrlook(132,0,wramstart,wramend,addr,-1)
   'because it's the start of the program, we can be sure there is enough memory
   usraddr(3)=addr
   usrsize(3)=132
@@ -651,7 +676,7 @@ end sub
 
 sub usrdefaultpal
   addr=0
-  call usrlook(32,0,wramstart,wramend,addr)
+  call usrlook(32,0,wramstart,wramend,addr,-1)
   'because it's the start of the program, we can be sure there is enough memory
   usraddr(1)=addr
   usrsize(1)=32
@@ -689,7 +714,7 @@ end sub
 
 sub usrdefaultchr
   addr=0
-  call usrlook(4096,0,wramstart,wramend,addr)
+  call usrlook(4096,0,wramstart,wramend,addr,-1)
   'because it's the start of the program, we can be sure there is enough memory
   usraddr(2)=addr
   usrsize(2)=4096
@@ -708,7 +733,6 @@ end sub
 'the character list is displayed above the bottom bar, it consume 32x4 cells (or 32x2) in the bg#0.
 
 'fltshow= show or hide the charalist
-'lststart,lstend= raster of where the charalist start and end
 'lstcurr= current raster of where the charalist start
 'lstrow= number of rows of user's characters drawn in the chara list
 'lstdouble= is the charalist is displayed at double size
@@ -717,7 +741,7 @@ end sub
 'lstchanged= something has changed
 'lstoldscr= old value for lstscroll, used during dragging operation
 'lstui= chara num used for the ui chara during raster of chara list
-global fltshow,lststart,lstend,lstcurr,lstrow,lstdouble,lstchanged,lstoldscr,lstui,lstoldx,lstoldy
+global fltshow,lstcurr,lstrow,lstdouble,lstchanged,lstoldscr,lstui,lstoldx,lstoldy
 
 'sprite used for the chara list cursor
 sprite 159 pal 4 prio 1 flip 0,0
@@ -950,6 +974,10 @@ bedchanged=0
 'fedmode= file load/save mode
 '=0 background
 '=1 palette
+
+'background dimension edit
+tlb_6_x=0 :tlb_6_v=0
+tlb_6_w=20 :tlb_6_h=30
 
 'flashing colored cursor
 global fccdir,fccdelay
@@ -1758,7 +1786,9 @@ fed_loop:
   call checkresize :if resized then goto filed
   call gesture
   'detect interaction on each part
+  here=1790
   gosub tlb_input
+  here=1792
   gosub cnv_input
   'editor was requested back from the bottom bar
   if tedchanged>0 then
@@ -1865,8 +1895,8 @@ cnv_update:
 cnv_input:
 'detect interaction on the canvas according to cane
   if released then bedg=0
-  curr=fltcurr-4
-  if floe>=0 and fltshow then curr=tlbcurr-4
+  curr=tlbcurr-4
+  if floe>=0 and fltshow then curr=fltcurr-4
   if (pressed or dragged) and bedg=1 then
   else if (pressed or dragged) and justed and pressedy<curr then
     bedg=1
@@ -1917,6 +1947,7 @@ backed_loop:
   call checkresize :if resized then goto backed
   call gesture
   'detect interaction on each part
+  here=1949
   gosub tlb_input
   'detect loaded files changed
   if usedfreed then
@@ -1925,6 +1956,7 @@ backed_loop:
   end if
 
   if floe>=0 then gosub flt_input
+  here=1960
   gosub cnv_input
   gosub cnv_update
   'user's chara was selected from the charalist
@@ -1989,6 +2021,7 @@ bed_redraw:
 bed_update:
 'only redraw missing part of the layers
   if bedchanged then gosub bed_uddraw
+  if tole=6 then gosub tlb_6_edit
   return
 
 'todo: is bed_limit called twice per frame?
@@ -2152,6 +2185,7 @@ bed_0_input:
   if tapped then return
   energytool=1
   if pressed and justed then
+    'bed_0
     'store starting coordinates and old coordinates
     bedxs=bedx :bedys=bedy :bedox=bedx :bedoy=bedy
   end if
@@ -2177,7 +2211,7 @@ bed_1_input:
   if bed_ex<0 or bed_ex>=bedw or bed_ey<0 or bed_ey>=bedh then return
   if justed then gosub bed_attr
   'draw cells
-  trace "bg source",hex$(beda)
+  ' trace "bg source",hex$(beda)
   bg laye :bg source beda
 
   d$="d"+hex$(bed_ex,2)+hex$(bed_ey,2)+hex$(mcell.a(bed_ex,bed_ey),2)+hex$(mcell.c(bed_ex,bed_ey),2)
@@ -2189,10 +2223,10 @@ bed_1_input:
 
   attr bedattr
   'draw in loaded background
-  trace bed_ex,bed_ey,lstchara
+  'trace bed_ex,bed_ey,lstchara
   mcell bed_ex,bed_ey,lstchara
   'draw in canvas layer
-  trace bed_ex-laym(laye),bed_ey-layn(laye)
+  'trace bed_ex-laym(laye),bed_ey-layn(laye)
   cell bed_ex-laym(laye),bed_ey-layn(laye),lstchara
 
   'gosub bed_drlayer
@@ -2328,6 +2362,7 @@ fltg_0_none:
   goto flt_show
 
 fltg_0_dragging:
+' trace "=fltg_0_dragging"
 'handle dragging of the charalist
   if justed then
     fltoldx=lstx :fltoldy=lsty
@@ -2337,10 +2372,12 @@ fltg_0_dragging:
   call dragcap(lstx,fltoldx,pressedx,touch.x,0,256-shownw)
   call dragcap(lsty,fltoldy,pressedy,touch.y,0,256-(fltend-fltstart))
   'store the 3 chara used by the chara list cursor where user can't see it
-  if draggedy<0 and lsty>256-(lstend-lststart)-16 and fltui=253 then
+  if draggedy<0 and lsty>256-(fltend-fltstart)-16 and fltui=253 then
     fltui=64
+    trace "fltui",fltui
   else if draggedy>0 and lsty<=80 and fltui=64 then
     fltui=253
+    trace "fltui",fltui
   end if
   goto flt_0_update
 
@@ -2412,10 +2449,12 @@ fltg_1_dragging:
   call dragcap(kolx,fltoldx,pressedx,touch.x,0,256-shownw)
   call dragcap(koly,fltoldy,pressedy,touch.y,0,192-(fltend-fltstart))
   'store the 3 chara used by the chara list cursor where user can't see it
-  if draggedy<0 and lsty>256-(lstend-lststart)-16 and fltui=253 then
+  if draggedy<0 and lsty>256-(fltend-fltstart)-16 and fltui=253 then
     fltui=64
+    trace "fltui",fltui
   else if draggedy>0 and lsty<=80 and fltui=64 then
     fltui=253
+    trace "fltui",fltui
   end if
   goto flt_1_update
   'goto flt_show
@@ -3155,13 +3194,13 @@ tlb_5_back: 'wid=4
 'width, height, back
 
 tlb_6_redraw:
-  keyboard on
   bg 0 :bg source rom(3) :attr %100001
   bg fill 0,0 to 31,31 char 1
   bg copy 0,50,29,3 to 0,0
   bg copy 0,53,29,3 to 0,4
   bg copy 0,56,29,3 to 0,8
   gosub tlb_6_dim
+  gosub tlb_6_size
   tlbrow=13-short*3 :tlbcol=26
   tlbraster1=24 :tlbraster2=48
   tlbrow1=4 :tlbrow2=7
@@ -3169,40 +3208,112 @@ tlb_6_redraw:
   return
 
 tlb_6_data:
-  data 1 :'number of widget
+  data 4 :'number of widget
   data 2,8,7,10 :'wid=0 back
+  data 8,0,12,2 :'wid=1 width
+  data 21,0,26,2 :'wid=2 height
+  data 8,8,12,10 :'wid=3 new
 
 tlb_6_input:
-  on wid goto tlb_6_back
+  on wid goto tlb_6_back, tlb_6_width, tlb_6_height, tlb_6_new
 
 tlb_6_back: 'wid=0
 'cancel selection, go back to the previous toolbar
-  if tapped then
-    call ungesture
-    keyboard off
-    tole=2 :gosub tlb_redraw
-  end if
+  call ungesture
+  keyboard off
+  tole=2 :gosub tlb_redraw
+  return
+
+tlb_6_width:
+  tlb_6_x=8 :tlb_6_v=tlb_6_w
+  gosub tlb_6_dim
+  keyboard on
+  call ungesture
+  return
+
+tlb_6_height:
+  tlb_6_x=22 :tlb_6_v=tlb_6_h
+  gosub tlb_6_dim
+  keyboard on
+  call ungesture
   return
 
 tlb_6_dim:
-  neww=10
-  newh=30
   bg 0 :attr 1
-  text 8,1,str$(neww)
-  text 22,1,str$(newh)
+  bg fill 8,1 to 11,1 char 3
+  bg fill 22,1 to 25,1 char 3
+  text 8,1,str$(tlb_6_w)
+  text 22,1,str$(tlb_6_h)
   return
 
+tlb_6_size:
+'display size and compute memory location
+  bg 0 :bg source rom(3) :attr %100001
+  bg copy 0,53,29,3 to 0,4
+  pal 3
+  s=tlb_6_w*tlb_6_h*2+4
+  if s>$ffff then return
+  text 12,5,hex$(s,4)
+  if s<=0 then return
+  addr=0
+  call usrlook(s,0,wramstart,wramend,addr,fedlife)
+  if addr>0 then
+    text 18,5,hex$(addr,4)
+    text 23,5,hex$(addr+s,4)
+  end if
   return
 
-' TODO: ui asset are not copied when floe is not drawn by sub r
+tlb_6_edit:
+'update width and height
+  if tlb_6_x=0 then return
+  if keyboard=0 then keyboard on
+  k=-1 :k$=inkey$
+  if k$<>"" then
+    k=asc(k$)
+    if k=8 and tlb_6_v>0 then
+      tlb_6_v=int(tlb_6_v/10)
+    else if k>=48 and k<=57 and tlb_6_v<99 then
+      tlb_6_v=tlb_6_v*10+k-48
+    end if
+  end if
+  bg 0 :attr 1
+  bg fill tlb_6_x,1 to tlb_6_x+3,1 char 3
+  v$=str$(tlb_6_v)
+  text tlb_6_x,1,v$
+  if tlb_6_x=8 then
+    tlb_6_w=tlb_6_v
+  else if tlb_6_x=22 then
+    tlb_6_h=tlb_6_v
+  end if
+  gosub tlb_6_size
+  if k=10 then
+    tlb_6_x=0
+    keyboard off
+    return
+  end if
+  pal 1
+  if (timer mod 50)>=20 then cell tlb_6_x+len(v$),1,62
+  return
 
-' width   height   memory needed
-'(     ) (      )
-'(   64) (   128)  memory avail
-'(     ) (      )
-'back create
+tlb_6_new:
+'erase current file and create a new one
+  'todo: check for changes not saved
 
+  if addr<=0 then return
 
+  if fedmode=0 then
+    call usrnewbg(tlb_6_w,tlb_6_h,fedlife,bedlife)
+    call stplayer(3,bedlife)
+    call uselayer(3)
+    call updlayer(laye)
+    call ungesture
+    keyboard off
+    tole=0 :floe=0
+    bedoldt=1
+    goto backed
+  else if fedmode=1 then
+  end if
+  return
 
 
 #1:ui palettes
@@ -3225,7 +3336,7 @@ FFFFFFFFFFFF00000000FFFFFF00FFFF
 00000000000000000000000000000000
 00000000000000000000000000000000
 00000000000000000000000000000000
-FFFFFFFFFFFFFFFF0000071F18303333
+FFFFFFFFFFFFFFFF0000071F18303133
 FFFFFFFFFFFFFFFFFFC399918999C3FF
 FFFFFFFFFFFFFFFFFFE7C7E7E7E781FF
 FFFFFFFFFFFFFFFFFFC399F3E7CF81FF

@@ -1,4 +1,4 @@
-data 0,"Retro Game Creator beta version 2.0"
+data 0,"Retro Game Creator beta version 1.0"
 data 0,""
 data 1,"what is working:"
 data 0,""
@@ -20,14 +20,24 @@ data 0,"------------"
 data 0,""
 data -1
 
-global blink
+'create a window and store position
+global l,t
+l=ceil(safe.l/8)+1
+r=floor((shown.w-safe.r)/8)-1
+t=ceil(safe.t/8)+1
+b=floor((shown.h-safe.b)/8)-1
+window l,t,r-l,b-t,0
+
+'for cursor blink
+global blink,cx,cy
+cx=0 :cy=0
 global speedup
 speedup=1
 sub v
   if timer mod 40>15 then
-    text cursor.x,cursor.y,"_"
+    text l+cx,t+cy,"_"
   else
-    text cursor.x,cursor.y," "
+    text l+cx,t+cy," "
   end if
   if touch then
     speedup=9
@@ -37,6 +47,7 @@ sub v
 end sub
 on vbl call v
 
+'print next line
 next_line:
   read p
   if p<0 then
@@ -55,20 +66,26 @@ next_word:
     msg$=""
   end if
   print word$;
+  cx=cursor.x :cy=cursor.y
+  bg fill l+cx,t+cy to l+r,t+cy char 0
   f=9 :gosub wait_a_bit
-  text cursor.x,cursor.y," "
+  text l+cx,t+cy," "
   if len(msg$)>0 then goto next_word
   print
+  cx=cursor.x :cy=cursor.y
+  bg fill l+cx,t+cy to l+r,t+cy char 0
   f=90 :gosub wait_a_bit
-  text cursor.x,cursor.y," "
+  text l+cx,t+cy," "
   goto next_line
 
+'wait a couple of frames
 wait_a_bit:
   while f>1
     wait vbl
     add f,-1*speedup
   wend
   return
+
 #2:MAIN CHARACTERS
 00000000000000000000000000000000
 0000000000000000FFFFFFFFFFFFFFFF
