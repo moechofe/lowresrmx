@@ -42,9 +42,8 @@ enum ErrorCode cmd_KEYBOARD(struct Core *core)
 		core->machine->ioRegisters.status.keyboardVisible = (type == TokenON);
 #ifdef SIMULATED_KEYBOARD
 		interpreter->simulatedKeyboardOn = (type == TokenON);
-#else
-		delegate_controlsDidChange(core);
 #endif
+		delegate_controlsDidChange(core);
 	}
 
 	return itp_endOfCommand(interpreter);
@@ -69,24 +68,6 @@ struct TypedValue fnc_KEYBOARD(struct Core *core)
 #endif
 	}
 	return value;
-}
-
-enum ErrorCode cmd_PAUSE(struct Core *core)
-{
-	struct Interpreter *interpreter = core->interpreter;
-
-	if (interpreter->pass == PassRun && interpreter->mode == ModeInterrupt)
-		return ErrorNotAllowedInInterrupt;
-
-	// PAUSE
-	++interpreter->pc;
-
-	if (interpreter->pass == PassRun)
-	{
-		trigger_debugger(core);
-	}
-
-	return itp_endOfCommand(interpreter);
 }
 
 struct TypedValue fnc_TOUCH(struct Core *core)

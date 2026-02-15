@@ -18,6 +18,7 @@
 // 3. This notice may not be removed or altered from any source distribution.
 //
 
+#include "config.h"
 #include "overlay.h"
 #include "core.h"
 #include "io_chip.h"
@@ -37,7 +38,7 @@ void overlay_init(struct Core *core)
 	lib->windowX = 0;
 	lib->windowY = 0;
 	lib->windowWidth = 216 / 8;
-	lib->windowHeight = 384 / 8;
+	lib->windowHeight = 384 / 8 - 1; // give space for message
 	lib->cursorX = 0;
 	lib->cursorY = 0;
 }
@@ -46,11 +47,15 @@ void overlay_updateLayout(struct Core *core, struct CoreInput *input)
 {
 	struct IORegisters *io = &core->machine->ioRegisters;
 	struct TextLib *lib = &core->overlay->textLib;
-	int b = io->safe.bottom > io->keyboardHeight ? io->safe.bottom : io->keyboardHeight;
+	int k = io->keyboardHeight;
+#ifdef SIMULATED_KEYBOARD
+	if (core->interpreter->simulatedKeyboardOn) k = 154;
+#endif
+	int b = io->safe.bottom > k ? io->safe.bottom : k;
 	lib->windowX = (io->safe.left + 7) / 8;
 	lib->windowY = (io->safe.top + 7) / 8;
 	lib->windowWidth = io->shown.width / 8 - (io->safe.left + 7) / 8 - (io->safe.right + 7) / 8;
-	lib->windowHeight = io->shown.height / 8 - (io->safe.top + 7) / 8 - (b + 7) / 8;
+	lib->windowHeight = io->shown.height / 8 - (io->safe.top + 7) / 8 - (b + 7) / 8 - 1; // give space for message
 }
 
 void overlay_reset(struct Core *core)

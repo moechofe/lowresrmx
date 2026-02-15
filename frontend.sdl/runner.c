@@ -18,6 +18,7 @@
 // 3. This notice may not be removed or altered from any source distribution.
 //
 
+#include "config.h"
 #include "runner.h"
 #include "main.h"
 #include "sdl_include.h"

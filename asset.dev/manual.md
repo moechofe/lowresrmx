@@ -2961,6 +2961,10 @@ Print the current call stack in reverse order: last line number followed by labe
 
 Enter the debugger when the program `=PEEK` or `POKE` the `address`.
 
+#### dbg: `NEXT`
+
+Execute next instruction in the program, and stop.
+
 ## References
 
 This annex provides technical information about how things work under the hood.

@@ -47,7 +47,6 @@
 struct TypedValue itp_evaluateExpressionLevel(struct Core *core, int level);
 struct TypedValue itp_evaluatePrimaryExpression(struct Core *core);
 struct TypedValue itp_evaluateFunction(struct Core *core);
-enum ErrorCode itp_evaluateCommand(struct Core *core);
 
 void itp_init(struct Core *core)
 {

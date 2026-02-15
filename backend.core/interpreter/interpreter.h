@@ -144,6 +144,7 @@ void itp_deinit(struct Core *core);
 struct CoreError itp_compileProgram(struct Core *core, const char *sourceCode);
 void itp_runProgram(struct Core *core);
 void itp_runInterrupt(struct Core *core, enum InterruptType type);
+enum ErrorCode itp_evaluateCommand(struct Core *core);
 void itp_didFinishVBL(struct Core *core);
 void itp_endProgram(struct Core *core);
 void itp_freeProgram(struct Core *core);

@@ -18,6 +18,7 @@
 // 3. This notice may not be removed or altered from any source distribution.
 //
 
+#include "overlay_debugger.h"
 #include "cmd_control.h"
 #include "core.h"
 #include <assert.h>
@@ -1023,6 +1024,24 @@ enum ErrorCode cmd_COMPAT(struct Core *core)
 	{
 		interpreter->compat = true;
 		delegate_controlsDidChange(core);
+	}
+
+	return itp_endOfCommand(interpreter);
+}
+
+enum ErrorCode cmd_PAUSE(struct Core *core)
+{
+	struct Interpreter *interpreter = core->interpreter;
+
+	if (interpreter->pass == PassRun && interpreter->mode == ModeInterrupt)
+		return ErrorNotAllowedInInterrupt;
+
+	// PAUSE
+	++interpreter->pc;
+
+	if (interpreter->pass == PassRun)
+	{
+		trigger_debugger(core);
 	}
 
 	return itp_endOfCommand(interpreter);

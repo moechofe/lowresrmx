@@ -69,6 +69,8 @@ const char *lineString(const char *source, int pos)
     }
     if (end > start)
     {
+				while (*start==' ') start++;
+				while (*end==' ') end--;
         size_t len = end - start;
         char *buffer = malloc(len + 1);
         if (buffer)
