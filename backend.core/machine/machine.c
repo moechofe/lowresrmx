@@ -69,7 +69,7 @@ int machine_peek(struct Core *core, int address)
 	if (
 		 (address < 0) // outside mapped memory
 	|| (address > VM_MAX) // outside mapped memory
-	|| (address >= 0x0f800 && address < 0x0fb00) // nothing 1
+	// || (address >= 0x0f800 && address < 0x0fb00) // nothing 1
 	|| (address >= 0x0fefc && address < 0x0ff00) // nothing 2
 	|| (address >= 0x0ff34 && address < 0x0ff40) // nothing 3
 	|| (address >= 0x0ff8c && address < 0x0ffa0) // nothing 4
@@ -79,7 +79,7 @@ int machine_peek(struct Core *core, int address)
 		return -1;
 	}
 
-	else if (address >= 0x0e000 && address < 0x0f800) // persistent
+	else if (address >= 0x0e000 && address < 0x0fb00) // persistent
 	{
 		if (!core->machineInternals->hasAccessedPersistent)
 		{
@@ -136,7 +136,7 @@ bool machine_poke(struct Core *core, int address, int value)
 	if (
 		 (address < 0) // outside mapped memory
 	|| (address >= 0x10000) // ROM
-	|| (address >= 0x0f800 && address < 0x0fb00) // nothing 1
+	// || (address >= 0x0f800 && address < 0x0fb00) // nothing 1
 	|| (address >= 0x0fefc && address < 0x0ff00) // nothing 2
 	|| (address >= 0x0ff34 && address < 0x0ff40) // nothing 3
 	|| (address >= 0x0ff88 && address < 0x0ffa0) // nothing 4
@@ -146,7 +146,7 @@ bool machine_poke(struct Core *core, int address, int value)
 	{
 		return false;
 	}
-	else if (address >= 0x0e000 && address < 0x0f800) // persistent
+	else if (address >= 0x0e000 && address < 0x0fb00) // persistent
 	{
 		if (!core->machineInternals->hasAccessedPersistent)
 		{
