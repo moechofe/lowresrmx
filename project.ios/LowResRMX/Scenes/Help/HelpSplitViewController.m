@@ -18,9 +18,9 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    
+
     self.delegate = self;
-    self.preferredDisplayMode = UISplitViewControllerDisplayModeAllVisible;
+    self.preferredDisplayMode = UISplitViewControllerDisplayModeOneBesideSecondary;
     self.preferredPrimaryColumnWidthFraction = 0.3;
 
     _detailNavigationController = self.viewControllers.lastObject;
@@ -33,7 +33,7 @@
     {
         [self showDetailViewController:self.detailNavigationController sender:self];
     }
-    
+
     HelpTextViewController *textViewController = (HelpTextViewController *)self.detailNavigationController.topViewController;
     textViewController.chapter = chapter;
 }

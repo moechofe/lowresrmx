@@ -11,10 +11,11 @@
 #import "HelpContent.h"
 #import "HelpSplitViewController.h"
 #import "App-Swift.h"
+#import <WebKit/WebKit.h>
 
-@interface HelpTextViewController ()
+@interface HelpTextViewController () <WKNavigationDelegate>
 
-@property (weak, nonatomic) IBOutlet UIWebView *webView;
+@property (weak, nonatomic) IBOutlet WKWebView *webView;
 @property (weak, nonatomic) IBOutlet UIActivityIndicatorView *activityView;
 
 @end
@@ -24,14 +25,12 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    
-    self.webView.delegate = self;
-    self.webView.scalesPageToFit = NO;
-    self.webView.dataDetectorTypes = UIDataDetectorTypeNone;
-    
+
+    self.webView.navigationDelegate = self;
+
     self.navigationItem.leftBarButtonItem = self.splitViewController.displayModeButtonItem;
     self.navigationItem.leftItemsSupplementBackButton = YES;
-    
+
     HelpContent *helpContent = AppController.shared.helpContent;
     [self.webView loadHTMLString:helpContent.manualHtml baseURL:helpContent.url];
 }
@@ -48,26 +47,27 @@
 - (void)jumpToChapter:(NSString *)chapter
 {
     NSString *script = [NSString stringWithFormat:@"document.getElementById('%@').scrollIntoView(true);", chapter];
-    [self.webView stringByEvaluatingJavaScriptFromString:script];
+    [self.webView evaluateJavaScript:script completionHandler:nil];
 }
 
-- (BOOL)webView:(UIWebView *)webView shouldStartLoadWithRequest:(NSURLRequest *)request navigationType:(UIWebViewNavigationType)navigationType
+- (void)webView:(WKWebView *)webView decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler
 {
-    if (!request.URL.isFileURL)
+    if (!navigationAction.request.URL.isFileURL)
     {
         // open links in Safari
-        [[UIApplication sharedApplication] openURL:[request URL]];
-        return NO;
+        [[UIApplication sharedApplication] openURL:navigationAction.request.URL options:@{} completionHandler:nil];
+        decisionHandler(WKNavigationActionPolicyCancel);
+        return;
     }
-    return YES;
+    decisionHandler(WKNavigationActionPolicyAllow);
 }
 
-- (void)webViewDidStartLoad:(UIWebView *)webView
+- (void)webView:(WKWebView *)webView didStartProvisionalNavigation:(WKNavigation *)navigation
 {
     [self.activityView startAnimating];
 }
 
-- (void)webViewDidFinishLoad:(UIWebView *)webView
+- (void)webView:(WKWebView *)webView didFinishNavigation:(WKNavigation *)navigation
 {
     [self.activityView stopAnimating];
     if (self.chapter)

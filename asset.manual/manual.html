@@ -2,24 +2,25 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Retro Game Creator - Documentation</title>
 <style>
 a { color: #36b; }
 a:visited { color: #639; }
-body { font-family: 'Baskerville', 'Libre Baskerville', serif; font-size: 1.3em; margin: 0; background: #f7f2ed; }
+html, body { overflow-x: hidden; }
+body { font-family: 'Baskerville', 'Libre Baskerville', serif; font-size: 1.2em; margin: 0; background: #f7f2ed; }
 h1, h2, h3, h4, h5 { margin: 2.0em 0 1em 0; background: #639; color: #fff; padding: 0.5em 1em 0.4em 1em; }
 body h1 { margin-top: 0; }
 p { margin: 1em; }
 blockquote { margin: 1em 0; border-left: solid 1em #c66; padding: 0.2em 0.4em; background-color: #f2d9d9; font-style: italic; }
-code { background-color: #927353; color: #fff; padding: 0.2em 0.3em; margin: -0.2em 0.1em; border-radius: 0.3em; text-decoration: none; white-space: preserve nowrap; }
+code { background-color: #927353; color: #fff; padding: 0.2em 0.3em; margin: -0.2em 0.1em; border-radius: 0.3em; text-decoration: none; }
 a code { text-decoration: underline solid 1px #fff; background-color: #a86e34; }
 del { text-decoration-color: #fff; }
 del code { background-color: #a35; }
 h4,h5 { background-color: #e94; color: #420; font-size: 1em; }
-h4>code,h5>code { background-color: unset; color: unset; padding: unset; margin: 0; border-radius: unset; font-size: 1.5em; }
+h4>code,h5>code { background-color: unset; color: unset; padding: unset; margin: 0; border-radius: unset; font-size: 1.3em; }
 code+code { display: inline-block; }
-pre { white-space: pre-wrap; font-family: 'Menlon-Regular', monospace; margin: 0; background-color: #dad0c6; padding: 0.5em 1em; display: inline-block; -moz-tab-size:2; -o-tab-size:2; tab-size:2; border-top-right-radius: 0.3em; border-bottom-right-radius: 0.3em; }
+pre { white-space: break-spaces; font-family: 'Menlon-Regular', monospace; margin: 0; background-color: #dad0c6; padding: 0.5em 1em; display: inline-block; -moz-tab-size:2; -o-tab-size:2; tab-size:2; border-top-right-radius: 0.3em; border-bottom-right-radius: 0.3em; }
 pre>code { padding: 0; margin: 0; background-color: unset; color: #000; }
 blockquote>pre { margin-left: 1em; }
 ul { padding-left: 2em; }
@@ -40,17 +41,18 @@ hr { border: none; border-top: solid 0.15em #639; margin: 1em; }
 <!--
 use https://markdowntohtml.com/
 	& # 39; '
-	fix table
+	fix table, select them and move them 2 tags ahead
 	replace emoji globe by &#x1f310;
 save in project.web
-	add antislash for br and hr tag
+	add slash for br and hr tag
 save in asset.manual
+duplicate content in project.web/sources/documentation.html
 -->
 
 <h1 id="retro-game-creator-documentation">Retro Game Creator - Documentation</h1>
 <blockquote>
-<p>This is a fork of the excellent fantasy console Lowres NX by Timo &quot;Inutilis&quot; Kloss.<br />
-This is a heavily modified version and way more complicated to use, I recommend you to stay on the original app:<br />
+<p>This is a fork of the excellent fantasy console Lowres NX by Timo &quot;Inutilis&quot; Kloss.<br/>
+This is a heavily modified version and way more complicated to use, I recommend you to stay on the original app:<br/>
 &#x1f310;<a href="https://apps.apple.com/app/lowres-nx-coder/id1318884577">LowRes NX Coder on App Store</a>.</p>
 </blockquote>
 <h2 id="what-is-retro-game-creator-">What is Retro Game Creator?</h2>
@@ -62,7 +64,7 @@ This is a heavily modified version and way more complicated to use, I recommend 
 <p>The goal of the app is to provide a development environment that I can use during my commutes on the subway, and later, to be able to publish a real app on the stores.</p>
 <p>The original LowRes NX, despite being an excellent development environment, lacks some capabilities needed for use on a handheld device.</p>
 <blockquote>
-<p>If you already know how to use Lowres NX, you can read the list of differences below.<br />
+<p>If you already know how to use Lowres NX, you can read the list of differences below.<br/>
 For new users, I recommend jumping to the <a href="#how-does-it-work">How does it work</a> section.</p>
 </blockquote>
 <p><strong>Background:</strong></p>
@@ -105,7 +107,7 @@ For new users, I recommend jumping to the <a href="#how-does-it-work">How does i
 <li><p>170 sprites instead of 64. Sprite numbers range from 0 to 169.</p>
 </li>
 <li><p>Positions support sub-pixels with 1/16 pixel precision.</p>
-<pre><code>  SPRITE <span class="hljs-number">123</span>,SPRITE.X(<span class="hljs-number">123</span>)+<span class="hljs-number">0.25</span>,
+<pre><code>  SPRITE <span class="hljs-number">123</span>, SPRITE.X(<span class="hljs-number">123</span>)+<span class="hljs-number">0.25</span>,
 </code></pre></li>
 </ul>
 <p><strong>Input/Output:</strong></p>
@@ -161,7 +163,7 @@ For new users, I recommend jumping to the <a href="#how-does-it-work">How does i
 </li>
 <li><p>New function <a href="#-interpolation-ease-function-mode-value-"><code>EASE</code> to compute easing function</a>.</p>
 </li>
-<li><p>New random generator using &#x1f310;<a href="https://www.pcg-random.org/">PCG</a>. It produces better randomness.</p>
+<li><p>New random generator using 🌐<a href="https://www.pcg-random.org/">PCG</a>. It produces better randomness.</p>
 </li>
 <li><p>New syntax for <a href="#-random-rnd-"><code>=RND</code> that save the state</a> of random generator.</p>
 </li>
@@ -366,7 +368,7 @@ For new users, I recommend jumping to the <a href="#how-does-it-work">How does i
 <p><strong>Work in progress:</strong> The particle system is under development and everything is subject to change.</p>
 </blockquote>
 <p>The particles library reuses sprites to make them appear, disappear, change their character data, and move them across the screen.</p>
-<hr />
+<hr/>
 <p><code>PARTICLE first, count AT address</code></p>
 <p>Declare the use of <code>count</code> sprites starting from <code>first</code> and store the internal data at <code>address</code>.</p>
 <p>Each sprite will consume 6 bytes of memory. For each sprite:</p>
@@ -406,38 +408,38 @@ For new users, I recommend jumping to the <a href="#how-does-it-work">How does i
 </tr>
 </tbody>
 </table>
-<pre><code>PARTICLE <span class="hljs-number">1</span>,<span class="hljs-number">20</span> AT $<span class="hljs-number">9000</span>
+<pre><code>PARTICLE <span class="hljs-number">1</span>, <span class="hljs-number">20</span> AT $<span class="hljs-number">9000</span>
 'Will use sprite <span class="hljs-number">1</span> to <span class="hljs-number">20</span> included.
 'Store internal data from $<span class="hljs-number">9000</span> to $<span class="hljs-number">9078</span> excluded.
-</code></pre><hr />
+</code></pre><hr/>
 <p><code>PARTICLE appearance DATA label</code></p>
 <p>Declare a <code>label</code> that contains data for the particle <code>appearance</code>.</p>
 <p><code>appearance</code> is a number between 0 and 23.</p>
 <p>The associated data MUST contain a list of character numbers that will be used to draw the particle. Using a negative number will loop back to the previous data value.</p>
 <p>A common example is to use zero (0) and minus one (-1) for the last two data values, which allows the particle to disappear until the sprite is reused.</p>
 <pre><code>my_appearance:
-DATA <span class="hljs-number">1</span>,<span class="hljs-number">2</span>,<span class="hljs-number">3</span>,<span class="hljs-number">4</span>,<span class="hljs-number">0</span>,-<span class="hljs-number">1</span>
+DATA <span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>, <span class="hljs-number">4</span>, <span class="hljs-number">0</span>, -<span class="hljs-number">1</span>
 <span class="hljs-symbol">'will</span> show the <span class="hljs-built_in">character</span> <span class="hljs-number">1</span> <span class="hljs-keyword">to</span> <span class="hljs-number">4</span>, each per frame.
 <span class="hljs-symbol">'and</span> <span class="hljs-keyword">loop</span> <span class="hljs-keyword">with</span> the <span class="hljs-built_in">character</span> <span class="hljs-number">0</span>.
-</code></pre><hr />
+</code></pre><hr/>
 <p><code>PARTICLE OFF</code></p>
 <p>Clear all sprite positions and reset all particle appearances.</p>
-<hr />
+<hr/>
 <p><code>ON PARTICLE CALL subprogram</code></p>
 <p>For each particle, the system will call the subprogram using an interrupt.</p>
 <p>The target <code>subprogram</code> will receive two arguments:</p>
 <ol>
 <li>The <code>sprite</code> number,</li>
 <li><p>The particle <code>address</code>.</p>
-<p> SUB mypart(spr,addr)</p>
+<p> SUB mypart(spr, addr)</p>
 <pre><code> sy=PEEKW(addr+<span class="hljs-number">2</span>)
- POKEW addr+<span class="hljs-number">2</span>,sy<span class="hljs-number">-5</span>
+ POKEW addr+<span class="hljs-number">2</span>, sy<span class="hljs-number">-5</span>
  'change the speed in y axis
 </code></pre><p> END SUB</p>
 </li>
 </ol>
 <p>The number of available cycles will be specified in a future version.</p>
-<hr />
+<hr/>
 <p><code>EMITTER count AT address</code></p>
 <p>Declare the use of <code>count</code> emitters and store the internal data at <code>address</code>.</p>
 <p><code>count</code> is a number between 0 and 15.</p>
@@ -473,7 +475,7 @@ DATA <span class="hljs-number">1</span>,<span class="hljs-number">2</span>,<span
 </tr>
 </tbody>
 </table>
-<hr />
+<hr/>
 <p><code>EMITTER emitter DATA label</code></p>
 <p>Declare a <code>label</code> that contains DATA for the <code>emitter</code>.</p>
 <p>The associated data MUST follow this list:</p>
@@ -492,15 +494,15 @@ DATA <span class="hljs-number">1</span>,<span class="hljs-number">2</span>,<span
 <li>how many times to <code>repeat</code> the emission.</li>
 </ol>
 <p>When a particle is spawned, a random position is computed between the <code>outer</code> and <code>inner</code> ring.</p>
-<hr />
+<hr/>
 <p><code>EMITTER emitter ON x, y</code></p>
 <p>Tell the <code>emitter</code> to emit particles starting at position <code>x</code> and <code>y</code>.</p>
 <p>It will automatically end when <code>repeat</code> reaches 0.</p>
-<hr />
+<hr/>
 <p><code>EMITTER emitter OFF</code></p>
 <p>Manually stop the <code>emitter</code>.</p>
 <h2 id="how-does-it-work">How does it work</h2>
-<p>Retro Game Creator does not have a framebuffer where users paint pixels like in Pico-8. Instead, it simulates a &#x1f310;<a href="https://www.nesdev.org/wiki/PPU">NES/Gameboy PPU chip</a>, which traverses its memory to generate output pixels based on characters, backgrounds, sprites, palettes and register information.</p>
+<p>Retro Game Creator does not have a framebuffer where users paint pixels like in Pico-8. Instead, it simulates a 🌐<a href="https://www.nesdev.org/wiki/PPU">NES/Gameboy PPU chip</a>, which traverses its memory to generate output pixels based on characters, backgrounds, sprites, palettes and register information.</p>
 <h3 id="screen">Screen</h3>
 <p>The fantasy screen has a maximum resolution of 216x384 pixels.</p>
 <p>It features perfectly square pixels, a fixed portrait orientation, and always fills the entire device screen.</p>
@@ -517,7 +519,7 @@ DATA <span class="hljs-number">1</span>,<span class="hljs-number">2</span>,<span
 <li><strong>a palette</strong> apply to one of the 8 palettes with 4 colors inside,</li>
 <li><strong>a color</strong> means one of the 4 colors within a palette or one of the 64 available colors.</li>
 </ul>
-<p>Sauce: &#x1f310;<a href="https://lospec.com/palette-list/famicube">FAMICUBE palette created by Arne</a>.</p>
+<p>Sauce: 🌐<a href="https://lospec.com/palette-list/famicube">FAMICUBE palette created by Arne</a>.</p>
 <h3 id="characters">Characters</h3>
 <p>The 256 characters are <a href="#character-data">blocks of 8x8 pixels</a> assigned to numbers from 0 to 255.
 When a number is used to draw in a background layer or sprite, the rendering process draws the corresponding 8x8 pixel block.</p>
@@ -634,7 +636,7 @@ The sprite numbers range starts at 0, so the last one is 169.</p>
 <p>The fantasy hardware has access to the device virtual keyboard. It allows users to type while running a program.</p>
 <p>Check the <a href="#input-api">input API</a> for more information.</p>
 <h2 id="program-language">Program Language</h2>
-<p>The programming language follows the path of the original Lowres NX. It's a &#x1f310;<a href="https://en.wikipedia.org/wiki/BASIC">BASIC-type language</a> and here's how to use it.</p>
+<p>The programming language follows the path of the original Lowres NX. It's a 🌐<a href="https://en.wikipedia.org/wiki/BASIC">BASIC-type language</a> and here's how to use it.</p>
 <h3 id="program">Program</h3>
 <p>A program is a list of so-called instructions executed by the fantasy hardware one by one from top to bottom. The simplest and most iconic program could be:</p>
 <pre><code><span class="hljs-keyword">PRINT</span> <span class="hljs-string">"hello world!"</span>
@@ -672,7 +674,7 @@ The sprite numbers range starts at 0, so the last one is 169.</p>
 <p>As a real example, this is a program that increments and prints a score every time the player taps the device screen.</p>
 <pre><code><span class="hljs-keyword">score</span>=0
 <span class="hljs-keyword">DO</span>
-    <span class="hljs-keyword">PRINT</span> <span class="hljs-string">"score"</span>,<span class="hljs-keyword">score</span>
+    <span class="hljs-keyword">PRINT</span> <span class="hljs-string">"score"</span>, <span class="hljs-keyword">score</span>
     WAIT TAP
     <span class="hljs-keyword">score</span>=<span class="hljs-keyword">score</span>+1
 LOOP
@@ -712,23 +714,23 @@ player_name<span class="hljs-variable">$(</span><span class="hljs-number">1</spa
 <p>Here is an example that demonstrates how to recreate the program above using labels:</p>
 <pre><code><span class="hljs-built_in">score</span>=<span class="hljs-number">0</span>
 start:
-    PRINT <span class="hljs-string">"score"</span>,<span class="hljs-built_in">score</span>
+    PRINT <span class="hljs-string">"score"</span>, <span class="hljs-built_in">score</span>
     WAIT TAP
     <span class="hljs-built_in">score</span>=<span class="hljs-built_in">score</span>+<span class="hljs-number">1</span>
 <span class="hljs-built_in">GOTO</span> start
 </code></pre><p>A label is declared by an identifier followed by a colon : (here &quot;start&quot;), and the <code>GOTO</code> command will make the program execution &quot;jump&quot; to the previous label &quot;start&quot;, creating an infinite loop.</p>
-<hr />
+<hr/>
 <p>About using label identifiers as <a href="#lvalue-and-rvalue">rvalue</a>: This feature allows using label names that lead to <a href="#-data-constant-constant-">constant string values</a> directly instead of having to store the value in a variable.</p>
 <p>Example, instead of writing:</p>
 <pre><code>DATA <span class="hljs-string">"chocolate"</span>
 READ <span class="hljs-keyword">like</span>$
-PRINT <span class="hljs-string">"I like"</span>,<span class="hljs-keyword">like</span>$
+PRINT <span class="hljs-string">"I like"</span>, <span class="hljs-keyword">like</span>$
 </code></pre><p>You can write:</p>
 <pre><code><span class="hljs-keyword">like</span>: DATA <span class="hljs-string">"chocolate"</span>
-PRINT <span class="hljs-string">"I like"</span>,<span class="hljs-keyword">like</span>
+PRINT <span class="hljs-string">"I like"</span>, <span class="hljs-keyword">like</span>
 </code></pre><p>And it works in all <a href="#expressions">expressions</a> that involve <a href="#literals">literal strings</a> or <a href="#variables-and-assignation">string variables</a>.</p>
 <pre><code><span class="hljs-built_in">test</span>1: DATA <span class="hljs-string">"entanglem"</span>
-PRINT <span class="hljs-built_in">test</span>1+LEFT$(<span class="hljs-built_in">test</span>1,3)
+PRINT <span class="hljs-built_in">test</span>1+LEFT$(<span class="hljs-built_in">test</span>1, 3)
 <span class="hljs-built_in">test</span>2: DATA 1234.5
 PRINT <span class="hljs-built_in">test</span>2*2
 </code></pre><h3 id="stack-sub-routine-and-return">Stack, sub-routine and return</h3>
@@ -750,17 +752,17 @@ common:
 </code></pre><h3 id="procedures">Procedures</h3>
 <p>The last usage of identifiers are procedures. They are meant to be reusable sub-parts of a program.</p>
 <p>Here's a quick example:</p>
-<pre><code>SUB addition(<span class="hljs-selector-tag">a</span>,<span class="hljs-selector-tag">b</span>,c)
+<pre><code>SUB addition(<span class="hljs-selector-tag">a</span>, <span class="hljs-selector-tag">b</span>, c)
     c=a+<span class="hljs-selector-tag">b</span>
 END SUB
 </code></pre><p>By running this program, nothing will happen because procedures do not get executed automatically. Instead the user MUST use a dedicated command for it.</p>
 <pre><code><span class="hljs-literal">result</span>=<span class="hljs-number">0</span>
-CALL addition(<span class="hljs-number">120</span>,<span class="hljs-number">3</span>,<span class="hljs-literal">result</span>)
-PRINT <span class="hljs-string">"result"</span>,<span class="hljs-literal">result</span>
+CALL addition(<span class="hljs-number">120</span>, <span class="hljs-number">3</span>, <span class="hljs-literal">result</span>)
+PRINT <span class="hljs-string">"result"</span>, <span class="hljs-literal">result</span>
 </code></pre><p>By adding this piece of code after the previous one and running the program, the solution of the operation 120+3 will be printed on the screen: &quot;result 123&quot;.</p>
 <p>The advantage of calling procedures is being able to do it again and again.</p>
-<pre><code><span class="hljs-keyword">CALL</span> addition(<span class="hljs-number">45</span>,<span class="hljs-number">-78</span>,<span class="hljs-keyword">result</span>)
-PRINT <span class="hljs-string">"result"</span>,<span class="hljs-keyword">result</span>
+<pre><code><span class="hljs-keyword">CALL</span> addition(<span class="hljs-number">45</span>, <span class="hljs-number">-78</span>, <span class="hljs-keyword">result</span>)
+PRINT <span class="hljs-string">"result"</span>, <span class="hljs-keyword">result</span>
 </code></pre><p>This time, it will print &quot;result -33&quot;.</p>
 <p>The difference with <a href="#stack-sub-routine-and-return">sub-routines</a> is the <a href="#parameters-arguments-and-scopes">scope</a>.</p>
 <h3 id="parameters-arguments-and-scopes">Parameters, arguments and scopes</h3>
@@ -768,7 +770,7 @@ PRINT <span class="hljs-string">"result"</span>,<span class="hljs-keyword">resul
 <p>By default, when declaring a variable in a program, its scope is limited and the variable is unknown inside a procedure.</p>
 <pre><code><span class="hljs-keyword">score=0
 </span><span class="hljs-keyword">SUB </span>print_score
-    🐞print <span class="hljs-string">"score"</span>,<span class="hljs-keyword">score
+    🐞print <span class="hljs-string">"score"</span>, <span class="hljs-keyword">score
 </span>END <span class="hljs-keyword">SUB
 </span>CALL print_score
 </code></pre><p>This program will produce the error: &quot;variable not initialized&quot;. The program can't access the variable score inside the print_score procedure.</p>
@@ -776,7 +778,7 @@ PRINT <span class="hljs-string">"result"</span>,<span class="hljs-keyword">resul
 <ol>
 <li><p>Users need to add a parameter to the procedure declaration:</p>
 <pre><code> <span class="hljs-keyword">SUB</span> print_score(s)
-     print <span class="hljs-string">"score"</span>,s
+     print <span class="hljs-string">"score"</span>, s
  <span class="hljs-keyword">END</span> <span class="hljs-keyword">SUB</span>
 </code></pre></li>
 <li><p>Users also need to add an argument to the procedure call:</p>
@@ -787,7 +789,7 @@ PRINT <span class="hljs-string">"result"</span>,<span class="hljs-keyword">resul
 <p>Corrected program:</p>
 <pre><code>    <span class="hljs-keyword">score</span>=0
     SUB print_score(s)
-        <span class="hljs-keyword">PRINT</span> <span class="hljs-string">"score"</span>,<span class="hljs-built_in">s</span>
+        <span class="hljs-keyword">PRINT</span> <span class="hljs-string">"score"</span>, <span class="hljs-built_in">s</span>
     END SUB
     CALL print_score(<span class="hljs-keyword">score</span>)
 </code></pre><p>Another option is to rely on <a href="#local-and-global-scope">global scope</a>.</p>
@@ -818,7 +820,7 @@ SUB frag
 END SUB
 <span class="hljs-keyword">DO</span>
     CLS
-    <span class="hljs-keyword">PRINT</span> <span class="hljs-string">"score:"</span>,<span class="hljs-keyword">score</span>
+    <span class="hljs-keyword">PRINT</span> <span class="hljs-string">"score:"</span>, <span class="hljs-keyword">score</span>
     WAIT TAP
     CALL frag
 LOOP
@@ -831,7 +833,7 @@ LOOP
 <pre><code>'<span class="hljs-built_in">get</span> touch <span class="hljs-built_in">position</span> <span class="hljs-keyword">in</span> cells coordinates
 tx=TOUCH.X\<span class="hljs-number">8</span>
 </code></pre><blockquote>
-<p>Avoid &#x1f310;<a href="https://en.wikipedia.org/wiki/Captain_Obvious">Captain Obvious</a> comments!</p>
+<p>Avoid 🌐<a href="https://en.wikipedia.org/wiki/Captain_Obvious">Captain Obvious</a> comments!</p>
 </blockquote>
 <h3 id="grammar">Grammar</h3>
 <p>As said earlier, a program is a list of instructions read and executed one by one. To make it easier to read, developers use a set of spaces, indentations, new lines, comments, procedures…</p>
@@ -860,7 +862,7 @@ tx=TOUCH.X\<span class="hljs-number">8</span>
 <pre><code>  <span class="hljs-keyword">DO</span>
       x=<span class="hljs-number">0</span> : y=<span class="hljs-number">0</span>
       <span class="hljs-keyword">IF</span> TAP <span class="hljs-keyword">THEN</span> x=<span class="hljs-keyword">TOUCH</span>.X : y=<span class="hljs-keyword">TOUCH</span>.Y
-      <span class="hljs-built_in">PRINT</span> x,y
+      <span class="hljs-built_in">PRINT</span> x, y
       <span class="hljs-keyword">WAIT</span> TAP
   LOOP
 </code></pre><p>  <code>y=TOUCH.Y</code> will always be executed.</p>
@@ -894,7 +896,7 @@ tx=TOUCH.X\<span class="hljs-number">8</span>
 </code></pre></li>
 <li><p>A <a href="#functions">function call</a>:</p>
 <pre><code>  <span class="hljs-built-in">cos</span>(<span class="hljs-number">1.314</span>)
-  LEFT<span class="hljs-symbol">$</span>(name<span class="hljs-symbol">$</span>,<span class="hljs-number">8</span>)
+  LEFT<span class="hljs-symbol">$</span>(name<span class="hljs-symbol">$</span>, <span class="hljs-number">8</span>)
 </code></pre></li>
 <li><p>An <a href="#operators">unary, binary or group operator</a>:</p>
 <pre><code>  <span class="hljs-number">42</span>+<span class="hljs-number">24</span>
@@ -1021,23 +1023,23 @@ tx=TOUCH.X\<span class="hljs-number">8</span>
 <tbody>
 <tr>
 <td style="text-align:right">NOT</td>
-<td>not (x=15)<br />not 0</td>
-<td>Bits that are 0 become 1,<br />and those that are 1 become 0.</td>
+<td>not (x=15)<br/>not 0</td>
+<td>Bits that are 0 become 1, <br/>and those that are 1 become 0.</td>
 </tr>
 <tr>
 <td style="text-align:right">AND</td>
-<td>a=1 and b=12<br />170 and 15</td>
-<td>If both bits are 1, the<br />result is 1, 0 otherwise.</td>
+<td>a=1 and b=12<br/>170 and 15</td>
+<td>If both bits are 1, the<br/>result is 1, 0 otherwise.</td>
 </tr>
 <tr>
 <td style="text-align:right">OR</td>
-<td>x=10 or y=0<br />128 or 2</td>
-<td>The result is 0 if both<br />bits are 0, 1 otherwise.</td>
+<td>x=10 or y=0<br/>128 or 2</td>
+<td>The result is 0 if both<br/>bits are 0, 1 otherwise.</td>
 </tr>
 <tr>
 <td style="text-align:right">XOR</td>
 <td>a xor b</td>
-<td>The result is 1 if only<br />one bit is 1, 0 otherwise.</td>
+<td>The result is 1 if only<br/>one bit is 1, 0 otherwise.</td>
 </tr>
 </tbody>
 </table>
@@ -1063,11 +1065,11 @@ tx=TOUCH.X\<span class="hljs-number">8</span>
 <p>Retro Game Creator provide a bunch of built-in commands to manipulate the fantasy device hardware such as the graphic or sound. You'll find them by consulting the <a href="#api-instructions">list of API instructions</a>.</p>
 <p>To execute a command, use it's identifier followed by a list of coma-separated arguments or other reserved keywords. The exact syntax depends on the command.</p>
 <pre><code>SPRITE OFF <span class="hljs-number">0</span> to <span class="hljs-number">169</span>
-SPRITE <span class="hljs-number">0</span>,<span class="hljs-number">40</span>,<span class="hljs-number">60</span>,<span class="hljs-number">1</span>
+SPRITE <span class="hljs-number">0</span>, <span class="hljs-number">40</span>, <span class="hljs-number">60</span>, <span class="hljs-number">1</span>
 </code></pre><h3 id="functions">Functions</h3>
 <p>Retro Game Creator provide a bunch of built-in function to manipulate the fantasy device hardware such as the graphic or sound. You'll find them by consulting the <a href="#api-instructions">list of API instructions</a>.</p>
 <p>To execute a function, use it's identifier followed by a list of coma-separated arguments surrounded by rounded parenthesis.</p>
-<pre><code><span class="hljs-keyword">PRINT</span> MID$(<span class="hljs-string">"test"</span>,3,1) :'<span class="hljs-keyword">print</span> <span class="hljs-built_in">s</span>
+<pre><code><span class="hljs-keyword">PRINT</span> MID$(<span class="hljs-string">"test"</span>, 3, 1) :'<span class="hljs-keyword">print</span> <span class="hljs-built_in">s</span>
 </code></pre><p>A function will always return something and MUST be used as <a href="#lvalue-and-rvalue">rvalue</a> inside an <a href="#expressions">expressions</a>.</p>
 <h3 id="lvalue-and-rvalue">Lvalue and Rvalue</h3>
 <p>The equal = sign is used both as variable assignement and comparison operator, and It can lead to some confusion. Here is a tip to help you:</p>
@@ -1140,12 +1142,12 @@ SPRITE <span class="hljs-number">0</span>,<span class="hljs-number">40</span>,<s
 </ul>
 <p>In the following sections, you'll learn how to do all this abstract but important things.</p>
 <h3 id="control-flow">Control flow</h3>
-<p>« In software, &#x1f310;<a href="https://en.wikipedia.org/wiki/Control_flow">control flow (or flow of control)</a> describes how execution progresses from one command to the next. »</p>
+<p>« In software, 🌐<a href="https://en.wikipedia.org/wiki/Control_flow">control flow (or flow of control)</a> describes how execution progresses from one command to the next. »</p>
 <p>-- wikipedia</p>
 <h4 id="-end-"><code>END</code></h4>
 <p>Stop the execution of the program.</p>
 <p>It has the same effect as the execution reach the end of the program.</p>
-<h4 id="-if-then-else-if-else-end-if-br-if-then-"><code>IF/THEN/ELSE IF/ELSE/END IF</code><br /><code>IF/THEN</code></h4>
+<h4 id="-if-then-else-if-else-end-if-br-if-then-"><code>IF/THEN/ELSE IF/ELSE/END IF</code><br/><code>IF/THEN</code></h4>
 <pre><code><span class="hljs-keyword">IF</span> expression <span class="hljs-keyword">THEN</span>
     instruction...
 [<span class="hljs-keyword">ELSE</span> <span class="hljs-keyword">IF</span> expression <span class="hljs-keyword">THEN</span>
@@ -1175,7 +1177,7 @@ retry: <span class="hljs-keyword">INPUT</span> <span class="hljs-string">"1-100:
     <span class="hljs-keyword">PRINT</span> <span class="hljs-string">"too high"</span>
     <span class="hljs-keyword">GOTO</span> retry
 <span class="hljs-keyword">END</span> <span class="hljs-keyword">IF</span>
-</code></pre><hr />
+</code></pre><hr/>
 <pre><code><span class="hljs-keyword">IF</span> condition <span class="hljs-keyword">THEN</span> instruction
 </code></pre><p>This form only allow one <code>instruction</code>, but it's also shorter.</p>
 <p>Real example of the same game with less lines:</p>
@@ -1206,9 +1208,9 @@ sy=1
 <span class="hljs-keyword">DO</span>
     <span class="hljs-keyword">IF</span> x=<span class="hljs-number">0</span> <span class="hljs-keyword">OR</span> x=shown.w<span class="hljs-number">-8</span> <span class="hljs-keyword">THEN</span> sx=-sx
     <span class="hljs-keyword">IF</span> y=<span class="hljs-number">0</span> <span class="hljs-keyword">OR</span> y=shown.h<span class="hljs-number">-8</span> <span class="hljs-keyword">THEN</span> sy=-sy
-    <span class="hljs-keyword">ADD</span> x,sx
-    <span class="hljs-keyword">ADD</span> y,sy
-    SPRITE <span class="hljs-number">0</span>,x,y,<span class="hljs-number">1</span>
+    <span class="hljs-keyword">ADD</span> x, sx
+    <span class="hljs-keyword">ADD</span> y, sy
+    SPRITE <span class="hljs-number">0</span>, x, y, <span class="hljs-number">1</span>
     <span class="hljs-keyword">WAIT</span> VBL
     <span class="hljs-keyword">IF</span> TAP <span class="hljs-keyword">THEN</span> <span class="hljs-keyword">EXIT</span>
 <span class="hljs-keyword">LOOP</span>
@@ -1312,13 +1314,13 @@ increase:
     INC score
     t=TIMER
 <span class="hljs-keyword">update</span>:
-    <span class="hljs-built_in">TEXT</span> <span class="hljs-number">2</span>,<span class="hljs-number">2</span>,<span class="hljs-string">"score:"</span>+<span class="hljs-keyword">STR</span>$(score)
+    <span class="hljs-built_in">TEXT</span> <span class="hljs-number">2</span>, <span class="hljs-number">2</span>, <span class="hljs-string">"score:"</span>+<span class="hljs-keyword">STR</span>$(score)
     <span class="hljs-keyword">RETURN</span>
 </code></pre><p>This example has one <code>RETURN</code>, two labels and three <code>GOSUB</code>. The best practice mentioned above is not followed here, but here is the explanation.</p>
 <p>The important thing is not the number of <code>RETURN</code> statements in the code but the number of times the command is executed. Users need to understand that one <code>GOSUB</code> execution will <a href="#stack-subroutine-and-return">increase by one the size of the stack</a>, and one execution of <code>RETURN</code> will reduce the same stack by exactly one. If the stack size is empty every time the <code>WAIT VBL</code> instruction is executed, it's a good sign. It means that the stack will not overflow.</p>
 <p>Users can print the current stack using the <a href="#dbg-trace-">debugger <code>TRACE</code> command</a>.</p>
-<h4 id="-on-goto-br-on-gosub-"><code>ON GOTO</code><br /><code>ON GOSUB</code></h4>
-<pre><code><span class="hljs-keyword">ON</span> value <span class="hljs-keyword">GOTO</span> label0[,label1...]
+<h4 id="-on-goto-br-on-gosub-"><code>ON GOTO</code><br/><code>ON GOSUB</code></h4>
+<pre><code><span class="hljs-keyword">ON</span> value <span class="hljs-keyword">GOTO</span> label0[, label1...]
 </code></pre><p>Jump to one of the listed <code>label</code> according to a <code>value</code>.</p>
 <p><code>ON GOSUB</code> Will store the current program location on top of the stack before jumping, allowing to <code>RETURN</code> to this location later.</p>
 <p>Will read the <code>value</code> and jump to:</p>
@@ -1330,7 +1332,7 @@ increase:
 <p>Real example:</p>
 <pre><code>again:
     <span class="hljs-keyword">WAIT</span> <span class="hljs-number">30</span>
-    <span class="hljs-keyword">ON</span> <span class="hljs-keyword">RND</span>(<span class="hljs-number">1</span>) <span class="hljs-keyword">GOTO</span> zero,one
+    <span class="hljs-keyword">ON</span> <span class="hljs-keyword">RND</span>(<span class="hljs-number">1</span>) <span class="hljs-keyword">GOTO</span> zero, one
 zero:
     <span class="hljs-keyword">PRINT</span> <span class="hljs-string">"zero"</span>
     <span class="hljs-keyword">GOTO</span> again
@@ -1376,18 +1378,18 @@ one:
 <span class="hljs-comment">'delete last character</span>
 <span class="hljs-keyword">SUB</span> delete
     <span class="hljs-keyword">IF</span> cursor.x=<span class="hljs-number">0</span> <span class="hljs-keyword">THEN</span> <span class="hljs-keyword">EXIT</span> <span class="hljs-keyword">SUB</span>
-    LOCATE cursor.x<span class="hljs-number">-1</span>,cursor.y
-    <span class="hljs-keyword">TEXT</span> cursor.x,cursor.y,<span class="hljs-string">" "</span>
+    LOCATE cursor.x<span class="hljs-number">-1</span>, cursor.y
+    <span class="hljs-keyword">TEXT</span> cursor.x, cursor.y, <span class="hljs-string">" "</span>
 <span class="hljs-keyword">END</span> <span class="hljs-keyword">SUB</span>
 
 <span class="hljs-comment">'check if input is correct</span>
 <span class="hljs-keyword">SUB</span> check(r$)
     r$=<span class="hljs-string">"       "</span>
-    <span class="hljs-keyword">TEXT</span> <span class="hljs-number">0</span>,<span class="hljs-number">2</span>,<span class="hljs-string">"       "</span>
+    <span class="hljs-keyword">TEXT</span> <span class="hljs-number">0</span>, <span class="hljs-number">2</span>, <span class="hljs-string">"       "</span>
     <span class="hljs-keyword">IF</span> cursor.x&lt;<span class="hljs-number">10</span> <span class="hljs-keyword">THEN</span> <span class="hljs-keyword">EXIT</span> <span class="hljs-keyword">SUB</span>
     ok=<span class="hljs-number">-1</span>
     <span class="hljs-keyword">FOR</span> i=<span class="hljs-number">0</span> <span class="hljs-keyword">TO</span> <span class="hljs-number">9</span>
-        <span class="hljs-keyword">IF</span> CELL.C(i,<span class="hljs-number">1</span>)<span class="hljs-number">-208</span>&lt;&gt;i <span class="hljs-keyword">THEN</span> ok=<span class="hljs-number">0</span>
+        <span class="hljs-keyword">IF</span> CELL.C(i, <span class="hljs-number">1</span>)<span class="hljs-number">-208</span>&lt;&gt;i <span class="hljs-keyword">THEN</span> ok=<span class="hljs-number">0</span>
     <span class="hljs-keyword">NEXT</span> i
     r$=<span class="hljs-string">"failure"</span>
     <span class="hljs-keyword">IF</span> ok <span class="hljs-keyword">THEN</span> r$=<span class="hljs-string">"success"</span>
@@ -1403,7 +1405,7 @@ RANDOMIZE TIMER
     <span class="hljs-keyword">IF</span> k$&lt;&gt;<span class="hljs-string">""</span> <span class="hljs-keyword">THEN</span> <span class="hljs-keyword">CALL</span> handle(k$)
     WAIT VBL
     <span class="hljs-keyword">CALL</span> check(result$)
-    <span class="hljs-keyword">TEXT</span> <span class="hljs-number">0</span>,<span class="hljs-number">2</span>,result$
+    <span class="hljs-keyword">TEXT</span> <span class="hljs-number">0</span>, <span class="hljs-number">2</span>, result$
 <span class="hljs-keyword">LOOP</span>
 </code></pre><p><code>EXIT SUB</code> command will exit the <code>SUB</code>.</p>
 <blockquote>
@@ -1426,8 +1428,8 @@ RANDOMIZE TIMER
 <li>a string: my_str$</li>
 <li>an array of number: my_num_array()</li>
 <li>an array of string: my_str_array$()</li>
-<li>one number from an array: my_num_array(1,2)</li>
-<li>one string from an array: my_str_array$(1,2)</li>
+<li>one number from an array: my_num_array(1, 2)</li>
+<li>one string from an array: my_str_array$(1, 2)</li>
 </ul>
 <h3 id="embedded-data">Embedded data</h3>
 <p>Retro Game Creator provides two ways to store data or assets inside a program.</p>
@@ -1435,23 +1437,23 @@ RANDOMIZE TIMER
 <li><p>Use the combination of <code>DATA</code> and <code>READ</code> to store readable number and string and access it when you need it.</p>
 <p> Real example that list the Straw Hat Pirates members:</p>
 <pre><code> data <span class="hljs-number">11</span>
- data <span class="hljs-string">"lufy"</span>,<span class="hljs-number">19</span>,<span class="hljs-string">"zoro"</span>,<span class="hljs-number">21</span>,<span class="hljs-string">"nami"</span>,<span class="hljs-number">20</span>
- data <span class="hljs-string">"usopp"</span>,<span class="hljs-number">21</span>,<span class="hljs-string">"sanji"</span>,<span class="hljs-number">21</span>,<span class="hljs-string">"chopper"</span>,<span class="hljs-number">17</span>
- data <span class="hljs-string">"robin"</span>,<span class="hljs-number">30</span>,<span class="hljs-string">"franky"</span>,<span class="hljs-number">36</span>,<span class="hljs-string">"brook"</span>,<span class="hljs-number">90</span>
- data <span class="hljs-string">"jinbe"</span>,<span class="hljs-number">46</span>,<span class="hljs-string">"vivi"</span>,<span class="hljs-number">18</span>
+ data <span class="hljs-string">"lufy"</span>, <span class="hljs-number">19</span>, <span class="hljs-string">"zoro"</span>, <span class="hljs-number">21</span>, <span class="hljs-string">"nami"</span>, <span class="hljs-number">20</span>
+ data <span class="hljs-string">"usopp"</span>, <span class="hljs-number">21</span>, <span class="hljs-string">"sanji"</span>, <span class="hljs-number">21</span>, <span class="hljs-string">"chopper"</span>, <span class="hljs-number">17</span>
+ data <span class="hljs-string">"robin"</span>, <span class="hljs-number">30</span>, <span class="hljs-string">"franky"</span>, <span class="hljs-number">36</span>, <span class="hljs-string">"brook"</span>, <span class="hljs-number">90</span>
+ data <span class="hljs-string">"jinbe"</span>, <span class="hljs-number">46</span>, <span class="hljs-string">"vivi"</span>, <span class="hljs-number">18</span>
  read count
  for i=<span class="hljs-number">1</span> to count
-     read name$,age
-     print name$,age
+     read name$, age
+     print name$, age
  next i
 </code></pre><p> Internaly it will use a read pointer that iterates all constant values.</p>
 </li>
 <li><p>Use the <a href="#virtual-file">virtual file</a> system accessible throughout the <a href="#file-api">file API</a>.</p>
 </li>
 </ol>
-<h4 id="-data-constant-constant-"><code>DATA constant [,constant...]</code></h4>
+<h4 id="-data-constant-constant-"><code>DATA constant [, constant...]</code></h4>
 <p>A list of <code>constant</code> values (numbers or strings) that can be accessed using the <code>READ</code> command.</p>
-<h4 id="-read-variable-variable-"><code>READ variable [,variable...]</code></h4>
+<h4 id="-read-variable-variable-"><code>READ variable [, variable...]</code></h4>
 <p>Read a list of values inside <code>variable</code> that was declared using <code>DATA</code>.</p>
 <h4 id="-restore-label-"><code>RESTORE [label]</code></h4>
 <p>Move the read pointer to a specified <code>label</code>. The declared constant values that appear after the label will be read next. When ommited, restore at the beginning of the program.</p>
@@ -1471,24 +1473,24 @@ PRINT word$
 </code></pre><p>Declare a list of number or string variables to be globally <a href="#local-and-global-scope">accessible in all scopes</a>.</p>
 <p><code>GLOBAL</code> are illegal inside a subroutine body.</p>
 <h4 id="-dim-"><code>DIM</code></h4>
-<pre><code><span class="hljs-selector-tag">DIM</span> <span class="hljs-selector-tag">identifier</span>(highest) <span class="hljs-selector-attr">[,identifier(highest)]</span>...
+<pre><code><span class="hljs-selector-tag">DIM</span> <span class="hljs-selector-tag">identifier</span>(highest) <span class="hljs-selector-attr">[, identifier(highest)]</span>...
 </code></pre><p>Will declare one or more arrays with <code>highest</code>+1 number of elements.</p>
 <p>Arrays of numbers or strings MUST be declared before reading or writing them.</p>
-<pre><code>DIM scores(<span class="hljs-number">1</span>),names$(<span class="hljs-number">1</span>)
+<pre><code>DIM scores(<span class="hljs-number">1</span>), names$(<span class="hljs-number">1</span>)
 FOR i=<span class="hljs-number">0</span> TO <span class="hljs-number">1</span>
-    PRINT names$(i);<span class="hljs-string">":"</span>,scores(i)
+    PRINT names$(i);<span class="hljs-string">":"</span>, scores(i)
 NEXT i
 </code></pre><h4 id="-dim-global-"><code>DIM GLOBAL</code></h4>
-<pre><code><span class="hljs-keyword">DIM</span> <span class="hljs-keyword">GLOBAL</span> identifier(highest) [,identifier(highest)]...
+<pre><code><span class="hljs-keyword">DIM</span> <span class="hljs-keyword">GLOBAL</span> identifier(highest) [, identifier(highest)]...
 </code></pre><p>Similar to <code>DIM</code> but will <a href="#arrays">declare the arrays</a> <a href="#local-and-global-scope">globally accessible</a>.</p>
 <p><code>DIM GLOBAL</code> are illegal inside a SUB/END SUB subroutine body.</p>
 <h4 id="-ubound-"><code>=UBOUND</code></h4>
-<pre><code>highest=<span class="hljs-built_in">UBOUND</span>(identifier[,<span class="hljs-keyword">dimension</span>])
+<pre><code>highest=<span class="hljs-built_in">UBOUND</span>(identifier[, <span class="hljs-keyword">dimension</span>])
 </code></pre><p>Return the <code>highest</code> index of the array variable <code>identifier</code> at specified <code>dimension</code>.</p>
 <h4 id="-swap-a-b-"><code>SWAP a, b</code></h4>
 <p>Swap the values of the variable <code>a</code> and <code>b</code>. They have to share same type.</p>
 <h2 id="api-instructions">API instructions</h2>
-<p><em>« An &#x1f310;<a href="https://en.wikipedia.org/wiki/API">application programming interface (API)</a> is a connection between computers or between computer programs. »</em></p>
+<p><em>« An 🌐<a href="https://en.wikipedia.org/wiki/API">application programming interface (API)</a> is a connection between computers or between computer programs. »</em></p>
 <p>Retro Game Creator provide a bunch of built-in <a href="#commands">commands</a> and <a href="#functions">functions</a> to communicates with the differents features provided by the fantasy console: input, graphics, sound, memory and more.</p>
 <h3 id="sprite-api">Sprite API</h3>
 <p>Sprites are limited in numbers and SHOULD be used to show moving objects above background layers. It is not an obligation and interesting effects can be achieved by breaking these rules.</p>
@@ -1499,8 +1501,8 @@ NEXT i
 <p>An example that show a smiley sprite moving in circle:</p>
 <pre><code>i=0
 <span class="hljs-keyword">DO</span>
-    <span class="hljs-keyword">ADD</span> i,<span class="hljs-number">1</span>,<span class="hljs-number">0</span> <span class="hljs-keyword">TO</span> <span class="hljs-number">99</span>
-    SPRITE <span class="hljs-number">0</span>,<span class="hljs-keyword">COS</span>(i/<span class="hljs-number">100</span>)*<span class="hljs-number">40</span>+<span class="hljs-number">60</span>,<span class="hljs-keyword">SIN</span>(i/<span class="hljs-number">100</span>)*<span class="hljs-number">40</span>+<span class="hljs-number">60</span>,<span class="hljs-number">1</span>
+    <span class="hljs-keyword">ADD</span> i, <span class="hljs-number">1</span>, <span class="hljs-number">0</span> <span class="hljs-keyword">TO</span> <span class="hljs-number">99</span>
+    SPRITE <span class="hljs-number">0</span>, <span class="hljs-keyword">COS</span>(i/<span class="hljs-number">100</span>)*<span class="hljs-number">40</span>+<span class="hljs-number">60</span>, <span class="hljs-keyword">SIN</span>(i/<span class="hljs-number">100</span>)*<span class="hljs-number">40</span>+<span class="hljs-number">60</span>, <span class="hljs-number">1</span>
     <span class="hljs-keyword">WAIT</span> VBL
 <span class="hljs-keyword">LOOP</span>
 
@@ -1519,23 +1521,23 @@ NEXT i
 <p>Omitted parameters will keep their previous values.</p>
 <p>Example of a sprite that get flipped according to it's position on the screen:</p>
 <pre><code><span class="hljs-keyword">DO</span>
-    SPRITE <span class="hljs-number">0</span>,<span class="hljs-keyword">TOUCH</span>.X,<span class="hljs-keyword">TOUCH</span>.Y,<span class="hljs-number">1</span>
+    SPRITE <span class="hljs-number">0</span>, <span class="hljs-keyword">TOUCH</span>.X, <span class="hljs-keyword">TOUCH</span>.Y, <span class="hljs-number">1</span>
     SPRITE <span class="hljs-number">0</span> PAL <span class="hljs-number">6</span>
-    SPRITE <span class="hljs-number">0</span> FLIP <span class="hljs-keyword">TOUCH</span>.X&gt;SHOWN.W/<span class="hljs-number">2</span>,<span class="hljs-keyword">TOUCH</span>.Y&gt;SHOWN.H/<span class="hljs-number">2</span>
+    SPRITE <span class="hljs-number">0</span> FLIP <span class="hljs-keyword">TOUCH</span>.X&gt;SHOWN.W/<span class="hljs-number">2</span>, <span class="hljs-keyword">TOUCH</span>.Y&gt;SHOWN.H/<span class="hljs-number">2</span>
     <span class="hljs-keyword">WAIT</span> VBL
 LOOP
 
 #<span class="hljs-number">2</span>:MAIN CHARACTERS
 <span class="hljs-number">00000000000000000000000000000000</span>
 0A0D0E8F4D0E818C06030180C305808
-</code></pre><h4 id="-x-sprite-x-sprite-br-y-sprite-y-sprite-"><code>x =SPRITE.X(sprite)</code><br /><code>y =SPRITE.Y(sprite)</code></h4>
+</code></pre><h4 id="-x-sprite-x-sprite-br-y-sprite-y-sprite-"><code>x =SPRITE.X(sprite)</code><br/><code>y =SPRITE.Y(sprite)</code></h4>
 <p>Return the position <code>x</code> or <code>y</code> of the <code>sprite</code> (0..169) in pixels.</p>
 <p>Example of a sprite smoothly following the finger touch:</p>
-<pre><code>sprite <span class="hljs-number">0</span>,shown<span class="hljs-selector-class">.w</span>,shown<span class="hljs-selector-class">.h</span>,<span class="hljs-number">1</span>
+<pre><code>sprite <span class="hljs-number">0</span>, shown<span class="hljs-selector-class">.w</span>, shown<span class="hljs-selector-class">.h</span>, <span class="hljs-number">1</span>
 do
     x=SPRITE.X(<span class="hljs-number">0</span>)+(TOUCH<span class="hljs-selector-class">.X-SPRITE</span><span class="hljs-selector-class">.X</span>(<span class="hljs-number">0</span>))/<span class="hljs-number">4</span>
     y=SPRITE.Y(<span class="hljs-number">0</span>)+(TOUCH<span class="hljs-selector-class">.Y-SPRITE</span><span class="hljs-selector-class">.Y</span>(<span class="hljs-number">0</span>))/<span class="hljs-number">4</span>
-    SPRITE <span class="hljs-number">0</span>,x,y,
+    SPRITE <span class="hljs-number">0</span>, x, y,
     WAIT VBL
 LOOP
 
@@ -1550,14 +1552,14 @@ LOOP
 <h4 id="-attributes-sprite-a-sprite-"><code>attributes =SPRITE.A(sprite)</code></h4>
 <p>Return the whole <code>attributes</code> flags of the <code>sprite</code> (0..169).</p>
 <p>Example: that show how to read sprite attributes:</p>
-<pre><code>SPRITE 0,80,80,1
-SPRITE.A 0,255
+<pre><code>SPRITE 0, 80, 80, 1
+SPRITE.A 0, 255
 <span class="hljs-keyword">DO</span>
-    <span class="hljs-built_in">TEXT</span> <span class="hljs-number">4</span>,<span class="hljs-number">4</span>,<span class="hljs-string">"palette: 00000"</span>+<span class="hljs-keyword">BIN</span>$(SPRITE.A(<span class="hljs-number">0</span>) <span class="hljs-keyword">AND</span> %<span class="hljs-number">111</span>)
-    <span class="hljs-built_in">TEXT</span> <span class="hljs-number">4</span>,<span class="hljs-number">5</span>,<span class="hljs-string">"flip:    000"</span>+<span class="hljs-keyword">BIN</span>$(SPRITE.A(<span class="hljs-number">0</span>) <span class="hljs-keyword">AND</span> %<span class="hljs-number">11000</span>)
-    <span class="hljs-built_in">TEXT</span> <span class="hljs-number">4</span>,<span class="hljs-number">6</span>,<span class="hljs-string">"size:    0"</span>+<span class="hljs-keyword">BIN</span>$(SPRITE.A(<span class="hljs-number">0</span>) <span class="hljs-keyword">AND</span> %<span class="hljs-number">1100000</span>)
+    <span class="hljs-built_in">TEXT</span> <span class="hljs-number">4</span>, <span class="hljs-number">4</span>, <span class="hljs-string">"palette: 00000"</span>+<span class="hljs-keyword">BIN</span>$(SPRITE.A(<span class="hljs-number">0</span>) <span class="hljs-keyword">AND</span> %<span class="hljs-number">111</span>)
+    <span class="hljs-built_in">TEXT</span> <span class="hljs-number">4</span>, <span class="hljs-number">5</span>, <span class="hljs-string">"flip:    000"</span>+<span class="hljs-keyword">BIN</span>$(SPRITE.A(<span class="hljs-number">0</span>) <span class="hljs-keyword">AND</span> %<span class="hljs-number">11000</span>)
+    <span class="hljs-built_in">TEXT</span> <span class="hljs-number">4</span>, <span class="hljs-number">6</span>, <span class="hljs-string">"size:    0"</span>+<span class="hljs-keyword">BIN</span>$(SPRITE.A(<span class="hljs-number">0</span>) <span class="hljs-keyword">AND</span> %<span class="hljs-number">1100000</span>)
     <span class="hljs-keyword">WAIT</span> TAP
-    SPRITE.A <span class="hljs-number">0</span>,RND(<span class="hljs-number">255</span>)
+    SPRITE.A <span class="hljs-number">0</span>, RND(<span class="hljs-number">255</span>)
 <span class="hljs-keyword">LOOP</span>
 
 #<span class="hljs-number">2</span>:<span class="hljs-keyword">MAIN</span> <span class="hljs-keyword">CHARACTERS</span>
@@ -1569,13 +1571,13 @@ SPRITE.A 0,255
 <p>Hide one <code>sprite</code>.</p>
 <p>Example that hide a sprite at each tap:</p>
 <pre><code><span class="hljs-keyword">FOR</span> i=<span class="hljs-number">0</span> TO <span class="hljs-number">159</span>
-    SPRITE I,<span class="hljs-keyword">RND</span>(SHOWN.W<span class="hljs-number">-8</span>),<span class="hljs-keyword">RND</span>(SHOWN.H<span class="hljs-number">-8</span>),<span class="hljs-number">1</span>
+    SPRITE I, <span class="hljs-keyword">RND</span>(SHOWN.W<span class="hljs-number">-8</span>), <span class="hljs-keyword">RND</span>(SHOWN.H<span class="hljs-number">-8</span>), <span class="hljs-number">1</span>
 <span class="hljs-keyword">NEXT</span> i
 i=<span class="hljs-number">0</span>
 <span class="hljs-keyword">WHILE</span> i&lt;<span class="hljs-number">159</span>
     <span class="hljs-keyword">WAIT</span> TAP
     SPRITE OFF I
-    ADD I,<span class="hljs-number">1</span>
+    ADD I, <span class="hljs-number">1</span>
 <span class="hljs-keyword">WEND</span>
 
 <span class="hljs-meta">#<span class="hljs-number">2</span>:MAIN CHARACTERS</span>
@@ -1588,14 +1590,14 @@ i=<span class="hljs-number">0</span>
 <p>Example of a ball that bounce on the wall and fall into holes:</p>
 <pre><code>again:
 <span class="hljs-keyword">FOR</span> i=<span class="hljs-number">1</span> TO <span class="hljs-number">20</span>
-    SPRITE I,<span class="hljs-keyword">RND</span>(SHOWN.W)<span class="hljs-number">-8</span>,<span class="hljs-keyword">RND</span>(SHOWN.H)<span class="hljs-number">-8</span>,<span class="hljs-number">2</span>
+    SPRITE I, <span class="hljs-keyword">RND</span>(SHOWN.W)<span class="hljs-number">-8</span>, <span class="hljs-keyword">RND</span>(SHOWN.H)<span class="hljs-number">-8</span>, <span class="hljs-number">2</span>
 <span class="hljs-keyword">NEXT</span> i
 x=<span class="hljs-number">0</span>
 y=<span class="hljs-number">0</span>
 sx=<span class="hljs-number">1</span>
 sy=<span class="hljs-number">1</span>
 <span class="hljs-keyword">DO</span>
-    SPRITE <span class="hljs-number">0</span>,x,y,<span class="hljs-number">1</span>
+    SPRITE <span class="hljs-number">0</span>, x, y, <span class="hljs-number">1</span>
     <span class="hljs-keyword">IF</span> SPRITE HIT(<span class="hljs-number">0</span>) THEN
         <span class="hljs-keyword">WAIT</span> <span class="hljs-number">30</span>
         <span class="hljs-keyword">GOTO</span> again
@@ -1618,13 +1620,13 @@ sy=<span class="hljs-number">1</span>
 <h4 id="-collides-sprite-hit-sprite-sprite1-"><code>collides =SPRITE HIT(sprite, sprite1)</code></h4>
 <p>Return if the <code>sprite</code> (0..169) <code>collides</code> (0/-1) with the <code>sprite1</code>.</p>
 <p>Example of two owerlapping sprites:</p>
-<pre><code>SPRITE 20,46,46,1
+<pre><code>SPRITE 20, 46, 46, 1
 <span class="hljs-keyword">DO</span>
-SPRITE <span class="hljs-number">10</span>,<span class="hljs-number">40</span>+((TIMER/<span class="hljs-number">60</span>) <span class="hljs-keyword">MOD</span> <span class="hljs-number">2</span>)*<span class="hljs-number">4</span>,<span class="hljs-number">40</span>,<span class="hljs-number">1</span>
-<span class="hljs-keyword">IF</span> SPRITE HIT(<span class="hljs-number">10</span>,<span class="hljs-number">20</span>) <span class="hljs-keyword">THEN</span>
-    <span class="hljs-built_in">TEXT</span> <span class="hljs-number">8</span>,<span class="hljs-number">5</span>,<span class="hljs-string">"hit"</span>
+SPRITE <span class="hljs-number">10</span>, <span class="hljs-number">40</span>+((TIMER/<span class="hljs-number">60</span>) <span class="hljs-keyword">MOD</span> <span class="hljs-number">2</span>)*<span class="hljs-number">4</span>, <span class="hljs-number">40</span>, <span class="hljs-number">1</span>
+<span class="hljs-keyword">IF</span> SPRITE HIT(<span class="hljs-number">10</span>, <span class="hljs-number">20</span>) <span class="hljs-keyword">THEN</span>
+    <span class="hljs-built_in">TEXT</span> <span class="hljs-number">8</span>, <span class="hljs-number">5</span>, <span class="hljs-string">"hit"</span>
 <span class="hljs-keyword">ELSE</span>
-    <span class="hljs-built_in">TEXT</span> <span class="hljs-number">8</span>,<span class="hljs-number">5</span>,<span class="hljs-string">"   "</span>
+    <span class="hljs-built_in">TEXT</span> <span class="hljs-number">8</span>, <span class="hljs-number">5</span>, <span class="hljs-string">"   "</span>
 <span class="hljs-keyword">END</span> <span class="hljs-keyword">IF</span>
 <span class="hljs-keyword">WAIT</span> VBL
 <span class="hljs-keyword">LOOP</span>
@@ -1640,7 +1642,7 @@ FFFFFFFFF0F0F0F00000000000000000
 <p>Return the <code>sprite</code> which collided, resulting of the last <code>=SPRITE.HIT()</code> function call (any of the three form).</p>
 <p>Example of a ball that bounce on the wall and destroy the obstable:</p>
 <pre><code>FOR i=1 TO 20
-    SPRITE i,RND(SHOWN.W)-8,RND(SHOWN.H)-8,2
+    SPRITE i, RND(SHOWN.W)-8, RND(SHOWN.H)-8, 2
 NEXT i
 again:
 x=0
@@ -1648,8 +1650,8 @@ y=0
 sx=1
 sy=1
 <span class="hljs-keyword">DO</span>
-    SPRITE <span class="hljs-number">0</span>,x,y,<span class="hljs-number">1</span>
-    <span class="hljs-keyword">IF</span> SPRITE HIT(<span class="hljs-number">0</span>,<span class="hljs-number">1</span> <span class="hljs-keyword">TO</span> <span class="hljs-number">20</span>) <span class="hljs-keyword">THEN</span>
+    SPRITE <span class="hljs-number">0</span>, x, y, <span class="hljs-number">1</span>
+    <span class="hljs-keyword">IF</span> SPRITE HIT(<span class="hljs-number">0</span>, <span class="hljs-number">1</span> <span class="hljs-keyword">TO</span> <span class="hljs-number">20</span>) <span class="hljs-keyword">THEN</span>
         <span class="hljs-keyword">WAIT</span> <span class="hljs-number">15</span>
         SPRITE <span class="hljs-keyword">OFF</span> HIT
         <span class="hljs-keyword">GOTO</span> again
@@ -1680,23 +1682,23 @@ sy=1
 <p>Only clear the background layer numbered <code>layer</code> with character zero 0. Do not alter the scrolling value.</p>
 <h4 id="-scroll-layer-x-y-"><code>SCROLL layer, [x], [y]</code></h4>
 <p>Set the scroll offset on <code>x</code> and <code>y</code> axis of the <code>layer</code> in pixels.</p>
-<pre><code>TEXT <span class="hljs-number">10</span>,<span class="hljs-number">10</span>,<span class="hljs-string">"hello!"</span>
+<pre><code>TEXT <span class="hljs-number">10</span>, <span class="hljs-number">10</span>, <span class="hljs-string">"hello!"</span>
 BG <span class="hljs-number">1</span>
-TEXT <span class="hljs-number">10</span>,<span class="hljs-number">10</span>,<span class="hljs-string">"hello!"</span>
-SCROLL <span class="hljs-number">0</span>,<span class="hljs-number">0</span>,<span class="hljs-number">-4</span>
+TEXT <span class="hljs-number">10</span>, <span class="hljs-number">10</span>, <span class="hljs-string">"hello!"</span>
+SCROLL <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">-4</span>
 </code></pre><p>Omitted parameters will keep their previous values.</p>
-<h4 id="-x-scroll-x-layer-br-y-scroll-y-layer-"><code>x =SCROLL.X(layer)</code><br /><code>y =SCROLL.Y(layer)</code></h4>
+<h4 id="-x-scroll-x-layer-br-y-scroll-y-layer-"><code>x =SCROLL.X(layer)</code><br/><code>y =SCROLL.Y(layer)</code></h4>
 <p>Return the scroll offset on <code>x</code> and <code>y</code> axis of the <code>layer</code> in pixels.</p>
 <p>Example of getting the scroll offset of the background layer:</p>
 <pre><code><span class="hljs-keyword">FOR</span> x=<span class="hljs-number">0</span> <span class="hljs-keyword">TO</span> <span class="hljs-number">63</span>
 <span class="hljs-keyword">FOR</span> y=<span class="hljs-number">0</span> <span class="hljs-keyword">TO</span> <span class="hljs-number">63</span>
-    CELL x,y,RND(<span class="hljs-number">3</span>)
+    CELL x, y, RND(<span class="hljs-number">3</span>)
 NEXT y
 NEXT x
 do
     x=SCROLL.<span class="hljs-keyword">X</span>(<span class="hljs-number">0</span>)+(TOUCH.<span class="hljs-keyword">X</span>-SCROLL.<span class="hljs-keyword">X</span>(<span class="hljs-number">0</span>))/<span class="hljs-number">4</span>
     y=SCROLL.<span class="hljs-keyword">Y</span>(<span class="hljs-number">0</span>)+(TOUCH.<span class="hljs-keyword">Y</span>-SCROLL.<span class="hljs-keyword">Y</span>(<span class="hljs-number">0</span>))/<span class="hljs-number">4</span>
-    SCROLL <span class="hljs-number">0</span>,x,y
+    SCROLL <span class="hljs-number">0</span>, x, y
     <span class="hljs-keyword">WAIT</span> VBL
 LOOP
 
@@ -1708,9 +1710,9 @@ FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
 </code></pre><h4 id="-bg-layer-"><code>BG layer</code></h4>
 <p>Change the current <code>layer</code> (0..3) for further cells draw operations.</p>
 <pre><code>BG <span class="hljs-number">0</span>
-TEXT <span class="hljs-number">10</span>,<span class="hljs-number">10</span>,<span class="hljs-string">"<span class="hljs-subst">\"</span>
+TEXT <span class="hljs-number">10</span>, <span class="hljs-number">10</span>, <span class="hljs-string">"<span class="hljs-subst">\"</span>
 BG 1
-TEXT 10,10,"</span>/<span class="hljs-string">"</span>
+TEXT 10, 10, "</span>/<span class="hljs-string">"</span>
 </code></pre><h4 id="-pal-palette-"><code>PAL palette</code></h4>
 <p>Change the current <code>palette</code> for further cells draw operations.</p>
 <pre><code><span class="hljs-keyword">PRINT</span> <span class="hljs-string">"hello"</span>,
@@ -1718,14 +1720,14 @@ PAL <span class="hljs-number">1</span>
 <span class="hljs-keyword">PRINT</span> <span class="hljs-string">"world"</span>
 </code></pre><h4 id="-flip-horizontal-vertical-"><code>FLIP [horizontal], [vertical]</code></h4>
 <p>Change the <code>horizontal</code> and <code>vertical</code> flip attributes for further cells draw operations, considering 0 as not flipped and something else as flipped.</p>
-<pre><code>FLIP <span class="hljs-number">1</span>,<span class="hljs-number">0</span>
+<pre><code>FLIP <span class="hljs-number">1</span>, <span class="hljs-number">0</span>
 PRINT <span class="hljs-string">"dlrow olleh"</span>
 </code></pre><p>Omitted parameters will keep their previous values.</p>
 <h4 id="-prio-priority-"><code>PRIO priority</code></h4>
 <p>Change the <code>priority</code> for further cells draw operations.</p>
-<pre><code><span class="hljs-attribute">SPRITE</span> <span class="hljs-number">0</span>,<span class="hljs-number">78</span>,<span class="hljs-number">78</span>,<span class="hljs-number">1</span>
+<pre><code><span class="hljs-attribute">SPRITE</span> <span class="hljs-number">0</span>, <span class="hljs-number">78</span>, <span class="hljs-number">78</span>, <span class="hljs-number">1</span>
 PRIO <span class="hljs-number">1</span>
-TEXT <span class="hljs-number">10</span>,<span class="hljs-number">10</span>,<span class="hljs-string">"s"</span>
+TEXT <span class="hljs-number">10</span>, <span class="hljs-number">10</span>, <span class="hljs-string">"s"</span>
 
 <span class="hljs-comment">#2:MAIN CHARACTERS</span>
 <span class="hljs-number">00000000000000000000000000000000</span>
@@ -1738,33 +1740,33 @@ TEXT <span class="hljs-number">10</span>,<span class="hljs-number">10</span>,<sp
 <p>By omiting the <code>character</code> argument, the command will only alter the attributes: palette, flip and priority.</p>
 <p>Use <code>BG</code>, <code>PAL</code>, <code>FLIP</code>, <code>PRIO</code> and <code>ATTR</code> to alter the <a href="#cells-attributes">current attributes</a>.</p>
 <p>E.g. draw a face:</p>
-<pre><code><span class="hljs-selector-tag">CELL</span> 10,10,1
+<pre><code><span class="hljs-selector-tag">CELL</span> 10, 10, 1
 
 <span class="hljs-selector-id">#2</span><span class="hljs-selector-pseudo">:MAIN</span> <span class="hljs-selector-tag">CHARACTERS</span>
 00000000000000000000000000000000
 003<span class="hljs-selector-tag">C7E6A7E7E3C000000183C00000000</span>
 </code></pre><p>E.g. draw an inverted blue r letter:</p>
-<pre><code>CELL <span class="hljs-number">10</span>,<span class="hljs-number">10</span>,<span class="hljs-number">242</span>
-FLIP <span class="hljs-number">1</span>,<span class="hljs-number">0</span>
+<pre><code>CELL <span class="hljs-number">10</span>, <span class="hljs-number">10</span>, <span class="hljs-number">242</span>
+FLIP <span class="hljs-number">1</span>, <span class="hljs-number">0</span>
 PAL <span class="hljs-number">1</span>
-CELL <span class="hljs-number">10</span>,<span class="hljs-number">10</span>,
+CELL <span class="hljs-number">10</span>, <span class="hljs-number">10</span>,
 </code></pre><h4 id="-character-cell-c-x-y-"><code>character =CELL.C(x, y)</code></h4>
 <p>Return the <code>character</code> of the <code>x, y</code> cell from the current layer.</p>
 <p>Example of reading the ASCII code of a character:</p>
 <pre><code>BG <span class="hljs-number">2</span>
 <span class="hljs-keyword">FOR</span> x=<span class="hljs-number">0</span> <span class="hljs-keyword">to</span> SHOWN.W\<span class="hljs-number">8</span>
 <span class="hljs-keyword">FOR</span> y=<span class="hljs-number">0</span> <span class="hljs-keyword">to</span> SHOWN.H\<span class="hljs-number">8</span>
-    CELL x,y,<span class="hljs-number">192</span>+RND(<span class="hljs-number">63</span>)
+    CELL x, y, <span class="hljs-number">192</span>+RND(<span class="hljs-number">63</span>)
 <span class="hljs-keyword">NEXT</span> y
 <span class="hljs-keyword">NEXT</span> x
 BG <span class="hljs-number">1</span>
-BG COPY <span class="hljs-number">0</span>,<span class="hljs-number">0</span>,<span class="hljs-number">6</span>,<span class="hljs-number">4</span> <span class="hljs-keyword">TO</span> <span class="hljs-number">4</span>,<span class="hljs-number">4</span>
+BG COPY <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">6</span>, <span class="hljs-number">4</span> <span class="hljs-keyword">TO</span> <span class="hljs-number">4</span>, <span class="hljs-number">4</span>
 
 <span class="hljs-keyword">DO</span>
     BG <span class="hljs-number">2</span>
-    c=CELL.C(TOUCH.X\<span class="hljs-number">8</span>,TOUCH.Y\<span class="hljs-number">8</span>)
+    c=CELL.C(TOUCH.X\<span class="hljs-number">8</span>, TOUCH.Y\<span class="hljs-number">8</span>)
     BG <span class="hljs-number">0</span>
-    <span class="hljs-keyword">TEXT</span> <span class="hljs-number">5</span>,<span class="hljs-number">5</span>,<span class="hljs-string">"$"</span>+RIGHT$(<span class="hljs-string">"0"</span>+HEX$(C<span class="hljs-number">-192</span>),<span class="hljs-number">2</span>)
+    <span class="hljs-keyword">TEXT</span> <span class="hljs-number">5</span>, <span class="hljs-number">5</span>, <span class="hljs-string">"$"</span>+RIGHT$(<span class="hljs-string">"0"</span>+HEX$(C<span class="hljs-number">-192</span>), <span class="hljs-number">2</span>)
     WAIT VBL
 <span class="hljs-keyword">LOOP</span>
 
@@ -1785,26 +1787,26 @@ FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
 <span class="hljs-keyword">FOR</span> x=<span class="hljs-number">0</span> <span class="hljs-keyword">to</span> SHOWN.W\<span class="hljs-number">8</span>
 <span class="hljs-keyword">FOR</span> y=<span class="hljs-number">0</span> <span class="hljs-keyword">to</span> SHOWN.H\<span class="hljs-number">8</span>
     ATTR RND(<span class="hljs-number">255</span>)
-    CELL X,Y,<span class="hljs-number">192</span>+RND(<span class="hljs-number">63</span>)
+    CELL X, Y, <span class="hljs-number">192</span>+RND(<span class="hljs-number">63</span>)
 <span class="hljs-keyword">NEXT</span> y
 <span class="hljs-keyword">NEXT</span> X
 BG <span class="hljs-number">1</span>
-BG FILL <span class="hljs-number">5</span>,<span class="hljs-number">5</span> <span class="hljs-keyword">TO</span> <span class="hljs-number">13</span>,<span class="hljs-number">9</span> <span class="hljs-built_in">CHAR</span> <span class="hljs-number">2</span>
-BG FILL <span class="hljs-number">4</span>,<span class="hljs-number">4</span> <span class="hljs-keyword">TO</span> <span class="hljs-number">12</span>,<span class="hljs-number">8</span> <span class="hljs-built_in">CHAR</span> <span class="hljs-number">1</span>
+BG FILL <span class="hljs-number">5</span>, <span class="hljs-number">5</span> <span class="hljs-keyword">TO</span> <span class="hljs-number">13</span>, <span class="hljs-number">9</span> <span class="hljs-built_in">CHAR</span> <span class="hljs-number">2</span>
+BG FILL <span class="hljs-number">4</span>, <span class="hljs-number">4</span> <span class="hljs-keyword">TO</span> <span class="hljs-number">12</span>, <span class="hljs-number">8</span> <span class="hljs-built_in">CHAR</span> <span class="hljs-number">1</span>
 BG <span class="hljs-number">0</span>
 PAL <span class="hljs-number">0</span>
 PRIO <span class="hljs-number">1</span>
-FLIP <span class="hljs-number">0</span>,<span class="hljs-number">0</span>
-<span class="hljs-keyword">TEXT</span> <span class="hljs-number">5</span>,<span class="hljs-number">5</span>,<span class="hljs-string">"Pal:"</span>
-<span class="hljs-keyword">TEXT</span> <span class="hljs-number">5</span>,<span class="hljs-number">6</span>,<span class="hljs-string">"Flip:"</span>
-<span class="hljs-keyword">TEXT</span> <span class="hljs-number">5</span>,<span class="hljs-number">7</span>,<span class="hljs-string">"Prio:"</span>
+FLIP <span class="hljs-number">0</span>, <span class="hljs-number">0</span>
+<span class="hljs-keyword">TEXT</span> <span class="hljs-number">5</span>, <span class="hljs-number">5</span>, <span class="hljs-string">"Pal:"</span>
+<span class="hljs-keyword">TEXT</span> <span class="hljs-number">5</span>, <span class="hljs-number">6</span>, <span class="hljs-string">"Flip:"</span>
+<span class="hljs-keyword">TEXT</span> <span class="hljs-number">5</span>, <span class="hljs-number">7</span>, <span class="hljs-string">"Prio:"</span>
 <span class="hljs-keyword">DO</span>
     BG <span class="hljs-number">2</span>
-    a=CELL.A(TOUCH.X\<span class="hljs-number">8</span>,TOUCH.Y\<span class="hljs-number">8</span>)
+    a=CELL.A(TOUCH.X\<span class="hljs-number">8</span>, TOUCH.Y\<span class="hljs-number">8</span>)
     BG <span class="hljs-number">0</span>
-    <span class="hljs-keyword">TEXT</span> <span class="hljs-number">9</span>,<span class="hljs-number">5</span>,RIGHT$(<span class="hljs-string">"00"</span>+BIN$(A <span class="hljs-keyword">AND</span> %<span class="hljs-number">111</span>),<span class="hljs-number">3</span>)
-    <span class="hljs-keyword">TEXT</span> <span class="hljs-number">10</span>,<span class="hljs-number">6</span>,RIGHT$(<span class="hljs-string">"0"</span>+BIN$((A\<span class="hljs-number">8</span>) <span class="hljs-keyword">AND</span> %<span class="hljs-number">11</span>),<span class="hljs-number">2</span>)
-    <span class="hljs-keyword">TEXT</span> <span class="hljs-number">10</span>,<span class="hljs-number">7</span>,RIGHT$(<span class="hljs-string">"0"</span>+BIN$((A\<span class="hljs-number">32</span>) <span class="hljs-keyword">AND</span> %<span class="hljs-number">11</span>),<span class="hljs-number">2</span>)
+    <span class="hljs-keyword">TEXT</span> <span class="hljs-number">9</span>, <span class="hljs-number">5</span>, RIGHT$(<span class="hljs-string">"00"</span>+BIN$(A <span class="hljs-keyword">AND</span> %<span class="hljs-number">111</span>), <span class="hljs-number">3</span>)
+    <span class="hljs-keyword">TEXT</span> <span class="hljs-number">10</span>, <span class="hljs-number">6</span>, RIGHT$(<span class="hljs-string">"0"</span>+BIN$((A\<span class="hljs-number">8</span>) <span class="hljs-keyword">AND</span> %<span class="hljs-number">11</span>), <span class="hljs-number">2</span>)
+    <span class="hljs-keyword">TEXT</span> <span class="hljs-number">10</span>, <span class="hljs-number">7</span>, RIGHT$(<span class="hljs-string">"0"</span>+BIN$((A\<span class="hljs-number">32</span>) <span class="hljs-keyword">AND</span> %<span class="hljs-number">11</span>), <span class="hljs-number">2</span>)
     WAIT VBL
 <span class="hljs-keyword">LOOP</span>
 
@@ -1815,13 +1817,13 @@ FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
 </code></pre><p>Check the <a href="#cell-attributes">cell attributes reference</a>.</p>
 <h4 id="-bg-fill-x1-y1-to-x2-y2-char-character-"><code>BG FILL x1, y1 TO x2, y2 CHAR character</code></h4>
 <p>Fills all cells from <code>x1, y1</code> coordinates to <code>x2, y2</code> with <code>character</code> and the current attributes.</p>
-<pre><code>BG FILL <span class="hljs-number">1</span>,<span class="hljs-number">1</span> <span class="hljs-keyword">TO</span> <span class="hljs-number">5</span>,<span class="hljs-number">5</span> <span class="hljs-built_in">CHAR</span> <span class="hljs-number">1</span>
-BG FILL <span class="hljs-number">2</span>,<span class="hljs-number">2</span> <span class="hljs-keyword">TO</span> <span class="hljs-number">4</span>,<span class="hljs-number">4</span> <span class="hljs-built_in">CHAR</span> <span class="hljs-number">2</span>
+<pre><code>BG FILL 1,<span class="hljs-number"> 1 </span>TO 5,<span class="hljs-number"> 5 </span>CHAR 1
+BG FILL 2,<span class="hljs-number"> 2 </span>TO 4,<span class="hljs-number"> 4 </span>CHAR 2
 
-<span class="hljs-meta">#2:MAIN CHARACTERS</span>
-<span class="hljs-number">00000000000000000000000000000000</span>
+<span class="hljs-comment">#2:MAIN CHARACTERS</span>
+00000000000000000000000000000000
 FFFFFFFFFFFFFFFF0000000000000000
-<span class="hljs-number">0000000000000000</span>FFFFFFFFFFFFFFFF
+0000000000000000FFFFFFFFFFFFFFFF
 </code></pre><h4 id="-tint-y-y-pal-palette-flip-horizontal-vertical-prio-priority-"><code>TINT y, y [PAL palette] [FLIP horizontal, vertical] [PRIO priority]</code></h4>
 <p>Sets to the cell <code>x, y</code> (0..63) of the current layer, one or more attributes:</p>
 <ul>
@@ -1831,7 +1833,7 @@ FFFFFFFFFFFFFFFF0000000000000000
 </ul>
 <p>Omitted parameters will keep their previous values.</p>
 <pre><code>PRINT <span class="hljs-string">"hello!"</span>
-TINT <span class="hljs-number">5</span>,<span class="hljs-number">0</span> PAL <span class="hljs-number">7</span>
+TINT <span class="hljs-number">5</span>, <span class="hljs-number">0</span> PAL <span class="hljs-number">7</span>
 </code></pre><h4 id="-bg-tint-y1-y1-to-x2-y2-pal-palette-flip-horizontal-vertical-prio-priority-"><code>BG TINT y1, y1 TO x2, y2 [PAL palette] [FLIP horizontal, vertical] [PRIO priority]</code></h4>
 <p>Sets to the cells from the rectangle <code>x1, y1</code> to <code>x2, y2</code> (0..63), one or more attributes:</p>
 <ul>
@@ -1841,10 +1843,10 @@ TINT <span class="hljs-number">5</span>,<span class="hljs-number">0</span> PAL <
 </ul>
 <p>Omitted parameters will keep their previous values.</p>
 <h4 id="-bg-scroll-x1-y1-to-x2-y2-step-x3-y3-"><code>BG SCROLL x1, y1 to x2, y2 step x3, y3</code></h4>
-<p>Move the cell's attributes and character from the rectangle <code>x1, y1</code> to <code>x2, y2</code> (0..63) of the current layer by <code>x3</code>,<code>y3</code> in cell coordinates.</p>
+<p>Move the cell's attributes and character from the rectangle <code>x1, y1</code> to <code>x2, y2</code> (0..63) of the current layer by <code>x3</code>, <code>y3</code> in cell coordinates.</p>
 <p>This feature is internally used to scroll text when it reach the bottom of the window.</p>
-<h4 id="-bg-source-address-width-height-"><code>BG SOURCE address [,width, height]</code></h4>
-<p>Set the memory <code>address</code> to use as source for BG COPY x1,y1,width,height TO x2,y2 operations.</p>
+<h4 id="-bg-source-address-width-height-"><code>BG SOURCE address [, width, height]</code></h4>
+<p>Set the memory <code>address</code> to use as source for BG COPY x1, y1, width, height TO x2, y2 operations.</p>
 <p>When <code>width</code> and <code>height</code> are specified, they are used as indiquating the number of cells in the source.</p>
 <p>If they are not specified, the <a href="#background-source-data">official background data format</a> are used to retrieve the width and the height.</p>
 <blockquote>
@@ -1854,26 +1856,26 @@ TINT <span class="hljs-number">5</span>,<span class="hljs-number">0</span> PAL <
 <pre><code>a=$<span class="hljs-number">9000</span>
 FOR r=<span class="hljs-number">0</span> TO <span class="hljs-number">63</span>
 FOR c=<span class="hljs-number">0</span> TO <span class="hljs-number">63</span>
-    POKE A,<span class="hljs-number">1</span>
+    POKE A, <span class="hljs-number">1</span>
     INC a
-    POKE a,RND(<span class="hljs-number">1</span>)*<span class="hljs-number">8</span>
+    POKE a, RND(<span class="hljs-number">1</span>)*<span class="hljs-number">8</span>
     INC a
 NEXT c
 NEXT r
 
-bG SOURCE $<span class="hljs-number">9000</span>,<span class="hljs-number">64</span>,<span class="hljs-number">64</span>
-BG COPY <span class="hljs-number">0</span>,<span class="hljs-number">0</span>,<span class="hljs-number">64</span>,<span class="hljs-number">64</span> TO <span class="hljs-number">0</span>,<span class="hljs-number">0</span>
+bG SOURCE $<span class="hljs-number">9000</span>, <span class="hljs-number">64</span>, <span class="hljs-number">64</span>
+BG COPY <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">64</span>, <span class="hljs-number">64</span> TO <span class="hljs-number">0</span>, <span class="hljs-number">0</span>
 
 Do
 x=<span class="hljs-number">0</span>
-ADD x,SIN(TIMER/<span class="hljs-number">600</span>)*COS(TIMER/<span class="hljs-number">6000</span>)*<span class="hljs-number">200</span>
-ADD x,SIN(TIMER/<span class="hljs-number">500</span>)*<span class="hljs-number">50</span>
+ADD x, SIN(TIMER/<span class="hljs-number">600</span>)*COS(TIMER/<span class="hljs-number">6000</span>)*<span class="hljs-number">200</span>
+ADD x, SIN(TIMER/<span class="hljs-number">500</span>)*<span class="hljs-number">50</span>
 
 y=<span class="hljs-number">0</span>
-ADD y,COS(TIMER/<span class="hljs-number">400</span>)*SIN(TIMER/<span class="hljs-number">4000</span>)*<span class="hljs-number">200</span>
-ADD y,COS(TIMER/<span class="hljs-number">700</span>)*<span class="hljs-number">50</span>
+ADD y, COS(TIMER/<span class="hljs-number">400</span>)*SIN(TIMER/<span class="hljs-number">4000</span>)*<span class="hljs-number">200</span>
+ADD y, COS(TIMER/<span class="hljs-number">700</span>)*<span class="hljs-number">50</span>
 
-SCROLL <span class="hljs-number">0</span>,X,Y
+SCROLL <span class="hljs-number">0</span>, X, Y
 WAIT VBL
 <span class="hljs-literal">LOOP</span>
 </code></pre><h4 id="-bg-copy-x1-y1-width-height-to-x2-y2-"><code>BG COPY x1, y1, width, height TO x2, y2</code></h4>
@@ -1883,15 +1885,15 @@ WAIT VBL
 <p>Similar to <code>CELL</code> but modify the source in memory instead of the current layer.</p>
 <p>The source MUST point to writable memory. It will NOT work with <code>BG SOURCE ROM(3)</code>.</p>
 <p>Example that continously draw to the background source:</p>
-<pre><code>TEXT 4,4,"touch to copy"
+<pre><code>TEXT 4, 4, "touch to copy"
 BG 1
-BG SOURCE $A000,64,64
+BG SOURCE $A000, 64, 64
 
 <span class="hljs-keyword">DO</span>
     PAL RND(<span class="hljs-number">7</span>)
-    MCELL RND(<span class="hljs-keyword">CEIL</span>(SHOWN.W/<span class="hljs-number">8</span>)),RND(<span class="hljs-keyword">CEIL</span>(SHOWN.H/<span class="hljs-number">8</span>)),RND(<span class="hljs-number">1</span>)
+    MCELL RND(<span class="hljs-keyword">CEIL</span>(SHOWN.W/<span class="hljs-number">8</span>)), RND(<span class="hljs-keyword">CEIL</span>(SHOWN.H/<span class="hljs-number">8</span>)), RND(<span class="hljs-number">1</span>)
     <span class="hljs-keyword">IF</span> TOUCH <span class="hljs-keyword">THEN</span>
-        BG COPY <span class="hljs-number">0</span>,<span class="hljs-number">0</span>,<span class="hljs-keyword">CEIL</span>(SHOWN.W/<span class="hljs-number">8</span>),<span class="hljs-keyword">CEIL</span>(SHOWN.H/<span class="hljs-number">8</span>) <span class="hljs-keyword">TO</span> <span class="hljs-number">0</span>,<span class="hljs-number">0</span>
+        BG COPY <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-keyword">CEIL</span>(SHOWN.W/<span class="hljs-number">8</span>), <span class="hljs-keyword">CEIL</span>(SHOWN.H/<span class="hljs-number">8</span>) <span class="hljs-keyword">TO</span> <span class="hljs-number">0</span>, <span class="hljs-number">0</span>
     <span class="hljs-keyword">END</span> <span class="hljs-keyword">IF</span>
     <span class="hljs-keyword">WAIT</span> VBL
 <span class="hljs-keyword">LOOP</span>
@@ -1907,17 +1909,17 @@ FFFFFFFFFFFFFFFF0000000000000000
 <p>Similar to <code>=CELL.A</code> but modify the source in memory instead of the current layer.</p>
 <h4 id="-text-x-y-text-"><code>TEXT x, y, text$</code></h4>
 <p>Will print <code>text$</code> on the current layer starting at <code>x, y</code> cell using the current background attributes on the current layer.</p>
-<p>  DATA &quot;ga&quot;,&quot;bu&quot;,&quot;zo&quot;,&quot;meu&quot;
+<p>  DATA &quot;ga&quot;, &quot;bu&quot;, &quot;zo&quot;, &quot;meu&quot;
   FOR i=0 TO 3
     PAL I
     READ c$
-    TEXT 8+i*2,10,c$
+    TEXT 8+i*2, 10, c$
   NEXT i</p>
 <h4 id="-number-x-y-number-count-"><code>NUMBER x, y, number, count</code></h4>
 <p>Will print the latest <code>count</code> digits of the <code>number</code> on the current layer starting at <code>x, y</code> cell using the current background attributes on the current layer.</p>
 <p>Similar to <code>TEXT</code> but dedicated to print number instead of text.</p>
 <pre><code>score=<span class="hljs-number">123</span>
-NUMBER <span class="hljs-number">10</span>,<span class="hljs-number">10</span>,score,<span class="hljs-number">6</span>
+NUMBER <span class="hljs-number">10</span>, <span class="hljs-number">10</span>, score, <span class="hljs-number">6</span>
 </code></pre><h4 id="-font-first-"><code>FONT first</code></h4>
 <p>Sets the <code>first</code> character number that will defines the range of ASCII characters used for <code>TEXT</code>, <code>NUMBER</code>] and <code>PRINT</code> commands.</p>
 <p>The default value is 192, which points to where the default font is loaded at the beginning of the program if the characters are not used. It MAY be overridden by <code>LOAD</code> operation.</p>
@@ -1925,7 +1927,7 @@ NUMBER <span class="hljs-number">10</span>,<span class="hljs-number">10</span>,s
 <p>Commands dedicated to draw text on layers using characters data. 64 characters can be reserved to print characters on screen. By default those characters number are (192..255) but can be changed using the <code>FONT</code>.</p>
 <h4 id="-window-x-y-width-height-layer-"><code>WINDOW x, y, width, height, layer</code></h4>
 <p>Sets the current window at <code>x, y</code> with <code>width, height</code> and on <code>layer</code> where text will be drawn.</p>
-<pre><code>WINDOW <span class="hljs-number">4</span>,<span class="hljs-number">8</span>,SHOWN.W\<span class="hljs-number">8</span><span class="hljs-number">-8</span>,<span class="hljs-number">20</span>,<span class="hljs-number">0</span>
+<pre><code>WINDOW <span class="hljs-number">4</span>, <span class="hljs-number">8</span>, SHOWN.W\<span class="hljs-number">8</span><span class="hljs-number">-8</span>, <span class="hljs-number">20</span>, <span class="hljs-number">0</span>
 PRINT <span class="hljs-string">"Oh my god! There's a tremendous amount of work to do. Can I do a little bit of it today."</span>
 </code></pre><p>By default, the window is sets inside the safe area delimited by the safe functions.</p>
 <h4 id="-clw-"><code>CLW</code></h4>
@@ -1933,10 +1935,10 @@ PRINT <span class="hljs-string">"Oh my god! There's a tremendous amount of work 
 <h4 id="-locate-x-y-"><code>LOCATE x, y</code></h4>
 <p>Move the cursor location at <code>x, y</code> in cells coordinates inside the window.</p>
 <pre><code><span class="hljs-keyword">FOR</span> i=<span class="hljs-number">1</span> TO <span class="hljs-number">9</span>
-    LOCATE I,I
+    LOCATE I, I
     <span class="hljs-keyword">PRINT</span> <span class="hljs-keyword">str</span>$(i)<span class="hljs-comment">;</span>
 <span class="hljs-keyword">NEXT</span> i
-</code></pre><h4 id="-x-cursor-x-br-y-cursor-y-"><code>x =CURSOR.X</code><br /><code>y =CURSOR.Y</code></h4>
+</code></pre><h4 id="-x-cursor-x-br-y-cursor-y-"><code>x =CURSOR.X</code><br/><code>y =CURSOR.Y</code></h4>
 <p>Return the cursor location <code>x, y</code> in cells coordinates inside the window.</p>
 <h4 id="-print-expression-"><code>PRINT expression...</code></h4>
 <p>Outputs string <code>expression...</code> onto the current window.</p>
@@ -1948,7 +1950,7 @@ PRINT <span class="hljs-string">"Oh my god! There's a tremendous amount of work 
 </ul>
 <p><code>expression...</code> items can be seperated by:</p>
 <ul>
-<li>a coma (,) to add a space between items,</li>
+<li>a coma (, ) to add a space between items,</li>
 <li>a semicolon (;) to not add space e</li>
 </ul>
 <p>Example with different expressions:</p>
@@ -1959,7 +1961,7 @@ txt: DATA <span class="hljs-string">"data"</span>
 <span class="hljs-keyword">PRINT</span> txt
 </code></pre><p>Example with different separators:</p>
 <pre><code><span class="hljs-keyword">PRINT</span> <span class="hljs-string">"glu"</span>;<span class="hljs-string">"ed"</span>
-<span class="hljs-keyword">PRINT</span> <span class="hljs-string">"sepa"</span>,<span class="hljs-string">"rated"</span>
+<span class="hljs-keyword">PRINT</span> <span class="hljs-string">"sepa"</span>, <span class="hljs-string">"rated"</span>
 
 <span class="hljs-keyword">DO</span>
     <span class="hljs-built_in">WAIT</span> <span class="hljs-number">2</span>
@@ -1975,35 +1977,35 @@ LOOp
 <p>Example that print a text only when device screen is touched:</p>
 <pre><code><span class="hljs-keyword">DO</span>
     CLS
-    <span class="hljs-keyword">IF</span> TOUCH <span class="hljs-keyword">THEN</span> <span class="hljs-built_in">TEXT</span> <span class="hljs-number">4</span>,<span class="hljs-number">4</span>,<span class="hljs-string">"touched"</span>
+    <span class="hljs-keyword">IF</span> TOUCH <span class="hljs-keyword">THEN</span> <span class="hljs-built_in">TEXT</span> <span class="hljs-number">4</span>, <span class="hljs-number">4</span>, <span class="hljs-string">"touched"</span>
     <span class="hljs-keyword">WAIT</span> VBL
 <span class="hljs-keyword">LOOP</span>
 </code></pre><h4 id="-touched-tap-"><code>touched =TAP</code></h4>
 <p>Return -1 for exactly one frame, if the device fantasy screen is <code>touched</code>.</p>
 <p>Example of a flappy letter going down by gravity and up when tapping on the screen:</p>
-<pre><code>SPRITE <span class="hljs-number">0</span>,<span class="hljs-number">0</span>,SHOWN.H/<span class="hljs-number">2</span>,<span class="hljs-number">226</span>
+<pre><code>SPRITE <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, SHOWN.H/<span class="hljs-number">2</span>, <span class="hljs-number">226</span>
 gravity=<span class="hljs-number">3</span>
 DO
     WAIT VBL
     x=SPRITE.X(<span class="hljs-number">0</span>)+<span class="hljs-number">1</span>
     IF x+<span class="hljs-number">8</span>&gt;SHOWN.W THEN X=<span class="hljs-number">0</span>
     IF TAP THEN gravity=<span class="hljs-number">-9</span>
-    y=CLAMP(SPRITE.Y(<span class="hljs-number">0</span>)+GRAVITY,<span class="hljs-number">0</span>,SHOWN.H<span class="hljs-number">-8</span>)
-    gravity=MIN(<span class="hljs-number">3</span>,gravity+<span class="hljs-number">1</span>)
-    SPRITE <span class="hljs-number">0</span>,x,y,
+    y=CLAMP(SPRITE.Y(<span class="hljs-number">0</span>)+GRAVITY, <span class="hljs-number">0</span>, SHOWN.H<span class="hljs-number">-8</span>)
+    gravity=MIN(<span class="hljs-number">3</span>, gravity+<span class="hljs-number">1</span>)
+    SPRITE <span class="hljs-number">0</span>, x, y,
 <span class="hljs-literal">LOOP</span>
-</code></pre><h4 id="-x-touch-x-br-y-touch-y-"><code>x =TOUCH.X</code><br /><code>y =TOUCH.Y</code></h4>
+</code></pre><h4 id="-x-touch-x-br-y-touch-y-"><code>x =TOUCH.X</code><br/><code>y =TOUCH.Y</code></h4>
 <p>Returns the last pixel position <code>x, y</code> touched. It returns a floating-point number, with a 1/16 pixel precisions.</p>
 <pre><code><span class="hljs-keyword">DO</span>
     <span class="hljs-keyword">CLS</span>
-    <span class="hljs-keyword">PRINT</span> TOUCH.X;<span class="hljs-string">","</span>;TOUCH.Y
+    <span class="hljs-keyword">PRINT</span> TOUCH.X;<span class="hljs-string">", "</span>;TOUCH.Y
     <span class="hljs-built_in">WAIT</span> VBL
 LOOP
-</code></pre><h4 id="-keyboard-on-br-keyboard-off-"><code>KEYBOARD ON</code><br /><code>KEYBOARD OFF</code></h4>
+</code></pre><h4 id="-keyboard-on-br-keyboard-off-"><code>KEYBOARD ON</code><br/><code>KEYBOARD OFF</code></h4>
 <p>Show or hide the device virtual keyboard. Because user can hide the keybord using a dedicated key, do not assume the keyboard is visible. Use <code>KEYBOARD ON</code> inside a loop or rely on <code>=KEYBOARD</code> to detect when the keyboard is shown or not.</p>
 <h4 id="-height-keyboard-"><code>height =KEYBOARD</code></h4>
 <p>Return the <code>height</code> of the virtual screen that has been occluded by the keyboard.</p>
-<h4 id="-input-prompt-variable-br-input-prompt-variable-"><code>INPUT [prompt;] variable</code><br /><code>INPUT [prompt;] variable$</code></h4>
+<h4 id="-input-prompt-variable-br-input-prompt-variable-"><code>INPUT [prompt;] variable</code><br/><code>INPUT [prompt;] variable$</code></h4>
 <p>Wait for the user to type a text or a number and store it to the <code>variable</code> or <code>variable$</code>.</p>
 <p>Optionally, a <code>prompt</code> can be printed on the screen before the user input.</p>
 <pre><code>a=<span class="hljs-keyword">RND</span>(<span class="hljs-number">9</span>)+<span class="hljs-number">10</span>
@@ -2036,16 +2038,16 @@ pass: <span class="hljs-keyword">PRINT</span> <span class="hljs-string">"you may
 <p>Sets the four colors on the height available <code>palette</code> (0..7). The color 0 of the palette 0 is generally used as backdrop color. (It can be change using the <code>SYSTEM</code> command.) <code>c0</code>, <code>c1</code>, <code>c2</code>, <code>c3</code> can accept a numeric value between 0 and 63, omit them to keep the current value. Consult the <a href="#64-colors">64 colors reference</a> to choose the color you want.</p>
 <h4 id="-available-color-palette-color-"><code>available =COLOR(palette, color)</code></h4>
 <p>Returns one of the <code>available</code> <a href="#64-colors">64 colors</a> associated to the pair <code>palette</code> (0..7), <code>color</code> (0..3).</p>
-<h4 id="-width-shown-w-br-height-shown-h-"><code>width =SHOWN.W</code><br /><code>height =SHOWN.H</code></h4>
+<h4 id="-width-shown-w-br-height-shown-h-"><code>width =SHOWN.W</code><br/><code>height =SHOWN.H</code></h4>
 <p>Returns the <code>width</code> and <code>height</code> in pixels of the visible area of the fantasy screen.</p>
-<h4 id="-left-safe-l-br-top-safe-t-br-right-safe-r-br-bottom-safe-b-"><code>left =SAFE.L</code><br /><code>top =SAFE.T</code><br /><code>right =SAFE.R</code><br /><code>bottom =SAFE.B</code></h4>
+<h4 id="-left-safe-l-br-top-safe-t-br-right-safe-r-br-bottom-safe-b-"><code>left =SAFE.L</code><br/><code>top =SAFE.T</code><br/><code>right =SAFE.R</code><br/><code>bottom =SAFE.B</code></h4>
 <p>Returns the <code>left</code>, <code>top</code>, <code>right</code> and <code>bottom</code> offset in pixels to apply from the boundary of the fantasy device screen to reach the inner safe area specified by the device's operating system.</p>
 <p>These functions can be used to avoid the top camera notch or the bottom inset full-width buttons.</p>
-<h4 id="-sprite-view-on-br-sprite-view-off-"><code>SPRITE VIEW ON</code><br /><code>SPRITE VIEW OFF</code></h4>
+<h4 id="-sprite-view-on-br-sprite-view-off-"><code>SPRITE VIEW ON</code><br/><code>SPRITE VIEW OFF</code></h4>
 <p>Enable or disable the rendering of all sprites.</p>
-<h4 id="-bg-view-on-br-bg-view-off-"><code>BG VIEW ON</code><br /><code>BG VIEW OFF</code></h4>
+<h4 id="-bg-view-on-br-bg-view-off-"><code>BG VIEW ON</code><br/><code>BG VIEW OFF</code></h4>
 <p>Enable or disable the rendering of all background layers.</p>
-<h4 id="-wait-vbl-br-wait-frame-"><code>WAIT VBL</code><br /><code>WAIT frame</code></h4>
+<h4 id="-wait-vbl-br-wait-frame-"><code>WAIT VBL</code><br/><code>WAIT frame</code></h4>
 <p>Wait for a number of <code>frame</code> to be drawn. Keyword <code>VBL</code> is similar to 1. This is used to:</p>
 <ul>
 <li>draw frames at 60 FPS,</li>
@@ -2054,15 +2056,15 @@ pass: <span class="hljs-keyword">PRINT</span> <span class="hljs-string">"you may
 </ul>
 <p>It is RECOMMENDED to place at least one <code>WAIT VBL</code> inside every loop that waits for player input or presents something to the player.</p>
 <p>Example that show the effect:</p>
-<pre><code>SPRITE <span class="hljs-number">0</span>,SHOWN.W/<span class="hljs-number">2</span><span class="hljs-number">-4</span>,SHOWN.H/<span class="hljs-number">2</span><span class="hljs-number">-4</span>,<span class="hljs-number">240</span>
-LOCATE <span class="hljs-number">2</span>,<span class="hljs-number">2</span>
+<pre><code>SPRITE <span class="hljs-number">0</span>, SHOWN.W/<span class="hljs-number">2</span><span class="hljs-number">-4</span>, SHOWN.H/<span class="hljs-number">2</span><span class="hljs-number">-4</span>, <span class="hljs-number">240</span>
+LOCATE <span class="hljs-number">2</span>, <span class="hljs-number">2</span>
 PRINT <span class="hljs-string">"touch to wait vbl"</span>
 DO
     x=SPRITE.X(<span class="hljs-number">0</span>)
     y=SPRITE.Y(<span class="hljs-number">0</span>)
-    ADD X,<span class="hljs-number">1</span>,<span class="hljs-number">-8</span> TO SHOWN.W
-    ADD Y,<span class="hljs-number">1</span>,<span class="hljs-number">-8</span> TO SHOWN.H
-    SPRITE <span class="hljs-number">0</span>,x,y,
+    ADD X, <span class="hljs-number">1</span>, <span class="hljs-number">-8</span> TO SHOWN.W
+    ADD Y, <span class="hljs-number">1</span>, <span class="hljs-number">-8</span> TO SHOWN.H
+    SPRITE <span class="hljs-number">0</span>, x, y,
     IF TOUCH THEN WAIT VBL
 <span class="hljs-literal">LOOP</span>
 </code></pre><blockquote>
@@ -2074,20 +2076,20 @@ DO
 <p>This can be used to execute code at every frame, independently of which part of the code is generating frames. Here is an example that demonstrate:</p>
 <pre><code>SUB v
     x=SPRITE.X(0)
-    ADD x,1,-8 TO SHOWN.<span class="hljs-built_in">W</span>
+    ADD x, 1, -8 TO SHOWN.<span class="hljs-built_in">W</span>
     y=SPRITE.<span class="hljs-built_in">Y</span>(0)
-    ADD y,1,-8 TO SHOWN.<span class="hljs-built_in">H</span>
-    SPRITE 0,x,y,1
+    ADD y, 1, -8 TO SHOWN.<span class="hljs-built_in">H</span>
+    SPRITE 0, x, y, 1
 END SUB
 <span class="hljs-keyword">ON</span> VBL CALL v
 
 <span class="hljs-keyword">one</span>:
-<span class="hljs-keyword">PALETTE</span> 0,43,,,
+<span class="hljs-keyword">PALETTE</span> 0, 43, , ,
 WAIT TAP
 GOTO <span class="hljs-keyword">two</span>
 
 <span class="hljs-keyword">two</span>:
-<span class="hljs-keyword">PALETTE</span> 0,59,,,
+<span class="hljs-keyword">PALETTE</span> 0, 59, , ,
 WAIT TAP
 GOTO <span class="hljs-keyword">one</span>
 
@@ -2100,16 +2102,16 @@ GOTO <span class="hljs-keyword">one</span>
 <p>Before the rendering of the next line of the screen, will execute the <code>procedure</code>. This is useful in conjunction with <code>=RASTER</code>.</p>
 <p>The code MUST be shortest, read more about <a href="#cycles">CPU cycles</a>.</p>
 <p>This can be used to change colors or scroll background layers, example:</p>
-<pre><code>TEXT <span class="hljs-number">3</span>,<span class="hljs-number">8</span>,<span class="hljs-string">"tap to toggle"</span>
-CELL <span class="hljs-number">10</span>,<span class="hljs-number">10</span>,<span class="hljs-number">1</span>
+<pre><code>TEXT <span class="hljs-number">3</span>, <span class="hljs-number">8</span>, <span class="hljs-string">"tap to toggle"</span>
+CELL <span class="hljs-number">10</span>, <span class="hljs-number">10</span>, <span class="hljs-number">1</span>
 
 SUB R
 IF RASTER&gt;=<span class="hljs-number">80</span> THEN
-    SCROLL <span class="hljs-number">0</span>,<span class="hljs-number">0</span>,<span class="hljs-number">80</span>-RASTER
-    PALETTE <span class="hljs-number">0</span>,,,RASTER MOD <span class="hljs-number">64</span>,
+    SCROLL <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">80</span>-RASTER
+    PALETTE <span class="hljs-number">0</span>, , , RASTER MOD <span class="hljs-number">64</span>,
 ELSE IF RASTER=<span class="hljs-number">0</span> THEN
-    SCROLL <span class="hljs-number">0</span>,<span class="hljs-number">0</span>,<span class="hljs-number">0</span>
-    PALETTE <span class="hljs-number">0</span>,,,<span class="hljs-number">0</span>,
+    SCROLL <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>
+    PALETTE <span class="hljs-number">0</span>, , , <span class="hljs-number">0</span>,
 END IF
 END SUB
 
@@ -2118,8 +2120,8 @@ DO
     ON RASTER CALL R
     WAIT TAP
     ON RASTER OFF
-    SCROLL <span class="hljs-number">0</span>,<span class="hljs-number">0</span>,<span class="hljs-number">0</span>
-    PALETTE <span class="hljs-number">0</span>,,,<span class="hljs-number">0</span>,
+    SCROLL <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>
+    PALETTE <span class="hljs-number">0</span>, , , <span class="hljs-number">0</span>,
 <span class="hljs-literal">LOOP</span>
 </code></pre><h4 id="-line-raster-"><code>line =RASTER</code></h4>
 <p>Return the fantasy screen <code>line</code> number currently rendered.</p>
@@ -2128,7 +2130,7 @@ DO
 <h3 id="math-api">Math API</h3>
 <h4 id="-pi-pi-"><code>pi =PI</code></h4>
 <p>Return the constant π.</p>
-<h4 id="-cosine-cos-number-br-sine-sin-number-"><code>cosine =COS(number)</code><br /><code>sine =SIN(number)</code></h4>
+<h4 id="-cosine-cos-number-br-sine-sin-number-"><code>cosine =COS(number)</code><br/><code>sine =SIN(number)</code></h4>
 <p>Return the <code>cosine</code> or <code>sine</code> (0..1) value of a <code>number</code>.</p>
 <p><code>=COS()</code> and <code>=SIN()</code> take (0..1) instead of (0..π*2), and <code>=SIN()</code> is inverted.</p>
 <h4 id="-arc-atan-x-y-"><code>arc =ATAN(x, y)</code></h4>
@@ -2138,12 +2140,12 @@ DO
 <pre><code>'<span class="hljs-built_in">get</span> the <span class="hljs-built_in">center</span> <span class="hljs-built_in">position</span> of the screen
 cx=SHOWN.W/<span class="hljs-number">2</span>-<span class="hljs-number">4</span>
 cy=SHOWN.H/<span class="hljs-number">2</span>-<span class="hljs-number">4</span>
-SPRITE <span class="hljs-number">50</span>,cx,cy,<span class="hljs-number">1</span>
+SPRITE <span class="hljs-number">50</span>, cx, cy, <span class="hljs-number">1</span>
 
 'initial <span class="hljs-built_in">position</span> from the <span class="hljs-built_in">center</span>
 dx=<span class="hljs-number">40</span>
 dy=<span class="hljs-number">20</span>
-SPRITE <span class="hljs-number">40</span>,cx+dx,cy+dy,<span class="hljs-number">1</span>
+SPRITE <span class="hljs-number">40</span>, cx+dx, cy+dy, <span class="hljs-number">1</span>
 SPRITE <span class="hljs-number">40</span> PAL <span class="hljs-number">1</span>
 SPRITE <span class="hljs-number">30</span> PAL <span class="hljs-number">2</span>
 
@@ -2151,16 +2153,16 @@ DO
     '<span class="hljs-built_in">new</span> <span class="hljs-built_in">position</span> from touch
     dx=TOUCH.X-cx
     dy=TOUCH.Y-cy
-    SPRITE <span class="hljs-number">40</span>,cx+dx,cy+dy,<span class="hljs-number">1</span>
+    SPRITE <span class="hljs-number">40</span>, cx+dx, cy+dy, <span class="hljs-number">1</span>
 
     '<span class="hljs-built_in">get</span> angle from <span class="hljs-built_in">vector</span>
-    a=ATAN(dx,dy)
+    a=ATAN(dx, dy)
 
     '<span class="hljs-built_in">get</span> <span class="hljs-built_in">position</span> from angle
     x=COS(a)*<span class="hljs-number">30</span>
     y=SIN(a)*<span class="hljs-number">30</span>
 
-    SPRITE <span class="hljs-number">30</span>,cx+x,cy+y,<span class="hljs-number">1</span>
+    SPRITE <span class="hljs-number">30</span>, cx+x, cy+y, <span class="hljs-number">1</span>
     WAIT VBL
 LOOP
 
@@ -2177,23 +2179,23 @@ LOOP
 <p>Return the <code>square</code> root value of a <code>number</code>.</p>
 <h4 id="-sign-sgn-number-"><code>sign =SGN(number)</code></h4>
 <p>Return the <code>sign</code> (+1/-1) of a <code>number</code>.</p>
-<h4 id="-floor-floor-number-br-floo-int-number-"><code>floor =FLOOR(number)</code><br /><code>floo =INT(number)</code></h4>
+<h4 id="-floor-floor-number-br-floo-int-number-"><code>floor =FLOOR(number)</code><br/><code>floo =INT(number)</code></h4>
 <p>Return the <code>floor</code> value of a <code>number</code>.</p>
 <h4 id="-ceil-ceil-number-"><code>ceil =CEIL(number)</code></h4>
 <p>Return the <code>ceil</code> value of a <code>number</code>.</p>
-<h4 id="-inc-variable-br-dec-variable-"><code>INC variable</code><br /><code>DEC variable</code></h4>
+<h4 id="-inc-variable-br-dec-variable-"><code>INC variable</code><br/><code>DEC variable</code></h4>
 <p>Increment or decrement by 1 the value of a <code>variable</code>.</p>
-<h4 id="-add-variable-value-br-add-variable-increment-min-to-max-"><code>ADD variable, value</code><br /><code>ADD variable, increment, min TO max</code></h4>
+<h4 id="-add-variable-value-br-add-variable-increment-min-to-max-"><code>ADD variable, value</code><br/><code>ADD variable, increment, min TO max</code></h4>
 <p>Add a <code>value</code> to a <code>variable</code>.</p>
 <p>Optionally make it wrap around between <code>min</code> and <code>max</code>.</p>
-<h4 id="-minimal-min-a-b-br-maximal-max-a-b-"><code>minimal =MIN(a, b)</code><br /><code>maximal =MAX(a, b)</code></h4>
+<h4 id="-minimal-min-a-b-br-maximal-max-a-b-"><code>minimal =MIN(a, b)</code><br/><code>maximal =MAX(a, b)</code></h4>
 <p>Return the <code>minimal</code> or <code>maximal</code> value between <code>a</code> and <code>b</code>.</p>
 <h4 id="-clamped-clamp-value-min-max-"><code>clamped =CLAMP(value, min, max)</code></h4>
 <p>Return the <code>value</code> <code>clamped</code> between <code>min</code> and <code>max</code>.</p>
 <h4 id="-length-len-x-y-"><code>length =LEN(x, y)</code></h4>
 <p>Return the <code>length</code> of a <code>x, y</code> vector.</p>
 <h4 id="-interpolation-ease-function-mode-value-"><code>interpolation =EASE(function, mode, value)</code></h4>
-<p>This returns the <code>interpolation</code> of <code>value</code> between 0.0 and 1.0, using the &#x1f310;<a href="https://easings.net/">specified easing</a> <code>function</code> and <code>mode</code>.</p>
+<p>This returns the <code>interpolation</code> of <code>value</code> between 0.0 and 1.0, using the 🌐<a href="https://easings.net/">specified easing</a> <code>function</code> and <code>mode</code>.</p>
 <table>
 <thead>
 <tr>
@@ -2285,7 +2287,7 @@ LOOP
 <span class="hljs-keyword">FOR</span> I=<span class="hljs-number">0</span> TO <span class="hljs-number">5</span>
     <span class="hljs-keyword">PRINT</span> <span class="hljs-keyword">RND</span>(<span class="hljs-number">100</span>)
 <span class="hljs-keyword">NEXT</span> I
-</code></pre><h4 id="-random-rnd-address-br-random-rnd-max-address-br-randomize-seed-address-"><code>random =RND address</code><br /><code>random =RND(max, address)</code><br /><code>RANDOMIZE seed [,address]</code></h4>
+</code></pre><h4 id="-random-rnd-address-br-random-rnd-max-address-br-randomize-seed-address-"><code>random =RND address</code><br/><code>random =RND(max, address)</code><br/><code>RANDOMIZE seed [, address]</code></h4>
 <p>Similar to the original functions with a additional <code>address</code> parameter, where the current generator state will be stored.</p>
 <p>This is useful if you want to keep multiple generator that still need to be deterministic.</p>
 <p>The generator state consume 16 Bytes of memory.</p>
@@ -2302,34 +2304,34 @@ LOOP
 </code></pre><h4 id="-number-val-text-"><code>number =VAL(text)</code></h4>
 <p>Converts a <code>text</code> string that starts with digits (and optionally one decimal point .) into a <code>number</code>.</p>
 <pre><code><span class="hljs-built_in">print</span> val(<span class="hljs-string">"3.5abc"</span>)
-</code></pre><h4 id="-hexadecimal-hex-number-digits-br-binary-bin-number-digits-"><code>hexadecimal =HEX$(number, [digits])</code><br /><code>binary =BIN$(number, [digits])</code></h4>
+</code></pre><h4 id="-hexadecimal-hex-number-digits-br-binary-bin-number-digits-"><code>hexadecimal =HEX$(number, [digits])</code><br/><code>binary =BIN$(number, [digits])</code></h4>
 <p>Converts a <code>number</code> to an <code>hexadecimal</code> or <code>binary</code> string with an optional minimal number of <code>digits</code>.</p>
-<h4 id="-leading-left-text-length-br-trailing-right-text-length-"><code>leading$ =LEFT$(text, length)</code><br /><code>trailing$ =RIGHT$(text, length)</code></h4>
+<h4 id="-leading-left-text-length-br-trailing-right-text-length-"><code>leading$ =LEFT$(text, length)</code><br/><code>trailing$ =RIGHT$(text, length)</code></h4>
 <p>Return the <code>length</code> number of characters from the beginning or the end of the <code>text</code> string.</p>
-<pre><code>shadok: DATA <span class="hljs-string">"gabuzomeu"</span>
-<span class="hljs-keyword">PRINT</span> LEFT$(shadok,<span class="hljs-number">4</span>)
-<span class="hljs-keyword">PRINT</span> RIGHT$(shadok,<span class="hljs-number">5</span>)
-</code></pre><h4 id="-left-text-length-replacement-br-right-text-length-replacement-"><code>LEFT$(text, length) =replacement$</code><br /><code>RIGHT$(text, length) =replacement$</code></h4>
+<pre><code><span class="hljs-keyword">shadok: </span>DATA <span class="hljs-string">"gabuzomeu"</span>
+PRINT LEFT$(<span class="hljs-keyword">shadok, </span><span class="hljs-number">4</span>)
+PRINT RIGHT$(<span class="hljs-keyword">shadok, </span><span class="hljs-number">5</span>)
+</code></pre><h4 id="-left-text-length-replacement-br-right-text-length-replacement-"><code>LEFT$(text, length) =replacement$</code><br/><code>RIGHT$(text, length) =replacement$</code></h4>
 <p>Overwrites the <code>length</code> number of characters at the beginning or the end of the <code>text</code> string by the <code>length</code> first characters of the <code>replacement$</code> string.</p>
 <h4 id="-extract-mid-text-position-length-"><code>extract$ =MID(text, position, length)</code></h4>
 <p>Return the <code>length</code> number of characters starting at <code>position</code> (1..) from the <code>text</code> string.</p>
 <h4 id="-mid-text-position-length-replacement-"><code>MID$(text, position, length) =replacement$</code></h4>
 <p>Overwrites the <code>length</code> number of characters starting at <code>position</code> (1..) from the <code>text</code> string by the <code>length</code> first characters of the <code>replacement$</code> string.</p>
 <pre><code>six<span class="hljs-symbol">$</span>=<span class="hljs-string">"hexakosioihexekontahexaphobie"</span>
-MID<span class="hljs-symbol">$</span>(six<span class="hljs-symbol">$</span>,<span class="hljs-number">1</span>,<span class="hljs-number">4</span>)=<span class="hljs-string">"-66-"</span>
-MID<span class="hljs-symbol">$</span>(six<span class="hljs-symbol">$</span>,<span class="hljs-number">11</span>,<span class="hljs-number">4</span>)=<span class="hljs-string">"-66-"</span>
-MID<span class="hljs-symbol">$</span>(six<span class="hljs-symbol">$</span>,<span class="hljs-number">20</span>,<span class="hljs-number">4</span>)=<span class="hljs-string">"-66-"</span>
+MID<span class="hljs-symbol">$</span>(six<span class="hljs-symbol">$</span>, <span class="hljs-number">1</span>, <span class="hljs-number">4</span>)=<span class="hljs-string">"-66-"</span>
+MID<span class="hljs-symbol">$</span>(six<span class="hljs-symbol">$</span>, <span class="hljs-number">11</span>, <span class="hljs-number">4</span>)=<span class="hljs-string">"-66-"</span>
+MID<span class="hljs-symbol">$</span>(six<span class="hljs-symbol">$</span>, <span class="hljs-number">20</span>, <span class="hljs-number">4</span>)=<span class="hljs-string">"-66-"</span>
 PRINT six<span class="hljs-symbol">$</span>
-</code></pre><h4 id="-found-instr-text-occurence-position-"><code>found =INSTR(text, occurence [,position])</code></h4>
+</code></pre><h4 id="-found-instr-text-occurence-position-"><code>found =INSTR(text, occurence [, position])</code></h4>
 <p>Search for the first <code>occurence</code> inside <code>text</code> and return the <code>found</code> position. Return 0 if not found. Optionally, start the search at <code>position</code>.</p>
 <h3 id="sound-api">Sound API</h3>
 <p>The fantasy hardware simulates 4 voices to play sound effects and music. See <a href="#sound">Sound</a> for an overview.</p>
-<h4 id="-play-voice-pitch-length-sound-sound-"><code>PLAY voice, pitch [,length] [SOUND sound]</code></h4>
+<h4 id="-play-voice-pitch-length-sound-sound-"><code>PLAY voice, pitch [, length] [SOUND sound]</code></h4>
 <p>Play a note at the <code>pitch</code> on the <code>voice</code> with an optional <code>length</code> and <code>sound</code>.</p>
 <p>Check the <a href="#pitch-values">pitch references</a> to learn which pitch correspond to which notes.</p>
 <p><code>length</code> use 1/60 of seconds as units with the maximum being 255, so 4.25 seconds. A length of 0 means that the sound will not stop until another sound is played on the same <code>voice</code>.</p>
 <p><code>sound</code> is a number representing a group of settings that define the sound's characteristics. It requires the usage of the <a href="manual#[`SOUND SOURCE [address]`](#sound-source-address"><code>SOUND SOURCE</code></a>&gt;) command.</p>
-<h4 id="-stop-br-stop-voice-"><code>STOP</code><br /><code>STOP [voice]</code></h4>
+<h4 id="-stop-br-stop-voice-"><code>STOP</code><br/><code>STOP [voice]</code></h4>
 <p>Stops the sound and track on the <code>voice</code> or all the voices if omitted.</p>
 <p>Release duration of envelope are not stop but fade out instead.</p>
 <h4 id="-volume-voice-volume-mix-"><code>VOLUME voice, [volume], [mix]</code></h4>
@@ -2348,7 +2350,7 @@ PRINT six<span class="hljs-symbol">$</span>
 </tr>
 <tr>
 <td style="text-align:right"><code>mix</code></td>
-<td>0 Muted<br />1 Left<br />2 Right<br />3 Both</td>
+<td>0 Muted<br/>1 Left<br/>2 Right<br/>3 Both</td>
 </tr>
 </tbody>
 </table>
@@ -2367,7 +2369,7 @@ PRINT six<span class="hljs-symbol">$</span>
 <tbody>
 <tr>
 <td style="text-align:right"><code>wave</code></td>
-<td>0 Sawtooth<br />1 Triangle<br />2 Pulse<br />3 Noise</td>
+<td>0 Sawtooth<br/>1 Triangle<br/>2 Pulse<br/>3 Noise</td>
 </tr>
 <tr>
 <td style="text-align:right"><code>width</code></td>
@@ -2375,7 +2377,7 @@ PRINT six<span class="hljs-symbol">$</span>
 </tr>
 <tr>
 <td style="text-align:right"><code>length</code></td>
-<td>0 Infinite<br />1 16.67ms .. 255 4.25s</td>
+<td>0 Infinite<br/>1 16.67ms .. 255 4.25s</td>
 </tr>
 </tbody>
 </table>
@@ -2457,19 +2459,19 @@ PRINT six<span class="hljs-symbol">$</span>
 <tbody>
 <tr>
 <td style="text-align:right"><code>wave</code></td>
-<td>0 Triangle<br />1 Sawtooth<br />2 Square<br />3 Random</td>
+<td>0 Triangle<br/>1 Sawtooth<br/>2 Square<br/>3 Random</td>
 </tr>
 <tr>
 <td style="text-align:right"><code>invert</code></td>
-<td>0 Off<br />1 On</td>
+<td>0 Off<br/>1 On</td>
 </tr>
 <tr>
 <td style="text-align:right"><code>env</code></td>
-<td>0 Off<br />1 On</td>
+<td>0 Off<br/>1 On</td>
 </tr>
 <tr>
 <td style="text-align:right"><code>trigger</code></td>
-<td>0 Off<br />1 On</td>
+<td>0 Off<br/>1 On</td>
 </tr>
 </tbody>
 </table>
@@ -2505,7 +2507,7 @@ PRINT six<span class="hljs-symbol">$</span>
 </tr>
 <tr>
 <td style="text-align:right">3</td>
-<td>The current speed<br />0 when stopped</td>
+<td>The current speed<br/>0 when stopped</td>
 </tr>
 </tbody>
 </table>
@@ -2519,8 +2521,8 @@ PRINT six<span class="hljs-symbol">$</span>
 <p>Example that change the background color:</p>
 <pre><code>c=<span class="hljs-number">0</span>
 DO
-    POKE $FF00,C
-    ADD c,<span class="hljs-number">1</span>,<span class="hljs-number">0</span> TO <span class="hljs-number">63</span>
+    POKE $FF00, C
+    ADD c, <span class="hljs-number">1</span>, <span class="hljs-number">0</span> TO <span class="hljs-number">63</span>
     WAIT <span class="hljs-number">5</span>
 <span class="hljs-literal">LOOP</span>
 </code></pre><h4 id="-value-peek-address-"><code>value =PEEK(address)</code></h4>
@@ -2536,8 +2538,8 @@ DO
 <h4 id="-value-peekw-address-"><code>value =PEEKW(address)</code></h4>
 <p>Read and return a 16bits <code>value</code> (-32768..32767) from memory at <code>address</code>.</p>
 <p>Example that print the width and height of the visible pixels:</p>
-<pre><code><span class="hljs-keyword">PRINT</span> <span class="hljs-string">"width"</span>,PEEKW(<span class="hljs-variable">$FF78</span>),SHOWN.<span class="hljs-built_in">W</span>
-<span class="hljs-keyword">PRINT</span> <span class="hljs-string">"height"</span>,PEEKW(<span class="hljs-variable">$FF7A</span>),SHOWN.<span class="hljs-built_in">H</span>
+<pre><code><span class="hljs-keyword">PRINT</span> <span class="hljs-string">"width"</span>, PEEKW(<span class="hljs-variable">$FF78</span>), SHOWN.<span class="hljs-built_in">W</span>
+<span class="hljs-keyword">PRINT</span> <span class="hljs-string">"height"</span>, PEEKW(<span class="hljs-variable">$FF7A</span>), SHOWN.<span class="hljs-built_in">H</span>
 </code></pre><h4 id="-pokel-address-value-"><code>POKEL address, value</code></h4>
 <p>Write a 32bits <code>value</code> value (-16777216..16777216) in memory at <code>address</code>.</p>
 <p>Values are stored as floating-point. See <a href="#number-limits">number limits</a> for precision details.</p>
@@ -2551,15 +2553,15 @@ DO
 <h4 id="-copy-source-count-to-destination-"><code>COPY source, count TO destination</code></h4>
 <p>Copies <code>count</code> bytes from <code>source</code> address from memory to <code>destination</code> address in memory.</p>
 <p>The <code>source</code> and <code>destination</code> CAN overlap.</p>
-<h4 id="-fill-address-count-value-"><code>FILL address, count [,value]</code></h4>
+<h4 id="-fill-address-count-value-"><code>FILL address, count [, value]</code></h4>
 <p>Sets <code>count</code> bytes from <code>address</code> in memory with the <code>value</code> or 0 when not specified.</p>
-<h4 id="-rol-address-places-br-ror-address-places-"><code>ROL address, places</code><br /><code>ROR address, places</code></h4>
+<h4 id="-rol-address-places-br-ror-address-places-"><code>ROL address, places</code><br/><code>ROR address, places</code></h4>
 <p>Rotates the bits of the byte stored at <code>address</code> by a number of <code>places</code> to the left or the right.</p>
-<pre><code>POKE $9000,%00001111
+<pre><code>POKE $9000, %00001111
 again:
-PRINT RIGHT$(<span class="hljs-string">"0000000"</span>+BIN$(PEEK($9000)),<span class="hljs-number">8</span>)
+PRINT RIGHT$(<span class="hljs-string">"0000000"</span>+BIN$(PEEK($9000)), <span class="hljs-number">8</span>)
 WAIT TAP
-ROL $9000,<span class="hljs-number">2</span>
+ROL $9000, <span class="hljs-number">2</span>
 GOTO AGAIN
 </code></pre><h4 id="-dma-copy-rom-"><code>DMA COPY [ROM]</code></h4>
 <p>Performs a fast memory copy that can only be done during interrupt calls: VBL/RASTER/EMITTER/PARTICLE.</p>
@@ -2603,14 +2605,14 @@ GOTO AGAIN
 <h4 id="-size-fsize-file-"><code>size =FSIZE(file)</code></h4>
 <p>Return the <code>size</code> in bytes stored in the <code>file</code>.</p>
 <p>The command <code>FILES</code> MUST be called before.</p>
-<h4 id="-load-file-address-limit-offset-"><code>LOAD file, address [,limit [,offset]]</code></h4>
+<h4 id="-load-file-address-limit-offset-"><code>LOAD file, address [, limit [, offset]]</code></h4>
 <p>Load the virtual <code>file</code> at <code>address</code>. Optionnaly <code>limit</code> the number of bytes read and start at <code>offset</code>.</p>
 <p>The command <code>FILES</code> MUST be called before.</p>
 <h4 id="-save-file-comment-address-size-"><code>SAVE file, comment$, address, size</code></h4>
 <p>Save <code>size</code> bytes from <code>address</code> to the <code>file</code> and <strong>erase previous data</strong>. The <code>comment$</code> is just a reminder of what is stored.</p>
 <p>The command <code>FILES</code> MUST be called before.</p>
 <h3 id="other-api">Other API</h3>
-<h4 id="-trace-expression-expression-"><code>TRACE expression [,expression...]</code></h4>
+<h4 id="-trace-expression-expression-"><code>TRACE expression [, expression...]</code></h4>
 <p>Output the evaluated <code>expression</code> on the <a href="#overlay">overlay</a>.</p>
 <h4 id="-message-text-"><code>MESSAGE text</code></h4>
 <p>Output <code>text</code> in the bottom-left corner of the fantasy screen, in the <a href="#overlay">overlay</a>.</p>
@@ -2773,7 +2775,11 @@ GOTO AGAIN
 <p>Allow to limit the output to the variables that matchs the <code>filter</code>.</p>
 <p>Allow to output more variables using the <code>pagination</code> with an index that start at 0 zero.</p>
 <h4 id="dbg-trace-">dbg: <code>TRACE</code></h4>
-<p>Print the current call stack in order: label and procedure names.</p>
+<p>Print the current call stack in reverse order: last line number followed by label <code>GOSUB</code>'ed and procedure <code>CALL</code>'ed.</p>
+<h4 id="dbg-track-peek-address-br-dbg-track-poke-address-">dbg: <code>TRACK PEEK address</code><br/> dbg: <code>TRACK POKE address</code></h4>
+<p>Enter the debugger when the program <code>=PEEK</code> or <code>POKE</code> the <code>address</code>.</p>
+<h4 id="dbg-next-">dbg: <code>NEXT</code></h4>
+<p>Execute next instruction in the program, and stop.</p>
 <h2 id="references">References</h2>
 <p>This annex provides technical information about how things work under the hood.</p>
 <h3 id="64-colors">64 Colors</h3>
@@ -3004,7 +3010,7 @@ GOTO AGAIN
 <li>8x8 pixels</li>
 <li>2 bits per pixel</li>
 <li>16 bytes per character</li>
-<li>&#x1f310;<a href="https://en.wikipedia.org/wiki/Bit_plane">bit plane encoded</a></li>
+<li>🌐<a href="https://en.wikipedia.org/wiki/Bit_plane">bit plane encoded</a></li>
 </ul>
 <p>The pixels are encoded bit per bit, from left to right, then top to bottom, one plane at a time.
 The 1st 8 bytes store the low bit for all the 8x8 pixels. The 2nd 8 bytes store the high bit.</p>
@@ -3128,7 +3134,7 @@ The 1st 8 bytes store the low bit for all the 8x8 pixels. The 2nd 8 bytes store 
 </tr>
 <tr>
 <td style="text-align:right">4..5</td>
-<td>Wave<br />0 Sawtooth<br />1 Triangle<br />2 Pulse<br />3 Noise</td>
+<td>Wave<br/>0 Sawtooth<br/>1 Triangle<br/>2 Pulse<br/>3 Noise</td>
 </tr>
 <tr>
 <td style="text-align:right">6</td>
@@ -3261,7 +3267,7 @@ The 1st 8 bytes store the low bit for all the 8x8 pixels. The 2nd 8 bytes store 
 </tr>
 </tbody>
 </table>
-<p><br /></p>
+<p><br/></p>
 <table>
 <thead>
 <tr>
@@ -3354,7 +3360,7 @@ The 1st 8 bytes store the low bit for all the 8x8 pixels. The 2nd 8 bytes store 
 <tr>
 <td style="text-align:right">44</td>
 <td style="text-align:right">$2C</td>
-<td>&quot;,&quot;</td>
+<td>&quot;, &quot;</td>
 </tr>
 <tr>
 <td style="text-align:right">45</td>
@@ -4259,7 +4265,7 @@ Also, they are both offseted by 32 pixels. To place a sprite in the 0x0 coordina
 <li>102 per emitter for EMITTER interrupt</li>
 </ul>
 <h3 id="number-limits">Number limits</h3>
-<p>Retro Game Creator internally store numbers as &#x1f310;<a href="https://en.wikipedia.org/wiki/IEEE_754">floating point</a> on 32 bits.</p>
+<p>Retro Game Creator internally store numbers as 🌐<a href="https://en.wikipedia.org/wiki/IEEE_754">floating point</a> on 32 bits.</p>
 <p>This enough to store integers values (-16777216..16777216) with a 1 to 1 precision.</p>
 <p>With lower or bigger numbers, precision will decrease, making those number equal.</p>
 <pre><code><span class="hljs-keyword">if</span> <span class="hljs-number">16777216</span>=<span class="hljs-number">16777217</span> <span class="hljs-keyword">then</span>
@@ -4310,7 +4316,7 @@ print <span class="hljs-number">0.000000239</span>&lt;&gt;<span class="hljs-numb
 </ul>
 <p><strong><code>ADD</code></strong>:</p>
 <ul>
-<li><a href="#-add-variable-value-br-add-variable-increment-min-to-max-"><code>ADD variable, value</code><br /><code>ADD variable, increment, min TO max</code></a></li>
+<li><a href="#-add-variable-value-br-add-variable-increment-min-to-max-"><code>ADD variable, value</code><br/><code>ADD variable, increment, min TO max</code></a></li>
 </ul>
 <p><strong><code>AND</code></strong>:</p>
 <ul>
@@ -4338,13 +4344,13 @@ print <span class="hljs-number">0.000000239</span>&lt;&gt;<span class="hljs-numb
 <li><a href="#-bg-fill-x1-y1-to-x2-y2-char-character-"><code>BG FILL x1, y1 TO x2, y2 CHAR character</code></a></li>
 <li><a href="#-bg-tint-y1-y1-to-x2-y2-pal-palette-flip-horizontal-vertical-prio-priority-"><code>BG TINT y1, y1 TO x2, y2 [PAL palette] [FLIP horizontal, vertical] [PRIO priority]</code></a></li>
 <li><a href="#-bg-scroll-x1-y1-to-x2-y2-step-x3-y3-"><code>BG SCROLL x1, y1 to x2, y2 step x3, y3</code></a></li>
-<li><a href="#-bg-source-address-width-height-"><code>BG SOURCE address [,width, height]</code></a></li>
+<li><a href="#-bg-source-address-width-height-"><code>BG SOURCE address [, width, height]</code></a></li>
 <li><a href="#-bg-copy-x1-y1-width-height-to-x2-y2-"><code>BG COPY x1, y1, width, height TO x2, y2</code></a></li>
-<li><a href="#-bg-view-on-br-bg-view-off-"><code>BG VIEW ON</code><br /><code>BG VIEW OFF</code></a></li>
+<li><a href="#-bg-view-on-br-bg-view-off-"><code>BG VIEW ON</code><br/><code>BG VIEW OFF</code></a></li>
 </ul>
 <p><strong><code>BIN</code></strong>:</p>
 <ul>
-<li><a href="#-hexadecimal-hex-number-digits-br-binary-bin-number-digits-"><code>hexadecimal =HEX$(number, [digits])</code><br /><code>binary =BIN$(number, [digits])</code></a></li>
+<li><a href="#-hexadecimal-hex-number-digits-br-binary-bin-number-digits-"><code>hexadecimal =HEX$(number, [digits])</code><br/><code>binary =BIN$(number, [digits])</code></a></li>
 </ul>
 <p><strong><code>CALL</code></strong>:</p>
 <ul>
@@ -4407,23 +4413,23 @@ print <span class="hljs-number">0.000000239</span>&lt;&gt;<span class="hljs-numb
 </ul>
 <p><strong><code>COS</code></strong>:</p>
 <ul>
-<li><a href="#-cosine-cos-number-br-sine-sin-number-"><code>cosine =COS(number)</code><br /><code>sine =SIN(number)</code></a></li>
+<li><a href="#-cosine-cos-number-br-sine-sin-number-"><code>cosine =COS(number)</code><br/><code>sine =SIN(number)</code></a></li>
 </ul>
 <p><strong><code>CURSOR.X</code></strong>:</p>
 <ul>
-<li><a href="#-x-cursor-x-br-y-cursor-y-"><code>x =CURSOR.X</code><br /><code>y =CURSOR.Y</code></a></li>
+<li><a href="#-x-cursor-x-br-y-cursor-y-"><code>x =CURSOR.X</code><br/><code>y =CURSOR.Y</code></a></li>
 </ul>
 <p><strong><code>CURSOR.Y</code></strong>:</p>
 <ul>
-<li><a href="#-x-cursor-x-br-y-cursor-y-"><code>x =CURSOR.X</code><br /><code>y =CURSOR.Y</code></a></li>
+<li><a href="#-x-cursor-x-br-y-cursor-y-"><code>x =CURSOR.X</code><br/><code>y =CURSOR.Y</code></a></li>
 </ul>
 <p><strong><code>DATA</code></strong>:</p>
 <ul>
-<li><a href="#-data-constant-constant-"><code>DATA constant [,constant...]</code></a></li>
+<li><a href="#-data-constant-constant-"><code>DATA constant [, constant...]</code></a></li>
 </ul>
 <p><strong><code>DEC</code></strong>:</p>
 <ul>
-<li><a href="#-inc-variable-br-dec-variable-"><code>INC variable</code><br /><code>DEC variable</code></a></li>
+<li><a href="#-inc-variable-br-dec-variable-"><code>INC variable</code><br/><code>DEC variable</code></a></li>
 </ul>
 <p><strong><code>DIM</code></strong>:</p>
 <ul>
@@ -4444,7 +4450,7 @@ print <span class="hljs-number">0.000000239</span>&lt;&gt;<span class="hljs-numb
 </ul>
 <p><strong><code>ELSE</code></strong>:</p>
 <ul>
-<li><a href="#-if-then-else-if-else-end-if-br-if-then-"><code>IF/THEN/ELSE IF/ELSE/END IF</code><br /><code>IF/THEN</code></a></li>
+<li><a href="#-if-then-else-if-else-end-if-br-if-then-"><code>IF/THEN/ELSE IF/ELSE/END IF</code><br/><code>IF/THEN</code></a></li>
 </ul>
 <p><strong><code>EMITTER</code></strong>:</p>
 <ul>
@@ -4453,7 +4459,7 @@ print <span class="hljs-number">0.000000239</span>&lt;&gt;<span class="hljs-numb
 <p><strong><code>END</code></strong>:</p>
 <ul>
 <li><a href="#-end-"><code>END</code></a></li>
-<li><a href="#-if-then-else-if-else-end-if-br-if-then-"><code>IF/THEN/ELSE IF/ELSE/END IF</code><br /><code>IF/THEN</code></a></li>
+<li><a href="#-if-then-else-if-else-end-if-br-if-then-"><code>IF/THEN/ELSE IF/ELSE/END IF</code><br/><code>IF/THEN</code></a></li>
 <li><a href="#-sub-end-sub-exit-sub-"><code>SUB/END SUB/EXIT SUB</code></a></li>
 </ul>
 <p><strong><code>ENVELOPE</code></strong>:</p>
@@ -4483,7 +4489,7 @@ print <span class="hljs-number">0.000000239</span>&lt;&gt;<span class="hljs-numb
 <p><strong><code>FILL</code></strong>:</p>
 <ul>
 <li><a href="#-bg-fill-x1-y1-to-x2-y2-char-character-"><code>BG FILL x1, y1 TO x2, y2 CHAR character</code></a></li>
-<li><a href="#-fill-address-count-value-"><code>FILL address, count [,value]</code></a></li>
+<li><a href="#-fill-address-count-value-"><code>FILL address, count [, value]</code></a></li>
 </ul>
 <p><strong><code>FLIP</code></strong>:</p>
 <ul>
@@ -4494,7 +4500,7 @@ print <span class="hljs-number">0.000000239</span>&lt;&gt;<span class="hljs-numb
 </ul>
 <p><strong><code>FLOOR</code></strong>:</p>
 <ul>
-<li><a href="#-floor-floor-number-br-floo-int-number-"><code>floor =FLOOR(number)</code><br /><code>floo =INT(number)</code></a></li>
+<li><a href="#-floor-floor-number-br-floo-int-number-"><code>floor =FLOOR(number)</code><br/><code>floo =INT(number)</code></a></li>
 </ul>
 <p><strong><code>FONT</code></strong>:</p>
 <ul>
@@ -4516,12 +4522,12 @@ print <span class="hljs-number">0.000000239</span>&lt;&gt;<span class="hljs-numb
 <p><strong><code>GOSUB</code></strong>:</p>
 <ul>
 <li><a href="#-gosub-return-"><code>GOSUB/RETURN</code></a></li>
-<li><a href="#-on-goto-br-on-gosub-"><code>ON GOTO</code><br /><code>ON GOSUB</code></a></li>
+<li><a href="#-on-goto-br-on-gosub-"><code>ON GOTO</code><br/><code>ON GOSUB</code></a></li>
 </ul>
 <p><strong><code>GOTO</code></strong>:</p>
 <ul>
 <li><a href="#-goto-"><code>GOTO</code></a></li>
-<li><a href="#-on-goto-br-on-gosub-"><code>ON GOTO</code><br /><code>ON GOSUB</code></a></li>
+<li><a href="#-on-goto-br-on-gosub-"><code>ON GOTO</code><br/><code>ON GOSUB</code></a></li>
 </ul>
 <p><strong><code>HAPTIC</code></strong>:</p>
 <ul>
@@ -4529,7 +4535,7 @@ print <span class="hljs-number">0.000000239</span>&lt;&gt;<span class="hljs-numb
 </ul>
 <p><strong><code>HEX</code></strong>:</p>
 <ul>
-<li><a href="#-hexadecimal-hex-number-digits-br-binary-bin-number-digits-"><code>hexadecimal =HEX$(number, [digits])</code><br /><code>binary =BIN$(number, [digits])</code></a></li>
+<li><a href="#-hexadecimal-hex-number-digits-br-binary-bin-number-digits-"><code>hexadecimal =HEX$(number, [digits])</code><br/><code>binary =BIN$(number, [digits])</code></a></li>
 </ul>
 <p><strong><code>HIT</code></strong>:</p>
 <ul>
@@ -4540,11 +4546,11 @@ print <span class="hljs-number">0.000000239</span>&lt;&gt;<span class="hljs-numb
 </ul>
 <p><strong><code>IF</code></strong>:</p>
 <ul>
-<li><a href="#-if-then-else-if-else-end-if-br-if-then-"><code>IF/THEN/ELSE IF/ELSE/END IF</code><br /><code>IF/THEN</code></a></li>
+<li><a href="#-if-then-else-if-else-end-if-br-if-then-"><code>IF/THEN/ELSE IF/ELSE/END IF</code><br/><code>IF/THEN</code></a></li>
 </ul>
 <p><strong><code>INC</code></strong>:</p>
 <ul>
-<li><a href="#-inc-variable-br-dec-variable-"><code>INC variable</code><br /><code>DEC variable</code></a></li>
+<li><a href="#-inc-variable-br-dec-variable-"><code>INC variable</code><br/><code>DEC variable</code></a></li>
 </ul>
 <p><strong><code>INKEY</code></strong>:</p>
 <ul>
@@ -4552,25 +4558,25 @@ print <span class="hljs-number">0.000000239</span>&lt;&gt;<span class="hljs-numb
 </ul>
 <p><strong><code>INPUT</code></strong>:</p>
 <ul>
-<li><a href="#-input-prompt-variable-br-input-prompt-variable-"><code>INPUT [prompt;] variable</code><br /><code>INPUT [prompt;] variable$</code></a></li>
+<li><a href="#-input-prompt-variable-br-input-prompt-variable-"><code>INPUT [prompt;] variable</code><br/><code>INPUT [prompt;] variable$</code></a></li>
 </ul>
 <p><strong><code>INSTR</code></strong>:</p>
 <ul>
-<li><a href="#-found-instr-text-occurence-position-"><code>found =INSTR(text, occurence [,position])</code></a></li>
+<li><a href="#-found-instr-text-occurence-position-"><code>found =INSTR(text, occurence [, position])</code></a></li>
 </ul>
 <p><strong><code>INT</code></strong>:</p>
 <ul>
-<li><a href="#-floor-floor-number-br-floo-int-number-"><code>floor =FLOOR(number)</code><br /><code>floo =INT(number)</code></a></li>
+<li><a href="#-floor-floor-number-br-floo-int-number-"><code>floor =FLOOR(number)</code><br/><code>floo =INT(number)</code></a></li>
 </ul>
 <p><strong><code>KEYBOARD</code></strong>:</p>
 <ul>
-<li><a href="#-keyboard-on-br-keyboard-off-"><code>KEYBOARD ON</code><br /><code>KEYBOARD OFF</code></a></li>
+<li><a href="#-keyboard-on-br-keyboard-off-"><code>KEYBOARD ON</code><br/><code>KEYBOARD OFF</code></a></li>
 <li><a href="#-height-keyboard-"><code>height =KEYBOARD</code></a></li>
 </ul>
 <p><strong><code>LEFT</code></strong>:</p>
 <ul>
-<li><a href="#-leading-left-text-length-br-trailing-right-text-length-"><code>leading$ =LEFT$(text, length)</code><br /><code>trailing$ =RIGHT$(text, length)</code></a></li>
-<li><a href="#-left-text-length-replacement-br-right-text-length-replacement-"><code>LEFT$(text, length) =replacement$</code><br /><code>RIGHT$(text, length) =replacement$</code></a></li>
+<li><a href="#-leading-left-text-length-br-trailing-right-text-length-"><code>leading$ =LEFT$(text, length)</code><br/><code>trailing$ =RIGHT$(text, length)</code></a></li>
+<li><a href="#-left-text-length-replacement-br-right-text-length-replacement-"><code>LEFT$(text, length) =replacement$</code><br/><code>RIGHT$(text, length) =replacement$</code></a></li>
 </ul>
 <p><strong><code>LEN</code></strong>:</p>
 <ul>
@@ -4592,7 +4598,7 @@ print <span class="hljs-number">0.000000239</span>&lt;&gt;<span class="hljs-numb
 </ul>
 <p><strong><code>LOAD</code></strong>:</p>
 <ul>
-<li><a href="#-load-file-address-limit-offset-"><code>LOAD file, address [,limit [,offset]]</code></a></li>
+<li><a href="#-load-file-address-limit-offset-"><code>LOAD file, address [, limit [, offset]]</code></a></li>
 </ul>
 <p><strong><code>LOCATE</code></strong>:</p>
 <ul>
@@ -4608,7 +4614,7 @@ print <span class="hljs-number">0.000000239</span>&lt;&gt;<span class="hljs-numb
 </ul>
 <p><strong><code>MAX</code></strong>:</p>
 <ul>
-<li><a href="#-minimal-min-a-b-br-maximal-max-a-b-"><code>minimal =MIN(a, b)</code><br /><code>maximal =MAX(a, b)</code></a></li>
+<li><a href="#-minimal-min-a-b-br-maximal-max-a-b-"><code>minimal =MIN(a, b)</code><br/><code>maximal =MAX(a, b)</code></a></li>
 </ul>
 <p><strong><code>MCELL</code></strong>:</p>
 <ul>
@@ -4635,7 +4641,7 @@ print <span class="hljs-number">0.000000239</span>&lt;&gt;<span class="hljs-numb
 </ul>
 <p><strong><code>MIN</code></strong>:</p>
 <ul>
-<li><a href="#-minimal-min-a-b-br-maximal-max-a-b-"><code>minimal =MIN(a, b)</code><br /><code>maximal =MAX(a, b)</code></a></li>
+<li><a href="#-minimal-min-a-b-br-maximal-max-a-b-"><code>minimal =MIN(a, b)</code><br/><code>maximal =MAX(a, b)</code></a></li>
 </ul>
 <p><strong><code>MOD</code></strong>:</p>
 <ul>
@@ -4663,19 +4669,19 @@ print <span class="hljs-number">0.000000239</span>&lt;&gt;<span class="hljs-numb
 <li><a href="#-sprite-off-"><code>SPRITE OFF</code></a></li>
 <li><a href="#-sprite-off-sprite-"><code>SPRITE OFF sprite</code></a></li>
 <li><a href="#-sprite-off-sprite1-to-sprite2-"><code>SPRITE OFF sprite1 TO sprite2</code></a></li>
-<li><a href="#-keyboard-on-br-keyboard-off-"><code>KEYBOARD ON</code><br /><code>KEYBOARD OFF</code></a></li>
-<li><a href="#-sprite-view-on-br-sprite-view-off-"><code>SPRITE VIEW ON</code><br /><code>SPRITE VIEW OFF</code></a></li>
-<li><a href="#-bg-view-on-br-bg-view-off-"><code>BG VIEW ON</code><br /><code>BG VIEW OFF</code></a></li>
+<li><a href="#-keyboard-on-br-keyboard-off-"><code>KEYBOARD ON</code><br/><code>KEYBOARD OFF</code></a></li>
+<li><a href="#-sprite-view-on-br-sprite-view-off-"><code>SPRITE VIEW ON</code><br/><code>SPRITE VIEW OFF</code></a></li>
+<li><a href="#-bg-view-on-br-bg-view-off-"><code>BG VIEW ON</code><br/><code>BG VIEW OFF</code></a></li>
 <li><a href="#-on-vbl-off-"><code>ON VBL OFF</code></a></li>
 <li><a href="#-on-raster-off-"><code>ON RASTER OFF</code></a></li>
 </ul>
 <p><strong><code>ON</code></strong>:</p>
 <ul>
-<li><a href="#-on-goto-br-on-gosub-"><code>ON GOTO</code><br /><code>ON GOSUB</code></a></li>
+<li><a href="#-on-goto-br-on-gosub-"><code>ON GOTO</code><br/><code>ON GOSUB</code></a></li>
 <li><a href="#-on-restore-"><code>ON RESTORE</code></a></li>
-<li><a href="#-keyboard-on-br-keyboard-off-"><code>KEYBOARD ON</code><br /><code>KEYBOARD OFF</code></a></li>
-<li><a href="#-sprite-view-on-br-sprite-view-off-"><code>SPRITE VIEW ON</code><br /><code>SPRITE VIEW OFF</code></a></li>
-<li><a href="#-bg-view-on-br-bg-view-off-"><code>BG VIEW ON</code><br /><code>BG VIEW OFF</code></a></li>
+<li><a href="#-keyboard-on-br-keyboard-off-"><code>KEYBOARD ON</code><br/><code>KEYBOARD OFF</code></a></li>
+<li><a href="#-sprite-view-on-br-sprite-view-off-"><code>SPRITE VIEW ON</code><br/><code>SPRITE VIEW OFF</code></a></li>
+<li><a href="#-bg-view-on-br-bg-view-off-"><code>BG VIEW ON</code><br/><code>BG VIEW OFF</code></a></li>
 <li><a href="#-on-vbl-call-procedure-"><code>ON VBL CALL procedure</code></a></li>
 <li><a href="#-on-vbl-off-"><code>ON VBL OFF</code></a></li>
 <li><a href="#-on-raster-call-procedure-"><code>ON RASTER CALL procedure</code></a></li>
@@ -4722,7 +4728,7 @@ print <span class="hljs-number">0.000000239</span>&lt;&gt;<span class="hljs-numb
 </ul>
 <p><strong><code>PLAY</code></strong>:</p>
 <ul>
-<li><a href="#-play-voice-pitch-length-sound-sound-"><code>PLAY voice, pitch [,length] [SOUND sound]</code></a></li>
+<li><a href="#-play-voice-pitch-length-sound-sound-"><code>PLAY voice, pitch [, length] [SOUND sound]</code></a></li>
 </ul>
 <p><strong><code>POKE</code></strong>:</p>
 <ul>
@@ -4751,7 +4757,7 @@ print <span class="hljs-number">0.000000239</span>&lt;&gt;<span class="hljs-numb
 <p><strong><code>RANDOMIZE</code></strong>:</p>
 <ul>
 <li><a href="#-randomize-seed-"><code>RANDOMIZE seed</code></a></li>
-<li><a href="#-random-rnd-address-br-random-rnd-max-address-br-randomize-seed-address-"><code>random =RND address</code><br /><code>random =RND(max, address)</code><br /><code>RANDOMIZE seed [,address]</code></a></li>
+<li><a href="#-random-rnd-address-br-random-rnd-max-address-br-randomize-seed-address-"><code>random =RND address</code><br/><code>random =RND(max, address)</code><br/><code>RANDOMIZE seed [, address]</code></a></li>
 </ul>
 <p><strong><code>RASTER</code></strong>:</p>
 <ul>
@@ -4761,7 +4767,7 @@ print <span class="hljs-number">0.000000239</span>&lt;&gt;<span class="hljs-numb
 </ul>
 <p><strong><code>READ</code></strong>:</p>
 <ul>
-<li><a href="#-read-variable-variable-"><code>READ variable [,variable...]</code></a></li>
+<li><a href="#-read-variable-variable-"><code>READ variable [, variable...]</code></a></li>
 </ul>
 <p><strong><code>REPEAT</code></strong>:</p>
 <ul>
@@ -4778,18 +4784,18 @@ print <span class="hljs-number">0.000000239</span>&lt;&gt;<span class="hljs-numb
 </ul>
 <p><strong><code>RIGHT</code></strong>:</p>
 <ul>
-<li><a href="#-leading-left-text-length-br-trailing-right-text-length-"><code>leading$ =LEFT$(text, length)</code><br /><code>trailing$ =RIGHT$(text, length)</code></a></li>
-<li><a href="#-left-text-length-replacement-br-right-text-length-replacement-"><code>LEFT$(text, length) =replacement$</code><br /><code>RIGHT$(text, length) =replacement$</code></a></li>
+<li><a href="#-leading-left-text-length-br-trailing-right-text-length-"><code>leading$ =LEFT$(text, length)</code><br/><code>trailing$ =RIGHT$(text, length)</code></a></li>
+<li><a href="#-left-text-length-replacement-br-right-text-length-replacement-"><code>LEFT$(text, length) =replacement$</code><br/><code>RIGHT$(text, length) =replacement$</code></a></li>
 </ul>
 <p><strong><code>RND</code></strong>:</p>
 <ul>
 <li><a href="#-random-rnd-"><code>random =RND</code></a></li>
 <li><a href="#-random-rnd-max-"><code>random =RND(max)</code></a></li>
-<li><a href="#-random-rnd-address-br-random-rnd-max-address-br-randomize-seed-address-"><code>random =RND address</code><br /><code>random =RND(max, address)</code><br /><code>RANDOMIZE seed [,address]</code></a></li>
+<li><a href="#-random-rnd-address-br-random-rnd-max-address-br-randomize-seed-address-"><code>random =RND address</code><br/><code>random =RND(max, address)</code><br/><code>RANDOMIZE seed [, address]</code></a></li>
 </ul>
 <p><strong><code>ROL</code></strong>:</p>
 <ul>
-<li><a href="#-rol-address-places-br-ror-address-places-"><code>ROL address, places</code><br /><code>ROR address, places</code></a></li>
+<li><a href="#-rol-address-places-br-ror-address-places-"><code>ROL address, places</code><br/><code>ROR address, places</code></a></li>
 </ul>
 <p><strong><code>ROM</code></strong>:</p>
 <ul>
@@ -4798,23 +4804,23 @@ print <span class="hljs-number">0.000000239</span>&lt;&gt;<span class="hljs-numb
 </ul>
 <p><strong><code>ROR</code></strong>:</p>
 <ul>
-<li><a href="#-rol-address-places-br-ror-address-places-"><code>ROL address, places</code><br /><code>ROR address, places</code></a></li>
+<li><a href="#-rol-address-places-br-ror-address-places-"><code>ROL address, places</code><br/><code>ROR address, places</code></a></li>
 </ul>
 <p><strong><code>SAFE.B</code></strong>:</p>
 <ul>
-<li><a href="#-left-safe-l-br-top-safe-t-br-right-safe-r-br-bottom-safe-b-"><code>left =SAFE.L</code><br /><code>top =SAFE.T</code><br /><code>right =SAFE.R</code><br /><code>bottom =SAFE.B</code></a></li>
+<li><a href="#-left-safe-l-br-top-safe-t-br-right-safe-r-br-bottom-safe-b-"><code>left =SAFE.L</code><br/><code>top =SAFE.T</code><br/><code>right =SAFE.R</code><br/><code>bottom =SAFE.B</code></a></li>
 </ul>
 <p><strong><code>SAFE.L</code></strong>:</p>
 <ul>
-<li><a href="#-left-safe-l-br-top-safe-t-br-right-safe-r-br-bottom-safe-b-"><code>left =SAFE.L</code><br /><code>top =SAFE.T</code><br /><code>right =SAFE.R</code><br /><code>bottom =SAFE.B</code></a></li>
+<li><a href="#-left-safe-l-br-top-safe-t-br-right-safe-r-br-bottom-safe-b-"><code>left =SAFE.L</code><br/><code>top =SAFE.T</code><br/><code>right =SAFE.R</code><br/><code>bottom =SAFE.B</code></a></li>
 </ul>
 <p><strong><code>SAFE.R</code></strong>:</p>
 <ul>
-<li><a href="#-left-safe-l-br-top-safe-t-br-right-safe-r-br-bottom-safe-b-"><code>left =SAFE.L</code><br /><code>top =SAFE.T</code><br /><code>right =SAFE.R</code><br /><code>bottom =SAFE.B</code></a></li>
+<li><a href="#-left-safe-l-br-top-safe-t-br-right-safe-r-br-bottom-safe-b-"><code>left =SAFE.L</code><br/><code>top =SAFE.T</code><br/><code>right =SAFE.R</code><br/><code>bottom =SAFE.B</code></a></li>
 </ul>
 <p><strong><code>SAFE.T</code></strong>:</p>
 <ul>
-<li><a href="#-left-safe-l-br-top-safe-t-br-right-safe-r-br-bottom-safe-b-"><code>left =SAFE.L</code><br /><code>top =SAFE.T</code><br /><code>right =SAFE.R</code><br /><code>bottom =SAFE.B</code></a></li>
+<li><a href="#-left-safe-l-br-top-safe-t-br-right-safe-r-br-bottom-safe-b-"><code>left =SAFE.L</code><br/><code>top =SAFE.T</code><br/><code>right =SAFE.R</code><br/><code>bottom =SAFE.B</code></a></li>
 </ul>
 <p><strong><code>SAVE</code></strong>:</p>
 <ul>
@@ -4823,16 +4829,16 @@ print <span class="hljs-number">0.000000239</span>&lt;&gt;<span class="hljs-numb
 <p><strong><code>SCROLL</code></strong>:</p>
 <ul>
 <li><a href="#-scroll-layer-x-y-"><code>SCROLL layer, [x], [y]</code></a></li>
-<li><a href="#-x-scroll-x-layer-br-y-scroll-y-layer-"><code>x =SCROLL.X(layer)</code><br /><code>y =SCROLL.Y(layer)</code></a></li>
+<li><a href="#-x-scroll-x-layer-br-y-scroll-y-layer-"><code>x =SCROLL.X(layer)</code><br/><code>y =SCROLL.Y(layer)</code></a></li>
 <li><a href="#-bg-scroll-x1-y1-to-x2-y2-step-x3-y3-"><code>BG SCROLL x1, y1 to x2, y2 step x3, y3</code></a></li>
 </ul>
 <p><strong><code>SCROLL.X</code></strong>:</p>
 <ul>
-<li><a href="#-x-scroll-x-layer-br-y-scroll-y-layer-"><code>x =SCROLL.X(layer)</code><br /><code>y =SCROLL.Y(layer)</code></a></li>
+<li><a href="#-x-scroll-x-layer-br-y-scroll-y-layer-"><code>x =SCROLL.X(layer)</code><br/><code>y =SCROLL.Y(layer)</code></a></li>
 </ul>
 <p><strong><code>SCROLL.Y</code></strong>:</p>
 <ul>
-<li><a href="#-x-scroll-x-layer-br-y-scroll-y-layer-"><code>x =SCROLL.X(layer)</code><br /><code>y =SCROLL.Y(layer)</code></a></li>
+<li><a href="#-x-scroll-x-layer-br-y-scroll-y-layer-"><code>x =SCROLL.X(layer)</code><br/><code>y =SCROLL.Y(layer)</code></a></li>
 </ul>
 <p><strong><code>SGN</code></strong>:</p>
 <ul>
@@ -4840,15 +4846,15 @@ print <span class="hljs-number">0.000000239</span>&lt;&gt;<span class="hljs-numb
 </ul>
 <p><strong><code>SHOWN.H</code></strong>:</p>
 <ul>
-<li><a href="#-width-shown-w-br-height-shown-h-"><code>width =SHOWN.W</code><br /><code>height =SHOWN.H</code></a></li>
+<li><a href="#-width-shown-w-br-height-shown-h-"><code>width =SHOWN.W</code><br/><code>height =SHOWN.H</code></a></li>
 </ul>
 <p><strong><code>SHOWN.W</code></strong>:</p>
 <ul>
-<li><a href="#-width-shown-w-br-height-shown-h-"><code>width =SHOWN.W</code><br /><code>height =SHOWN.H</code></a></li>
+<li><a href="#-width-shown-w-br-height-shown-h-"><code>width =SHOWN.W</code><br/><code>height =SHOWN.H</code></a></li>
 </ul>
 <p><strong><code>SIN</code></strong>:</p>
 <ul>
-<li><a href="#-cosine-cos-number-br-sine-sin-number-"><code>cosine =COS(number)</code><br /><code>sine =SIN(number)</code></a></li>
+<li><a href="#-cosine-cos-number-br-sine-sin-number-"><code>cosine =COS(number)</code><br/><code>sine =SIN(number)</code></a></li>
 </ul>
 <p><strong><code>SIZE</code></strong>:</p>
 <ul>
@@ -4861,20 +4867,20 @@ print <span class="hljs-number">0.000000239</span>&lt;&gt;<span class="hljs-numb
 </ul>
 <p><strong><code>SOUND</code></strong>:</p>
 <ul>
-<li><a href="#-play-voice-pitch-length-sound-sound-"><code>PLAY voice, pitch [,length] [SOUND sound]</code></a></li>
+<li><a href="#-play-voice-pitch-length-sound-sound-"><code>PLAY voice, pitch [, length] [SOUND sound]</code></a></li>
 <li><a href="#-sound-voice-wave-width-length-"><code>SOUND voice, [wave], [width], [length]</code></a></li>
 <li><a href="#-sound-source-address-"><code>SOUND SOURCE [address]</code></a></li>
 </ul>
 <p><strong><code>SOURCE</code></strong>:</p>
 <ul>
-<li><a href="#-bg-source-address-width-height-"><code>BG SOURCE address [,width, height]</code></a></li>
+<li><a href="#-bg-source-address-width-height-"><code>BG SOURCE address [, width, height]</code></a></li>
 <li><a href="#-sound-source-address-"><code>SOUND SOURCE [address]</code></a></li>
 </ul>
 <p><strong><code>SPRITE</code></strong>:</p>
 <ul>
 <li><a href="#-sprite-sprite-x-y-character-"><code>SPRITE sprite, [x], [y], [character]</code></a></li>
 <li><a href="#-sprite-sprite-pal-palette-flip-horizontal-vertical-prio-priority-size-size-"><code>SPRITE sprite [PAL palette] [FLIP horizontal, vertical] [PRIO priority] [SIZE size]</code></a></li>
-<li><a href="#-x-sprite-x-sprite-br-y-sprite-y-sprite-"><code>x =SPRITE.X(sprite)</code><br /><code>y =SPRITE.Y(sprite)</code></a></li>
+<li><a href="#-x-sprite-x-sprite-br-y-sprite-y-sprite-"><code>x =SPRITE.X(sprite)</code><br/><code>y =SPRITE.Y(sprite)</code></a></li>
 <li><a href="#-character-sprite-c-sprite-"><code>character =SPRITE.C(sprite)</code></a></li>
 <li><a href="#-sprite-a-sprite-attributes-"><code>SPRITE.A sprite, attributes</code></a></li>
 <li><a href="#-attributes-sprite-a-sprite-"><code>attributes =SPRITE.A(sprite)</code></a></li>
@@ -4884,7 +4890,7 @@ print <span class="hljs-number">0.000000239</span>&lt;&gt;<span class="hljs-numb
 <li><a href="#-collides-sprite-hit-sprite-"><code>collides =SPRITE HIT(sprite)</code></a></li>
 <li><a href="#-collides-sprite-hit-sprite-sprite1-"><code>collides =SPRITE HIT(sprite, sprite1)</code></a></li>
 <li><a href="#-collides-sprite-hit-sprite-sprite1-to-sprite2-"><code>collides =SPRITE.HIT(sprite, sprite1 to sprite2)</code></a></li>
-<li><a href="#-sprite-view-on-br-sprite-view-off-"><code>SPRITE VIEW ON</code><br /><code>SPRITE VIEW OFF</code></a></li>
+<li><a href="#-sprite-view-on-br-sprite-view-off-"><code>SPRITE VIEW ON</code><br/><code>SPRITE VIEW OFF</code></a></li>
 </ul>
 <p><strong><code>SPRITE.A</code></strong>:</p>
 <ul>
@@ -4897,11 +4903,11 @@ print <span class="hljs-number">0.000000239</span>&lt;&gt;<span class="hljs-numb
 </ul>
 <p><strong><code>SPRITE.X</code></strong>:</p>
 <ul>
-<li><a href="#-x-sprite-x-sprite-br-y-sprite-y-sprite-"><code>x =SPRITE.X(sprite)</code><br /><code>y =SPRITE.Y(sprite)</code></a></li>
+<li><a href="#-x-sprite-x-sprite-br-y-sprite-y-sprite-"><code>x =SPRITE.X(sprite)</code><br/><code>y =SPRITE.Y(sprite)</code></a></li>
 </ul>
 <p><strong><code>SPRITE.Y</code></strong>:</p>
 <ul>
-<li><a href="#-x-sprite-x-sprite-br-y-sprite-y-sprite-"><code>x =SPRITE.X(sprite)</code><br /><code>y =SPRITE.Y(sprite)</code></a></li>
+<li><a href="#-x-sprite-x-sprite-br-y-sprite-y-sprite-"><code>x =SPRITE.X(sprite)</code><br/><code>y =SPRITE.Y(sprite)</code></a></li>
 </ul>
 <p><strong><code>SQR</code></strong>:</p>
 <ul>
@@ -4913,7 +4919,7 @@ print <span class="hljs-number">0.000000239</span>&lt;&gt;<span class="hljs-numb
 </ul>
 <p><strong><code>STOP</code></strong>:</p>
 <ul>
-<li><a href="#-stop-br-stop-voice-"><code>STOP</code><br /><code>STOP [voice]</code></a></li>
+<li><a href="#-stop-br-stop-voice-"><code>STOP</code><br/><code>STOP [voice]</code></a></li>
 </ul>
 <p><strong><code>STR</code></strong>:</p>
 <ul>
@@ -4946,7 +4952,7 @@ print <span class="hljs-number">0.000000239</span>&lt;&gt;<span class="hljs-numb
 </ul>
 <p><strong><code>THEN</code></strong>:</p>
 <ul>
-<li><a href="#-if-then-else-if-else-end-if-br-if-then-"><code>IF/THEN/ELSE IF/ELSE/END IF</code><br /><code>IF/THEN</code></a></li>
+<li><a href="#-if-then-else-if-else-end-if-br-if-then-"><code>IF/THEN/ELSE IF/ELSE/END IF</code><br/><code>IF/THEN</code></a></li>
 </ul>
 <p><strong><code>TIMER</code></strong>:</p>
 <ul>
@@ -4964,25 +4970,25 @@ print <span class="hljs-number">0.000000239</span>&lt;&gt;<span class="hljs-numb
 <li><a href="#-bg-fill-x1-y1-to-x2-y2-char-character-"><code>BG FILL x1, y1 TO x2, y2 CHAR character</code></a></li>
 <li><a href="#-bg-tint-y1-y1-to-x2-y2-pal-palette-flip-horizontal-vertical-prio-priority-"><code>BG TINT y1, y1 TO x2, y2 [PAL palette] [FLIP horizontal, vertical] [PRIO priority]</code></a></li>
 <li><a href="#-bg-copy-x1-y1-width-height-to-x2-y2-"><code>BG COPY x1, y1, width, height TO x2, y2</code></a></li>
-<li><a href="#-add-variable-value-br-add-variable-increment-min-to-max-"><code>ADD variable, value</code><br /><code>ADD variable, increment, min TO max</code></a></li>
+<li><a href="#-add-variable-value-br-add-variable-increment-min-to-max-"><code>ADD variable, value</code><br/><code>ADD variable, increment, min TO max</code></a></li>
 <li><a href="#-copy-source-count-to-destination-"><code>COPY source, count TO destination</code></a></li>
 </ul>
 <p><strong><code>TOUCH</code></strong>:</p>
 <ul>
 <li><a href="#-touched-touch-"><code>touched =TOUCH</code></a></li>
-<li><a href="#-x-touch-x-br-y-touch-y-"><code>x =TOUCH.X</code><br /><code>y =TOUCH.Y</code></a></li>
+<li><a href="#-x-touch-x-br-y-touch-y-"><code>x =TOUCH.X</code><br/><code>y =TOUCH.Y</code></a></li>
 </ul>
 <p><strong><code>TOUCH.X</code></strong>:</p>
 <ul>
-<li><a href="#-x-touch-x-br-y-touch-y-"><code>x =TOUCH.X</code><br /><code>y =TOUCH.Y</code></a></li>
+<li><a href="#-x-touch-x-br-y-touch-y-"><code>x =TOUCH.X</code><br/><code>y =TOUCH.Y</code></a></li>
 </ul>
 <p><strong><code>TOUCH.Y</code></strong>:</p>
 <ul>
-<li><a href="#-x-touch-x-br-y-touch-y-"><code>x =TOUCH.X</code><br /><code>y =TOUCH.Y</code></a></li>
+<li><a href="#-x-touch-x-br-y-touch-y-"><code>x =TOUCH.X</code><br/><code>y =TOUCH.Y</code></a></li>
 </ul>
 <p><strong><code>TRACE</code></strong>:</p>
 <ul>
-<li><a href="#-trace-expression-expression-"><code>TRACE expression [,expression...]</code></a></li>
+<li><a href="#-trace-expression-expression-"><code>TRACE expression [, expression...]</code></a></li>
 </ul>
 <p><strong><code>TRACK</code></strong>:</p>
 <ul>
@@ -5002,14 +5008,14 @@ print <span class="hljs-number">0.000000239</span>&lt;&gt;<span class="hljs-numb
 </ul>
 <p><strong><code>VBL</code></strong>:</p>
 <ul>
-<li><a href="#-wait-vbl-br-wait-frame-"><code>WAIT VBL</code><br /><code>WAIT frame</code></a></li>
+<li><a href="#-wait-vbl-br-wait-frame-"><code>WAIT VBL</code><br/><code>WAIT frame</code></a></li>
 <li><a href="#-on-vbl-call-procedure-"><code>ON VBL CALL procedure</code></a></li>
 <li><a href="#-on-vbl-off-"><code>ON VBL OFF</code></a></li>
 </ul>
 <p><strong><code>VIEW</code></strong>:</p>
 <ul>
-<li><a href="#-sprite-view-on-br-sprite-view-off-"><code>SPRITE VIEW ON</code><br /><code>SPRITE VIEW OFF</code></a></li>
-<li><a href="#-bg-view-on-br-bg-view-off-"><code>BG VIEW ON</code><br /><code>BG VIEW OFF</code></a></li>
+<li><a href="#-sprite-view-on-br-sprite-view-off-"><code>SPRITE VIEW ON</code><br/><code>SPRITE VIEW OFF</code></a></li>
+<li><a href="#-bg-view-on-br-bg-view-off-"><code>BG VIEW ON</code><br/><code>BG VIEW OFF</code></a></li>
 </ul>
 <p><strong><code>VOLUME</code></strong>:</p>
 <ul>
@@ -5018,7 +5024,7 @@ print <span class="hljs-number">0.000000239</span>&lt;&gt;<span class="hljs-numb
 <p><strong><code>WAIT</code></strong>:</p>
 <ul>
 <li><a href="#-wait-tap-"><code>WAIT TAP</code></a></li>
-<li><a href="#-wait-vbl-br-wait-frame-"><code>WAIT VBL</code><br /><code>WAIT frame</code></a></li>
+<li><a href="#-wait-vbl-br-wait-frame-"><code>WAIT VBL</code><br/><code>WAIT frame</code></a></li>
 </ul>
 <p><strong><code>WAVE</code></strong>:</p>
 <ul>
@@ -5040,6 +5046,7 @@ print <span class="hljs-number">0.000000239</span>&lt;&gt;<span class="hljs-numb
 <ul>
 <li><a href="#operators"><code>XOR</code></a></li>
 </ul>
+
 
 
 

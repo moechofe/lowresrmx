@@ -33,8 +33,21 @@ static BlockerView *_currentInstance;
     {
         [_currentInstance removeFromSuperview];
     }
-    UIView *container = [UIApplication sharedApplication].keyWindow;
-    _currentInstance.frame = container.bounds;
+    UIWindow *container = nil;
+    if (@available(iOS 13.0, *)) {
+        for (UIScene *scene in [UIApplication sharedApplication].connectedScenes) {
+            if ([scene isKindOfClass:[UIWindowScene class]] && scene.activationState == UISceneActivationStateForegroundActive) {
+                UIWindowScene *windowScene = (UIWindowScene *)scene;
+                for (UIWindow *window in windowScene.windows) {
+                    if (window.isKeyWindow) {
+                        container = window;
+                        break;
+                    }
+                }
+            }
+            if (container) break;
+        }
+    }    _currentInstance.frame = container.bounds;
     [container addSubview:_currentInstance];
     [_currentInstance.activityIndicatorView startAnimating];
     [UIView animateWithDuration:0.3 animations:^{
