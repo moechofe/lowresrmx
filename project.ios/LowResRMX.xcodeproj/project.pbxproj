@@ -226,12 +226,6 @@
 		9234247522C3FACC002431CD /* ClearRamActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9234247422C3FACC002431CD /* ClearRamActivity.swift */; };
 		923AFD691F77EB27002F6A5B /* AppStyle.m in Sources */ = {isa = PBXBuildFile; fileRef = 925CC6B41F7589BA0059C230 /* AppStyle.m */; };
 		923AFD721F77ED34002F6A5B /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 926EB1D11F757DDD0048A6CF /* Main.storyboard */; };
-		923AFD7C1F77ED52002F6A5B /* Help.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 926EB1FC1F7582A70048A6CF /* Help.storyboard */; };
-		923AFD7D1F77ED52002F6A5B /* HelpContent.m in Sources */ = {isa = PBXBuildFile; fileRef = 926EB1F61F7582A50048A6CF /* HelpContent.m */; };
-		923AFD7E1F77ED52002F6A5B /* HelpMasterNavController.m in Sources */ = {isa = PBXBuildFile; fileRef = 926EB1FA1F7582A60048A6CF /* HelpMasterNavController.m */; };
-		923AFD7F1F77ED52002F6A5B /* HelpSplitViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 926EB1F71F7582A50048A6CF /* HelpSplitViewController.m */; };
-		923AFD801F77ED52002F6A5B /* HelpTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 926EB1F31F7582A30048A6CF /* HelpTableViewController.m */; };
-		923AFD811F77ED52002F6A5B /* HelpTextViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 926EB1F51F7582A40048A6CF /* HelpTextViewController.m */; };
 		923C311020587965003C89AC /* ToolsMenuConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 923C310F20587965003C89AC /* ToolsMenuConfiguration.swift */; };
 		924AB3F2205D986C00BCF977 /* IndexSideBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 924AB3F1205D986B00BCF977 /* IndexSideBar.swift */; };
 		926075512216ECEC0017E04B /* DonationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 926075502216ECEC0017E04B /* DonationViewController.swift */; };
@@ -467,17 +461,6 @@
 		926EB1D11F757DDD0048A6CF /* Main.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Main.storyboard; sourceTree = "<group>"; };
 		926EB1D81F757FAD0048A6CF /* UIViewController+LowResCoder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UIViewController+LowResCoder.h"; sourceTree = "<group>"; };
 		926EB1DA1F757FAD0048A6CF /* UIViewController+LowResCoder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UIViewController+LowResCoder.m"; sourceTree = "<group>"; };
-		926EB1F21F7582A30048A6CF /* HelpMasterNavController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HelpMasterNavController.h; sourceTree = "<group>"; };
-		926EB1F31F7582A30048A6CF /* HelpTableViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = HelpTableViewController.m; sourceTree = "<group>"; };
-		926EB1F41F7582A30048A6CF /* HelpContent.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HelpContent.h; sourceTree = "<group>"; };
-		926EB1F51F7582A40048A6CF /* HelpTextViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = HelpTextViewController.m; sourceTree = "<group>"; };
-		926EB1F61F7582A50048A6CF /* HelpContent.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = HelpContent.m; sourceTree = "<group>"; };
-		926EB1F71F7582A50048A6CF /* HelpSplitViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = HelpSplitViewController.m; sourceTree = "<group>"; };
-		926EB1F81F7582A50048A6CF /* HelpSplitViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HelpSplitViewController.h; sourceTree = "<group>"; };
-		926EB1F91F7582A60048A6CF /* HelpTextViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HelpTextViewController.h; sourceTree = "<group>"; };
-		926EB1FA1F7582A60048A6CF /* HelpMasterNavController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = HelpMasterNavController.m; sourceTree = "<group>"; };
-		926EB1FB1F7582A60048A6CF /* HelpTableViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HelpTableViewController.h; sourceTree = "<group>"; };
-		926EB1FC1F7582A70048A6CF /* Help.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Help.storyboard; sourceTree = "<group>"; };
 		9276994B1F7D649800211D15 /* ExplorerItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExplorerItem.swift; sourceTree = "<group>"; };
 		9276994D1F7D678900211D15 /* ProjectDocument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectDocument.swift; sourceTree = "<group>"; };
 		927D002F2529C78B004ACA03 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
@@ -831,17 +814,6 @@
 		926EB1F11F7582660048A6CF /* Help */ = {
 			isa = PBXGroup;
 			children = (
-				926EB1FC1F7582A70048A6CF /* Help.storyboard */,
-				926EB1F41F7582A30048A6CF /* HelpContent.h */,
-				926EB1F61F7582A50048A6CF /* HelpContent.m */,
-				926EB1F21F7582A30048A6CF /* HelpMasterNavController.h */,
-				926EB1FA1F7582A60048A6CF /* HelpMasterNavController.m */,
-				926EB1F81F7582A50048A6CF /* HelpSplitViewController.h */,
-				926EB1F71F7582A50048A6CF /* HelpSplitViewController.m */,
-				926EB1FB1F7582A60048A6CF /* HelpTableViewController.h */,
-				926EB1F31F7582A30048A6CF /* HelpTableViewController.m */,
-				926EB1F91F7582A60048A6CF /* HelpTextViewController.h */,
-				926EB1F51F7582A40048A6CF /* HelpTextViewController.m */,
 			);
 			path = Help;
 			sourceTree = "<group>";
@@ -1116,7 +1088,6 @@
 				5B34ED5A2AC5835600220A80 /* data_manager.bc in Resources */,
 				5B34ED282AC5835600220A80 /* cmd_memory.bc in Resources */,
 				5B34ECF42AC5835600220A80 /* cmd_subs.bc in Resources */,
-				923AFD7C1F77ED52002F6A5B /* Help.storyboard in Resources */,
 				5B34ED682AC5835600220A80 /* default_characters.bc in Resources */,
 				5B34ED4C2AC5835600220A80 /* cmd_variables.bc in Resources */,
 				920E1B4B1F7816FA00664382 /* BlockerView.xib in Resources */,
@@ -1191,13 +1162,11 @@
 		92EA93B61F744572007BEFB1 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			files = (
-				923AFD811F77ED52002F6A5B /* HelpTextViewController.m in Sources */,
 				920E1B371F78024E00664382 /* GORLabel.m in Sources */,
 				5B34ED382AC5835600220A80 /* cmd_io.c in Sources */,
 				5B34ED982AC5835700220A80 /* core_delegate.c in Sources */,
 				5B34ED3A2AC5835600220A80 /* interpreter.c in Sources */,
 				5B34ED8C2AC5835700220A80 /* boot_intro.c in Sources */,
-				923AFD7E1F77ED52002F6A5B /* HelpMasterNavController.m in Sources */,
 				5B34ED422AC5835600220A80 /* cmd_sprites.c in Sources */,
 				920E1B1C1F78000800664382 /* ExplorerItemCell.swift in Sources */,
 				5B34ED162AC5835600220A80 /* interpreter_utils.c in Sources */,
@@ -1254,7 +1223,6 @@
 				920E1B561F7816FA00664382 /* TextLabel.m in Sources */,
 				92BB14C1244B0FC700611F01 /* CoreStatsWrapper.swift in Sources */,
 				92DA4C99202CECE000129302 /* Dpad.swift in Sources */,
-				923AFD7F1F77ED52002F6A5B /* HelpSplitViewController.m in Sources */,
 				9227DC1E1FC8BB0700BC89FD /* ProjectManager.swift in Sources */,
 				5B34ED7C2AC5835700220A80 /* core.c in Sources */,
 				5B34ED142AC5835600220A80 /* cmd_text.c in Sources */,
@@ -1267,14 +1235,12 @@
 				5B34ED222AC5835600220A80 /* error.c in Sources */,
 				92930E4C203377DF00DE18B9 /* RoundHitBoxButton.swift in Sources */,
 				5B34ED462AC5835600220A80 /* value.c in Sources */,
-				923AFD7D1F77ED52002F6A5B /* HelpContent.m in Sources */,
 				5B34ED722AC5835600220A80 /* startup_sequence.c in Sources */,
 				9234247522C3FACC002431CD /* ClearRamActivity.swift in Sources */,
 				92A1C9322297E12C00364F80 /* CommunityViewController.swift in Sources */,
 				92A7E14B223B91FD00ED2487 /* ShareViewController.swift in Sources */,
 				923AFD691F77EB27002F6A5B /* AppStyle.m in Sources */,
 				5B34ED482AC5835600220A80 /* cmd_screen.c in Sources */,
-				923AFD801F77ED52002F6A5B /* HelpTableViewController.m in Sources */,
 				924AB3F2205D986C00BCF977 /* IndexSideBar.swift in Sources */,
 				9227DC221FC8C17A00BC89FD /* SplashViewController.swift in Sources */,
 				9217BF3523DC963C00DA8DAF /* TabBarController.swift in Sources */,
