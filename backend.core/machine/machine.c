@@ -239,7 +239,7 @@ void machine_trackMemory(struct Core *core, uint16_t address, bool read, bool wr
 
 void machine_checkForTrakedMemoryAccess(struct Core *core, uint16_t address, bool read, bool write)
 {
-	if (core->interpreter->pass == StatePaused) return;
+	if (core->interpreter->state == StatePaused) return;
 	for (int i = 0; i < core->machineInternals->numMemoryTracks; i++)
 	{
 		struct MemoryTrack *track = &core->machineInternals->memoryTracks[i];

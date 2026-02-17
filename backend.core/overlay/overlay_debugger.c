@@ -167,9 +167,6 @@ static void print_code(struct Core *core)
 	if (pc->type == TokenUndefined)
 		return;
 
-	int pos = pc->sourcePosition;
-	int first, second = pos - (sourceCode[pos] == '\n' ? 1 : 0), third = pos;
-
 	int next = pc->sourcePosition;
 
 	// make sure the first line do not start by a \n

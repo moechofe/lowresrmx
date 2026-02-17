@@ -63,7 +63,7 @@ The original LowRes NX, despite being an excellent development environment, lack
 
 - Positions support sub-pixels with 1/16 pixel precision.
 
-        SPRITE 123,SPRITE.X(123)+0.25,
+        SPRITE 123, SPRITE.X(123)+0.25,
 
 **Input/Output:**
 
@@ -220,7 +220,7 @@ Each sprite will consume 6 bytes of memory. For each sprite:
 |      +5 | 1 Byte  | Current frame   |
 |      +4 | 2 Bytes | Lifetime        |
 
-	PARTICLE 1,20 AT $9000
+	PARTICLE 1, 20 AT $9000
 	'Will use sprite 1 to 20 included.
 	'Store internal data from $9000 to $9078 excluded.
 
@@ -237,7 +237,7 @@ The associated data MUST contain a list of character numbers that will be used t
 A common example is to use zero (0) and minus one (-1) for the last two data values, which allows the particle to disappear until the sprite is reused.
 
 	my_appearance:
-	DATA 1,2,3,4,0,-1
+	DATA 1, 2, 3, 4, 0, -1
 	'will show the character 1 to 4, each per frame.
 	'and loop with the character 0.
 
@@ -258,9 +258,9 @@ The target `subprogram` will receive two arguments:
 1. The `sprite` number,
 2. The particle `address`.
 
-	SUB mypart(spr,addr)
+	SUB mypart(spr, addr)
 		sy=PEEKW(addr+2)
-		POKEW addr+2,sy-5
+		POKEW addr+2, sy-5
 		'change the speed in y axis
 	END SUB
 
@@ -549,7 +549,7 @@ As a real example, this is a program that increments and prints a score every ti
 
     score=0
     DO
-        PRINT "score",score
+        PRINT "score", score
         WAIT TAP
         score=score+1
     LOOP
@@ -612,7 +612,7 @@ Here is an example that demonstrates how to recreate the program above using lab
 
     score=0
     start:
-        PRINT "score",score
+        PRINT "score", score
         WAIT TAP
         score=score+1
     GOTO start
@@ -627,17 +627,17 @@ Example, instead of writing:
 
     DATA "chocolate"
     READ like$
-    PRINT "I like",like$
+    PRINT "I like", like$
 
 You can write:
 
     like: DATA "chocolate"
-    PRINT "I like",like
+    PRINT "I like", like
 
 And it works in all [expressions](#expressions) that involve [literal strings](#literals) or [string variables](#variables-and-assignation).
 
     test1: DATA "entanglem"
-    PRINT test1+LEFT$(test1,3)
+    PRINT test1+LEFT$(test1, 3)
     test2: DATA 1234.5
     PRINT test2*2
 
@@ -669,22 +669,22 @@ The last usage of identifiers are procedures. They are meant to be reusable sub-
 
 Here's a quick example:
 
-    SUB addition(a,b,c)
+    SUB addition(a, b, c)
         c=a+b
     END SUB
 
 By running this program, nothing will happen because procedures do not get executed automatically. Instead the user MUST use a dedicated command for it.
 
     result=0
-    CALL addition(120,3,result)
-    PRINT "result",result
+    CALL addition(120, 3, result)
+    PRINT "result", result
 
 By adding this piece of code after the previous one and running the program, the solution of the operation 120+3 will be printed on the screen: "result 123".
 
 The advantage of calling procedures is being able to do it again and again.
 
-    CALL addition(45,-78,result)
-    PRINT "result",result
+    CALL addition(45, -78, result)
+    PRINT "result", result
 
 This time, it will print "result -33".
 
@@ -698,7 +698,7 @@ By default, when declaring a variable in a program, its scope is limited and the
 
     score=0
     SUB print_score
-        🐞print "score",score
+        🐞print "score", score
     END SUB
     CALL print_score
 
@@ -709,7 +709,7 @@ One option is to pass the variable to the procedure. Two changes MUST be made fo
 1. Users need to add a parameter to the procedure declaration:
 
         SUB print_score(s)
-            print "score",s
+            print "score", s
         END SUB
 
 2. Users also need to add an argument to the procedure call:
@@ -722,7 +722,7 @@ Corrected program:
 
         score=0
         SUB print_score(s)
-            PRINT "score",s
+            PRINT "score", s
         END SUB
         CALL print_score(score)
 
@@ -766,7 +766,7 @@ It is possible to declare a variable global so it can be accessed in both scopes
     END SUB
     DO
         CLS
-        PRINT "score:",score
+        PRINT "score:", score
         WAIT TAP
         CALL frag
     LOOP
@@ -824,7 +824,7 @@ Here is a set of rules on how it works:
         DO
             x=0 : y=0
             IF TAP THEN x=TOUCH.X : y=TOUCH.Y
-            PRINT x,y
+            PRINT x, y
             WAIT TAP
         LOOP
 
@@ -865,7 +865,7 @@ Expressions are used to compute values, be assigned to identifiers or passed to 
 - A [function call](#functions):
 
         cos(1.314)
-        LEFT$(name$,8)
+        LEFT$(name$, 8)
 
 - An [unary, binary or group operator](#operators):
 
@@ -923,7 +923,7 @@ Used to manipulate each bit of numeric values.
 
 | symbol | example                    | purpose                                                     |
 | ------:| -------------------------- | ----------------------------------------------------------- |
-|    NOT | not (x=15)<br>not 0        | Bits that are 0 become 1,<br>and those that are 1 become 0. |
+|    NOT | not (x=15)<br>not 0        | Bits that are 0 become 1, <br>and those that are 1 become 0. |
 |    AND | a=1 and b=12<br>170 and 15 | If both bits are 1, the<br>result is 1, 0 otherwise.        |
 |     OR | x=10 or y=0<br>128 or 2    | The result is 0 if both<br>bits are 0, 1 otherwise.         |
 |    XOR | a xor b                    | The result is 1 if only<br>one bit is 1, 0 otherwise.       |
@@ -943,7 +943,7 @@ Retro Game Creator provide a bunch of built-in commands to manipulate the fantas
 To execute a command, use it's identifier followed by a list of coma-separated arguments or other reserved keywords. The exact syntax depends on the command.
 
     SPRITE OFF 0 to 169
-    SPRITE 0,40,60,1
+    SPRITE 0, 40, 60, 1
 
 ### Functions
 
@@ -951,7 +951,7 @@ Retro Game Creator provide a bunch of built-in function to manipulate the fantas
 
 To execute a function, use it's identifier followed by a list of coma-separated arguments surrounded by rounded parenthesis.
 
-    PRINT MID$("test",3,1) :'print s
+    PRINT MID$("test", 3, 1) :'print s
 
 A function will always return something and MUST be used as [rvalue](#lvalue-and-rvalue) inside an [expressions](#expressions).
 
@@ -1104,9 +1104,9 @@ Real example of non stop moving square that bounce on the device screen:
     DO
         IF x=0 OR x=shown.w-8 THEN sx=-sx
         IF y=0 OR y=shown.h-8 THEN sy=-sy
-        ADD x,sx
-        ADD y,sy
-        SPRITE 0,x,y,1
+        ADD x, sx
+        ADD y, sy
+        SPRITE 0, x, y, 1
         WAIT VBL
         IF TAP THEN EXIT
     LOOP
@@ -1244,7 +1244,7 @@ Real example. A score is incremented using time and tap:
         INC score
         t=TIMER
     update:
-        TEXT 2,2,"score:"+STR$(score)
+        TEXT 2, 2, "score:"+STR$(score)
         RETURN
 
 This example has one `RETURN`, two labels and three `GOSUB`. The best practice mentioned above is not followed here, but here is the explanation.
@@ -1255,7 +1255,7 @@ Users can print the current stack using the [debugger `TRACE` command](#dbg-trac
 
 #### `ON GOTO`<br>`ON GOSUB`
 
-    ON value GOTO label0[,label1...]
+    ON value GOTO label0[, label1...]
 
 Jump to one of the listed `label` according to a `value`.
 
@@ -1270,7 +1270,7 @@ Real example:
 
     again:
         WAIT 30
-        ON RND(1) GOTO zero,one
+        ON RND(1) GOTO zero, one
     zero:
         PRINT "zero"
         GOTO again
@@ -1325,18 +1325,18 @@ Real example, a game where the player needs to enter a sequence of digits while 
     'delete last character
     SUB delete
         IF cursor.x=0 THEN EXIT SUB
-        LOCATE cursor.x-1,cursor.y
-        TEXT cursor.x,cursor.y," "
+        LOCATE cursor.x-1, cursor.y
+        TEXT cursor.x, cursor.y, " "
     END SUB
 
     'check if input is correct
     SUB check(r$)
         r$="       "
-        TEXT 0,2,"       "
+        TEXT 0, 2, "       "
         IF cursor.x<10 THEN EXIT SUB
         ok=-1
         FOR i=0 TO 9
-            IF CELL.C(i,1)-208<>i THEN ok=0
+            IF CELL.C(i, 1)-208<>i THEN ok=0
         NEXT i
         r$="failure"
         IF ok THEN r$="success"
@@ -1352,7 +1352,7 @@ Real example, a game where the player needs to enter a sequence of digits while 
         IF k$<>"" THEN CALL handle(k$)
         WAIT VBL
         CALL check(result$)
-        TEXT 0,2,result$
+        TEXT 0, 2, result$
     LOOP
 
 `EXIT SUB` command will exit the `SUB`.
@@ -1387,8 +1387,8 @@ This allow to get any items in the array according to its number of dimensions.
 - a string: my_str$
 - an array of number: my_num_array()
 - an array of string: my_str_array$()
-- one number from an array: my_num_array(1,2)
-- one string from an array: my_str_array$(1,2)
+- one number from an array: my_num_array(1, 2)
+- one string from an array: my_str_array$(1, 2)
 
 ### Embedded data
 
@@ -1399,25 +1399,25 @@ Retro Game Creator provides two ways to store data or assets inside a program.
     Real example that list the Straw Hat Pirates members:
 
         data 11
-        data "lufy",19,"zoro",21,"nami",20
-        data "usopp",21,"sanji",21,"chopper",17
-        data "robin",30,"franky",36,"brook",90
-        data "jinbe",46,"vivi",18
+        data "lufy", 19, "zoro", 21, "nami", 20
+        data "usopp", 21, "sanji", 21, "chopper", 17
+        data "robin", 30, "franky", 36, "brook", 90
+        data "jinbe", 46, "vivi", 18
         read count
         for i=1 to count
-            read name$,age
-            print name$,age
+            read name$, age
+            print name$, age
         next i
 
     Internaly it will use a read pointer that iterates all constant values.
 
 2. Use the [virtual file](#virtual-file) system accessible throughout the [file API](#file-api).
 
-#### `DATA constant [,constant...]`
+#### `DATA constant [, constant...]`
 
 A list of `constant` values (numbers or strings) that can be accessed using the `READ` command.
 
-#### `READ variable [,variable...]`
+#### `READ variable [, variable...]`
 
 Read a list of values inside `variable` that was declared using `DATA`.
 
@@ -1453,20 +1453,20 @@ Declare a list of number or string variables to be globally [accessible in all s
 
 #### `DIM`
 
-    DIM identifier(highest) [,identifier(highest)]...
+    DIM identifier(highest) [, identifier(highest)]...
 
 Will declare one or more arrays with `highest`+1 number of elements.
 
 Arrays of numbers or strings MUST be declared before reading or writing them.
 
-    DIM scores(1),names$(1)
+    DIM scores(1), names$(1)
     FOR i=0 TO 1
-        PRINT names$(i);":",scores(i)
+        PRINT names$(i);":", scores(i)
     NEXT i
 
 #### `DIM GLOBAL`
 
-    DIM GLOBAL identifier(highest) [,identifier(highest)]...
+    DIM GLOBAL identifier(highest) [, identifier(highest)]...
 
 Similar to `DIM` but will [declare the arrays](#arrays) [globally accessible](#local-and-global-scope).
 
@@ -1474,7 +1474,7 @@ Similar to `DIM` but will [declare the arrays](#arrays) [globally accessible](#l
 
 #### `=UBOUND`
 
-    highest=UBOUND(identifier[,dimension])
+    highest=UBOUND(identifier[, dimension])
 
 Return the `highest` index of the array variable `identifier` at specified `dimension`.
 
@@ -1504,8 +1504,8 @@ An example that show a smiley sprite moving in circle:
 
     i=0
     DO
-        ADD i,1,0 TO 99
-        SPRITE 0,COS(i/100)*40+60,SIN(i/100)*40+60,1
+        ADD i, 1, 0 TO 99
+        SPRITE 0, COS(i/100)*40+60, SIN(i/100)*40+60, 1
         WAIT VBL
     LOOP
 
@@ -1529,9 +1529,9 @@ Omitted parameters will keep their previous values.
 Example of a sprite that get flipped according to it's position on the screen:
 
     DO
-        SPRITE 0,TOUCH.X,TOUCH.Y,1
+        SPRITE 0, TOUCH.X, TOUCH.Y, 1
         SPRITE 0 PAL 6
-        SPRITE 0 FLIP TOUCH.X>SHOWN.W/2,TOUCH.Y>SHOWN.H/2
+        SPRITE 0 FLIP TOUCH.X>SHOWN.W/2, TOUCH.Y>SHOWN.H/2
         WAIT VBL
     LOOP
 
@@ -1545,11 +1545,11 @@ Return the position `x` or `y` of the `sprite` (0..169) in pixels.
 
 Example of a sprite smoothly following the finger touch:
 
-    sprite 0,shown.w,shown.h,1
+    sprite 0, shown.w, shown.h, 1
     do
         x=SPRITE.X(0)+(TOUCH.X-SPRITE.X(0))/4
         y=SPRITE.Y(0)+(TOUCH.Y-SPRITE.Y(0))/4
-        SPRITE 0,x,y,
+        SPRITE 0, x, y,
         WAIT VBL
     LOOP
 
@@ -1573,14 +1573,14 @@ Return the whole `attributes` flags of the `sprite` (0..169).
 
 Example: that show how to read sprite attributes:
 
-    SPRITE 0,80,80,1
-    SPRITE.A 0,255
+    SPRITE 0, 80, 80, 1
+    SPRITE.A 0, 255
     DO
-        TEXT 4,4,"palette: 00000"+BIN$(SPRITE.A(0) AND %111)
-        TEXT 4,5,"flip:    000"+BIN$(SPRITE.A(0) AND %11000)
-        TEXT 4,6,"size:    0"+BIN$(SPRITE.A(0) AND %1100000)
+        TEXT 4, 4, "palette: 00000"+BIN$(SPRITE.A(0) AND %111)
+        TEXT 4, 5, "flip:    000"+BIN$(SPRITE.A(0) AND %11000)
+        TEXT 4, 6, "size:    0"+BIN$(SPRITE.A(0) AND %1100000)
         WAIT TAP
-        SPRITE.A 0,RND(255)
+        SPRITE.A 0, RND(255)
     LOOP
 
     #2:MAIN CHARACTERS
@@ -1598,13 +1598,13 @@ Hide one `sprite`.
 Example that hide a sprite at each tap:
 
     FOR i=0 TO 159
-        SPRITE I,RND(SHOWN.W-8),RND(SHOWN.H-8),1
+        SPRITE I, RND(SHOWN.W-8), RND(SHOWN.H-8), 1
     NEXT i
     i=0
     WHILE i<159
         WAIT TAP
         SPRITE OFF I
-        ADD I,1
+        ADD I, 1
     WEND
 
     #2:MAIN CHARACTERS
@@ -1623,14 +1623,14 @@ Example of a ball that bounce on the wall and fall into holes:
 
     again:
     FOR i=1 TO 20
-        SPRITE I,RND(SHOWN.W)-8,RND(SHOWN.H)-8,2
+        SPRITE I, RND(SHOWN.W)-8, RND(SHOWN.H)-8, 2
     NEXT i
     x=0
     y=0
     sx=1
     sy=1
     DO
-        SPRITE 0,x,y,1
+        SPRITE 0, x, y, 1
         IF SPRITE HIT(0) THEN
             WAIT 30
             GOTO again
@@ -1658,13 +1658,13 @@ Return if the `sprite` (0..169) `collides` (0/-1) with the `sprite1`.
 
 Example of two owerlapping sprites:
 
-    SPRITE 20,46,46,1
+    SPRITE 20, 46, 46, 1
     DO
-    SPRITE 10,40+((TIMER/60) MOD 2)*4,40,1
-    IF SPRITE HIT(10,20) THEN
-        TEXT 8,5,"hit"
+    SPRITE 10, 40+((TIMER/60) MOD 2)*4, 40, 1
+    IF SPRITE HIT(10, 20) THEN
+        TEXT 8, 5, "hit"
     ELSE
-        TEXT 8,5,"   "
+        TEXT 8, 5, "   "
     END IF
     WAIT VBL
     LOOP
@@ -1688,7 +1688,7 @@ Return the `sprite` which collided, resulting of the last `=SPRITE.HIT()` functi
 Example of a ball that bounce on the wall and destroy the obstable:
 
     FOR i=1 TO 20
-        SPRITE i,RND(SHOWN.W)-8,RND(SHOWN.H)-8,2
+        SPRITE i, RND(SHOWN.W)-8, RND(SHOWN.H)-8, 2
     NEXT i
     again:
     x=0
@@ -1696,8 +1696,8 @@ Example of a ball that bounce on the wall and destroy the obstable:
     sx=1
     sy=1
     DO
-        SPRITE 0,x,y,1
-        IF SPRITE HIT(0,1 TO 20) THEN
+        SPRITE 0, x, y, 1
+        IF SPRITE HIT(0, 1 TO 20) THEN
             WAIT 15
             SPRITE OFF HIT
             GOTO again
@@ -1741,10 +1741,10 @@ Only clear the background layer numbered `layer` with character zero 0. Do not a
 
 Set the scroll offset on `x` and `y` axis of the `layer` in pixels.
 
-    TEXT 10,10,"hello!"
+    TEXT 10, 10, "hello!"
     BG 1
-    TEXT 10,10,"hello!"
-    SCROLL 0,0,-4
+    TEXT 10, 10, "hello!"
+    SCROLL 0, 0, -4
 
 Omitted parameters will keep their previous values.
 
@@ -1756,13 +1756,13 @@ Example of getting the scroll offset of the background layer:
 
     FOR x=0 TO 63
     FOR y=0 TO 63
-        CELL x,y,RND(3)
+        CELL x, y, RND(3)
     NEXT y
     NEXT x
     do
         x=SCROLL.X(0)+(TOUCH.X-SCROLL.X(0))/4
         y=SCROLL.Y(0)+(TOUCH.Y-SCROLL.Y(0))/4
-        SCROLL 0,x,y
+        SCROLL 0, x, y
         WAIT VBL
     LOOP
 
@@ -1777,9 +1777,9 @@ Example of getting the scroll offset of the background layer:
 Change the current `layer` (0..3) for further cells draw operations.
 
     BG 0
-    TEXT 10,10,"\"
+    TEXT 10, 10, "\"
     BG 1
-    TEXT 10,10,"/"
+    TEXT 10, 10, "/"
 
 #### `PAL palette`
 
@@ -1793,7 +1793,7 @@ Change the current `palette` for further cells draw operations.
 
 Change the `horizontal` and `vertical` flip attributes for further cells draw operations, considering 0 as not flipped and something else as flipped.
 
-    FLIP 1,0
+    FLIP 1, 0
     PRINT "dlrow olleh"
 
 Omitted parameters will keep their previous values.
@@ -1802,9 +1802,9 @@ Omitted parameters will keep their previous values.
 
 Change the `priority` for further cells draw operations.
 
-    SPRITE 0,78,78,1
+    SPRITE 0, 78, 78, 1
     PRIO 1
-    TEXT 10,10,"s"
+    TEXT 10, 10, "s"
 
     #2:MAIN CHARACTERS
     00000000000000000000000000000000
@@ -1826,7 +1826,7 @@ Use `BG`, `PAL`, `FLIP`, `PRIO` and `ATTR` to alter the [current attributes](#ce
 
 E.g. draw a face:
 
-    CELL 10,10,1
+    CELL 10, 10, 1
 
     #2:MAIN CHARACTERS
     00000000000000000000000000000000
@@ -1834,10 +1834,10 @@ E.g. draw a face:
 
 E.g. draw an inverted blue r letter:
 
-    CELL 10,10,242
-    FLIP 1,0
+    CELL 10, 10, 242
+    FLIP 1, 0
     PAL 1
-    CELL 10,10,
+    CELL 10, 10,
 
 #### `character =CELL.C(x, y)`
 
@@ -1848,17 +1848,17 @@ Example of reading the ASCII code of a character:
     BG 2
     FOR x=0 to SHOWN.W\8
     FOR y=0 to SHOWN.H\8
-        CELL x,y,192+RND(63)
+        CELL x, y, 192+RND(63)
     NEXT y
     NEXT x
     BG 1
-    BG COPY 0,0,6,4 TO 4,4
+    BG COPY 0, 0, 6, 4 TO 4, 4
 
     DO
         BG 2
-        c=CELL.C(TOUCH.X\8,TOUCH.Y\8)
+        c=CELL.C(TOUCH.X\8, TOUCH.Y\8)
         BG 0
-        TEXT 5,5,"$"+RIGHT$("0"+HEX$(C-192),2)
+        TEXT 5, 5, "$"+RIGHT$("0"+HEX$(C-192), 2)
         WAIT VBL
     LOOP
 
@@ -1883,26 +1883,26 @@ Example that display cell's attributes:
     FOR x=0 to SHOWN.W\8
     FOR y=0 to SHOWN.H\8
         ATTR RND(255)
-        CELL X,Y,192+RND(63)
+        CELL X, Y, 192+RND(63)
     NEXT y
     NEXT X
     BG 1
-    BG FILL 5,5 TO 13,9 CHAR 2
-    BG FILL 4,4 TO 12,8 CHAR 1
+    BG FILL 5, 5 TO 13, 9 CHAR 2
+    BG FILL 4, 4 TO 12, 8 CHAR 1
     BG 0
     PAL 0
     PRIO 1
-    FLIP 0,0
-    TEXT 5,5,"Pal:"
-    TEXT 5,6,"Flip:"
-    TEXT 5,7,"Prio:"
+    FLIP 0, 0
+    TEXT 5, 5, "Pal:"
+    TEXT 5, 6, "Flip:"
+    TEXT 5, 7, "Prio:"
     DO
         BG 2
-        a=CELL.A(TOUCH.X\8,TOUCH.Y\8)
+        a=CELL.A(TOUCH.X\8, TOUCH.Y\8)
         BG 0
-        TEXT 9,5,RIGHT$("00"+BIN$(A AND %111),3)
-        TEXT 10,6,RIGHT$("0"+BIN$((A\8) AND %11),2)
-        TEXT 10,7,RIGHT$("0"+BIN$((A\32) AND %11),2)
+        TEXT 9, 5, RIGHT$("00"+BIN$(A AND %111), 3)
+        TEXT 10, 6, RIGHT$("0"+BIN$((A\8) AND %11), 2)
+        TEXT 10, 7, RIGHT$("0"+BIN$((A\32) AND %11), 2)
         WAIT VBL
     LOOP
 
@@ -1917,8 +1917,8 @@ Check the [cell attributes reference](#cell-attributes).
 
 Fills all cells from `x1, y1` coordinates to `x2, y2` with `character` and the current attributes.
 
-    BG FILL 1,1 TO 5,5 CHAR 1
-    BG FILL 2,2 TO 4,4 CHAR 2
+    BG FILL 1, 1 TO 5, 5 CHAR 1
+    BG FILL 2, 2 TO 4, 4 CHAR 2
 
     #2:MAIN CHARACTERS
     00000000000000000000000000000000
@@ -1936,7 +1936,7 @@ Sets to the cell `x, y` (0..63) of the current layer, one or more attributes:
 Omitted parameters will keep their previous values.
 
     PRINT "hello!"
-    TINT 5,0 PAL 7
+    TINT 5, 0 PAL 7
 
 #### `BG TINT y1, y1 TO x2, y2 [PAL palette] [FLIP horizontal, vertical] [PRIO priority]`
 
@@ -1950,13 +1950,13 @@ Omitted parameters will keep their previous values.
 
 #### `BG SCROLL x1, y1 to x2, y2 step x3, y3`
 
-Move the cell's attributes and character from the rectangle `x1, y1` to `x2, y2` (0..63) of the current layer by `x3`,`y3` in cell coordinates.
+Move the cell's attributes and character from the rectangle `x1, y1` to `x2, y2` (0..63) of the current layer by `x3`, `y3` in cell coordinates.
 
 This feature is internally used to scroll text when it reach the bottom of the window.
 
-#### `BG SOURCE address [,width, height]`
+#### `BG SOURCE address [, width, height]`
 
-Set the memory `address` to use as source for BG COPY x1,y1,width,height TO x2,y2 operations.
+Set the memory `address` to use as source for BG COPY x1, y1, width, height TO x2, y2 operations.
 
 When `width` and `height` are specified, they are used as indiquating the number of cells in the source.
 
@@ -1969,26 +1969,26 @@ Example that generate background using random numbers:
     a=$9000
     FOR r=0 TO 63
     FOR c=0 TO 63
-        POKE A,1
+        POKE A, 1
         INC a
-        POKE a,RND(1)*8
+        POKE a, RND(1)*8
         INC a
     NEXT c
     NEXT r
 
-    bG SOURCE $9000,64,64
-    BG COPY 0,0,64,64 TO 0,0
+    bG SOURCE $9000, 64, 64
+    BG COPY 0, 0, 64, 64 TO 0, 0
 
     Do
     x=0
-    ADD x,SIN(TIMER/600)*COS(TIMER/6000)*200
-    ADD x,SIN(TIMER/500)*50
+    ADD x, SIN(TIMER/600)*COS(TIMER/6000)*200
+    ADD x, SIN(TIMER/500)*50
 
     y=0
-    ADD y,COS(TIMER/400)*SIN(TIMER/4000)*200
-    ADD y,COS(TIMER/700)*50
+    ADD y, COS(TIMER/400)*SIN(TIMER/4000)*200
+    ADD y, COS(TIMER/700)*50
 
-    SCROLL 0,X,Y
+    SCROLL 0, X, Y
     WAIT VBL
     LOOP
 
@@ -2006,15 +2006,15 @@ The source MUST point to writable memory. It will NOT work with `BG SOURCE ROM(3
 
 Example that continously draw to the background source:
 
-    TEXT 4,4,"touch to copy"
+    TEXT 4, 4, "touch to copy"
     BG 1
-    BG SOURCE $A000,64,64
+    BG SOURCE $A000, 64, 64
 
     DO
         PAL RND(7)
-        MCELL RND(CEIL(SHOWN.W/8)),RND(CEIL(SHOWN.H/8)),RND(1)
+        MCELL RND(CEIL(SHOWN.W/8)), RND(CEIL(SHOWN.H/8)), RND(1)
         IF TOUCH THEN
-            BG COPY 0,0,CEIL(SHOWN.W/8),CEIL(SHOWN.H/8) TO 0,0
+            BG COPY 0, 0, CEIL(SHOWN.W/8), CEIL(SHOWN.H/8) TO 0, 0
         END IF
         WAIT VBL
     LOOP
@@ -2039,11 +2039,11 @@ Similar to `=CELL.A` but modify the source in memory instead of the current laye
 
 Will print `text$` on the current layer starting at `x, y` cell using the current background attributes on the current layer.
 
-  DATA "ga","bu","zo","meu"
+  DATA "ga", "bu", "zo", "meu"
   FOR i=0 TO 3
     PAL I
     READ c$
-    TEXT 8+i*2,10,c$
+    TEXT 8+i*2, 10, c$
   NEXT i
 
 #### `NUMBER x, y, number, count`
@@ -2053,7 +2053,7 @@ Will print the latest `count` digits of the `number` on the current layer starti
 Similar to `TEXT` but dedicated to print number instead of text.
 
     score=123
-    NUMBER 10,10,score,6
+    NUMBER 10, 10, score, 6
 
 #### `FONT first`
 
@@ -2069,7 +2069,7 @@ Commands dedicated to draw text on layers using characters data. 64 characters c
 
 Sets the current window at `x, y` with `width, height` and on `layer` where text will be drawn.
 
-    WINDOW 4,8,SHOWN.W\8-8,20,0
+    WINDOW 4, 8, SHOWN.W\8-8, 20, 0
     PRINT "Oh my god! There's a tremendous amount of work to do. Can I do a little bit of it today."
 
 By default, the window is sets inside the safe area delimited by the safe functions.
@@ -2083,7 +2083,7 @@ Clears the window by replacing all the cells by the character 0. It also reset t
 Move the cursor location at `x, y` in cells coordinates inside the window.
 
     FOR i=1 TO 9
-        LOCATE I,I
+        LOCATE I, I
         PRINT str$(i);
     NEXT i
 
@@ -2101,7 +2101,7 @@ Outputs string `expression...` onto the current window.
 - a label that point to a string data.
 
 `expression...` items can be seperated by:
-- a coma (,) to add a space between items,
+- a coma (, ) to add a space between items,
 - a semicolon (;) to not add space e
 
 Example with different expressions:
@@ -2115,7 +2115,7 @@ Example with different expressions:
 Example with different separators:
 
     PRINT "glu";"ed"
-    PRINT "sepa","rated"
+    PRINT "sepa", "rated"
 
     DO
         WAIT 2
@@ -2140,7 +2140,7 @@ Example that print a text only when device screen is touched:
 
     DO
         CLS
-        IF TOUCH THEN TEXT 4,4,"touched"
+        IF TOUCH THEN TEXT 4, 4, "touched"
         WAIT VBL
     LOOP
 
@@ -2150,16 +2150,16 @@ Return -1 for exactly one frame, if the device fantasy screen is `touched`.
 
 Example of a flappy letter going down by gravity and up when tapping on the screen:
 
-    SPRITE 0,0,SHOWN.H/2,226
+    SPRITE 0, 0, SHOWN.H/2, 226
     gravity=3
     DO
         WAIT VBL
         x=SPRITE.X(0)+1
         IF x+8>SHOWN.W THEN X=0
         IF TAP THEN gravity=-9
-        y=CLAMP(SPRITE.Y(0)+GRAVITY,0,SHOWN.H-8)
-        gravity=MIN(3,gravity+1)
-        SPRITE 0,x,y,
+        y=CLAMP(SPRITE.Y(0)+GRAVITY, 0, SHOWN.H-8)
+        gravity=MIN(3, gravity+1)
+        SPRITE 0, x, y,
     LOOP
 
 #### `x =TOUCH.X`<br>`y =TOUCH.Y`
@@ -2168,7 +2168,7 @@ Returns the last pixel position `x, y` touched. It returns a floating-point numb
 
     DO
         CLS
-        PRINT TOUCH.X;",";TOUCH.Y
+        PRINT TOUCH.X;", ";TOUCH.Y
         WAIT VBL
     LOOP
 
@@ -2260,15 +2260,15 @@ It is RECOMMENDED to place at least one `WAIT VBL` inside every loop that waits 
 
 Example that show the effect:
 
-    SPRITE 0,SHOWN.W/2-4,SHOWN.H/2-4,240
-    LOCATE 2,2
+    SPRITE 0, SHOWN.W/2-4, SHOWN.H/2-4, 240
+    LOCATE 2, 2
     PRINT "touch to wait vbl"
     DO
         x=SPRITE.X(0)
         y=SPRITE.Y(0)
-        ADD X,1,-8 TO SHOWN.W
-        ADD Y,1,-8 TO SHOWN.H
-        SPRITE 0,x,y,
+        ADD X, 1, -8 TO SHOWN.W
+        ADD Y, 1, -8 TO SHOWN.H
+        SPRITE 0, x, y,
         IF TOUCH THEN WAIT VBL
     LOOP
 
@@ -2284,20 +2284,20 @@ This can be used to execute code at every frame, independently of which part of 
 
     SUB v
         x=SPRITE.X(0)
-        ADD x,1,-8 TO SHOWN.W
+        ADD x, 1, -8 TO SHOWN.W
         y=SPRITE.Y(0)
-        ADD y,1,-8 TO SHOWN.H
-        SPRITE 0,x,y,1
+        ADD y, 1, -8 TO SHOWN.H
+        SPRITE 0, x, y, 1
     END SUB
     ON VBL CALL v
 
     one:
-    PALETTE 0,43,,,
+    PALETTE 0, 43, , ,
     WAIT TAP
     GOTO two
 
     two:
-    PALETTE 0,59,,,
+    PALETTE 0, 59, , ,
     WAIT TAP
     GOTO one
 
@@ -2317,16 +2317,16 @@ The code MUST be shortest, read more about [CPU cycles](#cycles).
 
 This can be used to change colors or scroll background layers, example:
 
-    TEXT 3,8,"tap to toggle"
-    CELL 10,10,1
+    TEXT 3, 8, "tap to toggle"
+    CELL 10, 10, 1
 
     SUB R
     IF RASTER>=80 THEN
-        SCROLL 0,0,80-RASTER
-        PALETTE 0,,,RASTER MOD 64,
+        SCROLL 0, 0, 80-RASTER
+        PALETTE 0, , , RASTER MOD 64,
     ELSE IF RASTER=0 THEN
-        SCROLL 0,0,0
-        PALETTE 0,,,0,
+        SCROLL 0, 0, 0
+        PALETTE 0, , , 0,
     END IF
     END SUB
 
@@ -2335,8 +2335,8 @@ This can be used to change colors or scroll background layers, example:
         ON RASTER CALL R
         WAIT TAP
         ON RASTER OFF
-        SCROLL 0,0,0
-        PALETTE 0,,,0,
+        SCROLL 0, 0, 0
+        PALETTE 0, , , 0,
     LOOP
 
 #### `line =RASTER`
@@ -2370,12 +2370,12 @@ Example that show how to compute an angle from a position, and a position from a
     'get the center position of the screen
     cx=SHOWN.W/2-4
     cy=SHOWN.H/2-4
-    SPRITE 50,cx,cy,1
+    SPRITE 50, cx, cy, 1
 
     'initial position from the center
     dx=40
     dy=20
-    SPRITE 40,cx+dx,cy+dy,1
+    SPRITE 40, cx+dx, cy+dy, 1
     SPRITE 40 PAL 1
     SPRITE 30 PAL 2
 
@@ -2383,16 +2383,16 @@ Example that show how to compute an angle from a position, and a position from a
         'new position from touch
         dx=TOUCH.X-cx
         dy=TOUCH.Y-cy
-        SPRITE 40,cx+dx,cy+dy,1
+        SPRITE 40, cx+dx, cy+dy, 1
 
         'get angle from vector
-        a=ATAN(dx,dy)
+        a=ATAN(dx, dy)
 
         'get position from angle
         x=COS(a)*30
         y=SIN(a)*30
 
-        SPRITE 30,cx+x,cy+y,1
+        SPRITE 30, cx+x, cy+y, 1
         WAIT VBL
     LOOP
 
@@ -2501,7 +2501,7 @@ Setting a specific `seed` will guarantee to return the same sequence of random n
         PRINT RND(100)
     NEXT I
 
-#### `random =RND address`<br>`random =RND(max, address)`<br>`RANDOMIZE seed [,address]`
+#### `random =RND address`<br>`random =RND(max, address)`<br>`RANDOMIZE seed [, address]`
 
 Similar to the original functions with a additional `address` parameter, where the current generator state will be stored.
 
@@ -2544,8 +2544,8 @@ Converts a `number` to an `hexadecimal` or `binary` string with an optional mini
 Return the `length` number of characters from the beginning or the end of the `text` string.
 
     shadok: DATA "gabuzomeu"
-    PRINT LEFT$(shadok,4)
-    PRINT RIGHT$(shadok,5)
+    PRINT LEFT$(shadok, 4)
+    PRINT RIGHT$(shadok, 5)
 
 #### `LEFT$(text, length) =replacement$`<br>`RIGHT$(text, length) =replacement$`
 
@@ -2560,12 +2560,12 @@ Return the `length` number of characters starting at `position` (1..) from the `
 Overwrites the `length` number of characters starting at `position` (1..) from the `text` string by the `length` first characters of the `replacement$` string.
 
     six$="hexakosioihexekontahexaphobie"
-    MID$(six$,1,4)="-66-"
-    MID$(six$,11,4)="-66-"
-    MID$(six$,20,4)="-66-"
+    MID$(six$, 1, 4)="-66-"
+    MID$(six$, 11, 4)="-66-"
+    MID$(six$, 20, 4)="-66-"
     PRINT six$
 
-#### `found =INSTR(text, occurence [,position])`
+#### `found =INSTR(text, occurence [, position])`
 
 Search for the first `occurence` inside `text` and return the `found` position. Return 0 if not found. Optionally, start the search at `position`.
 
@@ -2573,7 +2573,7 @@ Search for the first `occurence` inside `text` and return the `found` position. 
 
 The fantasy hardware simulates 4 voices to play sound effects and music. See [Sound](#sound) for an overview.
 
-#### `PLAY voice, pitch [,length] [SOUND sound]`
+#### `PLAY voice, pitch [, length] [SOUND sound]`
 
 Play a note at the `pitch` on the `voice` with an optional `length` and `sound`.
 
@@ -2712,8 +2712,8 @@ Example that change the background color:
 
     c=0
     DO
-        POKE $FF00,C
-        ADD c,1,0 TO 63
+        POKE $FF00, C
+        ADD c, 1, 0 TO 63
         WAIT 5
     LOOP
 
@@ -2739,8 +2739,8 @@ Read and return a 16bits `value` (-32768..32767) from memory at `address`.
 
 Example that print the width and height of the visible pixels:
 
-    PRINT "width",PEEKW($FF78),SHOWN.W
-    PRINT "height",PEEKW($FF7A),SHOWN.H
+    PRINT "width", PEEKW($FF78), SHOWN.W
+    PRINT "height", PEEKW($FF7A), SHOWN.H
 
 #### `POKEL address, value`
 
@@ -2768,7 +2768,7 @@ Copies `count` bytes from `source` address from memory to `destination` address 
 
 The `source` and `destination` CAN overlap.
 
-#### `FILL address, count [,value]`
+#### `FILL address, count [, value]`
 
 Sets `count` bytes from `address` in memory with the `value` or 0 when not specified.
 
@@ -2776,11 +2776,11 @@ Sets `count` bytes from `address` in memory with the `value` or 0 when not speci
 
 Rotates the bits of the byte stored at `address` by a number of `places` to the left or the right.
 
-    POKE $9000,%00001111
+    POKE $9000, %00001111
     again:
-    PRINT RIGHT$("0000000"+BIN$(PEEK($9000)),8)
+    PRINT RIGHT$("0000000"+BIN$(PEEK($9000)), 8)
     WAIT TAP
-    ROL $9000,2
+    ROL $9000, 2
     GOTO AGAIN
 
 #### `DMA COPY [ROM]`
@@ -2821,7 +2821,7 @@ Return the `size` in bytes stored in the `file`.
 
 The command `FILES` MUST be called before.
 
-#### `LOAD file, address [,limit [,offset]]`
+#### `LOAD file, address [, limit [, offset]]`
 
 Load the virtual `file` at `address`. Optionnaly `limit` the number of bytes read and start at `offset`.
 
@@ -2835,7 +2835,7 @@ The command `FILES` MUST be called before.
 
 ### Other API
 
-#### `TRACE expression [,expression...]`
+#### `TRACE expression [, expression...]`
 
 Output the evaluated `expression` on the [overlay](#overlay).
 
@@ -3213,7 +3213,7 @@ The [text API](#text-api) can only print a fraction of it and remap it. The `FON
 |   41 |  $29 | ")"         |
 |   42 |  $2A | "*"         |
 |   43 |  $2B | "+"         |
-|   44 |  $2C | ","         |
+|   44 |  $2C | ", "         |
 |   45 |  $2D | "-"         |
 |   46 |  $2E | "."         |
 |   47 |  $2F | "/"         |
@@ -3556,7 +3556,7 @@ With floating-point numbers, the maximum precision varies depending on the magni
 - [`BG FILL x1, y1 TO x2, y2 CHAR character`](#-bg-fill-x1-y1-to-x2-y2-char-character-)
 - [`BG TINT y1, y1 TO x2, y2 [PAL palette] [FLIP horizontal, vertical] [PRIO priority]`](#-bg-tint-y1-y1-to-x2-y2-pal-palette-flip-horizontal-vertical-prio-priority-)
 - [`BG SCROLL x1, y1 to x2, y2 step x3, y3`](#-bg-scroll-x1-y1-to-x2-y2-step-x3-y3-)
-- [`BG SOURCE address [,width, height]`](#-bg-source-address-width-height-)
+- [`BG SOURCE address [, width, height]`](#-bg-source-address-width-height-)
 - [`BG COPY x1, y1, width, height TO x2, y2`](#-bg-copy-x1-y1-width-height-to-x2-y2-)
 - [`BG VIEW ON`<br>`BG VIEW OFF`](#-bg-view-on-br-bg-view-off-)
 
@@ -3619,7 +3619,7 @@ With floating-point numbers, the maximum precision varies depending on the magni
 - [`x =CURSOR.X`<br>`y =CURSOR.Y`](#-x-cursor-x-br-y-cursor-y-)
 
 **`DATA`**:
-- [`DATA constant [,constant...]`](#-data-constant-constant-)
+- [`DATA constant [, constant...]`](#-data-constant-constant-)
 
 **`DEC`**:
 - [`INC variable`<br>`DEC variable`](#-inc-variable-br-dec-variable-)
@@ -3669,7 +3669,7 @@ With floating-point numbers, the maximum precision varies depending on the magni
 
 **`FILL`**:
 - [`BG FILL x1, y1 TO x2, y2 CHAR character`](#-bg-fill-x1-y1-to-x2-y2-char-character-)
-- [`FILL address, count [,value]`](#-fill-address-count-value-)
+- [`FILL address, count [, value]`](#-fill-address-count-value-)
 
 **`FLIP`**:
 - [`SPRITE sprite [PAL palette] [FLIP horizontal, vertical] [PRIO priority] [SIZE size]`](#-sprite-sprite-pal-palette-flip-horizontal-vertical-prio-priority-size-size-)
@@ -3726,7 +3726,7 @@ With floating-point numbers, the maximum precision varies depending on the magni
 - [`INPUT [prompt;] variable`<br>`INPUT [prompt;] variable$`](#-input-prompt-variable-br-input-prompt-variable-)
 
 **`INSTR`**:
-- [`found =INSTR(text, occurence [,position])`](#-found-instr-text-occurence-position-)
+- [`found =INSTR(text, occurence [, position])`](#-found-instr-text-occurence-position-)
 
 **`INT`**:
 - [`floor =FLOOR(number)`<br>`floo =INT(number)`](#-floor-floor-number-br-floo-int-number-)
@@ -3754,7 +3754,7 @@ With floating-point numbers, the maximum precision varies depending on the magni
 - [`LFO.A`](#operators)
 
 **`LOAD`**:
-- [`LOAD file, address [,limit [,offset]]`](#-load-file-address-limit-offset-)
+- [`LOAD file, address [, limit [, offset]]`](#-load-file-address-limit-offset-)
 
 **`LOCATE`**:
 - [`LOCATE x, y`](#-locate-x-y-)
@@ -3857,7 +3857,7 @@ With floating-point numbers, the maximum precision varies depending on the magni
 - [`pi =PI`](#-pi-pi-)
 
 **`PLAY`**:
-- [`PLAY voice, pitch [,length] [SOUND sound]`](#-play-voice-pitch-length-sound-sound-)
+- [`PLAY voice, pitch [, length] [SOUND sound]`](#-play-voice-pitch-length-sound-sound-)
 
 **`POKE`**:
 - [`POKE address, value`](#-poke-address-value-)
@@ -3880,7 +3880,7 @@ With floating-point numbers, the maximum precision varies depending on the magni
 
 **`RANDOMIZE`**:
 - [`RANDOMIZE seed`](#-randomize-seed-)
-- [`random =RND address`<br>`random =RND(max, address)`<br>`RANDOMIZE seed [,address]`](#-random-rnd-address-br-random-rnd-max-address-br-randomize-seed-address-)
+- [`random =RND address`<br>`random =RND(max, address)`<br>`RANDOMIZE seed [, address]`](#-random-rnd-address-br-random-rnd-max-address-br-randomize-seed-address-)
 
 **`RASTER`**:
 - [`ON RASTER CALL procedure`](#-on-raster-call-procedure-)
@@ -3888,7 +3888,7 @@ With floating-point numbers, the maximum precision varies depending on the magni
 - [`ON RASTER OFF`](#-on-raster-off-)
 
 **`READ`**:
-- [`READ variable [,variable...]`](#-read-variable-variable-)
+- [`READ variable [, variable...]`](#-read-variable-variable-)
 
 **`REPEAT`**:
 - [`REPEAT/UNTIL/EXIT`](#-repeat-until-exit-)
@@ -3907,7 +3907,7 @@ With floating-point numbers, the maximum precision varies depending on the magni
 **`RND`**:
 - [`random =RND`](#-random-rnd-)
 - [`random =RND(max)`](#-random-rnd-max-)
-- [`random =RND address`<br>`random =RND(max, address)`<br>`RANDOMIZE seed [,address]`](#-random-rnd-address-br-random-rnd-max-address-br-randomize-seed-address-)
+- [`random =RND address`<br>`random =RND(max, address)`<br>`RANDOMIZE seed [, address]`](#-random-rnd-address-br-random-rnd-max-address-br-randomize-seed-address-)
 
 **`ROL`**:
 - [`ROL address, places`<br>`ROR address, places`](#-rol-address-places-br-ror-address-places-)
@@ -3965,12 +3965,12 @@ With floating-point numbers, the maximum precision varies depending on the magni
 - [`SKIP number`](#-skip-number-)
 
 **`SOUND`**:
-- [`PLAY voice, pitch [,length] [SOUND sound]`](#-play-voice-pitch-length-sound-sound-)
+- [`PLAY voice, pitch [, length] [SOUND sound]`](#-play-voice-pitch-length-sound-sound-)
 - [`SOUND voice, [wave], [width], [length]`](#-sound-voice-wave-width-length-)
 - [`SOUND SOURCE [address]`](#-sound-source-address-)
 
 **`SOURCE`**:
-- [`BG SOURCE address [,width, height]`](#-bg-source-address-width-height-)
+- [`BG SOURCE address [, width, height]`](#-bg-source-address-width-height-)
 - [`SOUND SOURCE [address]`](#-sound-source-address-)
 
 **`SPRITE`**:
@@ -4062,7 +4062,7 @@ With floating-point numbers, the maximum precision varies depending on the magni
 - [`x =TOUCH.X`<br>`y =TOUCH.Y`](#-x-touch-x-br-y-touch-y-)
 
 **`TRACE`**:
-- [`TRACE expression [,expression...]`](#-trace-expression-expression-)
+- [`TRACE expression [, expression...]`](#-trace-expression-expression-)
 
 **`TRACK`**:
 - [`TRACK track, voice`](#-track-track-voice-)
