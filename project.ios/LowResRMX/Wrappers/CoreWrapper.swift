@@ -8,7 +8,7 @@
 
 import Foundation
 
-protocol CoreWrapperDelegate: class {
+protocol CoreWrapperDelegate: AnyObject {
     func coreInterpreterDidFail(coreError: CoreError) -> Void
     func coreDiskDriveWillAccess(diskDataManager: UnsafeMutablePointer<DataManager>?) -> Bool
     func coreDiskDriveDidSave(diskDataManager: UnsafeMutablePointer<DataManager>?) -> Void
@@ -58,7 +58,7 @@ class CoreWrapper: NSObject {
     
 }
 
-class LowResRMXError: NSError {
+class LowResRMXError: NSError, @unchecked Sendable {
     
     let coreError: CoreError
     let message: String
