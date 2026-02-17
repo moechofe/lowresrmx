@@ -113,10 +113,21 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
             fatalError("unexpected document state")
         }
 
-        addKeyCommand(UIKeyCommand(input: "r", modifierFlags: .command, action: #selector(onRunTapped(_:)), discoverabilityTitle: "Run Program"))
-        addKeyCommand(UIKeyCommand(input: "f", modifierFlags: .command, action: #selector(onSearchTapped(_:)), discoverabilityTitle: "Find"))
-        addKeyCommand(UIKeyCommand(input: UIKeyCommand.inputUpArrow, modifierFlags: [.command, .alternate], action: #selector(onSubPrev), discoverabilityTitle: "Previous SUB"))
-        addKeyCommand(UIKeyCommand(input: UIKeyCommand.inputDownArrow, modifierFlags: [.command, .alternate], action: #selector(onSubNext), discoverabilityTitle: "Next SUB"))
+        let runCommand = UIKeyCommand(input: "r", modifierFlags: .command, action: #selector(onRunTapped(_:)))
+        runCommand.discoverabilityTitle = "Run Program"
+        addKeyCommand(runCommand)
+
+        let findCommand = UIKeyCommand(input: "f", modifierFlags: .command, action: #selector(onSearchTapped(_:)))
+        findCommand.discoverabilityTitle = "Find"
+        addKeyCommand(findCommand)
+
+        let subPrevCommand = UIKeyCommand(input: UIKeyCommand.inputUpArrow, modifierFlags: [.command, .alternate], action: #selector(onSubPrev))
+        subPrevCommand.discoverabilityTitle = "Previous SUB"
+        addKeyCommand(subPrevCommand)
+
+        let subNextCommand = UIKeyCommand(input: UIKeyCommand.inputDownArrow, modifierFlags: [.command, .alternate], action: #selector(onSubNext))
+        subNextCommand.discoverabilityTitle = "Next SUB"
+        addKeyCommand(subNextCommand)
 
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
