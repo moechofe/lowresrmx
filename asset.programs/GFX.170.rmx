@@ -19,33 +19,33 @@ version$="0.170"
 files
 
 
-' 'beta version intro
-' palette 0,2,8,8,2
-' shownw=0 :shownh=0
-' do
-'   if shownw<>shown.w or shownh<>shown.h then
-'     shownw=shown.w :shownh=shown.h
-'     cls
-'     window 2,3,shownw/8-4,shownh/8-6,0
-'     print "work in progress."
-'     print "gfx ";version$
-'     print
-'     print "- include a basic background editor."
-'     print
-'     print "- include a palette editor."
-'     print
-'     print "- characters must exists in file#2,"
-'     print
-'     print "- background must exists in file#3."
-'     print
-'     print "tap to continue..."
-'   end if
-'   wait vbl
-'   if tap then goto eon
-' loop
-' eon: cls: palette 0,4,4,4,4
-' wait vbl
-' shownw=0 :shownh=0
+'beta version intro
+palette 0,2,8,8,2
+shownw=0 :shownh=0
+do
+  if shownw<>shown.w or shownh<>shown.h then
+    shownw=shown.w :shownh=shown.h
+    cls
+    window 2,3,shownw/8-4,shownh/8-6,0
+    print "work in progress."
+    print "gfx ";version$
+    print
+    print "- include a basic background editor."
+    print
+    print "- include a palette editor."
+    print
+    print "- characters must exists in file#2,"
+    print
+    print "- background must exists in file#3."
+    print
+    print "tap to continue..."
+  end if
+  wait vbl
+  if tap then goto eon
+loop
+eon: cls: palette 0,4,4,4,4
+wait vbl
+shownw=0 :shownh=0
 
 
 'file#1 ui palettes

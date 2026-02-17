@@ -2,29 +2,29 @@
 'BY MARTIN "MOECHOFE" MAUCHAUFFEE IN 2024..
 'REVISION: 0.121
 
-' palette 0,37,8,8,36
-' shownw=0 :shownh=0
-' do
-'   if shownw<>shown.w or shownh<>shown.h then
-'     shownw=shown.w :shownh=shown.h
-'     cls
-'     window 2,3,shownw/8-4,shownh/8-6,0
-'     print "abandonned editor"
-'     print
-'     print "- include a basic character editor."
-'     print
-'     print "- include a palette editor."
-'     print
-'     print "- include a basic background editor"
-'     print
-'     print "tap to continue..."
-'   end if
-'   wait vbl
-'   if tap then goto eon
-' loop
-' eon: cls: palette 0,4,4,4,4
-' wait vbl
-' shownw=0 :shownh=0
+palette 0,37,8,8,36
+shownw=0 :shownh=0
+do
+  if shownw<>shown.w or shownh<>shown.h then
+    shownw=shown.w :shownh=shown.h
+    cls
+    window 2,3,shownw/8-4,shownh/8-6,0
+    print "abandonned editor"
+    print
+    print "- include a basic character editor."
+    print
+    print "- include a palette editor."
+    print
+    print "- include a basic background editor"
+    print
+    print "tap to continue..."
+  end if
+  wait vbl
+  if tap then goto eon
+loop
+eon: cls: palette 0,4,4,4,4
+wait vbl
+shownw=0 :shownh=0
 
 'I CAN REDUCE THE NUMBER OF BG USED FOR THE BOTTOM BAR
 'I CAN STORE THE COMPLETE BOTTOM BAR INTO ROM(3) INSTEAD OF BUILDING IT EVERTY TIME, IT WILL ALLOW ME TO DMA COPY DURING RASTER
