@@ -30,7 +30,7 @@ extension Notification.Name {
 
     @objc weak var tabBarController: TabBarController!
 
-    // @objc let helpContent: HelpContent
+    @objc let helpContent: HelpContent
     @objc let bootTime: CFAbsoluteTime
     let webProcessPool = WKProcessPool()
 
@@ -107,7 +107,7 @@ extension Notification.Name {
 
     private override init() {
         let url = Bundle.main.url(forResource: "manual", withExtension: "html", subdirectory:"asset.manual")!
-        // helpContent = HelpContent(url: url)
+        helpContent = HelpContent(url: url)
 
         bootTime = CFAbsoluteTimeGetCurrent()
 

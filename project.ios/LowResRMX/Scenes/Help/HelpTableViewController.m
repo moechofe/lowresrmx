@@ -25,18 +25,18 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    
+
     _cancelItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel target:self action:@selector(onCancelTapped:)];
-    
+
     self.tableView.indicatorStyle = UIScrollViewIndicatorStyleWhite;
 }
 
 - (void)viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:animated];
-    
+
     self.helpContent = AppController.shared.helpContent;
-    
+
     [self updateBarButtonCollapsed:self.splitViewController.collapsed];
 }
 
@@ -89,10 +89,10 @@
         cellIdentifier = @"CommandCell";
     }
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellIdentifier forIndexPath:indexPath];
-    
+
     cell.textLabel.text = chapter.title;
     cell.indentationLevel = chapter.level;
-    
+
     return cell;
 }
 
@@ -101,7 +101,7 @@
     HelpChapter *chapter = self.helpContent.chapters[indexPath.row];
     HelpSplitViewController *helpVC = (HelpSplitViewController *)self.splitViewController;
     [helpVC showChapter:chapter.htmlChapter];
-    
+
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
 }
 

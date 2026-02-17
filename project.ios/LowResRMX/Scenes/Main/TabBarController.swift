@@ -24,19 +24,19 @@ class TabBarController: UITabBarController {
 
         let explorerVC = self.storyboard!.instantiateViewController(withIdentifier: "ExplorerNav")
 
-        // let helpStoryboard = UIStoryboard(name: "Help", bundle: nil)
-        // let helpVC = helpStoryboard.instantiateInitialViewController()!
+        let helpStoryboard = UIStoryboard(name: "Help", bundle: nil)
+        let helpVC = helpStoryboard.instantiateInitialViewController()!
 
         //let aboutVC = self.storyboard!.instantiateViewController(withIdentifier: "AboutNav")
 
         //let communityVC = self.storyboard!.instantiateViewController(withIdentifier: "CommunityNav")
 
         explorerVC.tabBarItem = item(title: "My Programs", imageName: "programs")
-        // helpVC.tabBarItem = item(title: "Help", imageName: "help")
+        helpVC.tabBarItem = item(title: "Help", imageName: "help")
         //aboutVC.tabBarItem = item(title: "About", imageName: "about")
         //communityVC.tabBarItem = item(title: "Community", imageName: "community")
 
-        self.viewControllers = [explorerVC] //, helpVC] //, aboutVC, communityVC]
+        self.viewControllers = [explorerVC, helpVC] //, aboutVC, communityVC]
 
         NotificationCenter.default.addObserver(self, selector: #selector(didAddProgram), name: NSNotification.Name(rawValue: "ProjectManagerDidAddProgram"), object: nil)
     }
