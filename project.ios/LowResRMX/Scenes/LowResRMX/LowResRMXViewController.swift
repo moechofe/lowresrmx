@@ -422,7 +422,9 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
       showAlert(withTitle: "Video Recording Currently Not Available", message: nil, block: nil)
       return
     }
-    RPScreenRecorder.shared().startRecording(withMicrophoneEnabled: false) { (error) in
+    let recorder = RPScreenRecorder.shared()
+    recorder.isMicrophoneEnabled = false
+    recorder.startRecording { error in
       if let error = error {
         DispatchQueue.main.async {
           self.showAlert(

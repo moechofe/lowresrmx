@@ -58,7 +58,7 @@ class ShareViewController: UIViewController, WKNavigationDelegate {
         navigationItem.title = "Share with Community"
         navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(cancel))
 
-        activityView = UIActivityIndicatorView(style: .white)
+        activityView = UIActivityIndicatorView(style: .medium)
         activityView.sizeToFit()
         navigationItem.rightBarButtonItem = UIBarButtonItem(customView: activityView)
 
@@ -114,7 +114,7 @@ class ShareViewController: UIViewController, WKNavigationDelegate {
 
                 let alert = UIAlertController(title: "Your program has been published successfully.", message: nil, preferredStyle: .alert)
                 alert.addAction(UIAlertAction(title: "Open in Safari", style: .default, handler: { (action) in
-                    UIApplication.shared.openURL(url)
+                    UIApplication.shared.open(url, options: [:], completionHandler: nil)
                     self.activity?.activityDidFinish(true)
                 }))
                 alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { (action) in

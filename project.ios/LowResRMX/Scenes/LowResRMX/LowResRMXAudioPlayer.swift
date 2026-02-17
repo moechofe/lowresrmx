@@ -11,20 +11,20 @@ import AudioToolbox
 import AVFoundation
 
 class LowResRMXAudioPlayer: NSObject {
-    
+
     var coreWrapper: CoreWrapper
     private var isActive = false
     private var queue: AudioQueueRef?
-    
+
     init(coreWrapper: CoreWrapper) {
         self.coreWrapper = coreWrapper
         super.init()
     }
-    
+
     func start() {
         if !isActive {
             isActive = true
-            
+
             let session = AVAudioSession.sharedInstance()
             do {
                 try session.setCategory(AVAudioSession.Category.ambient)
@@ -32,7 +32,7 @@ class LowResRMXAudioPlayer: NSObject {
             } catch {
                 print("AVAudioSession", error.localizedDescription)
             }
-            
+
             var dataFormat = AudioStreamBasicDescription()
             dataFormat.mSampleRate = session.sampleRate
             dataFormat.mFormatID = kAudioFormatLinearPCM
@@ -43,13 +43,14 @@ class LowResRMXAudioPlayer: NSObject {
             dataFormat.mChannelsPerFrame = 2
             dataFormat.mBitsPerChannel = 16
             dataFormat.mReserved = 0
-            
-            AudioQueueNewOutput(&dataFormat, audioQueueCallback, &coreWrapper, nil, CFRunLoopMode.commonModes.rawValue, 0, &queue)
-            
+
+            let unmanagedCoreWrapper = Unmanaged.passUnretained(coreWrapper).toOpaque()
+            AudioQueueNewOutput(&dataFormat, audioQueueCallback, unmanagedCoreWrapper, nil, CFRunLoopMode.commonModes.rawValue, 0, &queue)
+
             guard let queue = queue else {
                 return
             }
-            
+
             var buffer: AudioQueueBufferRef?
             for _ in 0 ..< 2 {
                 AudioQueueAllocateBuffer(queue, 1470 * dataFormat.mBytesPerFrame, &buffer)
@@ -60,30 +61,31 @@ class LowResRMXAudioPlayer: NSObject {
                     AudioQueueEnqueueBuffer(queue, buffer, 0, nil)
                 }
             }
-            
+
             AudioQueueStart(queue, nil)
         }
 
     }
-    
+
     func stop() {
         if isActive {
             isActive = false
-            
+
             if let queue = queue {
                 AudioQueueStop(queue, true)
                 AudioQueueDispose(queue, true)
             }
             queue = nil
-            
+
             try? AVAudioSession.sharedInstance().setActive(false)
         }
     }
-    
+
 }
 
 func audioQueueCallback(_ userData: UnsafeMutableRawPointer?, _ audioQueue: AudioQueueRef, _ buffer: AudioQueueBufferRef) {
-    if let coreWrapper = userData?.assumingMemoryBound(to: CoreWrapper.self).pointee {
+    if let userData = userData {
+        let coreWrapper = Unmanaged<CoreWrapper>.fromOpaque(userData).takeUnretainedValue()
         audio_renderAudio(&coreWrapper.core, buffer.pointee.mAudioData.assumingMemoryBound(to: Int16.self), Int32(buffer.pointee.mAudioDataBytesCapacity / 2), Int32(AVAudioSession.sharedInstance().sampleRate), 0)
     }
     AudioQueueEnqueueBuffer(audioQueue, buffer, 0, nil)
