@@ -10,13 +10,13 @@ import GameController
 import ReplayKit
 import UIKit
 
-protocol LowResRMXViewControllerDelegate: class {
+protocol LowResRMXViewControllerDelegate: AnyObject {
   func didChangeDebugMode(enabled: Bool)
   func didEndWithError(_ error: LowResRMXError)
   func didEndWithKeyCommand()
 }
 
-protocol LowResRMXViewControllerToolDelegate: class {
+protocol LowResRMXViewControllerToolDelegate: AnyObject {
   func nxSourceCodeForVirtualDisk() -> String
   func nxDidSaveVirtualDisk(sourceCode: String)
 }
@@ -125,9 +125,9 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
 
       group.notify(queue: .main) {
         if let sourceCode = sourceCode {
-          if let topicId = webSource.topicId {
-//            self.countPlay(topicId: topicId)
-          }
+//          if let topicId = webSource.topicId {
+////            self.countPlay(topicId: topicId)
+//          }
           let error = self.compileAndStartProgram(sourceCode: sourceCode)
           if let error = error {
             self.showError(error)

@@ -8,7 +8,7 @@
 
 import UIKit
 
-protocol ProjectDocumentDelegate: class {
+protocol ProjectDocumentDelegate: AnyObject {
     func projectDocumentContentDidUpdate(_ projectDocument: ProjectDocument)
 }
 
