@@ -8,7 +8,6 @@
 
 import UIKit
 import StoreKit
-import WebKit
 
 extension Notification.Name {
     static let EditorFontSizeDidChange = Notification.Name("EditorFontSizeDidChange")
@@ -32,7 +31,6 @@ extension Notification.Name {
 
     @objc let helpContent: HelpContent
     @objc let bootTime: CFAbsoluteTime
-    let webProcessPool = WKProcessPool()
 
     private var webSource: WebSource?
 
@@ -123,9 +121,13 @@ extension Notification.Name {
     func requestAppStoreReview() {
         let lastVersionPromptedForReview = UserDefaults.standard.string(forKey: AppController.lastVersionPromptedForReviewKey)
         if currentVersion != lastVersionPromptedForReview {
-            if #available(iOS 10.3, *) {
-                SKStoreReviewController.requestReview()
+            // iOS 14+ only (minimum supported is 15.5)
+            if let windowScene = UIApplication.shared.connectedScenes
+                .compactMap({ $0 as? UIWindowScene })
+                .first(where: { $0.activationState == .foregroundActive }) {
+                SKStoreReviewController.requestReview(in: windowScene)
             }
+            // Do nothing if no active scene is found
             UserDefaults.standard.set(currentVersion, forKey: AppController.lastVersionPromptedForReviewKey)
         }
     }

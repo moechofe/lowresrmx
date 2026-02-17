@@ -10,7 +10,7 @@ import UIKit
 import WebKit
 
 class ShareViewController: UIViewController, WKNavigationDelegate {
-	
+
 	  weak var activity: ShareActivity?
     var programUrl: URL?
     var imageUrl: URL?
@@ -20,7 +20,6 @@ class ShareViewController: UIViewController, WKNavigationDelegate {
 
     override func loadView() {
         let config = WKWebViewConfiguration()
-        config.processPool = AppController.shared.webProcessPool
         webView = WKWebView(frame: CGRect.zero, configuration: config)
 
 //        webView.layer.borderColor = UIColor.green.cgColor
