@@ -219,7 +219,6 @@
 		922798952527251F004F6E1A /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 922798942527251F004F6E1A /* SwiftUI.framework */; };
 		922798982527251F004F6E1A /* Widgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 922798972527251F004F6E1A /* Widgets.swift */; };
 		9227989A25272523004F6E1A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9227989925272523004F6E1A /* Assets.xcassets */; };
-		9227989E25272523004F6E1A /* Widgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 922798912527251F004F6E1A /* Widgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		9227DA902204302F0035615C /* Boot Intro.rmx in Resources */ = {isa = PBXBuildFile; fileRef = 9227DA8F2204302F0035615C /* Boot Intro.rmx */; };
 		9227DC1E1FC8BB0700BC89FD /* ProjectManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9227DC1D1FC8BB0700BC89FD /* ProjectManager.swift */; };
 		9227DC221FC8C17A00BC89FD /* SplashViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9227DC211FC8C17A00BC89FD /* SplashViewController.swift */; };
@@ -260,18 +259,6 @@
 		92EA93C51F744573007BEFB1 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 92EA93C41F744573007BEFB1 /* Assets.xcassets */; };
 		92FAB24D1FC07D1C002E45FB /* LowResRMXView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92FAB24C1FC07D1B002E45FB /* LowResRMXView.swift */; };
 /* End PBXBuildFile section */
-
-/* Begin PBXCopyFilesBuildPhase section */
-		9227989F25272523004F6E1A /* Embed Foundation Extensions */ = {
-			isa = PBXCopyFilesBuildPhase;
-			dstPath = "";
-			dstSubfolder = PlugIns;
-			files = (
-				9227989E25272523004F6E1A /* Widgets.appex in Embed Foundation Extensions */,
-			);
-			name = "Embed Foundation Extensions";
-		};
-/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		5B34EC522AC5795600220A80 /* asset.manual */ = {isa = PBXFileReference; lastKnownFileType = folder; name = asset.manual; path = ../asset.manual; sourceTree = "<group>"; };
@@ -954,7 +941,6 @@
 				92EA93B61F744572007BEFB1 /* Sources */,
 				92EA93B71F744572007BEFB1 /* Frameworks */,
 				92EA93B81F744572007BEFB1 /* Resources */,
-				9227989F25272523004F6E1A /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);

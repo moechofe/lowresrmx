@@ -9,8 +9,8 @@
 #include "core.h"
 #include "core_stats.h"
 
-#import "HelpSplitViewController.h"
-#import "HelpContent.h"
+// #import "HelpSplitViewController.h"
+// #import "HelpContent.h"
 #import "AppStyle.h"
 #import "NSString+Utils.h"
 #import "UITextView+Utils.h"

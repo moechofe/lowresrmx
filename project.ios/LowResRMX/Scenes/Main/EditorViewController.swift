@@ -599,32 +599,32 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
             }
         }
 
-        let helpContent = AppController.shared.helpContent
-        let results = helpContent.chapters(forSearchText: selectedText)
+        // let helpContent = AppController.shared.helpContent
+        // let results = helpContent.chapters(forSearchText: selectedText)
 
-        if results.count == 1 {
-            let chapter = results.first!
-            AppController.shared.tabBarController.showHelp(chapter: chapter.htmlChapter)
+        // if results.count == 1 {
+        //     let chapter = results.first!
+        //     AppController.shared.tabBarController.showHelp(chapter: chapter.htmlChapter)
 
-        } else if results.count > 1 {
-            let alert = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
-            for chapter in results {
-                alert.addAction(UIAlertAction(title: chapter.title, style: .default, handler: { (action) in
-                    AppController.shared.tabBarController.showHelp(chapter: chapter.htmlChapter)
-                }))
-            }
-            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
-
-            if let ppc = alert.popoverPresentationController {
-                ppc.sourceView = sourceCodeTextView;
-                ppc.sourceRect = sourceCodeTextView.layoutManager.boundingRect(forGlyphRange: range, in: sourceCodeTextView.textContainer)
-                ppc.permittedArrowDirections = [.up, .down]
-            }
-            present(alert, animated: true, completion: nil)
-
-        } else {
-            showAlert(withTitle: "\(selectedText) Is not a Keyword", message: nil, block: nil)
-        }
+        // } else if results.count > 1 {
+//            let alert = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
+        //     for chapter in results {
+        //         alert.addAction(UIAlertAction(title: chapter.title, style: .default, handler: { (action) in
+        //             AppController.shared.tabBarController.showHelp(chapter: chapter.htmlChapter)
+        //         }))
+        //     }
+//            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+//
+//            if let ppc = alert.popoverPresentationController {
+//                ppc.sourceView = sourceCodeTextView;
+//                ppc.sourceRect = sourceCodeTextView.layoutManager.boundingRect(forGlyphRange: range, in: sourceCodeTextView.textContainer)
+//                ppc.permittedArrowDirections = [.up, .down]
+//            }
+//            present(alert, animated: true, completion: nil)
+//
+//        } else {
+//            showAlert(withTitle: "\(selectedText) Is not a Keyword", message: nil, block: nil)
+//        }
     }
 
     //MARK: - SearchToolbarDelegate
