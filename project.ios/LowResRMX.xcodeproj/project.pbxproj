@@ -233,7 +233,6 @@
 		923AFD811F77ED52002F6A5B /* HelpTextViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 926EB1F51F7582A40048A6CF /* HelpTextViewController.m */; };
 		923C311020587965003C89AC /* ToolsMenuConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 923C310F20587965003C89AC /* ToolsMenuConfiguration.swift */; };
 		924AB3F2205D986C00BCF977 /* IndexSideBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 924AB3F1205D986B00BCF977 /* IndexSideBar.swift */; };
-		926075512216ECEC0017E04B /* DonationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 926075502216ECEC0017E04B /* DonationViewController.swift */; };
 		92612125223D73BE0079A486 /* WebViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92612124223D73BE0079A486 /* WebViewController.swift */; };
 		926EB1DC1F757FAD0048A6CF /* UIViewController+LowResCoder.m in Sources */ = {isa = PBXBuildFile; fileRef = 926EB1DA1F757FAD0048A6CF /* UIViewController+LowResCoder.m */; };
 		9276994C1F7D649800211D15 /* ExplorerItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9276994B1F7D649800211D15 /* ExplorerItem.swift */; };
@@ -246,8 +245,6 @@
 		9294F2E01FC4B9A600A90487 /* LowResRMXViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9294F2DF1FC4B9A600A90487 /* LowResRMXViewController.swift */; };
 		9294F2E21FC4BA1100A90487 /* CoreWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9294F2E11FC4BA1100A90487 /* CoreWrapper.swift */; };
 		92A001CF243780DD007AE953 /* ActionButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A001CE243780DD007AE953 /* ActionButton.swift */; };
-		92A1C9322297E12C00364F80 /* CommunityViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A1C9312297E12C00364F80 /* CommunityViewController.swift */; };
-		92A5248920697EDE00EDE7AF /* AboutViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A5248820697EDD00EDE7AF /* AboutViewController.swift */; };
 		92A7E148223B8EBC00ED2487 /* ShareActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A7E147223B8EBC00ED2487 /* ShareActivity.swift */; };
 		92A7E14B223B91FD00ED2487 /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A7E149223B91FD00ED2487 /* ShareViewController.swift */; };
 		92A7E14E223BCD0F00ED2487 /* URLRequest+Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A7E14D223BCD0F00ED2487 /* URLRequest+Utils.swift */; };
@@ -449,7 +446,6 @@
 		925CC6B11F7589B90059C230 /* AppStyle.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppStyle.h; sourceTree = "<group>"; };
 		925CC6B41F7589BA0059C230 /* AppStyle.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppStyle.m; sourceTree = "<group>"; };
 		925CC6B91F758A360059C230 /* ReplayKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ReplayKit.framework; path = System/Library/Frameworks/ReplayKit.framework; sourceTree = SDKROOT; };
-		926075502216ECEC0017E04B /* DonationViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DonationViewController.swift; sourceTree = "<group>"; };
 		92612124223D73BE0079A486 /* WebViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewController.swift; sourceTree = "<group>"; };
 		926EB1D11F757DDD0048A6CF /* Main.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Main.storyboard; sourceTree = "<group>"; };
 		926EB1D81F757FAD0048A6CF /* UIViewController+LowResCoder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UIViewController+LowResCoder.h"; sourceTree = "<group>"; };
@@ -476,8 +472,6 @@
 		9294F2DF1FC4B9A600A90487 /* LowResRMXViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LowResRMXViewController.swift; sourceTree = "<group>"; };
 		9294F2E11FC4BA1100A90487 /* CoreWrapper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CoreWrapper.swift; sourceTree = "<group>"; };
 		92A001CE243780DD007AE953 /* ActionButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActionButton.swift; sourceTree = "<group>"; };
-		92A1C9312297E12C00364F80 /* CommunityViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommunityViewController.swift; sourceTree = "<group>"; };
-		92A5248820697EDD00EDE7AF /* AboutViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutViewController.swift; sourceTree = "<group>"; };
 		92A7E147223B8EBC00ED2487 /* ShareActivity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareActivity.swift; sourceTree = "<group>"; };
 		92A7E149223B91FD00ED2487 /* ShareViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareViewController.swift; sourceTree = "<group>"; };
 		92A7E14D223BCD0F00ED2487 /* URLRequest+Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "URLRequest+Utils.swift"; sourceTree = "<group>"; };
@@ -807,9 +801,6 @@
 				920E1B191F77FF7A00664382 /* ExplorerViewController.swift */,
 				920E1B1B1F78000800664382 /* ExplorerItemCell.swift */,
 				9216142F1F7D70E2006AB2DE /* EditorViewController.swift */,
-				92A5248820697EDD00EDE7AF /* AboutViewController.swift */,
-				926075502216ECEC0017E04B /* DonationViewController.swift */,
-				92A1C9312297E12C00364F80 /* CommunityViewController.swift */,
 				92612124223D73BE0079A486 /* WebViewController.swift */,
 			);
 			path = Main;
@@ -1217,7 +1208,6 @@
 				920E1B351F78024500664382 /* UITextView+Utils.m in Sources */,
 				920E1B331F78024500664382 /* UIColor+Utils.m in Sources */,
 				5B6334F62F3F3ECF00E8198A /* SceneDelegate.swift in Sources */,
-				92A5248920697EDE00EDE7AF /* AboutViewController.swift in Sources */,
 				9276994C1F7D649800211D15 /* ExplorerItem.swift in Sources */,
 				5B34ED042AC5835600220A80 /* variables.c in Sources */,
 				5B34ECFA2AC5835600220A80 /* cmd_files.c in Sources */,
@@ -1227,7 +1217,6 @@
 				5B34ED962AC5835700220A80 /* overlay.c in Sources */,
 				5B34ED402AC5835600220A80 /* data.c in Sources */,
 				5B34ED702AC5835600220A80 /* audio_lib.c in Sources */,
-				926075512216ECEC0017E04B /* DonationViewController.swift in Sources */,
 				5B34ED082AC5835600220A80 /* token.c in Sources */,
 				5B34ECFC2AC5835600220A80 /* cmd_control.c in Sources */,
 				920E1B321F78024500664382 /* NSString+Utils.m in Sources */,
@@ -1256,7 +1245,6 @@
 				923AFD7D1F77ED52002F6A5B /* HelpContent.m in Sources */,
 				5B34ED722AC5835600220A80 /* startup_sequence.c in Sources */,
 				9234247522C3FACC002431CD /* ClearRamActivity.swift in Sources */,
-				92A1C9322297E12C00364F80 /* CommunityViewController.swift in Sources */,
 				92A7E14B223B91FD00ED2487 /* ShareViewController.swift in Sources */,
 				923AFD691F77EB27002F6A5B /* AppStyle.m in Sources */,
 				5B34ED482AC5835600220A80 /* cmd_screen.c in Sources */,
