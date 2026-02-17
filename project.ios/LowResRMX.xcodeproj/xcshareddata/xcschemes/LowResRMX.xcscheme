@@ -20,6 +20,20 @@
                ReferencedContainer = "container:LowResRMX.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "NO"
+            buildForRunning = "YES"
+            buildForProfiling = "NO"
+            buildForArchiving = "NO"
+            buildForAnalyzing = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "922798902527251F004F6E1A"
+               BuildableName = "Widgets.appex"
+               BlueprintName = "Widgets"
+               ReferencedContainer = "container:LowResRMX.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
       </BuildActionEntries>
    </BuildAction>
    <TestAction
