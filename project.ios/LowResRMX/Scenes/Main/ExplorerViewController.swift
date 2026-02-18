@@ -285,7 +285,7 @@ class ExplorerViewController: UIViewController, UICollectionViewDelegateFlowLayo
 //    }
 
     func showFontSizePicker() {
-        let fontSizePicker = FontSizePickerViewController()
+        let fontSizePicker = EditorSettingViewController()
         let navigationController = UINavigationController(rootViewController: fontSizePicker)
         present(navigationController, animated: true, completion: nil)
     }

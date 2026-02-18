@@ -24,6 +24,8 @@ extension Notification.Name {
     private static let userIdKey = "userIdKey"
     private static let usernameKey = "usernameKey"
     private static let editorFontSizeKey = "editorFontSize"
+    private static let editorIndexModeKey = "editorIndexMode"
+    private static let editorSyntaxHighlightingModeKey = "editorSyntaxHighlightingMode"
 
     @objc static let shared = AppController()
 
@@ -98,6 +100,26 @@ extension Notification.Name {
         }
     }
 
+    var editorIndexMode: IndexMode {
+        get {
+            let value = UserDefaults.standard.integer(forKey: AppController.editorIndexModeKey)
+            return IndexMode(rawValue: value) ?? .labelsAndProcedures
+        }
+        set {
+            UserDefaults.standard.set(newValue.rawValue, forKey: AppController.editorIndexModeKey)
+        }
+    }
+
+    var editorSyntaxHighlightingMode: SyntaxHighlightingMode {
+        get {
+            let value = UserDefaults.standard.integer(forKey: AppController.editorSyntaxHighlightingModeKey)
+            return SyntaxHighlightingMode(rawValue: value) ?? .none
+        }
+        set {
+            UserDefaults.standard.set(newValue.rawValue, forKey: AppController.editorSyntaxHighlightingModeKey)
+        }
+    }
+
     var currentVersion: String {
         let version = Bundle.main.object(forInfoDictionaryKey: kCFBundleVersionKey as String) as! String
         return version
@@ -110,6 +132,11 @@ extension Notification.Name {
         bootTime = CFAbsoluteTimeGetCurrent()
 
         super.init()
+
+        UserDefaults.standard.register(defaults: [
+            AppController.editorIndexModeKey: IndexMode.manualMarkers.rawValue,
+            AppController.editorSyntaxHighlightingModeKey: SyntaxHighlightingMode.syntax.rawValue
+        ])
 
         let lastVersion = UserDefaults.standard.string(forKey: AppController.lastVersionKey)
         if currentVersion != lastVersion {
