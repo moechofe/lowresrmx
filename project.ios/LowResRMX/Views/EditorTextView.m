@@ -276,9 +276,46 @@
         case 1:
             [self applyBasicSyntaxHighlighting];
             break;
+        case 2:
+            [self applyMarkBlockColoration];
         default:
             break;
     }
+}
+
+- (void)applyMarkBlockColoration {
+    NSString *text = self.text ?: @"";
+    UIFont *font = self.font ?: [UIFont monospacedSystemFontOfSize:14 weight:UIFontWeightRegular];
+    UIColor *defaultColor = [UIColor blackColor];
+    if (@available(iOS 13.0, *)) {
+        defaultColor = [UIColor labelColor];
+    }
+
+    NSMutableAttributedString *attributed = [[NSMutableAttributedString alloc] initWithString:text attributes:@{NSFontAttributeName: font, NSForegroundColorAttributeName: defaultColor}];
+
+    // Regex to find manual markers: lines starting with '''
+    NSRegularExpression *markerRegex = [NSRegularExpression regularExpressionWithPattern:@"^\\s*'''" options:NSRegularExpressionAnchorsMatchLines error:nil];
+
+    // Find all marker locations
+    NSArray<NSTextCheckingResult *> *markerMatches = [markerRegex matchesInString:text options:0 range:NSMakeRange(0, text.length)];
+
+    // If there are no markers, there's nothing to do.
+    if (markerMatches.count == 0) {
+        return;
+    }
+
+    // Color the marker lines as comments to show they've been processed.
+    // The blocks between them are not colored yet, as per the request to do the splitting "first".
+    UIColor *commentColor = [UIColor colorWithRed:0.36 green:0.36 blue:0.36 alpha:1.0];
+    for (NSTextCheckingResult *match in markerMatches) {
+        NSRange lineRange = [text lineRangeForRange:match.range];
+        [attributed addAttribute:NSForegroundColorAttributeName value:commentColor range:lineRange];
+    }
+
+    // Set the attributed text (preserve selection)
+    NSRange selectedRange = self.selectedRange;
+    self.attributedText = attributed;
+    self.selectedRange = selectedRange;
 }
 
 - (void)applyBasicSyntaxHighlighting {
@@ -288,8 +325,7 @@
     UIColor *stringColor = [UIColor colorWithRed:0.75 green:0.1 blue:0.15 alpha:1.0];
     UIColor *commentColor = [UIColor colorWithRed:0.36 green:0.36 blue:0.36 alpha:1.0];
     UIColor *labelColor = [UIColor colorWithRed:0.9 green:0.38 blue:0.0 alpha:1.0];
-    UIColor *gotoColor = [UIColor colorWithRed:0.9 green:0.38 blue:0.0 alpha:1.0];
-    UIColor *defaultColor = [UIColor colorWithRed:0.0 green:0.0 blue:0.0 alpha:1.0];
+    UIColor *defaultColor = [UIColor labelColor];
     UIFont *font = self.font ?: [UIFont monospacedSystemFontOfSize:14 weight:UIFontWeightRegular];
     NSString *text = self.text ?: @"";
     NSMutableAttributedString *attributed = [[NSMutableAttributedString alloc] initWithString:text attributes:@{NSFontAttributeName: font, NSForegroundColorAttributeName: defaultColor}];
@@ -372,7 +408,7 @@
             NSRange labelRange = [match rangeAtIndex:2];
             NSString *target = [text substringWithRange:labelRange];
             if ([labelSet containsObject:target.uppercaseString]) {
-                [attributed addAttribute:NSForegroundColorAttributeName value:gotoColor range:labelRange];
+                [attributed addAttribute:NSForegroundColorAttributeName value:labelColor range:labelRange];
             }
         }
     }

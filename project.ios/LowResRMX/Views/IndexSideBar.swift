@@ -91,13 +91,13 @@ class IndexSideBar: UIControl {
         
         switch indexMode {
         case .labelsAndProcedures:
-            regex = try! NSRegularExpression(pattern: "\\A\\s*(?:(\\S+?):|SUB\\s+([^\\s\\(]+))", options: .caseInsensitive)
+            regex = try! NSRegularExpression(pattern: "\\A\\s*(?:([^'\\s]\\S+):|SUB\\s+([^\\s\\(]+))", options: .caseInsensitive)
         case .labelsWithoutUnderscore:
-            regex = try! NSRegularExpression(pattern: "\\A\\s*([^\\s:_]+):", options: .caseInsensitive)
+            regex = try! NSRegularExpression(pattern: "\\A\\s*([^'\\s][^\\s:_]+):", options: .caseInsensitive)
         case .manualMarkers:
             regex = try! NSRegularExpression(pattern: "\\A\\s*'''(\\S+)", options: .caseInsensitive)
         default:
-            regex = try! NSRegularExpression(pattern: "\\A\\s*(?:(\\S+?):|SUB\\s+([^\\s\\(]+))", options: .caseInsensitive)
+            regex = try! NSRegularExpression(pattern: "\\A\\s*(?:([^'\\s]\\S+):|SUB\\s+([^\\s\\(]+))", options: .caseInsensitive)
         }
         
         var markers = [IndexMarker]()
@@ -236,7 +236,7 @@ class IndexSideBar: UIControl {
             label.clipsToBounds = true
 //            label.textColor = AppStyle.darkGrayColor()
 						label.textColor = UIColor.white
-            label.font = UIFont.systemFont(ofSize: AppController.shared.editorFontSize / 1.2)
+            label.font = UIFont.systemFont(ofSize: AppController.shared.editorFontSize * 0.7)
             label.textAlignment = .center
             label.text = marker.label
             label.sizeToFit()

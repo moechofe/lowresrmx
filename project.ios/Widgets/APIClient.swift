@@ -28,7 +28,7 @@ class APIClient: NSObject {
     let date = ISO8601DateFormatter.string(
       from: Date(), timeZone: TimeZone.current, formatOptions: .withFullDate)
 		let url = URL(string: "\(APIClient.baseURL)/potd/\(date)")!
-		var request = URLRequest(url: url, cachePolicy: .returnCacheDataElseLoad)
+		let request = URLRequest(url: url, cachePolicy: .returnCacheDataElseLoad)
     let task = URLSession.shared.dataTask(with: request) { (data, response, error) in
       guard error == nil else {
         completion(.failure(error!))
