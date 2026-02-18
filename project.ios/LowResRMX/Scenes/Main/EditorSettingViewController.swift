@@ -64,7 +64,7 @@ class EditorSettingViewController: UIViewController {
     private func setupUI() {
         view.backgroundColor = UIColor.systemBackground
 
-        title = "Font Size"
+        title = "Editor Settings"
 
         // Navigation bar buttons
         navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(cancelTapped))
@@ -81,9 +81,8 @@ class EditorSettingViewController: UIViewController {
         scrollView.addSubview(containerView)
 
         // Size label
-        sizeLabel.text = String(format: "%.0f pt", AppController.shared.editorFontSize)
-        sizeLabel.textAlignment = .center
-        sizeLabel.font = UIFont.systemFont(ofSize: 16, weight: .medium)
+        sizeLabel.text = String(format: "Font size: %.0f pt", AppController.shared.editorFontSize)
+        sizeLabel.font = UIFont.systemFont(ofSize: 17, weight: .semibold)
         sizeLabel.translatesAutoresizingMaskIntoConstraints = false
         containerView.addSubview(sizeLabel)
 
@@ -172,7 +171,7 @@ class EditorSettingViewController: UIViewController {
             sizeLabel.leadingAnchor.constraint(equalTo: containerView.leadingAnchor),
             sizeLabel.trailingAnchor.constraint(equalTo: containerView.trailingAnchor),
 
-            slider.topAnchor.constraint(equalTo: sizeLabel.bottomAnchor, constant: 20),
+            slider.topAnchor.constraint(equalTo: sizeLabel.bottomAnchor, constant: 8),
             slider.leadingAnchor.constraint(equalTo: containerView.leadingAnchor),
             slider.trailingAnchor.constraint(equalTo: containerView.trailingAnchor),
 
@@ -212,7 +211,7 @@ class EditorSettingViewController: UIViewController {
     private func updatePreview(fontSize: CGFloat? = nil) {
         let size = fontSize ?? AppController.shared.editorFontSize
 
-        sizeLabel.text = String(format: "%.0f pt", size)
+        sizeLabel.text = String(format: "Font size: %.0f pt", size)
         previewLabel.font = UIFont(name: "Menlo", size: size) ?? UIFont.monospacedSystemFont(ofSize: size, weight: .regular)
     }
 
