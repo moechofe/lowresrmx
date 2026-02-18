@@ -94,7 +94,7 @@
     [stackView addArrangedSubview:copyButton];
     [stackView addArrangedSubview:pasteButton];
 
-    NSArray *keys = @[@"_", @"(", @",", @")", @"<", @"=", @">", @"+", @"-", @"*", @"/", @".", @":", @"'", @"\"", @"%", @"$"];
+    NSArray *keys = @[@"_", @"(", @",", @")", @"<", @"=", @">", @"+", @"-", @"*", @"/", @".", @":", @"'", @"\"", @"$"];
 
     for (NSString *key in keys)
     {
