@@ -37,7 +37,7 @@ extension Notification.Name {
         switch self {
         case .none: return "None"
         case .syntax: return "Syntax"
-        case .manualMarkers: return "Manual"
+        case .manualMarkers: return "Markers"
         }
     }
 }
