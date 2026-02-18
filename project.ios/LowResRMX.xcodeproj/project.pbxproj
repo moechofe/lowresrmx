@@ -191,7 +191,7 @@
 		5B34ED972AC5835700220A80 /* overlay.c in Sources */ = {isa = PBXBuildFile; fileRef = 5B34ECE22AC5835600220A80 /* overlay.c */; };
 		5B34ED982AC5835700220A80 /* core_delegate.c in Sources */ = {isa = PBXBuildFile; fileRef = 5B34ECE42AC5835600220A80 /* core_delegate.c */; };
 		5B34ED992AC5835700220A80 /* core_delegate.c in Sources */ = {isa = PBXBuildFile; fileRef = 5B34ECE42AC5835600220A80 /* core_delegate.c */; };
-		5B3C38742E8E64320048C9FE /* FontSizePickerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B3C38732E8E64320048C9FE /* FontSizePickerViewController.swift */; };
+		5B3C38742E8E64320048C9FE /* EditorSettingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B3C38732E8E64320048C9FE /* EditorSettingViewController.swift */; };
 		5B572CB32DE710BA00196C83 /* globmatch.c in Sources */ = {isa = PBXBuildFile; fileRef = 5B572CB22DE710BA00196C83 /* globmatch.c */; };
 		5B572CB42DE710BA00196C83 /* globmatch.c in Sources */ = {isa = PBXBuildFile; fileRef = 5B572CB22DE710BA00196C83 /* globmatch.c */; };
 		5B6334F62F3F3ECF00E8198A /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B6334F52F3F3ECF00E8198A /* SceneDelegate.swift */; };
@@ -397,7 +397,7 @@
 		5B34ECE32AC5835600220A80 /* overlay_data.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = overlay_data.h; sourceTree = "<group>"; };
 		5B34ECE42AC5835600220A80 /* core_delegate.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = core_delegate.c; sourceTree = "<group>"; };
 		5B34ECE52AC5835600220A80 /* core_stats.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = core_stats.h; sourceTree = "<group>"; };
-		5B3C38732E8E64320048C9FE /* FontSizePickerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FontSizePickerViewController.swift; sourceTree = "<group>"; };
+		5B3C38732E8E64320048C9FE /* EditorSettingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorSettingViewController.swift; sourceTree = "<group>"; };
 		5B572CB12DE710BA00196C83 /* globmatch.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = globmatch.h; sourceTree = "<group>"; };
 		5B572CB22DE710BA00196C83 /* globmatch.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = globmatch.c; sourceTree = "<group>"; };
 		5B6334F52F3F3ECF00E8198A /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -794,7 +794,7 @@
 		926EB1DD1F757FC90048A6CF /* Main */ = {
 			isa = PBXGroup;
 			children = (
-				5B3C38732E8E64320048C9FE /* FontSizePickerViewController.swift */,
+				5B3C38732E8E64320048C9FE /* EditorSettingViewController.swift */,
 				926EB1D11F757DDD0048A6CF /* Main.storyboard */,
 				9227DC211FC8C17A00BC89FD /* SplashViewController.swift */,
 				9217BF3423DC963C00DA8DAF /* TabBarController.swift */,
@@ -1191,7 +1191,7 @@
 				923C311020587965003C89AC /* ToolsMenuConfiguration.swift in Sources */,
 				5B34ED342AC5835600220A80 /* cmd_subs.c in Sources */,
 				5B34ED542AC5835600220A80 /* disk_drive.c in Sources */,
-				5B3C38742E8E64320048C9FE /* FontSizePickerViewController.swift in Sources */,
+				5B3C38742E8E64320048C9FE /* EditorSettingViewController.swift in Sources */,
 				921614301F7D70E2006AB2DE /* EditorViewController.swift in Sources */,
 				5B34ED1C2AC5835600220A80 /* cmd_audio.c in Sources */,
 				92EA93BE1F744572007BEFB1 /* AppDelegate.swift in Sources */,
