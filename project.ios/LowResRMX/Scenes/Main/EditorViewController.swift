@@ -72,6 +72,7 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
         //        }
 
         sourceCodeTextView.text = document.sourceCode ?? ""
+			(sourceCodeTextView)?.applyBasicSyntaxHighlighting()
 
         // Apply font size setting
         applyFontSize()
@@ -554,6 +555,7 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
 
     func projectDocumentContentDidUpdate(_ projectDocument: ProjectDocument) {
         sourceCodeTextView.text = projectDocument.sourceCode ?? ""
+        (sourceCodeTextView)?.applyBasicSyntaxHighlighting()
         indexSideBar.update()
         updateStats()
     }
@@ -590,6 +592,9 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
             spacesToInsert = nil
             textView.insertText(spaces)
         }
+
+        // live syntax highlighting
+        (textView as? EditorTextView)?.applyBasicSyntaxHighlighting()
 
         // side bar
         if shouldUpdateSideBar {
@@ -695,6 +700,7 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
             // replace
             let changedSourceText = sourceText.replacingCharacters(in: selectedRange, with: replaceText)
             sourceCodeTextView.text = changedSourceText
+            (sourceCodeTextView)?.applyBasicSyntaxHighlighting()
             sourceCodeTextView.selectedRange = NSMakeRange(selectedRange.location + replaceText.count, 0)
             sourceCodeTextView.scrollSelectedRangeToVisible()
         }
