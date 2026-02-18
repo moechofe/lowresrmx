@@ -274,7 +274,9 @@
     UIColor *numberColor = [UIColor colorWithRed:0.8 green:0.2 blue:0.2 alpha:1.0];
     UIColor *stringColor = [UIColor colorWithRed:0.2 green:0.6 blue:0.2 alpha:1.0];
     UIColor *commentColor = [UIColor colorWithRed:0.5 green:0.5 blue:0.5 alpha:1.0];
-    UIColor *defaultColor = [UIColor labelColor];
+    UIColor *labelColor = [UIColor colorWithRed:0.7 green:0.4 blue:0.1 alpha:1.0];
+    UIColor *gotoColor = [UIColor colorWithRed:0.8 green:0.5 blue:0.0 alpha:1.0];
+    UIColor *defaultColor = [UIColor colorWithRed:0.0 green:0.0 blue:0.0 alpha:1.0];
     UIFont *font = self.font ?: [UIFont monospacedSystemFontOfSize:14 weight:UIFontWeightRegular];
     NSString *text = self.text ?: @"";
     NSMutableAttributedString *attributed = [[NSMutableAttributedString alloc] initWithString:text attributes:@{NSFontAttributeName: font, NSForegroundColorAttributeName: defaultColor}];
@@ -326,6 +328,32 @@
             }
             if (!inStringOrComment) {
                 [attributed addAttribute:NSForegroundColorAttributeName value:keywordColor range:match.range];
+            }
+        }
+    }
+    // Labels: find lines like 'label:' at the start of a line
+    NSRegularExpression *labelRegex = [NSRegularExpression regularExpressionWithPattern:@"^([A-Za-z_][A-Za-z0-9_]*)\s*:" options:NSRegularExpressionAnchorsMatchLines error:nil];
+    NSMutableSet<NSString *> *labelSet = [NSMutableSet set];
+    NSArray<NSTextCheckingResult *> *labelMatches = [labelRegex matchesInString:text options:0 range:NSMakeRange(0, text.length)];
+    
+    for (NSTextCheckingResult *match in labelMatches) {
+        if (match.numberOfRanges > 1) {
+            NSRange idRange = [match rangeAtIndex:1];
+            [attributed addAttribute:NSForegroundColorAttributeName value:labelColor range:idRange];
+            NSString *labelName = [text substringWithRange:idRange];
+            [labelSet addObject:labelName.uppercaseString];
+        }
+    }
+    // Colorize GOTO/GOSUB targets
+    NSRegularExpression *gotoRegex = [NSRegularExpression regularExpressionWithPattern:@"\\b(GOTO|GOSUB)\\s+([A-Za-z_][A-Za-z0-9_]*)\\b" options:NSRegularExpressionCaseInsensitive error:nil];
+    NSArray<NSTextCheckingResult *> *gotoMatches = [gotoRegex matchesInString:text options:0 range:NSMakeRange(0, text.length)];
+    
+    for (NSTextCheckingResult *match in gotoMatches) {
+        if (match.numberOfRanges > 2) {
+            NSRange labelRange = [match rangeAtIndex:2];
+            NSString *target = [text substringWithRange:labelRange];
+            if ([labelSet containsObject:target.uppercaseString]) {
+                [attributed addAttribute:NSForegroundColorAttributeName value:gotoColor range:labelRange];
             }
         }
     }
