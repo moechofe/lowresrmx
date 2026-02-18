@@ -110,7 +110,7 @@ extension Notification.Name {
         }
     }
 
-    var editorSyntaxHighlightingMode: SyntaxHighlightingMode {
+    @objc var editorSyntaxHighlightingMode: SyntaxHighlightingMode {
         get {
             let value = UserDefaults.standard.integer(forKey: AppController.editorSyntaxHighlightingModeKey)
             return SyntaxHighlightingMode(rawValue: value) ?? .none

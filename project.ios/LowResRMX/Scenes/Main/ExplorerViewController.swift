@@ -228,7 +228,7 @@ class ExplorerViewController: UIViewController, UICollectionViewDelegateFlowLayo
     @objc func onActionTapped(_ sender: UIBarButtonItem) {
         let alert = UIAlertController(title: "Options", message: nil, preferredStyle: .actionSheet)
 
-        let fontSizeAction = UIAlertAction(title: "Editor Font Size", style: .default, handler: { [weak self] (action) in
+        let fontSizeAction = UIAlertAction(title: "Editor Settings", style: .default, handler: { [weak self] (action) in
             self?.showFontSizePicker()
         })
         alert.addAction(fontSizeAction)

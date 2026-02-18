@@ -72,7 +72,7 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
         //        }
 
         sourceCodeTextView.text = document.sourceCode ?? ""
-			(sourceCodeTextView)?.applyBasicSyntaxHighlighting()
+			(sourceCodeTextView)?.applyColoration(AppController.shared.editorSyntaxHighlightingMode.rawValue)
 
         // Apply font size setting
         applyFontSize()
@@ -555,7 +555,7 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
 
     func projectDocumentContentDidUpdate(_ projectDocument: ProjectDocument) {
         sourceCodeTextView.text = projectDocument.sourceCode ?? ""
-        (sourceCodeTextView)?.applyBasicSyntaxHighlighting()
+			(sourceCodeTextView)?.applyColoration(AppController.shared.editorSyntaxHighlightingMode.rawValue)
         indexSideBar.update()
         updateStats()
     }
@@ -594,7 +594,7 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
         }
 
         // live syntax highlighting
-        (textView as? EditorTextView)?.applyBasicSyntaxHighlighting()
+			(textView as? EditorTextView)?.applyColoration(AppController.shared.editorSyntaxHighlightingMode.rawValue)
 
         // side bar
         if shouldUpdateSideBar {
@@ -700,7 +700,7 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
             // replace
             let changedSourceText = sourceText.replacingCharacters(in: selectedRange, with: replaceText)
             sourceCodeTextView.text = changedSourceText
-            (sourceCodeTextView)?.applyBasicSyntaxHighlighting()
+					(sourceCodeTextView)?.applyColoration(AppController.shared.editorSyntaxHighlightingMode.rawValue)
             sourceCodeTextView.selectedRange = NSMakeRange(selectedRange.location + replaceText.count, 0)
             sourceCodeTextView.scrollSelectedRangeToVisible()
         }
