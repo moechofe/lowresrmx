@@ -267,31 +267,47 @@
     }
 }
 
-// BASIC syntax highlighting (standalone, not called automatically)
+- (void)applyColoration:(NSInteger)mode {
+    [self applyColorationWithMode:mode];
+}
+
+- (void)applyColorationWithMode:(NSInteger)mode {
+    switch (mode) {
+        case 1:
+            [self applyBasicSyntaxHighlighting];
+            break;
+        default:
+            break;
+    }
+}
+
 - (void)applyBasicSyntaxHighlighting {
-    NSArray *keywords = @[ @"PRINT", @"IF", @"THEN", @"ELSE", @"FOR", @"TO", @"NEXT", @"GOTO", @"GOSUB", @"RETURN", @"END", @"REM", @"INPUT", @"LET", @"DIM", @"READ", @"DATA", @"RESTORE", @"ON", @"STOP", @"DEF", @"POKE", @"PEEK", @"CALL", @"SUB", @"FUNCTION", @"WHILE", @"WEND", @"DO", @"LOOP", @"UNTIL", @"STEP" ];
-    UIColor *keywordColor = [UIColor colorWithRed:0.2 green:0.2 blue:0.8 alpha:1.0];
-    UIColor *numberColor = [UIColor colorWithRed:0.8 green:0.2 blue:0.2 alpha:1.0];
-    UIColor *stringColor = [UIColor colorWithRed:0.2 green:0.6 blue:0.2 alpha:1.0];
-    UIColor *commentColor = [UIColor colorWithRed:0.5 green:0.5 blue:0.5 alpha:1.0];
-    UIColor *labelColor = [UIColor colorWithRed:0.7 green:0.4 blue:0.1 alpha:1.0];
-    UIColor *gotoColor = [UIColor colorWithRed:0.8 green:0.5 blue:0.0 alpha:1.0];
+    NSArray *keywords = @[ @"ABS", @"ADD", @"AND", @"ASC", @"AT", @"ATAN", @"ATTR", @"BG", @"BIN", @"CALL", @"CEIL", @"CELL", @"CELL\\.A", @"CELL\\.C", @"CHAR", @"CHR", @"CLAMP", @"CLS", @"CLW", @"COLOR", @"COMPAT", @"COPY", @"COS", @"CURSOR\\.X", @"CURSOR\\.Y", @"DATA", @"DEC", @"DIM", @"DMA", @"DO", @"EASE", @"ELSE", @"EMITTER", @"END", @"ENVELOPE", @"EXIT", @"EXP", @"FILE", @"FILES", @"FILL", @"FLIP", @"FLOOR", @"FONT", @"FOR", @"FSIZE", @"GLOBAL", @"GOSUB", @"GOTO", @"HAPTIC", @"HEX", @"HIT", @"IF", @"INC", @"INKEY", @"INPUT", @"INSTR", @"INT", @"KEYBOARD", @"LEFT", @"LEN", @"LET", @"LFO", @"LFO\\.A", @"LOAD", @"LOCATE", @"LOG", @"LOOP", @"MAX", @"MCELL", @"MCELL\\.A", @"MCELL\\.C", @"MESSAGE", @"MID", @"MIN", @"MOD", @"MUSIC", @"NEXT", @"NOT", @"NUMBER", @"OFF", @"ON", @"OR", @"PAL", @"PALETTE", @"PARTICLE", @"PAUSE", @"PEEK", @"PEEKL", @"PEEKW", @"PI", @"PLAY", @"POKE", @"POKEL", @"POKEW", @"PRINT", @"PRIO", @"RANDOMIZE", @"RASTER", @"READ", @"REPEAT", @"RESTORE", @"RETURN", @"RIGHT", @"RND", @"ROL", @"ROM", @"ROR", @"SAFE\\.B", @"SAFE\\.L", @"SAFE\\.R", @"SAFE\\.T", @"SAVE", @"SCROLL", @"SCROLL\\.X", @"SCROLL\\.Y", @"SGN", @"SHOWN\\.H", @"SHOWN\\.W", @"SIN", @"SIZE", @"SKIP", @"SOUND", @"SOURCE", @"SPRITE", @"SPRITE\\.A", @"SPRITE\\.C", @"SPRITE\\.X", @"SPRITE\\.Y", @"SQR", @"STEP", @"STOP", @"STR", @"SUB", @"SWAP", @"SYSTEM", @"TAN", @"TAP", @"TEXT", @"THEN", @"TIMER", @"TINT", @"TO", @"TOUCH", @"TOUCH\\.X", @"TOUCH\\.Y", @"TRACE", @"TRACK", @"UBOUND", @"UNTIL", @"VAL", @"VBL", @"VIEW", @"VOLUME", @"WAIT", @"WAVE", @"WEND", @"WHILE", @"WINDOW", @"XOR",  ];
+    UIColor *keywordColor = [UIColor colorWithRed:0.5 green:0.24 blue:0.61 alpha:1.0];
+    UIColor *numberColor = [UIColor colorWithRed:0.75 green:0.1 blue:0.15 alpha:1.0];
+    UIColor *stringColor = [UIColor colorWithRed:0.75 green:0.1 blue:0.15 alpha:1.0];
+    UIColor *commentColor = [UIColor colorWithRed:0.36 green:0.36 blue:0.36 alpha:1.0];
+    UIColor *labelColor = [UIColor colorWithRed:0.9 green:0.38 blue:0.0 alpha:1.0];
+    UIColor *gotoColor = [UIColor colorWithRed:0.9 green:0.38 blue:0.0 alpha:1.0];
     UIColor *defaultColor = [UIColor colorWithRed:0.0 green:0.0 blue:0.0 alpha:1.0];
     UIFont *font = self.font ?: [UIFont monospacedSystemFontOfSize:14 weight:UIFontWeightRegular];
     NSString *text = self.text ?: @"";
     NSMutableAttributedString *attributed = [[NSMutableAttributedString alloc] initWithString:text attributes:@{NSFontAttributeName: font, NSForegroundColorAttributeName: defaultColor}];
+
     // Strings
     NSRegularExpression *stringRegex = [NSRegularExpression regularExpressionWithPattern:@"\"[^\"]*\"" options:0 error:nil];
     NSArray<NSTextCheckingResult *> *stringMatches = [stringRegex matchesInString:text options:0 range:NSMakeRange(0, text.length)];
     for (NSTextCheckingResult *match in stringMatches) {
         [attributed addAttribute:NSForegroundColorAttributeName value:stringColor range:match.range];
     }
+
     // Comments (REM ... or ' ...)
     NSRegularExpression *remRegex = [NSRegularExpression regularExpressionWithPattern:@"REM.*|'.*" options:NSRegularExpressionCaseInsensitive error:nil];
     NSArray<NSTextCheckingResult *> *remMatches = [remRegex matchesInString:text options:0 range:NSMakeRange(0, text.length)];
     for (NSTextCheckingResult *match in remMatches) {
         [attributed addAttribute:NSForegroundColorAttributeName value:commentColor range:match.range];
     }
+
     // Numbers (not inside strings)
     NSRegularExpression *numberRegex = [NSRegularExpression regularExpressionWithPattern:@"\\b[0-9]+(\\.[0-9]+)?\\b" options:0 error:nil];
     NSArray<NSTextCheckingResult *> *numberMatches = [numberRegex matchesInString:text options:0 range:NSMakeRange(0, text.length)];
@@ -307,6 +323,7 @@
             [attributed addAttribute:NSForegroundColorAttributeName value:numberColor range:match.range];
         }
     }
+
     // Keywords (not inside strings or comments)
     for (NSString *keyword in keywords) {
         NSString *pattern = [NSString stringWithFormat:@"\\b%@\\b", keyword];
@@ -331,8 +348,9 @@
             }
         }
     }
+
     // Labels: find lines like 'label:' at the start of a line
-    NSRegularExpression *labelRegex = [NSRegularExpression regularExpressionWithPattern:@"^([A-Za-z_][A-Za-z0-9_]*)\s*:" options:NSRegularExpressionAnchorsMatchLines error:nil];
+    NSRegularExpression *labelRegex = [NSRegularExpression regularExpressionWithPattern:@"^([A-Za-z_][A-Za-z0-9_]*)\\s*:" options:NSRegularExpressionAnchorsMatchLines error:nil];
     NSMutableSet<NSString *> *labelSet = [NSMutableSet set];
     NSArray<NSTextCheckingResult *> *labelMatches = [labelRegex matchesInString:text options:0 range:NSMakeRange(0, text.length)];
     
@@ -344,6 +362,7 @@
             [labelSet addObject:labelName.uppercaseString];
         }
     }
+
     // Colorize GOTO/GOSUB targets
     NSRegularExpression *gotoRegex = [NSRegularExpression regularExpressionWithPattern:@"\\b(GOTO|GOSUB)\\s+([A-Za-z_][A-Za-z0-9_]*)\\b" options:NSRegularExpressionCaseInsensitive error:nil];
     NSArray<NSTextCheckingResult *> *gotoMatches = [gotoRegex matchesInString:text options:0 range:NSMakeRange(0, text.length)];
@@ -357,6 +376,7 @@
             }
         }
     }
+
     // Set the attributed text (preserve selection)
     NSRange selectedRange = self.selectedRange;
     self.attributedText = attributed;
