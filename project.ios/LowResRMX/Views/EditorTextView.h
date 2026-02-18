@@ -16,6 +16,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, nullable) UIToolbar *keyboardToolbar;
 @property (weak, nullable) id<EditorTextViewDelegate> editorDelegate;
 
+- (void)applyBasicSyntaxHighlighting;
+
 @end
 
 @protocol EditorTextViewDelegate <NSObject>

@@ -267,4 +267,100 @@
     }
 }
 
+// BASIC syntax highlighting (standalone, not called automatically)
+- (void)applyBasicSyntaxHighlighting {
+    NSArray *keywords = @[ @"PRINT", @"IF", @"THEN", @"ELSE", @"FOR", @"TO", @"NEXT", @"GOTO", @"GOSUB", @"RETURN", @"END", @"REM", @"INPUT", @"LET", @"DIM", @"READ", @"DATA", @"RESTORE", @"ON", @"STOP", @"DEF", @"POKE", @"PEEK", @"CALL", @"SUB", @"FUNCTION", @"WHILE", @"WEND", @"DO", @"LOOP", @"UNTIL", @"STEP" ];
+    UIColor *keywordColor = [UIColor colorWithRed:0.2 green:0.2 blue:0.8 alpha:1.0];
+    UIColor *numberColor = [UIColor colorWithRed:0.8 green:0.2 blue:0.2 alpha:1.0];
+    UIColor *stringColor = [UIColor colorWithRed:0.2 green:0.6 blue:0.2 alpha:1.0];
+    UIColor *commentColor = [UIColor colorWithRed:0.5 green:0.5 blue:0.5 alpha:1.0];
+    UIColor *labelColor = [UIColor colorWithRed:0.7 green:0.4 blue:0.1 alpha:1.0];
+    UIColor *gotoColor = [UIColor colorWithRed:0.8 green:0.5 blue:0.0 alpha:1.0];
+    UIColor *defaultColor = [UIColor colorWithRed:0.0 green:0.0 blue:0.0 alpha:1.0];
+    UIFont *font = self.font ?: [UIFont monospacedSystemFontOfSize:14 weight:UIFontWeightRegular];
+    NSString *text = self.text ?: @"";
+    NSMutableAttributedString *attributed = [[NSMutableAttributedString alloc] initWithString:text attributes:@{NSFontAttributeName: font, NSForegroundColorAttributeName: defaultColor}];
+    // Strings
+    NSRegularExpression *stringRegex = [NSRegularExpression regularExpressionWithPattern:@"\"[^\"]*\"" options:0 error:nil];
+    NSArray<NSTextCheckingResult *> *stringMatches = [stringRegex matchesInString:text options:0 range:NSMakeRange(0, text.length)];
+    for (NSTextCheckingResult *match in stringMatches) {
+        [attributed addAttribute:NSForegroundColorAttributeName value:stringColor range:match.range];
+    }
+    // Comments (REM ... or ' ...)
+    NSRegularExpression *remRegex = [NSRegularExpression regularExpressionWithPattern:@"REM.*|'.*" options:NSRegularExpressionCaseInsensitive error:nil];
+    NSArray<NSTextCheckingResult *> *remMatches = [remRegex matchesInString:text options:0 range:NSMakeRange(0, text.length)];
+    for (NSTextCheckingResult *match in remMatches) {
+        [attributed addAttribute:NSForegroundColorAttributeName value:commentColor range:match.range];
+    }
+    // Numbers (not inside strings)
+    NSRegularExpression *numberRegex = [NSRegularExpression regularExpressionWithPattern:@"\\b[0-9]+(\\.[0-9]+)?\\b" options:0 error:nil];
+    NSArray<NSTextCheckingResult *> *numberMatches = [numberRegex matchesInString:text options:0 range:NSMakeRange(0, text.length)];
+    for (NSTextCheckingResult *match in numberMatches) {
+        BOOL inString = NO;
+        for (NSTextCheckingResult *stringMatch in stringMatches) {
+            if (NSIntersectionRange(match.range, stringMatch.range).length > 0) {
+                inString = YES;
+                break;
+            }
+        }
+        if (!inString) {
+            [attributed addAttribute:NSForegroundColorAttributeName value:numberColor range:match.range];
+        }
+    }
+    // Keywords (not inside strings or comments)
+    for (NSString *keyword in keywords) {
+        NSString *pattern = [NSString stringWithFormat:@"\\b%@\\b", keyword];
+        NSRegularExpression *keywordRegex = [NSRegularExpression regularExpressionWithPattern:pattern options:NSRegularExpressionCaseInsensitive error:nil];
+        NSArray<NSTextCheckingResult *> *keywordMatches = [keywordRegex matchesInString:text options:0 range:NSMakeRange(0, text.length)];
+        for (NSTextCheckingResult *match in keywordMatches) {
+            BOOL inStringOrComment = NO;
+            for (NSTextCheckingResult *stringMatch in stringMatches) {
+                if (NSIntersectionRange(match.range, stringMatch.range).length > 0) {
+                    inStringOrComment = YES;
+                    break;
+                }
+            }
+            for (NSTextCheckingResult *remMatch in remMatches) {
+                if (NSIntersectionRange(match.range, remMatch.range).length > 0) {
+                    inStringOrComment = YES;
+                    break;
+                }
+            }
+            if (!inStringOrComment) {
+                [attributed addAttribute:NSForegroundColorAttributeName value:keywordColor range:match.range];
+            }
+        }
+    }
+    // Labels: find lines like 'label:' at the start of a line
+    NSRegularExpression *labelRegex = [NSRegularExpression regularExpressionWithPattern:@"^([A-Za-z_][A-Za-z0-9_]*)\s*:" options:NSRegularExpressionAnchorsMatchLines error:nil];
+    NSMutableSet<NSString *> *labelSet = [NSMutableSet set];
+    NSArray<NSTextCheckingResult *> *labelMatches = [labelRegex matchesInString:text options:0 range:NSMakeRange(0, text.length)];
+    
+    for (NSTextCheckingResult *match in labelMatches) {
+        if (match.numberOfRanges > 1) {
+            NSRange idRange = [match rangeAtIndex:1];
+            [attributed addAttribute:NSForegroundColorAttributeName value:labelColor range:idRange];
+            NSString *labelName = [text substringWithRange:idRange];
+            [labelSet addObject:labelName.uppercaseString];
+        }
+    }
+    // Colorize GOTO/GOSUB targets
+    NSRegularExpression *gotoRegex = [NSRegularExpression regularExpressionWithPattern:@"\\b(GOTO|GOSUB)\\s+([A-Za-z_][A-Za-z0-9_]*)\\b" options:NSRegularExpressionCaseInsensitive error:nil];
+    NSArray<NSTextCheckingResult *> *gotoMatches = [gotoRegex matchesInString:text options:0 range:NSMakeRange(0, text.length)];
+    
+    for (NSTextCheckingResult *match in gotoMatches) {
+        if (match.numberOfRanges > 2) {
+            NSRange labelRange = [match rangeAtIndex:2];
+            NSString *target = [text substringWithRange:labelRange];
+            if ([labelSet containsObject:target.uppercaseString]) {
+                [attributed addAttribute:NSForegroundColorAttributeName value:gotoColor range:labelRange];
+            }
+        }
+    }
+    // Set the attributed text (preserve selection)
+    NSRange selectedRange = self.selectedRange;
+    self.attributedText = attributed;
+    self.selectedRange = selectedRange;
+}
+
 @end
