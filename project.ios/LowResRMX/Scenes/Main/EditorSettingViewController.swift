@@ -10,7 +10,7 @@ import UIKit
 
 // NOTE: These should ideally be in a shared location if used across multiple files.
 extension Notification.Name {
-    
+
     static let EditorIndexModeDidChange = Notification.Name("EditorIndexModeDidChange")
     static let EditorSyntaxHighlightingDidChange = Notification.Name("EditorSyntaxHighlightingDidChange")
 }
@@ -49,20 +49,6 @@ extension Notification.Name {
         switch self {
         case .noMarkers: return "No Markers"
         case .manualMarkers: return "Manual Markers"
-        }
-    }
-}
-
-@objc enum IndexMode: Int, CaseIterable {
-    case labelsAndProcedures
-    case labelsWithoutUnderscore
-    case manualMarkers
-
-    var title: String {
-        switch self {
-        case .labelsAndProcedures: return "Labels & Subs"
-        case .labelsWithoutUnderscore: return "Labels w/o '_'"
-        case .manualMarkers: return "Manual"
         }
     }
 }
@@ -205,20 +191,6 @@ Manual markers start by 3 single quotes (''').
         markerIndexModeDescriptionLabel.translatesAutoresizingMaskIntoConstraints = false
         containerView.addSubview(markerIndexModeDescriptionLabel)
 
-        // // Index Mode
-        // let indexModeLabel = UILabel()
-        // indexModeLabel.text = "Index Markers"
-        // indexModeLabel.font = UIFont.systemFont(ofSize: 17, weight: .semibold)
-        // indexModeLabel.translatesAutoresizingMaskIntoConstraints = false
-        // containerView.addSubview(indexModeLabel)
-
-        // for (index, mode) in IndexMode.allCases.enumerated() {
-        //     indexModeSegmentedControl.insertSegment(withTitle: mode.title, at: index, animated: false)
-        // }
-        // indexModeSegmentedControl.selectedSegmentIndex = AppController.shared.editorIndexMode.rawValue
-        // indexModeSegmentedControl.translatesAutoresizingMaskIntoConstraints = false
-        // containerView.addSubview(indexModeSegmentedControl)
-
         // Text Coloration
         let syntaxHighlightingLabel = UILabel()
         syntaxHighlightingLabel.text = "Text Coloration"
@@ -238,16 +210,16 @@ Manual markers start by 3 single quotes (''').
         sub r
         poke $ff00,r(((raster+timer*2.5+cos(timer*0.01)*sin(timer*0.005)*20)*0.12+(ubound(r)+1)) mod (ubound(r)+1))
         end sub
-        
+
         c: data 8, 9, 10, 13, 14, 62, 63, 55, 54, 53, 52, 51, 49, 50, 44, 45, 46, 47, 48, 56, 57, 58, 59, 60, 61, 12, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 11
-        
+
         dim global r(55)
         for i=0 to ubound(r)
         read r(i)
         next i
-        
+
         on raster call r
-        
+
         do : wait vbl : loop
         """
         previewLabel.numberOfLines = 0
@@ -317,7 +289,7 @@ Manual markers start by 3 single quotes (''').
             markerIndexModeSegmentedControl.topAnchor.constraint(equalTo: markerIndexModeLabel.bottomAnchor, constant: 8),
             markerIndexModeSegmentedControl.leadingAnchor.constraint(equalTo: containerView.leadingAnchor),
             markerIndexModeSegmentedControl.trailingAnchor.constraint(equalTo: containerView.trailingAnchor),
-            
+
             markerIndexModeDescriptionLabel.topAnchor.constraint(equalTo: markerIndexModeSegmentedControl.bottomAnchor, constant: 8),
             markerIndexModeDescriptionLabel.leadingAnchor.constraint(equalTo: containerView.leadingAnchor),
             markerIndexModeDescriptionLabel.trailingAnchor.constraint(equalTo: containerView.trailingAnchor),
@@ -387,12 +359,6 @@ Manual markers start by 3 single quotes (''').
         if newMarkerIndexMode != AppController.shared.editorManualMarkerIndexMode {
             AppController.shared.editorManualMarkerIndexMode = newMarkerIndexMode
         }
-
-        // let newIndexMode = IndexMode(rawValue: indexModeSegmentedControl.selectedSegmentIndex) ?? .manualMarkers
-        // if newIndexMode != AppController.shared.editorIndexMode {
-        //     AppController.shared.editorIndexMode = newIndexMode
-        //     NotificationCenter.default.post(name: .EditorIndexModeDidChange, object: nil)
-        // }
 
         let newSyntaxMode = SyntaxHighlightingMode(rawValue: syntaxHighlightingSegmentedControl.selectedSegmentIndex) ?? .syntax
         if newSyntaxMode != AppController.shared.editorSyntaxHighlightingMode {

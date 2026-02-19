@@ -27,7 +27,6 @@ extension Notification.Name {
     private static let editorLabelIndexModeKey = "editorLabelIndexMode"
     private static let editorProcedureIndexModeKey = "editorProcedureIndexMode"
     private static let editorManualMarkerIndexModeKey = "editorManualMarkerIndexMode"
-    private static let editorIndexModeKey = "editorIndexMode"
     private static let editorSyntaxHighlightingModeKey = "editorSyntaxHighlightingMode"
 
     @objc static let shared = AppController()
@@ -133,16 +132,6 @@ extension Notification.Name {
         }
     }
 
-    var editorIndexMode: IndexMode {
-        get {
-            let value = UserDefaults.standard.integer(forKey: AppController.editorIndexModeKey)
-            return IndexMode(rawValue: value) ?? .labelsAndProcedures
-        }
-        set {
-            UserDefaults.standard.set(newValue.rawValue, forKey: AppController.editorIndexModeKey)
-        }
-    }
-
     @objc var editorSyntaxHighlightingMode: SyntaxHighlightingMode {
         get {
             let value = UserDefaults.standard.integer(forKey: AppController.editorSyntaxHighlightingModeKey)
@@ -167,7 +156,9 @@ extension Notification.Name {
         super.init()
 
         UserDefaults.standard.register(defaults: [
-            AppController.editorIndexModeKey: IndexMode.manualMarkers.rawValue,
+						AppController.editorLabelIndexModeKey: LabelIndexMode.allLabels.rawValue,
+						AppController.editorProcedureIndexModeKey: ProcedureIndexMode.allProcedures.rawValue,
+						AppController.editorManualMarkerIndexModeKey: MarkerIndexMode.noMarkers.rawValue,
             AppController.editorSyntaxHighlightingModeKey: SyntaxHighlightingMode.syntax.rawValue
         ])
 
