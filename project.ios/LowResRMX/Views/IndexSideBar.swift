@@ -87,24 +87,49 @@ class IndexSideBar: UIControl {
         }
         
         let regex: NSRegularExpression
-        let indexMode = AppController.shared.editorIndexMode
-        
-        switch indexMode {
-        case .labelsAndProcedures:
-            regex = try! NSRegularExpression(pattern: "\\A\\s*(?:([^'\\s]\\S+):|SUB\\s+([^\\s\\(]+))", options: .caseInsensitive)
+
+        let labelPart: String
+        switch AppController.shared.editorLabelIndexMode {
+        case .allLabels:
+            labelPart = "([^'#\\s]\\S+):"
         case .labelsWithoutUnderscore:
-            regex = try! NSRegularExpression(pattern: "\\A\\s*([^'\\s][^\\s:_]+):", options: .caseInsensitive)
-        case .manualMarkers:
-            regex = try! NSRegularExpression(pattern: "\\A\\s*'''(\\S+)", options: .caseInsensitive)
+            labelPart = "([^'#\\s][^\\s:_]+):"
         default:
-            regex = try! NSRegularExpression(pattern: "\\A\\s*(?:([^'\\s]\\S+):|SUB\\s+([^\\s\\(]+))", options: .caseInsensitive)
+            labelPart = ""
         }
+
+        let prodecurePart: String
+        switch AppController.shared.editorProcedureIndexMode {
+        case .allProcedures:
+            prodecurePart = "SUB\\s+([^\\s\\(]+)"
+        default:
+            prodecurePart = ""
+        }
+
+        let markerPart: String
+        switch AppController.shared.editorManualMarkerIndexMode {
+        case .manualMarkers:
+            markerPart = "'''(\\S+)"
+        default:
+            markerPart = ""
+        }
+
+        if (labelPart.isEmpty && prodecurePart.isEmpty && markerPart.isEmpty) {
+             self.numLines = 0
+             self.markers = []
+             self.shouldUpdateOnTouch = false
+             updateBarPositions()
+             return
+        }
+
+        regex = try! NSRegularExpression(pattern: "\\A\\s*(?:" + [labelPart, prodecurePart, markerPart].filter { !$0.isEmpty }.joined(separator: "|") + ")", options: .caseInsensitive)
         
         var markers = [IndexMarker]()
         var numLines = 0
         
         text.enumerateSubstrings(in: text.startIndex..<text.endIndex, options: .byLines) { (string, substringRange, enclosingRange, stop) in
             if let string = string {
+                print("\(numLines): \(string)")
                 if let match = regex.firstMatch(in: string, options: [], range: NSRange(location: 0, length: string.utf16.count)) {
                     var capturedLabel: String?
                     for i in 1..<match.numberOfRanges {
