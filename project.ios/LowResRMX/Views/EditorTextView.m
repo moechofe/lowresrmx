@@ -305,11 +305,33 @@
     }
 
     // Color the marker lines as comments to show they've been processed.
-    // The blocks between them are not colored yet, as per the request to do the splitting "first".
     UIColor *commentColor = [UIColor colorWithRed:0.36 green:0.36 blue:0.36 alpha:1.0];
-    for (NSTextCheckingResult *match in markerMatches) {
+    NSArray *blockColors = @[
+        [UIColor colorWithRed:0.8 green:0.4 blue:0.4 alpha:1.0],
+        [UIColor colorWithRed:0.4 green:0.8 blue:0.4 alpha:1.0],
+        [UIColor colorWithRed:0.4 green:0.4 blue:0.8 alpha:1.0],
+        [UIColor colorWithRed:0.8 green:0.8 blue:0.4 alpha:1.0],
+        [UIColor colorWithRed:0.4 green:0.8 blue:0.8 alpha:1.0],
+        [UIColor colorWithRed:0.8 green:0.4 blue:0.8 alpha:1.0]
+    ];
+
+    for (NSUInteger i = 0; i < markerMatches.count; i++) {
+        NSTextCheckingResult *match = markerMatches[i];
         NSRange lineRange = [text lineRangeForRange:match.range];
         [attributed addAttribute:NSForegroundColorAttributeName value:commentColor range:lineRange];
+
+        NSUInteger blockStart = lineRange.location + lineRange.length;
+        NSUInteger blockEnd = (i + 1 < markerMatches.count) ? markerMatches[i+1].range.location : text.length;
+
+        if (blockEnd > blockStart) {
+            NSString *line = [text substringWithRange:lineRange];
+            NSRange markerStart = [line rangeOfString:@"'''"];
+            NSString *content = (markerStart.location != NSNotFound) ? [[line substringFromIndex:markerStart.location + 3] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] : @"";
+            
+            NSUInteger hash = [content hash];
+            UIColor *blockColor = blockColors[hash % blockColors.count];
+            [attributed addAttribute:NSForegroundColorAttributeName value:blockColor range:NSMakeRange(blockStart, blockEnd - blockStart)];
+        }
     }
 
     // Set the attributed text (preserve selection)
