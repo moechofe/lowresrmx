@@ -92,14 +92,14 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
             self?.applyFontSize()
         }
 
-        // Observe index mode changes
-        NotificationCenter.default.addObserver(
-            forName: .EditorIndexModeDidChange,
-            object: nil,
-            queue: .main
-        ) { [weak self] _ in
-            self?.indexSideBar.update()
-        }
+        // // Observe index mode changes
+        // NotificationCenter.default.addObserver(
+        //     forName: .EditorIndexModeDidChange,
+        //     object: nil,
+        //     queue: .main
+        // ) { [weak self] _ in
+        //     self?.indexSideBar.update()
+        // }
 
         // Observe syntax highlighting changes
         NotificationCenter.default.addObserver(forName: .EditorSyntaxHighlightingDidChange, object: nil, queue: .main) { [weak self] _ in
@@ -213,7 +213,7 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
         if document.documentState == .normal {
             updateStats()
         }
-        indexSideBar.update()
+        indexSideBar.update() // already done
         sourceCodeTextView.flashScrollIndicators()
 
         if didAddProject {

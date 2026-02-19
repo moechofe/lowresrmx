@@ -10,8 +10,47 @@ import UIKit
 
 // NOTE: These should ideally be in a shared location if used across multiple files.
 extension Notification.Name {
+    
     static let EditorIndexModeDidChange = Notification.Name("EditorIndexModeDidChange")
     static let EditorSyntaxHighlightingDidChange = Notification.Name("EditorSyntaxHighlightingDidChange")
+}
+
+@objc enum LabelIndexMode: Int, CaseIterable {
+    case noLabels
+    case allLabels
+    case labelsWithoutUnderscore
+
+    var title: String {
+        switch self {
+        case .noLabels: return "No Labels"
+        case .allLabels: return "All Labels"
+        case .labelsWithoutUnderscore: return "Labels w/o '_'"
+        }
+    }
+}
+
+@objc enum ProcedureIndexMode: Int, CaseIterable {
+    case noProcedures
+    case allProcedures
+
+    var title: String {
+        switch self {
+        case .noProcedures: return "No Subs"
+        case .allProcedures: return "All Subs"
+        }
+    }
+}
+
+@objc enum MarkerIndexMode: Int, CaseIterable {
+    case noMarkers
+    case manualMarkers
+
+    var title: String {
+        switch self {
+        case .noMarkers: return "No Markers"
+        case .manualMarkers: return "Manual Markers"
+        }
+    }
 }
 
 @objc enum IndexMode: Int, CaseIterable {
@@ -31,13 +70,13 @@ extension Notification.Name {
 @objc enum SyntaxHighlightingMode: Int, CaseIterable {
     case none
     case syntax
-    case manualMarkers
+    // case manualMarkers
 
     var title: String {
         switch self {
         case .none: return "None"
         case .syntax: return "Syntax"
-        case .manualMarkers: return "Markers"
+        // case .manualMarkers: return "Markers"
         }
     }
 }
@@ -48,7 +87,10 @@ class EditorSettingViewController: UIViewController {
     private let previewLabel = UILabel()
     private let sizeLabel = UILabel()
 
-    private let indexModeSegmentedControl = UISegmentedControl()
+    private let labelIndexModeSegmentedControl = UISegmentedControl()
+    private let procedureIndexModeSegmentedControl = UISegmentedControl()
+    private let markerIndexModeSegmentedControl = UISegmentedControl()
+    // private let indexModeSegmentedControl = UISegmentedControl()
     private let syntaxHighlightingSegmentedControl = UISegmentedControl()
 
     private let minFontSize: CGFloat = 8.0
@@ -94,19 +136,88 @@ class EditorSettingViewController: UIViewController {
         slider.translatesAutoresizingMaskIntoConstraints = false
         containerView.addSubview(slider)
 
-        // Index Mode
-        let indexModeLabel = UILabel()
-        indexModeLabel.text = "Index Markers"
-        indexModeLabel.font = UIFont.systemFont(ofSize: 17, weight: .semibold)
-        indexModeLabel.translatesAutoresizingMaskIntoConstraints = false
-        containerView.addSubview(indexModeLabel)
+        // Label Index Mode
+        let labelIndexModeLabel = UILabel()
+        labelIndexModeLabel.text = "Index Labels"
+        labelIndexModeLabel.font = UIFont.systemFont(ofSize: 17, weight: .semibold)
+        labelIndexModeLabel.translatesAutoresizingMaskIntoConstraints = false
+        containerView.addSubview(labelIndexModeLabel)
 
-        for (index, mode) in IndexMode.allCases.enumerated() {
-            indexModeSegmentedControl.insertSegment(withTitle: mode.title, at: index, animated: false)
+        for (index, mode) in LabelIndexMode.allCases.enumerated() {
+            labelIndexModeSegmentedControl.insertSegment(withTitle: mode.title, at: index, animated: false)
         }
-        indexModeSegmentedControl.selectedSegmentIndex = AppController.shared.editorIndexMode.rawValue
-        indexModeSegmentedControl.translatesAutoresizingMaskIntoConstraints = false
-        containerView.addSubview(indexModeSegmentedControl)
+        labelIndexModeSegmentedControl.selectedSegmentIndex = AppController.shared.editorLabelIndexMode.rawValue
+        labelIndexModeSegmentedControl.translatesAutoresizingMaskIntoConstraints = false
+        containerView.addSubview(labelIndexModeSegmentedControl)
+
+        let labelIndexModeDescriptionLabel = UILabel()
+        labelIndexModeDescriptionLabel.text = "Which label declarations appear in the sidebar index."
+        labelIndexModeDescriptionLabel.font = UIFont.systemFont(ofSize: 14)
+        labelIndexModeDescriptionLabel.textColor = UIColor.secondaryLabel
+        labelIndexModeDescriptionLabel.numberOfLines = 0
+        labelIndexModeDescriptionLabel.translatesAutoresizingMaskIntoConstraints = false
+        containerView.addSubview(labelIndexModeDescriptionLabel)
+
+        // Procedure Index Mode
+        let procedureIndexModeLabel = UILabel()
+        procedureIndexModeLabel.text = "Index Subs"
+        procedureIndexModeLabel.font = UIFont.systemFont(ofSize: 17, weight: .semibold)
+        procedureIndexModeLabel.translatesAutoresizingMaskIntoConstraints = false
+        containerView.addSubview(procedureIndexModeLabel)
+
+        for (index, mode) in ProcedureIndexMode.allCases.enumerated() {
+            procedureIndexModeSegmentedControl.insertSegment(withTitle: mode.title, at: index, animated: false)
+        }
+        procedureIndexModeSegmentedControl.selectedSegmentIndex = AppController.shared.editorProcedureIndexMode.rawValue
+        procedureIndexModeSegmentedControl.translatesAutoresizingMaskIntoConstraints = false
+        containerView.addSubview(procedureIndexModeSegmentedControl)
+
+        let prodecureIndexModeDescriptionLabel = UILabel()
+        prodecureIndexModeDescriptionLabel.text = "Show subroutine declarations in the sidebar index."
+        prodecureIndexModeDescriptionLabel.font = UIFont.systemFont(ofSize: 14)
+        prodecureIndexModeDescriptionLabel.textColor = UIColor.secondaryLabel
+        prodecureIndexModeDescriptionLabel.numberOfLines = 0
+        prodecureIndexModeDescriptionLabel.translatesAutoresizingMaskIntoConstraints = false
+        containerView.addSubview(prodecureIndexModeDescriptionLabel)
+
+        // Marker Index Mode
+        let markerIndexModeLabel = UILabel()
+        markerIndexModeLabel.text = "Index Markers"
+        markerIndexModeLabel.font = UIFont.systemFont(ofSize: 17, weight: .semibold)
+        markerIndexModeLabel.translatesAutoresizingMaskIntoConstraints = false
+        containerView.addSubview(markerIndexModeLabel)
+
+        for (index, mode) in MarkerIndexMode.allCases.enumerated() {
+            markerIndexModeSegmentedControl.insertSegment(withTitle: mode.title, at: index, animated: false)
+        }
+        markerIndexModeSegmentedControl.selectedSegmentIndex = AppController.shared.editorManualMarkerIndexMode.rawValue
+        markerIndexModeSegmentedControl.translatesAutoresizingMaskIntoConstraints = false
+        containerView.addSubview(markerIndexModeSegmentedControl)
+
+        let markerIndexModeDescriptionLabel = UILabel()
+        markerIndexModeDescriptionLabel.text = """
+Show manual markers in the sidebar index.
+Manual markers start by 3 single quotes (''').
+"""
+        markerIndexModeDescriptionLabel.font = UIFont.systemFont(ofSize: 14)
+        markerIndexModeDescriptionLabel.textColor = UIColor.secondaryLabel
+        markerIndexModeDescriptionLabel.numberOfLines = 0
+        markerIndexModeDescriptionLabel.translatesAutoresizingMaskIntoConstraints = false
+        containerView.addSubview(markerIndexModeDescriptionLabel)
+
+        // // Index Mode
+        // let indexModeLabel = UILabel()
+        // indexModeLabel.text = "Index Markers"
+        // indexModeLabel.font = UIFont.systemFont(ofSize: 17, weight: .semibold)
+        // indexModeLabel.translatesAutoresizingMaskIntoConstraints = false
+        // containerView.addSubview(indexModeLabel)
+
+        // for (index, mode) in IndexMode.allCases.enumerated() {
+        //     indexModeSegmentedControl.insertSegment(withTitle: mode.title, at: index, animated: false)
+        // }
+        // indexModeSegmentedControl.selectedSegmentIndex = AppController.shared.editorIndexMode.rawValue
+        // indexModeSegmentedControl.translatesAutoresizingMaskIntoConstraints = false
+        // containerView.addSubview(indexModeSegmentedControl)
 
         // Text Coloration
         let syntaxHighlightingLabel = UILabel()
@@ -175,15 +286,51 @@ class EditorSettingViewController: UIViewController {
             slider.leadingAnchor.constraint(equalTo: containerView.leadingAnchor),
             slider.trailingAnchor.constraint(equalTo: containerView.trailingAnchor),
 
-            indexModeLabel.topAnchor.constraint(equalTo: slider.bottomAnchor, constant: 30),
-            indexModeLabel.leadingAnchor.constraint(equalTo: containerView.leadingAnchor),
-            indexModeLabel.trailingAnchor.constraint(equalTo: containerView.trailingAnchor),
+            labelIndexModeLabel.topAnchor.constraint(equalTo: slider.bottomAnchor, constant: 30),
+            labelIndexModeLabel.leadingAnchor.constraint(equalTo: containerView.leadingAnchor),
+            labelIndexModeLabel.trailingAnchor.constraint(equalTo: containerView.trailingAnchor),
 
-            indexModeSegmentedControl.topAnchor.constraint(equalTo: indexModeLabel.bottomAnchor, constant: 8),
-            indexModeSegmentedControl.leadingAnchor.constraint(equalTo: containerView.leadingAnchor),
-            indexModeSegmentedControl.trailingAnchor.constraint(equalTo: containerView.trailingAnchor),
+            labelIndexModeSegmentedControl.topAnchor.constraint(equalTo: labelIndexModeLabel.bottomAnchor, constant: 8),
+            labelIndexModeSegmentedControl.leadingAnchor.constraint(equalTo: containerView.leadingAnchor),
+            labelIndexModeSegmentedControl.trailingAnchor.constraint(equalTo: containerView.trailingAnchor),
 
-            syntaxHighlightingLabel.topAnchor.constraint(equalTo: indexModeSegmentedControl.bottomAnchor, constant: 20),
+            labelIndexModeDescriptionLabel.topAnchor.constraint(equalTo: labelIndexModeSegmentedControl.bottomAnchor, constant: 8),
+            labelIndexModeDescriptionLabel.leadingAnchor.constraint(equalTo: containerView.leadingAnchor),
+            labelIndexModeDescriptionLabel.trailingAnchor.constraint(equalTo: containerView.trailingAnchor),
+
+            procedureIndexModeLabel.topAnchor.constraint(equalTo: labelIndexModeDescriptionLabel.bottomAnchor, constant: 20),
+            procedureIndexModeLabel.leadingAnchor.constraint(equalTo: containerView.leadingAnchor),
+            procedureIndexModeLabel.trailingAnchor.constraint(equalTo: containerView.trailingAnchor),
+
+            procedureIndexModeSegmentedControl.topAnchor.constraint(equalTo: procedureIndexModeLabel.bottomAnchor, constant: 8),
+            procedureIndexModeSegmentedControl.leadingAnchor.constraint(equalTo: containerView.leadingAnchor),
+            procedureIndexModeSegmentedControl.trailingAnchor.constraint(equalTo: containerView.trailingAnchor),
+
+            prodecureIndexModeDescriptionLabel.topAnchor.constraint(equalTo: procedureIndexModeSegmentedControl.bottomAnchor, constant: 8),
+            prodecureIndexModeDescriptionLabel.leadingAnchor.constraint(equalTo: containerView.leadingAnchor),
+            prodecureIndexModeDescriptionLabel.trailingAnchor.constraint(equalTo: containerView.trailingAnchor),
+
+            markerIndexModeLabel.topAnchor.constraint(equalTo: prodecureIndexModeDescriptionLabel.bottomAnchor, constant: 20),
+            markerIndexModeLabel.leadingAnchor.constraint(equalTo: containerView.leadingAnchor),
+            markerIndexModeLabel.trailingAnchor.constraint(equalTo: containerView.trailingAnchor),
+
+            markerIndexModeSegmentedControl.topAnchor.constraint(equalTo: markerIndexModeLabel.bottomAnchor, constant: 8),
+            markerIndexModeSegmentedControl.leadingAnchor.constraint(equalTo: containerView.leadingAnchor),
+            markerIndexModeSegmentedControl.trailingAnchor.constraint(equalTo: containerView.trailingAnchor),
+            
+            markerIndexModeDescriptionLabel.topAnchor.constraint(equalTo: markerIndexModeSegmentedControl.bottomAnchor, constant: 8),
+            markerIndexModeDescriptionLabel.leadingAnchor.constraint(equalTo: containerView.leadingAnchor),
+            markerIndexModeDescriptionLabel.trailingAnchor.constraint(equalTo: containerView.trailingAnchor),
+
+            // indexModeLabel.topAnchor.constraint(equalTo: markerIndexModeDescriptionLabel.bottomAnchor, constant: 20),
+            // indexModeLabel.leadingAnchor.constraint(equalTo: containerView.leadingAnchor),
+            // indexModeLabel.trailingAnchor.constraint(equalTo: containerView.trailingAnchor),
+
+            // indexModeSegmentedControl.topAnchor.constraint(equalTo: indexModeLabel.bottomAnchor, constant: 8),
+            // indexModeSegmentedControl.leadingAnchor.constraint(equalTo: containerView.leadingAnchor),
+            // indexModeSegmentedControl.trailingAnchor.constraint(equalTo: containerView.trailingAnchor),
+
+            syntaxHighlightingLabel.topAnchor.constraint(equalTo: markerIndexModeDescriptionLabel.bottomAnchor, constant: 20),
             syntaxHighlightingLabel.leadingAnchor.constraint(equalTo: containerView.leadingAnchor),
             syntaxHighlightingLabel.trailingAnchor.constraint(equalTo: containerView.trailingAnchor),
 
@@ -223,14 +370,29 @@ class EditorSettingViewController: UIViewController {
         let newFontSize = CGFloat(slider.value)
         if newFontSize != AppController.shared.editorFontSize {
             AppController.shared.editorFontSize = newFontSize
-            NotificationCenter.default.post(name: .EditorFontSizeDidChange, object: nil)
+            // NotificationCenter.default.post(name: .EditorFontSizeDidChange, object: nil)
         }
 
-        let newIndexMode = IndexMode(rawValue: indexModeSegmentedControl.selectedSegmentIndex) ?? .manualMarkers
-        if newIndexMode != AppController.shared.editorIndexMode {
-            AppController.shared.editorIndexMode = newIndexMode
-            NotificationCenter.default.post(name: .EditorIndexModeDidChange, object: nil)
+        let newLabelIndexMode = LabelIndexMode(rawValue: labelIndexModeSegmentedControl.selectedSegmentIndex) ?? .allLabels
+        if newLabelIndexMode != AppController.shared.editorLabelIndexMode {
+            AppController.shared.editorLabelIndexMode = newLabelIndexMode
         }
+
+        let newProcedureIndexMode = ProcedureIndexMode(rawValue: procedureIndexModeSegmentedControl.selectedSegmentIndex) ?? .allProcedures
+        if newProcedureIndexMode != AppController.shared.editorProcedureIndexMode {
+            AppController.shared.editorProcedureIndexMode = newProcedureIndexMode
+        }
+
+        let newMarkerIndexMode = MarkerIndexMode(rawValue: markerIndexModeSegmentedControl.selectedSegmentIndex) ?? .noMarkers
+        if newMarkerIndexMode != AppController.shared.editorManualMarkerIndexMode {
+            AppController.shared.editorManualMarkerIndexMode = newMarkerIndexMode
+        }
+
+        // let newIndexMode = IndexMode(rawValue: indexModeSegmentedControl.selectedSegmentIndex) ?? .manualMarkers
+        // if newIndexMode != AppController.shared.editorIndexMode {
+        //     AppController.shared.editorIndexMode = newIndexMode
+        //     NotificationCenter.default.post(name: .EditorIndexModeDidChange, object: nil)
+        // }
 
         let newSyntaxMode = SyntaxHighlightingMode(rawValue: syntaxHighlightingSegmentedControl.selectedSegmentIndex) ?? .syntax
         if newSyntaxMode != AppController.shared.editorSyntaxHighlightingMode {

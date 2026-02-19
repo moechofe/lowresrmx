@@ -24,6 +24,9 @@ extension Notification.Name {
     private static let userIdKey = "userIdKey"
     private static let usernameKey = "usernameKey"
     private static let editorFontSizeKey = "editorFontSize"
+    private static let editorLabelIndexModeKey = "editorLabelIndexMode"
+    private static let editorProcedureIndexModeKey = "editorProcedureIndexMode"
+    private static let editorManualMarkerIndexModeKey = "editorManualMarkerIndexMode"
     private static let editorIndexModeKey = "editorIndexMode"
     private static let editorSyntaxHighlightingModeKey = "editorSyntaxHighlightingMode"
 
@@ -97,6 +100,36 @@ extension Notification.Name {
         }
         set {
             UserDefaults.standard.set(Double(newValue), forKey: AppController.editorFontSizeKey)
+        }
+    }
+
+    var editorLabelIndexMode: LabelIndexMode {
+        get {
+            let value = UserDefaults.standard.integer(forKey: AppController.editorLabelIndexModeKey)
+            return LabelIndexMode(rawValue: value) ?? .allLabels
+        }
+        set {
+            UserDefaults.standard.set(newValue.rawValue, forKey: AppController.editorLabelIndexModeKey)
+        }
+    }
+
+    var editorProcedureIndexMode: ProcedureIndexMode {
+        get {
+            let value = UserDefaults.standard.integer(forKey: AppController.editorProcedureIndexModeKey)
+            return ProcedureIndexMode(rawValue: value) ?? .allProcedures
+        }
+        set {
+            UserDefaults.standard.set(newValue.rawValue, forKey: AppController.editorProcedureIndexModeKey)
+        }
+    }
+
+    var editorManualMarkerIndexMode: MarkerIndexMode {
+        get {
+            let value = UserDefaults.standard.integer(forKey: AppController.editorManualMarkerIndexModeKey)
+            return MarkerIndexMode(rawValue: value) ?? .noMarkers
+        }
+        set {
+            UserDefaults.standard.set(newValue.rawValue, forKey: AppController.editorManualMarkerIndexModeKey)
         }
     }
 
