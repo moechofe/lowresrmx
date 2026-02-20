@@ -85,6 +85,7 @@ enum ErrorCode {
     ErrorAutomaticPauseNotDisabled,
     ErrorNotAllowedOutsideOfInterrupt,
 		ErrorUserDeviceDiskFull,
+		ErrorRandAddressNotSeeded,
 
 		ErrorMax
 };
@@ -208,11 +209,11 @@ struct IORegisters
 #if __APPLE__
 #include <TargetConditionals.h>
 #if TARGET_OS_IPHONE
-#define BGR 1
+#define ABGR 1
 #endif
 #endif
 #if __ANDROID__
-#define BGR 0
+#define ABGR 0
 #endif
 #if __linux__
 #endif
@@ -512,11 +513,18 @@ void audio_renderAudio(struct Core *core, int16_t *output, int numSamples, int o
 #define VM_SIZE 0x20000
 #define VM_MAX 0x1FFFF
 #define PERSISTENT_RAM_SIZE 6144
+#define MAX_MEMORY_TRACK 32
 
 struct DmaRegisters {
   uint16_t src_addr; // Support RAM or ROM
   uint16_t bytes_count;
   uint16_t dst_addr; // Only RAM
+};
+
+struct MemoryTrack {
+	uint16_t address;
+	int read:1;
+	int write:1;
 };
 
 struct Core;
@@ -569,10 +577,12 @@ struct Machine {
 
 struct MachineInternals {
     struct AudioInternals audioInternals;
+		struct MemoryTrack memoryTracks[MAX_MEMORY_TRACK];
+    int energySavingTimer;
+		int numMemoryTracks;
     bool hasAccessedPersistent;
     bool hasChangedPersistent;
     bool isEnergySaving;
-    int energySavingTimer;
 		bool planeColor0IsOpaque[4];
 };
 
@@ -586,6 +596,8 @@ bool machine_poke_short(struct Core *core, int address, int16_t value);
 bool machine_poke_long(struct Core *core, int address, int32_t value);
 void machine_enableAudio(struct Core *core);
 void machine_suspendEnergySaving(struct Core *core, int numUpdates);
+void machine_trackMemory(struct Core *core, uint16_t address, bool read, bool write);
+void machine_checkForTrakedMemoryAccess(struct Core *core, uint16_t address, bool read, bool write);
 
 #endif /* machine_h */
 //
@@ -1756,6 +1768,7 @@ struct Interpreter
 	int cpuLoadTimer;
 
 	bool compat;
+	bool simulatedKeyboardOn;
 
 	struct Tokenizer tokenizer;
 
@@ -1803,6 +1816,7 @@ void itp_deinit(struct Core *core);
 struct CoreError itp_compileProgram(struct Core *core, const char *sourceCode);
 void itp_runProgram(struct Core *core);
 void itp_runInterrupt(struct Core *core, enum InterruptType type);
+enum ErrorCode itp_evaluateCommand(struct Core *core);
 void itp_didFinishVBL(struct Core *core);
 void itp_endProgram(struct Core *core);
 void itp_freeProgram(struct Core *core);
@@ -1912,6 +1926,7 @@ struct ControlsInfo {
 		enum HapticMode hapticMode;
     bool isAudioEnabled;
 		bool isInputState;
+		bool isCompatMode;
 };
 
 struct CoreDelegate {
@@ -1929,7 +1944,7 @@ struct CoreDelegate {
     /** Called when a disk data entry was tried to be saved, but the disk is full */
     void (*diskDriveIsFull)(void *context, struct DataManager *diskDataManager);
 
-    /** Called when keyboard or gamepad settings changed */
+    /** Called when keyboard settings changed */
     void (*controlsDidChange)(void *context, struct ControlsInfo controlsInfo);
 
     /** Called when persistent RAM will be accessed the first time */
@@ -2313,6 +2328,7 @@ extern uint8_t DefaultCharacters[][16];
 
 struct Core;
 
+void trigger_debugger(struct Core *core);
 void overlay_debugger(struct Core *core);
 
 #endif /* overlay_debugger_h */
@@ -2365,3 +2381,25 @@ int log_add_fp(FILE *fp, int level);
 void log_log(int level, const char *file, int line, const char *fmt, ...);
 
 #endif
+
+#ifndef SL_GLOBMATCH_H
+#define SL_GLOBMATCH_H 1
+
+#ifdef  __cplusplus
+extern "C" {
+#endif
+
+  
+#ifndef SL_GLOBMATCH_NEGATE
+#define SL_GLOBMATCH_NEGATE '^'       /* std char set negation char */
+#endif
+
+
+int sl_globmatch(char *string, char *pattern);
+
+
+#ifdef  __cplusplus
+}
+#endif
+
+#endif /* globmatch.h  */

@@ -15,6 +15,7 @@
 #include "default_characters.h"
 #include "overlay_debugger.h"
 #include "log.h"
+#include "globmatch.h"
 
 #include <stdio.h>
 

@@ -282,12 +282,12 @@ void core_willRunProgram(struct Core *core, long secondsSincePowerOn)
 void core_update(struct Core *core, struct CoreInput *input)
 {
 	core_handleInput(core, input);
+	overlay_updateLayout(core, input);
 	itp_runInterrupt(core, InterruptTypeVBL);
 	prtclib_interrupt(core, &core->interpreter->particlesLib);
 	itp_runProgram(core);
 	prtclib_update(core, &core->interpreter->particlesLib);
 	itp_didFinishVBL(core);
-	overlay_updateLayout(core, input);
 	overlay_draw(core, true);
 	audio_bufferRegisters(core);
 }
@@ -501,6 +501,7 @@ void delegate_controlsDidChange(struct Core *core)
         }
         info.isAudioEnabled = core->machineInternals->audioInternals.audioEnabled;
 				info.hapticMode = core->machine->ioRegisters.haptic;
+				info.isCompatMode = core->interpreter->compat;
 				core->machine->ioRegisters.haptic=0;
         core->delegate->controlsDidChange(core->delegate->context, info);
     }
@@ -1026,10 +1027,6 @@ void data_setEntry(struct DataManager *manager, int index, const char *comment, 
  */
 
 #include "core.h"
-
-#ifndef SL_GLOBMATCH_NEGATE
-#define SL_GLOBMATCH_NEGATE '^'       /* std char set negation char */
-#endif
 
 #define SL_GLOBMATCH_TRUE 1
 #define SL_GLOBMATCH_FALSE 0
@@ -2513,6 +2510,7 @@ enum ErrorCode cmd_TINT(struct Core *core)
 
 #include "core.h"
 #include "core.h"
+#include "core.h"
 #include <assert.h>
 
 enum ErrorCode cmd_END(struct Core *core)
@@ -3515,6 +3513,25 @@ enum ErrorCode cmd_COMPAT(struct Core *core)
 	if (interpreter->pass == PassRun)
 	{
 		interpreter->compat = true;
+		delegate_controlsDidChange(core);
+	}
+
+	return itp_endOfCommand(interpreter);
+}
+
+enum ErrorCode cmd_PAUSE(struct Core *core)
+{
+	struct Interpreter *interpreter = core->interpreter;
+
+	if (interpreter->pass == PassRun && interpreter->mode == ModeInterrupt)
+		return ErrorNotAllowedInInterrupt;
+
+	// PAUSE
+	++interpreter->pc;
+
+	if (interpreter->pass == PassRun)
+	{
+		trigger_debugger(core);
 	}
 
 	return itp_endOfCommand(interpreter);
@@ -3727,47 +3744,47 @@ enum ErrorCode cmd_LOAD(struct Core *core)
     // LOAD
     struct Token *startPc = interpreter->pc;
     ++interpreter->pc;
-
+    
     // file value
     struct TypedValue fileValue = itp_evaluateNumericExpression(core, 0, MAX_ENTRIES - 1);
     if (fileValue.type == ValueTypeError) return fileValue.v.errorCode;
-
+    
     // comma
     if (interpreter->pc->type != TokenComma) return ErrorSyntax;
     ++interpreter->pc;
-
+    
     // address value
     struct TypedValue addressValue = itp_evaluateExpression(core, TypeClassNumeric);
     if (addressValue.type == ValueTypeError) return addressValue.v.errorCode;
-
+    
     int maxLength = 0;
     int offset = 0;
     if (interpreter->pc->type == TokenComma)
     {
         ++interpreter->pc;
-
+        
         // max length value
         struct TypedValue maxLengthValue = itp_evaluateNumericExpression(core, 0, DATA_SIZE);
         if (maxLengthValue.type == ValueTypeError) return maxLengthValue.v.errorCode;
         maxLength = maxLengthValue.v.floatValue;
-
+        
         if (interpreter->pc->type == TokenComma)
         {
             ++interpreter->pc;
-
+            
             // offset value
             struct TypedValue offsetValue = itp_evaluateNumericExpression(core, 0, DATA_SIZE);
             if (offsetValue.type == ValueTypeError) return offsetValue.v.errorCode;
             offset = offsetValue.v.floatValue;
         }
     }
-
+    
     if (interpreter->pass == PassRun)
     {
         bool pokeFailed = false;
         bool ready = disk_loadFile(core, fileValue.v.floatValue, addressValue.v.floatValue, maxLength, offset, &pokeFailed);
         if (pokeFailed) return ErrorIllegalMemoryAccess;
-
+        
         interpreter->exitEvaluation = true;
         if (!ready)
         {
@@ -3777,7 +3794,7 @@ enum ErrorCode cmd_LOAD(struct Core *core)
             return ErrorNone;
         }
     }
-
+    
     return itp_endOfCommand(interpreter);
 }
 
@@ -3785,19 +3802,19 @@ enum ErrorCode cmd_SAVE(struct Core *core)
 {
     struct Interpreter *interpreter = core->interpreter;
     if (interpreter->pass == PassRun && interpreter->mode == ModeInterrupt) return ErrorNotAllowedInInterrupt;
-
+    
     // SAVE
     struct Token *startPc = interpreter->pc;
     ++interpreter->pc;
-
+    
     // file value
     struct TypedValue fileValue = itp_evaluateNumericExpression(core, 0, MAX_ENTRIES - 1);
     if (fileValue.type == ValueTypeError) return fileValue.v.errorCode;
-
+    
     // comma
     if (interpreter->pc->type != TokenComma) return ErrorSyntax;
     ++interpreter->pc;
-
+    
     // comment value
     struct TypedValue commentValue = itp_evaluateExpression(core, TypeClassString);
     if (commentValue.type == ValueTypeError) return commentValue.v.errorCode;
@@ -3805,7 +3822,7 @@ enum ErrorCode cmd_SAVE(struct Core *core)
     // comma
     if (interpreter->pc->type != TokenComma) return ErrorSyntax;
     ++interpreter->pc;
-
+    
     // address value
     struct TypedValue addressValue = itp_evaluateExpression(core, TypeClassNumeric);
     if (addressValue.type == ValueTypeError) return addressValue.v.errorCode;
@@ -3813,11 +3830,11 @@ enum ErrorCode cmd_SAVE(struct Core *core)
     // comma
     if (interpreter->pc->type != TokenComma) return ErrorSyntax;
     ++interpreter->pc;
-
+    
     // length value
     struct TypedValue lengthValue = itp_evaluateNumericExpression(core, 1, DATA_SIZE);
     if (lengthValue.type == ValueTypeError) return lengthValue.v.errorCode;
-
+    
     if (interpreter->pass == PassRun)
     {
         int address = addressValue.v.floatValue;
@@ -3828,7 +3845,7 @@ enum ErrorCode cmd_SAVE(struct Core *core)
         }
         bool ready = disk_saveFile(core, fileValue.v.floatValue, commentValue.v.stringValue->chars, address, length);
         rcstring_release(commentValue.v.stringValue);
-
+        
         interpreter->exitEvaluation = true;
         if (!ready)
         {
@@ -3838,7 +3855,7 @@ enum ErrorCode cmd_SAVE(struct Core *core)
             return ErrorNone;
         }
     }
-
+    
     return itp_endOfCommand(interpreter);
 }
 
@@ -3846,15 +3863,15 @@ enum ErrorCode cmd_FILES(struct Core *core)
 {
     struct Interpreter *interpreter = core->interpreter;
     if (interpreter->pass == PassRun && interpreter->mode == ModeInterrupt) return ErrorNotAllowedInInterrupt;
-
+    
     // FILES
     struct Token *startPc = interpreter->pc;
     ++interpreter->pc;
-
+    
     if (interpreter->pass == PassRun)
     {
         bool ready = disk_prepare(core);
-
+        
         interpreter->exitEvaluation = true;
         if (!ready)
         {
@@ -3864,21 +3881,21 @@ enum ErrorCode cmd_FILES(struct Core *core)
             return ErrorNone;
         }
     }
-
+    
     return itp_endOfCommand(interpreter);
 }
 
 struct TypedValue fnc_FILE(struct Core *core)
 {
     struct Interpreter *interpreter = core->interpreter;
-
+    
     // FILE$
     ++interpreter->pc;
-
+    
     // bracket open
     if (interpreter->pc->type != TokenBracketOpen) return val_makeError(ErrorSyntax);
     ++interpreter->pc;
-
+    
     // file value
     struct TypedValue fileValue = itp_evaluateNumericExpression(core, 0, MAX_ENTRIES - 1);
     if (fileValue.type == ValueTypeError) return fileValue;
@@ -3889,14 +3906,14 @@ struct TypedValue fnc_FILE(struct Core *core)
 
     struct TypedValue resultValue;
     resultValue.type = ValueTypeString;
-
+    
     if (interpreter->pass == PassRun)
     {
         if (core->diskDrive->dataManager.data == NULL) return val_makeError(ErrorDirectoryNotLoaded);
-
+        
         int index = fileValue.v.floatValue;
         struct DataEntry *entry = &core->diskDrive->dataManager.entries[index];
-
+        
         size_t len = strlen(entry->comment);
         resultValue.v.stringValue = rcstring_new(entry->comment, len);
         rcstring_retain(resultValue.v.stringValue);
@@ -3908,32 +3925,32 @@ struct TypedValue fnc_FILE(struct Core *core)
 struct TypedValue fnc_FSIZE(struct Core *core)
 {
     struct Interpreter *interpreter = core->interpreter;
-
+    
     // FSIZE
     ++interpreter->pc;
-
+    
     // bracket open
     if (interpreter->pc->type != TokenBracketOpen) return val_makeError(ErrorSyntax);
     ++interpreter->pc;
-
+    
     // file value
     struct TypedValue fileValue = itp_evaluateNumericExpression(core, 0, MAX_ENTRIES - 1);
     if (fileValue.type == ValueTypeError) return fileValue;
-
+    
     // bracket close
     if (interpreter->pc->type != TokenBracketClose) return val_makeError(ErrorSyntax);
     ++interpreter->pc;
-
+    
     struct TypedValue resultValue;
     resultValue.type = ValueTypeFloat;
-
+    
     if (interpreter->pass == PassRun)
     {
         if (core->diskDrive->dataManager.data == NULL) return val_makeError(ErrorDirectoryNotLoaded);
-
+        
         int index = fileValue.v.floatValue;
         struct DataEntry *entry = &core->diskDrive->dataManager.entries[index];
-
+        
         resultValue.v.floatValue = entry->length;
     }
     return resultValue;
@@ -3960,6 +3977,8 @@ struct TypedValue fnc_FSIZE(struct Core *core)
 
 #include "core.h"
 #include "core.h"
+#include "core.h"
+#include "core.h"
 #include <assert.h>
 
 enum ErrorCode cmd_KEYBOARD(struct Core *core)
@@ -3978,6 +3997,9 @@ enum ErrorCode cmd_KEYBOARD(struct Core *core)
 	if (interpreter->pass == PassRun)
 	{
 		core->machine->ioRegisters.status.keyboardVisible = (type == TokenON);
+#ifdef SIMULATED_KEYBOARD
+		interpreter->simulatedKeyboardOn = (type == TokenON);
+#endif
 		delegate_controlsDidChange(core);
 	}
 
@@ -3996,35 +4018,13 @@ struct TypedValue fnc_KEYBOARD(struct Core *core)
 
 	if (interpreter->pass == PassRun)
 	{
+#ifdef SIMULATED_KEYBOARD
+		value.v.floatValue = interpreter->simulatedKeyboardOn ? 154 : 0;
+#else
 		value.v.floatValue = core->machine->ioRegisters.keyboardHeight;
+#endif
 	}
 	return value;
-}
-
-enum ErrorCode cmd_PAUSE(struct Core *core)
-{
-	struct Interpreter *interpreter = core->interpreter;
-
-	if (interpreter->pass == PassRun && interpreter->mode == ModeInterrupt)
-		return ErrorNotAllowedInInterrupt;
-
-	// PAUSE
-	++interpreter->pc;
-
-	if (interpreter->pass == PassRun)
-	{
-		core->interpreter->debug = true;
-		interpreter->state = StatePaused;
-		// overlay_updateState(core);
-		core->machine->ioRegisters.key = 0;
-		struct TextLib *lib = &core->overlay->textLib;
-		txtlib_printText(lib, "\nDebugger\n");
-		txtlib_printText(lib,   "========\n\n");
-		txtlib_printText(lib, "  'PAUSE' to resume\n\n");
-		txtlib_scrollWindowIfNeeded(lib);
-	}
-
-	return itp_endOfCommand(interpreter);
 }
 
 struct TypedValue fnc_TOUCH(struct Core *core)
@@ -4669,6 +4669,12 @@ struct TypedValue fnc_RND(struct Core *core) {
 
       if (interpreter->pass == PassRun) {
         int addr = yValue.v.floatValue;
+				// validate memory address
+				enum ErrorCode errorCode;
+				int32_t test = machine_peek_long(core, addr, &errorCode);
+				if (errorCode > 0) return val_makeError(ErrorIllegalMemoryAccess);
+				if (!machine_poke_long(core, addr, test)) return val_makeError(ErrorIllegalMemoryAccess);
+				if (test==0) return val_makeError(ErrorRandAddressNotSeeded);
         rng = (pcg32_random_t *)((uint8_t *)(core->machine) + addr);
       }
     }
@@ -8234,6 +8240,7 @@ const char *ErrorStrings[] = {
     "Automatic Pause Not Disabled",
     "Not Allowed Outside Of Interrupt",
 		"Not enough storage space on the device",
+		"Random using address not needed",
 
 		"Out of error"
 };
@@ -8303,7 +8310,6 @@ struct CoreError err_noCoreError(void)
 struct TypedValue itp_evaluateExpressionLevel(struct Core *core, int level);
 struct TypedValue itp_evaluatePrimaryExpression(struct Core *core);
 struct TypedValue itp_evaluateFunction(struct Core *core);
-enum ErrorCode itp_evaluateCommand(struct Core *core);
 
 void itp_init(struct Core *core)
 {
@@ -8409,6 +8415,7 @@ struct CoreError itp_compileProgram(struct Core *core, const char *sourceCode)
 	interpreter->isSingleLineIf = false;
 	interpreter->lastFrameIOStatus.value = 0;
 	interpreter->seed = 0;
+	interpreter->simulatedKeyboardOn = false;
 
 	memset(&interpreter->textLib, 0, sizeof(struct TextLib));
 	memset(&interpreter->spritesLib, 0, sizeof(struct SpritesLib));
@@ -10102,82 +10109,82 @@ bool is_equal_approx(float x, float y)
 enum ErrorCode itp_evaluateSimpleAttributes(struct Core *core, struct SimpleAttributes *attrs)
 {
     struct Interpreter *interpreter = core->interpreter;
-
+    
     attrs->pal = -1;
     attrs->flipX = -1;
     attrs->flipY = -1;
     attrs->prio = -1;
     attrs->size = -1;
-
+    
     bool changed = false;
     bool checked = false;
-
+    
     do
     {
         checked = false;
-
+        
         // PAL
         if (interpreter->pc->type == TokenPAL && attrs->pal == -1)
         {
             ++interpreter->pc;
-
+            
             struct TypedValue value = itp_evaluateNumericExpression(core, 0, NUM_PALETTES - 1);
             if (value.type == ValueTypeError) return value.v.errorCode;
             attrs->pal = value.v.floatValue;
-
+            
             checked = true;
         }
-
+        
         // FLIP
         if (interpreter->pc->type == TokenFLIP && attrs->flipX == -1)
         {
             ++interpreter->pc;
-
+            
             struct TypedValue fxValue = itp_evaluateNumericExpression(core, -1, 1);
             if (fxValue.type == ValueTypeError) return fxValue.v.errorCode;
             attrs->flipX = fxValue.v.floatValue ? 1 : 0;
-
+            
             // comma
             if (interpreter->pc->type != TokenComma) return ErrorSyntax;
             ++interpreter->pc;
-
+            
             struct TypedValue fyValue = itp_evaluateNumericExpression(core, -1, 1);
             if (fyValue.type == ValueTypeError) return fyValue.v.errorCode;
             attrs->flipY = fyValue.v.floatValue ? 1 : 0;
-
+            
             checked = true;
         }
-
+        
         // PRIO
         if (interpreter->pc->type == TokenPRIO && attrs->prio == -1)
         {
             ++interpreter->pc;
-
+            
             struct TypedValue value = itp_evaluateNumericExpression(core, -1, 1);
             if (value.type == ValueTypeError) return value.v.errorCode;
             attrs->prio = value.v.floatValue ? 1 : 0;
-
+            
             checked = true;
         }
-
+        
         // SIZE
         if (interpreter->pc->type == TokenSIZE && attrs->size == -1)
         {
             ++interpreter->pc;
-
+            
             struct TypedValue value = itp_evaluateNumericExpression(core, 0, 3);
             if (value.type == ValueTypeError) return value.v.errorCode;
             attrs->size = value.v.floatValue;
-
+            
             checked = true;
         }
-
+        
         changed |= checked;
     }
     while (checked);
-
+    
     if (!changed) return ErrorSyntax;
-
+    
     return ErrorNone;
 }
 
@@ -10188,44 +10195,44 @@ struct TypedValue itp_evaluateCharAttributes(struct Core *core, union CharacterA
     {
         // bracket open
         interpreter->pc++;
-
+        
         // obsolete syntax!
-
+        
         union CharacterAttributes resultAttr = oldAttr;
-
+        
         struct TypedValue palValue = {ValueTypeNull, 0};
         struct TypedValue fxValue = {ValueTypeNull, 0};
         struct TypedValue fyValue = {ValueTypeNull, 0};
         struct TypedValue priValue = {ValueTypeNull, 0};
         struct TypedValue sValue = {ValueTypeNull, 0};
-
+        
         // palette value
         palValue = itp_evaluateOptionalNumericExpression(core, 0, NUM_PALETTES - 1);
         if (palValue.type == ValueTypeError) return palValue;
-
+        
         // comma
         if (interpreter->pc->type == TokenComma)
         {
             ++interpreter->pc;
-
+            
             // flip x value
             fxValue = itp_evaluateOptionalNumericExpression(core, -1, 1);
             if (fxValue.type == ValueTypeError) return fxValue;
-
+            
             // comma
             if (interpreter->pc->type == TokenComma)
             {
                 ++interpreter->pc;
-
+                
                 // flip y value
                 fyValue = itp_evaluateOptionalNumericExpression(core, -1, 1);
                 if (fyValue.type == ValueTypeError) return fyValue;
-
+                
                 // comma
                 if (interpreter->pc->type == TokenComma)
                 {
                     ++interpreter->pc;
-
+                    
                     // priority value
                     priValue = itp_evaluateOptionalNumericExpression(core, -1, 1);
                     if (priValue.type == ValueTypeError) return priValue;
@@ -10234,7 +10241,7 @@ struct TypedValue itp_evaluateCharAttributes(struct Core *core, union CharacterA
                     if (interpreter->pc->type == TokenComma)
                     {
                         ++interpreter->pc;
-
+                        
                         // size value
                         sValue = itp_evaluateOptionalNumericExpression(core, 0, 3);
                         if (sValue.type == ValueTypeError) return sValue;
@@ -10242,11 +10249,11 @@ struct TypedValue itp_evaluateCharAttributes(struct Core *core, union CharacterA
                 }
             }
         }
-
+        
         // bracket close
         if (interpreter->pc->type != TokenBracketClose) return val_makeError(ErrorSyntax);
         interpreter->pc++;
-
+        
         if (interpreter->pass == PassRun)
         {
             if (palValue.type != ValueTypeNull) resultAttr.palette = palValue.v.floatValue;
@@ -10255,7 +10262,7 @@ struct TypedValue itp_evaluateCharAttributes(struct Core *core, union CharacterA
             if (priValue.type != ValueTypeNull) resultAttr.priority = priValue.v.floatValue;
             if (sValue.type != ValueTypeNull) resultAttr.size = sValue.v.floatValue;
         }
-
+        
         struct TypedValue resultValue;
         resultValue.type = ValueTypeFloat;
         resultValue.v.floatValue = resultAttr.value;
@@ -10274,9 +10281,9 @@ struct TypedValue itp_evaluateCharAttributes(struct Core *core, union CharacterA
 //     {
 //         // bracket open
 //         interpreter->pc++;
-
+        
 //         union DisplayAttributes resultAttr = oldAttr;
-
+        
 //         struct TypedValue sValue = {ValueTypeNull, 0};
 //         struct TypedValue bg0Value = {ValueTypeNull, 0};
 //         struct TypedValue bg1Value = {ValueTypeNull, 0};
@@ -10295,7 +10302,7 @@ struct TypedValue itp_evaluateCharAttributes(struct Core *core, union CharacterA
 //         if (interpreter->pc->type == TokenComma)
 //         {
 //             ++interpreter->pc;
-
+            
 //             // bg0 value
 //             bg0Value = itp_evaluateOptionalNumericExpression(core, -1, 1);
 //             if (bg0Value.type == ValueTypeError) return bg0Value;
@@ -10304,25 +10311,25 @@ struct TypedValue itp_evaluateCharAttributes(struct Core *core, union CharacterA
 //             if (interpreter->pc->type == TokenComma)
 //             {
 //                 ++interpreter->pc;
-
+                
 //                 // bg1 value
 //                 bg1Value = itp_evaluateOptionalNumericExpression(core, -1, 1);
 //                 if (bg1Value.type == ValueTypeError) return bg1Value;
-
+                
 //                 // comma
 //                 if (interpreter->pc->type == TokenComma)
 //                 {
 //                     ++interpreter->pc;
-
+                    
 //                     // bg0 cell size value
 //                     bg0SizeValue = itp_evaluateOptionalNumericExpression(core, -1, 1);
 //                     if (bg0SizeValue.type == ValueTypeError) return bg0SizeValue;
-
+                    
 //                     // comma
 //                     if (interpreter->pc->type == TokenComma)
 //                     {
 //                         ++interpreter->pc;
-
+                        
 //                         // bg1 cell size value
 //                         bg1SizeValue = itp_evaluateOptionalNumericExpression(core, -1, 1);
 //                         if (bg1SizeValue.type == ValueTypeError) return bg1SizeValue;
@@ -10331,7 +10338,7 @@ struct TypedValue itp_evaluateCharAttributes(struct Core *core, union CharacterA
 //                         if (interpreter->pc->type == TokenComma)
 //                         {
 //                             ++interpreter->pc;
-
+                            
 //                             // bg2 cell size value
 //                             bg1SizeValue = itp_evaluateOptionalNumericExpression(core, -1, 1);
 //                             if (bg1SizeValue.type == ValueTypeError) return bg1SizeValue;
@@ -10340,11 +10347,11 @@ struct TypedValue itp_evaluateCharAttributes(struct Core *core, union CharacterA
 //                 }
 //             }
 //         }
-
+        
 //         // bracket close
 //         if (interpreter->pc->type != TokenBracketClose) return val_makeError(ErrorSyntax);
 //         interpreter->pc++;
-
+        
 //         if (interpreter->pass == PassRun)
 //         {
 //             if (sValue.type != ValueTypeNull) resultAttr.spritesEnabled = sValue.v.floatValue;
@@ -10353,7 +10360,7 @@ struct TypedValue itp_evaluateCharAttributes(struct Core *core, union CharacterA
 //             if (bg0SizeValue.type != ValueTypeNull) resultAttr.planeACellSize = bg0SizeValue.v.floatValue;
 //             if (bg1SizeValue.type != ValueTypeNull) resultAttr.planeBCellSize = bg1SizeValue.v.floatValue;
 //         }
-
+        
 //         struct TypedValue resultValue;
 //         resultValue.type = ValueTypeFloat;
 //         resultValue.v.floatValue = resultAttr.value;
@@ -10372,52 +10379,52 @@ struct TypedValue itp_evaluateLFOAttributes(struct Core *core, union LFOAttribut
     {
         // bracket open
         interpreter->pc++;
-
+        
         union LFOAttributes resultAttr = oldAttr;
-
+        
         struct TypedValue wavValue = {ValueTypeNull, 0};
         struct TypedValue invValue = {ValueTypeNull, 0};
         struct TypedValue envValue = {ValueTypeNull, 0};
         struct TypedValue triValue = {ValueTypeNull, 0};
-
+        
         // wave value
         wavValue = itp_evaluateOptionalNumericExpression(core, 0, 3);
         if (wavValue.type == ValueTypeError) return wavValue;
-
+        
         // comma
         if (interpreter->pc->type == TokenComma)
         {
             ++interpreter->pc;
-
+            
             // invert value
             invValue = itp_evaluateOptionalNumericExpression(core, -1, 1);
             if (invValue.type == ValueTypeError) return invValue;
-
+            
             // comma
             if (interpreter->pc->type == TokenComma)
             {
                 ++interpreter->pc;
-
+                
                 // env mode value
                 envValue = itp_evaluateOptionalNumericExpression(core, -1, 1);
                 if (envValue.type == ValueTypeError) return envValue;
-
+                
                 // comma
                 if (interpreter->pc->type == TokenComma)
                 {
                     ++interpreter->pc;
-
+                    
                     // trigger value
                     triValue = itp_evaluateOptionalNumericExpression(core, -1, 1);
                     if (triValue.type == ValueTypeError) return triValue;
                 }
             }
         }
-
+        
         // bracket close
         if (interpreter->pc->type != TokenBracketClose) return val_makeError(ErrorSyntax);
         interpreter->pc++;
-
+        
         if (interpreter->pass == PassRun)
         {
             if (wavValue.type != ValueTypeNull) resultAttr.wave = wavValue.v.floatValue;
@@ -10425,7 +10432,7 @@ struct TypedValue itp_evaluateLFOAttributes(struct Core *core, union LFOAttribut
             if (envValue.type != ValueTypeNull) resultAttr.envMode = envValue.v.floatValue;
             if (triValue.type != ValueTypeNull) resultAttr.trigger = triValue.v.floatValue;
         }
-
+        
         struct TypedValue resultValue;
         resultValue.type = ValueTypeFloat;
         resultValue.v.floatValue = resultAttr.value;
@@ -10635,6 +10642,8 @@ const char *lineString(const char *source, int pos)
     }
     if (end > start)
     {
+				while (*start==' ') start++;
+				while (*end==' ') end--;
         size_t len = end - start;
         char *buffer = malloc(len + 1);
         if (buffer)
@@ -13813,6 +13822,7 @@ void audio_renderAudioBuffer(struct AudioRegisters *lifeRegisters, struct AudioR
 #include "core.h"
 #include "core.h"
 #include "core.h"
+#include "core.h"
 
 void machine_init(struct Core *core)
 {
@@ -13854,7 +13864,7 @@ int machine_peek(struct Core *core, int address)
 	if (
 		 (address < 0) // outside mapped memory
 	|| (address > VM_MAX) // outside mapped memory
-	|| (address >= 0x0f800 && address < 0x0fb00) // nothing 1
+	// || (address >= 0x0f800 && address < 0x0fb00) // nothing 1
 	|| (address >= 0x0fefc && address < 0x0ff00) // nothing 2
 	|| (address >= 0x0ff34 && address < 0x0ff40) // nothing 3
 	|| (address >= 0x0ff8c && address < 0x0ffa0) // nothing 4
@@ -13864,7 +13874,7 @@ int machine_peek(struct Core *core, int address)
 		return -1;
 	}
 
-	else if (address >= 0x0e000 && address < 0x0f800) // persistent
+	else if (address >= 0x0e000 && address < 0x0fb00) // persistent
 	{
 		if (!core->machineInternals->hasAccessedPersistent)
 		{
@@ -13887,6 +13897,8 @@ int machine_peek(struct Core *core, int address)
 
 	else if (address == 0x0ffae) return core->interpreter->numLabelStackItems & 0xff;
 	else if (address == 0x0ffaf) return (core->interpreter->numLabelStackItems >> 8) & 0xff;
+
+	machine_checkForTrakedMemoryAccess(core, (uint16_t)address, true, false);
 
 	// read byte
 	return *(uint8_t *)((uint8_t *)core->machine + address);
@@ -13919,7 +13931,7 @@ bool machine_poke(struct Core *core, int address, int value)
 	if (
 		 (address < 0) // outside mapped memory
 	|| (address >= 0x10000) // ROM
-	|| (address >= 0x0f800 && address < 0x0fb00) // nothing 1
+	// || (address >= 0x0f800 && address < 0x0fb00) // nothing 1
 	|| (address >= 0x0fefc && address < 0x0ff00) // nothing 2
 	|| (address >= 0x0ff34 && address < 0x0ff40) // nothing 3
 	|| (address >= 0x0ff88 && address < 0x0ffa0) // nothing 4
@@ -13929,7 +13941,7 @@ bool machine_poke(struct Core *core, int address, int value)
 	{
 		return false;
 	}
-	else if (address >= 0x0e000 && address < 0x0f800) // persistent
+	else if (address >= 0x0e000 && address < 0x0fb00) // persistent
 	{
 		if (!core->machineInternals->hasAccessedPersistent)
 		{
@@ -13943,6 +13955,8 @@ bool machine_poke(struct Core *core, int address, int value)
 		if (address == 0xff87) {} // haptic
 		else return false; // read only
 	}
+
+	machine_checkForTrakedMemoryAccess(core, (uint16_t)address, false, true);
 
 	// write byte
 	*(uint8_t *)((uint8_t *)core->machine + address) = value & 0xFF;
@@ -13992,6 +14006,46 @@ void machine_suspendEnergySaving(struct Core *core, int numUpdates)
 	if (core->machineInternals->energySavingTimer < numUpdates)
 	{
 		core->machineInternals->energySavingTimer = numUpdates;
+	}
+}
+
+void machine_trackMemory(struct Core *core, uint16_t address, bool read, bool write)
+{
+	// modify existing track
+	for (int i = 0; i < core->machineInternals->numMemoryTracks; i++)
+	{
+		struct MemoryTrack *track = &core->machineInternals->memoryTracks[i];
+		if (track->address == address)
+		{
+			if (read) track->read = true;
+			if (write) track->write = true;
+			return;
+		}
+	}
+	// add new track
+	if (core->machineInternals->numMemoryTracks < MAX_MEMORY_TRACK)
+	{
+		struct MemoryTrack *track = &core->machineInternals->memoryTracks[core->machineInternals->numMemoryTracks++];
+		track->address = address;
+		track->read = read;
+		track->write = write;
+	}
+}
+
+void machine_checkForTrakedMemoryAccess(struct Core *core, uint16_t address, bool read, bool write)
+{
+	if (core->interpreter->state == StatePaused) return;
+	for (int i = 0; i < core->machineInternals->numMemoryTracks; i++)
+	{
+		struct MemoryTrack *track = &core->machineInternals->memoryTracks[i];
+		if (track->address == address)
+		{
+			if ((read && track->read) || (write && track->write))
+			{
+				trigger_debugger(core);
+			}
+			return;
+		}
 	}
 }
 //
@@ -14193,6 +14247,9 @@ void video_renderSprites(struct SpriteRegisters *reg, struct VideoRam *ram, int 
     }
 }
 
+// static int old_width=-1,old_height;
+// static bool old_compat;
+
 void video_renderScreen(struct Core *core, uint32_t *outputRGB)
 {
     uint8_t scanlineBuffer[SCREEN_WIDTH];
@@ -14206,20 +14263,45 @@ void video_renderScreen(struct Core *core, uint32_t *outputRGB)
     struct IORegisters *io = &core->machine->ioRegisters;
 		struct MachineInternals *mi = core->machineInternals;
 
+		int sw=io->shown.width!=0?io->shown.width:SCREEN_WIDTH;
+    int sh=io->shown.height!=0?io->shown.height:SCREEN_HEIGHT;
+
     int width=SCREEN_WIDTH;
     int height=SCREEN_HEIGHT;
     int skip_before=0;
     int skip_after=0;
+		int overflow_x=0;
     if (core->interpreter->compat)
     {
-        int sw=io->shown.width!=0?io->shown.width:SCREEN_WIDTH;
-        int sh=io->shown.height!=0?io->shown.height:SCREEN_HEIGHT;
+				if(sw<160) { overflow_x=160-sw; sw=160; }
+				if(sh<128) sh=128;
+
         width=160;
         height=128;
         skip_before=(sw-width)/2;
-        skip_after=SCREEN_WIDTH-width-skip_before;
-        outputPixel+=SCREEN_WIDTH*(sh-height)/2;
+        skip_after=sw-width-skip_before;
+
+				// draw original lowresnx background color
+				int count=(sh-height)/2*sw;
+#if ABGR
+				// AABBGGRR
+				while(count-->0) *outputPixel++=0xff4c6001;
+#else
+				while(count-->0) *outputPixel++=0xff01604c;
+#endif
     }
+
+		// if(old_width!=io->shown.width || old_height!=io->shown.height || old_compat!=core->interpreter->compat)
+		// {
+		// 		old_width=io->shown.width;
+		// 		old_height=io->shown.height;
+		// 		old_compat=core->interpreter->compat;
+		// 		printf("sw=%d, sh=%d, skip_before=%d, skip_after=%d\n", sw, sh, skip_before, skip_after);
+		// 		printf("io->shown.width=%d, io->shown.height=%d\n", io->shown.width, io->shown.height);
+		// 		printf("width=%d, height=%d\n", width, height);
+		// 		printf("overflow_x=%d\n",overflow_x);
+		// }
+
     for (int y = 0; y<height; y++)
     {
         reg->rasterLine = y;
@@ -14282,16 +14364,24 @@ void video_renderScreen(struct Core *core, uint32_t *outputRGB)
         // overlay
         video_renderPlane((struct Character *)overlayCharacters, &core->overlay->plane, 0, y, 0, 0, OVERLAY_FLAG, scanlineBuffer, 0, 0, 0);
 
-        outputPixel+=skip_before;
+				if (core->interpreter->compat)
+				{
+#if ABGR
+				for(int i=0;i<skip_before;++i) *outputPixel++=0xff4c6001;
+#else
+				for(int i=0;i<skip_before;++i) *outputPixel++=0xff01604c;
+#endif
+				}
+        // outputPixel+=skip_before;
 
-        for (int x = 0; x < width; x++)
+        for (int x = 0; x < width/* - overflow_x*/; x++)
         {
             int colorIndex = scanlineBuffer[x] & 0x1F;
             int color = (scanlineBuffer[x] & OVERLAY_FLAG) ? overlayColors[colorIndex] : skip ? 0 : creg->colors[colorIndex];
 
             uint32_t c = better_palette[color & 63];
 
-#if BGR
+#if ABGR
             uint32_t a=(c>>24)&0xff;
             uint32_t r=(c>>16)&0xff;
             uint32_t g=(c>>8)&0xff;
@@ -14302,8 +14392,40 @@ void video_renderScreen(struct Core *core, uint32_t *outputRGB)
             ++outputPixel;
         }
 
-        outputPixel+=skip_after;
+				if (core->interpreter->compat)
+				{
+#if ABGR
+				for(int i=0;i<skip_after;++i) *outputPixel++=0xff4c6001;
+#else
+				for(int i=0;i<skip_after;++i) *outputPixel++=0xff01604c;
+#endif
+				}
+        // outputPixel+=skip_after;
     }
+
+		if (core->interpreter->compat)
+		{
+			uint32_t *endPixel=outputRGB+sw*sh;
+			while(outputPixel<endPixel)
+			{
+	#if ABGR
+				*outputPixel++=0xff4c6001;
+	#else
+				*outputPixel++=0xff01604c;
+	#endif
+			}
+		}
+
+		// Debug, draw red diagonal line
+		// uint32_t *ptr=outputRGB;
+		// uint32_t *end=outputRGB+sw*sh;
+
+		// // uint32_t x=0,y=0;
+		// while(ptr<end)
+		// {
+		// 	*ptr=0xff0000ff;
+		// 	ptr+=sw+1;
+		// }
 }
 //
 // Copyright 2017-2018 Timo Kloss
@@ -14329,6 +14451,7 @@ void video_renderScreen(struct Core *core, uint32_t *outputRGB)
 #include "core.h"
 #include "core.h"
 #include "core.h"
+#include "core.h"
 #include <math.h>
 #include <string.h>
 
@@ -14344,7 +14467,7 @@ void overlay_init(struct Core *core)
 	lib->windowX = 0;
 	lib->windowY = 0;
 	lib->windowWidth = 216 / 8;
-	lib->windowHeight = 384 / 8;
+	lib->windowHeight = 384 / 8 - 1; // give space for message
 	lib->cursorX = 0;
 	lib->cursorY = 0;
 }
@@ -14353,11 +14476,15 @@ void overlay_updateLayout(struct Core *core, struct CoreInput *input)
 {
 	struct IORegisters *io = &core->machine->ioRegisters;
 	struct TextLib *lib = &core->overlay->textLib;
-	int b = io->safe.bottom > io->keyboardHeight ? io->safe.bottom : io->keyboardHeight;
+	int k = io->keyboardHeight;
+#ifdef SIMULATED_KEYBOARD
+	if (core->interpreter->simulatedKeyboardOn) k = 154;
+#endif
+	int b = io->safe.bottom > k ? io->safe.bottom : k;
 	lib->windowX = (io->safe.left + 7) / 8;
 	lib->windowY = (io->safe.top + 7) / 8;
 	lib->windowWidth = io->shown.width / 8 - (io->safe.left + 7) / 8 - (io->safe.right + 7) / 8;
-	lib->windowHeight = io->shown.height / 8 - (io->safe.top + 7) / 8 - (b + 7) / 8;
+	lib->windowHeight = io->shown.height / 8 - (io->safe.top + 7) / 8 - (b + 7) / 8 - 1; // give space for message
 }
 
 void overlay_reset(struct Core *core)
@@ -14585,7 +14712,9 @@ uint8_t overlayCharacters[] = {
 #include "core.h"
 #include "core.h"
 #include "core.h"
+#include "core.h"
 #include <string.h>
+#include <stdlib.h>
 
 void new_line(struct Core *core)
 {
@@ -14645,8 +14774,13 @@ void print_command_line(struct Core *core)
 	struct TextLib *lib = &core->overlay->textLib;
 	struct Overlay *overlay = core->overlay;
 
+	int w = lib->windowWidth - 1;
+	char buffer[27];
+	strncpy(buffer, overlay->commandLine, w);
+	buffer[w] = 0;
+
 	txtlib_setCells(lib, 0, lib->windowY + lib->cursorY, 27, lib->windowY + lib->cursorY, 0);
-	txtlib_writeText(lib, overlay->commandLine, lib->windowX, lib->windowY + lib->cursorY);
+	txtlib_writeText(lib, buffer, lib->windowX, lib->windowY + lib->cursorY);
 }
 
 struct SimpleVariable *get_simple_var(struct Core *core, const char *looking_name)
@@ -14685,7 +14819,93 @@ int get_address(struct Core *core, struct Token *t)
 	return address;
 }
 
-void process_command_line(struct Core *core)
+static void print_float(struct Core *core, union Value value)
+{
+	print_value(core, ValueTypeFloat, &value);
+	struct RCString *rcstring = rcstring_new(NULL, 16);
+	if (rcstring)
+	{
+		int width = 0;
+		int x = value.floatValue;
+		if (x < 0)
+		{
+			long int i = pow(16, width > 0 ? width : 16) - 1;
+			x = (unsigned int)x & i;
+		}
+		snprintf(rcstring->chars, 17, "%0*X", width, x);
+		txtlib_printText(&core->overlay->textLib, "  $");
+		txtlib_printText(&core->overlay->textLib, rcstring->chars);
+		new_line(core);
+		rcstring_release(rcstring);
+	}
+}
+
+static void print_line_of_code(struct Core *core, int sourcePosition, const char cursor)
+{
+	int w = core->overlay->textLib.windowWidth - 1;
+	const char *line = lineString(core->interpreter->sourceCode, sourcePosition);
+	if (line)
+	{
+		char buffer[27];
+		sprintf(buffer, "%c ", cursor);
+		strncpy(buffer + 2, line, w - 2);
+		buffer[26] = 0;
+		txtlib_printText(&core->overlay->textLib, buffer);
+		txtlib_printText(&core->overlay->textLib, "\n");
+		free((void *)line);
+	}
+}
+
+static void print_code(struct Core *core)
+{
+	struct Interpreter *interpreter = core->interpreter;
+	struct Token *pc = interpreter->pc;
+	const char *sourceCode = interpreter->sourceCode;
+	struct TextLib *textLib = &core->overlay->textLib;
+
+	if (pc->type == TokenUndefined)
+		return;
+
+	int next = pc->sourcePosition;
+
+	// make sure the first line do not start by a \n
+	while (sourceCode[next] == '\n')
+		++next;
+
+	int last = next - 1, prev = -1;
+
+	// reverse skip whitespace
+	while (sourceCode[last] == '\n' || sourceCode[last] == ' ')
+		--last;
+
+	// look up for previous line
+	while (last > 0 && sourceCode[last - 1] != '\n')
+		--last;
+
+	// there is more line above
+	if (last > 0)
+	{
+		prev = last - 1;
+		while (sourceCode[prev] == '\n' || sourceCode[prev] == ' ')
+			--prev;
+		while (prev > 0 && sourceCode[prev - 1] != '\n')
+			--prev;
+	}
+
+	if (prev >= 0)
+		print_line_of_code(core, prev, ' ');
+	if (last >= 0 && sourceCode[last] != '\0')
+		print_line_of_code(core, last, '>');
+	if (next >= 0 && sourceCode[next] != '\0')
+		print_line_of_code(core, next, ' ');
+
+	txtlib_printText(textLib, "\n");
+	txtlib_scrollWindowIfNeeded(textLib);
+}
+
+static bool autoNext = false;
+
+static void process_command_line(struct Core *core)
 {
 	struct Tokenizer toks;
 	struct CoreError err;
@@ -14711,7 +14931,12 @@ void process_command_line(struct Core *core)
 				print_value(core, ValueTypeNull, &simple->v);
 			// read simple variable
 			else if (simple && t->type == TokenEol)
-				print_value(core, simple->type, &simple->v);
+			{
+				if (simple->type == ValueTypeFloat)
+					print_float(core, simple->v);
+				else
+					print_value(core, simple->type, &simple->v);
+			}
 			// write simple variable
 			else if (simple && t->type == TokenEq)
 			{
@@ -14762,7 +14987,12 @@ void process_command_line(struct Core *core)
 				union Value *value = var_getArrayValue(core->interpreter, array, &indices[0]);
 				// read array item
 				if (t->type == TokenEol)
-					print_value(core, array->type, value);
+				{
+					if (array->type == ValueTypeFloat)
+						print_float(core, *value);
+					else
+						print_value(core, array->type, value);
+				}
 				// write array item
 				else if (t->type == TokenEq)
 				{
@@ -14803,7 +15033,7 @@ void process_command_line(struct Core *core)
 		// list variables
 		else if (t->type == TokenDIM)
 		{
-			char filter[SYMBOL_NAME_SIZE+2] = "*";
+			char filter[SYMBOL_NAME_SIZE + 2] = "*";
 			int pagination = 0;
 			t = &toks.tokens[i++];
 			if (t->type == TokenIdentifier || t->type == TokenStringIdentifier)
@@ -14812,7 +15042,8 @@ void process_command_line(struct Core *core)
 				strcat(filter, "*");
 				t = &toks.tokens[i++];
 			}
-			if (t->type == TokenFloat && t->floatValue >= 1) pagination = (int)t->floatValue;
+			if (t->type == TokenFloat && t->floatValue >= 1)
+				pagination = (int)t->floatValue;
 			struct Tokenizer *tokenizer = &core->interpreter->tokenizer;
 			int canPrint = (core->overlay->textLib.windowHeight - 3);
 			int printed = 0;
@@ -14836,14 +15067,14 @@ void process_command_line(struct Core *core)
 					pagination--;
 					printed = 0;
 				}
-				if (simple && pagination == 0 && sl_globmatch(tokenizer->symbols[i].name, filter)>0)
+				if (simple && pagination == 0 && sl_globmatch(tokenizer->symbols[i].name, filter) > 0)
 				{
 					txtlib_printText(&core->overlay->textLib, "  ");
 					txtlib_printText(&core->overlay->textLib, tokenizer->symbols[i].name);
 					new_line(core);
 					printed++;
 				}
-				else if (array && pagination == 0 && sl_globmatch(tokenizer->symbols[i].name, filter)>0)
+				else if (array && pagination == 0 && sl_globmatch(tokenizer->symbols[i].name, filter) > 0)
 				{
 					txtlib_printText(&core->overlay->textLib, "  ");
 					txtlib_printText(&core->overlay->textLib, tokenizer->symbols[i].name);
@@ -14885,7 +15116,7 @@ void process_command_line(struct Core *core)
 				struct TypedValue value;
 				value.type = ValueTypeFloat;
 				value.v.floatValue = peek;
-				print_value(core, ValueTypeFloat, &value.v);
+				print_float(core, value.v);
 			}
 			// write memory
 			else if (t->type == TokenEq)
@@ -14911,26 +15142,79 @@ void process_command_line(struct Core *core)
 		else if (t->type == TokenTRACE)
 		{
 			char buffer[20];
-			for(int i=0; i<core->interpreter->numLabelStackItems; ++i)
+			int number = lineNumber(core->interpreter->sourceCode, core->interpreter->pc->sourcePosition) - 1;
+			sprintf(buffer, "  %d", number);
+			txtlib_printText(&core->overlay->textLib, buffer);
+			new_line(core);
+			for (int i = 0; i < core->interpreter->numLabelStackItems; ++i)
 			{
-				txtlib_printText(&core->overlay->textLib,"  ");
+				txtlib_printText(&core->overlay->textLib, "  ");
 
-				char *ptr=(char*)(&core->interpreter->sourceCode[core->interpreter->labelStackItems[i].token->sourcePosition-1]);
-				while((*ptr>='a' && *ptr<='z')
-				|| (*ptr>='A' && *ptr<='Z')
-				|| (*ptr>='0' && *ptr<='9')
-				|| *ptr=='_')
+				char *ptr = (char *)(&core->interpreter->sourceCode[core->interpreter->labelStackItems[i].token->sourcePosition - 1]);
+				while ((*ptr >= 'a' && *ptr <= 'z') || (*ptr >= 'A' && *ptr <= 'Z') || (*ptr >= '0' && *ptr <= '9') || *ptr == '_')
 				{
 					ptr--;
 				}
-				size_t len=&core->interpreter->sourceCode[core->interpreter->labelStackItems[i].token->sourcePosition-1]-ptr;
-				if(len>20) len=20;
-				buffer[len]='\0';
-				memcpy(&buffer,ptr+1,len);
-				txtlib_printText(&core->overlay->textLib,buffer);
+				size_t len = &core->interpreter->sourceCode[core->interpreter->labelStackItems[i].token->sourcePosition - 1] - ptr;
+				if (len > 20)
+					len = 20;
+				buffer[len] = '\0';
+				memcpy(&buffer, ptr + 1, len);
+				txtlib_printText(&core->overlay->textLib, buffer);
 				new_line(core);
 			}
 			new_line(core);
+		}
+
+		// track memory access
+		else if (t->type == TokenTRACK)
+		{
+			t = &toks.tokens[i++];
+			struct Token *addrToken;
+			if (t->type == TokenPEEK)
+				addrToken = &toks.tokens[i++];
+			else if (t->type == TokenPOKE)
+				addrToken = &toks.tokens[i++];
+			else
+			{
+				txtlib_printText(&core->overlay->textLib, "  syntax error");
+				new_line(core);
+				return;
+			}
+			if (addrToken->type != TokenFloat)
+			{
+				txtlib_printText(&core->overlay->textLib, "  syntax error");
+				new_line(core);
+				return;
+			}
+			int address = (int)addrToken->floatValue;
+			if (address < 0 || address >= 0x10000)
+			{
+				txtlib_printText(&core->overlay->textLib, "  out of bounds");
+				new_line(core);
+				return;
+			}
+			machine_trackMemory(core,
+													address,
+													t->type == TokenPEEK ? true : false,
+													t->type == TokenPOKE ? true : false);
+		}
+
+		else if (t->type == TokenNEXT)
+		{
+			enum ErrorCode errorCode = ErrorNone;
+			errorCode = itp_evaluateCommand(core);
+
+			if (errorCode != ErrorNone)
+			{
+				itp_endProgram(core);
+				delegate_interpreterDidFail(core, err_makeCoreError(errorCode, core->interpreter->pc->sourcePosition));
+			}
+			else
+			{
+				print_code(core);
+				autoNext = true;
+			}
 		}
 
 		else
@@ -14942,6 +15226,21 @@ void process_command_line(struct Core *core)
 	}
 }
 
+void trigger_debugger(struct Core *core)
+{
+	core->interpreter->debug = true;
+	core->interpreter->state = StatePaused;
+	// overlay_updateState(core);
+	core->machine->ioRegisters.key = 0;
+	struct TextLib *lib = &core->overlay->textLib;
+	txtlib_printText(lib, "\nDebugger\n");
+	txtlib_printText(lib, "========\n\n");
+	txtlib_printText(lib, "  'PAUSE' to resume\n\n");
+	txtlib_printText(lib, "LINE  CODE\n");
+	txtlib_printText(lib, "\n");
+	print_code(core);
+}
+
 void overlay_debugger(struct Core *core)
 {
 	struct TextLib *lib = &core->overlay->textLib;
@@ -14950,6 +15249,14 @@ void overlay_debugger(struct Core *core)
 	struct ControlsInfo info;
 	info.keyboardMode = KeyboardModeOn;
 	core->delegate->controlsDidChange(core->delegate->context, info);
+
+	if (autoNext)
+	{
+		autoNext = false;
+		strncpy(overlay->commandLine, "NEXT", 4);
+		lib->cursorX = 4;
+		print_command_line(core);
+	}
 
 	char key = core->machine->ioRegisters.key;
 	if (key && lib->cursorX < 27)
