@@ -49,6 +49,8 @@ FFI_PLUGIN_EXPORT const char* runnerGetError(Runner*,enum ErrorCode);
 
 FFI_PLUGIN_EXPORT void runnerStart(Runner*,int scondsSincePowerOn,const char *originalDataDisk,size_t originalDataDiskSize);
 
+FFI_PLUGIN_EXPORT void runnerRenderAudio(Runner* runner, int16_t* output, int numSamples, int outputFrequency, int volume);
+
 FFI_PLUGIN_EXPORT struct CoreError runnerUpdate(Runner*,Input*);
 
 FFI_PLUGIN_EXPORT bool runnerShouldRender(Runner*);
