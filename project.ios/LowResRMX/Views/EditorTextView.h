@@ -16,6 +16,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, nullable) UIToolbar *keyboardToolbar;
 @property (weak, nullable) id<EditorTextViewDelegate> editorDelegate;
 
+// New method with range
+- (void)applyColoration:(NSInteger)mode inRange:(NSRange)range;
+// Old method for compatibility
 - (void)applyColoration:(NSInteger)mode;
 
 @end
