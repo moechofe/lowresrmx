@@ -19,48 +19,6 @@ void main() async {
   comPort = ComPort();
   await comPort.init();
   runApp(const MyApp());
-
-
-  final audioStream = getAudioStream();
-
-  //default init params: {int bufferMilliSec = 3000,
-  //                      int waitingBufferMilliSec = 100,
-  //                      int channels = 1,
-  //                      int sampleRate = 44100}
-  audioStream.init(channels: 2); //Call this from Flutter's State.initState() method
-
-  //For web platform, call this after user interaction
-  audioStream.resume();
-
-  // generating a stereo sine-wave PCM stream
-  const rate = 44100;
-  const freqL = 440;
-  const freqR = 660;
-  const dur = 10;
-
-  Float32List samples = Float32List(rate);
-
-  for (var t = 0; t < dur; t++) {
-    int pos = 0;
-
-    for (var i = 0; i < rate; i++) {
-      samples[pos++] = math.sin(2 * math.pi * ((i * freqL) % rate) / rate);
-      samples[pos++] = math.sin(2 * math.pi * ((i * freqR) % rate) / rate);
-
-      if (pos == samples.length) {
-        pos = 0;
-
-        // playback the generated PCM stream
-        audioStream.push(samples);
-      }
-    }
-    if (t > 0) {
-      await Future.delayed(const Duration(seconds: 1));
-    }
-  }
-
-  //Call this from Flutter's State.dispose()\
-  audioStream.uninit();
 }
 
 class MyApp extends StatefulWidget {
