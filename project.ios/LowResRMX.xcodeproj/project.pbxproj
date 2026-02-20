@@ -1459,6 +1459,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = "";
 				CODE_SIGN_ENTITLEMENTS = LowResRMX/LowResRMX.entitlements;
 				CURRENT_PROJECT_VERSION = 12;
+				DEVELOPMENT_TEAM = YWZ55H4QT9;
 				INFOPLIST_FILE = "$(SRCROOT)/LowResRMX/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "Game Creator";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
@@ -1482,6 +1483,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = "";
 				CODE_SIGN_ENTITLEMENTS = LowResRMX/LowResRMX.entitlements;
 				CURRENT_PROJECT_VERSION = 12;
+				DEVELOPMENT_TEAM = YWZ55H4QT9;
 				INFOPLIST_FILE = "$(SRCROOT)/LowResRMX/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "Game Creator";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
