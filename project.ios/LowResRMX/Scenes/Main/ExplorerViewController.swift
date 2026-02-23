@@ -233,17 +233,17 @@ class ExplorerViewController: UIViewController, UICollectionViewDelegateFlowLayo
         })
         alert.addAction(fontSizeAction)
 
+        let communityAction = UIAlertAction(title: "Community Website", style: .default, handler: { _ in
+            if let url = URL(string: AppDelegate.baseURL) {
+                UIApplication.shared.open(url, options: [:], completionHandler: nil)
+            }
+        })
+        alert.addAction(communityAction)
+
         let addAction = UIAlertAction(title: "Reinstall Default Programs", style: .default, handler: { [weak self] (action) in
             self?.onReinstallTapped()
         })
         alert.addAction(addAction)
-//
-//        if let username = AppController.shared.username {
-//            let logoutAction = UIAlertAction(title: "Log Out (\(username))", style: .default, handler: { [weak self] (action) in
-//                self?.logout()
-//            })
-//            alert.addAction(logoutAction)
-//        }
 
         let cancelAction = UIAlertAction(title:"Cancel", style: .cancel, handler: nil)
         alert.addAction(cancelAction)
