@@ -392,7 +392,7 @@
 	UIColor *commentColor = [UIColor colorWithRed:0.4667 green:0.4627 blue:0.4824 alpha:1.0];
 	UIColor *labelColor = [UIColor colorWithRed:0.7765 green:0.2745 blue:0.0000 alpha:1.0];
 	UIColor *subsColor = [UIColor colorWithRed:0.1020 green:0.3725 blue:0.7059 alpha:1.0];
-	
+
 	// End of code, start of DATA block
 	NSRegularExpression *endOfCodeRegex = [NSRegularExpression regularExpressionWithPattern:@"#[0-9]+:" options:0 error:nil];
 	NSArray<NSTextCheckingResult *> *endOfCodeMatches = [endOfCodeRegex matchesInString:text options:0 range:range];
@@ -489,7 +489,7 @@
 			[labelSet addObject:labelName.uppercaseString];
 		}
 	}
-	
+
 	// Colorize GOTO/GOSUB targets
 	NSRegularExpression *gotoRegex = [NSRegularExpression regularExpressionWithPattern: @"\\b(GOTO|GOSUB)\\s+([A-Za-z_][A-Za-z0-9_]*)\\b" options:NSRegularExpressionCaseInsensitive error:nil];
 	NSArray<NSTextCheckingResult *> *gotoMatches = [gotoRegex matchesInString:text options:0 range:range];
@@ -516,6 +516,53 @@
 			NSString *target = [text substringWithRange:labelRange];
 			if ([labelSet containsObject:target.uppercaseString]) {
 				[updates addObject:@{ @"range" : [NSValue valueWithRange:labelRange], @"color" : labelColor }];
+			}
+		}
+	}
+
+	// Colorize ON var GOTO/GOSUB label1, label2, ...
+	NSRegularExpression *onGotoGosubRegex = [NSRegularExpression regularExpressionWithPattern:@"\\bON\\s+[A-Za-z_][A-Za-z0-9_]*\\s+(GOTO|GOSUB)\\s+([A-Za-z_][A-Za-z0-9_]*(?:\\s*,\\s*[A-Za-z_][A-Za-z0-9_]*)*)" options:NSRegularExpressionCaseInsensitive error:nil];
+	NSArray<NSTextCheckingResult *> *onGotoGosubMatches = [onGotoGosubRegex matchesInString:text options:0 range:range];
+	for (NSTextCheckingResult *match in onGotoGosubMatches) {
+		BOOL inString = NO;
+		for (NSTextCheckingResult *stringMatch in stringMatches) {
+			if (NSIntersectionRange(match.range, stringMatch.range).length > 0) {
+				inString = YES;
+				break;
+			}
+		}
+		BOOL inComment = NO;
+		for (NSTextCheckingResult *remMatch in remMatches) {
+			if (NSIntersectionRange(match.range, remMatch.range).length > 0) {
+				inComment = YES;
+				break;
+			}
+		}
+		if (inString || inComment)
+			continue;
+		if (match.numberOfRanges > 2) {
+			NSRange labelsRange = [match rangeAtIndex:2];
+			NSString *labelsString = [text substringWithRange:labelsRange];
+			NSArray *labels = [labelsString componentsSeparatedByString:@","];
+			NSUInteger offset = labelsRange.location;
+			// Scan within labelsString, map to full text using labelsRange.location
+			NSUInteger localPos = 0;
+			for (NSString *label in labels) {
+				NSString *trimmedLabel = [label stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+				// Find the range of trimmedLabel in labelsString starting from localPos
+				NSRange searchRange = NSMakeRange(localPos, labelsString.length - localPos);
+				NSRange foundRange = [labelsString rangeOfString:trimmedLabel options:0 range:searchRange];
+				if (foundRange.location != NSNotFound) {
+					NSRange labelRange = NSMakeRange(labelsRange.location + foundRange.location, trimmedLabel.length);
+					if ([labelSet containsObject:trimmedLabel.uppercaseString]) {
+						[updates addObject:@{ @"range" : [NSValue valueWithRange:labelRange], @"color" : labelColor }];
+					}
+					localPos = foundRange.location + foundRange.length;
+				}
+				// Move past comma and whitespace
+				while (localPos < labelsString.length && ([[NSCharacterSet whitespaceCharacterSet] characterIsMember:[labelsString characterAtIndex:localPos]] || [labelsString characterAtIndex:localPos] == ',')) {
+					localPos++;
+				}
 			}
 		}
 	}
