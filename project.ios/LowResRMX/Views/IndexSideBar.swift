@@ -86,17 +86,60 @@ class IndexSideBar: UIControl {
             return
         }
         
-        let regex = try! NSRegularExpression(pattern: "\\A\\s*(\\S+?:\\s*|#\\d+?:.*?|SUB\\s.+?)\\Z", options: .caseInsensitive)
+        let regex: NSRegularExpression
+
+        let labelPart: String
+        switch AppController.shared.editorLabelIndexMode {
+        case .allLabels:
+            labelPart = "([^'#\\s]\\S+):"
+        case .labelsWithoutUnderscore:
+            labelPart = "([^'#\\s][^\\s:_]+):"
+        default:
+            labelPart = ""
+        }
+
+        let prodecurePart: String
+        switch AppController.shared.editorProcedureIndexMode {
+        case .allProcedures:
+            prodecurePart = "SUB\\s+([^\\s\\(]+)"
+        default:
+            prodecurePart = ""
+        }
+
+        let markerPart: String
+        switch AppController.shared.editorManualMarkerIndexMode {
+        case .manualMarkers:
+            markerPart = "'''(\\S+)"
+        default:
+            markerPart = ""
+        }
+
+        if (labelPart.isEmpty && prodecurePart.isEmpty && markerPart.isEmpty) {
+             self.numLines = 0
+             self.markers = []
+             self.shouldUpdateOnTouch = false
+             updateBarPositions()
+             return
+        }
+
+        regex = try! NSRegularExpression(pattern: "\\A\\s*(?:" + [labelPart, prodecurePart, markerPart].filter { !$0.isEmpty }.joined(separator: "|") + ")", options: .caseInsensitive)
         
         var markers = [IndexMarker]()
         var numLines = 0
         
         text.enumerateSubstrings(in: text.startIndex..<text.endIndex, options: .byLines) { (string, substringRange, enclosingRange, stop) in
             if let string = string {
-                let numMatches = regex.numberOfMatches(in: string, options: [], range: NSRange(location: 0, length: string.utf16.count))
-                if numMatches > 0 {
+                print("\(numLines): \(string)")
+                if let match = regex.firstMatch(in: string, options: [], range: NSRange(location: 0, length: string.utf16.count)) {
+                    var capturedLabel: String?
+                    for i in 1..<match.numberOfRanges {
+                        if let range = Range(match.range(at: i), in: string), !range.isEmpty {
+                            capturedLabel = String(string[range])
+                            break
+                        }
+                    }
                     let range = NSRange(enclosingRange, in: text)
-                    markers.append(IndexMarker(label: string, line: numLines, range: range))
+                    markers.append(IndexMarker(label: capturedLabel ?? string.trimmingCharacters(in: .whitespacesAndNewlines), line: numLines, range: range))
                 }
             }
             numLines += 1
@@ -218,7 +261,7 @@ class IndexSideBar: UIControl {
             label.clipsToBounds = true
 //            label.textColor = AppStyle.darkGrayColor()
 						label.textColor = UIColor.white
-            label.font = UIFont.systemFont(ofSize: 11)
+            label.font = UIFont.systemFont(ofSize: AppController.shared.editorFontSize * 0.7)
             label.textAlignment = .center
             label.text = marker.label
             label.sizeToFit()

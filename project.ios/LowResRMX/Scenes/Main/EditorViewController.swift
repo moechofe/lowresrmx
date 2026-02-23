@@ -72,6 +72,7 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
         //        }
 
         sourceCodeTextView.text = document.sourceCode ?? ""
+        (sourceCodeTextView)?.applyColoration(AppController.shared.editorSyntaxHighlightingMode.rawValue, in: NSMakeRange(0, sourceCodeTextView.text.count))
 
         // Apply font size setting
         applyFontSize()
@@ -89,6 +90,21 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
             queue: .main
         ) { [weak self] _ in
             self?.applyFontSize()
+        }
+
+        // // Observe index mode changes
+        // NotificationCenter.default.addObserver(
+        //     forName: .EditorIndexModeDidChange,
+        //     object: nil,
+        //     queue: .main
+        // ) { [weak self] _ in
+        //     self?.indexSideBar.update()
+        // }
+
+        // Observe syntax highlighting changes
+        NotificationCenter.default.addObserver(forName: .EditorSyntaxHighlightingDidChange, object: nil, queue: .main) { [weak self] _ in
+            // Re-apply text to trigger re-highlighting
+            self?.sourceCodeTextView.text = self?.document.sourceCode ?? ""
         }
 
         activityIndicatorView.isHidden = true
@@ -197,7 +213,7 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
         if document.documentState == .normal {
             updateStats()
         }
-        indexSideBar.update()
+        indexSideBar.update() // already done
         sourceCodeTextView.flashScrollIndicators()
 
         if didAddProject {
@@ -539,6 +555,7 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
 
     func projectDocumentContentDidUpdate(_ projectDocument: ProjectDocument) {
         sourceCodeTextView.text = projectDocument.sourceCode ?? ""
+        (sourceCodeTextView)?.applyColoration(AppController.shared.editorSyntaxHighlightingMode.rawValue, in: NSMakeRange(0, sourceCodeTextView.text.count))
         indexSideBar.update()
         updateStats()
     }
@@ -574,6 +591,12 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
         if let spaces = spacesToInsert {
             spacesToInsert = nil
             textView.insertText(spaces)
+        }
+
+        // live syntax highlighting
+        if let editor = textView as? EditorTextView {
+            let range = editor.selectedRange
+            editor.applyColoration(AppController.shared.editorSyntaxHighlightingMode.rawValue, in: range)
         }
 
         // side bar
@@ -680,6 +703,7 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
             // replace
             let changedSourceText = sourceText.replacingCharacters(in: selectedRange, with: replaceText)
             sourceCodeTextView.text = changedSourceText
+            (sourceCodeTextView)?.applyColoration(AppController.shared.editorSyntaxHighlightingMode.rawValue, in: NSMakeRange(selectedRange.location, replaceText.count))
             sourceCodeTextView.selectedRange = NSMakeRange(selectedRange.location + replaceText.count, 0)
             sourceCodeTextView.scrollSelectedRangeToVisible()
         }

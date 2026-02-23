@@ -24,6 +24,10 @@ extension Notification.Name {
     private static let userIdKey = "userIdKey"
     private static let usernameKey = "usernameKey"
     private static let editorFontSizeKey = "editorFontSize"
+    private static let editorLabelIndexModeKey = "editorLabelIndexMode"
+    private static let editorProcedureIndexModeKey = "editorProcedureIndexMode"
+    private static let editorManualMarkerIndexModeKey = "editorManualMarkerIndexMode"
+    private static let editorSyntaxHighlightingModeKey = "editorSyntaxHighlightingMode"
 
     @objc static let shared = AppController()
 
@@ -98,6 +102,46 @@ extension Notification.Name {
         }
     }
 
+    var editorLabelIndexMode: LabelIndexMode {
+        get {
+            let value = UserDefaults.standard.integer(forKey: AppController.editorLabelIndexModeKey)
+            return LabelIndexMode(rawValue: value) ?? .allLabels
+        }
+        set {
+            UserDefaults.standard.set(newValue.rawValue, forKey: AppController.editorLabelIndexModeKey)
+        }
+    }
+
+    var editorProcedureIndexMode: ProcedureIndexMode {
+        get {
+            let value = UserDefaults.standard.integer(forKey: AppController.editorProcedureIndexModeKey)
+            return ProcedureIndexMode(rawValue: value) ?? .allProcedures
+        }
+        set {
+            UserDefaults.standard.set(newValue.rawValue, forKey: AppController.editorProcedureIndexModeKey)
+        }
+    }
+
+    var editorManualMarkerIndexMode: MarkerIndexMode {
+        get {
+            let value = UserDefaults.standard.integer(forKey: AppController.editorManualMarkerIndexModeKey)
+            return MarkerIndexMode(rawValue: value) ?? .noMarkers
+        }
+        set {
+            UserDefaults.standard.set(newValue.rawValue, forKey: AppController.editorManualMarkerIndexModeKey)
+        }
+    }
+
+    @objc var editorSyntaxHighlightingMode: SyntaxHighlightingMode {
+        get {
+            let value = UserDefaults.standard.integer(forKey: AppController.editorSyntaxHighlightingModeKey)
+            return SyntaxHighlightingMode(rawValue: value) ?? .none
+        }
+        set {
+            UserDefaults.standard.set(newValue.rawValue, forKey: AppController.editorSyntaxHighlightingModeKey)
+        }
+    }
+
     var currentVersion: String {
         let version = Bundle.main.object(forInfoDictionaryKey: kCFBundleVersionKey as String) as! String
         return version
@@ -110,6 +154,13 @@ extension Notification.Name {
         bootTime = CFAbsoluteTimeGetCurrent()
 
         super.init()
+
+        UserDefaults.standard.register(defaults: [
+						AppController.editorLabelIndexModeKey: LabelIndexMode.allLabels.rawValue,
+						AppController.editorProcedureIndexModeKey: ProcedureIndexMode.allProcedures.rawValue,
+						AppController.editorManualMarkerIndexModeKey: MarkerIndexMode.noMarkers.rawValue,
+            AppController.editorSyntaxHighlightingModeKey: SyntaxHighlightingMode.syntax.rawValue
+        ])
 
         let lastVersion = UserDefaults.standard.string(forKey: AppController.lastVersionKey)
         if currentVersion != lastVersion {
