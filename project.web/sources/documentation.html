@@ -1086,23 +1086,23 @@ NOT dead
 <tbody>
 <tr>
 <td class="right">NOT</td>
-<td>NOT (x=15)<br>NOT 0</td>
-<td>Bits that are 0 become 1, <br>and those that are 1 become 0.</td>
+<td>NOT (x=15)<br />NOT 0</td>
+<td>Bits that are 0 become 1, <br />and those that are 1 become 0.</td>
 </tr>
 <tr>
 <td class="right">AND</td>
-<td>a=1 AND b=12<br>170 AND 15</td>
-<td>If both bits are 1, the<br>result is 1, 0 otherwise.</td>
+<td>a=1 AND b=12<br />170 AND 15</td>
+<td>If both bits are 1, the<br />result is 1, 0 otherwise.</td>
 </tr>
 <tr>
 <td class="right">OR</td>
-<td>x=10 OR y=0<br>128 OR 2</td>
-<td>The result is 0 if both<br>bits are 0, 1 otherwise.</td>
+<td>x=10 OR y=0<br />128 OR 2</td>
+<td>The result is 0 if both<br />bits are 0, 1 otherwise.</td>
 </tr>
 <tr>
 <td class="right">XOR</td>
 <td>a XOR b</td>
-<td>The result is 1 if only<br>one bit is 1, 0 otherwise.</td>
+<td>The result is 1 if only<br />one bit is 1, 0 otherwise.</td>
 </tr>
 </tbody>
 </table>
@@ -1224,7 +1224,7 @@ RESTORE test : WAIT VBL
 <h4 id="end" tabindex="-1"><code>END</code></h4>
 <p>Stop the execution of the program.</p>
 <p>It has the same effect as the execution reach the end of the program.</p>
-<h4 id="if-then-else-if-else-end-ifif-then" tabindex="-1"><code>IF/THEN/ELSE IF/ELSE/END IF</code><br><code>IF/THEN</code></h4>
+<h4 id="if-then-else-if-else-end-ifif-then" tabindex="-1"><code>IF/THEN/ELSE IF/ELSE/END IF</code><br /><code>IF/THEN</code></h4>
 <pre><code>IF expression THEN
   instruction...
 [ELSE IF expression THEN
@@ -1412,7 +1412,7 @@ update:
 <p>This example has one <code>RETURN</code>, two labels and three <code>GOSUB</code>. The best practice mentioned above is not followed here, but here is the explanation.</p>
 <p>The important thing is not the number of <code>RETURN</code> statements in the code but the number of times the command is executed. Users need to understand that one <code>GOSUB</code> execution will <a href="#stack-sub-routine-and-return">increase by one the size of the stack</a>, and one execution of <code>RETURN</code> will reduce the same stack by exactly one. If the stack size is empty every time the <a href="#wait-vblwait-frame"><code>WAIT VBL</code></a> instruction is executed, it's a good sign. It means that the stack will not overflow.</p>
 <p>Users can print the current stack using the <a href="#dbg-trace">debugger <code>TRACE</code> command</a>.</p>
-<h4 id="on-gotoon-gosub" tabindex="-1"><code>ON GOTO</code><br><code>ON GOSUB</code></h4>
+<h4 id="on-gotoon-gosub" tabindex="-1"><code>ON GOTO</code><br /><code>ON GOSUB</code></h4>
 <pre><code>ON value GOTO label0[, label1...]
 </code></pre>
 <p>Jump to one of the listed <code>label</code> according to a <code>value</code>.</p>
@@ -1651,7 +1651,7 @@ LOOP
 00000000000000000000000000000000
 40A0D0E8F4D0E818C06030180C305808
 </code></pre>
-<h4 id="x-sprite-x-sprite-y-sprite-y-sprite" tabindex="-1"><code>x =SPRITE.X(sprite)</code><br><code>y =SPRITE.Y(sprite)</code></h4>
+<h4 id="x-sprite-x-sprite-y-sprite-y-sprite" tabindex="-1"><code>x =SPRITE.X(sprite)</code><br /><code>y =SPRITE.Y(sprite)</code></h4>
 <p>Return the position <code>x</code> or <code>y</code> of the <code>sprite</code> (0..169) in pixels.</p>
 <p>Example of a sprite smoothly following the finger touch:</p>
 <pre><code>sprite 0, shown.w, shown.h, 1
@@ -1815,7 +1815,7 @@ TEXT 10, 10, &quot;hello!&quot;
 SCROLL 0, 0, -4
 </code></pre>
 <p>Omitted parameters will keep their previous values.</p>
-<h4 id="x-scroll-x-layer-y-scroll-y-layer" tabindex="-1"><code>x =SCROLL.X(layer)</code><br><code>y =SCROLL.Y(layer)</code></h4>
+<h4 id="x-scroll-x-layer-y-scroll-y-layer" tabindex="-1"><code>x =SCROLL.X(layer)</code><br /><code>y =SCROLL.Y(layer)</code></h4>
 <p>Return the scroll offset on <code>x</code> and <code>y</code> axis of the <code>layer</code> in pixels.</p>
 <p>Example of getting the scroll offset of the background layer:</p>
 <pre><code>FOR x=0 TO 63
@@ -2083,7 +2083,7 @@ PRINT &quot;Oh my god! There's a tremendous amount of work to do. Can I do a lit
   PRINT str$(i);
 NEXT i
 </code></pre>
-<h4 id="x-cursor-xy-cursor-y" tabindex="-1"><code>x =CURSOR.X</code><br><code>y =CURSOR.Y</code></h4>
+<h4 id="x-cursor-xy-cursor-y" tabindex="-1"><code>x =CURSOR.X</code><br /><code>y =CURSOR.Y</code></h4>
 <p>Return the cursor location <code>x, y</code> in cells coordinates inside the window.</p>
 <h4 id="print-expression" tabindex="-1"><code>PRINT expression...</code></h4>
 <p>Outputs string <code>expression...</code> onto the current window.</p>
@@ -2143,7 +2143,7 @@ DO
   SPRITE 0, x, y,
 LOOP
 </code></pre>
-<h4 id="x-touch-xy-touch-y" tabindex="-1"><code>x =TOUCH.X</code><br><code>y =TOUCH.Y</code></h4>
+<h4 id="x-touch-xy-touch-y" tabindex="-1"><code>x =TOUCH.X</code><br /><code>y =TOUCH.Y</code></h4>
 <p>Returns the last pixel position <code>x, y</code> touched. It returns a floating-point number, with a 1/16 pixel precisions.</p>
 <pre><code>DO
   CLS
@@ -2151,11 +2151,11 @@ LOOP
   WAIT VBL
 LOOP
 </code></pre>
-<h4 id="keyboard-onkeyboard-off" tabindex="-1"><code>KEYBOARD ON</code><br><code>KEYBOARD OFF</code></h4>
+<h4 id="keyboard-onkeyboard-off" tabindex="-1"><code>KEYBOARD ON</code><br /><code>KEYBOARD OFF</code></h4>
 <p>Show or hide the device virtual keyboard. Because user can hide the keybord using a dedicated key, do not assume the keyboard is visible. Use <code>KEYBOARD ON</code> inside a loop or rely on <a href="#height-keyboard"><code>=KEYBOARD</code></a> to detect when the keyboard is shown or not.</p>
 <h4 id="height-keyboard" tabindex="-1"><code>height =KEYBOARD</code></h4>
 <p>Return the <code>height</code> of the virtual screen that has been occluded by the keyboard.</p>
-<h4 id="input-prompt-variableinput-prompt-variable" tabindex="-1"><code>INPUT [prompt;] variable</code><br><code>INPUT [prompt;] variable$</code></h4>
+<h4 id="input-prompt-variableinput-prompt-variable" tabindex="-1"><code>INPUT [prompt;] variable</code><br /><code>INPUT [prompt;] variable$</code></h4>
 <p>Wait for the user to type a text or a number and store it to the <code>variable</code> or <code>variable$</code>.</p>
 <p>Optionally, a <code>prompt</code> can be printed on the screen before the user input.</p>
 <pre><code>a=RND(9)+10
@@ -2191,16 +2191,16 @@ LOOP
 <p>Sets the four colors on the height available <code>palette</code> (0..7). The color 0 of the palette 0 is generally used as backdrop color. (It can be change using the <code>SYSTEM</code> command.) <code>c0</code>, <code>c1</code>, <code>c2</code>, <code>c3</code> can accept a numeric value between 0 and 63, omit them to keep the current value. Consult the <a href="#64-colors">64 colors reference</a> to choose the color you want.</p>
 <h4 id="available-color-palette-color" tabindex="-1"><code>available =COLOR(palette, color)</code></h4>
 <p>Returns one of the <code>available</code> <a href="#64-colors">64 colors</a> associated to the pair <code>palette</code> (0..7), <code>color</code> (0..3).</p>
-<h4 id="width-shown-wheight-shown-h" tabindex="-1"><code>width =SHOWN.W</code><br><code>height =SHOWN.H</code></h4>
+<h4 id="width-shown-wheight-shown-h" tabindex="-1"><code>width =SHOWN.W</code><br /><code>height =SHOWN.H</code></h4>
 <p>Returns the <code>width</code> and <code>height</code> in pixels of the visible area of the fantasy screen.</p>
-<h4 id="left-safe-ltop-safe-tright-safe-rbottom-safe-b" tabindex="-1"><code>left =SAFE.L</code><br><code>top =SAFE.T</code><br><code>right =SAFE.R</code><br><code>bottom =SAFE.B</code></h4>
+<h4 id="left-safe-ltop-safe-tright-safe-rbottom-safe-b" tabindex="-1"><code>left =SAFE.L</code><br /><code>top =SAFE.T</code><br /><code>right =SAFE.R</code><br /><code>bottom =SAFE.B</code></h4>
 <p>Returns the <code>left</code>, <code>top</code>, <code>right</code> and <code>bottom</code> offset in pixels to apply from the boundary of the fantasy device screen to reach the inner safe area specified by the device's operating system.</p>
 <p>These functions can be used to avoid the top camera notch or the bottom inset full-width buttons.</p>
-<h4 id="sprite-view-onsprite-view-off" tabindex="-1"><code>SPRITE VIEW ON</code><br><code>SPRITE VIEW OFF</code></h4>
+<h4 id="sprite-view-onsprite-view-off" tabindex="-1"><code>SPRITE VIEW ON</code><br /><code>SPRITE VIEW OFF</code></h4>
 <p>Enable or disable the rendering of all sprites.</p>
-<h4 id="bg-view-onbg-view-off" tabindex="-1"><code>BG VIEW ON</code><br><code>BG VIEW OFF</code></h4>
+<h4 id="bg-view-onbg-view-off" tabindex="-1"><code>BG VIEW ON</code><br /><code>BG VIEW OFF</code></h4>
 <p>Enable or disable the rendering of all background layers.</p>
-<h4 id="wait-vblwait-frame" tabindex="-1"><code>WAIT VBL</code><br><code>WAIT frame</code></h4>
+<h4 id="wait-vblwait-frame" tabindex="-1"><code>WAIT VBL</code><br /><code>WAIT frame</code></h4>
 <p>Wait for a number of <code>frame</code> to be drawn. This is used to:</p>
 <ul>
 <li>draw frames at 60 FPS,</li>
@@ -2294,7 +2294,7 @@ LOOP
 <blockquote>
 <p><strong>Deprecated:</strong> since trigonometric functions use -0.5 .. +0.5 range now.</p>
 </blockquote>
-<h4 id="cosine-cos-number-sine-sin-number" tabindex="-1"><code>cosine =COS(number)</code><br><code>sine =SIN(number)</code></h4>
+<h4 id="cosine-cos-number-sine-sin-number" tabindex="-1"><code>cosine =COS(number)</code><br /><code>sine =SIN(number)</code></h4>
 <p>Return the <code>cosine</code> or <code>sine</code> (0..1) value of a <code>number</code>.</p>
 <p><code>=COS()</code> and <code>=SIN()</code> take (0..1) instead of (0..π*2), and <code>=SIN()</code> is inverted.</p>
 <h4 id="arc-atan-x-y" tabindex="-1"><code>arc =ATAN(x, y)</code></h4>
@@ -2344,16 +2344,16 @@ LOOP
 <p>Return the <code>square</code> root value of a <code>number</code>.</p>
 <h4 id="sign-sgn-number" tabindex="-1"><code>sign =SGN(number)</code></h4>
 <p>Return the <code>sign</code> (+1/-1) of a <code>number</code>.</p>
-<h4 id="floor-floor-number-floor-int-number" tabindex="-1"><code>floor =FLOOR(number)</code><br><code>floor =INT(number)</code></h4>
+<h4 id="floor-floor-number-floor-int-number" tabindex="-1"><code>floor =FLOOR(number)</code><br /><code>floor =INT(number)</code></h4>
 <p>Return the <code>floor</code> value of a <code>number</code>.</p>
 <h4 id="ceil-ceil-number" tabindex="-1"><code>ceil =CEIL(number)</code></h4>
 <p>Return the <code>ceil</code> value of a <code>number</code>.</p>
-<h4 id="inc-variabledec-variable" tabindex="-1"><code>INC variable</code><br><code>DEC variable</code></h4>
+<h4 id="inc-variabledec-variable" tabindex="-1"><code>INC variable</code><br /><code>DEC variable</code></h4>
 <p>Increment or decrement by 1 the value of a <code>variable</code>.</p>
-<h4 id="add-variable-valueadd-variable-increment-min-to-max" tabindex="-1"><code>ADD variable, value</code><br><code>ADD variable, increment, min TO max</code></h4>
+<h4 id="add-variable-valueadd-variable-increment-min-to-max" tabindex="-1"><code>ADD variable, value</code><br /><code>ADD variable, increment, min TO max</code></h4>
 <p>Add a <code>value</code> to a <code>variable</code>.</p>
 <p>Optionally make it wrap around between <code>min</code> and <code>max</code>.</p>
-<h4 id="minimal-min-a-b-maximal-max-a-b" tabindex="-1"><code>minimal =MIN(a, b)</code><br><code>maximal =MAX(a, b)</code></h4>
+<h4 id="minimal-min-a-b-maximal-max-a-b" tabindex="-1"><code>minimal =MIN(a, b)</code><br /><code>maximal =MAX(a, b)</code></h4>
 <p>Return the <code>minimal</code> or <code>maximal</code> value between <code>a</code> and <code>b</code>.</p>
 <h4 id="clamped-clamp-value-min-max" tabindex="-1"><code>clamped =CLAMP(value, min, max)</code></h4>
 <p>Return the <code>value</code> <code>clamped</code> between <code>min</code> and <code>max</code>.</p>
@@ -2453,7 +2453,7 @@ FOR I=0 TO 5
   PRINT RND(100)
 NEXT I
 </code></pre>
-<h4 id="random-rnd-addressrandom-rnd-max-address-randomize-seed-address" tabindex="-1"><code>random =RND address</code><br><code>random =RND(max, address)</code><br><code>RANDOMIZE seed [, address]</code></h4>
+<h4 id="random-rnd-addressrandom-rnd-max-address-randomize-seed-address" tabindex="-1"><code>random =RND address</code><br /><code>random =RND(max, address)</code><br /><code>RANDOMIZE seed [, address]</code></h4>
 <p>Similar to the original functions with a additional <code>address</code> parameter, where the current generator state will be stored.</p>
 <p>This is useful if you want to keep multiple generator that still need to be deterministic.</p>
 <p>The generator state consume 16 Bytes of memory.</p>
@@ -2472,15 +2472,15 @@ NEXT I
 <p>Converts a <code>text</code> string that starts with digits (and optionally one decimal point .) into a <code>number</code>.</p>
 <pre><code>print val(&quot;3.5abc&quot;)
 </code></pre>
-<h4 id="hexadecimal-hex-number-digits-binary-bin-number-digits" tabindex="-1"><code>hexadecimal =HEX$(number, [digits])</code><br><code>binary =BIN$(number, [digits])</code></h4>
+<h4 id="hexadecimal-hex-number-digits-binary-bin-number-digits" tabindex="-1"><code>hexadecimal =HEX$(number, [digits])</code><br /><code>binary =BIN$(number, [digits])</code></h4>
 <p>Converts a <code>number</code> to an <code>hexadecimal</code> or <code>binary</code> string with an optional minimal number of <code>digits</code>.</p>
-<h4 id="leading-left-text-length-trailing-right-text-length" tabindex="-1"><code>leading$ =LEFT$(text, length)</code><br><code>trailing$ =RIGHT$(text, length)</code></h4>
+<h4 id="leading-left-text-length-trailing-right-text-length" tabindex="-1"><code>leading$ =LEFT$(text, length)</code><br /><code>trailing$ =RIGHT$(text, length)</code></h4>
 <p>Return the <code>length</code> number of characters from the beginning or the end of the <code>text</code> string.</p>
 <pre><code>shadok: DATA &quot;gabuzomeu&quot;
 PRINT LEFT$(shadok, 4)
 PRINT RIGHT$(shadok, 5)
 </code></pre>
-<h4 id="left-text-length-replacement-right-text-length-replacement" tabindex="-1"><code>LEFT$(text, length) =replacement$</code><br><code>RIGHT$(text, length) =replacement$</code></h4>
+<h4 id="left-text-length-replacement-right-text-length-replacement" tabindex="-1"><code>LEFT$(text, length) =replacement$</code><br /><code>RIGHT$(text, length) =replacement$</code></h4>
 <p>Overwrites the <code>length</code> number of characters at the beginning or the end of the <code>text</code> string by the <code>length</code> first characters of the <code>replacement$</code> string.</p>
 <h4 id="extract-mid-text-position-length" tabindex="-1"><code>extract$ =MID(text, position, length)</code></h4>
 <p>Return the <code>length</code> number of characters starting at <code>position</code> (1..) from the <code>text</code> string.</p>
@@ -2501,7 +2501,7 @@ PRINT six$
 <p>Check the <a href="#pitch-values">pitch references</a> to learn which pitch correspond to which notes.</p>
 <p><code>length</code> use 1/60 of seconds as units with the maximum being 255, so 4.25 seconds. A length of 0 means that the sound will not stop until another sound is played on the same <code>voice</code>.</p>
 <p><code>sound</code> is a number representing a group of settings that define the sound's characteristics. It requires the usage of the <a href="#sound-source-address"><code>SOUND SOURCE</code></a> command.</p>
-<h4 id="stopstop-voice" tabindex="-1"><code>STOP</code><br><code>STOP [voice]</code></h4>
+<h4 id="stopstop-voice" tabindex="-1"><code>STOP</code><br /><code>STOP [voice]</code></h4>
 <p>Stops the sound and track on the <code>voice</code> or all the voices if omitted.</p>
 <p>Release duration of envelope are not stop but fade out instead.</p>
 <h4 id="volume-voice-volume-mix" tabindex="-1"><code>VOLUME voice, [volume], [mix]</code></h4>
@@ -2520,7 +2520,7 @@ PRINT six$
 </tr>
 <tr>
 <td class="right"><code>mix</code></td>
-<td>0 Muted<br>1 Left<br>2 Right<br>3 Both</td>
+<td>0 Muted<br />1 Left<br />2 Right<br />3 Both</td>
 </tr>
 </tbody>
 </table>
@@ -2539,7 +2539,7 @@ PRINT six$
 <tbody>
 <tr>
 <td class="right"><code>wave</code></td>
-<td>0 Sawtooth<br>1 Triangle<br>2 Pulse<br>3 Noise</td>
+<td>0 Sawtooth<br />1 Triangle<br />2 Pulse<br />3 Noise</td>
 </tr>
 <tr>
 <td class="right"><code>width</code></td>
@@ -2547,7 +2547,7 @@ PRINT six$
 </tr>
 <tr>
 <td class="right"><code>length</code></td>
-<td>0 Infinite<br>1 16.67ms .. 255 4.25s</td>
+<td>0 Infinite<br />1 16.67ms .. 255 4.25s</td>
 </tr>
 </tbody>
 </table>
@@ -2629,19 +2629,19 @@ PRINT six$
 <tbody>
 <tr>
 <td class="right"><code>wave</code></td>
-<td>0 Triangle<br>1 Sawtooth<br>2 Square<br>3 Random</td>
+<td>0 Triangle<br />1 Sawtooth<br />2 Square<br />3 Random</td>
 </tr>
 <tr>
 <td class="right"><code>invert</code></td>
-<td>0 Off<br>1 On</td>
+<td>0 Off<br />1 On</td>
 </tr>
 <tr>
 <td class="right"><code>env</code></td>
-<td>0 Off<br>1 On</td>
+<td>0 Off<br />1 On</td>
 </tr>
 <tr>
 <td class="right"><code>trigger</code></td>
-<td>0 Off<br>1 On</td>
+<td>0 Off<br />1 On</td>
 </tr>
 </tbody>
 </table>
@@ -2677,7 +2677,7 @@ PRINT six$
 </tr>
 <tr>
 <td class="right">3</td>
-<td>The current speed<br>0 when stopped</td>
+<td>The current speed<br />0 when stopped</td>
 </tr>
 </tbody>
 </table>
@@ -2728,7 +2728,7 @@ PRINT &quot;height&quot;, PEEKW($FF7A), SHOWN.H
 <p>The <code>source</code> and <code>destination</code> CAN overlap.</p>
 <h4 id="fill-address-count-value" tabindex="-1"><code>FILL address, count [, value]</code></h4>
 <p>Sets <code>count</code> bytes from <code>address</code> in memory with the <code>value</code> or 0 when not specified.</p>
-<h4 id="rol-address-placesror-address-places" tabindex="-1"><code>ROL address, places</code><br><code>ROR address, places</code></h4>
+<h4 id="rol-address-placesror-address-places" tabindex="-1"><code>ROL address, places</code><br /><code>ROR address, places</code></h4>
 <p>Rotates the bits of the byte stored at <code>address</code> by a number of <code>places</code> to the left or the right.</p>
 <pre><code>POKE $9000, %00001111
 again:
@@ -2951,7 +2951,7 @@ GOTO AGAIN
 <p>Allow to output more variables using the <code>pagination</code> with an index that start at 0 zero.</p>
 <h4 id="dbg-trace" tabindex="-1">dbg: <code>TRACE</code></h4>
 <p>Print the current call stack in reverse order: last line number followed by label <code>GOSUB</code>'ed and procedure <code>CALL</code>'ed.</p>
-<h4 id="dbg-track-peek-address-dbg-track-poke-address" tabindex="-1">dbg: <code>TRACK PEEK address</code><br> dbg: <code>TRACK POKE address</code></h4>
+<h4 id="dbg-track-peek-address-dbg-track-poke-address" tabindex="-1">dbg: <code>TRACK PEEK address</code><br /> dbg: <code>TRACK POKE address</code></h4>
 <p>Enter the debugger when the program <code>=PEEK</code> or <code>POKE</code> the <code>address</code>.</p>
 <h4 id="dbg-next" tabindex="-1">dbg: <code>NEXT</code></h4>
 <p>Execute next instruction in the program, and stop.</p>
@@ -3241,7 +3241,7 @@ The 1st 8 bytes store the low bit for all the 8x8 pixels. The 2nd 8 bytes store 
 </tr>
 <tr>
 <td class="right">4..5</td>
-<td>Wave<br>0 Sawtooth<br>1 Triangle<br>2 Pulse<br>3 Noise</td>
+<td>Wave<br />0 Sawtooth<br />1 Triangle<br />2 Pulse<br />3 Noise</td>
 </tr>
 <tr>
 <td class="right">6</td>
@@ -4436,7 +4436,7 @@ PRINT 0.000000239&lt;&gt;0
 </ul>
 <p><strong><code>ADD</code></strong>:</p>
 <ul>
-<li><a href="#add-variable-valueadd-variable-increment-min-to-max"><code>ADD variable, value</code><br><code>ADD variable, increment, min TO max</code></a></li>
+<li><a href="#add-variable-valueadd-variable-increment-min-to-max"><code>ADD variable, value</code><br /><code>ADD variable, increment, min TO max</code></a></li>
 </ul>
 <p><strong><code>AND</code></strong>:</p>
 <ul>
@@ -4466,11 +4466,11 @@ PRINT 0.000000239&lt;&gt;0
 <li><a href="#bg-scroll-x1-y1-to-x2-y2-step-x3-y3"><code>BG SCROLL x1, y1 to x2, y2 step x3, y3</code></a></li>
 <li><a href="#bg-source-address-width-height"><code>BG SOURCE address [, width, height]</code></a></li>
 <li><a href="#bg-copy-x1-y1-width-height-to-x2-y2"><code>BG COPY x1, y1, width, height TO x2, y2</code></a></li>
-<li><a href="#bg-view-onbg-view-off"><code>BG VIEW ON</code><br><code>BG VIEW OFF</code></a></li>
+<li><a href="#bg-view-onbg-view-off"><code>BG VIEW ON</code><br /><code>BG VIEW OFF</code></a></li>
 </ul>
 <p><strong><code>BIN</code></strong>:</p>
 <ul>
-<li><a href="#hexadecimal-hex-number-digits-binary-bin-number-digits"><code>hexadecimal =HEX$(number, [digits])</code><br><code>binary =BIN$(number, [digits])</code></a></li>
+<li><a href="#hexadecimal-hex-number-digits-binary-bin-number-digits"><code>hexadecimal =HEX$(number, [digits])</code><br /><code>binary =BIN$(number, [digits])</code></a></li>
 </ul>
 <p><strong><code>CALL</code></strong>:</p>
 <ul>
@@ -4533,15 +4533,15 @@ PRINT 0.000000239&lt;&gt;0
 </ul>
 <p><strong><code>COS</code></strong>:</p>
 <ul>
-<li><a href="#cosine-cos-numbersine-sin-number"><code>cosine =COS(number)</code><br><code>sine =SIN(number)</code></a></li>
+<li><a href="#cosine-cos-numbersine-sin-number"><code>cosine =COS(number)</code><br /><code>sine =SIN(number)</code></a></li>
 </ul>
 <p><strong><code>CURSOR.X</code></strong>:</p>
 <ul>
-<li><a href="#x-cursor-xy-cursor-y"><code>x =CURSOR.X</code><br><code>y =CURSOR.Y</code></a></li>
+<li><a href="#x-cursor-xy-cursor-y"><code>x =CURSOR.X</code><br /><code>y =CURSOR.Y</code></a></li>
 </ul>
 <p><strong><code>CURSOR.Y</code></strong>:</p>
 <ul>
-<li><a href="#x-cursor-xy-cursor-y"><code>x =CURSOR.X</code><br><code>y =CURSOR.Y</code></a></li>
+<li><a href="#x-cursor-xy-cursor-y"><code>x =CURSOR.X</code><br /><code>y =CURSOR.Y</code></a></li>
 </ul>
 <p><strong><code>DATA</code></strong>:</p>
 <ul>
@@ -4549,7 +4549,7 @@ PRINT 0.000000239&lt;&gt;0
 </ul>
 <p><strong><code>DEC</code></strong>:</p>
 <ul>
-<li><a href="#inc-variabledec-variable"><code>INC variable</code><br><code>DEC variable</code></a></li>
+<li><a href="#inc-variabledec-variable"><code>INC variable</code><br /><code>DEC variable</code></a></li>
 </ul>
 <p><strong><code>DIM</code></strong>:</p>
 <ul>
@@ -4570,7 +4570,7 @@ PRINT 0.000000239&lt;&gt;0
 </ul>
 <p><strong><code>ELSE</code></strong>:</p>
 <ul>
-<li><a href="#if-then-else-if-else-end-ifif-then"><code>IF/THEN/ELSE IF/ELSE/END IF</code><br><code>IF/THEN</code></a></li>
+<li><a href="#if-then-else-if-else-end-ifif-then"><code>IF/THEN/ELSE IF/ELSE/END IF</code><br /><code>IF/THEN</code></a></li>
 </ul>
 <p><strong><code>EMITTER</code></strong>:</p>
 <ul>
@@ -4579,7 +4579,7 @@ PRINT 0.000000239&lt;&gt;0
 <p><strong><code>END</code></strong>:</p>
 <ul>
 <li><a href="#end"><code>END</code></a></li>
-<li><a href="#if-then-else-if-else-end-ifif-then"><code>IF/THEN/ELSE IF/ELSE/END IF</code><br><code>IF/THEN</code></a></li>
+<li><a href="#if-then-else-if-else-end-ifif-then"><code>IF/THEN/ELSE IF/ELSE/END IF</code><br /><code>IF/THEN</code></a></li>
 <li><a href="#sub-end-sub-exit-sub"><code>SUB/END SUB/EXIT SUB</code></a></li>
 </ul>
 <p><strong><code>ENVELOPE</code></strong>:</p>
@@ -4620,7 +4620,7 @@ PRINT 0.000000239&lt;&gt;0
 </ul>
 <p><strong><code>FLOOR</code></strong>:</p>
 <ul>
-<li><a href="#floor-floor-number-floor-int-number"><code>floor =FLOOR(number)</code><br><code>floor =INT(number)</code></a></li>
+<li><a href="#floor-floor-number-floor-int-number"><code>floor =FLOOR(number)</code><br /><code>floor =INT(number)</code></a></li>
 </ul>
 <p><strong><code>FONT</code></strong>:</p>
 <ul>
@@ -4642,12 +4642,12 @@ PRINT 0.000000239&lt;&gt;0
 <p><strong><code>GOSUB</code></strong>:</p>
 <ul>
 <li><a href="#gosub-return"><code>GOSUB/RETURN</code></a></li>
-<li><a href="#on-gotoon-gosub"><code>ON GOTO</code><br><code>ON GOSUB</code></a></li>
+<li><a href="#on-gotoon-gosub"><code>ON GOTO</code><br /><code>ON GOSUB</code></a></li>
 </ul>
 <p><strong><code>GOTO</code></strong>:</p>
 <ul>
 <li><a href="#goto"><code>GOTO</code></a></li>
-<li><a href="#on-gotoon-gosub"><code>ON GOTO</code><br><code>ON GOSUB</code></a></li>
+<li><a href="#on-gotoon-gosub"><code>ON GOTO</code><br /><code>ON GOSUB</code></a></li>
 </ul>
 <p><strong><code>HAPTIC</code></strong>:</p>
 <ul>
@@ -4655,7 +4655,7 @@ PRINT 0.000000239&lt;&gt;0
 </ul>
 <p><strong><code>HEX</code></strong>:</p>
 <ul>
-<li><a href="#hexadecimal-hex-number-digits-binary-bin-number-digits"><code>hexadecimal =HEX$(number, [digits])</code><br><code>binary =BIN$(number, [digits])</code></a></li>
+<li><a href="#hexadecimal-hex-number-digits-binary-bin-number-digits"><code>hexadecimal =HEX$(number, [digits])</code><br /><code>binary =BIN$(number, [digits])</code></a></li>
 </ul>
 <p><strong><code>HIT</code></strong>:</p>
 <ul>
@@ -4666,11 +4666,11 @@ PRINT 0.000000239&lt;&gt;0
 </ul>
 <p><strong><code>IF</code></strong>:</p>
 <ul>
-<li><a href="#if-then-else-if-else-end-ifif-then"><code>IF/THEN/ELSE IF/ELSE/END IF</code><br><code>IF/THEN</code></a></li>
+<li><a href="#if-then-else-if-else-end-ifif-then"><code>IF/THEN/ELSE IF/ELSE/END IF</code><br /><code>IF/THEN</code></a></li>
 </ul>
 <p><strong><code>INC</code></strong>:</p>
 <ul>
-<li><a href="#inc-variabledec-variable"><code>INC variable</code><br><code>DEC variable</code></a></li>
+<li><a href="#inc-variabledec-variable"><code>INC variable</code><br /><code>DEC variable</code></a></li>
 </ul>
 <p><strong><code>INKEY</code></strong>:</p>
 <ul>
@@ -4678,7 +4678,7 @@ PRINT 0.000000239&lt;&gt;0
 </ul>
 <p><strong><code>INPUT</code></strong>:</p>
 <ul>
-<li><a href="#input-prompt-variableinput-prompt-variable"><code>INPUT [prompt;] variable</code><br><code>INPUT [prompt;] variable$</code></a></li>
+<li><a href="#input-prompt-variableinput-prompt-variable"><code>INPUT [prompt;] variable</code><br /><code>INPUT [prompt;] variable$</code></a></li>
 </ul>
 <p><strong><code>INSTR</code></strong>:</p>
 <ul>
@@ -4686,17 +4686,17 @@ PRINT 0.000000239&lt;&gt;0
 </ul>
 <p><strong><code>INT</code></strong>:</p>
 <ul>
-<li><a href="#floor-floor-number-floor-int-number"><code>floor =FLOOR(number)</code><br><code>floor =INT(number)</code></a></li>
+<li><a href="#floor-floor-number-floor-int-number"><code>floor =FLOOR(number)</code><br /><code>floor =INT(number)</code></a></li>
 </ul>
 <p><strong><code>KEYBOARD</code></strong>:</p>
 <ul>
-<li><a href="#keyboard-onkeyboard-off"><code>KEYBOARD ON</code><br><code>KEYBOARD OFF</code></a></li>
+<li><a href="#keyboard-onkeyboard-off"><code>KEYBOARD ON</code><br /><code>KEYBOARD OFF</code></a></li>
 <li><a href="#height-keyboard"><code>height =KEYBOARD</code></a></li>
 </ul>
 <p><strong><code>LEFT</code></strong>:</p>
 <ul>
-<li><a href="#leading-left-text-length-trailing-right-text-length"><code>leading$ =LEFT$(text, length)</code><br><code>trailing$ =RIGHT$(text, length)</code></a></li>
-<li><a href="#left-text-length-replacement-right-text-length-replacement"><code>LEFT$(text, length) =replacement$</code><br><code>RIGHT$(text, length) =replacement$</code></a></li>
+<li><a href="#leading-left-text-length-trailing-right-text-length"><code>leading$ =LEFT$(text, length)</code><br /><code>trailing$ =RIGHT$(text, length)</code></a></li>
+<li><a href="#left-text-length-replacement-right-text-length-replacement"><code>LEFT$(text, length) =replacement$</code><br /><code>RIGHT$(text, length) =replacement$</code></a></li>
 </ul>
 <p><strong><code>LEN</code></strong>:</p>
 <ul>
@@ -4730,7 +4730,7 @@ PRINT 0.000000239&lt;&gt;0
 </ul>
 <p><strong><code>MAX</code></strong>:</p>
 <ul>
-<li><a href="#minimal-min-a-b-maximal-max-a-b"><code>minimal =MIN(a, b)</code><br><code>maximal =MAX(a, b)</code></a></li>
+<li><a href="#minimal-min-a-b-maximal-max-a-b"><code>minimal =MIN(a, b)</code><br /><code>maximal =MAX(a, b)</code></a></li>
 </ul>
 <p><strong><code>MCELL</code></strong>:</p>
 <ul>
@@ -4757,7 +4757,7 @@ PRINT 0.000000239&lt;&gt;0
 </ul>
 <p><strong><code>MIN</code></strong>:</p>
 <ul>
-<li><a href="#minimal-min-a-b-maximal-max-a-b"><code>minimal =MIN(a, b)</code><br><code>maximal =MAX(a, b)</code></a></li>
+<li><a href="#minimal-min-a-b-maximal-max-a-b"><code>minimal =MIN(a, b)</code><br /><code>maximal =MAX(a, b)</code></a></li>
 </ul>
 <p><strong><code>MOD</code></strong>:</p>
 <ul>
@@ -4785,19 +4785,19 @@ PRINT 0.000000239&lt;&gt;0
 <li><a href="#sprite-off"><code>SPRITE OFF</code></a></li>
 <li><a href="#sprite-off-sprite"><code>SPRITE OFF sprite</code></a></li>
 <li><a href="#sprite-off-sprite1-to-sprite2"><code>SPRITE OFF sprite1 TO sprite2</code></a></li>
-<li><a href="#keyboard-onkeyboard-off"><code>KEYBOARD ON</code><br><code>KEYBOARD OFF</code></a></li>
-<li><a href="#sprite-view-onsprite-view-off"><code>SPRITE VIEW ON</code><br><code>SPRITE VIEW OFF</code></a></li>
-<li><a href="#bg-view-onbg-view-off"><code>BG VIEW ON</code><br><code>BG VIEW OFF</code></a></li>
+<li><a href="#keyboard-onkeyboard-off"><code>KEYBOARD ON</code><br /><code>KEYBOARD OFF</code></a></li>
+<li><a href="#sprite-view-onsprite-view-off"><code>SPRITE VIEW ON</code><br /><code>SPRITE VIEW OFF</code></a></li>
+<li><a href="#bg-view-onbg-view-off"><code>BG VIEW ON</code><br /><code>BG VIEW OFF</code></a></li>
 <li><a href="#on-vbl-off"><code>ON VBL OFF</code></a></li>
 <li><a href="#on-raster-off"><code>ON RASTER OFF</code></a></li>
 </ul>
 <p><strong><code>ON</code></strong>:</p>
 <ul>
-<li><a href="#on-gotoon-gosub"><code>ON GOTO</code><br><code>ON GOSUB</code></a></li>
+<li><a href="#on-gotoon-gosub"><code>ON GOTO</code><br /><code>ON GOSUB</code></a></li>
 <li><a href="#on-restore"><code>ON RESTORE</code></a></li>
-<li><a href="#keyboard-onkeyboard-off"><code>KEYBOARD ON</code><br><code>KEYBOARD OFF</code></a></li>
-<li><a href="#sprite-view-onsprite-view-off"><code>SPRITE VIEW ON</code><br><code>SPRITE VIEW OFF</code></a></li>
-<li><a href="#bg-view-onbg-view-off"><code>BG VIEW ON</code><br><code>BG VIEW OFF</code></a></li>
+<li><a href="#keyboard-onkeyboard-off"><code>KEYBOARD ON</code><br /><code>KEYBOARD OFF</code></a></li>
+<li><a href="#sprite-view-onsprite-view-off"><code>SPRITE VIEW ON</code><br /><code>SPRITE VIEW OFF</code></a></li>
+<li><a href="#bg-view-onbg-view-off"><code>BG VIEW ON</code><br /><code>BG VIEW OFF</code></a></li>
 <li><a href="#on-vbl-call-procedure"><code>ON VBL CALL procedure</code></a></li>
 <li><a href="#on-vbl-off"><code>ON VBL OFF</code></a></li>
 <li><a href="#on-raster-call-procedure"><code>ON RASTER CALL procedure</code></a></li>
@@ -4873,7 +4873,7 @@ PRINT 0.000000239&lt;&gt;0
 <p><strong><code>RANDOMIZE</code></strong>:</p>
 <ul>
 <li><a href="#randomize-seed"><code>RANDOMIZE seed</code></a></li>
-<li><a href="#random-rnd-addressrandom-rnd-max-address-randomize-seed-address"><code>random =RND address</code><br><code>random =RND(max, address)</code><br><code>RANDOMIZE seed [, address]</code></a></li>
+<li><a href="#random-rnd-addressrandom-rnd-max-address-randomize-seed-address"><code>random =RND address</code><br /><code>random =RND(max, address)</code><br /><code>RANDOMIZE seed [, address]</code></a></li>
 </ul>
 <p><strong><code>RASTER</code></strong>:</p>
 <ul>
@@ -4900,18 +4900,18 @@ PRINT 0.000000239&lt;&gt;0
 </ul>
 <p><strong><code>RIGHT</code></strong>:</p>
 <ul>
-<li><a href="#leading-left-text-length-trailing-right-text-length"><code>leading$ =LEFT$(text, length)</code><br><code>trailing$ =RIGHT$(text, length)</code></a></li>
-<li><a href="#left-text-length-replacement-right-text-length-replacement"><code>LEFT$(text, length) =replacement$</code><br><code>RIGHT$(text, length) =replacement$</code></a></li>
+<li><a href="#leading-left-text-length-trailing-right-text-length"><code>leading$ =LEFT$(text, length)</code><br /><code>trailing$ =RIGHT$(text, length)</code></a></li>
+<li><a href="#left-text-length-replacement-right-text-length-replacement"><code>LEFT$(text, length) =replacement$</code><br /><code>RIGHT$(text, length) =replacement$</code></a></li>
 </ul>
 <p><strong><code>RND</code></strong>:</p>
 <ul>
 <li><a href="#random-rnd"><code>random =RND</code></a></li>
 <li><a href="#random-rnd-max"><code>random =RND(max)</code></a></li>
-<li><a href="#random-rnd-addressrandom-rnd-max-address-randomize-seed-address"><code>random =RND address</code><br><code>random =RND(max, address)</code><br><code>RANDOMIZE seed [, address]</code></a></li>
+<li><a href="#random-rnd-addressrandom-rnd-max-address-randomize-seed-address"><code>random =RND address</code><br /><code>random =RND(max, address)</code><br /><code>RANDOMIZE seed [, address]</code></a></li>
 </ul>
 <p><strong><code>ROL</code></strong>:</p>
 <ul>
-<li><a href="#rol-address-placesror-address-places"><code>ROL address, places</code><br><code>ROR address, places</code></a></li>
+<li><a href="#rol-address-placesror-address-places"><code>ROL address, places</code><br /><code>ROR address, places</code></a></li>
 </ul>
 <p><strong><code>ROM</code></strong>:</p>
 <ul>
@@ -4920,23 +4920,23 @@ PRINT 0.000000239&lt;&gt;0
 </ul>
 <p><strong><code>ROR</code></strong>:</p>
 <ul>
-<li><a href="#rol-address-placesror-address-places"><code>ROL address, places</code><br><code>ROR address, places</code></a></li>
+<li><a href="#rol-address-placesror-address-places"><code>ROL address, places</code><br /><code>ROR address, places</code></a></li>
 </ul>
 <p><strong><code>SAFE.B</code></strong>:</p>
 <ul>
-<li><a href="#left-safe-ltop-safe-tright-safe-rbottom-safe-b"><code>left =SAFE.L</code><br><code>top =SAFE.T</code><br><code>right =SAFE.R</code><br><code>bottom =SAFE.B</code></a></li>
+<li><a href="#left-safe-ltop-safe-tright-safe-rbottom-safe-b"><code>left =SAFE.L</code><br /><code>top =SAFE.T</code><br /><code>right =SAFE.R</code><br /><code>bottom =SAFE.B</code></a></li>
 </ul>
 <p><strong><code>SAFE.L</code></strong>:</p>
 <ul>
-<li><a href="#left-safe-ltop-safe-tright-safe-rbottom-safe-b"><code>left =SAFE.L</code><br><code>top =SAFE.T</code><br><code>right =SAFE.R</code><br><code>bottom =SAFE.B</code></a></li>
+<li><a href="#left-safe-ltop-safe-tright-safe-rbottom-safe-b"><code>left =SAFE.L</code><br /><code>top =SAFE.T</code><br /><code>right =SAFE.R</code><br /><code>bottom =SAFE.B</code></a></li>
 </ul>
 <p><strong><code>SAFE.R</code></strong>:</p>
 <ul>
-<li><a href="#left-safe-ltop-safe-tright-safe-rbottom-safe-b"><code>left =SAFE.L</code><br><code>top =SAFE.T</code><br><code>right =SAFE.R</code><br><code>bottom =SAFE.B</code></a></li>
+<li><a href="#left-safe-ltop-safe-tright-safe-rbottom-safe-b"><code>left =SAFE.L</code><br /><code>top =SAFE.T</code><br /><code>right =SAFE.R</code><br /><code>bottom =SAFE.B</code></a></li>
 </ul>
 <p><strong><code>SAFE.T</code></strong>:</p>
 <ul>
-<li><a href="#left-safe-ltop-safe-tright-safe-rbottom-safe-b"><code>left =SAFE.L</code><br><code>top =SAFE.T</code><br><code>right =SAFE.R</code><br><code>bottom =SAFE.B</code></a></li>
+<li><a href="#left-safe-ltop-safe-tright-safe-rbottom-safe-b"><code>left =SAFE.L</code><br /><code>top =SAFE.T</code><br /><code>right =SAFE.R</code><br /><code>bottom =SAFE.B</code></a></li>
 </ul>
 <p><strong><code>SAVE</code></strong>:</p>
 <ul>
@@ -4945,16 +4945,16 @@ PRINT 0.000000239&lt;&gt;0
 <p><strong><code>SCROLL</code></strong>:</p>
 <ul>
 <li><a href="#scroll-layer-x-y"><code>SCROLL layer, [x], [y]</code></a></li>
-<li><a href="#x-scroll-x-layer-y-scroll-y-layer"><code>x =SCROLL.X(layer)</code><br><code>y =SCROLL.Y(layer)</code></a></li>
+<li><a href="#x-scroll-x-layer-y-scroll-y-layer"><code>x =SCROLL.X(layer)</code><br /><code>y =SCROLL.Y(layer)</code></a></li>
 <li><a href="#bg-scroll-x1-y1-to-x2-y2-step-x3-y3"><code>BG SCROLL x1, y1 to x2, y2 step x3, y3</code></a></li>
 </ul>
 <p><strong><code>SCROLL.X</code></strong>:</p>
 <ul>
-<li><a href="#x-scroll-x-layer-y-scroll-y-layer"><code>x =SCROLL.X(layer)</code><br><code>y =SCROLL.Y(layer)</code></a></li>
+<li><a href="#x-scroll-x-layer-y-scroll-y-layer"><code>x =SCROLL.X(layer)</code><br /><code>y =SCROLL.Y(layer)</code></a></li>
 </ul>
 <p><strong><code>SCROLL.Y</code></strong>:</p>
 <ul>
-<li><a href="#x-scroll-x-layer-y-scroll-y-layer"><code>x =SCROLL.X(layer)</code><br><code>y =SCROLL.Y(layer)</code></a></li>
+<li><a href="#x-scroll-x-layer-y-scroll-y-layer"><code>x =SCROLL.X(layer)</code><br /><code>y =SCROLL.Y(layer)</code></a></li>
 </ul>
 <p><strong><code>SGN</code></strong>:</p>
 <ul>
@@ -4962,15 +4962,15 @@ PRINT 0.000000239&lt;&gt;0
 </ul>
 <p><strong><code>SHOWN.H</code></strong>:</p>
 <ul>
-<li><a href="#width-shown-wheight-shown-h"><code>width =SHOWN.W</code><br><code>height =SHOWN.H</code></a></li>
+<li><a href="#width-shown-wheight-shown-h"><code>width =SHOWN.W</code><br /><code>height =SHOWN.H</code></a></li>
 </ul>
 <p><strong><code>SHOWN.W</code></strong>:</p>
 <ul>
-<li><a href="#width-shown-wheight-shown-h"><code>width =SHOWN.W</code><br><code>height =SHOWN.H</code></a></li>
+<li><a href="#width-shown-wheight-shown-h"><code>width =SHOWN.W</code><br /><code>height =SHOWN.H</code></a></li>
 </ul>
 <p><strong><code>SIN</code></strong>:</p>
 <ul>
-<li><a href="#cosine-cos-numbersine-sin-number"><code>cosine =COS(number)</code><br><code>sine =SIN(number)</code></a></li>
+<li><a href="#cosine-cos-numbersine-sin-number"><code>cosine =COS(number)</code><br /><code>sine =SIN(number)</code></a></li>
 </ul>
 <p><strong><code>SIZE</code></strong>:</p>
 <ul>
@@ -4996,7 +4996,7 @@ PRINT 0.000000239&lt;&gt;0
 <ul>
 <li><a href="#sprite-sprite-x-y-character"><code>SPRITE sprite, [x], [y], [character]</code></a></li>
 <li><a href="#sprite-sprite-pal-palette-flip-horizontal-vertical-prio-priority-size-size"><code>SPRITE sprite [PAL palette] [FLIP horizontal, vertical] [PRIO priority] [SIZE size]</code></a></li>
-<li><a href="#x-sprite-x-sprite-y-sprite-y-sprite"><code>x =SPRITE.X(sprite)</code><br><code>y =SPRITE.Y(sprite)</code></a></li>
+<li><a href="#x-sprite-x-sprite-y-sprite-y-sprite"><code>x =SPRITE.X(sprite)</code><br /><code>y =SPRITE.Y(sprite)</code></a></li>
 <li><a href="#character-sprite-c-sprite"><code>character =SPRITE.C(sprite)</code></a></li>
 <li><a href="#sprite-a-sprite-attributes"><code>SPRITE.A sprite, attributes</code></a></li>
 <li><a href="#attributes-sprite-a-sprite"><code>attributes =SPRITE.A(sprite)</code></a></li>
@@ -5006,7 +5006,7 @@ PRINT 0.000000239&lt;&gt;0
 <li><a href="#collides-sprite-hit-sprite"><code>collides =SPRITE HIT(sprite)</code></a></li>
 <li><a href="#collides-sprite-hit-sprite-sprite1"><code>collides =SPRITE HIT(sprite, sprite1)</code></a></li>
 <li><a href="#collides-sprite-hit-sprite-sprite1-to-sprite2"><code>collides =SPRITE.HIT(sprite, sprite1 to sprite2)</code></a></li>
-<li><a href="#sprite-view-onsprite-view-off"><code>SPRITE VIEW ON</code><br><code>SPRITE VIEW OFF</code></a></li>
+<li><a href="#sprite-view-onsprite-view-off"><code>SPRITE VIEW ON</code><br /><code>SPRITE VIEW OFF</code></a></li>
 </ul>
 <p><strong><code>SPRITE.A</code></strong>:</p>
 <ul>
@@ -5019,11 +5019,11 @@ PRINT 0.000000239&lt;&gt;0
 </ul>
 <p><strong><code>SPRITE.X</code></strong>:</p>
 <ul>
-<li><a href="#x-sprite-x-sprite-y-sprite-y-sprite"><code>x =SPRITE.X(sprite)</code><br><code>y =SPRITE.Y(sprite)</code></a></li>
+<li><a href="#x-sprite-x-sprite-y-sprite-y-sprite"><code>x =SPRITE.X(sprite)</code><br /><code>y =SPRITE.Y(sprite)</code></a></li>
 </ul>
 <p><strong><code>SPRITE.Y</code></strong>:</p>
 <ul>
-<li><a href="#x-sprite-x-sprite-y-sprite-y-sprite"><code>x =SPRITE.X(sprite)</code><br><code>y =SPRITE.Y(sprite)</code></a></li>
+<li><a href="#x-sprite-x-sprite-y-sprite-y-sprite"><code>x =SPRITE.X(sprite)</code><br /><code>y =SPRITE.Y(sprite)</code></a></li>
 </ul>
 <p><strong><code>SQR</code></strong>:</p>
 <ul>
@@ -5035,7 +5035,7 @@ PRINT 0.000000239&lt;&gt;0
 </ul>
 <p><strong><code>STOP</code></strong>:</p>
 <ul>
-<li><a href="#stopstop-voice"><code>STOP</code><br><code>STOP [voice]</code></a></li>
+<li><a href="#stopstop-voice"><code>STOP</code><br /><code>STOP [voice]</code></a></li>
 </ul>
 <p><strong><code>STR</code></strong>:</p>
 <ul>
@@ -5068,7 +5068,7 @@ PRINT 0.000000239&lt;&gt;0
 </ul>
 <p><strong><code>THEN</code></strong>:</p>
 <ul>
-<li><a href="#if-then-else-if-else-end-ifif-then"><code>IF/THEN/ELSE IF/ELSE/END IF</code><br><code>IF/THEN</code></a></li>
+<li><a href="#if-then-else-if-else-end-ifif-then"><code>IF/THEN/ELSE IF/ELSE/END IF</code><br /><code>IF/THEN</code></a></li>
 </ul>
 <p><strong><code>TIMER</code></strong>:</p>
 <ul>
@@ -5086,21 +5086,21 @@ PRINT 0.000000239&lt;&gt;0
 <li><a href="#bg-fill-x1-y1-to-x2-y2-char-character"><code>BG FILL x1, y1 TO x2, y2 CHAR character</code></a></li>
 <li><a href="#bg-tint-y1-y1-to-x2-y2-pal-palette-flip-horizontal-vertical-prio-priority"><code>BG TINT y1, y1 TO x2, y2 [PAL palette] [FLIP horizontal, vertical] [PRIO priority]</code></a></li>
 <li><a href="#bg-copy-x1-y1-width-height-to-x2-y2"><code>BG COPY x1, y1, width, height TO x2, y2</code></a></li>
-<li><a href="#add-variable-valueadd-variable-increment-min-to-max"><code>ADD variable, value</code><br><code>ADD variable, increment, min TO max</code></a></li>
+<li><a href="#add-variable-valueadd-variable-increment-min-to-max"><code>ADD variable, value</code><br /><code>ADD variable, increment, min TO max</code></a></li>
 <li><a href="#copy-source-count-to-destination"><code>COPY source, count TO destination</code></a></li>
 </ul>
 <p><strong><code>TOUCH</code></strong>:</p>
 <ul>
 <li><a href="#touched-touch"><code>touched =TOUCH</code></a></li>
-<li><a href="#x-touch-xy-touch-y"><code>x =TOUCH.X</code><br><code>y =TOUCH.Y</code></a></li>
+<li><a href="#x-touch-xy-touch-y"><code>x =TOUCH.X</code><br /><code>y =TOUCH.Y</code></a></li>
 </ul>
 <p><strong><code>TOUCH.X</code></strong>:</p>
 <ul>
-<li><a href="#x-touch-xy-touch-y"><code>x =TOUCH.X</code><br><code>y =TOUCH.Y</code></a></li>
+<li><a href="#x-touch-xy-touch-y"><code>x =TOUCH.X</code><br /><code>y =TOUCH.Y</code></a></li>
 </ul>
 <p><strong><code>TOUCH.Y</code></strong>:</p>
 <ul>
-<li><a href="#x-touch-xy-touch-y"><code>x =TOUCH.X</code><br><code>y =TOUCH.Y</code></a></li>
+<li><a href="#x-touch-xy-touch-y"><code>x =TOUCH.X</code><br /><code>y =TOUCH.Y</code></a></li>
 </ul>
 <p><strong><code>TRACE</code></strong>:</p>
 <ul>
@@ -5124,14 +5124,14 @@ PRINT 0.000000239&lt;&gt;0
 </ul>
 <p><strong><code>VBL</code></strong>:</p>
 <ul>
-<li><a href="#wait-vblwait-frame"><code>WAIT VBL</code><br><code>WAIT frame</code></a></li>
+<li><a href="#wait-vblwait-frame"><code>WAIT VBL</code><br /><code>WAIT frame</code></a></li>
 <li><a href="#on-vbl-call-procedure"><code>ON VBL CALL procedure</code></a></li>
 <li><a href="#on-vbl-off"><code>ON VBL OFF</code></a></li>
 </ul>
 <p><strong><code>VIEW</code></strong>:</p>
 <ul>
-<li><a href="#sprite-view-onsprite-view-off"><code>SPRITE VIEW ON</code><br><code>SPRITE VIEW OFF</code></a></li>
-<li><a href="#bg-view-onbg-view-off"><code>BG VIEW ON</code><br><code>BG VIEW OFF</code></a></li>
+<li><a href="#sprite-view-onsprite-view-off"><code>SPRITE VIEW ON</code><br /><code>SPRITE VIEW OFF</code></a></li>
+<li><a href="#bg-view-onbg-view-off"><code>BG VIEW ON</code><br /><code>BG VIEW OFF</code></a></li>
 </ul>
 <p><strong><code>VOLUME</code></strong>:</p>
 <ul>
@@ -5140,7 +5140,7 @@ PRINT 0.000000239&lt;&gt;0
 <p><strong><code>WAIT</code></strong>:</p>
 <ul>
 <li><a href="#wait-tap"><code>WAIT TAP</code></a></li>
-<li><a href="#wait-vblwait-frame"><code>WAIT VBL</code><br><code>WAIT frame</code></a></li>
+<li><a href="#wait-vblwait-frame"><code>WAIT VBL</code><br /><code>WAIT frame</code></a></li>
 </ul>
 <p><strong><code>WAVE</code></strong>:</p>
 <ul>

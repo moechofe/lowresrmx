@@ -36,6 +36,8 @@ h4::before { content: " "; background-color: blue; height: 100%; width: 1.5em; d
 h4>code { font-size: 1.2em; background-color: unset; padding: unset; border-radius: unset; white-space: unset; }
 h4>br::before { content: " test "; }
 
+h1:focus, h2:focus, h3:focus, h4:focus, h5:focus, h6:focus, [id]:focus { outline: none; box-shadow: none; }
+
 .famicube{display:flex;flex-wrap:wrap}
 .famicube div{font-family: monospace; font-weight: bold; padding: 0.8em 1em; width: 2em; font-size: 1.2em; text-align: center;}
 .famicube div:nth-child(1){background:#000000;color:#fff}

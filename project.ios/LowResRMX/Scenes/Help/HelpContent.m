@@ -52,7 +52,7 @@
 
 - (void)parser:(NSXMLParser *)parser didStartElement:(NSString *)elementName namespaceURI:(NSString *)namespaceURI qualifiedName:(NSString *)qName attributes:(NSDictionary *)attributeDict
 {
-    //NSLog(@"tag: %@",elementName);
+//    NSLog(@"tag: %@",elementName);
     if ([self.headerTags indexOfObject:elementName.lowercaseString] != NSNotFound)
     {
         self.currentTag = elementName;
