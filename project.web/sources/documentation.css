@@ -12,7 +12,7 @@ ul, ol { padding-left: 1.75em; }
 code { background-color: #ddd; padding: 0.1em 0.25em; border-radius: 0.2em; white-space: nowrap; }
 pre { background-color: #e7e7e7; border-radius: 0.2em; padding: 0.1em 0.25em; margin-left: -0.25em; overflow-x: scroll; }
 pre code { background-color: unset; padding: unset; border-radius: unset; white-space: unset; }
-li code { white-space: unset; }
+li code, p code { white-space: unset; }
 
 table { border-collapse: collapse; }
 table thead, table tr:not(:last-child) { border-bottom: 1px solid #999; }

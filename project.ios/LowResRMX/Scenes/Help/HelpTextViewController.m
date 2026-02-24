@@ -13,7 +13,7 @@
 #import "App-Swift.h"
 #import <WebKit/WebKit.h>
 
-@interface HelpTextViewController () <WKNavigationDelegate>
+@interface HelpTextViewController () <WKNavigationDelegate, UIScrollViewDelegate>
 
 @property (weak, nonatomic) IBOutlet WKWebView *webView;
 @property (weak, nonatomic) IBOutlet UIActivityIndicatorView *activityView;
@@ -27,6 +27,11 @@
     [super viewDidLoad];
 
     self.webView.navigationDelegate = self;
+		self.webView.scrollView.alwaysBounceHorizontal = NO;
+		self.webView.scrollView.bounces = NO;
+		self.webView.scrollView.showsHorizontalScrollIndicator = NO;
+		self.webView.scrollView.contentSize = CGSizeMake(self.webView.frame.size.width, self.webView.scrollView.contentSize.height);
+		self.webView.scrollView.delegate = self; // If you want to enforce further
 
     self.navigationItem.leftBarButtonItem = self.splitViewController.displayModeButtonItem;
     self.navigationItem.leftItemsSupplementBackButton = YES;
@@ -73,6 +78,14 @@
     if (self.chapter)
     {
         [self jumpToChapter:self.chapter];
+    }
+}
+
+- (void)scrollViewDidScroll:(UIScrollView *)scrollView {
+    CGPoint offset = scrollView.contentOffset;
+    if (offset.x != 0) {
+        offset.x = 0;
+        scrollView.contentOffset = offset;
     }
 }
 
