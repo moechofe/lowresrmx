@@ -4,3 +4,7 @@
 .DS_Store
 build*
 xcuserdata
+node_modules
+package-lock.json
+package.json
+venv

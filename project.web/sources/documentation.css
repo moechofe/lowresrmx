@@ -1,33 +1,43 @@
-a { color: #36b; }
-a:visited { color: #639; }
-body { font-family: 'Baskerville', 'Libre Baskerville', serif; font-size: 1.3em; margin: 0; background: #f7f2ed; }
-h1, h2, h3, h4, h5 { margin: 2.0em 0 1em 0; background: #639; color: #fff; padding: 0.5em 1em 0.4em 1em; }
-body h1 { margin-top: 0; }
-p { margin: 1em; }
-blockquote { margin: 1em 0; border-left: solid 1em #c66; padding: 0.2em 0.4em; background-color: #f2d9d9; font-style: italic; }
-code { background-color: #927353; color: #fff; padding: 0.2em 0.3em; margin: -0.2em 0.1em; border-radius: 0.3em; text-decoration: none; white-space: preserve nowrap; }
-a code { text-decoration: underline solid 1px #fff; background-color: #a86e34; }
-del { text-decoration-color: #fff; }
-del code { background-color: #a35; }
-h4,h5 { background-color: #e94; color: #420; font-size: 1em; }
-h4>code,h5>code { background-color: unset; color: unset; padding: unset; margin: 0; border-radius: unset; font-size: 1.5em; }
-code+code { display: inline-block; }
-pre { white-space: pre-wrap; font-family: 'Menlon-Regular', monospace; margin: 0; background-color: #dad0c6; padding: 0.5em 1em; display: inline-block; -moz-tab-size:2; -o-tab-size:2; tab-size:2; border-top-right-radius: 0.3em; border-bottom-right-radius: 0.3em; }
-pre>code { padding: 0; margin: 0; background-color: unset; color: #000; }
-blockquote>pre { margin-left: 1em; }
-ul { padding-left: 2em; }
-ul li>pre { margin-left: -2em; padding-left: 2.0em; }
-ol li>pre { margin-left: -2em; padding-left: 2.5em; }
-blockquote pre,blockquote code { background-color: #c66; font-style: normal; }
-table { border-collapse: collapse; margin: 0 1em; display: inline-block; }
-table+table { margin-left: 2em; vertical-align:top; }
-td, th { padding: 0.2em 0.8em; text-align: left; }
-tbody>tr, tr+tr { border-top: solid 0.1em #b8a189; }
-hr { border: none; border-top: solid 0.15em #639; margin: 1em; }
-.right { text-align: right; }
-.left { text-align: left; }
+html { font-size: 1.1em; }
+* { font-size: 1em; font-family: system-ui; }
+body { margin: 1.5em; overflow-x: hidden; }
+body>* { margin: 0.75em 0 ; }
+
+code { font-family: monospace; font-size: 1rem; }
+
+hr { border: none; border-top: 1px solid #999; overflow: visible; text-align: center; height: 1px; margin-top: 1.5em }
+
+ul, ol { padding-left: 1.75em; }
+
+code { background-color: #ddd; padding: 0.1em 0.25em; border-radius: 0.2em; white-space: nowrap; }
+pre { background-color: #e7e7e7; border-radius: 0.2em; padding: 0.1em 0.25em; margin-left: -0.25em; overflow-x: scroll; }
+pre code { background-color: unset; padding: unset; border-radius: unset; white-space: unset; }
+li code { white-space: unset; }
+
+table { border-collapse: collapse; }
+table thead, table tr:not(:last-child) { border-bottom: 1px solid #999; }
+table th, table td { padding: 0.3em 0.6em; vertical-align: text-top; }
+table .right { text-align: right; }
+
+blockquote { font-style: italic; margin-left: 2em; position: relative; background: #e7d6cf; border-radius: 0.2em; }
+blockquote::before { content: "“"; position: absolute; height: 100%; left: -0.6em; width: 2em; text-align: left; font-size: 5em; color: #d9beb4; }
+blockquote>p { padding: 0.8em 1em; }
+blockquote code { background-color: #d3ab9d; }
+
+h1 { font-size: 1.6em; }
+h2 { font-size: 1.4em; margin: 2.5em 0 0.5em 0; }
+h2::before { content: " "; background: #ccc; width: calc(100% + 2.2em); height: 0.2em; display: block; margin-left: -1.1em; top: -0.5em; position: relative; }
+h3, h4, h5 { font-size: 1.2em; }
+h3, h5 { font-size: 1.2em; margin: 1.5em 0 0.5em 0; }
+h3::before { content: " "; background: #ccc; width: calc(100% + 2.6em); height: 0.1em; display: block; margin-left: -1.3em; top: -0.25em; position: relative; }
+
+h4 { position: relative; background-color: #ccc; padding: 0.1em 0.25em; border-radius: 0.2em; margin: 1.5em 0em 0.5em -0.25em; }
+h4::before { content: " "; background-color: blue; height: 100%; width: 1.5em; display: block; float: left; position: absolute; left: -2em; border-radius: 0.2em; top: 0; }
+h4>code { font-size: 1.2em; background-color: unset; padding: unset; border-radius: unset; white-space: unset; }
+h4>br::before { content: " test "; }
+
 .famicube{display:flex;flex-wrap:wrap}
-.famicube div{font-family:monospace;padding:0.8em 1em;width:2em}
+.famicube div{font-family: monospace; font-weight: bold; padding: 0.8em 1em; width: 2em; font-size: 1.2em; text-align: center;}
 .famicube div:nth-child(1){background:#000000;color:#fff}
 .famicube div:nth-child(2){background:#e03c28;color:#000}
 .famicube div:nth-child(3){background:#ffffff;color:#000}

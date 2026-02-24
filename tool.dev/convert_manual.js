@@ -1,0 +1,54 @@
+import fs from 'fs'
+
+import markdownit from 'markdown-it'
+import markdownItAnchor from 'markdown-it-anchor'
+const slugify = (s) => encodeURIComponent(String(s).toLowerCase().replace(/[\W-]+/g, '-').replace(/-+$/, ''))
+const mdit = markdownit({
+	html:true,
+	xhtmlOut:true,
+	breaks:true, // doesn't work inside links
+}).use(markdownItAnchor,{slugify})
+
+import path from 'path'
+import { fileURLToPath } from 'url'
+const scriptDir = path.dirname(fileURLToPath(import.meta.url))
+const rootDir = path.resolve(scriptDir, '..')
+
+const md = fs.readFileSync(path.join(rootDir, 'asset.dev', 'manual.md'), 'utf8')
+const css = fs.readFileSync(path.join(rootDir, 'project.web', 'sources', 'documentation.css'), 'utf8')
+
+const html = mdit.render(md).replace(/&lt;br&gt;/g, '<br />').replace(/ style="text-align:right"/g, ' class="right"');
+
+const community = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+<title>Documentation — Retro Game Creator</title>
+<link rel="stylesheet" href="documentation.css">
+<link rel="icon" href="favicon.ico" type="image/x-icon">
+</head>
+<body>
+${html}
+</body>
+</html>`
+
+const bundle = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Retro Game Creator - Documentation</title>
+<style>
+${css}
+</style>
+<body>
+${html}
+</body>
+</html>
+`
+
+fs.writeFileSync(path.join(rootDir, 'project.web', 'sources', 'documentation.html'), community, 'utf8')
+
+fs.writeFileSync(path.join(rootDir, 'asset.manual', 'manual.html'), bundle, 'utf8')
