@@ -544,7 +544,6 @@
 			NSRange labelsRange = [match rangeAtIndex:2];
 			NSString *labelsString = [text substringWithRange:labelsRange];
 			NSArray *labels = [labelsString componentsSeparatedByString:@","];
-			NSUInteger offset = labelsRange.location;
 			// Scan within labelsString, map to full text using labelsRange.location
 			NSUInteger localPos = 0;
 			for (NSString *label in labels) {
