@@ -604,6 +604,7 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
             // immediate update
             shouldUpdateSideBar = false
             indexSideBar.update()
+            (sourceCodeTextView)?.applyColoration(AppController.shared.editorSyntaxHighlightingMode.rawValue, in: NSMakeRange(0, sourceCodeTextView.text.count))
         } else {
             // update later
             indexSideBar.shouldUpdateOnTouch = true

@@ -129,7 +129,7 @@ class IndexSideBar: UIControl {
         
         text.enumerateSubstrings(in: text.startIndex..<text.endIndex, options: .byLines) { (string, substringRange, enclosingRange, stop) in
             if let string = string {
-                print("\(numLines): \(string)")
+                //print("\(numLines): \(string)")
                 if let match = regex.firstMatch(in: string, options: [], range: NSRange(location: 0, length: string.utf16.count)) {
                     var capturedLabel: String?
                     for i in 1..<match.numberOfRanges {
