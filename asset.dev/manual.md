@@ -1,9 +1,5 @@
 # Retro Game Creator - Documentation
 
-> This is a fork of the excellent fantasy console Lowres NX by Timo "Inutilis" Kloss.
-> This is a heavily modified version and way more complicated to use, I recommend you to stay on the original app: 🌐&nbsp;[LowRes NX Coder on App Store](https://apps.apple.com/app/lowres-nx-coder/id1318884577).
-> **Important:** The app MAY NOT be available anymore, look at the 🌐&nbsp;[LowRes NX community web site](https://lowresnx.inutilis.com/) for more informations.
-
 ## What is Retro Game Creator?
 
 Create games and play them on the go using an iPhone or iPad. Retro Game Creator is a virtual game console and game development environment that includes all the tools needed to start and finish a project.
@@ -14,14 +10,17 @@ Retro Game Creator simulates a virtual retro game console directly inside your d
 
 It emulates old-school 8-bit/16-bit console hardware by replicating their limitations: a low number of colors, limited memory, and slow processing power.
 
+> This is a fork of the excellent fantasy console Lowres NX by Timo "Inutilis" Kloss.
+> This is a heavily modified version and way more complicated to use, I recommend you to stay on the original app: 🌐&nbsp;[LowRes NX Coder on App Store](https://apps.apple.com/app/lowres-nx-coder/id1318884577).
+> **Important:** The app MAY NOT be available anymore, look at the 🌐&nbsp;[LowRes NX community web site](https://lowresnx.inutilis.com/) for more informations.
+
+> **New user?** Skip the next section and `GOTO` [How does it works](#how-does-it-work).
+
 ## Difference
 
 The goal of the app is to provide a development environment that I can use during my commutes on the subway, and later, to be able to publish a real app on the stores.
 
 The original LowRes NX, despite being an excellent development environment, lacks some capabilities needed for use on a handheld device.
-
-> If you already know how to use Lowres NX, you can read the list of differences below.
-> For new users, I recommend jumping to the [How does it work](#how-does-it-work) section.
 
 **Background:**
 
@@ -599,7 +598,7 @@ Arrays can also store strings:
     player_name$(0)="Untel"
     player_name$(1)="John Doe"
 
-See `DIM`, `DIM GLOBAL` and `=UBOUND` for more information.
+See [`DIM`](#dim), [`DIM GLOBAL`](#dim-global) and [`=UBOUND`](#-ubound) for more information.
 
 ### Labels, jumps and embedded data
 

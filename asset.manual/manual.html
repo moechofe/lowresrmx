@@ -115,24 +115,22 @@ h1:focus, h2:focus, h3:focus, h4:focus, h5:focus, h6:focus, [id]:focus { outline
 
 </style>
 <body>
-<h1 id="retro-game-creator-documentation" tabindex="-1">Retro Game Creator - Documentation</h1>
-<blockquote>
-<p>This is a fork of the excellent fantasy console Lowres NX by Timo &quot;Inutilis&quot; Kloss.<br />
-This is a heavily modified version and way more complicated to use, I recommend you to stay on the original app: 🌐 <a href="https://apps.apple.com/app/lowres-nx-coder/id1318884577">LowRes NX Coder on App Store</a>.<br />
-<strong>Important:</strong> The app MAY NOT be available anymore, look at the 🌐 <a href="https://lowresnx.inutilis.com/">LowRes NX community web site</a> for more informations.</p>
-</blockquote>
 <h2 id="what-is-retro-game-creator" tabindex="-1">What is Retro Game Creator?</h2>
 <p>Create games and play them on the go using an iPhone or iPad. Retro Game Creator is a virtual game console and game development environment that includes all the tools needed to start and finish a project.</p>
 <p>It includes a project manager, a code editor, and various tools to edit game assets: sprites, palettes, backgrounds, instruments, and music.</p>
 <p>Retro Game Creator simulates a virtual retro game console directly inside your device, allowing users to create, play, and share their games.</p>
 <p>It emulates old-school 8-bit/16-bit console hardware by replicating their limitations: a low number of colors, limited memory, and slow processing power.</p>
+<blockquote>
+<p>This is a fork of the excellent fantasy console Lowres NX by Timo &quot;Inutilis&quot; Kloss.<br />
+This is a heavily modified version and way more complicated to use, I recommend you to stay on the original app: 🌐 <a href="https://apps.apple.com/app/lowres-nx-coder/id1318884577">LowRes NX Coder on App Store</a>.<br />
+<strong>Important:</strong> The app MAY NOT be available anymore, look at the 🌐 <a href="https://lowresnx.inutilis.com/">LowRes NX community web site</a> for more informations.</p>
+</blockquote>
+<blockquote>
+<p><strong>New user?</strong> Skip the next section and <code>GOTO</code> <a href="#how-does-it-work">How does it works</a>.</p>
+</blockquote>
 <h2 id="difference" tabindex="-1">Difference</h2>
 <p>The goal of the app is to provide a development environment that I can use during my commutes on the subway, and later, to be able to publish a real app on the stores.</p>
 <p>The original LowRes NX, despite being an excellent development environment, lacks some capabilities needed for use on a handheld device.</p>
-<blockquote>
-<p>If you already know how to use Lowres NX, you can read the list of differences below.<br />
-For new users, I recommend jumping to the <a href="#how-does-it-work">How does it work</a> section.</p>
-</blockquote>
 <p><strong>Background:</strong></p>
 <ul>
 <li>
@@ -839,7 +837,7 @@ player_score(1)=456
 player_name$(0)=&quot;Untel&quot;
 player_name$(1)=&quot;John Doe&quot;
 </code></pre>
-<p>See <code>DIM</code>, <code>DIM GLOBAL</code> and <code>=UBOUND</code> for more information.</p>
+<p>See <a href="#dim"><code>DIM</code></a>, <a href="#dim-global"><code>DIM GLOBAL</code></a> and <a href="#-ubound"><code>=UBOUND</code></a> for more information.</p>
 <h3 id="labels-jumps-and-embedded-data" tabindex="-1">Labels, jumps and embedded data</h3>
 <p>Another feature that uses identifiers are labels. They are used to mark a position in the program to go back to it later. Users need to understand that programs are executed line by line from top to bottom and labels are one solution to go back to the top of the program or anywhere else (almost).</p>
 <p>Here is an example that demonstrates how to recreate the program above using labels:</p>
