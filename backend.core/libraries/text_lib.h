@@ -52,6 +52,9 @@ struct TextLib
 	int blink;
 };
 
+struct Plane *txtlib_getBackground(struct TextLib *lib, int bg);
+void txtlib_scroll(struct Plane *plane, int fromX, int fromY, int toX, int toY, int deltaX, int deltaY);
+void txtlib_setCellAt(struct Plane *plane, int x, int y, int character, union CharacterAttributes attr);
 void txtlib_printText(struct TextLib *lib, const char *text);
 bool txtlib_deleteBackward(struct TextLib *lib);
 void txtlib_writeText(struct TextLib *lib, const char *text, int x, int y);

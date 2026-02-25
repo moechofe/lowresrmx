@@ -14,6 +14,7 @@
 #include "rcstring.h"
 #include "machine.h"
 #include "globmatch.h"
+#include "config.h"
 #include <string.h>
 #include <stdlib.h>
 
@@ -201,7 +202,6 @@ static void print_code(struct Core *core)
 		print_line_of_code(core, next, ' ');
 
 	txtlib_printText(textLib, "\n");
-	txtlib_scrollWindowIfNeeded(textLib);
 }
 
 static bool autoNext = false;
@@ -313,6 +313,9 @@ static void process_command_line(struct Core *core)
 
 			struct ControlsInfo info;
 			info.keyboardMode = KeyboardModeOff;
+#ifdef SIMULATED_KEYBOARD
+			core->interpreter->simulatedKeyboardOn = false;
+#endif
 			core->delegate->controlsDidChange(core->delegate->context, info);
 		}
 
@@ -549,6 +552,9 @@ void overlay_debugger(struct Core *core)
 
 	struct ControlsInfo info;
 	info.keyboardMode = KeyboardModeOn;
+#ifdef SIMULATED_KEYBOARD
+	core->interpreter->simulatedKeyboardOn = true;
+#endif
 	core->delegate->controlsDidChange(core->delegate->context, info);
 
 	if (autoNext)

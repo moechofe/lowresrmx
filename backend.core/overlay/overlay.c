@@ -23,6 +23,8 @@
 #include "core.h"
 #include "io_chip.h"
 #include "overlay_debugger.h"
+#include "text_lib.h"
+#include "video_chip.h"
 #include <math.h>
 #include <string.h>
 
@@ -48,14 +50,36 @@ void overlay_updateLayout(struct Core *core, struct CoreInput *input)
 	struct IORegisters *io = &core->machine->ioRegisters;
 	struct TextLib *lib = &core->overlay->textLib;
 	int k = io->keyboardHeight;
+	int oldHeight = lib->windowHeight;
 #ifdef SIMULATED_KEYBOARD
 	if (core->interpreter->simulatedKeyboardOn) k = 154;
 #endif
 	int b = io->safe.bottom > k ? io->safe.bottom : k;
+	int new_height = io->shown.height / 8 - (io->safe.top + 7) / 8 - (b + 7) / 8 - 1; // give
+
+	// keyboard has been shown, make sure to scroll the overlay
+	if (k > 0 && new_height < oldHeight)
+	{
+		int keyboard_height_in_cells = ceil(k/8);
+
+		// how many cells are covered by the keyboard
+		int cursor_y = lib->cursorY + lib->windowY;
+		// int new_bottom = io->shown.height / 8 - (lib->windowY + new_height); //keyboard_height_in_cells;
+		int need_to_scroll_up = cursor_y - new_height;
+
+		if (need_to_scroll_up > 0)
+		{
+			struct Plane *plane = txtlib_getBackground(lib, lib->windowBg);
+			txtlib_scroll(plane, lib->windowX, lib->windowY, lib->windowX + lib->windowWidth - 1, lib->windowY + lib->windowHeight - 1, 0, -need_to_scroll_up);
+
+			lib->cursorY -= need_to_scroll_up;
+		}
+	}
+
 	lib->windowX = (io->safe.left + 7) / 8;
 	lib->windowY = (io->safe.top + 7) / 8;
 	lib->windowWidth = io->shown.width / 8 - (io->safe.left + 7) / 8 - (io->safe.right + 7) / 8;
-	lib->windowHeight = io->shown.height / 8 - (io->safe.top + 7) / 8 - (b + 7) / 8 - 1; // give space for message
+	lib->windowHeight = new_height;
 }
 
 void overlay_reset(struct Core *core)
