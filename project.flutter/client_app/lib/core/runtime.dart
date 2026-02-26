@@ -165,7 +165,7 @@ class Runtime extends ChangeNotifier {
 	static const int audioSampleRate = 44100;
 	static const int audioChannels = 2;
 	static const int audioBufferSamples = 1470; // matches iOS/SDL buffer size
-	final ffi.Pointer<ffi.Uint16> audioBuffer = calloc<ffi.Uint16>(audioBufferSamples * audioChannels);
+	final ffi.Pointer<ffi.Int16> audioBuffer = calloc<ffi.Int16>(audioBufferSamples * audioChannels);
 	Timer? _audioTimer;
 
 	void startAudioStream() {
@@ -173,12 +173,12 @@ class Runtime extends ChangeNotifier {
 		// Use a timer to regularly generate and push audio
 		_audioTimer = Timer.periodic(Duration(milliseconds: (audioBufferSamples * 1000) ~/ audioSampleRate), (_) {
 			// Fill PCM buffer using FFI
-			runnerRenderAudio(runner, audioBuffer, audioBufferSamples, audioSampleRate, 0);
+			runnerRenderAudio(runner, audioBuffer, audioBufferSamples * audioChannels, audioSampleRate, 0);
 			// Convert PCM int16 to Float32List (-1.0..1.0)
 			final Float32List floatSamples = Float32List(audioBufferSamples * audioChannels);
-			final Uint16List pcm = audioBuffer.asTypedList(audioBufferSamples * audioChannels);
+			final Int16List pcm = audioBuffer.asTypedList(audioBufferSamples * audioChannels);
 			for (int i = 0; i < pcm.length; i++) {
-				floatSamples[i] = pcm[i].toSigned(16) / 32768.0;
+				floatSamples[i] = pcm[i] / 32768.0;
 			}
 			audioStream.push(floatSamples);
 		});

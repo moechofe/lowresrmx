@@ -110,6 +110,30 @@ class CorePluginBindings {
   late final _runnerStart = _runnerStartPtr.asFunction<
       void Function(ffi.Pointer<Runner>, int, ffi.Pointer<ffi.Char>, int)>();
 
+  void runnerRenderAudio(
+    ffi.Pointer<Runner> runner,
+    ffi.Pointer<ffi.Int16> output,
+    int numSamples,
+    int outputFrequency,
+    int volume,
+  ) {
+    return _runnerRenderAudio(
+      runner,
+      output,
+      numSamples,
+      outputFrequency,
+      volume,
+    );
+  }
+
+  late final _runnerRenderAudioPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Void Function(ffi.Pointer<Runner>, ffi.Pointer<ffi.Int16>,
+              ffi.Int, ffi.Int, ffi.Int)>>('runnerRenderAudio');
+  late final _runnerRenderAudio = _runnerRenderAudioPtr.asFunction<
+      void Function(
+          ffi.Pointer<Runner>, ffi.Pointer<ffi.Int16>, int, int, int)>();
+
   CoreError runnerUpdate(
     ffi.Pointer<Runner> arg0,
     ffi.Pointer<Input> arg1,
@@ -236,32 +260,7 @@ class CorePluginBindings {
       'inputKeyDown');
   late final _inputKeyDown =
       _inputKeyDownPtr.asFunction<void Function(ffi.Pointer<Input>, int)>();
-
-	late final _runnerRenderAudioPtr = _lookup<
-		ffi.NativeFunction<
-			ffi.Void Function(ffi.Pointer<Runner>, ffi.Pointer<ffi.Uint16>, ffi.Int, ffi.Int, ffi.Int)>>('runnerRenderAudio');
-
-	late final _runnerRenderAudio = _runnerRenderAudioPtr.asFunction<void Function(
-		ffi.Pointer<Runner>, ffi.Pointer<ffi.Uint16>, int, int, int)>();
-
-	void runnerRenderAudio(
-		ffi.Pointer<Runner> arg0,
-		ffi.Pointer<ffi.Uint16> arg1,
-		int arg2,
-		int arg3,
-		int arg4
-	) {
-		return _runnerRenderAudio(
-			arg0,
-			arg1,
-			arg2,
-			arg3,
-			arg4
-		);
-	}
-
 }
-
 
 /// @brief Hold stuff to control the core.
 final class Runner extends ffi.Struct {
