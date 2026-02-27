@@ -19,7 +19,9 @@ dependencies:
   path_provider: ^2.1.3
   package_info_plus: ^9.0.0
   shared_preferences: ^2.2.3
-  mp_audio_stream: ^0.2.2
+  # flutter_soloud: ^3.4.10
+  flutter_miniaudio:
+    git: https://github.com/bill0015/flutter_miniaudio.git
   image: ^4.2.0
   markdown_widget: ^2.3.2+6
   re_highlight: ^0.0.3

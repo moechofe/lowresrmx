@@ -8,11 +8,6 @@ import 'package:lowresrmx/page/library_page.dart';
 import 'package:lowresrmx/theme.dart';
 import 'package:provider/provider.dart';
 
-import 'dart:math' as math;
-import 'dart:async';
-import 'dart:typed_data';
-import 'package:mp_audio_stream/mp_audio_stream.dart';
-
 late final ComPort comPort;
 
 void main() async {

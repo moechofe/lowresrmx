@@ -1,5 +1,19 @@
+// TODO: TEST to reach the end of a program, how it is handled compare to produce an error
+// TODO: TEST to reach the end of a program, how it is handled compare to produce an error
+// TODO: TEST to reach the end of a program, how it is handled compare to produce an error
+// TODO: TEST to reach the end of a program, how it is handled compare to produce an error
+// TODO: TEST to reach the end of a program, how it is handled compare to produce an error
+// TODO: TEST to reach the end of a program, how it is handled compare to produce an error
+// TODO: TEST to reach the end of a program, how it is handled compare to produce an error
+// TODO: TEST to reach the end of a program, how it is handled compare to produce an error
+// TODO: TEST to reach the end of a program, how it is handled compare to produce an error
+// TODO: TEST to reach the end of a program, how it is handled compare to produce an error
+// TODO: TEST to reach the end of a program, how it is handled compare to produce an error
+// TODO: TEST to reach the end of a program, how it is handled compare to produce an error
+// TODO: TEST to reach the end of a program, how it is handled compare to produce an error
+// TODO: TEST to reach the end of a program, how it is handled compare to produce an error
+
 import 'dart:async';
-import 'dart:typed_data';
 import 'dart:developer';
 import 'dart:ffi' as ffi;
 import 'dart:isolate';
@@ -10,8 +24,10 @@ import 'package:flutter/material.dart';
 
 import 'package:ffi/ffi.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:flutter/services.dart';
 import 'package:image/image.dart' as img;
-import 'package:mp_audio_stream/mp_audio_stream.dart';
+// import 'package:flutter_soloud/flutter_soloud.dart';
+import 'package:flutter_miniaudio/flutter_miniaudio.dart';
 
 import 'package:core_plugin/core_plugin_bindings_generated.dart';
 import 'package:core_plugin/core_plugin.dart';
@@ -87,6 +103,9 @@ enum IsolateMessageType {
   traceOff,
   thumbnail,
   renderFrame,
+	audioStart,
+	audioStop,
+	renderAudio,
 }
 
 // FIXME: Message should have Message in their name. Common!
@@ -162,34 +181,12 @@ class MeasurementMsg {
 /// Bridge between the core and the app
 class Runtime extends ChangeNotifier {
 
-	static const int audioSampleRate = 44100;
-	static const int audioChannels = 2;
-	static const int audioBufferSamples = 1470; // matches iOS/SDL buffer size
-	final ffi.Pointer<ffi.Int16> audioBuffer = calloc<ffi.Int16>(audioBufferSamples * audioChannels);
-	Timer? _audioTimer;
-
-	void startAudioStream() {
-		audioStream.init(channels: audioChannels, sampleRate: audioSampleRate);
-		// Use a timer to regularly generate and push audio
-		_audioTimer = Timer.periodic(Duration(milliseconds: (audioBufferSamples * 1000) ~/ audioSampleRate), (_) {
-			// Fill PCM buffer using FFI
-			runnerRenderAudio(runner, audioBuffer, audioBufferSamples * audioChannels, audioSampleRate, 0);
-			// Convert PCM int16 to Float32List (-1.0..1.0)
-			final Float32List floatSamples = Float32List(audioBufferSamples * audioChannels);
-			final Int16List pcm = audioBuffer.asTypedList(audioBufferSamples * audioChannels);
-			for (int i = 0; i < pcm.length; i++) {
-				floatSamples[i] = pcm[i] / 32768.0;
-			}
-			audioStream.push(floatSamples);
-		});
-		audioStream.resume();
-	}
-
-	void stopAudioStream() {
-		_audioTimer?.cancel();
-		audioStream.uninit();
-		calloc.free(audioBuffer);
-	}
+	final audio = MiniaudioPlayer(
+  	sampleRate: 44100,
+  	channels: 2,
+  	bufferFrames: 1470,
+	);
+	final ffi.Pointer<ffi.Int16> audioBuffer = calloc<ffi.Int16>(1470 * 2);
 
   static int screenWidth = 216;
   static int screenHeight = 384;
@@ -199,6 +196,7 @@ class Runtime extends ChangeNotifier {
   ui.Image? image;
   String? dataDiskToSave;
   bool keyboardOpen = false;
+	// AudioSource? audioStream;
 
   /// During input mode, the keyboard should be openned on a tap.
   bool inputMode = false;
@@ -208,25 +206,22 @@ class Runtime extends ChangeNotifier {
   final ffi.Pointer<ffi.Uint8> pixels = calloc<ffi.Uint8>(bufferSize);
   final ffi.Pointer<CoreDelegate> delegate = calloc();
 
-  final audioStream = getAudioStream();
-
   /// Keep the computed screen scale after a resize event
   double _screenScale = 1.0;
   double get screenScale => _screenScale;
 
-  void initState() {
+  void initState() async {
     runnerInit(runner);
-    startAudioStream();
   }
 
   @override
   void dispose() {
-    stopAudioStream();
+		audio.dispose();
     runnerDeinit(runner);
     super.dispose();
   }
 
-  Error compileAndStart(String src, String dataDisk) {
+  Future<Error> compileAndStart(String src, String dataDisk) async {
     final CoreError err = runnerCompileProgram(runner, src);
     if (err.code == 0) {
       final Uint8List dataList = Uint8List.fromList(dataDisk.codeUnits);
@@ -234,8 +229,7 @@ class Runtime extends ChangeNotifier {
       final ffi.Pointer<ffi.Uint8> dataDiskPtr = calloc<ffi.Uint8>(dataSize);
       dataDiskPtr.asTypedList(dataDisk.length).setAll(0, dataList);
       // TODO: compute secondsSincePowerOn
-      runnerStart(
-          runner, 123, ffi.Pointer.fromAddress(dataDiskPtr.address), dataSize);
+      runnerStart(runner, 123, ffi.Pointer.fromAddress(dataDiskPtr.address), dataSize);
     }
     return Error(
         code: err.code,
@@ -290,12 +284,17 @@ class Runtime extends ChangeNotifier {
         position: err.sourcePosition);
   }
 
-  void render() {
+  void renderFrame() {
 		// if(runnerShouldRender(runner)) {
     	runnerRender(runner, pixels);
     	bytesList = pixels.asTypedList(bufferSize);
 		// }
   }
+
+	void renderAudio() {
+		runnerRenderAudio(runner, audioBuffer, 1470 * 2, 44100, 0);
+		audio.write(audioBuffer, 1470);
+	}
 
   void touchOn(Offset pos) {
     input.ref.touchX = (pos.dx / _screenScale);
@@ -324,13 +323,15 @@ class Runtime extends ChangeNotifier {
 }
 
 /// Used to hold the [Runtime] instance into an isolate.
-void isolateEntryPoint(SendPort sendPort) {
+void isolateEntryPoint(List<Object> arguments) {
+	RootIsolateToken rootIsolateToken = arguments[0] as RootIsolateToken;
+	BackgroundIsolateBinaryMessenger.ensureInitialized(rootIsolateToken);
+
+	SendPort sendPort = arguments[1] as SendPort;
   final ReceivePort receivePort = ReceivePort();
   final Runtime runtime = Runtime();
   // late final Ticker ticker;
   // Duration totalDuration = Duration.zero;
-  bool running =
-      false; //  TODO: I may not need this, if Ticker is working correctly.
 
   double updateTime, renderTime;
 
@@ -342,10 +343,10 @@ void isolateEntryPoint(SendPort sendPort) {
 
   sendPort.send(receivePort.sendPort);
 
-  receivePort.listen((message) {
+  receivePort.listen((message) async {
     if (message is CompileAndRunMsg) {
       // Receive the code and compile it, then send back the error. Start running if no error
-      final Error err = runtime.compileAndStart(message.code, message.dataDisk);
+      final Error err = await runtime.compileAndStart(message.code, message.dataDisk);
       sendPort.send(err);
     } else if (message is CompileOnlyMsg) {
       // Receive the code and compile it, then send back the error
@@ -362,7 +363,7 @@ void isolateEntryPoint(SendPort sendPort) {
       updateTime =
           stopwatch.elapsed.inMicroseconds / Duration.microsecondsPerSecond;
       stopwatch.reset();
-      runtime.render();
+      runtime.renderFrame();
       renderTime =
           stopwatch.elapsed.inMicroseconds / Duration.microsecondsPerSecond;
       sendPort.send(MeasurementMsg(updateTime, renderTime));
@@ -382,6 +383,12 @@ void isolateEntryPoint(SendPort sendPort) {
         sendPort.send(InputModeMsg(runtime.inputMode));
         currInputMode = runtime.inputMode;
       }
+		} else if (message is IsolateMessageType && message == IsolateMessageType.audioStart) {
+			runtime.audio.start();
+		} else if (message is IsolateMessageType && message == IsolateMessageType.renderAudio) {
+			runtime.renderAudio();
+		} else if (message is IsolateMessageType && message == IsolateMessageType.audioStop) {
+			runtime.audio.stop();
     } else if (message is OrientationChangeMsg) {
       // Receive the screen size and the safe area
       runtime.resize(message.width, message.height, message.safeTop,
@@ -405,7 +412,7 @@ void isolateEntryPoint(SendPort sendPort) {
       runtime.trace(false);
     } else if (message is IsolateMessageType &&
         message == IsolateMessageType.thumbnail) {
-      runtime.render();
+      runtime.renderFrame();
       sendPort.send(ThumbnailMsg(runtime.bytesList!));
     }
   });
@@ -461,7 +468,7 @@ class ComPort {
   /// Setup the communication with the isolate and listen for messages
   Future<SendPort> init() async {
     receivePort = ReceivePort();
-    isolate = await Isolate.spawn(isolateEntryPoint, receivePort.sendPort);
+    isolate = await Isolate.spawn(isolateEntryPoint, [RootIsolateToken.instance!, receivePort.sendPort]);
     receivePort.listen((message) {
       if (message is SendPort) {
         // Store the sendPort to be used later
@@ -524,6 +531,8 @@ class ComPort {
       }
     });
 
+		bool tickerByTwo = true;
+
     ticker = Ticker((Duration currDuration) {
       final delta = currDuration - prevDuration;
       deltaTime.add(delta.inMicroseconds / Duration.microsecondsPerSecond);
@@ -531,6 +540,12 @@ class ComPort {
 
       // NOTE: If started before the SendPort is ready, it will crash.
       sendPort.send(IsolateMessageType.renderFrame);
+
+			if (tickerByTwo) {
+				sendPort.send(IsolateMessageType.renderAudio);
+			}
+
+			tickerByTwo = !tickerByTwo;
     });
 
     return ready.future;
@@ -553,6 +568,7 @@ class ComPort {
   /// Start updating the runtime at 60 fps
   void start() {
 		log("Ticker started");
+		sendPort.send(IsolateMessageType.audioStart);
     ticker.start();
     runtimeStopwatch.start();
     // sendPort.send(true);
@@ -562,6 +578,7 @@ class ComPort {
   void stop() {
 		log("Ticker stopped");
     ticker.stop();
+		sendPort.send(IsolateMessageType.audioStop);
     prevDuration = Duration.zero;
     runtimeStopwatch.stop();
     runtimeStopwatch.reset();
