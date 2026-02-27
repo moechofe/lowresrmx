@@ -44,3 +44,5 @@ String runnerGetSymbolName(ffi.Pointer<Runner> runner, int index) => _bindings.r
 int runnerGetSymbolPosition(ffi.Pointer<Runner> runner, int index) => _bindings.runnerGetSymbolPosition(runner, index);
 
 void inputKeyDown(ffi.Pointer<Input> input, int key) => _bindings.inputKeyDown(input, key);
+
+void runnerRenderAudio(ffi.Pointer<Runner> runner, ffi.Pointer<ffi.Int16> output, int numSamples, int outputFrequency, int volume) => _bindings.runnerRenderAudio(runner, output, numSamples, outputFrequency, volume);

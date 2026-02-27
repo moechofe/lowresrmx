@@ -208,3 +208,9 @@ FFI_PLUGIN_EXPORT void inputKeyDown(Input *input,int ascii)
 {
 	input->key=(char)(ascii & 0xff);
 }
+
+FFI_PLUGIN_EXPORT void runnerRenderAudio(Runner* runner, int16_t* output, int numSamples, int outputFrequency, int volume)
+{
+	if (!runner || !runner->core) return;
+	audio_renderAudio(runner->core, output, numSamples, outputFrequency, volume);
+}

@@ -110,6 +110,30 @@ class CorePluginBindings {
   late final _runnerStart = _runnerStartPtr.asFunction<
       void Function(ffi.Pointer<Runner>, int, ffi.Pointer<ffi.Char>, int)>();
 
+  void runnerRenderAudio(
+    ffi.Pointer<Runner> runner,
+    ffi.Pointer<ffi.Int16> output,
+    int numSamples,
+    int outputFrequency,
+    int volume,
+  ) {
+    return _runnerRenderAudio(
+      runner,
+      output,
+      numSamples,
+      outputFrequency,
+      volume,
+    );
+  }
+
+  late final _runnerRenderAudioPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Void Function(ffi.Pointer<Runner>, ffi.Pointer<ffi.Int16>,
+              ffi.Int, ffi.Int, ffi.Int)>>('runnerRenderAudio');
+  late final _runnerRenderAudio = _runnerRenderAudioPtr.asFunction<
+      void Function(
+          ffi.Pointer<Runner>, ffi.Pointer<ffi.Int16>, int, int, int)>();
+
   CoreError runnerUpdate(
     ffi.Pointer<Runner> arg0,
     ffi.Pointer<Input> arg1,
