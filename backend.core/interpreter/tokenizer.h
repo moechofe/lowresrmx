@@ -25,31 +25,34 @@
 #include "interpreter_config.h"
 #include "token.h"
 
-struct Symbol {
-    char name[SYMBOL_NAME_SIZE];
+struct Symbol
+{
+	char name[SYMBOL_NAME_SIZE];
 };
 
-struct JumpLabelItem {
-    int symbolIndex;
-    struct Token *token;
+struct JumpLabelItem
+{
+	int symbolIndex;
+	struct Token *token;
 };
 
-struct SubItem {
-    int symbolIndex;
-    struct Token *token;
+struct SubItem
+{
+	int symbolIndex;
+	struct Token *token;
 };
 
 struct Tokenizer
 {
-    struct Token tokens[MAX_TOKENS];
-    int numTokens;
-    struct Symbol symbols[MAX_SYMBOLS];
-    int numSymbols;
+	struct Token tokens[MAX_TOKENS];
+	int numTokens;
+	struct Symbol symbols[MAX_SYMBOLS];
+	int numSymbols;
 
-    struct JumpLabelItem jumpLabelItems[MAX_JUMP_LABEL_ITEMS];
-    int numJumpLabelItems;
-    struct SubItem subItems[MAX_SUB_ITEMS];
-    int numSubItems;
+	struct JumpLabelItem jumpLabelItems[MAX_SYMBOLS];
+	int numJumpLabelItems;
+	struct SubItem subItems[MAX_SUB_ITEMS];
+	int numSubItems;
 };
 
 struct CoreError tok_tokenizeProgram(struct Tokenizer *tokenizer, const char *sourceCode);
