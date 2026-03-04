@@ -107,21 +107,6 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
             self?.sourceCodeTextView.text = self?.document.sourceCode ?? ""
         }
 
-        // // Observe index mode changes
-        // NotificationCenter.default.addObserver(
-        //     forName: .EditorIndexModeDidChange,
-        //     object: nil,
-        //     queue: .main
-        // ) { [weak self] _ in
-        //     self?.indexSideBar.update()
-        // }
-
-        // Observe syntax highlighting changes
-        NotificationCenter.default.addObserver(forName: .EditorSyntaxHighlightingDidChange, object: nil, queue: .main) { [weak self] _ in
-            // Re-apply text to trigger re-highlighting
-            self?.sourceCodeTextView.text = self?.document.sourceCode ?? ""
-        }
-
         activityIndicatorView.isHidden = true
         sourceCodeTextView.isEditable = false
 
@@ -228,7 +213,6 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
         if document.documentState == .normal {
             updateStats()
         }
-        indexSideBar.update() // already done
         indexSideBar.update() // already done
         sourceCodeTextView.flashScrollIndicators()
 

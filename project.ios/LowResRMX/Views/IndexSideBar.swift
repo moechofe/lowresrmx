@@ -123,43 +123,6 @@ class IndexSideBar: UIControl {
         }
 
         regex = try! NSRegularExpression(pattern: "\\A\\s*(?:" + [labelPart, prodecurePart, markerPart].filter { !$0.isEmpty }.joined(separator: "|") + ")", options: .caseInsensitive)
-        let regex: NSRegularExpression
-
-        let labelPart: String
-        switch AppController.shared.editorLabelIndexMode {
-        case .allLabels:
-            labelPart = "([^'#\\s]\\S+):"
-        case .labelsWithoutUnderscore:
-            labelPart = "([^'#\\s][^\\s:_]+):"
-        default:
-            labelPart = ""
-        }
-
-        let prodecurePart: String
-        switch AppController.shared.editorProcedureIndexMode {
-        case .allProcedures:
-            prodecurePart = "SUB\\s+([^\\s\\(]+)"
-        default:
-            prodecurePart = ""
-        }
-
-        let markerPart: String
-        switch AppController.shared.editorManualMarkerIndexMode {
-        case .manualMarkers:
-            markerPart = "'''(\\S+)"
-        default:
-            markerPart = ""
-        }
-
-        if (labelPart.isEmpty && prodecurePart.isEmpty && markerPart.isEmpty) {
-             self.numLines = 0
-             self.markers = []
-             self.shouldUpdateOnTouch = false
-             updateBarPositions()
-             return
-        }
-
-        regex = try! NSRegularExpression(pattern: "\\A\\s*(?:" + [labelPart, prodecurePart, markerPart].filter { !$0.isEmpty }.joined(separator: "|") + ")", options: .caseInsensitive)
 
         var markers = [IndexMarker]()
         var numLines = 0
@@ -176,7 +139,6 @@ class IndexSideBar: UIControl {
                         }
                     }
                     let range = NSRange(enclosingRange, in: text)
-                    markers.append(IndexMarker(label: capturedLabel ?? string.trimmingCharacters(in: .whitespacesAndNewlines), line: numLines, range: range))
                     markers.append(IndexMarker(label: capturedLabel ?? string.trimmingCharacters(in: .whitespacesAndNewlines), line: numLines, range: range))
                 }
             }
@@ -299,7 +261,6 @@ class IndexSideBar: UIControl {
             label.clipsToBounds = true
 //            label.textColor = AppStyle.darkGrayColor()
 						label.textColor = UIColor.white
-            label.font = UIFont.systemFont(ofSize: AppController.shared.editorFontSize * 0.7)
             label.font = UIFont.systemFont(ofSize: AppController.shared.editorFontSize * 0.7)
             label.textAlignment = .center
             label.text = marker.label

@@ -60,8 +60,6 @@ void overlay_updateLayout(struct Core *core, struct CoreInput *input)
 	// keyboard has been shown, make sure to scroll the overlay
 	if (k > 0 && new_height < oldHeight)
 	{
-		int keyboard_height_in_cells = ceil(k/8);
-
 		// how many cells are covered by the keyboard
 		int cursor_y = lib->cursorY + lib->windowY;
 		// int new_bottom = io->shown.height / 8 - (lib->windowY + new_height); //keyboard_height_in_cells;

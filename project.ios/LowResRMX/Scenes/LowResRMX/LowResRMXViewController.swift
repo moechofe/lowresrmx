@@ -209,7 +209,7 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
       object: nil)
 
     // Sauce: https://developer.apple.com/forums/thread/110064
-    let value = UIInterfaceOrientation.portraitUpsideDown.rawValue
+    let value = UIInterfaceOrientation.portrait.rawValue
     UIDevice.current.setValue(value, forKey: "orientation")
   }
 
