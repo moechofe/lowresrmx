@@ -953,13 +953,17 @@ A function will always return something and MUST be used as [rvalue](#lvalue-and
 
 ### Lvalue and Rvalue
 
-The equal = sign is used both as variable assignement and comparison operator, and It can lead to some confusion. Here is a tip to help you:
+The equal = sign is used both as a variable assignment and a comparison operator, and it can lead to some confusion. Here is a tip to help you:
 
-- If the line start by the variable name, it's [a variable assignation](#variables-and-assignation).
+- If the line starts with the variable name, it's [a variable assignation](#variables-and-assignation).
+
+      lvalue = rvalue
 
 - In all other cases, the variable is used as [a part of an expression](#expressions).
 
-An lvalue appears on the left side of an assignment, and an rvalue appears on the right side of an assignment. Also, rvalue is used as an argument of [functions](#functions) or [procedures](#procedures).
+      call func(rvalue + rvalue)
+
+An lvalue appears on the left side of an assignment, and an rvalue appears on the right side of an assignment. Also, an rvalue is used as an argument of [functions](#functions) or [procedures](#procedures).
 
 |                               expression | type of value    |
 | ----------------------------------------:| ---------------- |
@@ -968,6 +972,10 @@ An lvalue appears on the left side of an assignment, and an rvalue appears on th
 |              [function call](#functions) | rvalue           |
 |               [any operator](#operators) | rvalue           |
 | [label](#labels-jumps-and-embedded-data) | rvalue           |
+
+Lvalues are always identifiers, where rvalues can be identifiers are literals.
+
+Lvalues are writable, where rvalues are not nescessary.
 
 ### Instructions separator
 
@@ -2366,7 +2374,7 @@ TODO: link to interrupt
 
 Return the constant π.
 
-> **Deprecated:** since trigonometric functions use -0.5 .. +0.5 range now.
+> **Deprecated:** since trigonometric functions use 0..1 range now.
 
 #### `cosine =COS(number)`<br>`sine =SIN(number)`
 
