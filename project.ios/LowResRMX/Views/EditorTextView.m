@@ -40,10 +40,8 @@
 - (void)applyColoration:(NSInteger)mode inRange:(NSRange)range {
 	switch (mode) {
 	case 1:
-		[self applyBasicSyntaxHighlightingAsyncInRange:range];
+	[self applyBasicSyntaxHighlightingAsyncInRange:range];
 		break;
-	// case 2:
-	//     [self applyMarkBlockColoration];
 	default:
 		break;
 	}
@@ -54,8 +52,13 @@
 	[self applyColoration:mode inRange:NSMakeRange(0, self.text.length)];
 }
 
-// New async highlighting for a range
+// New async highlighting for a range with cancellation token
 - (void)applyBasicSyntaxHighlightingAsyncInRange:(NSRange)range {
+	static NSUInteger syntaxHighlightingToken = 0;
+	syntaxHighlightingToken++;
+	if (syntaxHighlightingToken > 1000000000) syntaxHighlightingToken = 1;
+	NSUInteger currentToken = syntaxHighlightingToken;
+
 	NSString *text = self.text;
 	if (range.location == NSNotFound || NSMaxRange(range) > text.length)
 		return;
@@ -79,7 +82,10 @@
 	dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
 		NSArray *updates = [self computeSyntaxHighlightingUpdatesForText:text range:expandedRange];
 		dispatch_async(dispatch_get_main_queue(), ^{
-			[self applyUpdates:updates toStorage:self.textStorage range:expandedRange font:font];
+			// Only apply if this is the latest request
+			if (currentToken == syntaxHighlightingToken) {
+				[self applyUpdates:updates toStorage:self.textStorage range:expandedRange font:font token:currentToken latestTokenPtr:&syntaxHighlightingToken];
+			}
 		});
 	});
 }
@@ -269,7 +275,6 @@
 	}
 	self.selectedRange = finalRange;
 	[self scrollRangeToVisible:self.selectedRange];
-	/*    CGRect rect = [self firstRectForRange:self.selectedTextRange]; UIMenuController *menu = [UIMenuController sharedMenuController]; [menu setTargetRect:rect inView:self]; [menu setMenuVisible:YES animated:NO];*/
 }
 
 - (void)insertCheckedText:(NSString *)text {
@@ -278,106 +283,6 @@
 	if (!self.delegate || [self.delegate textView:self shouldChangeTextInRange:self.selectedRange replacementText:text]) {
 		[self insertText:text];
 	}
-}
-
-// - (void)applyMarkBlockColoration {
-// 	NSString *text = self.text ?: @"";
-// 	UIFont *font = self.font ?: [UIFont monospacedSystemFontOfSize:14
-// weight:UIFontWeightRegular]; 	UIColor *defaultColor = [UIColor
-// blackColor]; 	if
-// (@available(iOS 13.0, *)) { 		defaultColor = [UIColor labelColor];
-// 	}
-
-// 	NSMutableAttributedString *attributed = [[NSMutableAttributedString
-// alloc] initWithString:text attributes:@{NSFontAttributeName: font,
-// NSForegroundColorAttributeName: defaultColor}];
-
-// 	// Regex to find manual markers: lines starting with '''
-// 	NSRegularExpression *markerRegex = [NSRegularExpression
-// regularExpressionWithPattern:@"^\\s*'''"
-// options:NSRegularExpressionAnchorsMatchLines error:nil];
-
-// 	// Find all marker locations
-// 	NSArray<NSTextCheckingResult *> *markerMatches = [markerRegex
-// matchesInString:text options:0 range:NSMakeRange(0, text.length)];
-
-// 	// If there are no markers, there's nothing to do.
-// 	if (markerMatches.count == 0) {
-// 		return;
-// 	}
-
-// 	// Color the marker lines as comments to show they've been processed.
-// 	UIColor *commentColor = [UIColor colorWithRed:0.36 green:0.36 blue:0.36
-// alpha:1.0]; 	NSArray *blockColors = @[ 		[UIColor
-// colorWithRed:0.4784 green:0.5880 blue:0.4196 alpha:1.0], 		[UIColor
-// colorWithRed:0.4667 green:0.1412 blue:0.2784 alpha:1.0], 		[UIColor
-// colorWithRed:0.4784 green:0.2392 blue:0.2392 alpha:1.0], 		[UIColor
-// colorWithRed:0.4667 green:0.3020 blue:0.1333 alpha:1.0], 		[UIColor
-// colorWithRed:0.4667 green:0.4353 blue:0.0000 alpha:1.0], 		[UIColor
-// colorWithRed:0.8 green:0.4 blue:0.8 alpha:1.0]
-// 	];
-
-// 	for (NSUInteger i = 0; i < markerMatches.count; i++) {
-// 		NSTextCheckingResult *match = markerMatches[i];
-// 		NSRange lineRange = [text lineRangeForRange:match.range];
-// 		[attributed addAttribute:NSForegroundColorAttributeName
-// value:commentColor range:lineRange];
-
-// 		NSUInteger blockStart = lineRange.location + lineRange.length;
-// 		NSUInteger blockEnd = (i + 1 < markerMatches.count) ?
-// markerMatches[i+1].range.location : text.length;
-
-// 		if (blockEnd > blockStart) {
-// 			NSString *line = [text substringWithRange:lineRange];
-// 			NSRange markerStart = [line rangeOfString:@"'''"];
-// 			NSString *content = (markerStart.location != NSNotFound)
-// ? [[line substringFromIndex:markerStart.location + 3]
-// stringByTrimmingCharactersInSet:[NSCharacterSet
-// whitespaceAndNewlineCharacterSet]] : @"";
-
-// 			NSUInteger hash = [content hash];
-// 			UIColor *blockColor = blockColors[hash %
-// blockColors.count]; 			[attributed
-// addAttribute:NSForegroundColorAttributeName value:blockColor
-// range:NSMakeRange(blockStart, blockEnd - blockStart)];
-// 		}
-// 	}
-
-// 	// Set the attributed text (preserve selection)
-// 	NSRange selectedRange = self.selectedRange;
-// 	self.attributedText = attributed;
-// 	self.selectedRange = selectedRange;
-// }
-
-- (void)applyBasicSyntaxHighlighting {
-	[self applyBasicSyntaxHighlightingInRange:NSMakeRange(0, self.text.length)];
-}
-
-- (void)applyBasicSyntaxHighlightingAsync {
-	NSString *text = self.text;
-	NSRange range = NSMakeRange(0, text.length);
-	UIFont *font = self.font ?: [UIFont monospacedSystemFontOfSize:14 weight:UIFontWeightRegular];
-
-	dispatch_async(
-			dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-				NSArray *updates = [self computeSyntaxHighlightingUpdatesForText:text range:range];
-				dispatch_async(dispatch_get_main_queue(), ^{
-					if (![self.text isEqualToString:text])
-						return;
-					[self applyUpdates:updates toStorage:self.textStorage range:range font:font];
-				});
-			});
-}
-
-- (void)applyBasicSyntaxHighlightingInRange:(NSRange)range {
-	NSString *text = self.text;
-	if (range.location == NSNotFound || NSMaxRange(range) > text.length)
-		return;
-
-	NSRange lineRange = [text lineRangeForRange:range];
-	UIFont *font = self.font ?: [UIFont monospacedSystemFontOfSize:14 weight:UIFontWeightRegular];
-	NSArray *updates = [self computeSyntaxHighlightingUpdatesForText:text range:lineRange];
-	[self applyUpdates:updates toStorage:self.textStorage range:lineRange font:font];
 }
 
 - (NSArray *)computeSyntaxHighlightingUpdatesForText:(NSString *)text range:(NSRange)range {
@@ -608,7 +513,9 @@
 	return updates;
 }
 
-- (void)applyUpdates:(NSArray *)updates toStorage:(NSTextStorage *)storage range:(NSRange)range font:(UIFont *)font {
+
+// Apply updates, aborting if token is outdated
+- (void)applyUpdates:(NSArray *)updates toStorage:(NSTextStorage *)storage range:(NSRange)range font:(UIFont *)font token:(NSUInteger)token latestTokenPtr:(NSUInteger *)latestTokenPtr {
 	[storage beginEditing];
 	UIColor *defaultColor = [UIColor blackColor];
 	if (@available(iOS 13.0, *)) {
@@ -619,6 +526,11 @@
 	[storage addAttribute:NSFontAttributeName value:font range:range];
 
 	for (NSDictionary *update in updates) {
+		if (token != *latestTokenPtr) {
+			// Abort if a new request has started
+			[storage endEditing];
+			return;
+		}
 		[storage addAttribute:NSForegroundColorAttributeName value:update[@"color"] range:[update[@"range"] rangeValue]];
 	}
 	[storage endEditing];

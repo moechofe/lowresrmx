@@ -1,9 +1,9 @@
 //
-//  BlockerView.m
-//  Pixels
+// BlockerView.m
+// Pixels
 //
-//  Created by Timo Kloss on 27/11/16.
-//  Copyright © 2016 Inutilis Software. All rights reserved.
+// Created by Timo Kloss on 27/11/16.
+// Copyright © 2016 Inutilis Software. All rights reserved.
 //
 
 #import "BlockerView.h"
@@ -19,62 +19,62 @@ static BlockerView *_currentInstance;
 
 + (instancetype)view
 {
-    BlockerView *view = [[UINib nibWithNibName:NSStringFromClass([self class]) bundle:nil] instantiateWithOwner:nil options:nil].firstObject;
-    return view;
+	BlockerView *view = [[UINib nibWithNibName:NSStringFromClass([self class]) bundle:nil] instantiateWithOwner:nil options:nil].firstObject;
+	return view;
 }
 
 + (void)show
 {
-    if (!_currentInstance)
-    {
-        _currentInstance = [BlockerView view];
-    }
-    else if (_currentInstance.superview)
-    {
-        [_currentInstance removeFromSuperview];
-    }
-    UIWindow *container = nil;
-    if (@available(iOS 13.0, *)) {
-        for (UIScene *scene in [UIApplication sharedApplication].connectedScenes) {
-            if ([scene isKindOfClass:[UIWindowScene class]] && scene.activationState == UISceneActivationStateForegroundActive) {
-                UIWindowScene *windowScene = (UIWindowScene *)scene;
-                for (UIWindow *window in windowScene.windows) {
-                    if (window.isKeyWindow) {
-                        container = window;
-                        break;
-                    }
-                }
-            }
-            if (container) break;
-        }
-    }    _currentInstance.frame = container.bounds;
-    [container addSubview:_currentInstance];
-    [_currentInstance.activityIndicatorView startAnimating];
-    [UIView animateWithDuration:0.3 animations:^{
-        _currentInstance.alpha = 1.0;
-    }];
+	if (!_currentInstance)
+	{
+		_currentInstance = [BlockerView view];
+	}
+	else if (_currentInstance.superview)
+	{
+		[_currentInstance removeFromSuperview];
+	}
+	UIWindow *container = nil;
+	if (@available(iOS 13.0, *)) {
+		for (UIScene *scene in [UIApplication sharedApplication].connectedScenes) {
+			if ([scene isKindOfClass:[UIWindowScene class]] && scene.activationState == UISceneActivationStateForegroundActive) {
+				UIWindowScene *windowScene = (UIWindowScene *)scene;
+				for (UIWindow *window in windowScene.windows) {
+					if (window.isKeyWindow) {
+						container = window;
+						break;
+					}
+				}
+			}
+			if (container) break;
+		}
+	}  _currentInstance.frame = container.bounds;
+	[container addSubview:_currentInstance];
+	[_currentInstance.activityIndicatorView startAnimating];
+	[UIView animateWithDuration:0.3 animations:^{
+		_currentInstance.alpha = 1.0;
+	}];
 }
 
 + (void)dismiss
 {
-    if (_currentInstance)
-    {
-        BlockerView *view = _currentInstance;
-        _currentInstance = nil;
-        [UIView animateWithDuration:0.3 animations:^{
-            view.alpha = 0.0;
-        } completion:^(BOOL finished) {
-            [view removeFromSuperview];
-        }];
-    }
+	if (_currentInstance)
+	{
+		BlockerView *view = _currentInstance;
+		_currentInstance = nil;
+		[UIView animateWithDuration:0.3 animations:^{
+			view.alpha = 0.0;
+		} completion:^(BOOL finished) {
+			[view removeFromSuperview];
+		}];
+	}
 }
 
 - (void)awakeFromNib
 {
-    [super awakeFromNib];
-    self.alpha = 0;
-//    self.activityIndicatorView.color = [AppStyle whiteColor];
-//    self.backgroundColor = [[AppStyle darkGrayColor] colorWithAlphaComponent:0.25];
+	[super awakeFromNib];
+	self.alpha = 0;
+//  self.activityIndicatorView.color = [AppStyle whiteColor];
+//  self.backgroundColor = [[AppStyle darkGrayColor] colorWithAlphaComponent:0.25];
 }
 
 @end
