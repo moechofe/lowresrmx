@@ -102,6 +102,8 @@
 	UIScrollView *scrollView = [[UIScrollView alloc] init];
 	scrollView.translatesAutoresizingMaskIntoConstraints = NO;
 	scrollView.showsHorizontalScrollIndicator = NO;
+	scrollView.alwaysBounceHorizontal = NO;
+	scrollView.bounces = NO;
 	[accessoryView addSubview:scrollView];
 
 	UIStackView *stackView = [[UIStackView alloc] init];
@@ -171,19 +173,6 @@
 		button.tintColor = self.tintColor;
 		[stackView addArrangedSubview:button];
 	}
-
-	UIButton *doneButton = [UIButton buttonWithType:UIButtonTypeSystem];
-	[doneButton addTarget:self action:@selector(onKeyboardDoneTapped:) forControlEvents:UIControlEventTouchUpInside];
-	doneButton.tintColor = self.tintColor;
-	if (@available(iOS 13.0, *)) {
-		UIImageSymbolConfiguration *config = [UIImageSymbolConfiguration configurationWithPointSize:22 weight:UIImageSymbolWeightLight];
-		UIImage *image = [[UIImage systemImageNamed:@"keyboard.chevron.compact.down"] imageWithConfiguration:config];
-		[doneButton setImage:image forState:UIControlStateNormal];
-	} else {
-		[doneButton setTitle:@"Done" forState:UIControlStateNormal];
-		doneButton.titleLabel.font = [UIFont boldSystemFontOfSize:doneButton.titleLabel.font.pointSize];
-	}
-	[stackView addArrangedSubview:doneButton];
 
 	[NSLayoutConstraint activateConstraints:@[
 		[scrollView.leadingAnchor constraintEqualToAnchor:accessoryView.leadingAnchor],
