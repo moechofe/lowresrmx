@@ -13,6 +13,7 @@
 @property NSString *currentTag;
 @property NSString *currentTagId;
 @property NSString *currentTagName;
+@property NSString *currentTagTitle;
 @property HelpChapter *currentChapter;
 @end
 
@@ -22,7 +23,7 @@
 {
     if (self = [super init])
     {
-        self.headerTags = @[/*@"h1", */@"h2", @"h3"/*, @"h4", @"h5", @"h6"*/];
+        self.headerTags = @[/*@"h1", */@"h2", @"h3", @"h4"/*, @"h5", @"h6"*/];
         _url = url;
         _manualHtml = [NSString stringWithContentsOfURL:url encoding:NSUTF8StringEncoding error:nil];
         _chapters = [NSMutableArray array];
@@ -40,10 +41,13 @@
     NSMutableArray *results = [NSMutableArray array];
     for (HelpChapter *chapter in self.chapters)
     {
-        if (chapter.keywords && [chapter.keywords indexOfObject:text] != NSNotFound)
-        {
-            [results addObject:chapter];
-        }
+				if (chapter.level == 2)
+				{
+						if (chapter.keywords && [chapter.keywords indexOfObject:text] != NSNotFound)
+						{
+								[results addObject:chapter];
+						}
+				}
     }
     return results;
 }
@@ -52,30 +56,42 @@
 
 - (void)parser:(NSXMLParser *)parser didStartElement:(NSString *)elementName namespaceURI:(NSString *)namespaceURI qualifiedName:(NSString *)qName attributes:(NSDictionary *)attributeDict
 {
-//    NSLog(@"tag: %@",elementName);
+    NSLog(@"tag: %@",elementName);
     if ([self.headerTags indexOfObject:elementName.lowercaseString] != NSNotFound)
     {
+				NSLog(@"header id: %@",attributeDict[@"id"]);
         self.currentTag = elementName;
         self.currentTagId = attributeDict[@"id"];
-        self.currentTagName = attributeDict[@"name"];
+        self.currentTagName = attributeDict[@"data-keyword"];
+				self.currentTagTitle = attributeDict[@"data-title"];
     }
 }
 
 - (void)parser:(NSXMLParser *)parser foundCharacters:(NSString *)string
 {
+		NSLog(@"char: %@",string);
     if (self.currentTag)
     {
 				if (_currentChapter == nil)
 				{
+//						NSLog(@"header tag: %@",self.headerTags);
 						_currentChapter = [[HelpChapter alloc] init];
-						_currentChapter.title = string;
+						if (self.currentTagTitle && self.currentTagTitle.length > 0) {
+							_currentChapter.title = self.currentTagTitle;
+						} else {
+							_currentChapter.title = string;
+						}
 						_currentChapter.htmlChapter = self.currentTagId;
 						_currentChapter.keywords = [self.currentTagName componentsSeparatedByString:@","];
 						_currentChapter.level = (int)[self.headerTags indexOfObject:self.currentTag.lowercaseString];
 				}
 				else
 				{
-						_currentChapter.title = [_currentChapter.title stringByAppendingString: string];
+						if (self.currentTagTitle && self.currentTagTitle.length > 0) {
+							_currentChapter.title = self.currentTagTitle;
+						} else {
+							_currentChapter.title = string;
+						}
 				}
         //
     }

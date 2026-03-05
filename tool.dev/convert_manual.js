@@ -14,9 +14,30 @@ import { fileURLToPath } from 'url'
 const scriptDir = path.dirname(fileURLToPath(import.meta.url))
 const rootDir = path.resolve(scriptDir, '..')
 
+const match_h4=/<h4.*?<code>(.*)<\/code><\/h4>/gm
+const replace_h4=/<h4 id=/
+const add_keyword_to_h4=(text)=>{
+	return text.replace(match_h4, (match, g1)=>{
+		const kreg = /([A-Z][A-Z.]*[A-Z])/g;
+		let m;
+		let keyword=[];
+		while ((m = kreg.exec(g1)) !== null) {
+			if (m.index === kreg.lastIndex) kreg.lastIndex++;
+			keyword.push(m[1]);
+		}
+		const treg = /(=?[A-Z][A-Z. ]*[A-Z])/g;
+		let title=[];
+		while ((m = treg.exec(g1)) !== null) {
+			if (m.index === treg.lastIndex) treg.lastIndex++;
+			title.push(m[1]);
+		}
+		return match.replace(replace_h4,`<h4 data-keyword="${keyword.join(',')}" data-title="${title.join('/')}" id=`);
+	});
+};
+
 const md = fs.readFileSync(path.join(rootDir, 'asset.dev', 'manual.md'), 'utf8').split('\n').slice(1).join('\n')
 const css = fs.readFileSync(path.join(rootDir, 'project.web', 'sources', 'documentation.css'), 'utf8')
-const html = mdit.render(md).replace(/&lt;br&gt;/g, '<br />').replace(/ style="text-align:right"/g, ' class="right"').replace(/<br>/g,'<br />');
+const html = add_keyword_to_h4(mdit.render(md).replace(/&lt;br&gt;/g, '<br />').replace(/ style="text-align:right"/g, ' class="right"').replace(/<br>/g,'<br />'));
 
 const community = `<!DOCTYPE html>
 <html lang="en">

@@ -24,69 +24,78 @@
 
 - (void)viewDidLoad
 {
-    [super viewDidLoad];
+	[super viewDidLoad];
 
-    self.webView.navigationDelegate = self;
-		self.webView.scrollView.alwaysBounceHorizontal = NO;
-		self.webView.scrollView.bounces = NO;
-		self.webView.scrollView.showsHorizontalScrollIndicator = NO;
-		self.webView.scrollView.contentSize = CGSizeMake(self.webView.frame.size.width, self.webView.scrollView.contentSize.height);
-		self.webView.scrollView.delegate = self; // If you want to enforce further
+	self.webView.navigationDelegate = self;
+	self.webView.scrollView.alwaysBounceHorizontal = NO;
+	self.webView.scrollView.bounces = NO;
+	self.webView.scrollView.showsHorizontalScrollIndicator = NO;
+	self.webView.scrollView.contentSize = CGSizeMake(self.webView.frame.size.width, self.webView.scrollView.contentSize.height);
+	self.webView.scrollView.delegate = self; // If you want to enforce further
 
-    self.navigationItem.leftBarButtonItem = self.splitViewController.displayModeButtonItem;
-    self.navigationItem.leftItemsSupplementBackButton = YES;
+	self.navigationItem.leftBarButtonItem = self.splitViewController.displayModeButtonItem;
+	self.navigationItem.leftItemsSupplementBackButton = YES;
 
-    HelpContent *helpContent = AppController.shared.helpContent;
-    [self.webView loadHTMLString:helpContent.manualHtml baseURL:helpContent.url];
+	UIBarButtonItem *searchButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemSearch target:self action:@selector(onSearchTapped:)];
+	self.navigationItem.rightBarButtonItem = searchButton;
+
+	HelpContent *helpContent = AppController.shared.helpContent;
+	[self.webView loadHTMLString:helpContent.manualHtml baseURL:helpContent.url];
+}
+
+// Search button handler stub
+- (void)onSearchTapped:(id)sender {
+	// TODO: Show search UI or perform search
+	NSLog(@"Search button tapped");
 }
 
 - (void)setChapter:(NSString *)chapter
 {
-    _chapter = chapter;
-    if (!self.webView.isLoading)
-    {
-        [self jumpToChapter:self.chapter];
-    }
+	_chapter = chapter;
+	if (!self.webView.isLoading)
+	{
+		[self jumpToChapter:self.chapter];
+	}
 }
 
 - (void)jumpToChapter:(NSString *)chapter
 {
-    NSString *script = [NSString stringWithFormat:@"document.getElementById('%@').scrollIntoView(true);", chapter];
-    [self.webView evaluateJavaScript:script completionHandler:nil];
+	NSString *script = [NSString stringWithFormat:@"document.getElementById('%@').scrollIntoView(true);", chapter];
+	[self.webView evaluateJavaScript:script completionHandler:nil];
 }
 
 - (void)webView:(WKWebView *)webView decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler
 {
-    if (!navigationAction.request.URL.isFileURL)
-    {
-        // open links in Safari
-        [[UIApplication sharedApplication] openURL:navigationAction.request.URL options:@{} completionHandler:nil];
-        decisionHandler(WKNavigationActionPolicyCancel);
-        return;
-    }
-    decisionHandler(WKNavigationActionPolicyAllow);
+	if (!navigationAction.request.URL.isFileURL)
+	{
+		// open links in Safari
+		[[UIApplication sharedApplication] openURL:navigationAction.request.URL options:@{} completionHandler:nil];
+		decisionHandler(WKNavigationActionPolicyCancel);
+		return;
+	}
+	decisionHandler(WKNavigationActionPolicyAllow);
 }
 
 - (void)webView:(WKWebView *)webView didStartProvisionalNavigation:(WKNavigation *)navigation
 {
-    [self.activityView startAnimating];
+	[self.activityView startAnimating];
 }
 
 - (void)webView:(WKWebView *)webView didFinishNavigation:(WKNavigation *)navigation
 {
-    [self.activityView stopAnimating];
-    if (self.chapter)
-    {
-        [self jumpToChapter:self.chapter];
-    }
+	[self.activityView stopAnimating];
+	if (self.chapter)
+	{
+		[self jumpToChapter:self.chapter];
+	}
 }
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView {
-    CGPoint offset = scrollView.contentOffset;
-    if (offset.x != 0) {
-        offset.x = 0;
-        scrollView.contentOffset = offset;
-    }
+	CGPoint offset = scrollView.contentOffset;
+	if (offset.x != 0) {
+		offset.x = 0;
+		scrollView.contentOffset = offset;
+	}
 }
 
 @end

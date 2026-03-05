@@ -10,7 +10,7 @@ import UIKit
 
 enum TabIndex: Int {
     case explorer
-    // case help
+    case help
     //case about
     //case community
 }
@@ -82,9 +82,9 @@ class TabBarController: UITabBarController {
     }
 
     func showHelp(chapter: String) {
-        // self.selectedIndex = TabIndex.help.rawValue;
-        // let helpVC = self.selectedViewController as! HelpSplitViewController
-        // helpVC.showChapter(chapter)
+         self.selectedIndex = TabIndex.help.rawValue;
+         let helpVC = self.selectedViewController as! HelpSplitViewController
+         helpVC.showChapter(chapter)
     }
 
     @objc func didAddProgram() {

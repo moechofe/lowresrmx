@@ -2930,17 +2930,17 @@ Check the [debugger instructions](#debugger-instructions) to learn what you can 
 
 ## Debugger instructions
 
-#### dbg: `PAUSE`
+##### dbg: `PAUSE`
 
 Enter the debugger. It bring a console where user can enter debugger specific commands. The scope used in the debugger is the same as the one in the program where the `PAUSE` appear.
 
-#### dbg: a variable name
+##### dbg: a variable name
 
 By typing the name of a variable, the debugger will print it's value. The variable use the same syntax as inside a program: `$` for string, () for array.
 
 The variable MUST be accessible throughout the scope of where the `PAUSE` has been used to enter the debugger. Global variables are still available everywhere.
 
-#### dbg: a variable name `=` new value
+##### dbg: a variable name `=` new value
 
 Allow to change the value of a variable.
 
@@ -2948,27 +2948,27 @@ Number literal use the same syntax as inside a program, it support integer, floa
 
 String literal SHOULD use the same syntax as inside a program: ".
 
-#### dbg: an address
+##### dbg: an address
 
 By typing a memory address, the debugger will print it's value as if it was read by `=PEEK()`.
 
 The address can be indicated using the hexadecimal or by any other valid numeric literal.
 
-#### dbg: an address `=` a value
+##### dbg: an address `=` a value
 
 Will try to modify the value store inside a memory address.
 
     $FF00=3
 
-#### dbg: `CLS`
+##### dbg: `CLS`
 
 Clear the debugger console.
 
-#### dbg: `WAIT`
+##### dbg: `WAIT`
 
 Resume execution until a `WAIT` command is found in the program, the scope may change.
 
-#### dbg: `DIM [filter] [pagination]`
+##### dbg: `DIM [filter] [pagination]`
 
 Print the list of accessible variable at the current scope.
 
@@ -2976,15 +2976,15 @@ Allow to limit the output to the variables that matchs the `filter`.
 
 Allow to output more variables using the `pagination` with an index that start at 0 zero.
 
-#### dbg: `TRACE`
+##### dbg: `TRACE`
 
 Print the current call stack in reverse order: last line number followed by label `GOSUB`'ed and procedure `CALL`'ed.
 
-#### dbg: `TRACK PEEK address`<br> dbg: `TRACK POKE address`
+##### dbg: `TRACK PEEK address`<br> dbg: `TRACK POKE address`
 
 Enter the debugger when the program `=PEEK` or `POKE` the `address`.
 
-#### dbg: `NEXT`
+##### dbg: `NEXT`
 
 Execute next instruction in the program, and stop.
 

@@ -69,12 +69,12 @@
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
     // Return the number of rows in the section.
-    return self.helpContent.chapters.count;
+    return [self filteredChapters].count;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    HelpChapter *chapter = self.helpContent.chapters[indexPath.row];
+    HelpChapter *chapter = [self filteredChapters][indexPath.row];
     NSString *cellIdentifier;
     if (chapter.level == 0)
     {
@@ -86,6 +86,7 @@
     }
     else
     {
+				// Normally, not used
         cellIdentifier = @"CommandCell";
     }
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellIdentifier forIndexPath:indexPath];
@@ -98,11 +99,21 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    HelpChapter *chapter = self.helpContent.chapters[indexPath.row];
+    HelpChapter *chapter = [self filteredChapters][indexPath.row];
     HelpSplitViewController *helpVC = (HelpSplitViewController *)self.splitViewController;
     [helpVC showChapter:chapter.htmlChapter];
 
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
+}
+
+- (NSArray<HelpChapter *> *)filteredChapters {
+    NSMutableArray<HelpChapter *> *filtered = [NSMutableArray array];
+    for (HelpChapter *chapter in self.helpContent.chapters) {
+        if (chapter.level == 0 || chapter.level == 1) {
+            [filtered addObject:chapter];
+        }
+    }
+    return filtered;
 }
 
 @end

@@ -1135,16 +1135,20 @@ SPRITE 0, 40, 60, 1
 </code></pre>
 <p>A function will always return something and MUST be used as <a href="#lvalue-and-rvalue">rvalue</a> inside an <a href="#expressions">expressions</a>.</p>
 <h3 id="lvalue-and-rvalue" tabindex="-1">Lvalue and Rvalue</h3>
-<p>The equal = sign is used both as variable assignement and comparison operator, and It can lead to some confusion. Here is a tip to help you:</p>
+<p>The equal = sign is used both as a variable assignment and a comparison operator, and it can lead to some confusion. Here is a tip to help you:</p>
 <ul>
 <li>
-<p>If the line start by the variable name, it's <a href="#variables-and-assignation">a variable assignation</a>.</p>
+<p>If the line starts with the variable name, it's <a href="#variables-and-assignation">a variable assignation</a>.</p>
+<pre><code>lvalue = rvalue
+</code></pre>
 </li>
 <li>
 <p>In all other cases, the variable is used as <a href="#expressions">a part of an expression</a>.</p>
+<pre><code>call func(rvalue + rvalue)
+</code></pre>
 </li>
 </ul>
-<p>An lvalue appears on the left side of an assignment, and an rvalue appears on the right side of an assignment. Also, rvalue is used as an argument of <a href="#functions">functions</a> or <a href="#procedures">procedures</a>.</p>
+<p>An lvalue appears on the left side of an assignment, and an rvalue appears on the right side of an assignment. Also, an rvalue is used as an argument of <a href="#functions">functions</a> or <a href="#procedures">procedures</a>.</p>
 <table>
 <thead>
 <tr>
@@ -1175,6 +1179,8 @@ SPRITE 0, 40, 60, 1
 </tr>
 </tbody>
 </table>
+<p>Lvalues are always identifiers, where rvalues can be identifiers are literals.</p>
+<p>Lvalues are writable, where rvalues are not nescessary.</p>
 <h3 id="instructions-separator" tabindex="-1">Instructions separator</h3>
 <p>An instruction generally end by a new line \n.</p>
 <p>It's possible to put multiple instructions using a colon : on one line but with limitation:</p>
@@ -1219,10 +1225,10 @@ RESTORE test : WAIT VBL
 <p>« In software, 🌐 <a href="https://en.wikipedia.org/wiki/Control_flow">control flow (or flow of control)</a> describes how execution progresses from one command to the next. »<br />
 — wikipedia</p>
 </blockquote>
-<h4 id="end" tabindex="-1"><code>END</code></h4>
+<h4 data-keyword="END" data-title="END" id="end" tabindex="-1"><code>END</code></h4>
 <p>Stop the execution of the program.</p>
 <p>It has the same effect as the execution reach the end of the program.</p>
-<h4 id="if-then-else-if-else-end-ifif-then" tabindex="-1"><code>IF/THEN/ELSE IF/ELSE/END IF</code><br /><code>IF/THEN</code></h4>
+<h4 data-keyword="IF,THEN,ELSE,IF,ELSE,END,IF,IF,THEN" data-title="IF/THEN/ELSE IF/ELSE/END IF/IF/THEN" id="if-then-else-if-else-end-ifif-then" tabindex="-1"><code>IF/THEN/ELSE IF/ELSE/END IF</code><br /><code>IF/THEN</code></h4>
 <pre><code>IF expression THEN
   instruction...
 [ELSE IF expression THEN
@@ -1272,7 +1278,7 @@ IF guess&lt;answer THEN PRINT &quot;too low&quot;
 IF guess&gt;answer THEN PRINT &quot;too high&quot;
 GOTO retry
 </code></pre>
-<h4 id="do-loop-exit" tabindex="-1"><code>DO/LOOP/EXIT</code></h4>
+<h4 data-keyword="DO,LOOP,EXIT" data-title="DO/LOOP/EXIT" id="do-loop-exit" tabindex="-1"><code>DO/LOOP/EXIT</code></h4>
 <pre><code>DO
   instruction...
   [EXIT/GOTO]
@@ -1301,7 +1307,7 @@ PRINT &quot;done&quot;
 0000000000000000FFFFFFFFFFFFFFFF
 </code></pre>
 <p><code>EXIT</code> command will exit one level of <code>DO/LOOP</code>.</p>
-<h4 id="repeat-until-exit" tabindex="-1"><code>REPEAT/UNTIL/EXIT</code></h4>
+<h4 data-keyword="REPEAT,UNTIL,EXIT" data-title="REPEAT/UNTIL/EXIT" id="repeat-until-exit" tabindex="-1"><code>REPEAT/UNTIL/EXIT</code></h4>
 <pre><code>REPEAT
   instruction...
   [EXIT/GOTO]
@@ -1317,7 +1323,7 @@ REPEAT
 UNTIL stop_now
 </code></pre>
 <p><code>EXIT</code> command will exit one level of <code>REPEAT/UNTIL</code>.</p>
-<h4 id="while-wend-exit" tabindex="-1"><code>WHILE/WEND/EXIT</code></h4>
+<h4 data-keyword="WHILE,WEND,EXIT" data-title="WHILE/WEND/EXIT" id="while-wend-exit" tabindex="-1"><code>WHILE/WEND/EXIT</code></h4>
 <pre><code>WHILE expression
   instruction...
   [EXIT/GOTO]
@@ -1333,7 +1339,7 @@ WHILE count
 WEND
 </code></pre>
 <p><code>EXIT</code> instruction will exit one level of <code>WHILE/WEND</code>.</p>
-<h4 id="for-to-step-next-exit" tabindex="-1"><code>FOR/TO/STEP/NEXT/EXIT</code></h4>
+<h4 data-keyword="FOR,TO,STEP,NEXT,EXIT" data-title="FOR/TO/STEP/NEXT/EXIT" id="for-to-step-next-exit" tabindex="-1"><code>FOR/TO/STEP/NEXT/EXIT</code></h4>
 <pre><code>FOR variable=begin TO ended [STEP incr]
   instruction...
   [EXIT/GOTO]
@@ -1352,7 +1358,7 @@ FOR i=9 TO 1 STEP -1
 NEXT i
 </code></pre>
 <p><code>EXIT</code> command will exit one level of <code>FOR/TO/NEXT</code>.</p>
-<h4 id="goto" tabindex="-1"><code>GOTO</code></h4>
+<h4 data-keyword="GOTO" data-title="GOTO" id="goto" tabindex="-1"><code>GOTO</code></h4>
 <pre><code>GOTO label
 </code></pre>
 <p>Make the execution of the program to jump at the specific <code>label</code>.</p>
@@ -1376,7 +1382,7 @@ edge:
   PRINT &quot;edge of the coin!&quot;
   GOTO again
 </code></pre>
-<h4 id="gosub-return" tabindex="-1"><code>GOSUB/RETURN</code></h4>
+<h4 data-keyword="GOSUB,RETURN" data-title="GOSUB/RETURN" id="gosub-return" tabindex="-1"><code>GOSUB/RETURN</code></h4>
 <pre><code>GOSUB label
 ...
 RETURN
@@ -1410,7 +1416,7 @@ update:
 <p>This example has one <code>RETURN</code>, two labels and three <code>GOSUB</code>. The best practice mentioned above is not followed here, but here is the explanation.</p>
 <p>The important thing is not the number of <code>RETURN</code> statements in the code but the number of times the command is executed. Users need to understand that one <code>GOSUB</code> execution will <a href="#stack-sub-routine-and-return">increase by one the size of the stack</a>, and one execution of <code>RETURN</code> will reduce the same stack by exactly one. If the stack size is empty every time the <a href="#wait-vblwait-frame"><code>WAIT VBL</code></a> instruction is executed, it's a good sign. It means that the stack will not overflow.</p>
 <p>Users can print the current stack using the <a href="#dbg-trace">debugger <code>TRACE</code> command</a>.</p>
-<h4 id="on-gotoon-gosub" tabindex="-1"><code>ON GOTO</code><br /><code>ON GOSUB</code></h4>
+<h4 data-keyword="ON,GOTO,ON,GOSUB" data-title="ON GOTO/ON GOSUB" id="on-gotoon-gosub" tabindex="-1"><code>ON GOTO</code><br /><code>ON GOSUB</code></h4>
 <pre><code>ON value GOTO label0[, label1...]
 </code></pre>
 <p>Jump to one of the listed <code>label</code> according to a <code>value</code>.</p>
@@ -1432,7 +1438,7 @@ one:
   PRINT &quot;one&quot;
   GOTO again
 </code></pre>
-<h4 id="sub-end-sub-exit-sub" tabindex="-1"><code>SUB/END SUB/EXIT SUB</code></h4>
+<h4 data-keyword="SUB,END,SUB,EXIT,SUB" data-title="SUB/END SUB/EXIT SUB" id="sub-end-sub-exit-sub" tabindex="-1"><code>SUB/END SUB/EXIT SUB</code></h4>
 <p>Syntax for a <a href="#procedures">procedure definition</a>:</p>
 <pre><code>SUB procedure [(parameters...)]
   instruction...
@@ -1510,7 +1516,7 @@ LOOP
 <blockquote>
 <p>Using <a href="#gosubreturn"><code>GOSUB</code></a> inside a procedure that jumps to a label outside of the body is NOT RECOMMENDED because the scope of the procedure will be used to execute the instructions. Unlike with <a href="#goto"><code>GOTO</code></a> is still possible to <a href="#stack-sub-routine-and-return">decrease the stack</a> using <a href="#gosubreturn"><code>RETURN</code></a>.</p>
 </blockquote>
-<h4 id="call" tabindex="-1"><code>CALL</code></h4>
+<h4 data-keyword="CALL" data-title="CALL" id="call" tabindex="-1"><code>CALL</code></h4>
 <p>Syntax for a <a href="#procedures">procedure call</a>:</p>
 <pre><code>CALL procedure [(parameters)]
 </code></pre>
@@ -1561,13 +1567,13 @@ next i
 <p>Use the <a href="#virtual-file">virtual file</a> system accessible throughout the <a href="#file-api">file API</a>.</p>
 </li>
 </ul>
-<h4 id="data-constant-constant" tabindex="-1"><code>DATA constant [, constant...]</code></h4>
+<h4 data-keyword="DATA" data-title="DATA" id="data-constant-constant" tabindex="-1"><code>DATA constant [, constant...]</code></h4>
 <p>A list of <code>constant</code> values (numbers or strings) that can be accessed using the <a href="#read-variable-variable"><code>READ</code></a> command.</p>
-<h4 id="read-variable-variable" tabindex="-1"><code>READ variable [, variable...]</code></h4>
+<h4 data-keyword="READ" data-title="READ" id="read-variable-variable" tabindex="-1"><code>READ variable [, variable...]</code></h4>
 <p>Read a list of values inside <code>variable</code> that was declared using <a href="#data-constant-constant"><code>DATA</code></a>.</p>
-<h4 id="restore-label" tabindex="-1"><code>RESTORE [label]</code></h4>
+<h4 data-keyword="RESTORE" data-title="RESTORE" id="restore-label" tabindex="-1"><code>RESTORE [label]</code></h4>
 <p>Move the read pointer to a specified <code>label</code>. The declared constant values that appear after the label will be read next. When ommited, restore at the beginning of the program.</p>
-<h4 id="skip-number" tabindex="-1"><code>SKIP number</code></h4>
+<h4 data-keyword="SKIP" data-title="SKIP" id="skip-number" tabindex="-1"><code>SKIP number</code></h4>
 <p>Allow to skip a <code>number</code> of constant values by moving the read pointer.</p>
 <pre><code>DATA &quot;failure&quot;
 DATA &quot;success&quot;
@@ -1575,17 +1581,17 @@ SKIP 1
 READ word$
 PRINT word$
 </code></pre>
-<h4 id="on-restore" tabindex="-1"><code>ON RESTORE</code></h4>
+<h4 data-keyword="ON,RESTORE" data-title="ON RESTORE" id="on-restore" tabindex="-1"><code>ON RESTORE</code></h4>
 <pre><code>ON value RESTORE label0, [label1...]
 </code></pre>
 <p>Move the read pointer to one of the listed <code>label</code> according to a <code>value</code>.</p>
 <h3 id="variables-and-scopes" tabindex="-1">Variables and scopes</h3>
-<h4 id="global" tabindex="-1"><code>GLOBAL</code></h4>
+<h4 data-keyword="GLOBAL" data-title="GLOBAL" id="global" tabindex="-1"><code>GLOBAL</code></h4>
 <pre><code>GLOBAL identifier...
 </code></pre>
 <p>Declare a list of number or string variables to be globally <a href="#local-and-global-scope">accessible in all scopes</a>.</p>
 <p><code>GLOBAL</code> are illegal inside a subroutine body.</p>
-<h4 id="dim" tabindex="-1"><code>DIM</code></h4>
+<h4 data-keyword="DIM" data-title="DIM" id="dim" tabindex="-1"><code>DIM</code></h4>
 <pre><code>DIM identifier(highest) [, identifier(highest)]...
 </code></pre>
 <p>Will declare one or more arrays with <code>highest</code>+1 number of elements.</p>
@@ -1595,16 +1601,16 @@ FOR i=0 TO 1
   PRINT names$(i);&quot;:&quot;, scores(i)
 NEXT i
 </code></pre>
-<h4 id="dim-global" tabindex="-1"><code>DIM GLOBAL</code></h4>
+<h4 data-keyword="DIM,GLOBAL" data-title="DIM GLOBAL" id="dim-global" tabindex="-1"><code>DIM GLOBAL</code></h4>
 <pre><code>DIM GLOBAL identifier(highest) [, identifier(highest)]...
 </code></pre>
 <p>Similar to <code>DIM</code> but will <a href="#arrays">declare the arrays</a> <a href="#local-and-global-scope">globally accessible</a>.</p>
 <p><code>DIM GLOBAL</code> are illegal inside a SUB/END SUB subroutine body.</p>
-<h4 id="-ubound" tabindex="-1"><code>=UBOUND</code></h4>
+<h4 data-keyword="UBOUND" data-title="=UBOUND" id="-ubound" tabindex="-1"><code>=UBOUND</code></h4>
 <pre><code>highest=UBOUND(identifier[, dimension])
 </code></pre>
 <p>Return the <code>highest</code> index of the array variable <code>identifier</code> at specified <code>dimension</code>.</p>
-<h4 id="swap-a-b" tabindex="-1"><code>SWAP a, b</code></h4>
+<h4 data-keyword="SWAP" data-title="SWAP" id="swap-a-b" tabindex="-1"><code>SWAP a, b</code></h4>
 <p>Swap the values of the variable <code>a</code> and <code>b</code>. They have to share same type.</p>
 <h2 id="api-instructions" tabindex="-1">API instructions</h2>
 <p><em>« An 🌐 <a href="https://en.wikipedia.org/wiki/API">application programming interface (API)</a> is a connection between computers or between computer programs. »</em></p>
@@ -1612,7 +1618,7 @@ NEXT i
 <h3 id="sprite-api" tabindex="-1">Sprite API</h3>
 <p>Sprites are limited in numbers and SHOULD be used to show moving objects above background layers. It is not an obligation and interesting effects can be achieved by breaking these rules.</p>
 <p>Check <a href="#sprites">how sprites works</a> and <a href="#sprite-registers">sprites registers</a>.</p>
-<h4 id="sprite-sprite-x-y-character" tabindex="-1"><code>SPRITE sprite, [x], [y], [character]</code></h4>
+<h4 data-keyword="SPRITE" data-title="SPRITE" id="sprite-sprite-x-y-character" tabindex="-1"><code>SPRITE sprite, [x], [y], [character]</code></h4>
 <p>Sets the position <code>x</code> and <code>y</code> in pixel coordinates and <code>character</code> number of the <code>sprite</code>.</p>
 <p><code>x, y</code> and <code>character</code> can be ommited to keep their current value.</p>
 <p>An example that show a smiley sprite moving in circle:</p>
@@ -1628,7 +1634,7 @@ LOOP
 007EFFFFEDFFFF7E0000003636000000
 </code></pre>
 <p>Omitted parameters will keep their previous values.</p>
-<h4 id="sprite-sprite-pal-palette-flip-horizontal-vertical-prio-priority-size-size" tabindex="-1"><code>SPRITE sprite [PAL palette] [FLIP horizontal, vertical] [PRIO priority] [SIZE size]</code></h4>
+<h4 data-keyword="SPRITE,PAL,FLIP,PRIO,SIZE" data-title="SPRITE/PAL/FLIP/PRIO/SIZE" id="sprite-sprite-pal-palette-flip-horizontal-vertical-prio-priority-size-size" tabindex="-1"><code>SPRITE sprite [PAL palette] [FLIP horizontal, vertical] [PRIO priority] [SIZE size]</code></h4>
 <p>Sets one or more attributes for the <code>sprite</code>:</p>
 <ul>
 <li><code>PAL palette</code> Change the <code>palette</code> (0..7),</li>
@@ -1649,7 +1655,7 @@ LOOP
 00000000000000000000000000000000
 40A0D0E8F4D0E818C06030180C305808
 </code></pre>
-<h4 id="x-sprite-x-sprite-y-sprite-y-sprite" tabindex="-1"><code>x =SPRITE.X(sprite)</code><br /><code>y =SPRITE.Y(sprite)</code></h4>
+<h4 data-keyword="SPRITE.X,SPRITE.Y" data-title="=SPRITE.X/=SPRITE.Y" id="x-sprite-x-sprite-y-sprite-y-sprite" tabindex="-1"><code>x =SPRITE.X(sprite)</code><br /><code>y =SPRITE.Y(sprite)</code></h4>
 <p>Return the position <code>x</code> or <code>y</code> of the <code>sprite</code> (0..169) in pixels.</p>
 <p>Example of a sprite smoothly following the finger touch:</p>
 <pre><code>sprite 0, shown.w, shown.h, 1
@@ -1664,12 +1670,12 @@ LOOP
 00000000000000000000000000000000
 007E7E66667E7E00FF81BDA5A5BD81FF
 </code></pre>
-<h4 id="character-sprite-c-sprite" tabindex="-1"><code>character =SPRITE.C(sprite)</code></h4>
+<h4 data-keyword="SPRITE.C" data-title="=SPRITE.C" id="character-sprite-c-sprite" tabindex="-1"><code>character =SPRITE.C(sprite)</code></h4>
 <p>Return the first <code>character</code> number of the <code>sprite</code> (0..169).</p>
-<h4 id="sprite-a-sprite-attributes" tabindex="-1"><code>SPRITE.A sprite, attributes</code></h4>
+<h4 data-keyword="SPRITE.A" data-title="SPRITE.A" id="sprite-a-sprite-attributes" tabindex="-1"><code>SPRITE.A sprite, attributes</code></h4>
 <p>Sets all <code>attributes</code> at once for the <code>sprite</code>.</p>
 <p>Check <a href="#character-attributes">Character attributes</a>.</p>
-<h4 id="attributes-sprite-a-sprite" tabindex="-1"><code>attributes =SPRITE.A(sprite)</code></h4>
+<h4 data-keyword="SPRITE.A" data-title="=SPRITE.A" id="attributes-sprite-a-sprite" tabindex="-1"><code>attributes =SPRITE.A(sprite)</code></h4>
 <p>Return the whole <code>attributes</code> flags of the <code>sprite</code> (0..169).</p>
 <p>Example: that show how to read sprite attributes:</p>
 <pre><code>SPRITE 0, 80, 80, 1
@@ -1686,9 +1692,9 @@ LOOP
 00000000000000000000000000000000
 40A0D0E8F4D0E818C06030180C305808
 </code></pre>
-<h4 id="sprite-off" tabindex="-1"><code>SPRITE OFF</code></h4>
+<h4 data-keyword="SPRITE,OFF" data-title="SPRITE OFF" id="sprite-off" tabindex="-1"><code>SPRITE OFF</code></h4>
 <p>Hides all sprites.</p>
-<h4 id="sprite-off-sprite" tabindex="-1"><code>SPRITE OFF sprite</code></h4>
+<h4 data-keyword="SPRITE,OFF" data-title="SPRITE OFF" id="sprite-off-sprite" tabindex="-1"><code>SPRITE OFF sprite</code></h4>
 <p>Hide one <code>sprite</code>.</p>
 <p>Example that hide a sprite at each tap:</p>
 <pre><code>FOR i=0 TO 159
@@ -1705,9 +1711,9 @@ WEND
 00000000000000000000000000000000
 0000000000000000FFFFFFFFFFFFFFFF
 </code></pre>
-<h4 id="sprite-off-sprite1-to-sprite2" tabindex="-1"><code>SPRITE OFF sprite1 TO sprite2</code></h4>
+<h4 data-keyword="SPRITE,OFF,TO" data-title="SPRITE OFF/TO" id="sprite-off-sprite1-to-sprite2" tabindex="-1"><code>SPRITE OFF sprite1 TO sprite2</code></h4>
 <p>Hides all sprites from range <code>sprite1</code> to <code>sprite2</code> included.</p>
-<h4 id="collides-sprite-hit-sprite" tabindex="-1"><code>collides =SPRITE HIT(sprite)</code></h4>
+<h4 data-keyword="SPRITE,HIT" data-title="=SPRITE HIT" id="collides-sprite-hit-sprite" tabindex="-1"><code>collides =SPRITE HIT(sprite)</code></h4>
 <p>Return if the <code>sprite</code> (0..169) <code>collides</code> (0/-1) with another sprite. Collision detection is done by checking overlapping pixels that are not transparent (a.k.a.: not using the color 0).</p>
 <p>Example of a ball that bounce on the wall and fall into holes:</p>
 <pre><code>again:
@@ -1740,7 +1746,7 @@ LOOP
 000000010101021C003C7E7F7F7F3E1C
 </code></pre>
 <p>Use <a href="#sprite-hit"><code>=HIT</code></a> to get which sprite is colliding with the tested <code>sprite</code>.</p>
-<h4 id="collides-sprite-hit-sprite-sprite1" tabindex="-1"><code>collides =SPRITE HIT(sprite, sprite1)</code></h4>
+<h4 data-keyword="SPRITE,HIT" data-title="=SPRITE HIT" id="collides-sprite-hit-sprite-sprite1" tabindex="-1"><code>collides =SPRITE HIT(sprite, sprite1)</code></h4>
 <p>Return if the <code>sprite</code> (0..169) <code>collides</code> (0/-1) with the <code>sprite1</code>.</p>
 <p>Example of two owerlapping sprites:</p>
 <pre><code>SPRITE 20, 46, 46, 1
@@ -1759,10 +1765,10 @@ LOOP
 FFFFFFFFF0F0F0F00000000000000000
 </code></pre>
 <p>Use <a href="#sprite-hit"><code>=HIT</code></a> to get which sprite is colliding with the tested <code>sprite</code>.</p>
-<h4 id="collides-sprite-hit-sprite-sprite1-to-sprite2" tabindex="-1"><code>collides =SPRITE.HIT(sprite, sprite1 to sprite2)</code></h4>
+<h4 data-keyword="SPRITE.HIT" data-title="=SPRITE.HIT" id="collides-sprite-hit-sprite-sprite1-to-sprite2" tabindex="-1"><code>collides =SPRITE.HIT(sprite, sprite1 to sprite2)</code></h4>
 <p>Return if the <code>sprite</code> (0..169) <code>collides</code> with any other from the range <code>sprite1</code> to <code>sprite2</code> included (0..169).</p>
 <p>Use <a href="#sprite-hit"><code>=HIT</code></a> to get which sprite is colliding with the tested <code>sprite</code>.</p>
-<h4 id="sprite-hit" tabindex="-1"><code>sprite =HIT</code></h4>
+<h4 data-keyword="HIT" data-title="=HIT" id="sprite-hit" tabindex="-1"><code>sprite =HIT</code></h4>
 <p>Return the <code>sprite</code> which collided, resulting of the last <code>=SPRITE.HIT()</code> function call (any of the three form).</p>
 <p>Example of a ball that bounce on the wall and destroy the obstable:</p>
 <pre><code>FOR i=1 TO 20
@@ -1801,11 +1807,11 @@ LOOP
 <p>Aside to that, there is an API to scroll the layers.</p>
 <p>Text generally use background mechanics as well, there is an <a href="#text-api">API to draw text</a> too.</p>
 <p>Check <a href="#backgrounds">How backgrounds works</a> and <a href="#background-data">background data</a>.</p>
-<h4 id="cls" tabindex="-1"><code>CLS</code></h4>
+<h4 data-keyword="CLS" data-title="CLS" id="cls" tabindex="-1"><code>CLS</code></h4>
 <p>Clear all background layers with character zero 0, resets the current window to the default and the layer scrolling values.</p>
-<h4 id="cls-layer" tabindex="-1"><code>CLS layer</code></h4>
+<h4 data-keyword="CLS" data-title="CLS" id="cls-layer" tabindex="-1"><code>CLS layer</code></h4>
 <p>Only clear the background layer numbered <code>layer</code> with character zero 0. Do not alter the scrolling value.</p>
-<h4 id="scroll-layer-x-y" tabindex="-1"><code>SCROLL layer, [x], [y]</code></h4>
+<h4 data-keyword="SCROLL" data-title="SCROLL" id="scroll-layer-x-y" tabindex="-1"><code>SCROLL layer, [x], [y]</code></h4>
 <p>Set the scroll offset on <code>x</code> and <code>y</code> axis of the <code>layer</code> in pixels.</p>
 <pre><code>TEXT 10, 10, &quot;hello!&quot;
 BG 1
@@ -1813,7 +1819,7 @@ TEXT 10, 10, &quot;hello!&quot;
 SCROLL 0, 0, -4
 </code></pre>
 <p>Omitted parameters will keep their previous values.</p>
-<h4 id="x-scroll-x-layer-y-scroll-y-layer" tabindex="-1"><code>x =SCROLL.X(layer)</code><br /><code>y =SCROLL.Y(layer)</code></h4>
+<h4 data-keyword="SCROLL.X,SCROLL.Y" data-title="=SCROLL.X/=SCROLL.Y" id="x-scroll-x-layer-y-scroll-y-layer" tabindex="-1"><code>x =SCROLL.X(layer)</code><br /><code>y =SCROLL.Y(layer)</code></h4>
 <p>Return the scroll offset on <code>x</code> and <code>y</code> axis of the <code>layer</code> in pixels.</p>
 <p>Example of getting the scroll offset of the background layer:</p>
 <pre><code>FOR x=0 TO 63
@@ -1834,26 +1840,26 @@ FFFFFFFFFFFFFFFF0000000000000000
 0000000000000000FFFFFFFFFFFFFFFF
 FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
 </code></pre>
-<h4 id="bg-layer" tabindex="-1"><code>BG layer</code></h4>
+<h4 data-keyword="BG" data-title="BG" id="bg-layer" tabindex="-1"><code>BG layer</code></h4>
 <p>Change the current <code>layer</code> (0..3) for further cells draw operations.</p>
 <pre><code>BG 0
 TEXT 10, 10, &quot;\&quot;
 BG 1
 TEXT 10, 10, &quot;/&quot;
 </code></pre>
-<h4 id="pal-palette" tabindex="-1"><code>PAL palette</code></h4>
+<h4 data-keyword="PAL" data-title="PAL" id="pal-palette" tabindex="-1"><code>PAL palette</code></h4>
 <p>Change the current <code>palette</code> for further cells draw operations.</p>
 <pre><code>PRINT &quot;hello&quot;,
 PAL 1
 PRINT &quot;world&quot;
 </code></pre>
-<h4 id="flip-horizontal-vertical" tabindex="-1"><code>FLIP [horizontal], [vertical]</code></h4>
+<h4 data-keyword="FLIP" data-title="FLIP" id="flip-horizontal-vertical" tabindex="-1"><code>FLIP [horizontal], [vertical]</code></h4>
 <p>Change the <code>horizontal</code> and <code>vertical</code> flip attributes for further cells draw operations, considering 0 as not flipped and something else as flipped.</p>
 <pre><code>FLIP 1, 0
 PRINT &quot;dlrow olleh&quot;
 </code></pre>
 <p>Omitted parameters will keep their previous values.</p>
-<h4 id="prio-priority" tabindex="-1"><code>PRIO priority</code></h4>
+<h4 data-keyword="PRIO" data-title="PRIO" id="prio-priority" tabindex="-1"><code>PRIO priority</code></h4>
 <p>Change the <code>priority</code> for further cells draw operations.</p>
 <pre><code>SPRITE 0, 78, 78, 1
 PRIO 1
@@ -1863,10 +1869,10 @@ TEXT 10, 10, &quot;s&quot;
 00000000000000000000000000000000
 003C7E6A7E7E3C000000183C00000000
 </code></pre>
-<h4 id="attr-attributes" tabindex="-1"><code>ATTR attributes</code></h4>
+<h4 data-keyword="ATTR" data-title="ATTR" id="attr-attributes" tabindex="-1"><code>ATTR attributes</code></h4>
 <p>Sets the palette, flip and priority <code>attributes</code> all at once for further cells draw operations.</p>
 <p>Check the <a href="#cell-attributes">cell attributes reference</a>.</p>
-<h4 id="cell-x-y-character" tabindex="-1"><code>CELL x, y, [character]</code></h4>
+<h4 data-keyword="CELL" data-title="CELL" id="cell-x-y-character" tabindex="-1"><code>CELL x, y, [character]</code></h4>
 <p>Draw to the <code>x, y</code> cell of the current layer with the <code>character</code> using the current attributes.</p>
 <p>By omiting the <code>character</code> argument, the command will only alter the attributes: palette, flip and priority.</p>
 <p>Use <a href="#bg-layer"><code>BG</code></a>, <a href="#pal-palette"><code>PAL</code></a>, <a href="#flip-horizontal-vertical"><code>FLIP</code></a>, <a href="#prio-priority"><code>PRIO</code></a> and <a href="#attr-attributes"><code>ATTR</code></a> to alter the <a href="#cell-attributes">current attributes</a>.</p>
@@ -1883,7 +1889,7 @@ FLIP 1, 0
 PAL 1
 CELL 10, 10,
 </code></pre>
-<h4 id="character-cell-c-x-y" tabindex="-1"><code>character =CELL.C(x, y)</code></h4>
+<h4 data-keyword="CELL.C" data-title="=CELL.C" id="character-cell-c-x-y" tabindex="-1"><code>character =CELL.C(x, y)</code></h4>
 <p>Return the <code>character</code> of the <code>x, y</code> cell from the current layer.</p>
 <p>Example of reading the ASCII code of a character:</p>
 <pre><code>BG 2
@@ -1914,7 +1920,7 @@ FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
 01000100010002000000020002000200
 02000200
 </code></pre>
-<h4 id="attributes-cell-a-x-y" tabindex="-1"><code>attributes =CELL.A(x, y)</code></h4>
+<h4 data-keyword="CELL.A" data-title="=CELL.A" id="attributes-cell-a-x-y" tabindex="-1"><code>attributes =CELL.A(x, y)</code></h4>
 <p>Return the <code>attributes</code> of the <code>x, y</code> call from current layer.</p>
 <p>Example that display cell's attributes:</p>
 <pre><code>BG 2
@@ -1950,7 +1956,7 @@ FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
 0000000000000000FFFFFFFFFFFFFFFF
 </code></pre>
 <p>Check the <a href="#cell-attributes">cell attributes reference</a>.</p>
-<h4 id="bg-fill-x1-y1-to-x2-y2-char-character" tabindex="-1"><code>BG FILL x1, y1 TO x2, y2 CHAR character</code></h4>
+<h4 data-keyword="BG,FILL,TO,CHAR" data-title="BG FILL/TO/CHAR" id="bg-fill-x1-y1-to-x2-y2-char-character" tabindex="-1"><code>BG FILL x1, y1 TO x2, y2 CHAR character</code></h4>
 <p>Fills all cells from <code>x1, y1</code> coordinates to <code>x2, y2</code> with <code>character</code> and the current attributes.</p>
 <pre><code>BG FILL 1, 1 TO 5, 5 CHAR 1
 BG FILL 2, 2 TO 4, 4 CHAR 2
@@ -1960,7 +1966,7 @@ BG FILL 2, 2 TO 4, 4 CHAR 2
 FFFFFFFFFFFFFFFF0000000000000000
 0000000000000000FFFFFFFFFFFFFFFF
 </code></pre>
-<h4 id="tint-y-y-pal-palette-flip-horizontal-vertical-prio-priority" tabindex="-1"><code>TINT y, y [PAL palette] [FLIP horizontal, vertical] [PRIO priority]</code></h4>
+<h4 data-keyword="TINT,PAL,FLIP,PRIO" data-title="TINT/PAL/FLIP/PRIO" id="tint-y-y-pal-palette-flip-horizontal-vertical-prio-priority" tabindex="-1"><code>TINT y, y [PAL palette] [FLIP horizontal, vertical] [PRIO priority]</code></h4>
 <p>Sets to the cell <code>x, y</code> (0..63) of the current layer, one or more attributes:</p>
 <ul>
 <li><code>PAL palette</code> Change the <code>palette</code> (0..3),</li>
@@ -1971,7 +1977,7 @@ FFFFFFFFFFFFFFFF0000000000000000
 <pre><code>PRINT &quot;hello!&quot;
 TINT 5, 0 PAL 7
 </code></pre>
-<h4 id="bg-tint-y1-y1-to-x2-y2-pal-palette-flip-horizontal-vertical-prio-priority" tabindex="-1"><code>BG TINT y1, y1 TO x2, y2 [PAL palette] [FLIP horizontal, vertical] [PRIO priority]</code></h4>
+<h4 data-keyword="BG,TINT,TO,PAL,FLIP,PRIO" data-title="BG TINT/TO/PAL/FLIP/PRIO" id="bg-tint-y1-y1-to-x2-y2-pal-palette-flip-horizontal-vertical-prio-priority" tabindex="-1"><code>BG TINT y1, y1 TO x2, y2 [PAL palette] [FLIP horizontal, vertical] [PRIO priority]</code></h4>
 <p>Sets to the cells from the rectangle <code>x1, y1</code> to <code>x2, y2</code> (0..63), one or more attributes:</p>
 <ul>
 <li><code>PAL palette</code> Change the <code>palette</code> (0..3),</li>
@@ -1979,10 +1985,10 @@ TINT 5, 0 PAL 7
 <li><code>PRIO priority</code> change the <code>priority</code> (0..1),</li>
 </ul>
 <p>Omitted parameters will keep their previous values.</p>
-<h4 id="bg-scroll-x1-y1-to-x2-y2-step-x3-y3" tabindex="-1"><code>BG SCROLL x1, y1 to x2, y2 step x3, y3</code></h4>
+<h4 data-keyword="BG,SCROLL" data-title="BG SCROLL" id="bg-scroll-x1-y1-to-x2-y2-step-x3-y3" tabindex="-1"><code>BG SCROLL x1, y1 to x2, y2 step x3, y3</code></h4>
 <p>Move the cell's attributes and character from the rectangle <code>x1, y1</code> to <code>x2, y2</code> (0..63) of the current layer by <code>x3</code>, <code>y3</code> in cell coordinates.</p>
 <p>This feature is internally used to scroll text when it reach the bottom of the window.</p>
-<h4 id="bg-source-address-width-height" tabindex="-1"><code>BG SOURCE address [, width, height]</code></h4>
+<h4 data-keyword="BG,SOURCE" data-title="BG SOURCE" id="bg-source-address-width-height" tabindex="-1"><code>BG SOURCE address [, width, height]</code></h4>
 <p>Set the memory <code>address</code> to use as source for BG COPY x1, y1, width, height TO x2, y2 operations.</p>
 <p>When <code>width</code> and <code>height</code> are specified, they are used as indiquating the number of cells in the source.</p>
 <p>If they are not specified, the <a href="#background-source-format-data">official background data format</a> are used to retrieve the width and the height.</p>
@@ -2016,9 +2022,9 @@ SCROLL 0, X, Y
 WAIT VBL
 LOOP
 </code></pre>
-<h4 id="bg-copy-x1-y1-width-height-to-x2-y2" tabindex="-1"><code>BG COPY x1, y1, width, height TO x2, y2</code></h4>
+<h4 data-keyword="BG,COPY,TO" data-title="BG COPY/TO" id="bg-copy-x1-y1-width-height-to-x2-y2" tabindex="-1"><code>BG COPY x1, y1, width, height TO x2, y2</code></h4>
 <p>Copy from the rectangle <code>x1, y1</code> (0..63) with <code>width, height</code> (0..63) the cell's attributes and character numbers from background source specified previously using <a href="#bg-source-address-width-height"><code>BG SOURCE</code></a> to <code>x2, y2</code> (0..63) of the current background layer.</p>
-<h4 id="mcell-x-y-character" tabindex="-1"><code>MCELL x, y, character</code></h4>
+<h4 data-keyword="MCELL" data-title="MCELL" id="mcell-x-y-character" tabindex="-1"><code>MCELL x, y, character</code></h4>
 <p>Draw to the <code>x, y</code> cell to the background source specified previously using <a href="#bg-source-address-width-height"><code>BG SOURCE</code></a> with the <code>character</code> using the current attributes.</p>
 <p>Similar to <a href="#cell-attributes"><code>CELL</code></a> but modify the source in memory instead of the current layer.</p>
 <p>The source MUST point to writable memory.</p>
@@ -2041,13 +2047,13 @@ LOOP
 00000000000000000000000000000000
 FFFFFFFFFFFFFFFF0000000000000000
 </code></pre>
-<h4 id="character-mcell-c-x-y" tabindex="-1"><code>character =MCELL.C(x, y)</code></h4>
+<h4 data-keyword="MCELL.C" data-title="=MCELL.C" id="character-mcell-c-x-y" tabindex="-1"><code>character =MCELL.C(x, y)</code></h4>
 <p>Return the <code>character</code> of the <code>x, y</code> cell from the background source.</p>
 <p>Similar to <a href="#character-cell-c-x-y"><code>=CELL.C</code></a> but modify the source in memory instead of the current layer.</p>
-<h4 id="attributes-mcell-a-x-y" tabindex="-1"><code>attributes =MCELL.A(x, y)</code></h4>
+<h4 data-keyword="MCELL.A" data-title="=MCELL.A" id="attributes-mcell-a-x-y" tabindex="-1"><code>attributes =MCELL.A(x, y)</code></h4>
 <p>Return the <code>attributes</code> of the <code>x, y</code> call from the background source.</p>
 <p>Similar to <a href="#attributes-cell-a-x-y"><code>=CELL.A</code></a> but modify the source in memory instead of the current layer.</p>
-<h4 id="text-x-y-text" tabindex="-1"><code>TEXT x, y, text$</code></h4>
+<h4 data-keyword="TEXT" data-title="TEXT" id="text-x-y-text" tabindex="-1"><code>TEXT x, y, text$</code></h4>
 <p>Will print <code>text$</code> on the current layer starting at <code>x, y</code> cell using the current background attributes on the current layer.</p>
 <p>DATA &quot;ga&quot;, &quot;bu&quot;, &quot;zo&quot;, &quot;meu&quot;<br />
 FOR i=0 TO 3<br />
@@ -2055,35 +2061,35 @@ PAL I<br />
 READ c$<br />
 TEXT 8+i*2, 10, c$<br />
 NEXT i</p>
-<h4 id="number-x-y-number-count" tabindex="-1"><code>NUMBER x, y, number, count</code></h4>
+<h4 data-keyword="NUMBER" data-title="NUMBER" id="number-x-y-number-count" tabindex="-1"><code>NUMBER x, y, number, count</code></h4>
 <p>Will print the latest <code>count</code> digits of the <code>number</code> on the current layer starting at <code>x, y</code> cell using the current background attributes on the current layer.</p>
 <p>Similar to <a href="#text-x-y-text"><code>TEXT</code></a> but dedicated to print number instead of text.</p>
 <pre><code>score=123
 NUMBER 10, 10, score, 6
 </code></pre>
-<h4 id="font-first" tabindex="-1"><code>FONT first</code></h4>
+<h4 data-keyword="FONT" data-title="FONT" id="font-first" tabindex="-1"><code>FONT first</code></h4>
 <p>Sets the <code>first</code> character number that will defines the range of ASCII characters used for <a href="#text-x-y-text"><code>TEXT</code></a>, <a href="#number-x-y-number-count"><code>NUMBER</code></a> and <a href="#print-expression"><code>PRINT</code></a> commands.</p>
 <p>The default value is 192, which points to where the default font is loaded at the beginning of the program if the characters are not used. It MAY be overridden by <a href="#load-file-address-limit-offset"><code>LOAD</code></a> operation.</p>
 <h3 id="text-api" tabindex="-1">Text API</h3>
 <p>Commands dedicated to draw text on layers using characters data. 64 characters can be reserved to print characters on screen. By default those characters number are (192..255) but can be changed using the <code>FONT</code>.</p>
-<h4 id="window-x-y-width-height-layer" tabindex="-1"><code>WINDOW x, y, width, height, layer</code></h4>
+<h4 data-keyword="WINDOW" data-title="WINDOW" id="window-x-y-width-height-layer" tabindex="-1"><code>WINDOW x, y, width, height, layer</code></h4>
 <p>Sets the current window at <code>x, y</code> with <code>width, height</code> and on <code>layer</code> where text will be drawn.</p>
 <pre><code>WINDOW 4, 8, SHOWN.W\8-8, 20, 0
 PRINT &quot;Oh my god! There's a tremendous amount of work to do. Can I do a little bit of it today.&quot;
 </code></pre>
 <p>By default, the window is sets inside the safe area delimited by the safe functions.</p>
-<h4 id="clw" tabindex="-1"><code>CLW</code></h4>
+<h4 data-keyword="CLW" data-title="CLW" id="clw" tabindex="-1"><code>CLW</code></h4>
 <p>Clears the window by replacing all the cells by the character 0. It also reset the cursor position.</p>
-<h4 id="locate-x-y" tabindex="-1"><code>LOCATE x, y</code></h4>
+<h4 data-keyword="LOCATE" data-title="LOCATE" id="locate-x-y" tabindex="-1"><code>LOCATE x, y</code></h4>
 <p>Move the cursor location at <code>x, y</code> in cells coordinates inside the window.</p>
 <pre><code>FOR i=1 TO 9
   LOCATE I, I
   PRINT str$(i);
 NEXT i
 </code></pre>
-<h4 id="x-cursor-xy-cursor-y" tabindex="-1"><code>x =CURSOR.X</code><br /><code>y =CURSOR.Y</code></h4>
+<h4 data-keyword="CURSOR.X,CURSOR.Y" data-title="=CURSOR.X/=CURSOR.Y" id="x-cursor-xy-cursor-y" tabindex="-1"><code>x =CURSOR.X</code><br /><code>y =CURSOR.Y</code></h4>
 <p>Return the cursor location <code>x, y</code> in cells coordinates inside the window.</p>
-<h4 id="print-expression" tabindex="-1"><code>PRINT expression...</code></h4>
+<h4 data-keyword="PRINT" data-title="PRINT" id="print-expression" tabindex="-1"><code>PRINT expression...</code></h4>
 <p>Outputs string <code>expression...</code> onto the current window.</p>
 <p><code>expression...</code> can be one or more of:</p>
 <ul>
@@ -2112,12 +2118,12 @@ DO
   PRINT &quot;.&quot;;
 LOOp
 </code></pre>
-<h4 id="print" tabindex="-1"><code>PRINT</code></h4>
+<h4 data-keyword="PRINT" data-title="PRINT" id="print" tabindex="-1"><code>PRINT</code></h4>
 <p>Outputs a new line.</p>
 <h3 id="input-api" tabindex="-1">Input API</h3>
 <p>Retro Game Creator support touch input with float-point precision (but not multi-touches), and limited keyboard input.</p>
 <p>User can also rely on the OS virtual keyboard to capture typed characters.</p>
-<h4 id="touched-touch" tabindex="-1"><code>touched =TOUCH</code></h4>
+<h4 data-keyword="TOUCH" data-title="=TOUCH" id="touched-touch" tabindex="-1"><code>touched =TOUCH</code></h4>
 <p>Return -1 if the device fantasy screen is currently <code>touched</code>.</p>
 <p>Example that print a text only when device screen is touched:</p>
 <pre><code>DO
@@ -2126,7 +2132,7 @@ LOOp
   WAIT VBL
 LOOP
 </code></pre>
-<h4 id="touched-tap" tabindex="-1"><code>touched =TAP</code></h4>
+<h4 data-keyword="TAP" data-title="=TAP" id="touched-tap" tabindex="-1"><code>touched =TAP</code></h4>
 <p>Return -1 for exactly one frame, if the device fantasy screen is <code>touched</code>.</p>
 <p>Example of a flappy letter going down by gravity and up when tapping on the screen:</p>
 <pre><code>SPRITE 0, 0, SHOWN.H/2, 226
@@ -2141,7 +2147,7 @@ DO
   SPRITE 0, x, y,
 LOOP
 </code></pre>
-<h4 id="x-touch-xy-touch-y" tabindex="-1"><code>x =TOUCH.X</code><br /><code>y =TOUCH.Y</code></h4>
+<h4 data-keyword="TOUCH.X,TOUCH.Y" data-title="=TOUCH.X/=TOUCH.Y" id="x-touch-xy-touch-y" tabindex="-1"><code>x =TOUCH.X</code><br /><code>y =TOUCH.Y</code></h4>
 <p>Returns the last pixel position <code>x, y</code> touched. It returns a floating-point number, with a 1/16 pixel precisions.</p>
 <pre><code>DO
   CLS
@@ -2149,11 +2155,11 @@ LOOP
   WAIT VBL
 LOOP
 </code></pre>
-<h4 id="keyboard-onkeyboard-off" tabindex="-1"><code>KEYBOARD ON</code><br /><code>KEYBOARD OFF</code></h4>
+<h4 data-keyword="KEYBOARD,ON,KEYBOARD,OFF" data-title="KEYBOARD ON/KEYBOARD OFF" id="keyboard-onkeyboard-off" tabindex="-1"><code>KEYBOARD ON</code><br /><code>KEYBOARD OFF</code></h4>
 <p>Show or hide the device virtual keyboard. Because user can hide the keybord using a dedicated key, do not assume the keyboard is visible. Use <code>KEYBOARD ON</code> inside a loop or rely on <a href="#height-keyboard"><code>=KEYBOARD</code></a> to detect when the keyboard is shown or not.</p>
-<h4 id="height-keyboard" tabindex="-1"><code>height =KEYBOARD</code></h4>
+<h4 data-keyword="KEYBOARD" data-title="=KEYBOARD" id="height-keyboard" tabindex="-1"><code>height =KEYBOARD</code></h4>
 <p>Return the <code>height</code> of the virtual screen that has been occluded by the keyboard.</p>
-<h4 id="input-prompt-variableinput-prompt-variable" tabindex="-1"><code>INPUT [prompt;] variable</code><br /><code>INPUT [prompt;] variable$</code></h4>
+<h4 data-keyword="INPUT,INPUT" data-title="INPUT/INPUT" id="input-prompt-variableinput-prompt-variable" tabindex="-1"><code>INPUT [prompt;] variable</code><br /><code>INPUT [prompt;] variable$</code></h4>
 <p>Wait for the user to type a text or a number and store it to the <code>variable</code> or <code>variable$</code>.</p>
 <p>Optionally, a <code>prompt</code> can be printed on the screen before the user input.</p>
 <pre><code>a=RND(9)+10
@@ -2166,7 +2172,7 @@ DO
 LOOP
 pass: PRINT &quot;you may pass&quot;
 </code></pre>
-<h4 id="pressed-inkey" tabindex="-1"><code>pressed$ =INKEY$</code></h4>
+<h4 data-keyword="INKEY" data-title="=INKEY" id="pressed-inkey" tabindex="-1"><code>pressed$ =INKEY$</code></h4>
 <p>Returns only once the last <code>pressed$</code> key. It's a string containing one ASCII character supported by Retro Game Creator. If no key was pressed or if the pressed key is not supported, it returns an empty string. See <a href="#ascii-table">ASCII table</a>.</p>
 <p>Example that output the pressed key:</p>
 <pre><code>DO
@@ -2178,27 +2184,27 @@ pass: PRINT &quot;you may pass&quot;
   WAIT VBL
 LOOP
 </code></pre>
-<h4 id="frames-timer" tabindex="-1"><code>frames =TIMER</code></h4>
+<h4 data-keyword="TIMER" data-title="=TIMER" id="frames-timer" tabindex="-1"><code>frames =TIMER</code></h4>
 <p>Returns the number of <code>frames</code> since Retro Game Creator was launched. The value wraps to 0 when 5184000 is reached, which is about 24 hours.</p>
-<h4 id="wait-tap" tabindex="-1"><code>WAIT TAP</code></h4>
+<h4 data-keyword="WAIT,TAP" data-title="WAIT TAP" id="wait-tap" tabindex="-1"><code>WAIT TAP</code></h4>
 <p>Will stop execution of the program until a touch is made.</p>
 <p>While waiting for a tap, interrupt sub-routines for VBL/RASTER/PARTICLE/EMITTER are still executed.</p>
 <p>TODO: link to interrupts</p>
 <h3 id="display-api" tabindex="-1">Display API</h3>
-<h4 id="palette-palette-c0-c1-c2-c3" tabindex="-1"><code>PALETTE palette, [c0], [c1], [c2], [c3]</code></h4>
+<h4 data-keyword="PALETTE" data-title="PALETTE" id="palette-palette-c0-c1-c2-c3" tabindex="-1"><code>PALETTE palette, [c0], [c1], [c2], [c3]</code></h4>
 <p>Sets the four colors on the height available <code>palette</code> (0..7). The color 0 of the palette 0 is generally used as backdrop color. (It can be change using the <code>SYSTEM</code> command.) <code>c0</code>, <code>c1</code>, <code>c2</code>, <code>c3</code> can accept a numeric value between 0 and 63, omit them to keep the current value. Consult the <a href="#64-colors">64 colors reference</a> to choose the color you want.</p>
-<h4 id="available-color-palette-color" tabindex="-1"><code>available =COLOR(palette, color)</code></h4>
+<h4 data-keyword="COLOR" data-title="=COLOR" id="available-color-palette-color" tabindex="-1"><code>available =COLOR(palette, color)</code></h4>
 <p>Returns one of the <code>available</code> <a href="#64-colors">64 colors</a> associated to the pair <code>palette</code> (0..7), <code>color</code> (0..3).</p>
-<h4 id="width-shown-wheight-shown-h" tabindex="-1"><code>width =SHOWN.W</code><br /><code>height =SHOWN.H</code></h4>
+<h4 data-keyword="SHOWN.W,SHOWN.H" data-title="=SHOWN.W/=SHOWN.H" id="width-shown-wheight-shown-h" tabindex="-1"><code>width =SHOWN.W</code><br /><code>height =SHOWN.H</code></h4>
 <p>Returns the <code>width</code> and <code>height</code> in pixels of the visible area of the fantasy screen.</p>
-<h4 id="left-safe-ltop-safe-tright-safe-rbottom-safe-b" tabindex="-1"><code>left =SAFE.L</code><br /><code>top =SAFE.T</code><br /><code>right =SAFE.R</code><br /><code>bottom =SAFE.B</code></h4>
+<h4 data-keyword="SAFE.L,SAFE.T,SAFE.R,SAFE.B" data-title="=SAFE.L/=SAFE.T/=SAFE.R/=SAFE.B" id="left-safe-ltop-safe-tright-safe-rbottom-safe-b" tabindex="-1"><code>left =SAFE.L</code><br /><code>top =SAFE.T</code><br /><code>right =SAFE.R</code><br /><code>bottom =SAFE.B</code></h4>
 <p>Returns the <code>left</code>, <code>top</code>, <code>right</code> and <code>bottom</code> offset in pixels to apply from the boundary of the fantasy device screen to reach the inner safe area specified by the device's operating system.</p>
 <p>These functions can be used to avoid the top camera notch or the bottom inset full-width buttons.</p>
-<h4 id="sprite-view-onsprite-view-off" tabindex="-1"><code>SPRITE VIEW ON</code><br /><code>SPRITE VIEW OFF</code></h4>
+<h4 data-keyword="SPRITE,VIEW,ON,SPRITE,VIEW,OFF" data-title="SPRITE VIEW ON/SPRITE VIEW OFF" id="sprite-view-onsprite-view-off" tabindex="-1"><code>SPRITE VIEW ON</code><br /><code>SPRITE VIEW OFF</code></h4>
 <p>Enable or disable the rendering of all sprites.</p>
-<h4 id="bg-view-onbg-view-off" tabindex="-1"><code>BG VIEW ON</code><br /><code>BG VIEW OFF</code></h4>
+<h4 data-keyword="BG,VIEW,ON,BG,VIEW,OFF" data-title="BG VIEW ON/BG VIEW OFF" id="bg-view-onbg-view-off" tabindex="-1"><code>BG VIEW ON</code><br /><code>BG VIEW OFF</code></h4>
 <p>Enable or disable the rendering of all background layers.</p>
-<h4 id="wait-vblwait-frame" tabindex="-1"><code>WAIT VBL</code><br /><code>WAIT frame</code></h4>
+<h4 data-keyword="WAIT,VBL,WAIT" data-title="WAIT VBL/WAIT" id="wait-vblwait-frame" tabindex="-1"><code>WAIT VBL</code><br /><code>WAIT frame</code></h4>
 <p>Wait for a number of <code>frame</code> to be drawn. This is used to:</p>
 <ul>
 <li>draw frames at 60 FPS,</li>
@@ -2222,7 +2228,7 @@ LOOP
 <blockquote>
 <p><code>WAIT VBL</code> is equal to <code>WAIT 1</code>.</p>
 </blockquote>
-<h4 id="on-vbl-call-procedure" tabindex="-1"><code>ON VBL CALL procedure</code></h4>
+<h4 data-keyword="ON,VBL,CALL" data-title="ON VBL CALL" id="on-vbl-call-procedure" tabindex="-1"><code>ON VBL CALL procedure</code></h4>
 <p>Before the execution of the code for the next frame, will execute the <code>procedure</code>.</p>
 <p>The code MUST be short, read more about <a href="#cycles">CPU cycles</a>.</p>
 <p>This can be used to execute code at every frame, independently of which part of the code is generating frames. Here is an example that demonstrate:</p>
@@ -2249,9 +2255,9 @@ GOTO one
 00000000000000000000000000000000
 0000000000000000FFFFFFFFFFFFFFFF
 </code></pre>
-<h4 id="on-vbl-off" tabindex="-1"><code>ON VBL OFF</code></h4>
+<h4 data-keyword="ON,VBL,OFF" data-title="ON VBL OFF" id="on-vbl-off" tabindex="-1"><code>ON VBL OFF</code></h4>
 <p>Will stop the execution of a sub-routine during VBL interrupt.</p>
-<h4 id="on-raster-call-procedure" tabindex="-1"><code>ON RASTER CALL procedure</code></h4>
+<h4 data-keyword="ON,RASTER,CALL" data-title="ON RASTER CALL" id="on-raster-call-procedure" tabindex="-1"><code>ON RASTER CALL procedure</code></h4>
 <p>Before the rendering of the next line of the screen, will execute the <code>procedure</code>. This is useful in conjunction with <a href="#line-raster"><code>=RASTER</code></a>.</p>
 <p>The code MUST be shortest, read more about <a href="#cycles">CPU cycles</a>.</p>
 <p>This can be used to change colors or scroll background layers, example:</p>
@@ -2277,25 +2283,25 @@ DO
   PALETTE 0, , , 0,
 LOOP
 </code></pre>
-<h4 id="line-raster" tabindex="-1"><code>line =RASTER</code></h4>
+<h4 data-keyword="RASTER" data-title="=RASTER" id="line-raster" tabindex="-1"><code>line =RASTER</code></h4>
 <p>Return the fantasy screen <code>line</code> number currently rendered.</p>
 <blockquote>
 <p>Only available during RASTER interrupt.</p>
 </blockquote>
 <p>TODO: link to interrupt</p>
-<h4 id="on-raster-off" tabindex="-1"><code>ON RASTER OFF</code></h4>
+<h4 data-keyword="ON,RASTER,OFF" data-title="ON RASTER OFF" id="on-raster-off" tabindex="-1"><code>ON RASTER OFF</code></h4>
 <p>Will stop the execution of a sub-routine during RASTER interrupt.</p>
 <p>TODO: link to interrupt</p>
 <h3 id="math-api" tabindex="-1">Math API</h3>
-<h4 id="pi-pi" tabindex="-1"><code>pi =PI</code></h4>
+<h4 data-keyword="PI" data-title="=PI" id="pi-pi" tabindex="-1"><code>pi =PI</code></h4>
 <p>Return the constant π.</p>
 <blockquote>
-<p><strong>Deprecated:</strong> since trigonometric functions use -0.5 .. +0.5 range now.</p>
+<p><strong>Deprecated:</strong> since trigonometric functions use 0..1 range now.</p>
 </blockquote>
-<h4 id="cosine-cos-number-sine-sin-number" tabindex="-1"><code>cosine =COS(number)</code><br /><code>sine =SIN(number)</code></h4>
+<h4 data-keyword="COS,SIN" data-title="=COS/=SIN" id="cosine-cos-number-sine-sin-number" tabindex="-1"><code>cosine =COS(number)</code><br /><code>sine =SIN(number)</code></h4>
 <p>Return the <code>cosine</code> or <code>sine</code> (0..1) value of a <code>number</code>.</p>
 <p><code>=COS()</code> and <code>=SIN()</code> take (0..1) instead of (0..π*2), and <code>=SIN()</code> is inverted.</p>
-<h4 id="arc-atan-x-y" tabindex="-1"><code>arc =ATAN(x, y)</code></h4>
+<h4 data-keyword="ATAN" data-title="=ATAN" id="arc-atan-x-y" tabindex="-1"><code>arc =ATAN(x, y)</code></h4>
 <p>Return the <code>arc</code> tangent value of a <code>x, y</code> vector.</p>
 <p><code>ATAN()</code> returns an value between (-0.5..0.5) making it suitable for use with <a href="#cosine-cos-number-sine-sin-number"><code>COS()</code></a> and <a href="#cosine-cos-number-sine-sin-number"><code>SIN()</code></a>.</p>
 <p>Example that show how to compute an angle from a position, and a position from an angle:</p>
@@ -2332,32 +2338,32 @@ LOOP
 00000000000000000000000000000000
 3C7EFFFFFFFF7E3C0000000000000000
 </code></pre>
-<h4 id="absolute-abs-number" tabindex="-1"><code>absolute =ABS(number)</code></h4>
+<h4 data-keyword="ABS" data-title="=ABS" id="absolute-abs-number" tabindex="-1"><code>absolute =ABS(number)</code></h4>
 <p>Return the <code>absolute</code> value of a <code>number</code>.</p>
-<h4 id="exponential-exp-number" tabindex="-1"><code>exponential =EXP(number)</code></h4>
+<h4 data-keyword="EXP" data-title="=EXP" id="exponential-exp-number" tabindex="-1"><code>exponential =EXP(number)</code></h4>
 <p>Return the <code>exponential</code> value of a <code>number</code>.</p>
-<h4 id="logarithm-log-number" tabindex="-1"><code>logarithm =LOG(number)</code></h4>
+<h4 data-keyword="LOG" data-title="=LOG" id="logarithm-log-number" tabindex="-1"><code>logarithm =LOG(number)</code></h4>
 <p>Return the <code>logarithm</code> value of a <code>number</code>.</p>
-<h4 id="square-sqr-number" tabindex="-1"><code>square =SQR(number)</code></h4>
+<h4 data-keyword="SQR" data-title="=SQR" id="square-sqr-number" tabindex="-1"><code>square =SQR(number)</code></h4>
 <p>Return the <code>square</code> root value of a <code>number</code>.</p>
-<h4 id="sign-sgn-number" tabindex="-1"><code>sign =SGN(number)</code></h4>
+<h4 data-keyword="SGN" data-title="=SGN" id="sign-sgn-number" tabindex="-1"><code>sign =SGN(number)</code></h4>
 <p>Return the <code>sign</code> (+1/-1) of a <code>number</code>.</p>
-<h4 id="floor-floor-number-floor-int-number" tabindex="-1"><code>floor =FLOOR(number)</code><br /><code>floor =INT(number)</code></h4>
+<h4 data-keyword="FLOOR,INT" data-title="=FLOOR/=INT" id="floor-floor-number-floor-int-number" tabindex="-1"><code>floor =FLOOR(number)</code><br /><code>floor =INT(number)</code></h4>
 <p>Return the <code>floor</code> value of a <code>number</code>.</p>
-<h4 id="ceil-ceil-number" tabindex="-1"><code>ceil =CEIL(number)</code></h4>
+<h4 data-keyword="CEIL" data-title="=CEIL" id="ceil-ceil-number" tabindex="-1"><code>ceil =CEIL(number)</code></h4>
 <p>Return the <code>ceil</code> value of a <code>number</code>.</p>
-<h4 id="inc-variabledec-variable" tabindex="-1"><code>INC variable</code><br /><code>DEC variable</code></h4>
+<h4 data-keyword="INC,DEC" data-title="INC/DEC" id="inc-variabledec-variable" tabindex="-1"><code>INC variable</code><br /><code>DEC variable</code></h4>
 <p>Increment or decrement by 1 the value of a <code>variable</code>.</p>
-<h4 id="add-variable-valueadd-variable-increment-min-to-max" tabindex="-1"><code>ADD variable, value</code><br /><code>ADD variable, increment, min TO max</code></h4>
+<h4 data-keyword="ADD,ADD,TO" data-title="ADD/ADD/TO" id="add-variable-valueadd-variable-increment-min-to-max" tabindex="-1"><code>ADD variable, value</code><br /><code>ADD variable, increment, min TO max</code></h4>
 <p>Add a <code>value</code> to a <code>variable</code>.</p>
 <p>Optionally make it wrap around between <code>min</code> and <code>max</code>.</p>
-<h4 id="minimal-min-a-b-maximal-max-a-b" tabindex="-1"><code>minimal =MIN(a, b)</code><br /><code>maximal =MAX(a, b)</code></h4>
+<h4 data-keyword="MIN,MAX" data-title="=MIN/=MAX" id="minimal-min-a-b-maximal-max-a-b" tabindex="-1"><code>minimal =MIN(a, b)</code><br /><code>maximal =MAX(a, b)</code></h4>
 <p>Return the <code>minimal</code> or <code>maximal</code> value between <code>a</code> and <code>b</code>.</p>
-<h4 id="clamped-clamp-value-min-max" tabindex="-1"><code>clamped =CLAMP(value, min, max)</code></h4>
+<h4 data-keyword="CLAMP" data-title="=CLAMP" id="clamped-clamp-value-min-max" tabindex="-1"><code>clamped =CLAMP(value, min, max)</code></h4>
 <p>Return the <code>value</code> <code>clamped</code> between <code>min</code> and <code>max</code>.</p>
-<h4 id="length-len-x-y" tabindex="-1"><code>length =LEN(x, y)</code></h4>
+<h4 data-keyword="LEN" data-title="=LEN" id="length-len-x-y" tabindex="-1"><code>length =LEN(x, y)</code></h4>
 <p>Return the <code>length</code> of a <code>x, y</code> vector.</p>
-<h4 id="interpolation-ease-function-mode-value" tabindex="-1"><code>interpolation =EASE(function, mode, value)</code></h4>
+<h4 data-keyword="EASE" data-title="=EASE" id="interpolation-ease-function-mode-value" tabindex="-1"><code>interpolation =EASE(function, mode, value)</code></h4>
 <p>This returns the <code>interpolation</code> of <code>value</code> between 0.0 and 1.0, using the 🌐 <a href="https://easings.net/">specified easing</a> <code>function</code> and <code>mode</code>.</p>
 <table>
 <thead>
@@ -2431,11 +2437,11 @@ LOOP
 </tr>
 </tbody>
 </table>
-<h4 id="random-rnd" tabindex="-1"><code>random =RND</code></h4>
+<h4 data-keyword="RND" data-title="=RND" id="random-rnd" tabindex="-1"><code>random =RND</code></h4>
 <p>Return a <code>random</code> floating-point number (0..1).</p>
-<h4 id="random-rnd-max" tabindex="-1"><code>random =RND(max)</code></h4>
+<h4 data-keyword="RND" data-title="=RND" id="random-rnd-max" tabindex="-1"><code>random =RND(max)</code></h4>
 <p>Return a <code>random</code> integer number (0..max).</p>
-<h4 id="randomize-seed" tabindex="-1"><code>RANDOMIZE seed</code></h4>
+<h4 data-keyword="RANDOMIZE" data-title="RANDOMIZE" id="randomize-seed" tabindex="-1"><code>RANDOMIZE seed</code></h4>
 <p>Initialize the random generator with a different <code>seed</code> (0..16777216).</p>
 <p>TODO: link to floating point precision loss</p>
 <p>Setting a specific <code>seed</code> will guarantee to return the same sequence of random numbers.</p>
@@ -2451,38 +2457,38 @@ FOR I=0 TO 5
   PRINT RND(100)
 NEXT I
 </code></pre>
-<h4 id="random-rnd-addressrandom-rnd-max-address-randomize-seed-address" tabindex="-1"><code>random =RND address</code><br /><code>random =RND(max, address)</code><br /><code>RANDOMIZE seed [, address]</code></h4>
+<h4 data-keyword="RND,RND,RANDOMIZE" data-title="=RND/=RND/RANDOMIZE" id="random-rnd-addressrandom-rnd-max-address-randomize-seed-address" tabindex="-1"><code>random =RND address</code><br /><code>random =RND(max, address)</code><br /><code>RANDOMIZE seed [, address]</code></h4>
 <p>Similar to the original functions with a additional <code>address</code> parameter, where the current generator state will be stored.</p>
 <p>This is useful if you want to keep multiple generator that still need to be deterministic.</p>
 <p>The generator state consume 16 Bytes of memory.</p>
 <h3 id="string-api" tabindex="-1">String API</h3>
-<h4 id="length-len-text" tabindex="-1"><code>length =LEN(text)</code></h4>
+<h4 data-keyword="LEN" data-title="=LEN" id="length-len-text" tabindex="-1"><code>length =LEN(text)</code></h4>
 <p>Return the <code>length</code> in ascii7 character of a <code>text</code> string.</p>
-<h4 id="ascii7-asc-character" tabindex="-1"><code>ascii7 =ASC(character)</code></h4>
+<h4 data-keyword="ASC" data-title="=ASC" id="ascii7-asc-character" tabindex="-1"><code>ascii7 =ASC(character)</code></h4>
 <p>Converts the first <code>character</code> of a string to an <code>ascii7</code> code. See <a href="#ascii-table">ASCII table</a>.</p>
-<h4 id="character-chr-ascii7" tabindex="-1"><code>character =CHR$(ascii7)</code></h4>
+<h4 data-keyword="CHR" data-title="=CHR" id="character-chr-ascii7" tabindex="-1"><code>character =CHR$(ascii7)</code></h4>
 <p>Converts an <code>ascii7</code> code to a one <code>character</code> string.</p>
-<h4 id="text-str-number" tabindex="-1"><code>text =STR$(number)</code></h4>
+<h4 data-keyword="STR" data-title="=STR" id="text-str-number" tabindex="-1"><code>text =STR$(number)</code></h4>
 <p>Converts a <code>number</code> to a <code>text</code> string.</p>
 <pre><code>print str$(123.456)
 </code></pre>
-<h4 id="number-val-text" tabindex="-1"><code>number =VAL(text)</code></h4>
+<h4 data-keyword="VAL" data-title="=VAL" id="number-val-text" tabindex="-1"><code>number =VAL(text)</code></h4>
 <p>Converts a <code>text</code> string that starts with digits (and optionally one decimal point .) into a <code>number</code>.</p>
 <pre><code>print val(&quot;3.5abc&quot;)
 </code></pre>
-<h4 id="hexadecimal-hex-number-digits-binary-bin-number-digits" tabindex="-1"><code>hexadecimal =HEX$(number, [digits])</code><br /><code>binary =BIN$(number, [digits])</code></h4>
+<h4 data-keyword="HEX,BIN" data-title="=HEX/=BIN" id="hexadecimal-hex-number-digits-binary-bin-number-digits" tabindex="-1"><code>hexadecimal =HEX$(number, [digits])</code><br /><code>binary =BIN$(number, [digits])</code></h4>
 <p>Converts a <code>number</code> to an <code>hexadecimal</code> or <code>binary</code> string with an optional minimal number of <code>digits</code>.</p>
-<h4 id="leading-left-text-length-trailing-right-text-length" tabindex="-1"><code>leading$ =LEFT$(text, length)</code><br /><code>trailing$ =RIGHT$(text, length)</code></h4>
+<h4 data-keyword="LEFT,RIGHT" data-title="=LEFT/=RIGHT" id="leading-left-text-length-trailing-right-text-length" tabindex="-1"><code>leading$ =LEFT$(text, length)</code><br /><code>trailing$ =RIGHT$(text, length)</code></h4>
 <p>Return the <code>length</code> number of characters from the beginning or the end of the <code>text</code> string.</p>
 <pre><code>shadok: DATA &quot;gabuzomeu&quot;
 PRINT LEFT$(shadok, 4)
 PRINT RIGHT$(shadok, 5)
 </code></pre>
-<h4 id="left-text-length-replacement-right-text-length-replacement" tabindex="-1"><code>LEFT$(text, length) =replacement$</code><br /><code>RIGHT$(text, length) =replacement$</code></h4>
+<h4 data-keyword="LEFT,RIGHT" data-title="LEFT/RIGHT" id="left-text-length-replacement-right-text-length-replacement" tabindex="-1"><code>LEFT$(text, length) =replacement$</code><br /><code>RIGHT$(text, length) =replacement$</code></h4>
 <p>Overwrites the <code>length</code> number of characters at the beginning or the end of the <code>text</code> string by the <code>length</code> first characters of the <code>replacement$</code> string.</p>
-<h4 id="extract-mid-text-position-length" tabindex="-1"><code>extract$ =MID(text, position, length)</code></h4>
+<h4 data-keyword="MID" data-title="=MID" id="extract-mid-text-position-length" tabindex="-1"><code>extract$ =MID(text, position, length)</code></h4>
 <p>Return the <code>length</code> number of characters starting at <code>position</code> (1..) from the <code>text</code> string.</p>
-<h4 id="mid-text-position-length-replacement" tabindex="-1"><code>MID$(text, position, length) =replacement$</code></h4>
+<h4 data-keyword="MID" data-title="MID" id="mid-text-position-length-replacement" tabindex="-1"><code>MID$(text, position, length) =replacement$</code></h4>
 <p>Overwrites the <code>length</code> number of characters starting at <code>position</code> (1..) from the <code>text</code> string by the <code>length</code> first characters of the <code>replacement$</code> string.</p>
 <pre><code>six$=&quot;hexakosioihexekontahexaphobie&quot;
 MID$(six$, 1, 4)=&quot;-66-&quot;
@@ -2490,19 +2496,19 @@ MID$(six$, 11, 4)=&quot;-66-&quot;
 MID$(six$, 20, 4)=&quot;-66-&quot;
 PRINT six$
 </code></pre>
-<h4 id="found-instr-text-occurence-position" tabindex="-1"><code>found =INSTR(text, occurence [, position])</code></h4>
+<h4 data-keyword="INSTR" data-title="=INSTR" id="found-instr-text-occurence-position" tabindex="-1"><code>found =INSTR(text, occurence [, position])</code></h4>
 <p>Search for the first <code>occurence</code> inside <code>text</code> and return the <code>found</code> position. Return 0 if not found. Optionally, start the search at <code>position</code>.</p>
 <h3 id="sound-api" tabindex="-1">Sound API</h3>
 <p>The fantasy hardware simulates 4 voices to play sound effects and music. See <a href="#sound">Sound</a> for an overview.</p>
-<h4 id="play-voice-pitch-length-sound-sound" tabindex="-1"><code>PLAY voice, pitch [, length] [SOUND sound]</code></h4>
+<h4 data-keyword="PLAY,SOUND" data-title="PLAY/SOUND" id="play-voice-pitch-length-sound-sound" tabindex="-1"><code>PLAY voice, pitch [, length] [SOUND sound]</code></h4>
 <p>Play a note at the <code>pitch</code> on the <code>voice</code> with an optional <code>length</code> and <code>sound</code>.</p>
 <p>Check the <a href="#pitch-values">pitch references</a> to learn which pitch correspond to which notes.</p>
 <p><code>length</code> use 1/60 of seconds as units with the maximum being 255, so 4.25 seconds. A length of 0 means that the sound will not stop until another sound is played on the same <code>voice</code>.</p>
 <p><code>sound</code> is a number representing a group of settings that define the sound's characteristics. It requires the usage of the <a href="#sound-source-address"><code>SOUND SOURCE</code></a> command.</p>
-<h4 id="stopstop-voice" tabindex="-1"><code>STOP</code><br /><code>STOP [voice]</code></h4>
+<h4 data-keyword="STOP,STOP" data-title="STOP/STOP" id="stopstop-voice" tabindex="-1"><code>STOP</code><br /><code>STOP [voice]</code></h4>
 <p>Stops the sound and track on the <code>voice</code> or all the voices if omitted.</p>
 <p>Release duration of envelope are not stop but fade out instead.</p>
-<h4 id="volume-voice-volume-mix" tabindex="-1"><code>VOLUME voice, [volume], [mix]</code></h4>
+<h4 data-keyword="VOLUME" data-title="VOLUME" id="volume-voice-volume-mix" tabindex="-1"><code>VOLUME voice, [volume], [mix]</code></h4>
 <p>Sets the <code>volume</code> and <code>mix</code> of <code>voice</code>.</p>
 <table>
 <thead>
@@ -2523,7 +2529,7 @@ PRINT six$
 </tbody>
 </table>
 <p>All parameters can be omitted to keep their current settings.</p>
-<h4 id="sound-voice-wave-width-length" tabindex="-1"><code>SOUND voice, [wave], [width], [length]</code></h4>
+<h4 data-keyword="SOUND" data-title="SOUND" id="sound-voice-wave-width-length" tabindex="-1"><code>SOUND voice, [wave], [width], [length]</code></h4>
 <p>Sets the sound's characteristics for the <code>voice</code>.</p>
 <p><code>wave</code> control the waveform. With a waveform of Pulse, the <code>width</code> control the pulse width. A value of 8 means a square wave.</p>
 <p><code>length</code> control the length of the sound. A length of 0 means that the sound will not stop until another sound is played on the same <code>voice</code>. This value can be overriden by the parameter <code>length</code> of the <a href="#play-voice-pitch-length-sound-sound"><code>PLAY</code> command</a>.</p>
@@ -2550,7 +2556,7 @@ PRINT six$
 </tbody>
 </table>
 <p>Omitted parameters will keep their previous values.</p>
-<h4 id="envelope-voice-attack-decay-sustain-release" tabindex="-1"><code>ENVELOPE voice, [attack], [decay], [sustain], [release]</code></h4>
+<h4 data-keyword="ENVELOPE" data-title="ENVELOPE" id="envelope-voice-attack-decay-sustain-release" tabindex="-1"><code>ENVELOPE voice, [attack], [decay], [sustain], [release]</code></h4>
 <p>Set the volume envelope for the <code>voice</code>.</p>
 <p>Allow to change the <code>attack</code>, <code>decay</code> and <code>release</code> duration.</p>
 <p><code>sustain</code> control the volume after the decay and before the release.</p>
@@ -2581,7 +2587,7 @@ PRINT six$
 </tbody>
 </table>
 <p>All parameters can be omitted to keep their current settings.</p>
-<h4 id="lfo-voice-rate-frequency-volume-width" tabindex="-1"><code>LFO voice, [rate], [frequency], [volume], [width]</code></h4>
+<h4 data-keyword="LFO" data-title="LFO" id="lfo-voice-rate-frequency-volume-width" tabindex="-1"><code>LFO voice, [rate], [frequency], [volume], [width]</code></h4>
 <p>Set the Low Frequency Oscillator (LFO) for the <code>voice</code>.</p>
 <p>Allow to change the <code>rate</code>, the <code>frequency</code>, the <code>volume</code> and the <code>width</code> for Pulse waveform.</p>
 <table>
@@ -2611,7 +2617,7 @@ PRINT six$
 </tbody>
 </table>
 <p>All parameters can be omitted to keep their current settings.</p>
-<h4 id="lfo-wave-voice-wave-invert-env-trigger" tabindex="-1"><code>LFO WAVE voice, [wave], [invert], [env], [trigger]</code></h4>
+<h4 data-keyword="LFO,WAVE" data-title="LFO WAVE" id="lfo-wave-voice-wave-invert-env-trigger" tabindex="-1"><code>LFO WAVE voice, [wave], [invert], [env], [trigger]</code></h4>
 <p>Set options for the a second Low Frequency Oscillator (LFO) for the <code>voice</code>.</p>
 <p>Allow to change the <code>wave</code> and enable or disable <code>invert</code>, <code>env</code> and <code>trigger</code>.</p>
 <p>With <code>invert</code> off, the wave is added (+) to the output signal. With <code>invert</code> on, the wave is substracted (-).</p>
@@ -2644,14 +2650,14 @@ PRINT six$
 </tbody>
 </table>
 <p>All parameters can be omitted to keep their current settings.</p>
-<h4 id="sound-source-address" tabindex="-1"><code>SOUND SOURCE [address]</code></h4>
+<h4 data-keyword="SOUND,SOURCE" data-title="SOUND SOURCE" id="sound-source-address" tabindex="-1"><code>SOUND SOURCE [address]</code></h4>
 <p>Set the <code>address</code> on memory to use as source for <code>MUSIC</code>, <code>TRACK</code> and <code>PLAY</code> commands. The <a href="#sound-source-format-data">sound source format data</a> is used to decode the information.</p>
 <p>This will not affect already started playback.</p>
 <p>If not specified the default address is taken by internally executing <code>=ROM(15)</code></p>
-<h4 id="music-pattern" tabindex="-1"><code>MUSIC [pattern]</code></h4>
+<h4 data-keyword="MUSIC" data-title="MUSIC" id="music-pattern" tabindex="-1"><code>MUSIC [pattern]</code></h4>
 <p>Starts playing at the <code>pattern</code>. If omitted, it starts at pattern 0.</p>
 <p>This will consider that the data respects the <a href="#sound-source-format-data">sound source format data</a>.</p>
-<h4 id="value-music-what" tabindex="-1"><code>value =MUSIC(what)</code></h4>
+<h4 data-keyword="MUSIC" data-title="=MUSIC" id="value-music-what" tabindex="-1"><code>value =MUSIC(what)</code></h4>
 <p>Question the current playback.</p>
 <table>
 <thead>
@@ -2679,11 +2685,11 @@ PRINT six$
 </tr>
 </tbody>
 </table>
-<h4 id="track-track-voice" tabindex="-1"><code>TRACK track, voice</code></h4>
+<h4 data-keyword="TRACK" data-title="TRACK" id="track-track-voice" tabindex="-1"><code>TRACK track, voice</code></h4>
 <p>Starts playing the <code>track</code> on <code>voice</code>.</p>
 <p>This will consider that the data respects the <a href="#sound-source-format-data">sound source format data</a>.</p>
 <h3 id="memory-api" tabindex="-1">Memory API</h3>
-<h4 id="poke-address-value" tabindex="-1"><code>POKE address, value</code></h4>
+<h4 data-keyword="POKE" data-title="POKE" id="poke-address-value" tabindex="-1"><code>POKE address, value</code></h4>
 <p>Write an 8bits <code>value</code> (0..255) in memory at <code>address</code>.</p>
 <p>The <code>address</code> MUST be writable. See <a href="#memory-mapping">memory mapping</a> for details.</p>
 <p>Example that change the background color:</p>
@@ -2694,7 +2700,7 @@ DO
   WAIT 5
 LOOP
 </code></pre>
-<h4 id="value-peek-address" tabindex="-1"><code>value =PEEK(address)</code></h4>
+<h4 data-keyword="PEEK" data-title="=PEEK" id="value-peek-address" tabindex="-1"><code>value =PEEK(address)</code></h4>
 <p>Read and return a 8bits <code>value</code> (0..255) from memory at <code>address</code>.</p>
 <p>Example that print the last pressed ASCII key code:</p>
 <pre><code>DO
@@ -2703,30 +2709,30 @@ LOOP
   WAIT 5
 LOOp
 </code></pre>
-<h4 id="pokew-address-value" tabindex="-1"><code>POKEW address, value</code></h4>
+<h4 data-keyword="POKEW" data-title="POKEW" id="pokew-address-value" tabindex="-1"><code>POKEW address, value</code></h4>
 <p>Write a 16bits <code>value</code> (-32768..32767) in memory at <code>address</code>.</p>
-<h4 id="value-peekw-address" tabindex="-1"><code>value =PEEKW(address)</code></h4>
+<h4 data-keyword="PEEKW" data-title="=PEEKW" id="value-peekw-address" tabindex="-1"><code>value =PEEKW(address)</code></h4>
 <p>Read and return a 16bits <code>value</code> (-32768..32767) from memory at <code>address</code>.</p>
 <p>Example that print the width and height of the visible pixels:</p>
 <pre><code>PRINT &quot;width&quot;, PEEKW($FF78), SHOWN.W
 PRINT &quot;height&quot;, PEEKW($FF7A), SHOWN.H
 </code></pre>
-<h4 id="pokel-address-value" tabindex="-1"><code>POKEL address, value</code></h4>
+<h4 data-keyword="POKEL" data-title="POKEL" id="pokel-address-value" tabindex="-1"><code>POKEL address, value</code></h4>
 <p>Write a 32bits <code>value</code> value (-16777216..16777216) in memory at <code>address</code>.</p>
 <p>Values are stored as floating-point. See <a href="#number-limits">number limits</a> for precision details.</p>
-<h4 id="value-peekl-address" tabindex="-1"><code>value =PEEKL(address)</code></h4>
+<h4 data-keyword="PEEKL" data-title="=PEEKL" id="value-peekl-address" tabindex="-1"><code>value =PEEKL(address)</code></h4>
 <p>Read and return a 32bits <code>value</code> (-16777216..16777216) from memory at <code>address</code>.</p>
 <p>Values are stored as floating-point. See <a href="#number-limits">number limits</a> for precision details.</p>
-<h4 id="address-rom-file" tabindex="-1"><code>address =ROM(file)</code></h4>
+<h4 data-keyword="ROM" data-title="=ROM" id="address-rom-file" tabindex="-1"><code>address =ROM(file)</code></h4>
 <p>Return the <code>address</code> in memory of the virtual <code>file</code>.</p>
-<h4 id="size-size-file" tabindex="-1"><code>size =SIZE(file)</code></h4>
+<h4 data-keyword="SIZE" data-title="=SIZE" id="size-size-file" tabindex="-1"><code>size =SIZE(file)</code></h4>
 <p>Return the <code>size</code> in bytes of the virtual <code>file</code>.</p>
-<h4 id="copy-source-count-to-destination" tabindex="-1"><code>COPY source, count TO destination</code></h4>
+<h4 data-keyword="COPY,TO" data-title="COPY/TO" id="copy-source-count-to-destination" tabindex="-1"><code>COPY source, count TO destination</code></h4>
 <p>Copies <code>count</code> bytes from <code>source</code> address from memory to <code>destination</code> address in memory.</p>
 <p>The <code>source</code> and <code>destination</code> CAN overlap.</p>
-<h4 id="fill-address-count-value" tabindex="-1"><code>FILL address, count [, value]</code></h4>
+<h4 data-keyword="FILL" data-title="FILL" id="fill-address-count-value" tabindex="-1"><code>FILL address, count [, value]</code></h4>
 <p>Sets <code>count</code> bytes from <code>address</code> in memory with the <code>value</code> or 0 when not specified.</p>
-<h4 id="rol-address-placesror-address-places" tabindex="-1"><code>ROL address, places</code><br /><code>ROR address, places</code></h4>
+<h4 data-keyword="ROL,ROR" data-title="ROL/ROR" id="rol-address-placesror-address-places" tabindex="-1"><code>ROL address, places</code><br /><code>ROR address, places</code></h4>
 <p>Rotates the bits of the byte stored at <code>address</code> by a number of <code>places</code> to the left or the right.</p>
 <pre><code>POKE $9000, %00001111
 again:
@@ -2735,7 +2741,7 @@ WAIT TAP
 ROL $9000, 2
 GOTO AGAIN
 </code></pre>
-<h4 id="dma-copy-rom" tabindex="-1"><code>DMA COPY [ROM]</code></h4>
+<h4 data-keyword="DMA,COPY,ROM" data-title="DMA COPY/ROM" id="dma-copy-rom" tabindex="-1"><code>DMA COPY [ROM]</code></h4>
 <p>Performs a fast memory copy that can only be done during interrupt calls: VBL/RASTER/EMITTER/PARTICLE.</p>
 <p>It uses the following registers as data:</p>
 <table>
@@ -2767,28 +2773,28 @@ GOTO AGAIN
 <p>To copy from an address greater or equal than <code>$10000</code>, the <code>ROM</code> argument MUST be used.</p>
 <h3 id="file-api" tabindex="-1">File API</h3>
 <p>Give access to the <a href="#virtual-file">virtual file embedded</a> in the cartridge.</p>
-<h4 id="files" tabindex="-1"><code>FILES</code></h4>
+<h4 data-keyword="FILES" data-title="FILES" id="files" tabindex="-1"><code>FILES</code></h4>
 <p>Enable the access to the files, allowing to use the other commands of the file API.</p>
 <p>Getting access to files allow to create editor program, like characters, map or custom editor. The official GFX and SFX use this command.</p>
 <p>When the <a href="#files"><code>FILES</code></a> command is called, it will map the data stored in the fantasy cartridge to virtual files indexed from 0 to 15.</p>
-<h4 id="comment-file-file" tabindex="-1"><code>comment$ =FILE$(file)</code></h4>
+<h4 data-keyword="FILE" data-title="=FILE" id="comment-file-file" tabindex="-1"><code>comment$ =FILE$(file)</code></h4>
 <p>Return the <code>comment$</code> string of the <code>file</code>.</p>
 <p>The command <a href="#files"><code>FILES</code></a> MUST be called before.</p>
-<h4 id="size-fsize-file" tabindex="-1"><code>size =FSIZE(file)</code></h4>
+<h4 data-keyword="FSIZE" data-title="=FSIZE" id="size-fsize-file" tabindex="-1"><code>size =FSIZE(file)</code></h4>
 <p>Return the <code>size</code> in bytes stored in the <code>file</code>.</p>
 <p>The command <a href="#files"><code>FILES</code></a> MUST be called before.</p>
-<h4 id="load-file-address-limit-offset" tabindex="-1"><code>LOAD file, address [, limit [, offset]]</code></h4>
+<h4 data-keyword="LOAD" data-title="LOAD" id="load-file-address-limit-offset" tabindex="-1"><code>LOAD file, address [, limit [, offset]]</code></h4>
 <p>Load the virtual <code>file</code> at <code>address</code>. Optionnaly <code>limit</code> the number of bytes read and start at <code>offset</code>.</p>
 <p>The command <a href="#files"><code>FILES</code></a> MUST be called before.</p>
-<h4 id="save-file-comment-address-size" tabindex="-1"><code>SAVE file, comment$, address, size</code></h4>
+<h4 data-keyword="SAVE" data-title="SAVE" id="save-file-comment-address-size" tabindex="-1"><code>SAVE file, comment$, address, size</code></h4>
 <p>Save <code>size</code> bytes from <code>address</code> to the <code>file</code> and <strong>erase previous data</strong>. The <code>comment$</code> is just a reminder of what is stored.</p>
 <p>The command <a href="#files"><code>FILES</code></a> MUST be called before.</p>
 <h3 id="other-api" tabindex="-1">Other API</h3>
-<h4 id="trace-expression-expression" tabindex="-1"><code>TRACE expression [, expression...]</code></h4>
+<h4 data-keyword="TRACE" data-title="TRACE" id="trace-expression-expression" tabindex="-1"><code>TRACE expression [, expression...]</code></h4>
 <p>Output the evaluated <code>expression</code> on the <a href="#overlay">overlay</a>.</p>
-<h4 id="message-text" tabindex="-1"><code>MESSAGE text</code></h4>
+<h4 data-keyword="MESSAGE" data-title="MESSAGE" id="message-text" tabindex="-1"><code>MESSAGE text</code></h4>
 <p>Output <code>text</code> in the bottom-left corner of the fantasy screen, in the <a href="#overlay">overlay</a>.</p>
-<h4 id="system-setting-value" tabindex="-1"><code>SYSTEM setting, value</code></h4>
+<h4 data-keyword="SYSTEM" data-title="SYSTEM" id="system-setting-value" tabindex="-1"><code>SYSTEM setting, value</code></h4>
 <p>Sets the <code>value</code> to system <code>setting</code>.</p>
 <table>
 <thead>
@@ -2852,7 +2858,7 @@ GOTO AGAIN
 <p>It makes no sens for layer 0.</p>
 </blockquote>
 <p>Enabling the <em>double size</em> will make the background layer rendered at twice the size. The scrolling values are not affected.</p>
-<h4 id="haptic-pattern" tabindex="-1"><code>HAPTIC pattern</code></h4>
+<h4 data-keyword="HAPTIC" data-title="HAPTIC" id="haptic-pattern" tabindex="-1"><code>HAPTIC pattern</code></h4>
 <p>Trigger an haptic feedback on the device make it vibrate using a <code>pattern</code> (0..9).</p>
 <table>
 <thead>
@@ -2905,7 +2911,7 @@ GOTO AGAIN
 </tbody>
 </table>
 <p>Not supported on all devices.</p>
-<h4 id="compat" tabindex="-1"><code>COMPAT</code></h4>
+<h4 data-keyword="COMPAT" data-title="COMPAT" id="compat" tabindex="-1"><code>COMPAT</code></h4>
 <p>Enables compatibility mode:</p>
 <ul>
 <li>Forces the rendering process to keep the original device screen.</li>
@@ -2919,39 +2925,39 @@ GOTO AGAIN
 <blockquote>
 <p>This command will be removed at some point.</p>
 </blockquote>
-<h4 id="pause" tabindex="-1"><code>PAUSE</code></h4>
+<h4 data-keyword="PAUSE" data-title="PAUSE" id="pause" tabindex="-1"><code>PAUSE</code></h4>
 <p>Halt the execution of bring the debugger console.</p>
 <p>Check the <a href="#debugger-instructions">debugger instructions</a> to learn what you can to do with it.</p>
 <h2 id="debugger-instructions" tabindex="-1">Debugger instructions</h2>
-<h4 id="dbg-pause" tabindex="-1">dbg: <code>PAUSE</code></h4>
+<h5 id="dbg-pause" tabindex="-1">dbg: <code>PAUSE</code></h5>
 <p>Enter the debugger. It bring a console where user can enter debugger specific commands. The scope used in the debugger is the same as the one in the program where the <code>PAUSE</code> appear.</p>
-<h4 id="dbg-a-variable-name" tabindex="-1">dbg: a variable name</h4>
+<h5 id="dbg-a-variable-name" tabindex="-1">dbg: a variable name</h5>
 <p>By typing the name of a variable, the debugger will print it's value. The variable use the same syntax as inside a program: <code>$</code> for string, () for array.</p>
 <p>The variable MUST be accessible throughout the scope of where the <code>PAUSE</code> has been used to enter the debugger. Global variables are still available everywhere.</p>
-<h4 id="dbg-a-variable-name-new-value" tabindex="-1">dbg: a variable name <code>=</code> new value</h4>
+<h5 id="dbg-a-variable-name-new-value" tabindex="-1">dbg: a variable name <code>=</code> new value</h5>
 <p>Allow to change the value of a variable.</p>
 <p>Number literal use the same syntax as inside a program, it support integer, float, hexadecimal and binary.</p>
 <p>String literal SHOULD use the same syntax as inside a program: &quot;.</p>
-<h4 id="dbg-an-address" tabindex="-1">dbg: an address</h4>
+<h5 id="dbg-an-address" tabindex="-1">dbg: an address</h5>
 <p>By typing a memory address, the debugger will print it's value as if it was read by <code>=PEEK()</code>.</p>
 <p>The address can be indicated using the hexadecimal or by any other valid numeric literal.</p>
-<h4 id="dbg-an-address-a-value" tabindex="-1">dbg: an address <code>=</code> a value</h4>
+<h5 id="dbg-an-address-a-value" tabindex="-1">dbg: an address <code>=</code> a value</h5>
 <p>Will try to modify the value store inside a memory address.</p>
 <pre><code>$FF00=3
 </code></pre>
-<h4 id="dbg-cls" tabindex="-1">dbg: <code>CLS</code></h4>
+<h5 id="dbg-cls" tabindex="-1">dbg: <code>CLS</code></h5>
 <p>Clear the debugger console.</p>
-<h4 id="dbg-wait" tabindex="-1">dbg: <code>WAIT</code></h4>
+<h5 id="dbg-wait" tabindex="-1">dbg: <code>WAIT</code></h5>
 <p>Resume execution until a <code>WAIT</code> command is found in the program, the scope may change.</p>
-<h4 id="dbg-dim-filter-pagination" tabindex="-1">dbg: <code>DIM [filter] [pagination]</code></h4>
+<h5 id="dbg-dim-filter-pagination" tabindex="-1">dbg: <code>DIM [filter] [pagination]</code></h5>
 <p>Print the list of accessible variable at the current scope.</p>
 <p>Allow to limit the output to the variables that matchs the <code>filter</code>.</p>
 <p>Allow to output more variables using the <code>pagination</code> with an index that start at 0 zero.</p>
-<h4 id="dbg-trace" tabindex="-1">dbg: <code>TRACE</code></h4>
+<h5 id="dbg-trace" tabindex="-1">dbg: <code>TRACE</code></h5>
 <p>Print the current call stack in reverse order: last line number followed by label <code>GOSUB</code>'ed and procedure <code>CALL</code>'ed.</p>
-<h4 id="dbg-track-peek-address-dbg-track-poke-address" tabindex="-1">dbg: <code>TRACK PEEK address</code><br /> dbg: <code>TRACK POKE address</code></h4>
+<h5 id="dbg-track-peek-address-dbg-track-poke-address" tabindex="-1">dbg: <code>TRACK PEEK address</code><br /> dbg: <code>TRACK POKE address</code></h5>
 <p>Enter the debugger when the program <code>=PEEK</code> or <code>POKE</code> the <code>address</code>.</p>
-<h4 id="dbg-next" tabindex="-1">dbg: <code>NEXT</code></h4>
+<h5 id="dbg-next" tabindex="-1">dbg: <code>NEXT</code></h5>
 <p>Execute next instruction in the program, and stop.</p>
 <h2 id="references" tabindex="-1">References</h2>
 <p>This annex provides technical information about how things work under the hood.</p>
