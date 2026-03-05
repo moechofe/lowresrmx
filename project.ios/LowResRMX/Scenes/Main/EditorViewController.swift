@@ -35,6 +35,7 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
 
     private var documentStateChangedObserver: Any?
     private var fontSizeObserver: Any?
+    private var fullHighlightTimer: Timer?
     private var lastAppliedFontSize: CGFloat = 0
     var document: ProjectDocument!
     var keyboardRect = CGRect()
@@ -158,6 +159,7 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
     deinit {
         removeDocumentStateChangedObserver()
         NotificationCenter.default.removeObserver(self)
+        fullHighlightTimer?.invalidate()
         updateDocument()
         document.close(completionHandler: nil)
         if let observer = fontSizeObserver {
@@ -597,6 +599,14 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
         if let editor = textView as? EditorTextView {
             let range = editor.selectedRange
             editor.applyColoration(AppController.shared.editorSyntaxHighlightingMode.rawValue, in: range)
+        }
+
+        // Cancel any pending full highlight
+        fullHighlightTimer?.invalidate()
+        // Schedule a full highlight after 300ms
+        fullHighlightTimer = Timer.scheduledTimer(withTimeInterval: 0.3, repeats: false) { [weak self] _ in
+            guard let self = self else { return }
+            self.sourceCodeTextView.applyColoration(AppController.shared.editorSyntaxHighlightingMode.rawValue, in: NSMakeRange(0, self.sourceCodeTextView.text.count))
         }
 
         // side bar
