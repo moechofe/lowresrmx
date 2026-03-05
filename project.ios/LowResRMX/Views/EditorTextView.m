@@ -129,6 +129,18 @@
 	[pasteButton addTarget:self action:@selector(paste:) forControlEvents:UIControlEventTouchUpInside];
 	pasteButton.tintColor = self.tintColor;
 
+	UIButton *doneButton = [UIButton buttonWithType:UIButtonTypeSystem];
+	[doneButton addTarget:self action:@selector(onKeyboardDoneTapped:) forControlEvents:UIControlEventTouchUpInside];
+	doneButton.tintColor = self.tintColor;
+	if (@available(iOS 13.0, *)) {
+		UIImageSymbolConfiguration *config = [UIImageSymbolConfiguration configurationWithPointSize:22 weight:UIImageSymbolWeightLight];
+		UIImage *image = [[UIImage systemImageNamed:@"keyboard.chevron.compact.down"] imageWithConfiguration:config];
+		[doneButton setImage:image forState:UIControlStateNormal];
+	} else {
+		[doneButton setTitle:@"Done" forState:UIControlStateNormal];
+		doneButton.titleLabel.font = [UIFont boldSystemFontOfSize:doneButton.titleLabel.font.pointSize];
+	}
+
 	if (@available(iOS 13.0, *)) {
 		[undoButton setImage:[UIImage systemImageNamed:@"arrow.uturn.backward"] forState:UIControlStateNormal];
 		[redoButton setImage:[UIImage systemImageNamed:@"arrow.uturn.forward"] forState:UIControlStateNormal];
@@ -141,6 +153,7 @@
 		[pasteButton setTitle:@"Paste" forState:UIControlStateNormal];
 	}
 
+	[stackView addArrangedSubview:doneButton];
 	[stackView addArrangedSubview:undoButton];
 	[stackView addArrangedSubview:redoButton];
 	[stackView addArrangedSubview:copyButton];
