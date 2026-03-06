@@ -56,10 +56,10 @@
 
 - (void)parser:(NSXMLParser *)parser didStartElement:(NSString *)elementName namespaceURI:(NSString *)namespaceURI qualifiedName:(NSString *)qName attributes:(NSDictionary *)attributeDict
 {
-    NSLog(@"tag: %@",elementName);
+//    NSLog(@"tag: %@",elementName);
     if ([self.headerTags indexOfObject:elementName.lowercaseString] != NSNotFound)
     {
-				NSLog(@"header id: %@",attributeDict[@"id"]);
+//				NSLog(@"header id: %@",attributeDict[@"id"]);
         self.currentTag = elementName;
         self.currentTagId = attributeDict[@"id"];
         self.currentTagName = attributeDict[@"data-keyword"];
@@ -69,7 +69,7 @@
 
 - (void)parser:(NSXMLParser *)parser foundCharacters:(NSString *)string
 {
-		NSLog(@"char: %@",string);
+//		NSLog(@"char: %@",string);
     if (self.currentTag)
     {
 				if (_currentChapter == nil)
