@@ -13,10 +13,14 @@
 #import "App-Swift.h"
 #import <WebKit/WebKit.h>
 
-@interface HelpTextViewController () <WKNavigationDelegate, UIScrollViewDelegate>
+@interface HelpTextViewController () <WKNavigationDelegate, UIScrollViewDelegate, UISearchBarDelegate>
 
 @property (weak, nonatomic) IBOutlet WKWebView *webView;
 @property (weak, nonatomic) IBOutlet UIActivityIndicatorView *activityView;
+@property (weak, nonatomic) IBOutlet UISearchBar *searchBar;
+
+@property (strong, nonatomic) HelpChapter *lastFoundChapter;
+@property (strong, nonatomic) NSArray<HelpChapter *> *lastSearchResults;
 
 @end
 
@@ -36,17 +40,10 @@
 	self.navigationItem.leftBarButtonItem = self.splitViewController.displayModeButtonItem;
 	self.navigationItem.leftItemsSupplementBackButton = YES;
 
-	UIBarButtonItem *searchButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemSearch target:self action:@selector(onSearchTapped:)];
-	self.navigationItem.rightBarButtonItem = searchButton;
+	self.searchBar.delegate = self; // In case not set in storyboard
 
 	HelpContent *helpContent = AppController.shared.helpContent;
 	[self.webView loadHTMLString:helpContent.manualHtml baseURL:helpContent.url];
-}
-
-// Search button handler stub
-- (void)onSearchTapped:(id)sender {
-	// TODO: Show search UI or perform search
-	NSLog(@"Search button tapped");
 }
 
 - (void)setChapter:(NSString *)chapter
@@ -96,6 +93,34 @@
 		offset.x = 0;
 		scrollView.contentOffset = offset;
 	}
+}
+
+- (void)searchBar:(UISearchBar *)searchBar textDidChange:(NSString *)searchText {
+    HelpContent *helpContent = AppController.shared.helpContent;
+    NSArray<HelpChapter *> *results = [helpContent chaptersForSearchAny:searchText];
+    self.lastSearchResults = results;
+		self.lastFoundChapter = nil;
+    if (results.count > 0) {
+        self.lastFoundChapter = results[0];
+
+    }
+}
+
+- (void)searchBarSearchButtonClicked:(UISearchBar *)searchBar {
+    if (self.lastSearchResults.count > 0) {
+				if (self.lastFoundChapter == nil) {
+						self.lastFoundChapter = self.lastSearchResults[0];
+				} else {
+						NSUInteger index = [self.lastSearchResults indexOfObject:self.lastFoundChapter];
+						if (index < self.lastSearchResults.count - 1) {
+								self.lastFoundChapter = self.lastSearchResults[index + 1];
+						} else {
+								self.lastFoundChapter = self.lastSearchResults[0];
+						}
+				}
+        HelpSplitViewController *helpVC = (HelpSplitViewController *)self.splitViewController;
+        [helpVC showChapter:self.lastFoundChapter.htmlChapter];
+    }
 }
 
 @end
