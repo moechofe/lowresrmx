@@ -645,7 +645,7 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
         }
 
 				let helpContent = AppController.shared.helpContent
-				let results = helpContent.chapters(forSearchText: selectedText)
+				let results = helpContent.chapters(forSearchKeyword: selectedText)
 
         if results.count == 1 {
             let chapter = results.first!

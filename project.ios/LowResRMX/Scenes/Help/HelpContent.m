@@ -35,7 +35,7 @@
     return self;
 }
 
-- (NSArray<HelpChapter *> *)chaptersForSearchText:(NSString *)text
+- (NSArray<HelpChapter *> *)chaptersForSearchKeyword:(NSString *)text
 {
     text = [[text stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] uppercaseString];
     NSMutableArray *results = [NSMutableArray array];
@@ -48,6 +48,20 @@
 								[results addObject:chapter];
 						}
 				}
+    }
+    return results;
+}
+
+- (NSArray<HelpChapter *> *)chaptersForSearchAny:(NSString *)text
+{
+    text = [[text stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] uppercaseString];
+    NSMutableArray *results = [NSMutableArray array];
+    for (HelpChapter *chapter in self.chapters)
+    {
+        if (chapter.title && [chapter.title localizedCaseInsensitiveContainsString:text])
+        {
+            [results addObject:chapter];
+        }
     }
     return results;
 }

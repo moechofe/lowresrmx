@@ -20,7 +20,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 
 - (instancetype)initWithURL:(NSURL *)url;
-- (NSArray<HelpChapter *> *)chaptersForSearchText:(NSString *)text;
+- (NSArray<HelpChapter *> *)chaptersForSearchKeyword:(NSString *)text;
+- (NSArray<HelpChapter *> *)chaptersForSearchAny:(NSString *)text;
 
 @end
 
