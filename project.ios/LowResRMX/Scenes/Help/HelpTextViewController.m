@@ -34,7 +34,6 @@
 	self.webView.scrollView.alwaysBounceHorizontal = NO;
 	self.webView.scrollView.bounces = NO;
 	self.webView.scrollView.showsHorizontalScrollIndicator = NO;
-	self.webView.scrollView.contentSize = CGSizeMake(self.webView.frame.size.width, self.webView.scrollView.contentSize.height);
 	self.webView.scrollView.delegate = self; // If you want to enforce further
 
 	self.navigationItem.leftBarButtonItem = self.splitViewController.displayModeButtonItem;

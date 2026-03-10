@@ -1,3 +1,7 @@
+TODO: improve Characters explaination
+
+
+
 # Retro Game Creator - Documentation
 
 ## What is Retro Game Creator?
@@ -1968,7 +1972,7 @@ This feature is internally used to scroll text when it reach the bottom of the w
 
 Set the memory `address` to use as source for BG COPY x1, y1, width, height TO x2, y2 operations.
 
-When `width` and `height` are specified, they are used as indiquating the number of cells in the source.
+When `width` and `height` are specified, they are used as indicating the number of cells in the source.
 
 If they are not specified, the [official background data format](#background-source-format-data) are used to retrieve the width and the height.
 
@@ -2051,12 +2055,12 @@ Similar to [`=CELL.A`](#attributes-cell-a-x-y) but modify the source in memory i
 
 Will print `text$` on the current layer starting at `x, y` cell using the current background attributes on the current layer.
 
-  DATA "ga", "bu", "zo", "meu"
-  FOR i=0 TO 3
-    PAL I
-    READ c$
-    TEXT 8+i*2, 10, c$
-  NEXT i
+    DATA "ga", "bu", "zo", "meu"
+    FOR i=0 TO 3
+      PAL I
+      READ c$
+      TEXT 8+i*2, 10, c$
+    NEXT i
 
 #### `NUMBER x, y, number, count`
 
@@ -2096,8 +2100,8 @@ Clears the window by replacing all the cells by the character 0. It also reset t
 Move the cursor location at `x, y` in cells coordinates inside the window.
 
     FOR i=1 TO 9
-      LOCATE I, I
-      PRINT str$(i);
+      LOCATE i, i
+      PRINT STR$(i);
     NEXT i
 
 #### `x =CURSOR.X`<br>`y =CURSOR.Y`
@@ -2240,7 +2244,7 @@ TODO: link to interrupts
 
 #### `PALETTE palette, [c0], [c1], [c2], [c3]`
 
-Sets the four colors on the height available `palette` (0..7). The color 0 of the palette 0 is generally used as backdrop color. (It can be change using the `SYSTEM` command.) `c0`, `c1`, `c2`, `c3` can accept a numeric value between 0 and 63, omit them to keep the current value. Consult the [64 colors reference](#64-colors) to choose the color you want.
+Sets the four colors on the eight available `palette` (0..7). The color 0 of the palette 0 is generally used as backdrop color. (It can be change using the `SYSTEM` command.) `c0`, `c1`, `c2`, `c3` can accept a numeric value between 0 and 63, omit them to keep the current value. Consult the [64 colors reference](#64-colors) to choose the color you want.
 
 #### `available =COLOR(palette, color)`
 
@@ -2336,23 +2340,34 @@ This can be used to change colors or scroll background layers, example:
     CELL 10, 10, 1
 
     SUB R
-    IF RASTER>=80 THEN
-      SCROLL 0, 0, 80-RASTER
-      PALETTE 0, , , RASTER MOD 64,
-    ELSE IF RASTER=0 THEN
-      SCROLL 0, 0, 0
-      PALETTE 0, , , 0,
-    END IF
+      '80 is the position of the cell drawn above
+      IF RASTER>=80 THEN
+        'at each raster line, scroll the the layer down
+        SCROLL 0, 0, 80-RASTER
+        'also change the palette
+        PALETTE 0, , , RASTER MOD 64,
+      'reset every thing at first raster line
+      ELSE IF RASTER=0 THEN
+        SCROLL 0, 0, 0
+        PALETTE 0, , , 0,
+      END IF
     END SUB
 
     DO
-      WAIT TAP
+    WAIT TAP
+      'enable the raster interrupt
       ON RASTER CALL R
       WAIT TAP
+      'disable the raster interrupt
       ON RASTER OFF
+      'reset scrolling and palette
       SCROLL 0, 0, 0
       PALETTE 0, , , 0,
     LOOP
+
+    #2:MAIN CHARACTERS
+    00000000000000000000000000000000
+    0000000000000000FF00000000000000
 
 #### `line =RASTER`
 
@@ -2635,7 +2650,7 @@ Sets the sound's characteristics for the `voice`.
 |----------:|------------------------------------------------|
 |    `wave` | 0 Sawtooth<br>1 Triangle<br>2 Pulse<br>3 Noise |
 |   `width` | 0 .. 15                                        |
-|  `length` | 0 Infinite<br>1 16.67ms .. 255 4.25s           |
+|  `length` | 0 Infinite<br>1 .. 255 (16.67ms .. 4.25s)      |
 
 Omitted parameters will keep their previous values.
 
@@ -2647,12 +2662,12 @@ Allow to change the `attack`, `decay` and `release` duration.
 
 `sustain` control the volume after the decay and before the release.
 
-| parameter | range           |
-|----------:|-----------------|
-|  `attack` | 0 2ms .. 15 12s |
-|   `decay` | 0 2ms .. 15 12s |
-| `release` | 0 2ms .. 15 12s |
-| `sustain` | 0 .. 15         |
+| parameter | range                |
+|----------:|----------------------|
+|  `attack` | 0 .. 15 (2ms .. 12s) |
+|   `decay` | 0 .. 15 (2ms .. 12s) |
+| `release` | 0 .. 15 (2ms .. 12s) |
+| `sustain` | 0 .. 15              |
 
 All parameters can be omitted to keep their current settings.
 
@@ -2662,12 +2677,12 @@ Set the Low Frequency Oscillator (LFO) for the `voice`.
 
 Allow to change the `rate`, the `frequency`, the `volume` and the `width` for Pulse waveform.
 
-|   parameter | range               |
-|------------:|---------------------|
-|      `rate` | 0 0.12Hz .. 15 18Hz |
-| `frequency` | 0 .. 15             |
-|    `volume` | 0 .. 15             |
-|     `width` | 0 .. 15             |
+|   parameter | range                    |
+|------------:|--------------------------|
+|      `rate` | 0 .. 15 (0.12Hz .. 18Hz) |
+| `frequency` | 0 .. 15                  |
+|    `volume` | 0 .. 15                  |
+|     `width` | 0 .. 15                  |
 
 All parameters can be omitted to keep their current settings.
 
@@ -2871,7 +2886,7 @@ Output `text` in the bottom-left corner of the fantasy screen, in the [overlay](
 Sets the `value` to system `setting`.
 
 | setting | purpose                     | values |
-| -------:|:--------------------------- |:------ |
+| -------:| --------------------------- | ------ |
 |       0 | energy saving mode          | 0 or 1 |
 |       1 | color 0 opacity for layer 0 | 0 or 1 |
 |       2 | color 0 opacity for layer 1 | 0 or 1 |
@@ -2880,7 +2895,7 @@ Sets the `value` to system `setting`.
 |       5 | double size for layer 0     | 0 or 1 |
 |       6 | double size for layer 1     | 0 or 1 |
 |       7 | double size for layer 2     | 0 or 1 |
-|       8 | double size for layer       | 0 or 1 |
+|       8 | double size for layer 3     | 0 or 1 |
 
 Enabling the _energy saving mode_ setting will reduce the refresh rate whenever there is no user input. The CPU cycles are not affected.
 
@@ -2911,20 +2926,21 @@ Not supported on all devices.
 
 #### `COMPAT`
 
+> This command only make sens if you are familiar with 🌐&nbsp;[LowRes NX fantasy console](https://lowresnx.inutilis.com/).
+> This command will be removed at some point.
+
 Enables compatibility mode:
 
-- Forces the rendering process to keep the original device screen.
+- Forces the rendering process to keep the original device screen (160x128).
 - Reverts the `RND` command and `=RND()` function to their original behavior.
 
 This does not guarantee full compatibility but can help with some aspects. For instance:
 - Commands and functions that have been removed will still be unavailable.
 - Double cell support for background is not emulated.
 
-> This command will be removed at some point.
-
 #### `PAUSE`
 
-Halt the execution of bring the debugger console.
+Halt the execution and bring the debugger console.
 
 Check the [debugger instructions](#debugger-instructions) to learn what you can to do with it.
 
@@ -2946,7 +2962,7 @@ Allow to change the value of a variable.
 
 Number literal use the same syntax as inside a program, it support integer, float, hexadecimal and binary.
 
-String literal SHOULD use the same syntax as inside a program: ".
+String literal use the same syntax as inside a program: surrounded by double quotes (").
 
 ##### dbg: an address
 
@@ -3255,7 +3271,15 @@ The [text API](#text-api) can only print a fraction of it and remap it. The `FON
 
 ### Registers
 
-Registers are one or more bytes mapped in memory thats as an internal usage.
+Registers are part of the memory reserved to control (or query) the state of the fantasy interpreter and hardware. Through registers, users can access most of the features already covered by the APIs, but some of them are unique and can only be accessed using dedicated registers.
+
+Each register are mapped to the memory and consist of an address and a number of bytes. Reading and writing to registers are done using the dedicated commands and functions: [`value =PEEK(address)`](#value-peek-address), [`value =PEEKL(address)`](#value-peekl-address), [`value =PEEKW(address)`](#value-peekw-address), [`POKE address, value`](#poke-address-value), and [`POKEW address, value`](#pokew-address-value).
+
+| bits | bytes | read  | write |
+|------|-------|-------|-------|
+|    8 |     1 | PEEK  | POKE  |
+|   16 |     2 | PEEKW | POKEW |
+|   32 |     4 | PEEKL | POKEL |
 
 TODO: layer registers?
 
@@ -3396,15 +3420,15 @@ Pixels outside the safe zone represent the number of fantasy pixels that are vis
 
 ##### DMA registers
 
-| address | size    | purpose                |
-| ------:| ------- | ----------------------- |
-|  $FFA0 | 2 Bytes | Source address          |
-|  $FFA2 | 2 Bytes | Number of bytes to copy |
-|  $FFA4 | 2 Bytes | Destination address     |
+| address | size    | purpose                 |
+| -------:| ------- | ----------------------- |
+|   $FFA0 | 2 Bytes | Source address          |
+|   $FFA2 | 2 Bytes | Number of bytes to copy |
+|   $FFA4 | 2 Bytes | Destination address     |
 
 ### Cycles
 
-The fantasy hardware simulates CPU cycles. A cycle a fixed time duration that can be used to compute things. In Retro Game Creator each instructions cost a number of cycles that follow a set of rules.
+The fantasy hardware simulates CPU cycles. A cycle is a fixed time duration that can be used to compute things. In Retro Game Creator each instructions cost a number of cycles that follow a set of rules.
 
 - 1 cycle per instruction,
 - 1 cycle for reading the value of a variable,
