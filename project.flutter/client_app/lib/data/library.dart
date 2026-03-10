@@ -1,8 +1,10 @@
+import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
+import 'package:flutter/services.dart';
 
 import 'package:path/path.dart' as p;
 import 'package:image/image.dart' as img;
@@ -196,4 +198,16 @@ class MyLibrary extends ChangeNotifier {
 			await programFile.create();
 		}
 	}
+
+	static Future<void> reinstallDefaultPrograms() async {
+		final Directory libraryDir = await getLibraryDir();
+		final assetManifest = await AssetManifest.loadFromAssetBundle(rootBundle);
+		final programsDir = assetManifest.listAssets().where((path) => path.startsWith('asset/programs/')).toList();
+		for (var path in programsDir) {
+			final byteData = await rootBundle.load(path);
+			final fileName = p.basename(path);
+			final file = File(p.join(libraryDir.path, fileName));
+			await file.writeAsBytes(byteData.buffer.asUint8List());
+		}
+  }
 }

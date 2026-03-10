@@ -72,6 +72,16 @@ abstract class MyPreference {
 		final prefs = await SharedPreferences.getInstance();
 		await prefs.setDouble("editorFontSize", fontSize);
 	}
+
+	static Future<String> getPreviouslyInstalledVersion() async {
+		final prefs = await SharedPreferences.getInstance();
+		return prefs.getString("previouslyInstalledVersion") ?? "";
+	}
+
+	static Future<void> setPreviouslyInstalledVersion(String version) async {
+		final prefs = await SharedPreferences.getInstance();
+		await prefs.setString("previouslyInstalledVersion", version);
+	}
 }
 
 /// A preference notifier for each program.

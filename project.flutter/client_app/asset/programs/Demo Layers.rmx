@@ -1,0 +1,52 @@
+'demo of 4 layers of 64x64 cells each
+
+pal 3
+bg 3
+bg fill 0,0 to 63,63 char 2
+
+'zoom layer 3, making it twice bigger
+system 8,1
+
+x=0 :y=0
+for i=0 to 64*64-1 step 2
+  pal 2: bg 1: bg fill x,y to x+1,y+1 char 3
+  add x,4
+  if x>=64 then
+    add y,2
+    x=(y mod 4)
+   end if
+next i
+
+x=0 :y=0
+for i=0 to 64*64-1 step 4
+  pal 1: bg 1: bg fill x,y to x+3,y+3 char 3
+  pal 0: bg 0: bg fill x,y to x+3,y+3 char 3
+  add x,8
+  if x>=64 then
+    add y,4
+    x=(y mod 8)
+   end if
+next i
+
+'zoom layer 0, making it twice bigger
+system 5,1
+
+do
+  'move the layer in circle
+  scroll 0,cos(timer/1000)*40,sin(timer/1000)*40
+  scroll 1,cos(timer/1200)*30,sin(timer/1200)*30
+  scroll 2,cos(timer/1400)*20,sin(timer/1400)*20
+  scroll 3,cos(timer/1600)*10,sin(timer/1600)*10
+  wait vbl
+loop
+
+#1:MAIN PALETTES
+00360000003501010034010100330101
+02353603020D0E03022D2E03021A1B03
+
+#2:MAIN CHARACTERS
+00000000000000000000000000000000
+CCCC3333CCCC33330000000000000000
+F0F0F0F00F0F0F0F0000000000000000
+FFFFFFFFFFFFFFFF0000000000000000
+
