@@ -1,4 +1,4 @@
-TODO: improve Characters explaination
+TODO: improve Characters explanation
 
 
 
@@ -16,11 +16,11 @@ It emulates old-school 8-bit/16-bit console hardware by replicating their limita
 
 > This is a fork of the excellent fantasy console Lowres NX by Timo "Inutilis" Kloss.
 > This is a heavily modified version and way more complicated to use, I recommend you to stay on the original app: 🌐&nbsp;[LowRes NX Coder on App Store](https://apps.apple.com/app/lowres-nx-coder/id1318884577).
-> **Important:** The app MAY NOT be available anymore, look at the 🌐&nbsp;[LowRes NX community web site](https://lowresnx.inutilis.com/) for more informations.
+> **Important:** The app MAY NOT be available anymore, look at the 🌐&nbsp;[LowRes NX community web site](https://lowresnx.inutilis.com/) for more information.
 
-> **New user?** Skip the next section and `GOTO` [How does it works](#how-does-it-work).
+> **New user?** Skip the next section and `GOTO` [How does it work](#how-does-it-work).
 
-## Difference
+## Differences
 
 The goal of the app is to provide a development environment that I can use during my commutes on the subway, and later, to be able to publish a real app on the stores.
 
@@ -353,6 +353,8 @@ From now on, the terms:
 
 ### Characters
 
+On the Retro Game Creator fantasy console, you can't draw things on the screen directly. The fantasy hardware simulates a dedicated chip that draws pixels for you that has been stored in the [fantasy cartridge](#cartridge). When the cartridge is run, a dedicated part of [the memory](#memory-mapping) is reserved to store this pixels data, they are called characters.
+
 The 256 characters are [blocks of 8x8 pixels](#character-data) assigned to numbers from 0 to 255.
 When a number is used to draw in a background layer or sprite, the rendering process draws the corresponding 8x8 pixel block.
 
@@ -438,6 +440,8 @@ Check the [cycles reference](#cycles) for more information.
 
 A Retro Game Creator cartridge is a text file containing the program code and 16 virtual files after the text.
 
+When a program (or a cartridge) is run, the 16 virtual files are [mapped to the memory](#memory-mapping).
+
 The virtual files data are encoded in hexadecimal and SHOULD respect a specific format.
 
 > Manually editing the virtual files data is NOT RECOMMENDED as it can lead to unexpected behavior. Instead, use the provided tools and APIs to manipulate the virtual files.
@@ -458,6 +462,8 @@ When the program is started, the content of the files is loaded and [mapped to t
 The memory address for the files starts at $10000, and the best way to know this address is to use the `=ROM` function.
 
 Check the [file API](#file-api).
+
+TODO: default file and usage, check if already exists in the manual
 
 ### Memory
 
@@ -979,7 +985,7 @@ An lvalue appears on the left side of an assignment, and an rvalue appears on th
 
 Lvalues are always identifiers, where rvalues can be identifiers are literals.
 
-Lvalues are writable, where rvalues are not nescessary.
+Lvalues are writable, where rvalues are not necessary.
 
 ### Instructions separator
 
@@ -987,7 +993,7 @@ An instruction generally end by a new line \n.
 
 It's possible to put multiple instructions using a colon : on one line but with limitation:
 
-- Can be miss-interpreted as a label declaration. So the best way is to add a space between the idenfier and the colon.
+- Can be misinterpreted as a label declaration. So the best way is to add a space between the idenfier and the colon.
 
     This will not work:
 
@@ -1294,7 +1300,7 @@ Syntax for a [procedure definition](#procedures):
       [EXIT SUB]
     END SUB
 
-This will define a `procedure` and can optionnaly received a list of `parameters`.
+This will define a `procedure` and can optionally received a list of `parameters`.
 
 An empty list of `parameters` is not valid. Simply remove the parentheses ().
 
@@ -1374,7 +1380,7 @@ Syntax for a [procedure call](#procedures):
 
     CALL procedure [(parameters)]
 
-This will call the `procedure` and optionnally pass a list of `parameters`.
+This will call the `procedure` and optionally pass a list of `parameters`.
 
 Syntax of the `parameters` list:
 
@@ -2603,9 +2609,9 @@ Overwrites the `length` number of characters starting at `position` (1..) from t
     MID$(six$, 20, 4)="-66-"
     PRINT six$
 
-#### `found =INSTR(text, occurence [, position])`
+#### `found =INSTR(text, occurrence [, position])`
 
-Search for the first `occurence` inside `text` and return the `found` position. Return 0 if not found. Optionally, start the search at `position`.
+Search for the first `occurrence` inside `text` and return the `found` position. Return 0 if not found. Optionally, start the search at `position`.
 
 ### Sound API
 
@@ -2861,7 +2867,7 @@ The command [`FILES`](#files) MUST be called before.
 
 #### `LOAD file, address [, limit [, offset]]`
 
-Load the virtual `file` at `address`. Optionnaly `limit` the number of bytes read and start at `offset`.
+Load the virtual `file` at `address`. optionally `limit` the number of bytes read and start at `offset`.
 
 The command [`FILES`](#files) MUST be called before.
 
@@ -2926,7 +2932,7 @@ Not supported on all devices.
 
 #### `COMPAT`
 
-> This command only make sens if you are familiar with 🌐&nbsp;[LowRes NX fantasy console](https://lowresnx.inutilis.com/).
+> This command only make sense if you are familiar with 🌐&nbsp;[LowRes NX fantasy console](https://lowresnx.inutilis.com/).
 > This command will be removed at some point.
 
 Enables compatibility mode:
@@ -3023,7 +3029,7 @@ This annex provides technical information about how things work under the hood.
 
 ### Memory mapping
 
-TODO: writtable
+TODO: writable
 
 | address | size        | purpose            |
 | -------:| ----------- | ------------------ |
@@ -3273,7 +3279,7 @@ The [text API](#text-api) can only print a fraction of it and remap it. The `FON
 
 Registers are part of the memory reserved to control (or query) the state of the fantasy interpreter and hardware. Through registers, users can access most of the features already covered by the APIs, but some of them are unique and can only be accessed using dedicated registers.
 
-Each register are mapped to the memory and consist of an address and a number of bytes. Reading and writing to registers are done using the dedicated commands and functions: [`value =PEEK(address)`](#value-peek-address), [`value =PEEKL(address)`](#value-peekl-address), [`value =PEEKW(address)`](#value-peekw-address), [`POKE address, value`](#poke-address-value), and [`POKEW address, value`](#pokew-address-value).
+Each register is mapped to the memory and consist of an address and a number of bytes. Reading and writing to registers are done using the dedicated commands and functions: [`value =PEEK(address)`](#value-peek-address), [`value =PEEKL(address)`](#value-peekl-address), [`value =PEEKW(address)`](#value-peekw-address), [`POKE address, value`](#poke-address-value), and [`POKEW address, value`](#pokew-address-value).
 
 | bits | bytes | read  | write |
 |------|-------|-------|-------|
@@ -3708,7 +3714,7 @@ TODO: interrupts
 - [`INPUT [prompt;] variable`<br>`INPUT [prompt;] variable$`](#input-prompt-variableinput-prompt-variable)
 
 **`INSTR`**:
-- [`found =INSTR(text, occurence [, position])`](#found-instr-text-occurence-position)
+- [`found =INSTR(text, occurrence [, position])`](#found-instr-text-occurrence-position)
 
 **`INT`**:
 - [`floor =FLOOR(number)`<br>`floor =INT(number)`](#floor-floor-number-floor-int-number)
