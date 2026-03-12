@@ -80,21 +80,23 @@ class _MyEditDrawerState extends State<MyEditDrawer> {
   Widget buildScaffold(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          // automaticallyImplyLeading: false,
-          title: const Text("Back to Programs"),
+          automaticallyImplyLeading: false,
+          // title: const Text("Back to Programs"),
+					title: Text(widget.editedProgramName),
           leading: IconButton(
-              icon: const Icon(Icons.library_books_rounded),
+              // icon: const Icon(Icons.library_books_rounded),
+							icon: const Icon(Icons.arrow_back_rounded),
               tooltip: "Program library",
               onPressed: () {
                 Navigator.of(context).pop();
-                gotoLibrary(context);
+                // gotoLibrary(context);
               }),
         ),
         body: buildListView());
   }
 
   Widget buildListView() {
-    const int reservedItemsBeforeList = 7;
+    const int reservedItemsBeforeList = 8;
     const int reservedItemsAfterList = 2;
     return FutureBuilder(
         future: MyPreference.listToolProgram(),
@@ -106,18 +108,20 @@ class _MyEditDrawerState extends State<MyEditDrawer> {
                     reservedItemsAfterList,
                 itemBuilder: (context, index) {
                   if (index == 0) {
-                    return buildTraceItem(context);
+										return buildBackItem(context);
                   } else if (index == 1) {
-                    return buildToolItem(context);
-                  } else if (index == 2) {
-                    return const Divider();
-                  } else if (index == 3) {
                     return const MyManualTile();
-                  } else if (index == 4) {
+                  } else if (index == 2) {
                     return buildSettingItem(context);
-                  } else if (index == 5) {
+                  } else if (index == 3) {
                     return const Divider();
-                  } else if (index == 6) {
+                  } else if (index == 4) {
+                    return buildTraceItem(context);
+                  } else if (index == 5) {
+                    return buildToolItem(context);
+									} else if (index == 6) {
+                    return const Divider();
+                  } else if (index == 7) {
                     return const Padding(
                       padding: EdgeInsets.only(
                           left: 52.0, right: 8.0, top: 8.0, bottom: 4),
@@ -166,6 +170,17 @@ class _MyEditDrawerState extends State<MyEditDrawer> {
         });
   }
 
+	Widget buildBackItem(BuildContext context) {
+		return ListTile(
+				leading: const Icon(Icons.library_books_rounded),
+				title: const Text("Back to Programs"),
+				onTap: () {
+					Navigator.of(context).pop();
+					gotoLibrary(context);
+				}
+		);
+	}
+
   Widget buildTraceItem(BuildContext context) {
     final programPreference = context.watch<MyProgramPreference>();
     final currentTrace = programPreference.withTrace;
@@ -186,6 +201,7 @@ class _MyEditDrawerState extends State<MyEditDrawer> {
     return SwitchListTile(
         value: currentTool,
         title: const Text("Is a Tool"),
+				subtitle: const Text("Allows edit other programs"),
         onChanged: (value) {
           // Store the change
           programPreference.setTool(!currentTool);

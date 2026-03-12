@@ -12,7 +12,7 @@ class MyManualTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       leading: const Icon(Icons.menu_book_rounded),
-      title: const Text("LowresRMX Manual"),
+      title: const Text("Manual (offline)"),
       onTap: () {
         Navigator.of(context).pop();
         Navigator.of(context).push(
