@@ -1,4 +1,4 @@
-version$="0.170"
+version$="0.174"
 'offical graphics editor for Retro Game Creator (LowResRMX) for iOS
 'author: martin mauchauffee
 
@@ -9,11 +9,16 @@ version$="0.170"
 
 
 'todo: is fltshow needed? floe -1 can be enough as long as oldfloe is set, and it's a mess, fltshow is set to -1 but floe stay -1
+'fixme: I keep it, it's less CPU comsuption in raster
 'todo: add sentence on top of the file selector to indicate which type of file
 'todo: can i remove the variable editor?, fedmode is pretty usefull
 'todo: there is some `bg source beda` and some `bg source usraddr(layfile(3))`, who win?
 'todo: actually, it should never be `layfile(3)`
 'todo: most of the time, I can remove `if tapped then`
+'todo: variable `first` is not well-named
+'todo: lstchara is used instead of care in backed
+'todo: check if tedchanged is usefull
+'todo: remove gotos in tlb_x_xxx that do not lead to a return shortly
 
 
 files
@@ -69,6 +74,7 @@ wramend=$e000
 
 'editor= current editor
 '=1 backed the background editor
+'=2 chared the character editor
 
 'pale= current user palette
 'cole= current user color, the index in the palette
@@ -102,6 +108,7 @@ global pcla
 '=0 user's chara list
 '=1 64 available colors
 global cane,tole,floe
+
 
 
 
@@ -141,6 +148,12 @@ bedtool=0 :bedoldt=1
 bedatt=0
 bedsetm=%111111
 bedbot=0
+
+'about character editor or chared or ced
+'cedlife= current edited file
+'cedtool= chared current tool
+'=0 pan the canvas, draw the canvas
+cedtool=0
 
 'about currently edited layer in backed
 'laybgl,laybgt,laybgr,laybgb= bounding box of the current layer relative to the loaded background, in cell coordinates
@@ -227,6 +240,11 @@ sub usecolor(c)
   fccdir=1
   fccdelay=6
   kolcolor=peek(pcla+cole)
+end sub
+
+sub usechar(c)
+'set the current character to use for draw operation
+  care=c
 end sub
 
 sub uselayer(l)
@@ -772,6 +790,26 @@ for i=0 to 63 : poke $9004+i,i : next i
 global kolraster,kolcol,kolchanged
 kolcol=0
 
+'======================= chared:
+
+sub pixeltocell(a,c,x,y,s)
+'convert chara pixel to bg cell, row by row
+'(in) a base address
+'(in) c source char index
+'(in) x,y dest cell coords
+'(in) s the first y/4 line to redraw
+  'chara address
+  r=a+c*16+s
+  for i=s to 7 step 4
+    for j=7 to 0 step -1
+      cell x+j,y+i,(peek(r) and 1)+(peek(r+8) and 1)*2
+      ror r,1
+      ror r+8,1
+    next j
+    r=r+4
+  next i
+end sub
+
 
 '======================= bottom:
 'a bottom bar for ui widgets
@@ -961,7 +999,7 @@ tlbg=0
 global fltui, fltcursor
 fltui=0 :fltg=0
 
-'needed by the canvas
+'needed by the canvas of the background editor
 'bedg= canvas gesture
 '=0 nothing or tapping
 '=1 pressing or dragging
@@ -969,6 +1007,11 @@ fltui=0 :fltg=0
 'beddrawn= layers has been drawn
 bedg=0
 bedchanged=0
+cedx=0 :cedy=0
+
+'needed by the canvas of the character editor
+'cedx,cedy= canvas position, used to pan the canvas, in float pixel coords
+
 
 'needed for the file toolbar
 'fedmode= file load/save mode
@@ -1025,6 +1068,27 @@ care=1
 
 lstchara=care
 
+
+
+'mark that canvas, floating or toolbar has changed and must be redrawn
+cnvchanged=-1 :fltchanged=-1 :tlbchanged=-1
+
+'ask to change to a new editor
+neweditor=0
+
+'ask to show the manual
+askmanual=0
+
+
+
+' cane=2 :tole=7 :floe=0
+' on raster call r2
+' on vbl call v
+' goto chared
+
+
+
+
 'addr=0
 'call usrlook($1000,0,$9004,$e000,addr)
 
@@ -1034,44 +1098,653 @@ lstchara=care
 
 'todo get from pram
 cane=0 :tole=0 :floe=0
-
-on raster call r
+on raster call r2
 on vbl call v
+goto backed
+
+'goto manual
+
 
 'goto filer
-goto backed
 'goto memed
+
+
 
 message "end reached! not good!"
 end
 
+
+
+manual:
+askmanual=0
+cls
+on raster off :on vbl off
+sprite off
+copy rom(1),32 to $ff00
+copy rom(2),$1000 to $8000
+bg source rom(3)
+palette 0,2,8,8,2
+palette 4,2,,,0
+palette 5,2,62,63,3
+palette 6,2,45,46,3
+palette 7,2,1,17,61
+shownw=0 :shownh=0
+subject=0
+font 192
+do
+  if shownw<>shown.w or shownh<>shown.h then
+    shownw=shown.w :shownh=shown.h
+    cls
+    pal 1
+    bg fill 0,0 to 63,0 char 1
+    bg fill 0,0 to 0,63 char 1
+    bg fill 63,0 to 63,63 char 1
+    bg fill 0,63 to 63,63 char 1
+    bg fill 21,0 to 21,63 char 1
+    bg fill 42,0 to 42,63 char 1
+
+    window 2,3,18,60,0
+    pal 5
+    print "gfx ";version$;" manual"
+    print :print
+    bg copy 2,6,6,3 to cursor.x+2,cursor.y+3
+    bg copy 8,62,6,3 to cursor.x+8,cursor.y+3
+    locate 0,cursor.y+4
+    pal 0
+    print "switch between layer and character editor"
+    print :print
+    pal 5
+    print "subject:"
+    print :print
+    pal 0
+    print "layer editor"
+    bg fill cursor.x+2,cursor.y+3 to cursor.x+2+11,cursor.y+3 char 65
+    print :print
+    print "layer: draw"
+    bg fill cursor.x+2,cursor.y+3 to cursor.x+2+10,cursor.y+3 char 65
+    print :print
+    print "layer: palette"
+    bg fill cursor.x+2,cursor.y+3 to cursor.x+2+13,cursor.y+3 char 65
+    print :print
+    print "layer: more"
+    bg fill cursor.x+2,cursor.y+3 to cursor.x+2+10,cursor.y+3 char 65
+    print :print
+    print "layer: file"
+    bg fill cursor.x+2,cursor.y+3 to cursor.x+2+10,cursor.y+3 char 65
+    print :print
+    print "chara editor"
+    bg fill cursor.x+2,cursor.y+3 to cursor.x+2+11,cursor.y+3 char 65
+    print :print
+    pal 6
+    print "quit manual"
+    bg fill cursor.x+2,cursor.y+3 to cursor.x+2+10,cursor.y+3 char 65
+
+    on subject gosub subject_0, subject_1, subject_2, subject_3
+
+    maxx=64*8-(shown.w-safe.l-safe.r)
+    maxy=64*8-(shown.h-safe.t-safe.b)
+  end if
+  wait vbl
+  if tap then
+    px=touch.x :py=touch.y
+    sx=scroll.x(0) :sy=scroll.y(0)
+    cx=(touch.x+sx)\8 :cy=(touch.y+sy)\8
+    trace cx,cy
+    if cx>=2 and cy>=18 and cx<=13 and cy<=19 then gosub subject_0
+    if cx>=2 and cy>=21 and cx<=12 and cy<=22 then gosub subject_1
+    if cx>=2 and cy>=24 and cx<=15 and cy<=25 then gosub subject_1
+    if cx>=2 and cy>=30 and cx<=12 and cy<=31 then gosub subject_3
+    if cx>=2 and cy>=36 and cx<=12 and cy<=37 then goto manual_quit
+  else if touch then
+    dx=touch.x-px :dy=touch.y-py
+    nx=clamp(sx-dx,0,maxx)
+    ny=clamp(sy-dy,0,maxy)
+    scroll 0,nx,ny
+    'trace nx,ny
+  end if
+loop
+end
+
+subject_0: subject=0
+  window 23,3,18,60,0 :clw
+  pal 5
+  print "layer editor"
+  print :print
+  pal 0
+  print "the layer editor will present 3 things."
+  print
+  print "1st: the layer canvas where user can paint on."
+  print
+  print "2nd: the list of characters to paint with."
+  print
+  print "3rd: a toolbar."
+  print
+  bg copy 2,0,11,3 to cursor.x+23,cursor.y+3
+  locate 0,cursor.y+4
+  pal 0
+  print "pan: enable to pan the layers using touch."
+  print
+  print "draw: show toolbar with additional paint tools."
+  print
+  pal 6
+  print "tip: to start painting, select the character."
+  print
+  bg copy 14,0,13,3 to cursor.x+23,cursor.y+3
+  locate 0,cursor.y+4
+  pal 0
+  print "zoom: toogle."
+  print
+  print "undo: last paint or paint settings."
+  bg copy 2,3,11,3 to cursor.x+23,cursor.y+3
+  bg tint cursor.x+23+7,cursor.y+4 to cursor.x+23+9,cursor.y+4 pal 7
+  pal 1
+  cell cursor.x+23+2,cursor.y+4,19
+  locate 0,cursor.y+4
+  pal 0
+  print "l3: change edited layer."
+  print
+  print "4 colors: show toolbar with additional palettes."
+  print
+
+  window 44,3,18,60,0 :clw
+  print "layer editor"
+  print
+  bg copy 14,3,13,3 to cursor.x+44,cursor.y+3
+  locate 0,cursor.y+4
+  print "arrows: paint with horizontal and vertical flag."
+  print
+  print "prio: paint character with priority flag."
+  print
+  bg copy 15,6,12,3 to cursor.x+44,cursor.y+3
+  locate 0,cursor.y+4
+  print "more: show toolbar with additional tools."
+  print
+  print "file: show toolbar with the file manager."
+
+  return
+
+subject_1: subject=1
+  window 23,3,18,60,0 :clw
+  pal 5
+  print "layer: draw"
+  print :print
+  pal 0
+  bg copy 2,18,11,3 to cursor.x+23,cursor.y+3
+  locate 0,cursor.y+4
+  print "dot: paint on tap, pan on drag."
+  print
+  print "back: show previous toolbar."
+  print
+  bg copy 14,18,13,3 to cursor.x+23,cursor.y+3
+  locate 0,cursor.y+4
+  print "zoom: toogle."
+  print
+  print "undo: last paint or paint settings."
+  bg copy 2,21,12,3 to cursor.x+23,cursor.y+3
+  locate 0,cursor.y+4
+  print "draw: paint on tap and drag."
+  print
+  print "rect: paint a rectangle on drag."
+  bg copy 15,21,12,3 to cursor.x+23,cursor.y+3
+  locate 0,cursor.y+4
+  print "copy: copy a rectangle from layer or list of characters."
+  print
+  print "past: paint with copied rectangle."
+  print
+  bg copy 2,24,12,3 to cursor.x+23,cursor.y+3
+  locate 0,cursor.y+4
+  print "char: toggle paint the character number only."
+  print
+  print "pal: toggle paint the palette only."
+
+  window 44,3,18,60,0 :clw
+  print "layer: draw"
+  print
+  bg copy 15,24,12,3 to cursor.x+44,cursor.y+3
+  locate 0,cursor.y+4
+  print "flip: toogle paint with horizontal and vertical flag only."
+  print
+  print "pri: toggle paint with priority flag only."
+  print
+  bg copy 2,9,18,3 to cursor.x+44,cursor.y+3
+  locate 0,cursor.y+4
+  print "set current palette to paint with."
+  print :print
+  pal 5
+  print "layer: palette"
+  print :print
+  pal 0
+  bg copy 2,15,11,3 to cursor.x+44,cursor.y+3
+  locate 0,cursor.y+4
+  print "back: show previous toolbar."
+  print
+  print "pa#: print the current palette index."
+  print
+  bg copy 14,15,12,3 to cursor.x+44,cursor.y+3
+  locate 0,cursor.y+4
+  print "edit: show toolbar with the palette editor."
+  print
+  print "file: show toolbar with the file manager."
+
+  return
+
+subject_2: subject=2
+  window 23,3,18,60,0 :clw
+  pal 5
+  print "layer: more"
+  print :print
+  pal 0
+
+  window 44,3,18,60,0 :clw
+  print "layer: more"
+  print
+
+  return
+
+subject_3: subject=3
+  window 23,3,18,60,0 :clw
+  pal 5
+  print "layer: file"
+  print :print
+  bg copy 2,27,8,3 to cursor.x+23,cursor.y+3
+  pal 1
+  cell cursor.x+23+6,cursor.y+3+1,19
+  locate 0,cursor.y+4
+  pal 0
+  print "file#3: print the selected file number."
+  print
+  print "tap to show a list of files to select from."
+  print
+  bg copy 11,27,5,3 to cursor.x+23,cursor.y+3
+  pal 3 :font 0
+  locate 1,cursor.y+1
+  print "0c20"
+  pal 0 :font 192
+  print :print
+  print "print the size in bytes in hexadecimal of the selected file."
+  print
+  bg copy 17,27,10,3 to cursor.x+23,cursor.y+3
+  pal 3 :font 0
+  locate 1,cursor.y+1
+  print "9010";
+  locate 6,cursor.y
+  print "a0ff"
+  pal 2
+  print "loaded"
+  print
+  pal 0: font 192
+  print "print memory range used by the selected loaded file."
+  print
+  bg copy 2,30,11,3 to cursor.x+23,cursor.y+3
+  locate 0,cursor.y+4
+  print "new: show toolbar to create a new empty background or a character set."
+  print
+  print "free: unload the selected file."
+  print
+  bg copy 14,30,13,3 to cursor.x+23,cursor.y+3
+  locate 0,cursor.y+4
+  print "load: (re)load from the selected file."
+  print
+  print "save: to the selected file."
+
+  window 44,3,18,60,0 :clw
+  print "layer: file"
+  print
+  pal 4: font 0
+  print "background"
+  print
+  print "character"
+  print
+  print "palette"
+  print
+  pal 0 :font 192
+  print "indiquate the mode for load and save operations."
+  print
+  bg copy 21,33,6,3 to cursor.x+44,cursor.y+3
+  locate 0,cursor.y+4
+  print "back: show previous toolbar."
+
+  return
+
+manual_quit:
+  copy rom(1),32 to $ff00
+  cls
+  wait vbl
+  on raster call r2
+  on vbl call v
+  cnvchanged=-1 :fltchanged=-1 :tlbchanged=-1
+  call ungesture
+  goto backed
+
 sub r2
 'change what is shown on the screen using raster interrupt.
-'the screen is divide in 3 parts for canvas, floating content and bottom toolbar. during the division a black bar of 4 pixel is shown allow to do computation heavy things.
+'the screen is divide in 3 parts for canvas, floating content and bottom toolbar. during the division a black bar of 4 pixels is shown ; used to do computation heavy things.
+
+'TODO: oob
+
 'canvas backed:
-'  chr$8000..$8fff user's character
-'  pal#0..#7 user's palette
+'  chr$8000..$8fff user's character (including chara for oob)
+'  chr#0..255 user's character (including chara for oob)
+'  pal#0..#7 user's palette (including color for oob)
+'  bg#0 hidden
 '  bg#1..#3 user's background
+'  sprite hidden
+
 'canvas filed:
-'  chr$8000..$842f ui font and ui button border
+'FIXME:  chr$8000..$842f ui font and ui button border
+'FIXME:  chr#0..66 ui font and ui button border
+'  chr#1 ui block
+'  chr#67..131 ui files list font
+'  chr#132..134 ui files list chara
 '  pal#1,2 ui button
-'  bg#0 ui file list ============= cells
+'  bg#0 ui file list
+'  bg#0(32x0..63x63) file list
+'  bg#1..3 hidden
+'  sprite hidden
+
 'floating charalist:
 '  chr$8000..$8fff user's character (-3 charas for ui cursor)
 '  chr#253..#255 or #64..66 ui cursor
 '  pal#0 user's current palette
 '  pal#4 ui cursor
-'floating kololist:
+'  bg#0 user's chara list
+'  bg#0(0x32..15x47) user's chara list
+'  bg#1..3 hidden
+'  sprite#131..159 ui cursor
 
-'  ui cursor?
+'TODO: fltui on kolorlist can always use the same chara
 
-'  bg#0 kolorlist colors ============= cells
-'  pal#0,1 kolorlist colors
+'floating kolorlist:
+'  chr#0..3 ui color block
+'  chr#253..#255 or #64..66 ui cursor
+'  pal#0,1 64 colors list
 '  pal#4 ui cursor
+'  bg#0 64 colors list
+'  bg#0(0x32..15x63) 64 colors list
+'  bg#1..3 hidden
+'  sprite#131..159 ui cursor
+
+'TODO: I don't need prio flag because other layers are hidden
+
+'toolbar all:
+'  chr$8000..$83FF ui buttons and texts
+'  chr#0..63 ui buttons and texts
+'  pal#0 user's current palette
+'  pal#1..3 ui buttons and texts
+'  bg#0 ui buttons and texts
+'  bg#0(0x0..31x31) ui buttons and texts
+'  bg#1..3 hidden
+'  short toolbar
+
+'toolbar title:
+'  pal#1 title bar
+
+'toolbar backed_palette:
+'  pal#4..7 user's 4 palette chooser
+
+'toolbar palette_editor:
+'  pal#4..7 user's 4 colors block
 
 ' ...
 
 
+'''R_CANVAS
+
+  on cane goto r_backed, r_filed, r_chared
+
+r_backed:
+
+if raster=shownh-2 then
+  'gray border
+  fill $ff00,32,3
+  'copy first half of user's character
+  pokew $ffa0,cara
+  pokew $ffa2,$800
+  pokew $ffa4,$8000
+  dma copy
+  exit sub
+
+else if raster=shownh-1 then
+  'copy second half of user's character
+  pokew $ffa0,cara+$800
+  pokew $ffa2,$800
+  pokew $ffa4,$8800
+  dma copy
+  exit sub
+
+else if raster=0 then
+  'copy user's color
+  copy pala,32 to $ff00
+  'show user's layer, hide ui layer
+  poke $ff32,%11100
+  'copy oob out-of-bound character
+  if oobe then copy rom(2)+1008,16 to $8000+oobc*16
+  exit sub
+
+else if fltshow then
+  on floe goto r_charalist, r_kolorlist
+else
+  goto r_toolbar
+end if
+
+r_filed:
+
+if raster=shownh-1 then
+  pokew $ffa0,rom(2)
+  pokew $ffa2,$860
+  pokew $ffa4,$8000
+  dma copy rom
+  exit sub
+
+else if raster=0 then
+  'show ui layer
+  poke $ff32,%10
+  'place the file list at the right position
+  scroll 0,32*8,fedscroll
+  'copy the ui palette
+  copy rom(1),12 to $ff00
+  'hide the last button that appear at the top of the screen, because the 64 cells are used in height
+  if fedscroll<0 then fill $ff00,12,3
+  exit sub
+
+else if raster+fedscroll=0 then
+  'copy back the ui palette that was erase by the code above
+  copy rom(1),12 to $ff00
+
+else
+  goto r_toolbar
+end if
+
+r_chared:
+
+  if raster=0 then
+    'show editor frame and user's edited chara
+    poke $ff32,%10000
+    system 4,1
+    system 8,1
+    'copy user's color
+    copy pcla,32 to $ff00
+    'editor frame color
+    palette 3,peek(pcla),0,2,5
+    'place the frame at the right position
+    scroll 3,-16,-16
+
+    exit sub
+
+else if fltshow then
+  on floe goto r_charalist, r_kolorlist
+else
+  goto r_toolbar
+end if
+
+'''R_FLOATING
+
+r_charalist:
+
+if raster=fltcurr-4 then
+  'black border
+  poke $ff00,0
+  'hide bgs, show sprite maybe
+  poke $ff32,fltcursor
+  'copy chara for the charalist cursor
+  copy rom(2)+1024,48 to $8000+fltui*16
+  'color for the ui cursor
+  palette 4,,2,,0
+  exit sub
+
+else if raster=fltcurr-3 then
+  'copy first half of user's character
+  pokew $ffa0,cara
+  pokew $ffa2,$800
+  pokew $ffa4,$8000
+  dma copy
+  'copy chara for the charalist cursor
+  copy rom(2)+1024,48 to $8000+fltui*16
+  exit sub
+
+else if raster=fltcurr-2 then
+  'copy second half of user's character
+  pokew $ffa0,cara+$800
+  pokew $ffa2,$800
+  pokew $ffa4,$8800
+  dma copy
+  'copy chara for the charalist cursor
+  copy rom(2)+1024,48 to $8000+fltui*16
+  exit sub
+
+else if raster=fltcurr then
+  'show bg 0, show sprite maybe, zoom bg 0
+  poke $ff32,%100010+fltcursor
+  'place the charalist at the right position
+  scroll 0,lstx,-fltcurr+512+lsty
+  'copy the user current selected palette, keep the backdrop color
+  copy pala+pale*4,4 to $ff00
+  exit sub
+
+else
+  goto r_toolbar
+end if
+
+r_kolorlist:
+
+if raster=fltcurr-4 then
+  'black border
+  poke $ff00,0
+  'hide bgs, show sprite maybe
+  poke $ff32,%+fltcursor
+  'copy chara for the charalist cursor
+  copy rom(2)+1024,48 to $8000+fltui*16
+  'copy chara for the color block
+  copy rom(2),4*16 to $8000
+  'color for the ui cursor
+  palette 4,,2,,0
+  exit sub
+
+else if raster=fltcurr then
+  'show bg 0, show sprite maybe, zoom bg 0
+  poke $ff32,%100010+fltcursor
+  'place the charalist at the right position
+  scroll 0,kolx,-fltcurr+512+koly
+  'setup raster progress
+  kolraster=((raster-fltcurr+koly)\24)*8
+  'copy 4 next colors from the 64 list
+  copy $9004+kolraster,8 to $ff00
+  exit sub
+
+else if raster>fltcurr and raster<tlbcurr-8 then
+  if ((raster-fltcurr+koly) mod 24)=0 then
+    'continue raster progress
+    add kolraster,8
+    'copy 4 next colors from the 64 list
+    copy $9004+kolraster,8 to $ff00
+  end if
+
+else
+  goto r_toolbar
+end if
+
+'''R_TOOLBAR
+
+r_toolbar:
+
+if raster=tlbcurr-8 then
+  'black border
+  poke $ff00,0
+  'hide layers, show sprite maybe
+  poke $ff32,fltcursor
+  'copy ui character
+  pokew $ffa2,$400
+  pokew $ffa4,$8000
+  pokew $ffa0,rom(2)
+  dma copy rom
+  exit sub
+
+else if raster=tlbcurr-4 then
+  'show bg 0, hide sprite, unzoom bg 0
+  poke $ff32,%10
+  'position toolbar
+  scroll 0,tlbdrag,-tlbcurr
+  'copy the ui palette
+  ' copy rom(1),16 to $ff00
+  'color and space for file toolbar title
+
+  'gray border
+  fill $ff00,32,3
+
+  if tole=2 then
+    palette 1,,,,0
+    scroll 0,,scroll.y(0)+4
+  else if tole=5 or tole=7 then
+    'FIXME: this is not the patch I want, I have the same issue with the filer toolbar
+    ' fill $ff00,8,3
+    'colorize color chooser button
+    palette 4,3,3,peek(pcla),fcccol(0)
+    palette 5,3,3,peek(pcla+1),fcccol(1)
+    palette 6,3,3,peek(pcla+2),fcccol(2)
+    palette 7,3,3,peek(pcla+3),fcccol(3)
+  end if
+  exit sub
+
+else if raster=tlbcurr then
+  'copy the ui palette
+  copy rom(1),16 to $ff00
+  'color and space for file toolbar title
+  if tole=2 then palette 1,,,,0
+  exit sub
+
+else if raster=tlbcurr+4 then
+  'revert the color and space for file toolbar title
+  if tole=2 then
+    palette 1,,,,3
+    scroll 0,,scroll.y(0)-4
+  end if
+  exit sub
+
+else if raster=tlbcurr+8 then
+  'copy user's current palette
+  copy pala+pale*4,4 to $ff00
+  'color and space for file toolbar title
+  if tole=2 then palette 1,,,,5
+  'copy user's palette 0 to 3
+  if tole=3 then copy pala,16 to $ff10
+  exit sub
+
+else if raster=tlbcurr+32 then
+  'copy user's palette 4 to 7
+  if tole=3 then copy pala+16,16 to $ff10
+  exit sub
+
+else if raster=tlbcurr+tlbraster1 and short then
+  'shorten the height of the bottom bar
+  scroll 0,,scroll.y(0)+8
+  exit sub
+
+else if raster=tlbcurr+tlbraster2 and short then
+  'shorten the height of the bottom bar
+  scroll 0,,scroll.y(0)+8
+  exit sub
+
+end if
 end sub
 
 
@@ -1189,6 +1862,7 @@ r_floe_0:
     'black border
     palette 0,0,0,0,0
     ' bg view off 1
+
     ' bg view off 2
     ' bg view off 3
     ' trace bin$(peek($ff32),8)
@@ -1294,7 +1968,6 @@ r_tole_5:
     palette 5,,,peek(pcla+1),fcccol(1)
     palette 6,,,peek(pcla+2),fcccol(2)
     palette 7,,,peek(pcla+3),fcccol(3)
-
   end if
   return
 
@@ -1307,13 +1980,9 @@ sub v
   fccdelay=6
   add fcccol(cole),fccdir
   if fcccol(cole)=46 or fcccol(cole)=54 then fccdir=-fccdir
+  'compute if oob character can be copied
+  call canoob
 end sub
-
-
-
-'======================= backed:
-
-
 
 
 
@@ -1510,42 +2179,6 @@ end sub
 '   end if
 '   return
 
-' bedold_btn_file: 'wid=9
-' 'show the drawing tool selection in the bottom bar
-'   if tapped then
-'     pressed=0
-'     bedbot=3
-'     'do not store layer related bedtool (start,size,dest)
-'     if bedtool>=0 and bedtool<6 then bedoldt=bedtool
-'     bedtool=0
-'     gosub bedold_bot_file
-'   else
-'     restore tlb_0_data
-'     'bg 0 :bg source rom(6)
-'     'bg copy (bedoldt-1)*4,0,4,1 to 8,1
-'     'call repaintwidget(7,1,2,bedtool>=1 and bedtool<=3)
-'   end if
-'   return
-
-' bedold_btn_more: 'wid=10
-' 'show the "more" menu in bottom bar
-'   if tapped then
-'     message "not implemented"
-'     pressed=0
-'     'bedbot=4
-'     'if bedtool>0 then bedoldt=bedtool
-'     'gosub bedold_bot_tool
-'   end if
-'   return
-
-' bedold_btn_chared: 'wid=11
-'   if tapped then
-'     message "not implemented"
-'   end if
-'   return
-
-
-
 
 ' bedold_data_file:
 ' 'touch zone for button on file layout of bottom bar
@@ -1557,163 +2190,6 @@ end sub
 '   data 14,8,19,10 :'4= font
 '   data 2,8,7,10 :'5= size
 '   data 7,3,12,5 :'6= free
-
-' bedold_btn_save: 'wid=1
-'   if tapped then
-'     trace "save fedlife",fedlife,"bedlife",bedlife
-'     call usrlife(bedlife,fedlife)
-'     call usrsave(bedlife)
-'     message "file #"+hex$(bedlife)+" saved"
-'   end if
-'   return
-
-' bedold_btn_load: 'wid=2
-'   if tapped then
-'     if fsize(fedlife)=0 then return
-'     t=0 :t$="" :call usrtype(fedlife,t,t$)
-'     if t<>3 then
-'       message "not a background"
-'       return
-'     end if
-
-'     'temp: remove when layers are working
-'     call usrfree(bedlife)
-
-'     'todo: what to do about previously loaded file?
-'     'todo: check for changes not saved
-'     'todo: if previous loaded file was edited one, free it
-
-'     a=0
-'     call usrlook(fsize(fedlife),0,$9004,$e000,a)
-'     if a=0 then
-'       message "not enough memory"
-'       return
-'     end if
-'     trace "a",hex$(a,4)
-'     t=0 : t$=""
-'     call usrtype(fedlife,t,t$)
-'     call usrload(fedlife,t,a)
-'     'call uselayer
-'     'bedlife=fedlife
-'     message "file #"+hex$(bedlife)+" loaded"
-
-'     trace "file",fedlife
-'     trace "dime",usrdime(fedlife,0),usrdime(fedlife,1)
-'     trace "layer",laye
-
-'     'temp: do something when layers are available
-'     layfile(laye)=fedlife
-'     layw(laye)=usrdime(fedlife,0)
-'     layh(laye)=usrdime(fedlife,1)
-'     layx(laye)=0
-'     layy(laye)=0
-'     layu(laye)=0
-'     layv(laye)=0
-
-'     call updlayer(laye)
-'     call uselayer((laye))
-'     'gosub bedold_drlayer
-
-'     goto backed
-
-'   end if
-'   return
-
-' tlb_0_layer2: 'wid=3
-'   if tapped then
-'     message "not finished"
-'     return
-'     pressed=0
-'     bedbot=5
-'     'if bedtool>0 then bedoldt=bedtool
-'     gosub bedold_bot_layer
-'   end if
-'   return
-
-' bedold_btn_font: 'wid=4
-'   if tapped then
-'     message "not implemented"
-'   end if
-'   return
-
-' bedold_btn_size2: 'wid=5
-'   if tapped then
-'     message "not implemented"
-'   end if
-'   return
-
-' bedold_btn_free: 'wid=6
-'   if tapped then
-'     message "not implemented"
-'   end if
-'   return
-
-' bedold_bot_layer:
-' 'draw the layer bottom bar
-'   'draw bottom bar
-'   bg 0 :bg source rom(3)
-'   bg copy 0,55,29,12 to 0,0
-'   'update btn colorized
-'   tapped=0
-'   gosub tlb_0_layer4
-'   call bottomsize(26,13,short)
-'   fltshow=0
-'   pause
-'   lstcurr=botcurr
-'   return
-
-' bedold_data_layer:
-' 'touch zone for button on layer layout of bottom bar
-'   data 5 :'number of widget
-'   data 8,8,13,10 :'0= back
-'   data 7,0,13,2 :'1= start
-'   data 14,0,19,2 :'2= size
-'   data 21,0,26,2 :'3= dest
-'   data 2,0,5,2 :'4= layer
-
-' bedold_btn_start: 'wid=1
-'   if tapped and bedtool<>6 then
-'     bedtool=6
-'   else if tapped then
-'     bedtool=0
-'   end if
-'   goto tlb_0_layer3
-
-' bedold_btn_size: 'wid=2
-'   if tapped and bedtool<>7 then
-'     bedtool=7
-'   else if tapped then
-'     bedtool=0
-'   end if
-'   goto tlb_0_layer3
-
-' bedold_btn_dest: 'wid=3
-'   if tapped and bedtool<>8 then
-'     bedtool=8
-'   else if tapped then
-'     bedtool=0
-'   end if
-'   goto tlb_0_layer3
-
-' tlb_0_layer3:
-'   restore bedold_data_layer
-'   call repaintwidget(1,1,2,bedtool=6)
-'   restore bedold_data_layer
-'   call repaintwidget(2,1,2,bedtool=7)
-'   restore bedold_data_layer
-'   call repaintwidget(3,1,2,bedtool=8)
-'   return
-
-' tlb_0_layer4: 'wid=4
-'   if tapped then
-'     pause
-'   end if
-'   restore bedold_data_layer
-'   'todo: copy this behavior code to bottom bar of pal chooser
-'   skip 4*4+1 :read x1,y1
-'   bg 0 :pal 1
-'   text x1+2,y1+1,str$(laye)
-'   return
 
 ' bedold_crop:
 ' 'resize layer bedg=11,12,13
@@ -1757,19 +2233,23 @@ end sub
 'it shows a list of files that can be scrolled and a tool bar with buttons to select a file to load or save.
 
 'for canvas part:
+'pal#1,2
+'chr#0..66 ui
+'bg#0(32x0..63x63) file list
 
 'for toolbar part:
-'chr#0..63 ui
 'bg#0 bottom bar
 
 filed:
   system 0,0 :sprite view off
+  neweditor=0
 
   'grey screen
   fill $ff00,32,3
 
   'make sure to display the right canvas, floating content and toolbar
   tole=4
+  fltshow=0
   cane=1
   gosub tlb_redraw
   gosub cnv_redraw
@@ -1783,23 +2263,18 @@ filed:
   'TODO: is it possible to center to the current selected files?
 
 fed_loop:
-  call checkresize :if resized then goto filed
-  call gesture
-  'detect interaction on each part
-  here=1790
-  gosub tlb_input
-  here=1792
-  gosub cnv_input
-  'editor was requested back from the bottom bar
-  if tedchanged>0 then
-    editor=tedchanged
-    call ungesture
-    'a new file was selected
+  'file as been selected or filed get cancelled
+  if neweditor=-1 then
     if not fedselected then fedlife=oldlife
     fedselected=0
     goto backed
-
   end if
+
+  call checkresize :if resized then goto filed
+  call gesture
+  'detect interaction on each part
+  gosub tlb_input
+  gosub cnv_input
 
   wait vbl
   goto fed_loop
@@ -1807,26 +2282,10 @@ fed_loop:
   'scroll position of the file list
   'fedscroll=-8
 
-  'current gesture
-  'firg=0 :'no gesture yet
-  '=1 file list panned
-  '=2 main bottom tapped
-
-  'bg 0
-
-  'draw bottom bar
-  'gosub fir_bot_main
-
-  'on raster call filer_r
-
   'copy ui char
+  'TODO: usefull?
   copy rom(2),130*16 to $8000
-
-  ' gosub fir_drfiles
   system 0,1
-
-  pressed=0 : tapped=0
-  draggedx=0 : draggedy=0
 
   firselected=0
   wid=-1
@@ -1879,32 +2338,103 @@ fed_input:
 
 
 
-'======================= canvas:
-'main interactive area
-'for backed, it shows 3 layers of user's map
-'for filed, it shows a list of files
+'======================= chared:
+'a character editor
+'it shows 1 character at a time
 
-cnv_redraw:
-'repaint the canvas
-  on cane goto bed_redraw, fed_redraw
+'for canvas part:
+'chr#0..64 editor and ui characters
+'bg#3 chara editor
+'pal#0 user's palette
 
-cnv_update:
-  'fed_update not needed yet
-  on cane goto bed_update, fed_update
+'for floating part:
+'chr#0..63 user's characters
+'chr#64 or #253 ui cursor
+'spr#131..159 ui cursor
+'bg#0 charalist
+'pal#0 user's palette
+'pal#4 ui cursor
 
-cnv_input:
-'detect interaction on the canvas according to cane
-  if released then bedg=0
-  curr=tlbcurr-4
-  if floe>=0 and fltshow then curr=fltcurr-4
-  if (pressed or dragged) and bedg=1 then
-  else if (pressed or dragged) and justed and pressedy<curr then
-    bedg=1
-  else if not tapped then
-    return
+chared:
+  system 0,0 :font 0 :sprite view off
+  editor=2 :neweditor=0
+
+  gosub tlb_redraw
+  gosub flt_redraw
+  gosub cnv_redraw
+  gosub flt_update
+
+chared_loop:
+  call checkresize :if resized then goto chared
+  call gesture
+  'detect interaction on each part
+  gosub tlb_input
+  if floe>=0 then gosub flt_input
+  gosub cnv_input
+  gosub cnv_update
+
+  if lstchanged then
+    lstchanged=0
+    call ungesture
+    call usechar(lstchara)
+    gosub ced_recanvas
   end if
-  on cane goto bed_input, fed_input
 
+  if kolchanged then
+    kolchanged=0
+    usrchanged(pallife)=-1
+    call ungesture
+    poke pcla+cole,kolcolor
+  end if
+
+  'enable battery saving mode
+  system 0,energytool and energylist and energyfold and energyredraw
+  wait vbl
+  goto chared_loop
+
+ced_redraw:
+'redraw the character editor
+  bg 3 :pal 3
+  bg fill 0,0 to 63,63 char 3
+  bg fill 0,0 to 7,7 char 0
+  cell 63,63,12
+  bg fill 0,63 to 7,63 char 13
+  flip 1,0 :cell 8,63,12
+  bg fill 8,0 to 8,7 char 28
+  flip 0,0 :bg fill 63,0 to 63,7 char 28
+  flip 0,1 :cell 63,8,12
+  bg fill 0,8 to 7,8 char 13
+  flip 1,1 :cell 8,8,12
+
+ced_recanvas:
+  bg 3 :attr 0
+  call pixeltocell(cara,care,0,0,0)
+  call pixeltocell(cara,care,0,0,1)
+  call pixeltocell(cara,care,0,0,2)
+  call pixeltocell(cara,care,0,0,3)
+  return
+
+ced_update:
+  return
+
+ced_input:
+  'TODO: on cedtool goto
+  if tapped then trace "tapped"
+  if pressed then trace "pressed"
+  if dragged then trace "dragged"
+  on cedtool goto ced_0_input
+
+ced_0_input:
+'handle pan or draw the canvas
+
+  'energytool=1
+  gosub ced_detectcell
+
+  return
+
+ced_detectcell:
+'determine which calls
+  return
 
 
 '======================= backed:
@@ -1915,7 +2445,7 @@ cnv_input:
 'chr#0..255 user's characters
 'chr#0/255 user's character, /!\ one can be used to draw out-of-bounds cells.
 'bg#1..3 layer for showing user's background
-'pal0..7 user's palettes
+'pal#0..7 user's palettes
 
 'for floating part:
 'chr#0..63 user's characters
@@ -1932,22 +2462,32 @@ cnv_input:
 backed:
   system 0,0 :font 0 :sprite view off
   'todo: should be set before
-  editor=1
+  editor=1 :neweditor=0
   first=-1
 
+  call canoob
   'copy user's chara for first draw
   copy cara,$400 to $8000
+  'TODO: other things should be copied too, I think
+
   'redraw the whole screen
-  gosub tlb_redraw
-  gosub flt_redraw
-  gosub cnv_redraw
+  ' gosub tlb_redraw
+  ' gosub flt_redraw
+  ' gosub cnv_redraw
   gosub flt_update
 
 backed_loop:
+
+  if askmanual then goto manual
+  if neweditor=2 then goto chared
+  if neweditor=-1 then goto filed
+  if tlbchanged then gosub tlb_redraw
+  if fltchanged then gosub flt_redraw
+  if cnvchanged then gosub cnv_redraw
+
   call checkresize :if resized then goto backed
   call gesture
   'detect interaction on each part
-  here=1949
   gosub tlb_input
   'detect loaded files changed
   if usedfreed then
@@ -1956,12 +2496,12 @@ backed_loop:
   end if
 
   if floe>=0 then gosub flt_input
-  here=1960
   gosub cnv_input
   gosub cnv_update
   'user's chara was selected from the charalist
   if lstchanged then
-    lstchanged=0 :bedtool=bedoldt
+    lstchanged=0
+    if tole=0 or tole=1 or tole=3 then bedtool=bedoldt
     call ungesture
     if tole=0 then
       gosub tlb_0_draw
@@ -1974,41 +2514,17 @@ backed_loop:
     call ungesture
     if tole=5 then
       poke pcla+cole,kolcolor
-      gosub tlb_5_color
     end if
   end if
   'file selector was requested from the bottom bar
-  if tedchanged<0 then
-    editor=tedchanged
-    call ungesture
-    goto filed
-  end if
+  ' if tedchanged<0 then
+  '   editor=tedchanged
+  '   call ungesture
+  '   goto filed
+  ' end if
   'enable battery saving mode
   system 0,energytool and energylist and energyfold and energyredraw
-  'copy cara,4096 to $8000
   wait vbl
-
-  if 0 then
-    cls
-    on raster off
-    on vbl off
-    bg view off 1
-    bg view off 2
-    bg view off 3
-    copy cara,4096 to $8000
-    bg source rom(4)
-    bg 0
-    bg copy 0,0,16,16 to 0,0
-    palette 0,0,2,4,6
-
-    do
-    wait tap
-    loop
-  end if
-
-
-
-
   goto backed_loop
 
 bed_redraw:
@@ -2269,6 +2785,37 @@ bed_attr:
   'trace "attr",bin$(bedattr)
   return
 
+
+
+'======================= canvas:
+'main interactive area
+'for backed, it shows 3 layers of user's map
+'for filed, it shows a list of files
+
+cnv_redraw:
+'repaint the canvas
+  cnvchanged=0
+  on cane goto bed_redraw, fed_redraw, ced_redraw
+
+cnv_update:
+  'fed_update not needed yet
+  on cane goto bed_update, fed_update, ced_update
+
+cnv_input:
+'detect interaction on the canvas according to cane
+  if released then bedg=0
+  curr=tlbcurr-4
+  if floe>=0 and fltshow then curr=fltcurr-4
+  if (pressed or dragged) and bedg=1 then
+  else if (pressed or dragged) and justed and pressedy<curr then
+    bedg=1
+  else if not tapped then
+    return
+  end if
+  on cane goto bed_input, fed_input, ced_input
+
+
+
 '===================== floating:
 'a floating content area above the toolbar and below the canvas
 
@@ -2277,12 +2824,14 @@ bed_attr:
 'pal#4 ui cursor
 
 flt_redraw:
+  fltchanged=0
   if floe>=0 then
     on floe gosub flt_0_redraw, flt_1_redraw
   else
     fltstart=999 : fltend=999 : fltcurr=999
     fltshow=0
   end if
+  gosub flt_update
   return
 
 flt_setup:
@@ -2295,7 +2844,8 @@ flt_setup:
 
 flt_input:
 'detect interaction on floating content according to floe
-  if floe<0 then return
+  if not fltshow then return
+  'if floe<0 then return
   if released then fltg=0
   if dragged and fltg=1 then
     call dragdist(draggedx,1)
@@ -2312,7 +2862,7 @@ flt_input:
 flt_show:
 'show the cursor
 '(in) x,y position of the cursor
-  fltcursor=-1
+  fltcursor=1
 flt_update:
   if floe>=0 then on floe goto flt_0_update, flt_1_update
 
@@ -2324,22 +2874,6 @@ flt_update:
 flt_0_redraw:
   bg 0 :bg source rom(4)
   bg copy 0,0,16,16 to 0,32
-
-
-  'palette 0,0,2,4,6
-  'bg copy 0,0,16,16 to 0,0
-  'on raster off
-  'on vbl off
-  'scroll 0,0,0
-  'copy rom(8),4096 to $8000
-  'bg view off 1
-  'bg view off 2
-  'bg view off 3
-  'sprite view off
-  'do
-  'wait tap
-  'loop
-
   fltrow=(wide+2)*2
   gosub flt_setup
   return
@@ -2351,6 +2885,7 @@ flt_0_input:
 fltg_0_none:
 'handle user's character selection
   if not tapped then return
+  if tole<>0 and tole<>1 and tole<>3 then return
   'detect character number
   x=(touch.x+lstx)\16
   y=(touch.y+lsty-fltcurr)\16
@@ -2374,10 +2909,8 @@ fltg_0_dragging:
   'store the 3 chara used by the chara list cursor where user can't see it
   if draggedy<0 and lsty>256-(fltend-fltstart)-16 and fltui=253 then
     fltui=64
-    trace "fltui",fltui
   else if draggedy>0 and lsty<=80 and fltui=64 then
     fltui=253
-    trace "fltui",fltui
   end if
   goto flt_0_update
 
@@ -2451,10 +2984,8 @@ fltg_1_dragging:
   'store the 3 chara used by the chara list cursor where user can't see it
   if draggedy<0 and lsty>256-(fltend-fltstart)-16 and fltui=253 then
     fltui=64
-    trace "fltui",fltui
   else if draggedy>0 and lsty<=80 and fltui=64 then
     fltui=253
-    trace "fltui",fltui
   end if
   goto flt_1_update
   'goto flt_show
@@ -2504,6 +3035,7 @@ tlb_setup:
 
 tlb_redraw:
 'redraw the content of the toolbar according to tole
+  tlbchanged=0
   if tapped then
     trace "tapped should be false"
     trace "you may forgot to call"
@@ -2511,7 +3043,7 @@ tlb_redraw:
     pause
   end if
 
-  on tole gosub tlb_0_redraw, tlb_1_redraw, tlb_2_redraw, tlb_3_redraw, tlb_4_redraw, tlb_5_redraw, tlb_6_redraw
+  on tole gosub tlb_0_redraw, tlb_1_redraw, tlb_2_redraw, tlb_3_redraw, tlb_4_redraw, tlb_5_redraw, tlb_6_redraw, tlb_7_redraw
   return
 
 tlb_input:
@@ -2532,7 +3064,7 @@ tlbg_none:
   end if
   if not tapped or pressedy<tlbcurr then return
   'detect button tap
-  on tole restore tlb_0_data, tlb_1_data, tlb_2_data, tlb_3_data, tlb_4_data, tlb_5_data, tlb_6_data
+  on tole restore tlb_0_data, tlb_1_data, tlb_2_data, tlb_3_data, tlb_4_data, tlb_5_data, tlb_6_data, tlb_7_data
 
   read l :'number of widgets
   while l>0
@@ -2548,7 +3080,7 @@ tlbg_none:
       'tap was inside widget
       if x>=x1 and x<=x2 and y>=y1 and y<=y2 then
 
-        on tole goto tlb_0_input, tlb_1_input, tlb_2_input, tlb_3_input, tlb_4_input, tlb_5_input, tlb_6_input
+        on tole goto tlb_0_input, tlb_1_input, tlb_2_input, tlb_3_input, tlb_4_input, tlb_5_input, tlb_6_input, tlb_7_input
 
       end if
     end if
@@ -2557,6 +3089,7 @@ tlbg_none:
   wid=-1
   trace "no widget at",(touch.x+tlbdrag)\8,(touch.y-tlbcurr)\8
   'message "not implemented"
+  'pause
   return
 tlbg_dragging:
 'horizontal drag of the toolbar
@@ -2695,7 +3228,7 @@ tlb_0_prio: 'wid=4
 tlb_0_pal: 'wid=5
 'show palette chooser
   if tapped then
-    call ungesture :tole=3 :goto tlb_redraw
+    call ungesture :tole=3 :tlbchanged=-1
   end if
   return
 tlb_0_layer: 'wid=6
@@ -2720,7 +3253,7 @@ tlb_0_draw: 'wid=7
   if tapped then
     bedbot=2
     if bedtool>0 then bedoldt=bedtool
-    call ungesture :tole=1 :goto tlb_redraw
+    call ungesture :tole=1 :tlbchanged=-1
   else if bedoldt>0 then
     'copy the right text for the button
     bg 0 :bg source rom(6)
@@ -2743,10 +3276,11 @@ tlb_0_file: :'wid=9
     fedtitle$="background"
     fedmode=0
     tole=2 :gosub tlb_redraw
-    floe=-1 :gosub flt_redraw
+    fltshow=0
     gosub bed_limit
     'disable drawing tool
-    bedoldt=bedtool :bedtool=0
+    if bedtool>0 then bedoldt=bedtool
+    bedtool=0
   end if
   return
 tlb_0_more: 'wid=10
@@ -2756,10 +3290,15 @@ tlb_0_more: 'wid=10
   end if
   return
 tlb_0_chared: 'wid=11
-'switch to character editor
-  if tapped then
-    message "not implemented"
-  end if
+'switch to chared editor
+  message "work in progress"
+  ' if tapped then
+  '   call ungesture
+  '   cane=2 :cnvchanged=-1
+  '   tole=7 :tlbchanged=-1
+  '   floe=0 :fltchanged=-1
+  '   neweditor=2
+  ' end if
   return
 
 
@@ -2803,7 +3342,7 @@ tlb_1_back: 'wid=0
   bedbot=0
   call ungesture :tole=0 :gosub tlb_redraw
   if bedtool>=1 and bedtool<=3 then
-    fltcursor=-1
+    fltcursor=1
     gosub flt_update
   end if
   return
@@ -2857,15 +3396,16 @@ tlb_2_redraw:
   gosub tlb_setup
   return
 tlb_2_data:
-  data 6 :'number of widget
+  data 7 :'number of widget
   data 21,9,26,11 :'0= back
   data 21,4,26,6 :'1= save
   data 14,4,19,6 :'2= load
   data 2,1,9,3 :'3= file
   data 7,4,12,6 :'4= free
   data 2,5,6,7 :'5= new
+  data 12,9,19,11 :'6= manual
 tlb_2_input:
-  on wid goto tlb_2_back, tlb_2_save, tlb_2_load, tlb_2_file, tlb_2_free, tlb_2_new
+  on wid goto tlb_2_back, tlb_2_save, tlb_2_load, tlb_2_file, tlb_2_free, tlb_2_new, tlb_2_manual
 tlb_2_back: 'wid=0
 'go back to the previous toolbar
   if tapped then
@@ -2877,8 +3417,6 @@ tlb_2_back: 'wid=0
       gosub tlb_redraw
       floe=0 :gosub flt_redraw
       gosub bed_limit
-      'restore drawing tool
-      if bedoldt>0 then bedtool=bedoldt
     end if
   end if
   return
@@ -2907,7 +3445,9 @@ tlb_2_load: 'wid=2
       call uselayer(3)
       call updlayer(laye)
       call ungesture
-      goto backed
+      cnvchanged=-1
+      'neweditor=1
+      'goto backed
     else if fedmode=1 then
       call usrloadpal(fedlife,pallife,pallife)
       call ungesture
@@ -2918,7 +3458,9 @@ tlb_2_file: 'wid=3
 'swith to file selector
 'show loaded file information
   if tapped then
-    tedchanged=-1
+    call ungesture
+    neweditor=-editor
+    'tedchanged=-1
     'save toolbar and floating content
     oldtole=tole
     oldfloe=floe
@@ -2945,7 +3487,6 @@ tlb_2_free:
   return
   'TODO: this is working but it make no sens if layers is not implemented
   if tapped then
-    trace "fedmode",fedmode
     if fedmode=0 then
       for l=1 to 3
         if layfile(l)=fedlife then
@@ -2972,7 +3513,6 @@ tlb_2_reaction:
   'used background freed
   if fedlife=bedlife then
     call usrdefaultbg
-    trace "bedlife",bedlife
     call stplayer(3,3)
     call uselayer(3)
     call updlayer(laye)
@@ -2991,6 +3531,9 @@ tlb_2_new:
     tole=6
     goto tlb_redraw
   end if
+  return
+tlb_2_manual:
+  if tapped then askmanual=-1
   return
 
 
@@ -3016,7 +3559,6 @@ tlb_3_redraw:
   tlbrow1=4 :tlbrow2=7
   gosub tlb_setup
   gosub tlb_3_pal
-  trace "tlbrow",tlbrow
   return
 tlb_3_data:
   data 11 :'number of widget
@@ -3047,7 +3589,7 @@ tlb_3_pal: 'wid=0..7
     if editor=1 then gosub bed_attr
   end if
   'paint new button
-  trace "pale",pale
+  bg 0
   bg copy pale*6,3,6,3 to (pale mod 4)*6+2,(pale\4)*4
   'update palette number
   pal 3 :text 12,9,str$(pale)
@@ -3057,6 +3599,8 @@ tlb_3_back: 'wid=8
   if tapped then
     if editor=1 then
       call ungesture :tole=0 :goto tlb_redraw
+    else if editor=2 then
+      call ungesture :tole=7 :goto tlb_redraw
     end if
   end if
   return
@@ -3066,6 +3610,7 @@ tlb_3_edit: 'wid=9
     call ungesture
     tole=5 :gosub tlb_redraw
     floe=1 :gosub flt_redraw
+    gosub flt_show
   end if
   return
 tlb_3_file: 'wid=10
@@ -3076,10 +3621,13 @@ tlb_3_file: 'wid=10
     fedtitle$="palette"
     fedmode=1
     tole=2 :gosub tlb_redraw
-    floe=-1 :gosub flt_redraw
+    fltshow=0
+    'floe=-1 :
+    'gosub flt_redraw
     gosub bed_limit
     'disable drawing tool
-    bedoldt=bedtool :bedtool=0
+    if bedtool>0 then bedoldt=bedtool
+    bedtool=0
   end if
   return
 
@@ -3113,20 +3661,22 @@ tlb_4_input:
 tlb_4_back: 'wid=0
 'cancel selection, go back to the previous toolbar
   if tapped then
-    tedchanged=-tedchanged
-    tole=oldtole
-    floe=oldfloe
-    cane=0
+    call ungesture
+    tole=oldtole :tlbchanged=-1
+    'floe=oldfloe :fltchanged=-1
+    cane=0 :cnvchanged=-1
+    neweditor=-editor
   end if
   return
 tlb_4_select: 'wid=1
 'confirm selection, go back to the previous toolbar
   if tapped then
-    tedchanged=-tedchanged
-    tole=oldtole
-    floe=oldfloe
-    cane=0
+    call ungesture
     fedselected=-1
+    tole=oldtole :tlbchanged=-1
+    ' floe=oldfloe :fltchanged=-1
+    cane=0 :cnvchanged=-1
+    neweditor=-editor
   end if
   return
 
@@ -3158,10 +3708,10 @@ tlb_5_redraw:
   return
 tlb_5_data:
   data 5 :'number of widget
-  data 2,0,7,3 :'wid=0 color 0
-  data 9,0,12,3 :'wid=1 color 1
-  data 14,0,18,3 :'wid=2 color 2
-  data 21,0,24,3 :'wid=3 color 3
+  data 2,0,7,4 :'wid=0 color 0
+  data 8,0,13,4 :'wid=1 color 1
+  data 14,0,19,4 :'wid=2 color 2
+  data 20,0,25,4 :'wid=3 color 3
   data 14,6,19,8 :'wid=4 back
 tlb_5_input:
   on wid goto tlb_5_color, tlb_5_color, tlb_5_color, tlb_5_color, tlb_5_back
@@ -3170,8 +3720,9 @@ tlb_5_color: 'wid=0..3
 'select one of the 4 colors of the current palette
   if tapped then
     call usecolor(wid)
+    ' call usepal((pale))
     gosub flt_show
-    end if
+  end if
   'update color number
   pal 3 :text 5,7,right$("0"+str$(peek(pcla+cole)),2)
   return
@@ -3179,15 +3730,18 @@ tlb_5_back: 'wid=4
 'go back to the previous toolbar
   if tapped then
     call ungesture
+    sprite off
     'XXX: do not tlb_redraw before flt_redraw
     floe=0 :gosub flt_redraw
     tole=3 :gosub tlb_redraw
     gosub flt_setup
+    gosub flt_update
   end if
   return
 
 '================= backed_more:
 'i don't know what to put here, i can't remember
+'- the oob settings
 
 
 '================== backed_new:
@@ -3316,6 +3870,57 @@ tlb_6_new:
   return
 
 
+
+'================ chared_first:
+'toolbar to edit current user's characters
+'4 colors button 4x(4)
+'sheet, palette(4), zoom, undo
+'char, layr, more(move/flip/rotate/copy/paste,sheeted), file
+
+tlb_7_redraw:
+  bg 0 :bg source rom(3) :pal 1
+  bg fill 0,0 to 31,31 char 1
+  bg copy 0,42,29,5 to 0,0
+  bg copy 0,59,29,3 to 0,6
+  bg copy 0,62,29,3 to 0,10
+  tlbrow=15-short*3 :tlbcol=25
+  tlbraster1=40 :tlbraster2=64
+  tlbrow1=5 :tlbrow2=8
+  gosub tlb_setup
+  gosub flt_show
+  return
+tlb_7_data:
+  data 6 :'number of widget
+  data 2,0,7,4 :'wid=0 color 0
+  data 8,0,13,4 :'wid=1 color 1
+  data 14,0,19,4 :'wid=2 color 2
+  data 20,0,25,4 :'wid=3 color 3
+  data 8,10,13,12 :'wid=4 layer
+  data 8,6,13,8 :'wid=5 palette
+tlb_7_input:
+  on wid goto tlb_7_color, tlb_7_color, tlb_7_color, tlb_7_color, tlb_7_layer, tlb_7_pal
+tlb_7_layer: 'wid=4
+'switch to backed editor
+  if tapped then
+    call ungesture
+    cane=0 :tole=0 :floe=0
+    goto backed
+  end if
+  return
+tlb_7_color: 'wid=0..3
+'select one of the 4 colors of the current palette
+  if tapped then
+    call usecolor(wid)
+    ' gosub flt_show
+  end if
+  return
+tlb_7_pal: 'wid=5
+'show palette chooser
+  if tapped then
+    call ungesture :tole=3 :goto tlb_redraw
+  end if
+  return
+
 #1:ui palettes
 03040404010305050103013001050303
 00031D3000033C300003173000032C30
@@ -3333,8 +3938,8 @@ FFFFFFFFFFFFFFFFFFDB99181899DBFF
 FFFFFFFFFFFFFFFFE7C381FFFF81C3E7
 FFFFFFFFFFFFFEFC0000071F1F3C393B
 FFFFFFFFFFFF00000000FFFFFF00FFFF
-00000000000000000000000000000000
-00000000000000000000000000000000
+FFFFFFFFFFFFFFFEFFFFFFFFFFFFFCFD
+FFFFFFFFFFFFFF00FFFFFFFFFFFF00FF
 00000000000000000000000000000000
 FFFFFFFFFFFFFFFF0000071F18303133
 FFFFFFFFFFFFFFFFFFC399918999C3FF
@@ -3349,7 +3954,7 @@ FFFFFFFFFFFFFFFFFFC399C39999C3FF
 FFFFFFFFFFFFFFFFFFC399C1F999C3FF
 FCFCFCFCFCFCFCFC3B3B3B3B3B3B3B3B
 00000000000000000000000000000000
-00000000000000000000000000000000
+FEFEFEFEFEFEFEFEFDFDFDFDFDFDFDFD
 00000000000000000000000000000000
 00000000000000000000000000000000
 FFFFFFFFFFFFFFFF3333333333333333
@@ -3455,277 +4060,399 @@ FFFFFFFFFFFFFFFFFFFFFFFFFFFF81FF
 FFFFFFFFFFFFFFFF3F3F3F3F3F3F3F3F
 FFFFFFFFFFFFFFFF0000FFFFFFFFFFFF
 FFFFFFFFFFFFFFFF0000071F1F3F3F3F
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00000000000000000000000000000000
+00181C1C1C0C180C00000404040C000C
+006C7E36120000000000121212000000
+00247E3F367E3F120000001B12001B12
+00083E3F1E3F1F040000000710011704
+0062753A142E57230000113204081123
+001C3E3A7E773A1D00000A021013001D
+00181C3C180000000000040C18000000
+000C1E3C38180C060000060C08000006
+0030180C0E1E3C180000000002060C18
+0000241A7E3F2C120000000200270812
+0000181C7E3F1C0C000000040027040C
+00000000181C3C180000000000040C18
+000000007E3F000000000000003F0000
+0000000000181C0C000000000000040C
+00060F1E3C787020000003060C183020
+003C7E7F777F3F1E000018110119031E
+00183C1C1C1C7E3F000004040404003F
+003C7E3F1E3C7E3F00001833060C003F
+003C7E3F06673F1E000018330001031E
+0066777F3F0707030000110139010103
+007E7F7C3E077F3E00001F003801033E
+001C3E7C7E773F1E00000E001811031E
+007E3F0F1E3C381800003903060C0818
+003C7E3F7E773F1E000018031811031E
+003C7E3F1F673F1E000018011901031E
+000000180C180C00000000000C000C00
+000000180C183C18000000000C000C18
+00000C1E3C180C06000000060C000006
+0000007E3F7E3F00000000003F003F00
+000030180C1E3C180000000000060C18
+003C7E3F1E0C180C00001833060C000C
+003C7E7F7F773C1E000018111117001E
+00183C7E7F7F77330000001801191133
+007C7E7F7E777F3E000018031811033E
+003C7E7370763F1E000018131010031E
+00787C76777F7E3C000010101113063C
+007E7F787C707E3F00001F001C10003F
+007E7F787C70703000001F001C101030
+003C7E7E77773F1E00001E101111031E
+0066777F7F7777330000110119111133
+003C1E1C1C1C3C1E000006040404001E
+001E0F0707673F1E000009010101031E
+00667F7E7C7C76330000130604101033
+0060707070707E3F000010101010003F
+0042677F7F7F77330000010101191133
+0066777F7F7777330000010111111133
+003C7E7777773F1E000018111111031E
+007C7E7F7E707030000018031E101030
+003C7E777B7D3E1F000018111111001F
+007C7E7F7E7C76330000180306101033
+003E7F3C1E077F3E00001F001801033E
+007E3F1C1C1C1C0C000027040404040C
+0066777777773F1E000011111111031E
+00667777773F1E0C000011111103060C
+0066777F7F7F73210000110101193121
+00663F1E3C7E77330000030600181133
+0066773F1E1C1C0C000011030604040C
+007E3F1E3C787E3F000033060C18003F
+003C3E3838383C1E00000E080808001E
+006030180C0603010000000000000101
+003C1E0E0E0E3E1E000012020202021E
+00183C7E330000000000001833000000
+0000000000007E3F000000000000003F
 
 #3:ui backgrounds
-00001D50012101210621052105210521
-06290621052105210521052106290121
-06210521052105210521062901210621
-05210521052105210629012101210121
-01210421302121212E21042904212421
-3221212137210429012104213A212F21
-2F212D2104290121042135212E212421
-2F210429012101210121012106310531
-053105310639063105313C313C310531
-06390121063105310531053105310639
-01210631053105310531053106390121
-01210121012106210521052106290121
-06210521052105210521062901210621
-05210521052105210629012106210521
-05210521052106290121012101210121
-04212C21030104290121042100200120
-02200320042901210421082103210321
-09210429012104213021322129212F21
-04290121012101210121063105310531
-06390121063105313C313C3105310639
-01210631053105310531053106390121
-06310531053105310531063901210121
-01210121062105210521052105210629
-06220522052205220522062A01210621
-05210521052105210629062105210521
-05210521062901210121012101210421
-2321282121213221042904222C222122
-39223222042A012104212D212F213221
-252104290421262129212C2125210429
-01210121012101210631053105310531
-0531063906320532053205320532063A
-0121063105313C313C31053106390631
-05313C313C3105310639012101210121
-01210621052105210521052106290621
-05210521052105210629062105210521
-05210521062906210521052105210521
-06290121012101210121012104211021
-01240224032404290421112101250225
-03250429042112210126022603260429
-04211321012702270327042901210121
-01210121012106310531053105310531
-06390631053105310531053106390631
-05310531053105310639063105310531
-05310531063901210121012101210121
-06210521052105210521062906210521
-05210521052106290621052105210521
-05210629062105210521052105210629
-01210121012101210121042114210124
-02240324042904211521012502250325
-04290421162101260226032604290421
-17210127022703270429012101210121
-01210121063105310531053105310639
-06310531053105310531063906310531
-05310531053106390631053105310531
-05310639012101210121012101210F21
-3C213C213C213C210F29012101210121
-01210121012106210521052105210521
-06290621052105210521052106290121
-01210121012101211F21222121212321
-2B211F290121302321233B2301210121
-04212521242129213421042904212621
-29212C21252104290121012101210121
-01210F313C313C313C313C310F390121
-01210121012101210121063105310531
-053105310639063105313C313C310531
-06390121012101210121012106210521
-0521052106290F213C213C213C213C21
-0F290121062105210521052105210629
-01210621052105210521052106290121
-012101210121042124212F2134210429
-1F212221212123212B211F2901210421
-3A212F212F212D210429012104213521
-2E2124212F2104290121012101210121
-063105310531053106390F313C313C31
-3C313C310F3901210631053105310531
-05310639012106310531053105310531
-06390121012101210121062105210521
-05210521062906210521052105210521
-06290121062105210521052105210629
-06210521052105210521062901210121
-01210121042124213221212137210429
-04213221252123213421042901210421
-23212F21302139210429042130212121
-33213421042901210121012101210631
-05310531053105310639063105310531
-05310531063901210631053105310531
-05310639063105310531053105310639
-01210121012101210621052105210521
-05210629012106210521052105210629
-01210621052105210521052106290121
-06210521052105210629012101210121
-01210421232128212121322104290121
-0421302121212C210429012104212621
-2C212921302104290121042130213221
-29210429012101210121012106310531
-05310531053106390121063105310531
-05310639012106310531053105310531
-06390121063105310531053106390121
-01210121012106210521052105210521
-0521052106290121332329233A232523
-072301212D2325232D232F2332233923
-07230121012101210121012101210121
-0421262129212C2125213B2103210429
-01212023012101210121012101212023
-01210121012101213E23012101210121
-01210121012101210121063105313C31
-3C313C313C3105310639012122233923
-34232523332301210121012101210121
-01210121012101210121012101210121
-01210121062105210521052106290621
-05210521052105210629012106210521
-05210521052106290121062105210521
-05210521062901210121012101210421
-2E212521372104290421262132212521
-25210429012104212C212F2121212421
-04290121042133212121362125210429
-01210121012101210631053105310531
-06390631053105310531053106390121
-06310531053105310531063901210631
-05310531053105310639012101210121
-01210121012101210121012101210121
-01210121012101210121012101210121
-01210121012101210F213C213C213C21
-3C210F29012101210121012101210121
-01210121012101210121012101210121
-01210121012101210121012101210121
-01211F212221212123212B211F290121
-01210121012101210121012101210121
-01210121012101210121012101210121
-0121012101210121012101210F313C31
-3C313C313C310F390121012101210121
-06210521052105210521062906210521
-05210521052106290621052105210521
-0521062901210F213C213C213C213C21
-0F290121012101210121042133212921
-3A212521042904212C21212139213221
-0429042126212F212E21342104290121
-1F212221212123212B211F2901210121
-01210121063105310531053105310639
-063105313C313C310531063906310531
-053105310531063901210F313C313C31
-3C313C310F3901210121012101210F21
-3C213C213C213C210F29062105210521
-05210521052105210629012101210121
-01210121012101210121012101210121
-01210121012101211F21222121212321
-2B211F290421332125212C2125212321
-34210429012101210121012101210121
-01210121012101210121012101210121
-01210F313C313C313C313C310F390631
-05310531053105310531053106390121
-01210121012101210121012101210121
-0121012101210121012101210A240B24
-0B240B240B240A2C0A250B250B250B25
-0B250A2D0A260B260B260B260B260A2E
-0A270B270B270B270B270A2F01210121
-0121012101211A240224022402240224
-1A2C1A2502250225022502251A2D1A26
-02260226022602261A2E1A2702270227
-022702271A2F01210121012101210121
-1A2402240224022402241A2C1A250225
-0225022502251A2D1A26022602260226
-02261A2E1A2702270227022702271A2F
-012101210121012101211A2402240224
-022402241A2C1A250225022502250225
-1A2D1A2602260226022602261A2E1A27
-02270227022702271A2F012101210121
-012101210A340B340B340B340B340A3C
-0A350B350B350B350B350A3D0A360B36
-0B360B360B360A3E0A370B370B370B37
-0B370A3F012101210121012101210121
-01210121012101210121012101210121
-0121012101210F213C213C213C213C21
-0F290121012101210121012101210121
-0121012101210121012123233B230323
-032301210121302321233B2301210121
-1F212221212123212B211F2901210121
-01210121012101210121012101210121
-01210121012101210121012101210121
-012101210121012101210F313C313C31
-3C313C310F3901210121012101210121
-01210121012101210121012101210121
-0121012101210A210B210B210B210B21
-0A290121012101210121012101210121
-01210A210B210B210B210B210A290121
-01210121012137232923242334232823
-1A2102210221022102211A2901210121
-2823252329232723282334231A210221
-0221022102211A290121012101210121
-012101210121012101210A310B310B31
-0B310B310A3901210121012101210121
-0121012101210A310B310B310B310B31
-0A390121012101210121012101210121
-01210121012101210121012133232923
-3A232523072301212D2325232D232F23
-32233923072301210121012101210121
-01210121012101210121012101210121
-01210121012120230121012101210121
-0121202301210121012101213E230121
-01210121012101210121012101210121
-01210121012101210121012101210121
-22233923342325233323012101210121
-01210121012101210121012101210121
-01210121012101210F213C213C213C21
-3C210F29062105210521052106290121
-01210121012101210121012101210121
-01210121012101210121012101210121
-01211F212221212123212B211F290421
-2E212521372104290121012101210121
-01210121012101210121012101210121
-0121012101210121012101210F313C31
-3C313C313C310F390631053105310531
-06390121012101210121012101210121
-01210121012101210121012101210121
-01213F213F213F213F213F213F213F21
-3F213F213F213F213F213F213F213F21
-3F213F213F213F213F213F213F213F21
-3F213F213F213F213F213F213F213F21
-3F213F213F213F213F213F213F213F21
-3F213F213F213F213F213F213F213F21
-3F213F213F213F213F213F213F213F21
-3F213F213F213F213F213F213F213F21
-3F213F213F213F213F213F213F213F21
-3F213F213F213F213F213F213F213F21
-3F213F213F213F213F213F213F213F21
-3F213F213F213F213F213F213F213F21
-3F213F213F213F213F213F213F213F21
-3F213F213F213F213F213F213F213F21
-3F213F213F213F213F213F213F213F21
-3F213F213F213F213F213F213F213F21
-3F213F213F213F213F213F213F213F21
-3F213F213F213F213F213F213F213F21
-3F213F21012101210621052105210629
-01210621052105210521052105210629
-06210521052105210521062901210621
-05210521052105210629012101210121
-012104212C2103210429012104213321
-34212121322134210429042133212921
-3A212521042901210421242125213321
-34210429012101210121012106310531
-05310639012106310531053105310531
-05310639063105310531053105310639
-01210631053105310531053106390121
-01210121012101210121012101210121
-01210121012101210121012101210121
-01210121012101210131012101210121
-0121012101210121012101213F213F21
-3F213F213F213F213F213F213F213F21
-3F213F213F213F213F213F213F213F21
-3F213F213F213F213F213F213F213F21
-3F213F213F213F213F213F213F213F21
-3F213F213F213F213F213F213F213F21
-3F213F213F213F213F213F213F213F21
-3F213F213F213F213F213F213F213F21
-01210121012101210121012101210121
-01210121012101210121012101210121
-01210121012101210121012101210121
-01210121012101210121000000000000
-00000000000000000000000000000000
-00000000000000000000000000000000
-00000000000000000000000000000000
-00000000000000000000000000000000
-00000000000000000000000000000000
-00000000000000000000000000000000
-00000000000000000000000000000000
-00000000000000000000000000000000
-00000000000000000000000000000000
-00000000000000000000000000000000
-00000000000000000000000000000000
+00001D50010101010601050105010501
+06090601050105010501050106090101
+06010501050105010501060901010601
+05010501050105010609010101010101
+01010401300121012E01040904012401
+3201210137010409010104013A012F01
+2F012D0104090101040135012E012401
+2F010409010101010101010106110511
+051105110619061105113C113C110511
+06190101061105110511051105110619
+01010611051105110511051106190101
+01010101010106010501050106090101
+06010501050105010501060901010601
+05010501050105010609010106010501
+05010501050106090101010101010101
+04012C01030104090101040100000100
+02000300040901010401080103010301
+09010409010104013001320129012F01
+04090101010101010101061105110511
+06190101061105113C113C1105110619
+01010611051105110511051106190101
+06110511051105110511061901010101
+01010101060105010501050105010609
+06020502050205020502060A01010601
+05010501050105010609060105010501
+05010501060901010101010101010401
+2301280121013201040904022C022102
+39023202040A010104012D012F013201
+250104090401260129012C0125010409
+01010101010101010611051105110511
+0511061906120512051205120512061A
+0101061105113C113C11051106190611
+05113C113C1105110619010101010101
+01010601050105010501050106090601
+05010501050105010609060105010501
+05010501060906010501050105010501
+06090101010101010101010104011001
+01040204030404090401110101050205
+03050409040112010106020603060409
+04011301010702070307040901010101
+01010101010106110511051105110511
+06190611051105110511051106190611
+05110511051105110619061105110511
+05110511061901010101010101010101
+06010501050105010501060906010501
+05010501050106090601050105010501
+05010609060105010501050105010609
+01010101010101010101040114010104
+02040304040904011501010502050305
+04090401160101060206030604090401
+17010107020703070409010101010101
+01010101061105110511051105110619
+06110511051105110511061906110511
+05110511051106190611051105110511
+05110619010101010101010101010F01
+3C013C013C013C010F09010101010101
+01010101010106010501050105010501
+06090601050105010501050106090101
+01010101010101011F01220121012301
+2B011F090101300321033B0301010101
+04012501240129013401040904012601
+29012C01250104090101010101010101
+01010F113C113C113C113C110F190101
+01010101010101010101061105110511
+051105110619061105113C113C110511
+06190101010101010101010106010501
+0501050106090F013C013C013C013C01
+0F090101060105010501050105010609
+01010601050105010501050106090101
+010101010101040124012F0134010409
+1F012201210123012B011F0901010401
+3A012F012F012D010409010104013501
+2E0124012F0104090101010101010101
+061105110511051106190F113C113C11
+3C113C110F1901010611051105110511
+05110619010106110511051105110511
+06190101010101010101060105010501
+05010501060906010501050105010501
+06090101060105010501050105010609
+06010501050105010501060901010101
+01010101040124013201210137010409
+04013201250123013401040901010401
+23012F01300139010409040130012101
+33013401040901010101010101010611
+05110511051105110619061105110511
+05110511061901010611051105110511
+05110619061105110511051105110619
+01010101010101010601050105010501
+05010609010106010501050105010609
+01010601050105010501050106090101
+06010501050105010609010101010101
+01010401230128012101320104090101
+0401300121012C010409010104012601
+2C012901300104090101040130013201
+29010409010101010101010106110511
+05110511051106190101061105110511
+05110619010106110511051105110511
+06190101061105110511051106190101
+01010101010106010501050105010501
+0501050106090101330329033A032503
+070301012D0325032D032F0332033903
+07030101010101010101010101010101
+0401260129012C0125013B0103010409
+01012003010101010101010101012003
+01010101010101013E03010101010101
+01010101010101010101061105113C11
+3C113C113C1105110619010122033903
+34032503330301010101010101010101
+01010101010101010101010101010101
+01010101060105010501050106090601
+05010501050105010609010106010501
+05010501050106090101060105010501
+05010501060901010101010101010401
+2E012501370104090401260132012501
+25010409010104012C012F0121012401
+04090101040133012101360125010409
+01010101010101010611051105110511
+06190611051105110511051106190101
+06110511051105110511061901010611
+05110511051105110619010101010101
+01010101010101010101010101010101
+01010101010106010501050105010501
+05010501060901010F013C013C013C01
+3C010F09010101010101010101010101
+01010101010101010101010101010101
+04012D0121012E01350121012C010409
+01011F012201210123012B011F090101
+01010101010101010101010101010101
+01010101010101010101061105110511
+0511051105110511061901010F113C11
+3C113C113C110F190101010101010101
+06010501050105010501060906010501
+05010501050106090601050105010501
+0501060901010F013C013C013C013C01
+0F090101010101010101040133012901
+3A012501040904012C01210139013201
+0409040126012F012E01340104090101
+1F012201210123012B011F0901010101
+01010101061105110511051105110619
+061105113C113C110511061906110511
+051105110511061901010F113C113C11
+3C113C110F1901010101010101010F01
+3C013C013C013C010F09060105010501
+05010501050105010609010101010101
+01010101010101010101010101010101
+01010101010101011F01220121012301
+2B011F090401330125012C0125012301
+34010409010101010101010101010101
+01010101010101010101010101010101
+01010F113C113C113C113C110F190611
+05110511051105110511051106190101
+01010101010101010101010101010101
+0101010101010101010101010A040B04
+0B040B040B040A0C0A050B050B050B05
+0B050A0D0A060B060B060B060B060A0E
+0A070B070B070B070B070A0F01010101
+0101010101011A040204020402040204
+1A0C1A0502050205020502051A0D1A06
+02060206020602061A0E1A0702070207
+020702071A0F01010101010101010101
+1A0402040204020402041A0C1A050205
+0205020502051A0D1A06020602060206
+02061A0E1A0702070207020702071A0F
+010101010101010101011A0402040204
+020402041A0C1A050205020502050205
+1A0D1A0602060206020602061A0E1A07
+02070207020702071A0F010101010101
+010101010A140B140B140B140B140A1C
+0A150B150B150B150B150A1D0A160B16
+0B160B160B160A1E0A170B170B170B17
+0B170A1F010101010101010101010101
+01010101010101010101010101010101
+0101010101010F013C013C013C013C01
+0F090101010101010101010101010101
+0101010101010101010123033B030303
+030301010101300321033B0301010101
+1F012201210123012B011F0901010101
+01010101010101010101010101010101
+01010101010101010101010101010101
+010101010101010101010F113C113C11
+3C113C110F1901010101010101010101
+01010101010101010101010101010101
+0101010101010A010B010B010B010B01
+0A090101010101010101010101010101
+01010A010B010B010B010B010A090101
+01010101010137032903240334032803
+1A0102010201020102011A0901010101
+2803250329032703280334031A010201
+0201020102011A090101010101010101
+010101010101010101010A110B110B11
+0B110B110A1901010101010101010101
+0101010101010A110B110B110B110B11
+0A190101010101010101010101010101
+01010101010101010101010133032903
+3A032503070301012D0325032D032F03
+32033903070301010101010101010101
+01010101010101010101010101010101
+01010101010120030101010101010101
+0101200301010101010101013E030101
+01010101010101010101010101010101
+01010101010101010101010101010101
+22033903340325033303010101010101
+01010101010101010101010101010101
+01010101010101010F013C013C013C01
+3C010F09060105010501050106090101
+01010101010101010101010101010101
+01010101010101010101010101010101
+01011F012201210123012B011F090401
+2E012501370104090101010101010101
+01010101010101010101010101010101
+0101010101010101010101010F113C11
+3C113C113C110F190611051105110511
+06190101010101010101010101010101
+01010101010101010101010101010101
+01010101010106010501050105010501
+06090601050105010501050106090601
+05010501050105010609060105010501
+05010501060901010101010101010101
+04013301280125012501040904010000
+010002000300040904013A012F012F01
+2D010409040135012E0124012F010409
+01010101010101010101061105110511
+051105110619061105113C113C110511
+06190611051105110511051106190611
+05110511051105110619010101010101
+0101010106020502050205020502060A
+06010501050105010501060906010501
+05010501050106090601050105010501
+05010609010101010101010101010402
+2302280221023202040A04012C012101
+39013201040904012D012F0132012501
+04090401260129012C01250104090101
+01010101010101010612051205120512
+0512061A061105110511051105110619
+061105113C113C110511061906110511
+3C113C11051106190101010101013F01
+3F013F013F013F013F013F013F013F01
+3F013F013F013F013F013F013F013F01
+3F013F013F013F013F013F013F013F01
+3F013F013F013F013F013F013F013F01
+3F013F013F013F013F013F013F013F01
+3F013F013F013F013F013F013F013F01
+3F013F013F013F013F013F013F013F01
+3F013F013F013F013F013F013F013F01
+3F013F013F013F013F013F013F013F01
+3F013F013F013F013F013F013F013F01
+3F013F013F013F013F013F013F013F01
+3F013F013F013F013F013F013F013F01
+3F013F013F013F013F013F013F013F01
+3F013F013F013F013F013F013F013F01
+3F013F013F013F013F013F013F013F01
+3F013F013F013F013F013F013F013F01
+3F013F013F013F013F013F013F013F01
+3F013F013F013F013F013F013F013F01
+01010101060105010501060901010601
+05010501050105010501060906010501
+05010501050106090101060105010501
+05010501060901010101010101010401
+2C010301040901010401330134012101
+3201340104090401330129013A012501
+04090101040124012501330134010409
+01010101010101010611051105110619
+01010611051105110511051105110619
+06110511051105110511061901010611
+05110511051105110619010101010101
+01010101010101010101010101010101
+01010101010101010101010101010101
+01010101011101010101010101010101
+01010101010101010000000000000000
 00000000000000000000000000000000
 00000000000000000000000000000000
 00000000000000000000000000000000
@@ -3750,39 +4477,39 @@ FFFFFFFFFFFFFFFF0000071F1F3F3F3F
 00000000
 
 #4:charalist backgrounds
-00001010002001200220032004200520
-06200720082009200A200B200C200D20
-0E200F20102011201220132014201520
-16201720182019201A201B201C201D20
-1E201F20202021202220232024202520
-26202720282029202A202B202C202D20
-2E202F20302031203220332034203520
-36203720382039203A203B203C203D20
-3E203F20402041204220432044204520
-46204720482049204A204B204C204D20
-4E204F20502051205220532054205520
-56205720582059205A205B205C205D20
-5E205F20602061206220632064206520
-66206720682069206A206B206C206D20
-6E206F20702071207220732074207520
-76207720782079207A207B207C207D20
-7E207F20802081208220832084208520
-86208720882089208A208B208C208D20
-8E208F20902091209220932094209520
-96209720982099209A209B209C209D20
-9E209F20A020A120A220A320A420A520
-A620A720A820A920AA20AB20AC20AD20
-AE20AF20B020B120B220B320B420B520
-B620B720B820B920BA20BB20BC20BD20
-BE20BF20C020C120C220C320C420C520
-C620C720C820C920CA20CB20CC20CD20
-CE20CF20D020D120D220D320D420D520
-D620D720D820D920DA20DB20DC20DD20
-DE20DF20E020E120E220E320E420E520
-E620E720E820E920EA20EB20EC20ED20
-EE20EF20F020F120F220F320F420F520
-F620F720F820F920FA20FB20FC20FD20
-FE20FF20
+00001010000001000200030004000500
+06000700080009000A000B000C000D00
+0E000F00100011001200130014001500
+16001700180019001A001B001C001D00
+1E001F00200021002200230024002500
+26002700280029002A002B002C002D00
+2E002F00300031003200330034003500
+36003700380039003A003B003C003D00
+3E003F00400041004200430044004500
+46004700480049004A004B004C004D00
+4E004F00500051005200530054005500
+56005700580059005A005B005C005D00
+5E005F00600061006200630064006500
+66006700680069006A006B006C006D00
+6E006F00700071007200730074007500
+76007700780079007A007B007C007D00
+7E007F00800081008200830084008500
+86008700880089008A008B008C008D00
+8E008F00900091009200930094009500
+96009700980099009A009B009C009D00
+9E009F00A000A100A200A300A400A500
+A600A700A800A900AA00AB00AC00AD00
+AE00AF00B000B100B200B300B400B500
+B600B700B800B900BA00BB00BC00BD00
+BE00BF00C000C100C200C300C400C500
+C600C700C800C900CA00CB00CC00CD00
+CE00CF00D000D100D200D300D400D500
+D600D700D800D900DA00DB00DC00DD00
+DE00DF00E000E100E200E300E400E500
+E600E700E800E900EA00EB00EC00ED00
+EE00EF00F000F100F200F300F400F500
+F600F700F800F900FA00FB00FC00FD00
+FE00FF00
 
 #5:ui palettes backgrounds
 00003006062105210521052105210629
