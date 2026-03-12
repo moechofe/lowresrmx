@@ -16,12 +16,12 @@
 <blockquote>
 <p>This is a fork of the excellent fantasy console Lowres NX by Timo &quot;Inutilis&quot; Kloss.<br />
 This is a heavily modified version and way more complicated to use, I recommend you to stay on the original app: 🌐 <a href="https://apps.apple.com/app/lowres-nx-coder/id1318884577">LowRes NX Coder on App Store</a>.<br />
-<strong>Important:</strong> The app MAY NOT be available anymore, look at the 🌐 <a href="https://lowresnx.inutilis.com/">LowRes NX community web site</a> for more informations.</p>
+<strong>Important:</strong> The app MAY NOT be available anymore, look at the 🌐 <a href="https://lowresnx.inutilis.com/">LowRes NX community web site</a> for more information.</p>
 </blockquote>
 <blockquote>
-<p><strong>New user?</strong> Skip the next section and <code>GOTO</code> <a href="#how-does-it-work">How does it works</a>.</p>
+<p><strong>New user?</strong> Skip the next section and <code>GOTO</code> <a href="#how-does-it-work">How does it work</a>.</p>
 </blockquote>
-<h2 id="difference" tabindex="-1">Difference</h2>
+<h2 id="differences" tabindex="-1">Differences</h2>
 <p>The goal of the app is to provide a development environment that I can use during my commutes on the subway, and later, to be able to publish a real app on the stores.</p>
 <p>The original LowRes NX, despite being an excellent development environment, lacks some capabilities needed for use on a handheld device.</p>
 <p><strong>Background:</strong></p>
@@ -528,6 +528,7 @@ END SUB
 <p>Sauce: 🌐 <a href="https://lospec.com/palette-list/famicube">FAMICUBE palette created by Arne</a>.</p>
 </blockquote>
 <h3 id="characters" tabindex="-1">Characters</h3>
+<p>On the Retro Game Creator fantasy console, you can't draw things on the screen directly. The fantasy hardware simulates a dedicated chip that draws pixels for you that has been stored in the <a href="#cartridge">fantasy cartridge</a>. When the cartridge is run, a dedicated part of <a href="#memory-mapping">the memory</a> is reserved to store this pixels data, they are called characters.</p>
 <p>The 256 characters are <a href="#character-data">blocks of 8x8 pixels</a> assigned to numbers from 0 to 255.<br />
 When a number is used to draw in a background layer or sprite, the rendering process draws the corresponding 8x8 pixel block.</p>
 <p>From now on, the term:</p>
@@ -611,6 +612,7 @@ The sprite numbers range starts at 0, so the last one is 169.</p>
 <p>Check the <a href="#cycles">cycles reference</a> for more information.</p>
 <h3 id="cartridge" tabindex="-1">Cartridge</h3>
 <p>A Retro Game Creator cartridge is a text file containing the program code and 16 virtual files after the text.</p>
+<p>When a program (or a cartridge) is run, the 16 virtual files are <a href="#memory-mapping">mapped to the memory</a>.</p>
 <p>The virtual files data are encoded in hexadecimal and SHOULD respect a specific format.</p>
 <blockquote>
 <p>Manually editing the virtual files data is NOT RECOMMENDED as it can lead to unexpected behavior. Instead, use the provided tools and APIs to manipulate the virtual files.</p>
@@ -628,6 +630,7 @@ data
 <p>When the program is started, the content of the files is loaded and <a href="#memory-mapping">mapped to the memory</a>.</p>
 <p>The memory address for the files starts at $10000, and the best way to know this address is to use the <code>=ROM</code> function.</p>
 <p>Check the <a href="#file-api">file API</a>.</p>
+<p>TODO: default file and usage, check if already exists in the manual</p>
 <h3 id="memory" tabindex="-1">Memory</h3>
 <p>The fantasy hardware simulates a <a href="#memory-mapping">memory mapping</a>, making access to the cartridge ROM and registers accessible using an address ($0000..$1FFFF).</p>
 <p>Each address contains a value of one byte (0..255). Some of those addresses are readable, writable, both or none.</p>
@@ -1180,13 +1183,13 @@ SPRITE 0, 40, 60, 1
 </tbody>
 </table>
 <p>Lvalues are always identifiers, where rvalues can be identifiers are literals.</p>
-<p>Lvalues are writable, where rvalues are not nescessary.</p>
+<p>Lvalues are writable, where rvalues are not necessary.</p>
 <h3 id="instructions-separator" tabindex="-1">Instructions separator</h3>
 <p>An instruction generally end by a new line \n.</p>
 <p>It's possible to put multiple instructions using a colon : on one line but with limitation:</p>
 <ul>
 <li>
-<p>Can be miss-interpreted as a label declaration. So the best way is to add a space between the idenfier and the colon.</p>
+<p>Can be misinterpreted as a label declaration. So the best way is to add a space between the idenfier and the colon.</p>
 <p>This will not work:</p>
 <pre><code>test: DATA 123
 🐞RESTORE test: WAIT VBL
@@ -1445,7 +1448,7 @@ one:
   [EXIT SUB]
 END SUB
 </code></pre>
-<p>This will define a <code>procedure</code> and can optionnaly received a list of <code>parameters</code>.</p>
+<p>This will define a <code>procedure</code> and can optionally received a list of <code>parameters</code>.</p>
 <p>An empty list of <code>parameters</code> is not valid. Simply remove the parentheses ().</p>
 <p>Syntax of the <code>parameters</code> list:</p>
 <pre><code>(identifier[$][()], identifier[$][()]...)
@@ -1520,7 +1523,7 @@ LOOP
 <p>Syntax for a <a href="#procedures">procedure call</a>:</p>
 <pre><code>CALL procedure [(parameters)]
 </code></pre>
-<p>This will call the <code>procedure</code> and optionnally pass a list of <code>parameters</code>.</p>
+<p>This will call the <code>procedure</code> and optionally pass a list of <code>parameters</code>.</p>
 <p>Syntax of the <code>parameters</code> list:</p>
 <pre><code>(identifier[$][([items...])], identifier[$][([items...])]...)
 </code></pre>
@@ -1990,7 +1993,7 @@ TINT 5, 0 PAL 7
 <p>This feature is internally used to scroll text when it reach the bottom of the window.</p>
 <h4 data-keyword="BG,SOURCE" data-title="BG SOURCE" id="bg-source-address-width-height" tabindex="-1"><code>BG SOURCE address [, width, height]</code></h4>
 <p>Set the memory <code>address</code> to use as source for BG COPY x1, y1, width, height TO x2, y2 operations.</p>
-<p>When <code>width</code> and <code>height</code> are specified, they are used as indiquating the number of cells in the source.</p>
+<p>When <code>width</code> and <code>height</code> are specified, they are used as indicating the number of cells in the source.</p>
 <p>If they are not specified, the <a href="#background-source-format-data">official background data format</a> are used to retrieve the width and the height.</p>
 <blockquote>
 <p>When the program is started, the default address is taken by internally executing <code>BG SOURCE ROM(3)</code>.</p>
@@ -2055,12 +2058,13 @@ FFFFFFFFFFFFFFFF0000000000000000
 <p>Similar to <a href="#attributes-cell-a-x-y"><code>=CELL.A</code></a> but modify the source in memory instead of the current layer.</p>
 <h4 data-keyword="TEXT" data-title="TEXT" id="text-x-y-text" tabindex="-1"><code>TEXT x, y, text$</code></h4>
 <p>Will print <code>text$</code> on the current layer starting at <code>x, y</code> cell using the current background attributes on the current layer.</p>
-<p>DATA &quot;ga&quot;, &quot;bu&quot;, &quot;zo&quot;, &quot;meu&quot;<br />
-FOR i=0 TO 3<br />
-PAL I<br />
-READ c$<br />
-TEXT 8+i*2, 10, c$<br />
-NEXT i</p>
+<pre><code>DATA &quot;ga&quot;, &quot;bu&quot;, &quot;zo&quot;, &quot;meu&quot;
+FOR i=0 TO 3
+  PAL I
+  READ c$
+  TEXT 8+i*2, 10, c$
+NEXT i
+</code></pre>
 <h4 data-keyword="NUMBER" data-title="NUMBER" id="number-x-y-number-count" tabindex="-1"><code>NUMBER x, y, number, count</code></h4>
 <p>Will print the latest <code>count</code> digits of the <code>number</code> on the current layer starting at <code>x, y</code> cell using the current background attributes on the current layer.</p>
 <p>Similar to <a href="#text-x-y-text"><code>TEXT</code></a> but dedicated to print number instead of text.</p>
@@ -2083,8 +2087,8 @@ PRINT &quot;Oh my god! There's a tremendous amount of work to do. Can I do a lit
 <h4 data-keyword="LOCATE" data-title="LOCATE" id="locate-x-y" tabindex="-1"><code>LOCATE x, y</code></h4>
 <p>Move the cursor location at <code>x, y</code> in cells coordinates inside the window.</p>
 <pre><code>FOR i=1 TO 9
-  LOCATE I, I
-  PRINT str$(i);
+  LOCATE i, i
+  PRINT STR$(i);
 NEXT i
 </code></pre>
 <h4 data-keyword="CURSOR.X,CURSOR.Y" data-title="=CURSOR.X/=CURSOR.Y" id="x-cursor-xy-cursor-y" tabindex="-1"><code>x =CURSOR.X</code><br /><code>y =CURSOR.Y</code></h4>
@@ -2192,7 +2196,7 @@ LOOP
 <p>TODO: link to interrupts</p>
 <h3 id="display-api" tabindex="-1">Display API</h3>
 <h4 data-keyword="PALETTE" data-title="PALETTE" id="palette-palette-c0-c1-c2-c3" tabindex="-1"><code>PALETTE palette, [c0], [c1], [c2], [c3]</code></h4>
-<p>Sets the four colors on the height available <code>palette</code> (0..7). The color 0 of the palette 0 is generally used as backdrop color. (It can be change using the <code>SYSTEM</code> command.) <code>c0</code>, <code>c1</code>, <code>c2</code>, <code>c3</code> can accept a numeric value between 0 and 63, omit them to keep the current value. Consult the <a href="#64-colors">64 colors reference</a> to choose the color you want.</p>
+<p>Sets the four colors on the eight available <code>palette</code> (0..7). The color 0 of the palette 0 is generally used as backdrop color. (It can be change using the <code>SYSTEM</code> command.) <code>c0</code>, <code>c1</code>, <code>c2</code>, <code>c3</code> can accept a numeric value between 0 and 63, omit them to keep the current value. Consult the <a href="#64-colors">64 colors reference</a> to choose the color you want.</p>
 <h4 data-keyword="COLOR" data-title="=COLOR" id="available-color-palette-color" tabindex="-1"><code>available =COLOR(palette, color)</code></h4>
 <p>Returns one of the <code>available</code> <a href="#64-colors">64 colors</a> associated to the pair <code>palette</code> (0..7), <code>color</code> (0..3).</p>
 <h4 data-keyword="SHOWN.W,SHOWN.H" data-title="=SHOWN.W/=SHOWN.H" id="width-shown-wheight-shown-h" tabindex="-1"><code>width =SHOWN.W</code><br /><code>height =SHOWN.H</code></h4>
@@ -2265,23 +2269,34 @@ GOTO one
 CELL 10, 10, 1
 
 SUB R
-IF RASTER&gt;=80 THEN
-  SCROLL 0, 0, 80-RASTER
-  PALETTE 0, , , RASTER MOD 64,
-ELSE IF RASTER=0 THEN
-  SCROLL 0, 0, 0
-  PALETTE 0, , , 0,
-END IF
+  '80 is the position of the cell drawn above
+  IF RASTER&gt;=80 THEN
+    'at each raster line, scroll the the layer down
+    SCROLL 0, 0, 80-RASTER
+    'also change the palette
+    PALETTE 0, , , RASTER MOD 64,
+  'reset every thing at first raster line
+  ELSE IF RASTER=0 THEN
+    SCROLL 0, 0, 0
+    PALETTE 0, , , 0,
+  END IF
 END SUB
 
 DO
-  WAIT TAP
+WAIT TAP
+  'enable the raster interrupt
   ON RASTER CALL R
   WAIT TAP
+  'disable the raster interrupt
   ON RASTER OFF
+  'reset scrolling and palette
   SCROLL 0, 0, 0
   PALETTE 0, , , 0,
 LOOP
+
+#2:MAIN CHARACTERS
+00000000000000000000000000000000
+0000000000000000FF00000000000000
 </code></pre>
 <h4 data-keyword="RASTER" data-title="=RASTER" id="line-raster" tabindex="-1"><code>line =RASTER</code></h4>
 <p>Return the fantasy screen <code>line</code> number currently rendered.</p>
@@ -2496,8 +2511,8 @@ MID$(six$, 11, 4)=&quot;-66-&quot;
 MID$(six$, 20, 4)=&quot;-66-&quot;
 PRINT six$
 </code></pre>
-<h4 data-keyword="INSTR" data-title="=INSTR" id="found-instr-text-occurence-position" tabindex="-1"><code>found =INSTR(text, occurence [, position])</code></h4>
-<p>Search for the first <code>occurence</code> inside <code>text</code> and return the <code>found</code> position. Return 0 if not found. Optionally, start the search at <code>position</code>.</p>
+<h4 data-keyword="INSTR" data-title="=INSTR" id="found-instr-text-occurrence-position" tabindex="-1"><code>found =INSTR(text, occurrence [, position])</code></h4>
+<p>Search for the first <code>occurrence</code> inside <code>text</code> and return the <code>found</code> position. Return 0 if not found. Optionally, start the search at <code>position</code>.</p>
 <h3 id="sound-api" tabindex="-1">Sound API</h3>
 <p>The fantasy hardware simulates 4 voices to play sound effects and music. See <a href="#sound">Sound</a> for an overview.</p>
 <h4 data-keyword="PLAY,SOUND" data-title="PLAY/SOUND" id="play-voice-pitch-length-sound-sound" tabindex="-1"><code>PLAY voice, pitch [, length] [SOUND sound]</code></h4>
@@ -2551,7 +2566,7 @@ PRINT six$
 </tr>
 <tr>
 <td class="right"><code>length</code></td>
-<td>0 Infinite<br />1 16.67ms .. 255 4.25s</td>
+<td>0 Infinite<br />1 .. 255 (16.67ms .. 4.25s)</td>
 </tr>
 </tbody>
 </table>
@@ -2570,15 +2585,15 @@ PRINT six$
 <tbody>
 <tr>
 <td class="right"><code>attack</code></td>
-<td>0 2ms .. 15 12s</td>
+<td>0 .. 15 (2ms .. 12s)</td>
 </tr>
 <tr>
 <td class="right"><code>decay</code></td>
-<td>0 2ms .. 15 12s</td>
+<td>0 .. 15 (2ms .. 12s)</td>
 </tr>
 <tr>
 <td class="right"><code>release</code></td>
-<td>0 2ms .. 15 12s</td>
+<td>0 .. 15 (2ms .. 12s)</td>
 </tr>
 <tr>
 <td class="right"><code>sustain</code></td>
@@ -2600,7 +2615,7 @@ PRINT six$
 <tbody>
 <tr>
 <td class="right"><code>rate</code></td>
-<td>0 0.12Hz .. 15 18Hz</td>
+<td>0 .. 15 (0.12Hz .. 18Hz)</td>
 </tr>
 <tr>
 <td class="right"><code>frequency</code></td>
@@ -2784,7 +2799,7 @@ GOTO AGAIN
 <p>Return the <code>size</code> in bytes stored in the <code>file</code>.</p>
 <p>The command <a href="#files"><code>FILES</code></a> MUST be called before.</p>
 <h4 data-keyword="LOAD" data-title="LOAD" id="load-file-address-limit-offset" tabindex="-1"><code>LOAD file, address [, limit [, offset]]</code></h4>
-<p>Load the virtual <code>file</code> at <code>address</code>. Optionnaly <code>limit</code> the number of bytes read and start at <code>offset</code>.</p>
+<p>Load the virtual <code>file</code> at <code>address</code>. optionally <code>limit</code> the number of bytes read and start at <code>offset</code>.</p>
 <p>The command <a href="#files"><code>FILES</code></a> MUST be called before.</p>
 <h4 data-keyword="SAVE" data-title="SAVE" id="save-file-comment-address-size" tabindex="-1"><code>SAVE file, comment$, address, size</code></h4>
 <p>Save <code>size</code> bytes from <code>address</code> to the <code>file</code> and <strong>erase previous data</strong>. The <code>comment$</code> is just a reminder of what is stored.</p>
@@ -2800,55 +2815,55 @@ GOTO AGAIN
 <thead>
 <tr>
 <th class="right">setting</th>
-<th style="text-align:left">purpose</th>
-<th style="text-align:left">values</th>
+<th>purpose</th>
+<th>values</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td class="right">0</td>
-<td style="text-align:left">energy saving mode</td>
-<td style="text-align:left">0 or 1</td>
+<td>energy saving mode</td>
+<td>0 or 1</td>
 </tr>
 <tr>
 <td class="right">1</td>
-<td style="text-align:left">color 0 opacity for layer 0</td>
-<td style="text-align:left">0 or 1</td>
+<td>color 0 opacity for layer 0</td>
+<td>0 or 1</td>
 </tr>
 <tr>
 <td class="right">2</td>
-<td style="text-align:left">color 0 opacity for layer 1</td>
-<td style="text-align:left">0 or 1</td>
+<td>color 0 opacity for layer 1</td>
+<td>0 or 1</td>
 </tr>
 <tr>
 <td class="right">3</td>
-<td style="text-align:left">color 0 opacity for layer 2</td>
-<td style="text-align:left">0 or 1</td>
+<td>color 0 opacity for layer 2</td>
+<td>0 or 1</td>
 </tr>
 <tr>
 <td class="right">4</td>
-<td style="text-align:left">color 0 opacity for layer 3</td>
-<td style="text-align:left">0 or 1</td>
+<td>color 0 opacity for layer 3</td>
+<td>0 or 1</td>
 </tr>
 <tr>
 <td class="right">5</td>
-<td style="text-align:left">double size for layer 0</td>
-<td style="text-align:left">0 or 1</td>
+<td>double size for layer 0</td>
+<td>0 or 1</td>
 </tr>
 <tr>
 <td class="right">6</td>
-<td style="text-align:left">double size for layer 1</td>
-<td style="text-align:left">0 or 1</td>
+<td>double size for layer 1</td>
+<td>0 or 1</td>
 </tr>
 <tr>
 <td class="right">7</td>
-<td style="text-align:left">double size for layer 2</td>
-<td style="text-align:left">0 or 1</td>
+<td>double size for layer 2</td>
+<td>0 or 1</td>
 </tr>
 <tr>
 <td class="right">8</td>
-<td style="text-align:left">double size for layer</td>
-<td style="text-align:left">0 or 1</td>
+<td>double size for layer 3</td>
+<td>0 or 1</td>
 </tr>
 </tbody>
 </table>
@@ -2912,9 +2927,13 @@ GOTO AGAIN
 </table>
 <p>Not supported on all devices.</p>
 <h4 data-keyword="COMPAT" data-title="COMPAT" id="compat" tabindex="-1"><code>COMPAT</code></h4>
+<blockquote>
+<p>This command only make sense if you are familiar with 🌐 <a href="https://lowresnx.inutilis.com/">LowRes NX fantasy console</a>.<br />
+This command will be removed at some point.</p>
+</blockquote>
 <p>Enables compatibility mode:</p>
 <ul>
-<li>Forces the rendering process to keep the original device screen.</li>
+<li>Forces the rendering process to keep the original device screen (160x128).</li>
 <li>Reverts the <code>RND</code> command and <code>=RND()</code> function to their original behavior.</li>
 </ul>
 <p>This does not guarantee full compatibility but can help with some aspects. For instance:</p>
@@ -2922,11 +2941,8 @@ GOTO AGAIN
 <li>Commands and functions that have been removed will still be unavailable.</li>
 <li>Double cell support for background is not emulated.</li>
 </ul>
-<blockquote>
-<p>This command will be removed at some point.</p>
-</blockquote>
 <h4 data-keyword="PAUSE" data-title="PAUSE" id="pause" tabindex="-1"><code>PAUSE</code></h4>
-<p>Halt the execution of bring the debugger console.</p>
+<p>Halt the execution and bring the debugger console.</p>
 <p>Check the <a href="#debugger-instructions">debugger instructions</a> to learn what you can to do with it.</p>
 <h2 id="debugger-instructions" tabindex="-1">Debugger instructions</h2>
 <h5 id="dbg-pause" tabindex="-1">dbg: <code>PAUSE</code></h5>
@@ -2937,7 +2953,7 @@ GOTO AGAIN
 <h5 id="dbg-a-variable-name-new-value" tabindex="-1">dbg: a variable name <code>=</code> new value</h5>
 <p>Allow to change the value of a variable.</p>
 <p>Number literal use the same syntax as inside a program, it support integer, float, hexadecimal and binary.</p>
-<p>String literal SHOULD use the same syntax as inside a program: &quot;.</p>
+<p>String literal use the same syntax as inside a program: surrounded by double quotes (&quot;).</p>
 <h5 id="dbg-an-address" tabindex="-1">dbg: an address</h5>
 <p>By typing a memory address, the debugger will print it's value as if it was read by <code>=PEEK()</code>.</p>
 <p>The address can be indicated using the hexadecimal or by any other valid numeric literal.</p>
@@ -2973,7 +2989,7 @@ GOTO AGAIN
     <div>56</div><div>57</div><div>58</div><div>59</div><div>60</div><div>61</div><div>62</div><div>63</div>
 </div>
 <h3 id="memory-mapping" tabindex="-1">Memory mapping</h3>
-<p>TODO: writtable</p>
+<p>TODO: writable</p>
 <table>
 <thead>
 <tr>
@@ -3887,7 +3903,38 @@ The 1st 8 bytes store the low bit for all the 8x8 pixels. The 2nd 8 bytes store 
 </tbody>
 </table>
 <h3 id="registers" tabindex="-1">Registers</h3>
-<p>Registers are one or more bytes mapped in memory thats as an internal usage.</p>
+<p>Registers are part of the memory reserved to control (or query) the state of the fantasy interpreter and hardware. Through registers, users can access most of the features already covered by the APIs, but some of them are unique and can only be accessed using dedicated registers.</p>
+<p>Each register is mapped to the memory and consist of an address and a number of bytes. Reading and writing to registers are done using the dedicated commands and functions: <a href="#value-peek-address"><code>value =PEEK(address)</code></a>, <a href="#value-peekl-address"><code>value =PEEKL(address)</code></a>, <a href="#value-peekw-address"><code>value =PEEKW(address)</code></a>, <a href="#poke-address-value"><code>POKE address, value</code></a>, and <a href="#pokew-address-value"><code>POKEW address, value</code></a>.</p>
+<table>
+<thead>
+<tr>
+<th>bits</th>
+<th>bytes</th>
+<th>read</th>
+<th>write</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>8</td>
+<td>1</td>
+<td>PEEK</td>
+<td>POKE</td>
+</tr>
+<tr>
+<td>16</td>
+<td>2</td>
+<td>PEEKW</td>
+<td>POKEW</td>
+</tr>
+<tr>
+<td>32</td>
+<td>4</td>
+<td>PEEKL</td>
+<td>POKEL</td>
+</tr>
+</tbody>
+</table>
 <p>TODO: layer registers?</p>
 <h5 id="character-registers" tabindex="-1">Character Registers</h5>
 <p>Each one of the 256 character occupies 16 bytes.</p>
@@ -4348,7 +4395,7 @@ Also, they are both offseted by 32 pixels. To place a sprite in the 0x0 coordina
 </tbody>
 </table>
 <h3 id="cycles" tabindex="-1">Cycles</h3>
-<p>The fantasy hardware simulates CPU cycles. A cycle a fixed time duration that can be used to compute things. In Retro Game Creator each instructions cost a number of cycles that follow a set of rules.</p>
+<p>The fantasy hardware simulates CPU cycles. A cycle is a fixed time duration that can be used to compute things. In Retro Game Creator each instructions cost a number of cycles that follow a set of rules.</p>
 <ul>
 <li>1 cycle per instruction,</li>
 <li>1 cycle for reading the value of a variable,</li>
@@ -4686,7 +4733,7 @@ PRINT 0.000000239&lt;&gt;0
 </ul>
 <p><strong><code>INSTR</code></strong>:</p>
 <ul>
-<li><a href="#found-instr-text-occurence-position"><code>found =INSTR(text, occurence [, position])</code></a></li>
+<li><a href="#found-instr-text-occurrence-position"><code>found =INSTR(text, occurrence [, position])</code></a></li>
 </ul>
 <p><strong><code>INT</code></strong>:</p>
 <ul>

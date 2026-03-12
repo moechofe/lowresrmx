@@ -14,3 +14,7 @@ for file in "$SOURCE_DIR"/*; do
 		cp "$file" "$DEST_DIR/"
 	fi
 done
+
+echo "copying: manual.md"
+cp "$ROOT/asset.dev/manual.md" "$ROOT/project.flutter/client_app/asset/manual.md"
+
