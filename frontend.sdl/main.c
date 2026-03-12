@@ -108,8 +108,6 @@ int volume = 0; // 0 = max, it's a bit shift
 
 int main(int argc, const char *argv[])
 {
-	printf("LowResRMX\n");
-
 	memset(&coreInput, 0, sizeof(struct CoreInput));
 
 	coreInput.width = 216;	//-32;
