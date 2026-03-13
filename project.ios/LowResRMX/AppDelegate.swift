@@ -51,53 +51,56 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
   }
 
+	// MARK: - URL Handling
+
+  @discardableResult
+  func handle(url: URL) -> Bool {
+      if url.isFileURL {
+          ProjectManager.shared.importProgram(
+              from: url,
+              completion: { (error) in
+                  if let error = error {
+                      print("importProgram:", error.localizedDescription)
+                  }
+          })
+          return true
+
+      } else if url.scheme == "lowresrmx" {
+          if let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
+              let items = components.queryItems
+          {
+              var name: String?
+              var program: URL?
+              var image: URL?
+              var topicId: String?
+
+              for item in items {
+                  if item.name == "n" {
+                      name = item.value
+                  } else if item.name == "i" {
+                      topicId = item.value
+                      if let topicId = topicId?.removingPercentEncoding,
+                          !topicId.isEmpty
+                      {
+                          program = URL(string: "\(AppDelegate.baseURL)/\(topicId).rmx")
+                          image = URL(string: "\(AppDelegate.baseURL)/\(topicId).png")
+                      }
+                  }
+              }
+              if let name = name, let program = program {
+                  let webSource = WebSource(name: name, programUrl: program, imageUrl: image, topicId: topicId)
+                  AppController.shared.runProgram(webSource)
+              }
+          }
+          return true
+      }
+      return false
+  }
+
   func application(
     _ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey: Any] = [:]
   ) -> Bool {
-    if url.isFileURL {
-      ProjectManager.shared.importProgram(
-        from: url,
-        completion: { (error) in
-          if let error = error {
-            print("importProgram:", error.localizedDescription)
-          }
-        })
-      return true
-
-    } else if url.scheme == "lowresrmx" {
-      if let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
-        let items = components.queryItems
-      {
-        var name: String?
-        var program: URL?
-        var image: URL?
-        var topicId: String?
-
-        for item in items {
-          if item.name == "n" {
-            name = item.value
-          } else if item.name == "i" {
-            topicId = item.value
-//            if let topicId = topicId?.addingPercentEncoding(
-//              withAllowedCharacters: .alphanumerics.union(CharacterSet(charactersIn: "-"))),
-//              !topicId.isEmpty
-						if let topicId = topicId?.removingPercentEncoding,
-							!topicId.isEmpty
-            {
-              program = URL(string: "\(AppDelegate.baseURL)\(topicId).rmx")
-              image = URL(string: "\(AppDelegate.baseURL)\(topicId).png")
-            }
-          }
-        }
-        if let name = name, let program = program {
-          let webSource = WebSource(
-            name: name, programUrl: program, imageUrl: image, topicId: topicId)
-          AppController.shared.runProgram(webSource)
-        }
-      }
-      return true
-    }
-    return false
+    return handle(url: url)
   }
 
   // MARK: UISceneSession Lifecycle
