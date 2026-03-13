@@ -70,8 +70,8 @@ const setupPublishDialog=()=>{
 			x:text,
 		}),{
 			[HEADER_TOKEN]:csrf
-		}).then((res)=>res.json()).then((fid)=>{
-			if(cb)cb(fid);
+		}).then((res)=>res.json()).then((ok)=>{
+			if(cb)cb(eid);
 		}).catch((_)=>{
 			showError();
 		});
@@ -160,6 +160,9 @@ const setupReplaceDialog=()=>{
 	/** @type {string|null} */
 	let pid=null;
 
+	/** @type {string|null} */
+	let eid=null;
+
 	/** @type {function():void} */
 	let cb=null;
 
@@ -198,6 +201,7 @@ const setupReplaceDialog=()=>{
 				return ans.json();
 			}).then((data)=>{
 				textarea.value=data||"";
+				eid=option.dataset['eid'];
 				showLimit();
 			}).finally(()=>{
 				loading(false);
@@ -258,19 +262,20 @@ const setupReplaceDialog=()=>{
 		const new_title=title.value.trim();
 		const new_text=textarea.value.trim();
 		if(!new_title||!new_text) return;
-	// 	if(!where||!title||!text) return;
-	// 	if(!pid) return;
-	// 	disable(event.target);
-	// 	post('/publish',JSON.stringify({
-	// 		p:pid,
-	// 		w:where,
-	// 		i:title,
-	// 		x:text,
-	// 	})).then((res)=>res.json()).then((fid)=>{
-	// 		if(cb)cb(fid);
-	// 	}).catch((_)=>{
-	// 		showError();
-	// 	});
+		if(!pid) return;
+		if(!eid) return;
+		disable(event.target);
+		post(`/${eid}/replace`,JSON.stringify({
+			p:pid,
+			i:new_title,
+			x:new_text,
+		}),{
+			[HEADER_TOKEN]:csrf
+		}).then((res)=>res.json()).then((fid)=>{
+			if(cb)cb(fid);
+		}).catch((_)=>{
+			showError();
+		});
 	});
 
 	append(body,dialog);
