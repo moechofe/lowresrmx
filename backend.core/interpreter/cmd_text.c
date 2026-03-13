@@ -360,6 +360,45 @@ enum ErrorCode cmd_WINDOW(struct Core *core)
 	return itp_endOfCommand(interpreter);
 }
 
+struct TypedValue fnc_WINDOW(struct Core *core)
+{
+	struct Interpreter *interpreter = core->interpreter;
+
+	// WINDOW.?
+	enum TokenType type = interpreter->pc->type;
+	++interpreter->pc;
+
+	struct TypedValue value;
+	value.type = ValueTypeFloat;
+
+	if (interpreter->pass == PassRun)
+	{
+		switch (type)
+		{
+		case TokenWINDOWX:
+			value.v.floatValue = interpreter->textLib.windowX;
+			break;
+
+		case TokenWINDOWY:
+			value.v.floatValue = interpreter->textLib.windowY;
+			break;
+
+		case TokenWINDOWW:
+			value.v.floatValue = interpreter->textLib.windowWidth;
+			break;
+
+		case TokenWINDOWH:
+			value.v.floatValue = interpreter->textLib.windowHeight;
+			break;
+
+		default:
+			assert(0);
+			break;
+		}
+	}
+	return value;
+}
+
 enum ErrorCode cmd_FONT(struct Core *core)
 {
 	struct Interpreter *interpreter = core->interpreter;

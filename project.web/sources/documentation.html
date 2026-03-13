@@ -630,7 +630,6 @@ data
 <p>When the program is started, the content of the files is loaded and <a href="#memory-mapping">mapped to the memory</a>.</p>
 <p>The memory address for the files starts at $10000, and the best way to know this address is to use the <code>=ROM</code> function.</p>
 <p>Check the <a href="#file-api">file API</a>.</p>
-<p>TODO: default file and usage, check if already exists in the manual</p>
 <h3 id="memory" tabindex="-1">Memory</h3>
 <p>The fantasy hardware simulates a <a href="#memory-mapping">memory mapping</a>, making access to the cartridge ROM and registers accessible using an address ($0000..$1FFFF).</p>
 <p>Each address contains a value of one byte (0..255). Some of those addresses are readable, writable, both or none.</p>
@@ -2031,7 +2030,6 @@ LOOP
 <p>Draw to the <code>x, y</code> cell to the background source specified previously using <a href="#bg-source-address-width-height"><code>BG SOURCE</code></a> with the <code>character</code> using the current attributes.</p>
 <p>Similar to <a href="#cell-attributes"><code>CELL</code></a> but modify the source in memory instead of the current layer.</p>
 <p>The source MUST point to writable memory.</p>
-<p>TODO: link to writtable</p>
 <p>Example that continously draw to the background source:</p>
 <pre><code>TEXT 4, 4, &quot;touch to copy&quot;
 BG 1
@@ -2081,7 +2079,14 @@ NUMBER 10, 10, score, 6
 <pre><code>WINDOW 4, 8, SHOWN.W\8-8, 20, 0
 PRINT &quot;Oh my god! There's a tremendous amount of work to do. Can I do a little bit of it today.&quot;
 </code></pre>
-<p>By default, the window is sets inside the safe area delimited by the safe functions.</p>
+<blockquote>
+<p>By default, the window is sets inside the safe area.</p>
+</blockquote>
+<h4 data-keyword="WINDOW.X,WINDOW.Y,WINDOW.W,WINDOW.H" data-title="=WINDOW.X/=WINDOW.Y/=WINDOW.W/=WINDOW.H" id="x-window-xy-window-ywidth-window-wheight-window-h" tabindex="-1"><code>x =WINDOW.X</code><br /><code>y =WINDOW.Y</code><br /><code>width =WINDOW.W</code><br /><code>height =WINDOW.H</code></h4>
+<p>Return the window <code>x, y</code> with <code>width, height</code> parameters.</p>
+<blockquote>
+<p>By default, the window is sets inside the safe area.</p>
+</blockquote>
 <h4 data-keyword="CLW" data-title="CLW" id="clw" tabindex="-1"><code>CLW</code></h4>
 <p>Clears the window by replacing all the cells by the character 0. It also reset the cursor position.</p>
 <h4 data-keyword="LOCATE" data-title="LOCATE" id="locate-x-y" tabindex="-1"><code>LOCATE x, y</code></h4>
@@ -2193,7 +2198,6 @@ LOOP
 <h4 data-keyword="WAIT,TAP" data-title="WAIT TAP" id="wait-tap" tabindex="-1"><code>WAIT TAP</code></h4>
 <p>Will stop execution of the program until a touch is made.</p>
 <p>While waiting for a tap, interrupt sub-routines for VBL/RASTER/PARTICLE/EMITTER are still executed.</p>
-<p>TODO: link to interrupts</p>
 <h3 id="display-api" tabindex="-1">Display API</h3>
 <h4 data-keyword="PALETTE" data-title="PALETTE" id="palette-palette-c0-c1-c2-c3" tabindex="-1"><code>PALETTE palette, [c0], [c1], [c2], [c3]</code></h4>
 <p>Sets the four colors on the eight available <code>palette</code> (0..7). The color 0 of the palette 0 is generally used as backdrop color. (It can be change using the <code>SYSTEM</code> command.) <code>c0</code>, <code>c1</code>, <code>c2</code>, <code>c3</code> can accept a numeric value between 0 and 63, omit them to keep the current value. Consult the <a href="#64-colors">64 colors reference</a> to choose the color you want.</p>
@@ -2303,10 +2307,8 @@ LOOP
 <blockquote>
 <p>Only available during RASTER interrupt.</p>
 </blockquote>
-<p>TODO: link to interrupt</p>
 <h4 data-keyword="ON,RASTER,OFF" data-title="ON RASTER OFF" id="on-raster-off" tabindex="-1"><code>ON RASTER OFF</code></h4>
 <p>Will stop the execution of a sub-routine during RASTER interrupt.</p>
-<p>TODO: link to interrupt</p>
 <h3 id="math-api" tabindex="-1">Math API</h3>
 <h4 data-keyword="PI" data-title="=PI" id="pi-pi" tabindex="-1"><code>pi =PI</code></h4>
 <p>Return the constant π.</p>
@@ -2458,7 +2460,6 @@ LOOP
 <p>Return a <code>random</code> integer number (0..max).</p>
 <h4 data-keyword="RANDOMIZE" data-title="RANDOMIZE" id="randomize-seed" tabindex="-1"><code>RANDOMIZE seed</code></h4>
 <p>Initialize the random generator with a different <code>seed</code> (0..16777216).</p>
-<p>TODO: link to floating point precision loss</p>
 <p>Setting a specific <code>seed</code> will guarantee to return the same sequence of random numbers.</p>
 <pre><code>RANDOMIZE 123456
 FOR I=0 TO 5
@@ -2989,7 +2990,6 @@ This command will be removed at some point.</p>
     <div>56</div><div>57</div><div>58</div><div>59</div><div>60</div><div>61</div><div>62</div><div>63</div>
 </div>
 <h3 id="memory-mapping" tabindex="-1">Memory mapping</h3>
-<p>TODO: writable</p>
 <table>
 <thead>
 <tr>
@@ -3076,7 +3076,6 @@ This command will be removed at some point.</p>
 </tr>
 </tbody>
 </table>
-<p>TODO: Add particle/emitter registers</p>
 <h3 id="todo-color-data" tabindex="-1">TODO: Color data</h3>
 <h3 id="background-data" tabindex="-1">Background data</h3>
 <p>The 4 background layers use the following format:</p>
@@ -3181,7 +3180,6 @@ The 1st 8 bytes store the low bit for all the 8x8 pixels. The 2nd 8 bytes store 
 </table>
 <h3 id="sound-source-format-data" tabindex="-1">Sound source format data</h3>
 <p>When using <code>SOUND SOURCE</code>, Retro Game Creator will use the following data format to store sounds, patterns and tracks.</p>
-<p>TODO: continue</p>
 <table>
 <thead>
 <tr>
@@ -3296,7 +3294,6 @@ The 1st 8 bytes store the low bit for all the 8x8 pixels. The 2nd 8 bytes store 
 </tr>
 </tbody>
 </table>
-<p>TODO: every attributes and settings</p>
 <h3 id="pitch-values" tabindex="-1">Pitch values</h3>
 <table>
 <thead>
@@ -3935,7 +3932,6 @@ The 1st 8 bytes store the low bit for all the 8x8 pixels. The 2nd 8 bytes store 
 </tr>
 </tbody>
 </table>
-<p>TODO: layer registers?</p>
 <h5 id="character-registers" tabindex="-1">Character Registers</h5>
 <p>Each one of the 256 character occupies 16 bytes.</p>
 <table>
@@ -4479,7 +4475,6 @@ PRINT 0.000000239&lt;&gt;0
 <p>32768 max items per array in all dimensions.</p>
 </li>
 </ol>
-<p>TODO: interrupts</p>
 <h2 id="index" tabindex="-1">Index</h2>
 <p><strong><code>ABS</code></strong>:</p>
 <ul>
@@ -5208,6 +5203,7 @@ PRINT 0.000000239&lt;&gt;0
 <p><strong><code>WINDOW</code></strong>:</p>
 <ul>
 <li><a href="#window-x-y-width-height-layer"><code>WINDOW x, y, width, height, layer</code></a></li>
+<li><a href="#x-window-xy-window-ywidth-window-wheight-window-h"><code>x =WINDOW.X</code><br /><code>y =WINDOW.Y</code><br /><code>width =WINDOW.W</code><br /><code>height =WINDOW.H</code></a></li>
 </ul>
 <p><strong><code>XOR</code></strong>:</p>
 <ul>

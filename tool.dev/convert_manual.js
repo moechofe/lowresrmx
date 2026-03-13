@@ -35,7 +35,10 @@ const add_keyword_to_h4=(text)=>{
 	});
 };
 
-const md = fs.readFileSync(path.join(rootDir, 'asset.dev', 'manual.md'), 'utf8').split('\n').slice(1).join('\n')
+let md = fs.readFileSync(path.join(rootDir, 'asset.dev', 'manual.md'), 'utf8').split('\n').slice(1);
+
+md = md.filter(line => !line.trim().startsWith('TODO:')).join('\n')
+
 const css = fs.readFileSync(path.join(rootDir, 'project.web', 'sources', 'documentation.css'), 'utf8')
 const html = add_keyword_to_h4(mdit.render(md).replace(/&lt;br&gt;/g, '<br />').replace(/ style="text-align:right"/g, ' class="right"').replace(/<br>/g,'<br />'));
 
@@ -69,6 +72,10 @@ ${html}
 </html>
 `
 
-fs.writeFileSync(path.join(rootDir, 'project.web', 'sources', 'documentation.html'), community, 'utf8')
+let file=path.join(rootDir, 'project.web', 'sources', 'documentation.html');
+fs.writeFileSync(file, community, 'utf8')
+console.log(file);
 
-fs.writeFileSync(path.join(rootDir, 'asset.manual', 'manual.html'), bundle, 'utf8')
+file=path.join(rootDir, 'asset.manual', 'manual.html')
+fs.writeFileSync(file, bundle, 'utf8')
+console.log(file)

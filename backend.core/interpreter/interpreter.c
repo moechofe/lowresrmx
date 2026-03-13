@@ -40,6 +40,7 @@
 #include "cmd_io.h"
 #include "cmd_files.h"
 #include "cmd_subs.h"
+#include "cmd_text.h"
 #include "string_utils.h"
 #include "cmd_particle.h"
 #include "pcg_basic.h"
@@ -1340,6 +1341,12 @@ struct TypedValue itp_evaluateFunction(struct Core *core)
 	case TokenCURSORX:
 	case TokenCURSORY:
 		return fnc_CURSOR(core);
+
+	case TokenWINDOWX:
+	case TokenWINDOWY:
+	case TokenWINDOWW:
+	case TokenWINDOWH:
+		return fnc_WINDOW(core);
 
 		// case TokenUP:
 		// case TokenDOWN:

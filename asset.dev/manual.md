@@ -1,10 +1,6 @@
 
-TODO: add BG COPY example
-cell cursor.x+23,cursor.y+3,16
+TODO: add BG COPY example: cell cursor.x+23,cursor.y+3,16
 TODO: fix link in BG COPY to BG SOURCE
-
-
-# Retro Game Creator - Documentation
 
 ## What is Retro Game Creator?
 
@@ -2097,7 +2093,13 @@ Sets the current window at `x, y` with `width, height` and on `layer` where text
     WINDOW 4, 8, SHOWN.W\8-8, 20, 0
     PRINT "Oh my god! There's a tremendous amount of work to do. Can I do a little bit of it today."
 
-By default, the window is sets inside the safe area delimited by the safe functions.
+> By default, the window is sets inside the safe area.
+
+#### `x =WINDOW.X`<br>`y =WINDOW.Y`<br>`width =WINDOW.W`<br>`height =WINDOW.H`
+
+Return the window `x, y` with `width, height` parameters.
+
+> By default, the window is sets inside the safe area.
 
 #### `CLW`
 
@@ -4090,6 +4092,7 @@ TODO: interrupts
 
 **`WINDOW`**:
 - [`WINDOW x, y, width, height, layer`](#window-x-y-width-height-layer)
+- [`x =WINDOW.X`<br>`y =WINDOW.Y`<br>`width =WINDOW.W`<br>`height =WINDOW.H`](#x-window-xy-window-ywidth-window-wheight-window-h)
 
 **`XOR`**:
 - [`XOR`](#operators)

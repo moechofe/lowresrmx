@@ -203,6 +203,10 @@ const char *TokenStrings[] = {
     "WAVE",
     "WEND",
     "WHILE",
+		"WINDOW.X",
+		"WINDOW.Y",
+		"WINDOW.W",
+		"WINDOW.H",
     "WINDOW",
 
     "SHOWN.W",

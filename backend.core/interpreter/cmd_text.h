@@ -34,6 +34,7 @@ enum ErrorCode cmd_TEXT(struct Core *core);
 enum ErrorCode cmd_NUMBER(struct Core *core);
 enum ErrorCode cmd_CLS(struct Core *core);
 enum ErrorCode cmd_WINDOW(struct Core *core);
+struct TypedValue fnc_WINDOW(struct Core *core);
 enum ErrorCode cmd_FONT(struct Core *core);
 enum ErrorCode cmd_LOCATE(struct Core *core);
 struct TypedValue fnc_CURSOR(struct Core *core);

@@ -208,6 +208,10 @@ enum TokenType
 	TokenWAVE,
 	TokenWEND,
 	TokenWHILE,
+	TokenWINDOWX,
+	TokenWINDOWY,
+	TokenWINDOWW,
+	TokenWINDOWH,
 	TokenWINDOW,
 
 	TokenSHOWNW,
@@ -227,6 +231,7 @@ enum TokenType
 	TokenCEIL,
 	TokenFLOOR,
 	TokenHAPTIC,
+
 
 	// Reserved Keywords
 	Token_reserved,
