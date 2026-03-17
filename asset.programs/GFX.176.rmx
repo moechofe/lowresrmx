@@ -1,4 +1,4 @@
-version$="0.174"
+version$="0.176"
 'offical graphics editor for Retro Game Creator (LowResRMX) for iOS
 'author: martin mauchauffee
 
@@ -370,7 +370,7 @@ end sub
 '======================== layout:
 
 'used to detect if the layout has changed
-global shownw,shownh,resized
+global shownw,shownh,resized,cnvchanged,fltchanged,tlbchanged
 
 'used to signal than the "canvas" has been resized
 'this is not equivalent to 'resized' that detect layout change
@@ -385,6 +385,9 @@ sub checkresize
 'call this after 'wait vbl' and check var 'resized'
   if shownw<>shown.w or shownh<>shown.h-safe.b-keyboard then
     resized=-1
+    cnvchanged=-1
+    fltchanged=-1
+    tlbchanged=-1
     shownw=shown.w : shownh=shown.h-safe.b-keyboard
     'compute ratio and size of ui element
     tall=0 : short=0 : wide=0
@@ -1097,7 +1100,7 @@ askmanual=0
 'bedscale=2
 
 'todo get from pram
-cane=0 :tole=0 :floe=0
+cane=0 :tole=0 :floe=0 :fltshow=-1
 on raster call r2
 on vbl call v
 goto backed
@@ -1729,7 +1732,7 @@ else if raster=tlbcurr+8 then
   if tole=3 then copy pala,16 to $ff10
   exit sub
 
-else if raster=tlbcurr+32 then
+else if raster=tlbcurr+31 then
   'copy user's palette 4 to 7
   if tole=3 then copy pala+16,16 to $ff10
   exit sub
@@ -2485,7 +2488,11 @@ backed_loop:
   if fltchanged then gosub flt_redraw
   if cnvchanged then gosub cnv_redraw
 
-  call checkresize :if resized then goto backed
+  call checkresize
+  if resized then
+
+    goto backed
+  end if
   call gesture
   'detect interaction on each part
   gosub tlb_input
@@ -2825,11 +2832,11 @@ cnv_input:
 
 flt_redraw:
   fltchanged=0
-  if floe>=0 then
+  if fltshow then
     on floe gosub flt_0_redraw, flt_1_redraw
   else
     fltstart=999 : fltend=999 : fltcurr=999
-    fltshow=0
+    'fltshow=0
   end if
   gosub flt_update
   return
@@ -3074,6 +3081,7 @@ tlbg_none:
       x=(touch.x+tlbdrag)\8 :y=(touch.y-tlbcurr)\8
       'fix y position when bottom is shorten
       if short and y1>=tlbrow1 then
+        trace "shorten",y1,">=",tlbrow1
         if y1>=tlbrow2 then dec y1 :dec y2
         dec y1 :dec y2
       end if
@@ -3383,6 +3391,7 @@ tlb_1_rect: 'wid=3
 'pal#1,2,3 ui
 
 tlb_2_redraw:
+trace "=tlb_2_redraw"
   bg 0 :bg source rom(3) :attr %100001
   bg fill 0,0 to 31,31 char 1
   pal 1 : text 3,0,fedtitle$
@@ -3391,17 +3400,17 @@ tlb_2_redraw:
   bg copy 0,33,29,3 to 0,9
   gosub tlb_2_file
   tlbrow=14-short*3 :tlbcol=26
-  tlbraster1=32 :tlbraster2=56
-  tlbrow1=5 :tlbrow2=8
+  tlbraster1=32 :tlbraster2=58
+  tlbrow1=4 :tlbrow2=8
   gosub tlb_setup
   return
 tlb_2_data:
   data 7 :'number of widget
   data 21,9,26,11 :'0= back
-  data 21,4,26,6 :'1= save
-  data 14,4,19,6 :'2= load
+  data 21,5,26,7 :'1= save
+  data 14,5,19,7 :'2= load
   data 2,1,9,3 :'3= file
-  data 7,4,12,6 :'4= free
+  data 7,5,12,7 :'4= free
   data 2,5,6,7 :'5= new
   data 12,9,19,11 :'6= manual
 tlb_2_input:
@@ -3415,7 +3424,7 @@ tlb_2_back: 'wid=0
       if fedmode=0 then tole=0
       if fedmode=1 then tole=3
       gosub tlb_redraw
-      floe=0 :gosub flt_redraw
+      floe=0 :fltshow=-1 :gosub flt_redraw
       gosub bed_limit
     end if
   end if
@@ -3745,7 +3754,7 @@ tlb_5_back: 'wid=4
 
 
 '================== backed_new:
-'width, height, back
+'width, height, back, new
 
 tlb_6_redraw:
   bg 0 :bg source rom(3) :attr %100001
@@ -4898,4 +4907,3 @@ FFFEFEFEFEFEFE00FFFE5203530303FF
 00000404000000000000050000000200
 03000000040006000700080000000000
 00000000
-
