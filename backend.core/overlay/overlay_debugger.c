@@ -315,6 +315,7 @@ static void process_command_line(struct Core *core)
 			info.keyboardMode = KeyboardModeOff;
 #ifdef SIMULATED_KEYBOARD
 			core->interpreter->simulatedKeyboardOn = false;
+			core->machine->ioRegisters.keyboardHeight = 0;
 #endif
 			core->delegate->controlsDidChange(core->delegate->context, info);
 		}
@@ -554,6 +555,7 @@ void overlay_debugger(struct Core *core)
 	info.keyboardMode = KeyboardModeOn;
 #ifdef SIMULATED_KEYBOARD
 	core->interpreter->simulatedKeyboardOn = true;
+	core->machine->ioRegisters.keyboardHeight = 154;
 #endif
 	core->delegate->controlsDidChange(core->delegate->context, info);
 

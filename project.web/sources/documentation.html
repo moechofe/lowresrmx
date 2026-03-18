@@ -103,6 +103,9 @@ This is a heavily modified version and way more complicated to use, I recommend 
 <li>
 <p>New <a href="#haptic-pattern"><code>HAPTIC</code> command to trigger haptic feedback</a> on the device.</p>
 </li>
+<li>
+<p>New advanced gesture functions <code>=TOUCH.PX</code>, <code>=TOUCH.PY</code>, <code>=TOUCH.TAP</code>, <code>=TOUCH.DRAG</code>, <code>=TOUCH.LONG</code>, <code>=TOUCH.CHANGE</code> to improve user's experience.</p>
+</li>
 </ul>
 <p><strong>Control flow:</strong></p>
 <ul>
@@ -2157,7 +2160,7 @@ DO
 LOOP
 </code></pre>
 <h4 data-keyword="TOUCH.X,TOUCH.Y" data-title="=TOUCH.X/=TOUCH.Y" id="x-touch-xy-touch-y" tabindex="-1"><code>x =TOUCH.X</code><br /><code>y =TOUCH.Y</code></h4>
-<p>Returns the last pixel position <code>x, y</code> touched. It returns a floating-point number, with a 1/16 pixel precisions.</p>
+<p>Returns the last pixel position <code>x</code>, <code>y</code> touched. It returns a floating-point number, with a 1/16 pixel precisions.</p>
 <pre><code>DO
   CLS
   PRINT TOUCH.X;&quot;, &quot;;TOUCH.Y
@@ -2198,6 +2201,23 @@ LOOP
 <h4 data-keyword="WAIT,TAP" data-title="WAIT TAP" id="wait-tap" tabindex="-1"><code>WAIT TAP</code></h4>
 <p>Will stop execution of the program until a touch is made.</p>
 <p>While waiting for a tap, interrupt sub-routines for VBL/RASTER/PARTICLE/EMITTER are still executed.</p>
+<h4 data-keyword="TOUCH.PX,TOUCH.PY" data-title="=TOUCH.PX/=TOUCH.PY" id="x-touch-pxy-touch-py" tabindex="-1"><code>x =TOUCH.PX</code><br /><code>y =TOUCH.PY</code></h4>
+<p>Returns the pixel position <code>x</code>, <code>y</code> when the device screen has been pressed. It returns a floating-point number, with a 1/16 pixel precisions.</p>
+<p>This can be used to detect distance travelled during drag.</p>
+<pre><code>do
+  cls 0
+  locate 0,0
+  print len(touch.x-touch.px,touch.y-touch.py)
+  wait vbl
+loop
+</code></pre>
+<h4 data-keyword="TOUCH.TAP,TOUCH.DRAG,TOUCH.LONG" data-title="=TOUCH.TAP/=TOUCH.DRAG/=TOUCH.LONG" id="tapped-touch-tapdraging-touch-draglong-touch-long" tabindex="-1"><code>tapped =TOUCH.TAP</code><br /><code>draging =TOUCH.DRAG</code><br /><code>long =TOUCH.LONG</code></h4>
+<p>Advanced gesture detection that returns when user has <code>tapped</code> the screen, or is currently <code>draging</code> his finger or has <code>long</code> pressed the screen without moving.</p>
+<h4 data-keyword="TOUCH.CHANGE" data-title="=TOUCH.CHANGE" id="changed-touch-change" tabindex="-1"><code>changed =TOUCH.CHANGE</code></h4>
+<p>Returns if something has <code>changed</code> during gesture detection.</p>
+<p>| true | false | detect | equivalent |<br />
+|------|<br />
+| TOUCH.DRAG<br />TOUCH.CHANGE</p>
 <h3 id="display-api" tabindex="-1">Display API</h3>
 <h4 data-keyword="PALETTE" data-title="PALETTE" id="palette-palette-c0-c1-c2-c3" tabindex="-1"><code>PALETTE palette, [c0], [c1], [c2], [c3]</code></h4>
 <p>Sets the four colors on the eight available <code>palette</code> (0..7). The color 0 of the palette 0 is generally used as backdrop color. (It can be change using the <code>SYSTEM</code> command.) <code>c0</code>, <code>c1</code>, <code>c2</code>, <code>c3</code> can accept a numeric value between 0 and 63, omit them to keep the current value. Consult the <a href="#64-colors">64 colors reference</a> to choose the color you want.</p>
@@ -2990,6 +3010,7 @@ This command will be removed at some point.</p>
     <div>56</div><div>57</div><div>58</div><div>59</div><div>60</div><div>61</div><div>62</div><div>63</div>
 </div>
 <h3 id="memory-mapping" tabindex="-1">Memory mapping</h3>
+<p>When a program is started, the <a href="#virtual-file">virtual files</a> are mapped at address $10000. User can access it using <a href="#address-rom-file"><code>ROM</code></a>, <a href="#value-peek-address"><code>PEEK</code></a>, <a href="#character-mcell-c-x-y"><code>MCELL.C</code></a>…</p>
 <table>
 <thead>
 <tr>
@@ -3000,72 +3021,72 @@ This command will be removed at some point.</p>
 </thead>
 <tbody>
 <tr>
-<td class="right">$00000</td>
+<td class="right">$0000</td>
 <td>8 Kibibyte</td>
 <td>Layer 0 data</td>
 </tr>
 <tr>
-<td class="right">$02000</td>
+<td class="right">$2000</td>
 <td>8 Kibibyte</td>
 <td>Layer 1 data</td>
 </tr>
 <tr>
-<td class="right">$04000</td>
+<td class="right">$4000</td>
 <td>8 Kibibyte</td>
 <td>Layer 2 data</td>
 </tr>
 <tr>
-<td class="right">$06000</td>
+<td class="right">$6000</td>
 <td>8 Kibibyte</td>
 <td>Layer 3 data</td>
 </tr>
 <tr>
-<td class="right">$08000</td>
+<td class="right">$8000</td>
 <td>4 Kibibyte</td>
 <td>Character data</td>
 </tr>
 <tr>
-<td class="right">$09000</td>
+<td class="right">$9000</td>
 <td>20 Kibibyte</td>
 <td>Working RAM</td>
 </tr>
 <tr>
-<td class="right">$0E000</td>
+<td class="right">$E000</td>
 <td>6 Kibibyte</td>
 <td>Persistent RAM</td>
 </tr>
 <tr>
-<td class="right">$0FB00</td>
+<td class="right">$FB00</td>
 <td>1020 Bytes</td>
 <td>Sprite registers</td>
 </tr>
 <tr>
-<td class="right">$0FF00</td>
+<td class="right">$FF00</td>
 <td>32 Bytes</td>
 <td>Color registers</td>
 </tr>
 <tr>
-<td class="right">$0FF20</td>
+<td class="right">$FF20</td>
 <td>10 Bytes</td>
 <td>Video registers</td>
 </tr>
 <tr>
-<td class="right">$0FF40</td>
+<td class="right">$FF40</td>
 <td>48 Bytes</td>
 <td>Audio registers</td>
 </tr>
 <tr>
-<td class="right">$0FF70</td>
+<td class="right">$FF70</td>
 <td>28 Bytes</td>
 <td>I/O registers</td>
 </tr>
 <tr>
-<td class="right">$0FFA0</td>
+<td class="right">$FFA0</td>
 <td>6 Bytes</td>
 <td>DMA registers</td>
 </tr>
 <tr>
-<td class="right">$0FFA6</td>
+<td class="right">$FFA6</td>
 <td>10 Bytes</td>
 <td>Internal registers</td>
 </tr>
@@ -4301,17 +4322,17 @@ Also, they are both offseted by 32 pixels. To place a sprite in the 0x0 coordina
 <td>Pixels shown in width</td>
 </tr>
 <tr>
-<td class="right">$FF7a</td>
+<td class="right">$FF7A</td>
 <td>2 Bytes</td>
 <td>Pixels shown in height</td>
 </tr>
 <tr>
-<td class="right">$FF7c</td>
+<td class="right">$FF7C</td>
 <td>2 Bytes</td>
 <td>Pixels outside the safe zone</td>
 </tr>
 <tr>
-<td class="right">$FF7e</td>
+<td class="right">$FF7E</td>
 <td>2 Bytes</td>
 <td>Pixels outside the safe zone</td>
 </tr>
@@ -4335,9 +4356,34 @@ Also, they are both offseted by 32 pixels. To place a sprite in the 0x0 coordina
 <td>1 Byte</td>
 <td>Other I/O status bits</td>
 </tr>
+<tr>
+<td class="right">$FF86</td>
+<td>1 Byte</td>
+<td>Haptic pattern</td>
+</tr>
+<tr>
+<td class="right">$FF87</td>
+<td>1 Byte</td>
+<td></td>
+</tr>
+<tr>
+<td class="right">$FF88</td>
+<td>2 Bytes</td>
+<td>Device visual keyboard height</td>
+</tr>
+<tr>
+<td class="right">$FF8C</td>
+<td>4 Bytes</td>
+<td>Gesture pressed position X</td>
+</tr>
+<tr>
+<td class="right">$FF90</td>
+<td>4 Bytes</td>
+<td>Gesture pressed position Y</td>
+</tr>
 </tbody>
 </table>
-<p>Last touch position X and Y are stored as float and currently Retro Game Creator do not have a way to peek float from memory, use <a href="#x-touch-xy-touch-y"><code>TOUCH.X</code></a> and <a href="#x-touch-xy-touch-y"><code>TOUCH.Y</code></a> functions instead.</p>
+<p>Last touch position X and Y are stored as float and Retro Game Creator do not have a way to peek float from memory, use <a href="#x-touch-xy-touch-y"><code>TOUCH.X</code></a> and <a href="#x-touch-xy-touch-y"><code>TOUCH.Y</code></a> functions instead.</p>
 <p>Pixels shown represent the number of fantasy pixels that is visible by the user according to their device screen ratio. Use the practical <a href="#width-shown-wheight-shown-h"><code>SHOWN.W</code></a> and <a href="#width-shown-wheight-shown-h"><code>SHOWN.H</code></a> functions.</p>
 <p>Pixels outside the safe zone represent the number of fantasy pixels that are visible but SHOULD be considered unsafe for touch input as they are outside the safe area. Use the easy memorable <a href="#left-safe-ltop-safe-tright-safe-rbottom-safe-b"><code>SAFE.L</code></a>, <a href="#left-safe-ltop-safe-tright-safe-rbottom-safe-b"><code>SAFE.T</code></a>, <a href="#left-safe-ltop-safe-tright-safe-rbottom-safe-b"><code>SAFE.R</code></a> and <a href="#left-safe-ltop-safe-tright-safe-rbottom-safe-b"><code>SAFE.B</code></a> functions.</p>
 <h5 id="other-i-o-status-bits" tabindex="-1">Other I/O status bits</h5>
@@ -4351,19 +4397,31 @@ Also, they are both offseted by 32 pixels. To place a sprite in the 0x0 coordina
 <tbody>
 <tr>
 <td class="right">0</td>
-<td>Pause currently active</td>
-</tr>
-<tr>
-<td class="right">1</td>
 <td>Fantasy screen currently touched</td>
 </tr>
 <tr>
+<td class="right">1</td>
+<td>Device visual keyboard currently visible</td>
+</tr>
+<tr>
 <td class="right">2</td>
-<td>Device virtual keyboard currently visible</td>
+<td>Gesture tap detected</td>
+</tr>
+<tr>
+<td class="right">3</td>
+<td>Gesture drag detected</td>
+</tr>
+<tr>
+<td class="right">4</td>
+<td>Gesture long press detected</td>
+</tr>
+<tr>
+<td class="right">5</td>
+<td>Gesture change detected</td>
 </tr>
 </tbody>
 </table>
-<h5 id="dma-registers" tabindex="-1">DMA registers</h5>
+<h5 id="dma-registerss" tabindex="-1">DMA registerss</h5>
 <table>
 <thead>
 <tr>

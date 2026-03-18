@@ -3064,24 +3064,26 @@ This annex provides technical information about how things work under the hood.
 
 ### Memory mapping
 
+When a program is started, the [virtual files](#virtual-file) are mapped at address $10000. User can access it using [`ROM`](#address-rom-file), [`PEEK`](#value-peek-address), [`MCELL.C`](#character-mcell-c-x-y)…
+
 TODO: writable
 
 | address | size        | purpose            |
 | -------:| ----------- | ------------------ |
-|  $00000 | 8 Kibibyte  | Layer 0 data       |
-|  $02000 | 8 Kibibyte  | Layer 1 data       |
-|  $04000 | 8 Kibibyte  | Layer 2 data       |
-|  $06000 | 8 Kibibyte  | Layer 3 data       |
-|  $08000 | 4 Kibibyte  | Character data     |
-|  $09000 | 20 Kibibyte | Working RAM        |
-|  $0E000 | 6 Kibibyte  | Persistent RAM     |
-|  $0FB00 | 1020 Bytes  | Sprite registers   |
-|  $0FF00 | 32 Bytes    | Color registers    |
-|  $0FF20 | 10 Bytes    | Video registers    |
-|  $0FF40 | 48 Bytes    | Audio registers    |
-|  $0FF70 | 28 Bytes    | I/O registers      |
-|  $0FFA0 | 6 Bytes     | DMA registers      |
-|  $0FFA6 | 10 Bytes    | Internal registers |
+|   $0000 | 8 Kibibyte  | Layer 0 data       |
+|   $2000 | 8 Kibibyte  | Layer 1 data       |
+|   $4000 | 8 Kibibyte  | Layer 2 data       |
+|   $6000 | 8 Kibibyte  | Layer 3 data       |
+|   $8000 | 4 Kibibyte  | Character data     |
+|   $9000 | 20 Kibibyte | Working RAM        |
+|   $E000 | 6 Kibibyte  | Persistent RAM     |
+|   $FB00 | 1020 Bytes  | Sprite registers   |
+|   $FF00 | 32 Bytes    | Color registers    |
+|   $FF20 | 10 Bytes    | Video registers    |
+|   $FF40 | 48 Bytes    | Audio registers    |
+|   $FF70 | 28 Bytes    | I/O registers      |
+|   $FFA0 | 6 Bytes     | DMA registers      |
+|   $FFA6 | 10 Bytes    | Internal registers |
 |  $10000 | 64 Kibibyte | Cartridge ROM      |
 
 TODO: Add particle/emitter registers
@@ -3437,9 +3439,9 @@ For each palette:
 |   $FF70 | 4 Bytes | Last touch position X          |
 |   $FF74 | 4 Bytes | Last touch position Y          |
 |   $FF78 | 2 Bytes | Pixels shown in width          |
-|   $FF7a | 2 Bytes | Pixels shown in height         |
-|   $FF7c | 2 Bytes | Pixels outside the safe zone   |
-|   $FF7e | 2 Bytes | Pixels outside the safe zone   |
+|   $FF7A | 2 Bytes | Pixels shown in height         |
+|   $FF7C | 2 Bytes | Pixels outside the safe zone   |
+|   $FF7E | 2 Bytes | Pixels outside the safe zone   |
 |   $FF80 | 2 Bytes | Pixels outside the safe zone   |
 |   $FF82 | 2 Bytes | Pixels outside the safe zone   |
 |   $FF84 | 1 Byte  | ASCII code of last pressed key |

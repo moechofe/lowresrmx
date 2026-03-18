@@ -42,6 +42,7 @@ enum ErrorCode cmd_KEYBOARD(struct Core *core)
 		core->machine->ioRegisters.status.keyboardVisible = (type == TokenON);
 #ifdef SIMULATED_KEYBOARD
 		interpreter->simulatedKeyboardOn = (type == TokenON);
+		core->machine->ioRegisters.keyboardHeight = (type == TokenON) ? 154 : 0;
 #endif
 		delegate_controlsDidChange(core);
 	}
@@ -61,11 +62,7 @@ struct TypedValue fnc_KEYBOARD(struct Core *core)
 
 	if (interpreter->pass == PassRun)
 	{
-#ifdef SIMULATED_KEYBOARD
-		value.v.floatValue = interpreter->simulatedKeyboardOn ? 154 : 0;
-#else
 		value.v.floatValue = core->machine->ioRegisters.keyboardHeight;
-#endif
 	}
 	return value;
 }
