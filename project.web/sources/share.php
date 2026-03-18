@@ -68,7 +68,7 @@ if(preg_match('/^\/last_shared$/',$urlPath)&&$isGet)
 
 	$list=[];
 
-	// traverse the list of published programs in reverse order and gather information on each program.
+	// traverse the list of uploaded programs in reverse order and gather information on each program.
 	$l=count($programs)-1;
 	for($i=$l;$i>=0;--$i)
 	{
@@ -355,8 +355,5 @@ if(preg_match("/\/($MATCH_ENTRY_TOKEN)\/replace$/",$urlPath,$matches)&&$isPost)
 	);
 
 	// Mark the program as publish
-	redis()->hset("p:$program_id","first",$first_id);
-
-	header("Content-Type: application/json",true);
-	exit;
+	redis()->hset("p:$program_id","first",$first_id);	exit;
 }

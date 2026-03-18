@@ -12,7 +12,7 @@ class ToolsMenuConfiguration: NSObject {
 
     private let defaultPrograms = [
         "Old GFX.rmx",
-        "GFX.174.rmx",
+        "GFX.176.rmx",
     ]
 
     private(set) var programUrls: [URL]!

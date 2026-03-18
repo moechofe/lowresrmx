@@ -50,7 +50,7 @@ const setupProgramList=(prg_list,config)=>{return new Promise(async(res,rej)=>{
 
 		text(find(item,'.name'),data.title||data.name||"Untitled");
 
-		if(config.isShare && !data.eid) get(`${encodeURI(data.pid)}.png`,{
+		if(config.isShare/* && !data.eid*/) get(`${encodeURI(data.pid)}.png`,{
 			[HEADER_TOKEN]:csrf
 		}).then((ans)=>{
 			if(!ans.ok) return Promise.reject();
@@ -60,7 +60,7 @@ const setupProgramList=(prg_list,config)=>{return new Promise(async(res,rej)=>{
 			const url=URL.createObjectURL(blob);
 			find(item,'.picture').style.backgroundImage=`url("${url}")`;
 		});
-		else if(config.isShare) find(item,'.picture').style.backgroundImage=`url(\"./${encodeURI(data.eid)}.png\")`;
+		// else if(config.isShare) find(item,'.picture').style.backgroundImage=`url(\"./${encodeURI(data.eid)}.png\")`;
 		else find(item,'.picture').style.backgroundImage=`url(\"./${encodeURI(data.pid)}.png\")`;
 
 		text(find(item,'.author'),data.author||"Unknown");

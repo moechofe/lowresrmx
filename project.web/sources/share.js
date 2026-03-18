@@ -70,8 +70,8 @@ const setupPublishDialog=()=>{
 			x:text,
 		}),{
 			[HEADER_TOKEN]:csrf
-		}).then((res)=>res.json()).then((ok)=>{
-			if(cb)cb(eid);
+		}).then((res)=>res.json()).then((fid)=>{
+			if(cb)cb(fid);
 		}).catch((_)=>{
 			showError();
 		});
@@ -271,8 +271,8 @@ const setupReplaceDialog=()=>{
 			x:new_text,
 		}),{
 			[HEADER_TOKEN]:csrf
-		}).then((res)=>res.json()).then((fid)=>{
-			if(cb)cb(fid);
+		}).then(_=>{
+			if(cb)cb(eid);
 		}).catch((_)=>{
 			showError();
 		});
@@ -283,7 +283,6 @@ const setupReplaceDialog=()=>{
 	return (pid_,name,on_replaced)=>{
 		pid=pid_;
 		cb=on_replaced;
-		// find(dialog,'input.title').value=name||"Untitled";
 		dialogOn(dialog);
 		populateList();
 	};
