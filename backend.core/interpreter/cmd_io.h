@@ -35,5 +35,7 @@ struct TypedValue fnc_TAP(struct Core *core);
 struct TypedValue fnc_TOUCH_X_Y(struct Core *core);
 struct TypedValue fnc_SHOWN(struct Core *core);
 struct TypedValue fnc_SAFE(struct Core *core);
+struct TypedValue fnc_TOUCH_PX_PY(struct Core *core);
+struct TypedValue fnc_TOUCH_TAP_DRAG_LONG_CHANGE(struct Core *core);
 
 #endif /* cmd_io_h */

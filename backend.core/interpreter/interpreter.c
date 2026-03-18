@@ -1379,6 +1379,16 @@ struct TypedValue itp_evaluateFunction(struct Core *core)
 	case TokenTOUCHY:
 		return fnc_TOUCH_X_Y(core);
 
+	case TokenTOUCHPX:
+	case TokenTOUCHPY:
+		return fnc_TOUCH_PX_PY(core);
+
+	case TokenTOUCHTAP:
+	case TokenTOUCHDRAG:
+	case TokenTOUCHLONG:
+	case TokenTOUCHCHANGE:
+		return fnc_TOUCH_TAP_DRAG_LONG_CHANGE(core);
+
 	case TokenSHOWNW:
 	case TokenSHOWNH:
 		return fnc_SHOWN(core);

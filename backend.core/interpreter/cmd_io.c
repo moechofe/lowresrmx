@@ -198,3 +198,71 @@ struct TypedValue fnc_SAFE(struct Core *core)
 	}
 	return value;
 }
+
+struct TypedValue fnc_TOUCH_PX_PY(struct Core *core)
+{
+	struct Interpreter *interpreter = core->interpreter;
+
+	// TOUCH.?
+	enum TokenType type = interpreter->pc->type;
+	++interpreter->pc;
+
+	struct TypedValue value;
+	value.type = ValueTypeFloat;
+
+	if (interpreter->pass == PassRun)
+	{
+		if (type == TokenTOUCHPX)
+		{
+			value.v.floatValue = core->machine->ioRegisters.pressedX;
+		}
+		else if (type == TokenTOUCHPY)
+		{
+			value.v.floatValue = core->machine->ioRegisters.pressedY;
+		}
+		else
+		{
+			assert(0);
+		}
+	}
+	return value;
+}
+
+struct TypedValue fnc_TOUCH_TAP_DRAG_LONG_CHANGE(struct Core *core)
+{
+	struct Interpreter *interpreter = core->interpreter;
+
+	// TOUCH.?
+	enum TokenType type = interpreter->pc->type;
+	++interpreter->pc;
+
+	struct TypedValue value;
+	value.type = ValueTypeFloat;
+
+	if (interpreter->pass == PassRun)
+	{
+		if (type == TokenTOUCHTAP)
+		{
+			value.v.floatValue = core->machine->ioRegisters.status.touchTap ? BAS_TRUE : BAS_FALSE;
+		}
+		else if (type == TokenTOUCHDRAG)
+		{
+			value.v.floatValue = core->machine->ioRegisters.status.touchDrag ? BAS_TRUE : BAS_FALSE;
+		}
+		else if (type == TokenTOUCHLONG)
+		{
+			value.v.floatValue = core->machine->ioRegisters.status.touchLong ? BAS_TRUE : BAS_FALSE;
+		}
+		else if (type == TokenTOUCHCHANGE)
+		{
+			value.v.floatValue = core->machine->ioRegisters.status.touchChange ? BAS_TRUE : BAS_FALSE;
+		}
+		else
+		{
+			assert(0);
+		}
+	}
+	return value;
+}
+
+

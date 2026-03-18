@@ -191,6 +191,94 @@ void core_handleInput(struct Core *core, struct CoreInput *input)
 		ioRegisters->status.touch = 0;
 	}
 
+	// Gesture detection
+	ioRegisters->status.touchChange = 0;
+	ioRegisters->status.touchTap = 0;
+	if (input->touch)
+	{
+		if (!core->machineInternals->hasDrag)
+		{
+			core->machineInternals->hasDrag = sqrtf(powf(input->touchX - ioRegisters->pressedX, 2) + powf(input->touchY - ioRegisters->pressedY, 2))>=8;
+			if (core->machineInternals->hasDrag)
+			{
+				core->machineInternals->longEnabled = false;
+				ioRegisters->status.touchLong = 0;
+			}
+		}
+		if (!core->machineInternals->gesturePressed)
+		{
+			// just pressed
+			core->machineInternals->gesturePressed = true;
+			core->machineInternals->gestureLonged = false;
+			core->machineInternals->gestureDragged = false;
+			core->machineInternals->hasDrag = false;
+			core->machineInternals->longEnabled = true;
+			core->machineInternals->gesturePressedTimer = core->interpreter->timer;
+			ioRegisters->pressedX = input->touchX;
+			ioRegisters->pressedY = input->touchY;
+			ioRegisters->status.touchTap = 0;
+			ioRegisters->status.touchDrag = 0;
+			ioRegisters->status.touchLong = 0;
+			ioRegisters->status.touchChange = 1;
+		}
+		else if (!core->machineInternals->gestureLonged
+		// && core->machineInternals->gesturePressedTimer > 0
+		&& !core->machineInternals->hasDrag
+		&& core->machineInternals->longEnabled
+		&& core->interpreter->timer - core->machineInternals->gesturePressedTimer > 32)
+		{
+			// just longed
+			core->machineInternals->gestureLonged = true;
+			// core->machineInternals->gesturePressedTimer = 0;
+			ioRegisters->status.touchLong = 1;
+			ioRegisters->status.touchChange = 1;
+		}
+		else if(!core->machineInternals->gestureDragged
+		&& core->machineInternals->gesturePressedTimer > 0
+		&& (core->interpreter->timer - core->machineInternals->gesturePressedTimer > 12
+		|| core->machineInternals->hasDrag))
+		{
+			// just dragged
+			core->machineInternals->gestureDragged = true;
+			// core->machineInternals->gesturePressedTimer = 0;
+			ioRegisters->status.touchDrag = 1;
+			ioRegisters->status.touchChange = 1;
+		}
+	}
+	else
+	{
+		if (core->machineInternals->gesturePressed)
+		{
+			if (!core->machineInternals->gestureDragged
+			&& core->interpreter->timer - core->machineInternals->gesturePressedTimer <= 12)
+			{
+				// just tapped
+				core->machineInternals->gesturePressed = false;
+				// core->machineInternals->gestureLonged = false;
+				// core->machineInternals->gestureDragged = false;
+				// core->machineInternals->hasDrag = false;
+				core->machineInternals->gesturePressedTimer = 0;
+				ioRegisters->status.touchTap = 1;
+				ioRegisters->status.touchDrag = 0;
+				ioRegisters->status.touchLong = 0;
+				ioRegisters->status.touchChange = 1;
+			}
+			else
+			{
+				// just released
+				core->machineInternals->gesturePressed = false;
+				core->machineInternals->gestureLonged = false;
+				core->machineInternals->gestureDragged = false;
+				core->machineInternals->hasDrag = false;
+				core->machineInternals->gesturePressedTimer = 0;
+				ioRegisters->status.touchTap = 0;
+				ioRegisters->status.touchDrag = 0;
+				ioRegisters->status.touchLong = 0;
+				ioRegisters->status.touchChange = 1;
+			}
+		}
+	}
+
 	ioRegisters->shown.width = input->width;
 	ioRegisters->shown.height = input->height;
 

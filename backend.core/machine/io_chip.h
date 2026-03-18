@@ -29,6 +29,10 @@ union IOStatus
 	{
 		uint8_t touch : 1;
 		uint8_t keyboardVisible : 1;
+		uint8_t touchTap : 1;
+		uint8_t touchDrag : 1;
+		uint8_t touchLong : 1;
+		uint8_t touchChange : 1;
 	};
 	uint8_t value;
 };
@@ -53,11 +57,15 @@ struct IORegisters
 	char key;
 	// 0x0ff85
 	union IOStatus status;
-	// 0x0ff87
-	uint8_t haptic;
+	// 0x0ff86 + padding
+	uint16_t haptic;
 	// 0x0ff88
 	int keyboardHeight;
 	// 0x0ff8c
+	float pressedX;
+	// 0x0ff90
+	float pressedY;
+	// 0x0ff94
 };
 
 #endif /* io_chip_h */

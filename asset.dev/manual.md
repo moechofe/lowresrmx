@@ -83,6 +83,8 @@ The original LowRes NX, despite being an excellent development environment, lack
 
 - New [`HAPTIC` command to trigger haptic feedback](#haptic-pattern) on the device.
 
+- New advanced gesture functions `=TOUCH.PX`, `=TOUCH.PY`, `=TOUCH.TAP`, `=TOUCH.DRAG`, `=TOUCH.LONG`, `=TOUCH.CHANGE` to improve user's experience.
+
 **Control flow:**
 
 - New program control flow: [`ON GOTO`](#on-gotoon-gosub), [`ON GOSUB`](#on-gotoon-gosub) and [`ON RESTORE`](#on-restore).
@@ -2192,7 +2194,7 @@ Example of a flappy letter going down by gravity and up when tapping on the scre
 
 #### `x =TOUCH.X`<br>`y =TOUCH.Y`
 
-Returns the last pixel position `x, y` touched. It returns a floating-point number, with a 1/16 pixel precisions.
+Returns the last pixel position `x`, `y` touched. It returns a floating-point number, with a 1/16 pixel precisions.
 
     DO
       CLS
@@ -2250,6 +2252,34 @@ Will stop execution of the program until a touch is made.
 While waiting for a tap, interrupt sub-routines for VBL/RASTER/PARTICLE/EMITTER are still executed.
 
 TODO: link to interrupts
+
+#### `x =TOUCH.PX`<br>`y =TOUCH.PY`
+
+Returns the pixel position `x`, `y` when the device screen has been pressed. It returns a floating-point number, with a 1/16 pixel precisions.
+
+This can be used to detect distance travelled during drag.
+
+    do
+      cls 0
+      locate 0,0
+      print len(touch.x-touch.px,touch.y-touch.py)
+      wait vbl
+    loop
+
+#### `tapped =TOUCH.TAP`<br>`draging =TOUCH.DRAG`<br>`long =TOUCH.LONG`
+
+Advanced gesture detection that returns when user has `tapped` the screen, or is currently `draging` his finger or has `long` pressed the screen without moving.
+
+#### `changed =TOUCH.CHANGE`
+
+Returns if something has `changed` during gesture detection.
+
+| true | false | detect | equivalent |
+|------|
+| TOUCH.DRAG<br>TOUCH.CHANGE
+
+
+TODO: continue
 
 ### Display API
 
@@ -3414,22 +3444,32 @@ For each palette:
 |   $FF82 | 2 Bytes | Pixels outside the safe zone   |
 |   $FF84 | 1 Byte  | ASCII code of last pressed key |
 |   $FF85 | 1 Byte  | Other I/O status bits          |
+|   $FF86 | 1 Byte  | Haptic pattern                 |
+|   $FF87 | 1 Byte  |                                |
+|   $FF88 | 2 Bytes | Device visual keyboard height  |
+|   $FF8C | 4 Bytes | Gesture pressed position X     |
+|   $FF90 | 4 Bytes | Gesture pressed position Y     |
 
-Last touch position X and Y are stored as float and currently Retro Game Creator do not have a way to peek float from memory, use [`TOUCH.X`](#x-touch-xy-touch-y) and [`TOUCH.Y`](#x-touch-xy-touch-y) functions instead.
+Last touch position X and Y are stored as float and Retro Game Creator do not have a way to peek float from memory, use [`TOUCH.X`](#x-touch-xy-touch-y) and [`TOUCH.Y`](#x-touch-xy-touch-y) functions instead.
 
 Pixels shown represent the number of fantasy pixels that is visible by the user according to their device screen ratio. Use the practical [`SHOWN.W`](#width-shown-wheight-shown-h) and [`SHOWN.H`](#width-shown-wheight-shown-h) functions.
 
 Pixels outside the safe zone represent the number of fantasy pixels that are visible but SHOULD be considered unsafe for touch input as they are outside the safe area. Use the easy memorable [`SAFE.L`](#left-safe-ltop-safe-tright-safe-rbottom-safe-b), [`SAFE.T`](#left-safe-ltop-safe-tright-safe-rbottom-safe-b), [`SAFE.R`](#left-safe-ltop-safe-tright-safe-rbottom-safe-b) and [`SAFE.B`](#left-safe-ltop-safe-tright-safe-rbottom-safe-b) functions.
 
+
+
 ##### Other I/O status bits
 
-| bits | purpose                                   |
-| ----:| ----------------------------------------- |
-|    0 | Pause currently active                    |
-|    1 | Fantasy screen currently touched          |
-|    2 | Device virtual keyboard currently visible |
+| bits | purpose                                  |
+| ----:| ---------------------------------------- |
+|    0 | Fantasy screen currently touched         |
+|    1 | Device visual keyboard currently visible |
+|    2 | Gesture tap detected                     |
+|    3 | Gesture drag detected                    |
+|    4 | Gesture long press detected              |
+|    5 | Gesture change detected                  |
 
-##### DMA registers
+##### DMA registerss
 
 | address | size    | purpose                 |
 | -------:| ------- | ----------------------- |

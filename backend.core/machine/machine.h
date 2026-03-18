@@ -80,8 +80,8 @@ struct Machine {
     struct AudioRegisters audioRegisters;
 
     // 0x0FF70..0x0FFA0
-    struct IORegisters ioRegisters; // 28 Bytes
-    uint8_t nothing4[0x30 - sizeof(struct IORegisters)]; // 20 Bytes
+    struct IORegisters ioRegisters; // 36 Bytes
+    uint8_t nothing4[0x30 - sizeof(struct IORegisters)]; // 12 Bytes
 
     // 0x0FFA0..0x0FFB0
     struct DmaRegisters dmaRegisters; // 6 Bytes
@@ -102,7 +102,9 @@ struct MachineInternals {
     bool hasAccessedPersistent;
     bool hasChangedPersistent;
     bool isEnergySaving;
-		bool planeColor0IsOpaque[4];
+		bool planeColor0IsOpaque[4]; // TODO: should be mapped
+		bool gesturePressed,gestureLonged,longEnabled,gestureDragged,hasDrag;
+		float gesturePressedTimer;
 };
 
 void machine_init(struct Core *core);
