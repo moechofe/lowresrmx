@@ -1442,6 +1442,8 @@ A list of `constant` values (numbers or strings) that can be accessed using the 
 
 Read a list of values inside `variable` that was declared using [`DATA`](#data-constant-constant).
 
+TODO: auto next
+
 #### `RESTORE [label]`
 
 Move the read pointer to a specified `label`. The declared constant values that appear after the label will be read next. When ommited, restore at the beginning of the program.
@@ -1484,6 +1486,8 @@ Arrays of numbers or strings MUST be declared before reading or writing them.
     FOR i=0 TO 1
       PRINT names$(i);":", scores(i)
     NEXT i
+
+TODO: multidimensional example
 
 #### `DIM GLOBAL`
 

@@ -1,4 +1,4 @@
-version$="0.176"
+version$="0.177"
 'offical graphics editor for Retro Game Creator (LowResRMX) for iOS
 'author: martin mauchauffee
 
@@ -19,6 +19,7 @@ version$="0.176"
 'todo: lstchara is used instead of care in backed
 'todo: check if tedchanged is usefull
 'todo: remove gotos in tlb_x_xxx that do not lead to a return shortly
+'todo: add one width space to tlb_7 between color block 0 and 1,2,3. It should require to add space to the kolor editor too.
 
 
 files
@@ -39,9 +40,7 @@ do
     print
     print "- include a palette editor."
     print
-    print "- characters must exists in file#2,"
-    print
-    print "- background must exists in file#3."
+    print "- include a basic character editor."
     print
     print "tap to continue..."
   end if
@@ -152,8 +151,13 @@ bedbot=0
 'about character editor or chared or ced
 'cedlife= current edited file
 'cedtool= chared current tool
-'=0 pan the canvas, draw the canvas
+'=0 detect pan or draw the canvas
+'=1 draw the canvas
+'=2 pan the canvas
+'cedzoom= zoomed layer on backed
+'cedscale= similar to bedzoom but store the zoom factor (1 or 2)
 cedtool=0
+cedzoom=0 :cedscale=1
 
 'about currently edited layer in backed
 'laybgl,laybgt,laybgr,laybgb= bounding box of the current layer relative to the loaded background, in cell coordinates
@@ -208,8 +212,8 @@ fedtitle$=""
 global pallife
 
 'about characters editor or chared or car
-'carlife= current edited file
-global carlife
+'cedlife= current edited file
+global cedlife
 
 sub usepalettes(f)
 'set the current file as source for paletters
@@ -218,7 +222,7 @@ end sub
 
 sub usecharacter(f)
 'set the current file as source for characters
-  carlife=f
+  cedlife=f
 end sub
 
 sub usebackground(f)
@@ -813,6 +817,23 @@ sub pixeltocell(a,c,x,y,s)
   next i
 end sub
 
+sub paintcharapixel(a,c,x,y,v)
+'set a pixel of character
+'(in) a base address
+'(in) c dest chara index
+'(in) x,y chara coords
+'(in) v color value
+ 'chara address
+  r=a+c*16+(y and 7)
+  b=v and 1
+  for i=0 to 1
+    rol r,1+x
+    poke r,(peek(r) and 254) or b
+    ror r,1+x
+    r=r+8
+    b=(v and 2)\2
+  next i
+end sub
 
 '======================= bottom:
 'a bottom bar for ui widgets
@@ -1008,18 +1029,20 @@ fltui=0 :fltg=0
 '=1 pressing or dragging
 'bedchanged= layers has been panned or layout has changed and canvas and must be redrawn
 'beddrawn= layers has been drawn
+'todo: bedg is actually cnvg
 bedg=0
 bedchanged=0
-cedx=0 :cedy=0
 
 'needed by the canvas of the character editor
 'cedx,cedy= canvas position, used to pan the canvas, in float pixel coords
+cedx=0 :cedy=0
 
 
 'needed for the file toolbar
 'fedmode= file load/save mode
 '=0 background
 '=1 palette
+'=2 character
 
 'background dimension edit
 tlb_6_x=0 :tlb_6_v=0
@@ -1047,9 +1070,9 @@ if pallife=-1 then
 end if
 
 'load user's characters from file 2 or load default characters
-carlife=-1
-call usrloadchr(2,-1,carlife)
-if carlife=-1 then
+cedlife=-1
+call usrloadchr(2,-1,cedlife)
+if cedlife=-1 then
   call usrdefaultchr
 end if
 
@@ -1084,10 +1107,10 @@ askmanual=0
 
 
 
-' cane=2 :tole=7 :floe=0
-' on raster call r2
-' on vbl call v
-' goto chared
+cane=2 :tole=7 :floe=0 :fltshow=-1
+on raster call r2
+on vbl call v
+goto chared
 
 
 
@@ -1100,10 +1123,10 @@ askmanual=0
 'bedscale=2
 
 'todo get from pram
-cane=0 :tole=0 :floe=0 :fltshow=-1
-on raster call r2
-on vbl call v
-goto backed
+' cane=0 :tole=0 :floe=0 :fltshow=-1
+' on raster call r2
+' on vbl call v
+' goto backed
 
 'goto manual
 
@@ -1563,14 +1586,14 @@ r_chared:
   if raster=0 then
     'show editor frame and user's edited chara
     poke $ff32,%10000
-    system 4,1
-    system 8,1
+    'system 4,1
+    'system 8,1
     'copy user's color
     copy pcla,32 to $ff00
     'editor frame color
     palette 3,peek(pcla),0,2,5
     'place the frame at the right position
-    scroll 3,-16,-16
+    'scroll 3,-16,-16
 
     exit sub
 
@@ -2265,12 +2288,16 @@ filed:
   'fedscroll=-8
   'TODO: is it possible to center to the current selected files?
 
-fed_loop:
+filed_loop:
   'file as been selected or filed get cancelled
   if neweditor=-1 then
     if not fedselected then fedlife=oldlife
     fedselected=0
     goto backed
+  else if neweditor=-2 then
+    if not fedselected then fedlife=oldlife
+    fedselected=0
+    goto chared
   end if
 
   call checkresize :if resized then goto filed
@@ -2280,7 +2307,7 @@ fed_loop:
   gosub cnv_input
 
   wait vbl
-  goto fed_loop
+  goto filed_loop
 
   'scroll position of the file list
   'fedscroll=-8
@@ -2362,12 +2389,27 @@ chared:
   system 0,0 :font 0 :sprite view off
   editor=2 :neweditor=0
 
-  gosub tlb_redraw
-  gosub flt_redraw
-  gosub cnv_redraw
+  'center canvas
+  cedx=-(shownw-8*8*cedscale)/2
+  cedy=-(fltcurr-4-8*8*cedscale)/2
+
+  ' gosub tlb_redraw
+  ' gosub flt_redraw
+  ' gosub cnv_redraw
   gosub flt_update
 
+  'fixme: useless, check sub r2
+  system 8,cedzoom
+
 chared_loop:
+
+  if askmanual then goto manual
+  if neweditor=1 then goto backed
+  if neweditor=-2 then goto filed
+  if tlbchanged then gosub tlb_redraw
+  if fltchanged then gosub flt_redraw
+  if cnvchanged then gosub cnv_redraw
+
   call checkresize :if resized then goto chared
   call gesture
   'detect interaction on each part
@@ -2397,6 +2439,9 @@ chared_loop:
 
 ced_redraw:
 'redraw the character editor
+  'fixme: useless, check sub r2
+  system 8,cedzoom
+
   bg 3 :pal 3
   bg fill 0,0 to 63,63 char 3
   bg fill 0,0 to 7,7 char 0
@@ -2408,6 +2453,8 @@ ced_redraw:
   flip 0,1 :cell 63,8,12
   bg fill 0,8 to 7,8 char 13
   flip 1,1 :cell 8,8,12
+  gosub ced_limit
+  goto ced_recanvas
 
 ced_recanvas:
   bg 3 :attr 0
@@ -2417,26 +2464,76 @@ ced_recanvas:
   call pixeltocell(cara,care,0,0,3)
   return
 
+ced_limit:
+'make sure, the canvas is visible
+  s=8*cedscale
+  curr=tlbcurr-4
+  if fltshow then curr=fltcurr-4
+  w=shownw-8*s :h=curr-8*s
+  curr=tlbcurr-4
+  if fltshow then curr=fltcurr-4
+  if cedx>-(w)/2+3*s then cedx=-(w)/2+3*s
+  if cedx<-(w)/2-3*s then cedx=-(w)/2-3*s
+  if cedy>-(h)/2+3*s then cedy=-(h)/2+3*s
+  if cedy<-(h)/2-3*s then cedy=-(h)/2-3*s
+  scroll 3,cedx,cedy
+  return
+
 ced_update:
   return
 
 ced_input:
-  'TODO: on cedtool goto
-  if tapped then trace "tapped"
-  if pressed then trace "pressed"
-  if dragged then trace "dragged"
-  on cedtool goto ced_0_input
+  on cedtool goto ced_0_input, ced_1_input, ced_2_input
 
 ced_0_input:
-'handle pan or draw the canvas
-
-  'energytool=1
+'distribute to other tools to pan or draw the canvas
   gosub ced_detectcell
+  if pressed and justed then
+    if x>=0 and x<8 and y>=0 and y<8 then
+      'old painted coords
+      ox=-1 :oy=-1
+      cedtool=1 :goto ced_1_input
+    else
+      cedtool=2 :goto ced_2_input
+    end if
+  end if
+  return
 
+ced_1_input:
+'handle draw the canvas
+  gosub ced_detectcell
+  if released then
+    cedtool=0
+  else if (ox<>x or oy<>y) and x>=0 and x<8 and y>=0 and y<8 then
+    ox=x :oy=y
+    'paint in memory
+    call paintcharapixel(cara,care,x,y,cole)
+    'paint in canvas
+    bg 3 :pal 0
+    cell x,y,cole
+  end if
+  return
+
+ced_2_input:
+'handle pan the canvas
+  gosub ced_detectcell
+  if released then
+    cedtool=0
+  else if pressed and justed then
+    'stored starting position
+    cedxs=cedx :cedys=cedy
+  else if dragged then
+    'compute pan distance
+    cedx=cedxs-draggedx :cedy=cedys-draggedy
+    gosub ced_limit
+  end if
   return
 
 ced_detectcell:
 'determine which calls
+  'compute cell coords of touch relative to the canvas
+  x=floor((touch.x+cedx)/8/cedscale)
+  y=floor((touch.y+cedy)/8/cedscale)
   return
 
 
@@ -2489,10 +2586,7 @@ backed_loop:
   if cnvchanged then gosub cnv_redraw
 
   call checkresize
-  if resized then
-
-    goto backed
-  end if
+  if resized then goto backed
   call gesture
   'detect interaction on each part
   gosub tlb_input
@@ -2549,20 +2643,13 @@ bed_update:
 
 'todo: is bed_limit called twice per frame?
 bed_limit:
-'make sure the canvas is still visible
+'make sure the canvas is visible
   'compute space needed to show the selected layer
   s=8*bedscale
   w=layw(3)*s+safe.l+safe.r+40 :h=layh(3)*s+safe.t+safe.b+40
   curr=tlbcurr-4
-  ' trace "floe",floe,"fltshow",fltshow
-  if floe>=0 and fltshow then curr=fltcurr-4
-  ' trace "curr",curr
-  ' if floe>=0 then
-  '   curr=min(fltcurr,tlbcurr)-4
-  ' else
-  '   curr=tlbcurr-4
-  ' end if
-  ' trace "curr",curr
+  ' if floe>=0 and fltshow then curr=fltcurr-4
+  if fltshow then curr=fltcurr-4
   if w>shownw then
     l=layl(laye)*s-safe.l-20
     r=(layr(laye)+1)*s-shownw+safe.r+20
@@ -2581,6 +2668,7 @@ bed_limit:
     if bedy>b then bedy=b
   else
     'not enough space in height, center it
+    'todo: safe.t is not used, it should
     bedy=-(curr-layh(3)*s)/2
   end if
   scroll 1,bedx,bedy
@@ -2712,13 +2800,15 @@ bed_0_input:
     'store starting coordinates and old coordinates
     bedxs=bedx :bedys=bedy :bedox=bedx :bedoy=bedy
   end if
-  'compute pan distance
-  bedx=bedxs-draggedx : bedy=bedys-draggedy
-  gosub bed_limit
-  if bedox<>bedx or bedoy<>bedy then
-    gosub bed_initcanvas
-    bedox=bedx :bedoy=bedy
-    energytool=0 :bedchanged=-1
+  if dragged then
+    'compute pan distance
+    bedx=bedxs-draggedx : bedy=bedys-draggedy
+    gosub bed_limit
+    if bedox<>bedx or bedoy<>bedy then
+      gosub bed_initcanvas
+      bedox=bedx :bedoy=bedy
+      energytool=0 :bedchanged=-1
+    end if
   end if
   return
 
@@ -2814,9 +2904,9 @@ cnv_input:
   curr=tlbcurr-4
   if floe>=0 and fltshow then curr=fltcurr-4
   if (pressed or dragged) and bedg=1 then
-  else if (pressed or dragged) and justed and pressedy<curr then
+  else if (pressed or dragged or released) and justed and pressedy<curr then
     bedg=1
-  else if not tapped then
+  else if not tapped and not released then
     return
   end if
   on cane goto bed_input, fed_input, ced_input
@@ -2892,7 +2982,7 @@ flt_0_input:
 fltg_0_none:
 'handle user's character selection
   if not tapped then return
-  if tole<>0 and tole<>1 and tole<>3 then return
+  'if tole<>0 and tole<>1 and tole<>3 and tole<>7 then return
   'detect character number
   x=(touch.x+lstx)\16
   y=(touch.y+lsty-fltcurr)\16
@@ -3200,7 +3290,7 @@ tlb_0_zoom: 'wid=1
     bedscale=abs(bedzoom)+1
     bedx=x*bedscale-shownw/2
     bedy=y*bedscale-curr/2
-    gosub bed_limit
+    ' gosub bed_limit
     gosub bed_redraw
   end if
   restore tlb_0_data
@@ -3279,13 +3369,15 @@ tlb_0_undo: 'wid=8
 tlb_0_file: :'wid=9
 'show the file menu
   if tapped then
-    fedlife=bedlife
     call ungesture
+    fedlife=bedlife
     fedtitle$="background"
     fedmode=0
+    'todo: replace per tlbchanged=-1
     tole=2 :gosub tlb_redraw
     fltshow=0
     gosub bed_limit
+    'todo: need to redraw the canvas
     'disable drawing tool
     if bedtool>0 then bedoldt=bedtool
     bedtool=0
@@ -3299,14 +3391,14 @@ tlb_0_more: 'wid=10
   return
 tlb_0_chared: 'wid=11
 'switch to chared editor
-  message "work in progress"
-  ' if tapped then
-  '   call ungesture
-  '   cane=2 :cnvchanged=-1
-  '   tole=7 :tlbchanged=-1
-  '   floe=0 :fltchanged=-1
-  '   neweditor=2
-  ' end if
+  'message "work in progress"
+  if tapped then
+    call ungesture
+    cane=2 :cnvchanged=-1
+    tole=7 :tlbchanged=-1
+    floe=0 :fltchanged=-1
+    neweditor=2
+  end if
   return
 
 
@@ -3391,7 +3483,6 @@ tlb_1_rect: 'wid=3
 'pal#1,2,3 ui
 
 tlb_2_redraw:
-trace "=tlb_2_redraw"
   bg 0 :bg source rom(3) :attr %100001
   bg fill 0,0 to 31,31 char 1
   pal 1 : text 3,0,fedtitle$
@@ -3418,14 +3509,21 @@ tlb_2_input:
 tlb_2_back: 'wid=0
 'go back to the previous toolbar
   if tapped then
+  call ungesture
+    trace "editor",editor
     if editor=1 then
-      call ungesture
       'go back to the previous toolbar
       if fedmode=0 then tole=0
       if fedmode=1 then tole=3
+      'todo: replace goto tlb_redraw by tlbchanged=-1
       gosub tlb_redraw
       floe=0 :fltshow=-1 :gosub flt_redraw
       gosub bed_limit
+    else if editor=2 then
+      if fedmode=2 then tole=7
+      tlbchanged=-1
+      floe=0 :fltshow=-1 :fltchanged=-1
+      gosub ced_limit
     end if
   end if
   return
@@ -3439,7 +3537,13 @@ tlb_2_save: 'wid=1
     else if fedmode=1 then
       call usrlife(pallife,fedlife)
       call usrsave(pallife)
-      message "palette #"+hex$(pallife)+" saved"
+      message "file #"+hex$(pallife)+" saved"
+    else if fedmode=2 then
+      call usrlife(cedlife,fedlife)
+      call usrsave(cedlife)
+      message "file #"+hex$(pallife)+" saved"
+    else
+      message "not implemented"
     end if
     call ungesture
     gosub tlb_redraw
@@ -3460,6 +3564,10 @@ tlb_2_load: 'wid=2
     else if fedmode=1 then
       call usrloadpal(fedlife,pallife,pallife)
       call ungesture
+    else if fedmode=2 then
+      call usrloadchr(fedlife,cedlife,cedlife)
+      call ungesture
+      cnvchanged=-1
     end if
   end if
   return
@@ -3510,8 +3618,10 @@ tlb_2_free:
       else
         message "file #"+hex$(fedlife)+" not loaded"
       end if
-    else if fedmode=1 then
+    else
+    'if fedmode=1 then
       'TODO: implement me
+      message "not implemented"
     end if
 tlb_2_free_cancel:
     call ungesture
@@ -3527,7 +3637,7 @@ tlb_2_reaction:
     call updlayer(laye)
     usedfreed=-1
   'used characters freed
-  else if fedlife=carlife then
+  else if fedlife=cedlife then
   'used palette freed
   else if fedlife=pallife then
   end if
@@ -3536,9 +3646,13 @@ tlb_2_reaction:
   return
 tlb_2_new:
   if tapped then
-    call ungesture
-    tole=6
-    goto tlb_redraw
+    if fedmode=0 then
+      call ungesture
+      tole=6
+      goto tlb_redraw
+    else
+      message "not implemented"
+    end if
   end if
   return
 tlb_2_manual:
@@ -3718,9 +3832,9 @@ tlb_5_redraw:
 tlb_5_data:
   data 5 :'number of widget
   data 2,0,7,4 :'wid=0 color 0
-  data 8,0,13,4 :'wid=1 color 1
-  data 14,0,19,4 :'wid=2 color 2
-  data 20,0,25,4 :'wid=3 color 3
+  data 9,0,14,4 :'wid=1 color 1
+  data 15,0,20,4 :'wid=2 color 2
+  data 21,0,26,4 :'wid=3 color 3
   data 14,6,19,8 :'wid=4 back
 tlb_5_input:
   on wid goto tlb_5_color, tlb_5_color, tlb_5_color, tlb_5_color, tlb_5_back
@@ -3899,21 +4013,25 @@ tlb_7_redraw:
   gosub flt_show
   return
 tlb_7_data:
-  data 6 :'number of widget
+  data 8 :'number of widget
   data 2,0,7,4 :'wid=0 color 0
-  data 8,0,13,4 :'wid=1 color 1
-  data 14,0,19,4 :'wid=2 color 2
-  data 20,0,25,4 :'wid=3 color 3
+  data 9,0,14,4 :'wid=1 color 1
+  data 15,0,20,4 :'wid=2 color 2
+  data 21,0,26,4 :'wid=3 color 3
   data 8,10,13,12 :'wid=4 layer
   data 8,6,13,8 :'wid=5 palette
+  data 15,6,20,8 :'wid=6 zoom
+  data 21,10,26,12 :'wid=7 file
 tlb_7_input:
-  on wid goto tlb_7_color, tlb_7_color, tlb_7_color, tlb_7_color, tlb_7_layer, tlb_7_pal
-tlb_7_layer: 'wid=4
+  on wid goto tlb_7_color, tlb_7_color, tlb_7_color, tlb_7_color, tlb_7_backed, tlb_7_pal, tlb_7_zoom, tlb_7_file
+tlb_7_backed: 'wid=4
 'switch to backed editor
   if tapped then
     call ungesture
-    cane=0 :tole=0 :floe=0
-    goto backed
+    cane=0 :cnvchanged=-1
+    tole=0 :tlbchanged=-1
+    floe=0 :fltchanged=-1
+    neweditor=1
   end if
   return
 tlb_7_color: 'wid=0..3
@@ -3926,7 +4044,35 @@ tlb_7_color: 'wid=0..3
 tlb_7_pal: 'wid=5
 'show palette chooser
   if tapped then
+    'todo: replace goto tlb_redraw by tlbchanged=-1
     call ungesture :tole=3 :goto tlb_redraw
+  end if
+  return
+tlb_7_zoom: 'wid=6
+'toogle zoom level
+  if tapped then
+    curr=min(fltcurr,tlbcurr)-8
+    x=(cedx+shownw/2)/cedscale
+    y=(cedy+curr/2)/cedscale
+    cedzoom=not cedzoom
+    cedscale=abs(cedzoom)+1
+    cedx=x*cedscale-shownw/2
+    cedy=y*cedscale-curr/2
+    gosub ced_redraw
+  end if
+  restore tlb_7_data
+  call repaintwidget(6,1,2,cedzoom)
+  return
+tlb_7_file: 'wid=7
+'show the file menu
+  if tapped then
+    call ungesture
+    fedlife=cedlife
+    fedtitle$="characters"
+    fedmode=2
+    tole=2 :tlbchanged=-1
+    fltshow=0
+    gosub ced_limit
   end if
   return
 
@@ -4346,24 +4492,24 @@ FFFFFFFFFFFFFFFF0000071F1F3F3F3F
 05110511051105110511051106190101
 01010101010101010101010101010101
 0101010101010101010101010A040B04
-0B040B040B040A0C0A050B050B050B05
-0B050A0D0A060B060B060B060B060A0E
-0A070B070B070B070B070A0F01010101
+0B040B040B040A0C01010A050B050B05
+0B050B050A0D0A060B060B060B060B06
+0A0E0A070B070B070B070B070A0F0101
 0101010101011A040204020402040204
-1A0C1A0502050205020502051A0D1A06
-02060206020602061A0E1A0702070207
-020702071A0F01010101010101010101
-1A0402040204020402041A0C1A050205
-0205020502051A0D1A06020602060206
-02061A0E1A0702070207020702071A0F
-010101010101010101011A0402040204
-020402041A0C1A050205020502050205
-1A0D1A0602060206020602061A0E1A07
-02070207020702071A0F010101010101
+1A0C01011A0502050205020502051A0D
+1A0602060206020602061A0E1A070207
+0207020702071A0F0101010101010101
+1A0402040204020402041A0C01011A05
+02050205020502051A0D1A0602060206
+020602061A0E1A070207020702070207
+1A0F01010101010101011A0402040204
+020402041A0C01011A05020502050205
+02051A0D1A0602060206020602061A0E
+1A0702070207020702071A0F01010101
 010101010A140B140B140B140B140A1C
-0A150B150B150B150B150A1D0A160B16
-0B160B160B160A1E0A170B170B170B17
-0B170A1F010101010101010101010101
+01010A150B150B150B150B150A1D0A16
+0B160B160B160B160A1E0A170B170B17
+0B170B170A1F01010101010101010101
 01010101010101010101010101010101
 0101010101010F013C013C013C013C01
 0F090101010101010101010101010101
@@ -4408,27 +4554,27 @@ FFFFFFFFFFFFFFFF0000071F1F3F3F3F
 06190101010101010101010101010101
 01010101010101010101010101010101
 01010101010106010501050105010501
-06090601050105010501050106090601
-05010501050105010609060105010501
-05010501060901010101010101010101
-04013301280125012501040904010000
-010002000300040904013A012F012F01
-2D010409040135012E0124012F010409
-01010101010101010101061105110511
-051105110619061105113C113C110511
-06190611051105110511051106190611
-05110511051105110619010101010101
-0101010106020502050205020502060A
+06090601050105010501050106090101
 06010501050105010501060906010501
-05010501050106090601050105010501
-05010609010101010101010101010402
+05010501050106090101010101010101
+04013301280125012501040904010000
+0100020003000409010104013A012F01
+2F012D010409040135012E0124012F01
+04090101010101010101061105110511
+051105110619061105113C113C110511
+06190101061105110511051105110619
+06110511051105110511061901010101
+0101010106020502050205020502060A
+06010501050105010501060901010601
+05010501050105010609060105010501
+05010501060901010101010101010402
 2302280221023202040A04012C012101
-39013201040904012D012F0132012501
-04090401260129012C01250104090101
+390132010409010104012D012F013201
+250104090401260129012C0125010409
 01010101010101010612051205120512
 0512061A061105110511051105110619
-061105113C113C110511061906110511
-3C113C11051106190101010101013F01
+0101061105113C113C11051106190611
+05113C113C1105110619010101013F01
 3F013F013F013F013F013F013F013F01
 3F013F013F013F013F013F013F013F01
 3F013F013F013F013F013F013F013F01
@@ -4907,3 +5053,4 @@ FFFEFEFEFEFEFE00FFFE5203530303FF
 00000404000000000000050000000200
 03000000040006000700080000000000
 00000000
+
