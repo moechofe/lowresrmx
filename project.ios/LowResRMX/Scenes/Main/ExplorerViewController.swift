@@ -434,7 +434,7 @@ class ExplorerViewController: UIViewController, UICollectionViewDelegateFlowLayo
         let alert = UIAlertController(title: "Rename “\(item.name)”", message: nil, preferredStyle: .alert)
         alert.addTextField { (textField) in
             textField.clearButtonMode = .always
-            textField.autocapitalizationType = .words
+            textField.autocapitalizationType = .none
             textField.autocorrectionType = .no
             textField.spellCheckingType = .no
             textField.text = item.name

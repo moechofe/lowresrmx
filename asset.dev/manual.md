@@ -2001,10 +2001,10 @@ Example that generate background using random numbers:
     NEXT c
     NEXT r
 
-    bG SOURCE $9000, 64, 64
+    BG SOURCE $9000, 64, 64
     BG COPY 0, 0, 64, 64 TO 0, 0
 
-    Do
+    DO
     x=0
     ADD x, SIN(TIMER/600)*COS(TIMER/6000)*200
     ADD x, SIN(TIMER/500)*50

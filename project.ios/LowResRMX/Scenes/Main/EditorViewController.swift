@@ -703,7 +703,7 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
         let sourceText = sourceCodeTextView.text as NSString
 
         let selectedRange = sourceCodeTextView.selectedRange
-				if sourceText.substring(with: selectedRange).uppercased() == findText.uppercased() {
+				if sourceText.substring(with: selectedRange).caseInsensitiveCompare(findText) == .orderedSame {
             if !sourceCodeTextView.isFirstResponder {
                 // activate editor
                 sourceCodeTextView.becomeFirstResponder()
