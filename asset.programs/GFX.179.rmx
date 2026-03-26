@@ -1,4 +1,4 @@
-version$="0.177"
+version$="0.179"
 'offical graphics editor for Retro Game Creator (LowResRMX) for iOS
 'author: martin mauchauffee
 
@@ -19,8 +19,12 @@ version$="0.177"
 'todo: lstchara is used instead of care in backed
 'todo: check if tedchanged is usefull
 'todo: remove gotos in tlb_x_xxx that do not lead to a return shortly
+'todo: remove goto backed
 'todo: add one width space to tlb_7 between color block 0 and 1,2,3. It should require to add space to the kolor editor too.
-
+'todo: bedg is a mess
+'todo: do I need lstcursor? fltcursor is not enough?
+'todo: canvas is in non energy mode at start, but get it after dragging something
+'todo: redo energy mode
 
 files
 
@@ -1023,10 +1027,17 @@ tlbg=0
 global fltui, fltcursor
 fltui=0 :fltg=0
 
+'needed for canvas gesture detection
+'cnvg= canvas gesture
+'=0 waiting
+'=1 gesture is targeting canvas (including dragging outside of it but started inside it)
+cnvg=0
+
 'needed by the canvas of the background editor
 'bedg= canvas gesture
 '=0 nothing or tapping
 '=1 pressing or dragging
+
 'bedchanged= layers has been panned or layout has changed and canvas and must be redrawn
 'beddrawn= layers has been drawn
 'todo: bedg is actually cnvg
@@ -1669,6 +1680,8 @@ if raster=fltcurr-4 then
 else if raster=fltcurr then
   'show bg 0, show sprite maybe, zoom bg 0
   poke $ff32,%100010+fltcursor
+  'opaque bg 0
+  system 1,1
   'place the charalist at the right position
   scroll 0,kolx,-fltcurr+512+koly
   'setup raster progress
@@ -1692,6 +1705,8 @@ end if
 '''R_TOOLBAR
 
 r_toolbar:
+  'transparent bg 0
+  'system 1,0
 
 if raster=tlbcurr-8 then
   'black border
@@ -2433,7 +2448,7 @@ chared_loop:
   end if
 
   'enable battery saving mode
-  system 0,energytool and energylist and energyfold and energyredraw
+  'system 0,energytool and energylist and energyfold and energyredraw
   wait vbl
   goto chared_loop
 
@@ -2574,6 +2589,7 @@ backed:
   ' gosub tlb_redraw
   ' gosub flt_redraw
   ' gosub cnv_redraw
+  fltcursor=(bedtool<>0)
   gosub flt_update
 
 backed_loop:
@@ -2603,8 +2619,8 @@ backed_loop:
   if lstchanged then
     lstchanged=0
     if tole=0 or tole=1 or tole=3 then bedtool=bedoldt
-    call ungesture
     if tole=0 then
+      call ungesture
       gosub tlb_0_draw
       gosub tlb_0_pan
     end if
@@ -2624,7 +2640,7 @@ backed_loop:
   '   goto filed
   ' end if
   'enable battery saving mode
-  system 0,energytool and energylist and energyfold and energyredraw
+  'system 0,energytool and energylist and energyfold and energyredraw
   wait vbl
   goto backed_loop
 
@@ -2814,7 +2830,7 @@ bed_0_input:
 
 bed_1_input:
 'handle layer draw using a pen
-  if tapped then return
+  'if tapped then return
   energytool=1
   gosub bed_detectcell
   if not beddrawn then return
@@ -2855,7 +2871,7 @@ bed_detectcell:
   y=floor((touch.y+bedy)/8/bedscale)
   'draw did not changes anything yes
   beddrawn=0
-  if tap then
+  if pressed and justed then
     'compute cell coords for where the draw operation begin relative to the loaded background
     bed_sx=x-layu(laye)+layx(laye) :bed_sy=y-layv(laye)+layy(laye)
     'ditto for where the draw operation ended
@@ -2863,12 +2879,14 @@ bed_detectcell:
     'used to detect changed
     lx=x :ly=y
     beddrawn=-1
-  else if x<>lx or y<>ly then
-    'compute cell coords for where the draw operation ended relative to the loaded background
-    bed_ex=x-layu(laye)+layx(laye) :bed_ey=y-layv(laye)+layy(laye)
-    'used to detect changed
-    lx=x :ly=y
-    beddrawn=-1
+  else if dragged then
+    if x<>lx or y<>ly then
+      'compute cell coords for where the draw operation ended relative to the loaded background
+      bed_ex=x-layu(laye)+layx(laye) :bed_ey=y-layv(laye)+layy(laye)
+      'used to detect changed
+      lx=x :ly=y
+      beddrawn=-1
+    end if
   end if
   return
 
@@ -2900,16 +2918,29 @@ cnv_update:
 
 cnv_input:
 'detect interaction on the canvas according to cane
-  if released then bedg=0
   curr=tlbcurr-4
-  if floe>=0 and fltshow then curr=fltcurr-4
-  if (pressed or dragged) and bedg=1 then
-  else if (pressed or dragged or released) and justed and pressedy<curr then
-    bedg=1
-  else if not tapped and not released then
+  if fltshow then curr=fltcurr-4
+  if tap and touch.y<curr then
+    cnvg=1
+  else if not touch then
+    cnvg=0
+  else if cnvg=1 then
+  else
     return
   end if
   on cane goto bed_input, fed_input, ced_input
+
+  ' if released then bedg=0
+  ' curr=tlbcurr-4
+  ' if floe>=0 and fltshow then curr=fltcurr-4
+  ' 'todo: replace bedg by cnvg?
+  ' if (pressed or dragged) and bedg=1 then
+  ' else if (pressed or dragged or released) and justed and pressedy<curr then
+  '   bedg=1
+  ' else if not tapped and not released then
+  '   return
+  ' end if
+  ' on cane goto bed_input, fed_input, ced_input
 
 
 
@@ -3351,6 +3382,7 @@ tlb_0_draw: 'wid=7
   if tapped then
     bedbot=2
     if bedtool>0 then bedoldt=bedtool
+    trace "line 3388"
     call ungesture :tole=1 :tlbchanged=-1
   else if bedoldt>0 then
     'copy the right text for the button
@@ -3733,6 +3765,8 @@ tlb_3_edit: 'wid=9
     call ungesture
     tole=5 :gosub tlb_redraw
     floe=1 :gosub flt_redraw
+    call usepal((pale))
+    call usecolor((cole))
     gosub flt_show
   end if
   return
@@ -3843,7 +3877,6 @@ tlb_5_color: 'wid=0..3
 'select one of the 4 colors of the current palette
   if tapped then
     call usecolor(wid)
-    ' call usepal((pale))
     gosub flt_show
   end if
   'update color number
@@ -3987,6 +4020,7 @@ tlb_6_new:
     keyboard off
     tole=0 :floe=0
     bedoldt=1
+    'todo: redo this
     goto backed
   else if fedmode=1 then
   end if
