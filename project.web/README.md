@@ -124,6 +124,7 @@ Create and fill the `sources/private.php` file using the given `private.sample.p
 - _(hash)_ `"f:ENTRY_TOKEN_ID":f` first message entry
 
     - _(str)_ `["uid"]` `USER_ID` author user ID
+    - _(str)_ `["pid"]` `PROGRAM_ID` program ID
     - _(str)_ `["title"]` Title of the message (or the program)
     - _(str)_ `["text"]` content of the message
     - _(str)_ `["ut"]` ATOM timestamp for update time

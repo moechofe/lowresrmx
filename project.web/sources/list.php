@@ -21,12 +21,13 @@ if(preg_match('/\/ranked$/',$urlPath)&&$isGet)
 	{
 		$first_id=$list[$i];
 
-		list($title,$author,$ut,$name)=$prg=redis()->hmget("f:$first_id:f","title","author","ut","name");
+		list($program_id,$title,$author,$ut,$name)=$prg=redis()->hmget("f:$first_id:f","pid","title","author","ut","name");
 		if(empty($title)||empty($author)||empty($ut)) { cleanInvalidFirst($first_id); continue; }
 		$points=redis()->hget("r:$first_id:d","pts");
 		$comm=redis()->hget("r:$first_id:d","comm");
 		$published[]=[
-			'pid'=>$list[$i],
+			'eid'=>$first_id,
+			'pid'=>$program_id,
 			'title'=>$title,
 			'author'=>$author,
 			'points'=>$points,
@@ -58,12 +59,13 @@ if(preg_match('/\/latest$/',$urlPath)&&$isGet)
 	{
 		$first_id=$list[$i];
 
-		list($title,$author,$ut,$name)=$prg=redis()->hmget("f:$first_id:f","title","author","ut","name");
+		list($program_id,$title,$author,$ut,$name)=$prg=redis()->hmget("f:$first_id:f","pid","title","author","ut","name");
 		if(empty($title)||empty($author)||empty($ut)) { cleanInvalidFirst($first_id); continue; }
 		$points=redis()->hget("r:$first_id:d","pts");
 		$comm=redis()->hget("r:$first_id:d","comm");
 		$published[]=[
-			'pid'=>$list[$i],
+			'eid'=>$first_id,
+			'pid'=>$program_id,
 			'title'=>$title,
 			'author'=>$author,
 			'points'=>$points,

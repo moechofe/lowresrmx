@@ -8,7 +8,7 @@ if(preg_match("/\/($MATCH_ENTRY_TOKEN)\.player$/",$urlPath,$matches)&&$isGet)
 	$eid=$matches[1];
 
 	// Get the first entry post
-	list($title,$author,$status)=redis()->hmget("f:$eid:f","title","author","status");
+	list($pid,$title,$author,$status)=redis()->hmget("f:$eid:f","pid","title","author","status");
 	if(empty($title) or empty($author)) badRequest("Fail to read entry");
 	if($status==="banned") badRequest("Fail to validate entry");
 

@@ -24,8 +24,8 @@ const setupChatList=()=>{
 
 const setupNewTopic=()=>{
 	click(query('.new-topic'),(event)=>{
-		post_dialog((pid)=>{
-			window.location.href=`./${encodeURIComponent(pid)}.html`;
+		post_dialog((fid)=>{
+			window.location.href=`./${encodeURIComponent(fid)}.html`;
 		});
 	});
 };

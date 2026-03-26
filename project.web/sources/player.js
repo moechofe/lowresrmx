@@ -2,7 +2,7 @@
 // include: minimum_runtime_check.js
 var Module = {
 	canvas: document.getElementById('canvas'),
-	arguments: [window.location.href.replace(/\.(player)$/,'.rmx')],
+	arguments: [`./${document.querySelector("body").dataset["pid"]}.rmx`],
 	print: console.log.bind(console),
 	printErr: console.warn.bind(console),
 };

@@ -46,7 +46,7 @@ const setupProgramList=(prg_list,config)=>{return new Promise(async(res,rej)=>{
 		const item=instanciate(item_tpl);
 		const a=find(item,'a');
 
-		dataset(item,'pid',encodeURI(data.pid));
+		dataset(item,'eid',encodeURI(data.eid));
 
 		text(find(item,'.name'),data.title||data.name||"Untitled");
 
@@ -61,7 +61,7 @@ const setupProgramList=(prg_list,config)=>{return new Promise(async(res,rej)=>{
 			find(item,'.picture').style.backgroundImage=`url("${url}")`;
 		});
 		// else if(config.isShare) find(item,'.picture').style.backgroundImage=`url(\"./${encodeURI(data.eid)}.png\")`;
-		else find(item,'.picture').style.backgroundImage=`url(\"./${encodeURI(data.pid)}.png\")`;
+		else find(item,'.picture').style.backgroundImage=`url(\"./${encodeURI(data.pid?data.pid:data.eid)}.png\")`;
 
 		text(find(item,'.author'),data.author||"Unknown");
 		humanDate(find(item,'.date'),data.ut||data.ct);
@@ -72,7 +72,7 @@ const setupProgramList=(prg_list,config)=>{return new Promise(async(res,rej)=>{
 		if(config.isPost) text(find(item,'.comments'),data.comm||"?");
 		else hide(find(item,'.comments'));
 
-		if(config.isPost) attr(a,"href",`./${encodeURI(data.pid)}.html`);
+		if(config.isPost) attr(a,"href",`./${encodeURI(data.eid)}.html`);
 		addClassCond(a,"is-post",config.isPost);
 
 		if(config.isShare) show(find(item,'details'));
@@ -143,11 +143,11 @@ const setupPostList=(prg_list,config)=>{return new Promise(async(res,rej)=>{
 		const item=instanciate(item_tpl);
 		const a=find(item,'a');
 
-		dataset(item,'pid',data.pid);
+		dataset(item,'eid',encodeURI(data.eid));
 
 		find(item,'.name').textContent=data.title||data.name||"Untitled";
 		if(data.name)
-			find(item,'.picture').style.backgroundImage="url(\"./"+data.pid+".png\")";
+			find(item,'.picture').style.backgroundImage=`url(\"./${encodeURI(data.pid?data.pid:data.eid)}.png\")`;
 		else
 			remove(find(item,'.picture'));
 		find(item,'.author').textContent=data.author||"Unknown";
@@ -157,7 +157,7 @@ const setupPostList=(prg_list,config)=>{return new Promise(async(res,rej)=>{
 
 		if(config.isShare) show(find(item,'details'));
 
-		if(config.isPost) attr(a,"href",`./${encodeURI(data.pid)}.html`);
+		if(config.isPost) attr(a,"href",`./${encodeURI(data.eid)}.html`);
 		addClassCond(a,"is-post",config.isPost);
 
 		return item;

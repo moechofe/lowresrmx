@@ -53,6 +53,7 @@ if(preg_match('/^\/share$/',$urlPath)&&$isGet)
 	// Clean up the temporary program
 	redis()->del("t:$uptoken");
 
+	header("X-Robots-Tag: noindex", true);
 	header("Location: /share.html");
 	exit;
 }
@@ -100,10 +101,12 @@ if(preg_match('/^\/last_shared$/',$urlPath)&&$isGet)
 	}
 
 	header("Content-Type: application/json",true);
+	header("X-Robots-Tag: noindex", true);
 	echo json_encode($list);
 	exit;
 }
 
+// API that delete a shared program from REDIS
 if(preg_match('/^\/delete$/',$urlPath)&&$isPost)
 {
 	list($user_id,$csrf_token)=validateSessionAndGetUserId();
@@ -121,6 +124,7 @@ if(preg_match('/^\/delete$/',$urlPath)&&$isPost)
 		redis()->lrem("u:{$user_id}:p",1,$program_id);
 	}
 
+	header("X-Robots-Tag: noindex", true);
 	exit;
 }
 
@@ -158,16 +162,17 @@ if(preg_match('/\/publish$/',$urlPath)&&$isPost)
 	$text=zstd_compress($text);
 
 	// stored private program from redis to public program to file
-	$folder=substr($first_id,0,3);
+	$folder=substr($program_id,0,3);
 	@mkdir(CONTENT_FOLDER.$folder,0777,true);
 	$prg=zstd_uncompress($prg);
 	if(empty($prg)) internalServerError("Fail to read program");
-	if(!file_put_contents(CONTENT_FOLDER."$folder/$first_id.rmx",$prg)) internalServerError("Fail to write program file");
-	if(!file_put_contents(CONTENT_FOLDER."$folder/$first_id.png",$img)) internalServerError("Fail to write image file");
+	if(!file_put_contents(CONTENT_FOLDER."$folder/$program_id.rmx",$prg)) internalServerError("Fail to write program file");
+	if(!file_put_contents(CONTENT_FOLDER."$folder/$program_id.png",$img)) internalServerError("Fail to write image file");
 
 	// Publish the program
 	redis()->hmset("f:$first_id:f",
 		"uid",$user_id,
+		"pid",$program_id,
 		"title",$title,
 		"text",$text,
 		"ut",date(DATE_ATOM),
@@ -178,7 +183,7 @@ if(preg_match('/\/publish$/',$urlPath)&&$isPost)
 	// Mark the program as publish
 	redis()->hset("p:$program_id","first",$first_id);
 
-	// Register the program in the forum
+	// Register the post in the forum
 	redis()->zadd("w:$where",time(),$first_id);
 
 	// Add to the user first post list
@@ -304,6 +309,7 @@ if(preg_match('/\/published$/',$urlPath)&&$isGet)
 	}
 }
 
+// API to replace the program published on a post
 if(preg_match("/\/($MATCH_ENTRY_TOKEN)\/replace$/",$urlPath,$matches)&&$isPost)
 {
 	$first_id=$matches[1];
@@ -323,7 +329,7 @@ if(preg_match("/\/($MATCH_ENTRY_TOKEN)\/replace$/",$urlPath,$matches)&&$isPost)
 	if(empty($title)) badRequest("Fail to read title");
 	$text=mb_substr(@trim(@$json['x']),0,MAX_POST_TEXT);
 	if(empty($text)) badRequest("Fail to read text");
-	error_log("program_id: $program_id");
+	// error_log("program_id: $program_id");
 
 	// Check for the program
 	if(!redis()->exists("p:$program_id")) badRequest("Fail to validate program");
@@ -332,21 +338,30 @@ if(preg_match("/\/($MATCH_ENTRY_TOKEN)\/replace$/",$urlPath,$matches)&&$isPost)
 	if(empty($img)) internalServerError("Fail to read image");
 	if(empty($name)) internalServerError("Fail to read program name");
 
+	// Retrieve old program
+	$old_program_id=redis()->hget("f:$first_id:f","pid");
+	if($old_program_id)
+	{
+		// Unmark the old program as publish
+		redis()->hdel("p:$program_id","first");
+	}
+
 	// Prepare text content
 	$author=redis()->hget("u:$user_id","name");
 	$author=substr($author,0,MAX_AUTHOR_NAME);
 	$text=zstd_compress($text);
 
 	// stored private program from redis to public program to file
-	$folder=substr($first_id,0,3);
+	$folder=substr($program_id,0,3);
 	@mkdir(CONTENT_FOLDER.$folder,0777,true);
 	$prg=zstd_uncompress($prg);
 	if(empty($prg)) internalServerError("Fail to read program");
-	if(!file_put_contents(CONTENT_FOLDER."$folder/$first_id.rmx",$prg)) internalServerError("Fail to write program file");
-	if(!file_put_contents(CONTENT_FOLDER."$folder/$first_id.png",$img)) internalServerError("Fail to write image file");
+	if(!file_put_contents(CONTENT_FOLDER."$folder/$program_id.rmx",$prg)) internalServerError("Fail to write program file");
+	if(!file_put_contents(CONTENT_FOLDER."$folder/$program_id.png",$img)) internalServerError("Fail to write image file");
 
 	// Publish the program
 	redis()->hmset("f:$first_id:f",
+		"pid",$program_id,
 		"title",$title,
 		"text",$text,
 		"ut",date(DATE_ATOM),
@@ -355,5 +370,14 @@ if(preg_match("/\/($MATCH_ENTRY_TOKEN)\/replace$/",$urlPath,$matches)&&$isPost)
 	);
 
 	// Mark the program as publish
-	redis()->hset("p:$program_id","first",$first_id);	exit;
+	redis()->hset("p:$program_id","first",$first_id);
+
+	// Update the rank of the post
+	updRank($first_id);
+
+	// TODO: should I give more point to update?
+	// Is the changement in the date is enough?
+
+	header("X-Robots-Tag: noindex", true);
+	exit;
 }
