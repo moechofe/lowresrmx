@@ -1,6 +1,6 @@
 # Declaration of variables
 CC = emcc
-CC_FLAGS = -w -s USE_SDL=2 -I ../backend.core -I ../backend.core/machine -I ../backend.core/accessories -I ../backend.core/datamanager -I ../backend.core/interpreter -I ../backend.core/libraries -I ../backend.core/overlay
+CC_FLAGS = -w -s USE_SDL=2 -I ../backend.core -I ../backend.core/machine -I ../backend.core/accessories -I ../backend.core/datamanager -I ../backend.core/interpreter -I ../backend.core/libraries -I ../backend.core/overlay -I ../frontend.sdl
 CC_FLAGS_MAIN = -s USE_SDL=2
 
 # File names

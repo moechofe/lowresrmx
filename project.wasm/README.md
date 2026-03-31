@@ -20,10 +20,10 @@ Add this to `player.js` before the first `(function() {`
 
 ```js
 var Module = {
-  canvas: document.getElementById('canvas'),
-  arguments: [window.location.href.replace(/\.(player)$/,'.rmx')],
-  print: console.log.bind(console),
-  printErr: console.warn.bind(console),
+	canvas: document.getElementById('canvas'),
+	arguments: [`./${document.querySelector("body").dataset["pid"]}.rmx`],
+	print: console.log.bind(console),
+	printErr: console.warn.bind(console),
 };
 ```
 

@@ -2,6 +2,7 @@
 TODO: add BG COPY example: cell cursor.x+23,cursor.y+3,16
 TODO: fix link in BG COPY to BG SOURCE
 TODO: mapped cycles counter
+TODO: explain that width is maxed a 216, height is not
 
 ## What is Retro Game Creator?
 
