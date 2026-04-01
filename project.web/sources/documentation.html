@@ -1824,6 +1824,8 @@ TEXT 10, 10, &quot;hello!&quot;
 SCROLL 0, 0, -4
 </code></pre>
 <p>Omitted parameters will keep their previous values.</p>
+<p>Scroll offset is a positive value that internally wraps around 512. This corresponds to the maximum number of pixels a bg layer can hold.</p>
+<p>A scroll value of 512 is visually equivalent to a value of 0.</p>
 <h4 data-keyword="SCROLL.X,SCROLL.Y" data-title="=SCROLL.X/=SCROLL.Y" id="x-scroll-x-layer-y-scroll-y-layer" tabindex="-1"><code>x =SCROLL.X(layer)</code><br /><code>y =SCROLL.Y(layer)</code></h4>
 <p>Return the scroll offset on <code>x</code> and <code>y</code> axis of the <code>layer</code> in pixels.</p>
 <p>Example of getting the scroll offset of the background layer:</p>
@@ -2011,10 +2013,10 @@ FOR c=0 TO 63
 NEXT c
 NEXT r
 
-bG SOURCE $9000, 64, 64
+BG SOURCE $9000, 64, 64
 BG COPY 0, 0, 64, 64 TO 0, 0
 
-Do
+DO
 x=0
 ADD x, SIN(TIMER/600)*COS(TIMER/6000)*200
 ADD x, SIN(TIMER/500)*50
@@ -2996,6 +2998,8 @@ This command will be removed at some point.</p>
 <p>Enter the debugger when the program <code>=PEEK</code> or <code>POKE</code> the <code>address</code>.</p>
 <h5 id="dbg-next" tabindex="-1">dbg: <code>NEXT</code></h5>
 <p>Execute next instruction in the program, and stop.</p>
+<h5 id="dbg-goto-ongoto-offgosub-ongosub-off" tabindex="-1">dbg: <code>GOTO ON</code><br /><code>GOTO OFF</code><br /><code>GOSUB ON</code><br /><code>GOSUB OFF</code></h5>
+<p>Start or stop logging <code>GOTO</code>s and <code>GOSUB</code>s.</p>
 <h2 id="references" tabindex="-1">References</h2>
 <p>This annex provides technical information about how things work under the hood.</p>
 <h3 id="64-colors" tabindex="-1">64 Colors</h3>

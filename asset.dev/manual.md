@@ -1774,6 +1774,10 @@ Set the scroll offset on `x` and `y` axis of the `layer` in pixels.
 
 Omitted parameters will keep their previous values.
 
+Scroll offset is a positive value that internally wraps around 512. This corresponds to the maximum number of pixels a bg layer can hold.
+
+A scroll value of 512 is visually equivalent to a value of 0.
+
 #### `x =SCROLL.X(layer)`<br>`y =SCROLL.Y(layer)`
 
 Return the scroll offset on `x` and `y` axis of the `layer` in pixels.
@@ -3049,6 +3053,10 @@ Enter the debugger when the program `=PEEK` or `POKE` the `address`.
 ##### dbg: `NEXT`
 
 Execute next instruction in the program, and stop.
+
+##### dbg: `GOTO ON`<br>`GOTO OFF`<br>`GOSUB ON`<br>`GOSUB OFF`
+
+Start or stop logging `GOTO`s and `GOSUB`s.
 
 ## References
 

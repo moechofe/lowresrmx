@@ -148,6 +148,8 @@ struct CoreError itp_compileProgram(struct Core *core, const char *sourceCode)
 	interpreter->state = StateEvaluate;
 	interpreter->mode = ModeNone;
 	interpreter->pauseAtWait = false;
+	interpreter->logGoto = false;
+	interpreter->logGosub = false;
 	interpreter->currentDataToken = interpreter->firstData;
 	interpreter->currentDataValueToken = interpreter->firstData ? interpreter->firstData + 1 : NULL;
 	interpreter->isSingleLineIf = false;

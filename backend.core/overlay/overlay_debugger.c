@@ -505,6 +505,7 @@ static void process_command_line(struct Core *core)
 													t->type == TokenPOKE ? true : false);
 		}
 
+		// execute next line of code
 		else if (t->type == TokenNEXT)
 		{
 			enum ErrorCode errorCode = ErrorNone;
@@ -519,6 +520,33 @@ static void process_command_line(struct Core *core)
 			{
 				print_code(core);
 				autoNext = true;
+			}
+		}
+
+		else if (t->type == TokenGOTO || t->type == TokenGOSUB)
+		{
+			struct Token *cmdToken=t;
+			t = &toks.tokens[i++];
+			if (t->type == TokenON || t->type == TokenOFF)
+			{
+				if (cmdToken->type == TokenGOTO)
+				{
+					core->interpreter->logGoto = t->type == TokenON;
+					txtlib_printText(&core->overlay->textLib, "  log goto ");
+				}
+				else if (cmdToken->type == TokenGOSUB)
+				{
+					core->interpreter->logGosub = t->type == TokenON;
+					txtlib_printText(&core->overlay->textLib, "  log gosub ");
+				}
+				txtlib_printText(&core->overlay->textLib, (t->type == TokenON)?"on":"off");
+				new_line(core);
+			}
+			else
+			{
+				txtlib_printText(&core->overlay->textLib, "  syntax error");
+				new_line(core);
+				return;
 			}
 		}
 
@@ -654,4 +682,31 @@ void overlay_debugger(struct Core *core)
 			}
 		}
 	}
+}
+
+void log_goto(struct Core *core,int symbolIndex)
+{
+	struct TextLib *lib = &core->overlay->textLib;
+	struct Tokenizer *tokenizer = &core->interpreter->tokenizer;
+	txtlib_printText(lib, "goto ");
+	txtlib_printText(lib, tokenizer->symbols[symbolIndex].name);
+	new_line(core);
+}
+
+void log_gosub(struct Core *core,int symbolIndex)
+{
+	struct TextLib *lib = &core->overlay->textLib;
+	struct Tokenizer *tokenizer = &core->interpreter->tokenizer;
+	txtlib_printText(lib, "gosub ");
+	txtlib_printText(lib, tokenizer->symbols[symbolIndex].name);
+	new_line(core);
+}
+
+void log_return(struct Core *core,bool clear)
+{
+	struct TextLib *lib = &core->overlay->textLib;
+	struct Tokenizer *tokenizer = &core->interpreter->tokenizer;
+	txtlib_printText(lib, "return");
+	if (clear) txtlib_printText(lib, "and clear stack");
+	new_line(core);
 }

@@ -415,6 +415,7 @@ enum ErrorCode cmd_GOTO(struct Core *core)
 	else if (interpreter->pass == PassRun)
 	{
 		interpreter->pc = tokenGOTO->jumpToken; // after label
+		if (interpreter->logGoto) log_goto(core,tokenIdentifier->symbolIndex);
 	}
 	return ErrorNone;
 }
@@ -449,6 +450,7 @@ enum ErrorCode cmd_GOSUB(struct Core *core)
 			return errorCode;
 
 		interpreter->pc = tokenGOSUB->jumpToken; // after label
+		if (interpreter->logGosub) log_gosub(core,tokenIdentifier->symbolIndex);
 	}
 	return ErrorNone;
 }
@@ -493,11 +495,13 @@ enum ErrorCode cmd_RETURN(struct Core *core)
 				interpreter->pc = tokenRETURN->jumpToken; // after label
 				// clear stack
 				interpreter->numLabelStackItems = 0;
+				if (interpreter->logGosub) log_return(core, true);
 			}
 			else
 			{
 				// jump back
 				interpreter->pc = itemGOSUB->token; // after GOSUB
+				if (interpreter->logGosub) log_return(core, false);
 			}
 		}
 		else

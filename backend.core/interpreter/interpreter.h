@@ -91,6 +91,7 @@ struct Interpreter
 	int interruptOverCycles;
 	bool debug;
 	bool pauseAtWait;
+	bool logGoto,logGosub;
 	int cpuLoadDisplay;
 	int cpuLoadMax;
 	int cpuLoadTimer;
