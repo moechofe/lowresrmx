@@ -1,4 +1,4 @@
-version$="0.179"
+version$="0.180"
 'offical graphics editor for Retro Game Creator (LowResRMX) for iOS
 'author: martin mauchauffee
 
@@ -21,13 +21,12 @@ version$="0.179"
 'todo: remove gotos in tlb_x_xxx that do not lead to a return shortly
 'todo: remove goto backed
 'todo: add one width space to tlb_7 between color block 0 and 1,2,3. It should require to add space to the kolor editor too.
-'todo: bedg is a mess
 'todo: do I need lstcursor? fltcursor is not enough?
 'todo: canvas is in non energy mode at start, but get it after dragging something
 'todo: redo energy mode
+'todo: prevent the toolbar to scroll back to start at every toolbar changed
 
 files
-
 
 'beta version intro
 palette 0,2,8,8,2
@@ -1029,19 +1028,12 @@ fltui=0 :fltg=0
 
 'needed for canvas gesture detection
 'cnvg= canvas gesture
-'=0 waiting
+'=0 waiting for gesture
 '=1 gesture is targeting canvas (including dragging outside of it but started inside it)
 cnvg=0
 
-'needed by the canvas of the background editor
-'bedg= canvas gesture
-'=0 nothing or tapping
-'=1 pressing or dragging
-
 'bedchanged= layers has been panned or layout has changed and canvas and must be redrawn
 'beddrawn= layers has been drawn
-'todo: bedg is actually cnvg
-bedg=0
 bedchanged=0
 
 'needed by the canvas of the character editor
@@ -1166,8 +1158,9 @@ palette 5,2,62,63,3
 palette 6,2,45,46,3
 palette 7,2,1,17,61
 shownw=0 :shownh=0
-subject=0
+subject=-1
 font 192
+scrollx=0 :scrolly=0
 do
   if shownw<>shown.w or shownh<>shown.h then
     shownw=shown.w :shownh=shown.h
@@ -1216,33 +1209,48 @@ do
     print "quit manual"
     bg fill cursor.x+2,cursor.y+3 to cursor.x+2+10,cursor.y+3 char 65
 
-    on subject gosub subject_0, subject_1, subject_2, subject_3
+    if subject>=0 then on subject gosub subject_0, subject_1, subject_2, subject_3
 
     maxx=64*8-(shown.w-safe.l-safe.r)
     maxy=64*8-(shown.h-safe.t-safe.b)
   end if
   wait vbl
-  if tap then
+  if scrollx>=0 or scrolly>=0 then
+    sx=scroll.x(0) :sy=scroll.y(0)
+    dx=scrollx-sx :dy=scrolly-sy
+    scrollx=-1: scrolly=-1
+    if dx<>0 or dy<>0 then
+      p=0
+      for i=0 to 1 step 0.1
+        p=ease(2,1,i)
+        nx=clamp(sx+dx*p,0,maxx)
+        ny=clamp(sy+dy*p,0,maxy)
+        scroll 0,nx,ny
+        wait vbl
+      next i
+    end if
+  else if tap then
     px=touch.x :py=touch.y
     sx=scroll.x(0) :sy=scroll.y(0)
     cx=(touch.x+sx)\8 :cy=(touch.y+sy)\8
     trace cx,cy
     if cx>=2 and cy>=18 and cx<=13 and cy<=19 then gosub subject_0
-    if cx>=2 and cy>=21 and cx<=12 and cy<=22 then gosub subject_1
-    if cx>=2 and cy>=24 and cx<=15 and cy<=25 then gosub subject_1
+    if cx>=2 and cy>=21 and cx<=12 and cy<=22 then gosub subject_1_1
+    if cx>=2 and cy>=24 and cx<=15 and cy<=25 then gosub subject_1_2
     if cx>=2 and cy>=30 and cx<=12 and cy<=31 then gosub subject_3
+    if cx>=2 and cy>=33 and cx<=13 and cy<=34 then gosub subject_4
     if cx>=2 and cy>=36 and cx<=12 and cy<=37 then goto manual_quit
   else if touch then
     dx=touch.x-px :dy=touch.y-py
     nx=clamp(sx-dx,0,maxx)
     ny=clamp(sy-dy,0,maxy)
     scroll 0,nx,ny
-    'trace nx,ny
   end if
 loop
 end
 
 subject_0: subject=0
+  scrollx=168 :scrolly=0
   window 23,3,18,60,0 :clw
   pal 5
   print "layer editor"
@@ -1258,7 +1266,7 @@ subject_0: subject=0
   print
   bg copy 2,0,11,3 to cursor.x+23,cursor.y+3
   locate 0,cursor.y+4
-  pal 0
+  ' pal 0
   print "pan: enable to pan the layers using touch."
   print
   print "draw: show toolbar with additional paint tools."
@@ -1282,7 +1290,6 @@ subject_0: subject=0
   print
   print "4 colors: show toolbar with additional palettes."
   print
-
   window 44,3,18,60,0 :clw
   print "layer editor"
   print
@@ -1297,9 +1304,14 @@ subject_0: subject=0
   print "more: show toolbar with additional tools."
   print
   print "file: show toolbar with the file manager."
-
   return
 
+subject_1_1:
+  scrollx=168 :scrolly=0
+  goto subject_1
+subject_1_2:
+  scrollx=336 :scrolly=160
+  goto subject_1
 subject_1: subject=1
   window 23,3,18,60,0 :clw
   pal 5
@@ -1333,7 +1345,6 @@ subject_1: subject=1
   print "char: toggle paint the character number only."
   print
   print "pal: toggle paint the palette only."
-
   window 44,3,18,60,0 :clw
   print "layer: draw"
   print
@@ -1362,23 +1373,22 @@ subject_1: subject=1
   print "edit: show toolbar with the palette editor."
   print
   print "file: show toolbar with the file manager."
-
   return
 
 subject_2: subject=2
+  'scrollx=336 :scrolly=0
   window 23,3,18,60,0 :clw
   pal 5
   print "layer: more"
   print :print
   pal 0
-
   window 44,3,18,60,0 :clw
   print "layer: more"
   print
-
   return
 
 subject_3: subject=3
+  scrollx=168 :scrolly=0
   window 23,3,18,60,0 :clw
   pal 5
   print "layer: file"
@@ -1423,7 +1433,6 @@ subject_3: subject=3
   print "load: (re)load from the selected file."
   print
   print "save: to the selected file."
-
   window 44,3,18,60,0 :clw
   print "layer: file"
   print
@@ -1440,8 +1449,35 @@ subject_3: subject=3
   bg copy 21,33,6,3 to cursor.x+44,cursor.y+3
   locate 0,cursor.y+4
   print "back: show previous toolbar."
-
   return
+
+subject_4: subject=4
+  scrollx=168 :scrolly=0
+  window 23,3,18,60,0 :clw
+  pal 5
+  print "chara editor"
+  print :print
+  pal 0
+  print "the chara editor will present 3 things."
+  print
+  print "1st: the chara canvas where user can paint on."
+  print
+  print "2nd: the list of characters to paint with."
+  print
+  print "3rd: a toolbar."
+  print
+  bg copy 2,42,6,5 to cursor.x+23,cursor.y+3
+  locate 0,cursor.y+4
+  print "set current color to paint with."
+  print
+  bg copy 2,59,11,3 to cursor.x+23,cursor.y+3
+  locate 0,cursor.y+4
+
+  window 44,3,18,60,0 :clw
+  print "chara editor"
+  print
+  return
+
 
 manual_quit:
   copy rom(1),32 to $ff00
@@ -2424,6 +2460,8 @@ chared_loop:
   if tlbchanged then gosub tlb_redraw
   if fltchanged then gosub flt_redraw
   if cnvchanged then gosub cnv_redraw
+  'fixme: should not be needed
+  'if (tlbchanged or fltchanged) and cane=2 then gosub ced_limit
 
   call checkresize :if resized then goto chared
   call gesture
@@ -2480,6 +2518,7 @@ ced_recanvas:
   return
 
 ced_limit:
+trace "=ced_limit"
 'make sure, the canvas is visible
   s=8*cedscale
   curr=tlbcurr-4
@@ -2929,18 +2968,6 @@ cnv_input:
     return
   end if
   on cane goto bed_input, fed_input, ced_input
-
-  ' if released then bedg=0
-  ' curr=tlbcurr-4
-  ' if floe>=0 and fltshow then curr=fltcurr-4
-  ' 'todo: replace bedg by cnvg?
-  ' if (pressed or dragged) and bedg=1 then
-  ' else if (pressed or dragged or released) and justed and pressedy<curr then
-  '   bedg=1
-  ' else if not tapped and not released then
-  '   return
-  ' end if
-  ' on cane goto bed_input, fed_input, ced_input
 
 
 
@@ -3515,6 +3542,7 @@ tlb_1_rect: 'wid=3
 'pal#1,2,3 ui
 
 tlb_2_redraw:
+trace "=tlb_2_redraw"
   bg 0 :bg source rom(3) :attr %100001
   bg fill 0,0 to 31,31 char 1
   pal 1 : text 3,0,fedtitle$
@@ -3541,17 +3569,19 @@ tlb_2_input:
 tlb_2_back: 'wid=0
 'go back to the previous toolbar
   if tapped then
-  call ungesture
-    trace "editor",editor
+    trace "=tlb_2_back"
+    call ungesture
     if editor=1 then
       'go back to the previous toolbar
       if fedmode=0 then tole=0
       if fedmode=1 then tole=3
-      'todo: replace goto tlb_redraw by tlbchanged=-1
-      gosub tlb_redraw
-      floe=0 :fltshow=-1 :gosub flt_redraw
+      if fedmode=2 then tole=0
+      tlbchanged=-1
+      floe=0 :fltshow=-1 :fltchanged=-1 :'gosub flt_redraw
       gosub bed_limit
     else if editor=2 then
+      'go back to the previous toolbar
+      if fedmode=1 then tole=3
       if fedmode=2 then tole=7
       tlbchanged=-1
       floe=0 :fltshow=-1 :fltchanged=-1
@@ -3704,6 +3734,7 @@ tlb_2_manual:
 'pal#1,2,3 ui
 
 tlb_3_redraw:
+trace "=tlb_3_redraw"
   bg 0 :bg source rom(3) :attr %100001
   bg fill 0,0 to 31,31 char 1
   bg copy 0,9,29,3 to 0,0
@@ -3779,9 +3810,6 @@ tlb_3_file: 'wid=10
     fedmode=1
     tole=2 :gosub tlb_redraw
     fltshow=0
-    'floe=-1 :
-    'gosub flt_redraw
-    gosub bed_limit
     'disable drawing tool
     if bedtool>0 then bedoldt=bedtool
     bedtool=0
@@ -4008,9 +4036,7 @@ tlb_6_edit:
 tlb_6_new:
 'erase current file and create a new one
   'todo: check for changes not saved
-
   if addr<=0 then return
-
   if fedmode=0 then
     call usrnewbg(tlb_6_w,tlb_6_h,fedlife,bedlife)
     call stplayer(3,bedlife)
@@ -4018,11 +4044,12 @@ tlb_6_new:
     call updlayer(laye)
     call ungesture
     keyboard off
-    tole=0 :floe=0
+    tole=0 :tlbchanged=-1
+    floe=0 :fltshow=-1 :fltchanged=-1
+    cnvchanged=-1
     bedoldt=1
-    'todo: redo this
-    goto backed
-  else if fedmode=1 then
+  else :'if fedmode=1 then
+    message "not implemented"
   end if
   return
 
