@@ -489,7 +489,9 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
       return
     }
 
-    core_update(&coreWrapper.core, &coreWrapper.input)
+    withUnsafeMutablePointer(to: &coreWrapper.input) { inputPtr in
+        core_update(&coreWrapper.core, inputPtr)
+    }
 
     if core_shouldRender(&coreWrapper.core) {
       nxView.render()

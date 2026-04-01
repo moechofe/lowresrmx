@@ -12,17 +12,17 @@ class SplashViewController: UIViewController {
 
     @IBOutlet weak var splashImageView: UIImageView!
     @IBOutlet weak var nxView: LowResRMXView!
-    
+
     private var coreWrapper = CoreWrapper()
     private var displayLink: CADisplayLink!
     private var audioPlayer: LowResRMXAudioPlayer!
-    
+
     private var isSetupDone = false
     private var isAnimationDone = false
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         nxView.coreWrapper = coreWrapper
         audioPlayer = LowResRMXAudioPlayer(coreWrapper: coreWrapper)
         displayLink = createDisplayLink()
@@ -34,19 +34,19 @@ class SplashViewController: UIViewController {
             self.checkStart()
         }
     }
-    
+
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         audioPlayer.start()
         displayLink.add(to: .current, forMode: .default)
     }
-    
+
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         displayLink.invalidate()
         audioPlayer.stop()
     }
-    
+
     private func loadIntro() {
         let url = Bundle.main.url(forResource: "Boot Intro", withExtension: "rmx")!
         let sourceCode = try! String(contentsOf: url)
@@ -68,7 +68,9 @@ class SplashViewController: UIViewController {
     }
 
     @objc private func update(displaylink: CADisplayLink) {
-        core_update(&coreWrapper.core, &coreWrapper.input)
+        withUnsafeMutablePointer(to: &coreWrapper.input) { inputPtr in
+            core_update(&coreWrapper.core, inputPtr)
+        }
         nxView.render()
 
         if machine_peek(&coreWrapper.core, 0xA000) == 2 {
@@ -77,13 +79,13 @@ class SplashViewController: UIViewController {
             checkStart()
         }
     }
-    
+
     private func checkStart() {
         if isSetupDone && isAnimationDone {
             showApp()
         }
     }
-    
+
     private func showApp() {
         if let window = view.window {
             if let vc = storyboard?.instantiateViewController(withIdentifier: "AppStart") {
@@ -94,5 +96,5 @@ class SplashViewController: UIViewController {
             }
         }
     }
-    
+
 }
