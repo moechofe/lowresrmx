@@ -31,11 +31,11 @@ article fieldset label { user-select:none; }
 #vote:not(:checked) + #set .up { display: none; }
 #vote:not(:checked) + #set .down { display: inline; }
 
-.upv { display: inline-block; position: absolute; pointer-events: none; left: 30%; height: 2em; width: 2em; z-index: 100; opacity: 0; background-color: #A79E8B; border: 1px solid rgba(212, 206, 176, 0.5); filter: blur(2px); }
-.upv b { display: block; position: absolute; left: 0; right: 0; top: -2px; height: 5px; background-color: #A79E8B; }
+.upv { display: inline-block; position: absolute; pointer-events: none; left: 30%; height: 2em; width: 2em; z-index: 100; opacity: 0; background-color: #3da; border: 0px solid #fff; }
+.upv b { display: block; position: absolute; left: 0; right: 0; top: -2px; height: 5px; background-color: #3da; }
 
-.upv:after, .upv:before { content: ""; font-size: 1em; position: absolute; display: inline-block; top: -2em; left: -1em; width: 3em; margin-top: 0; border-style: solid; border-color: transparent transparent #A79E8B transparent; border-width: 0 2em 2em 2em; }
-.upv:before { z-index: -1; margin-top: 1px; transform-origin: center bottom; transform: scale(1.087); border-color: transparent transparent #D4CEB0 transparent; }
+.upv:after, .upv:before { content: ""; font-size: 1em; position: absolute; display: inline-block; top: -2em; left: -1em; width: 3em; margin-top: 0; border-style: solid; border-color: transparent transparent #3da transparent; border-width: 0 2em 2em 2em; }
+.upv:before { z-index: -1; margin-top: 1px; transform-origin: center bottom; transform: scale(1.087); border-color: transparent transparent #3da transparent; }
 
 .upv:nth-child(20) { left: 28%; bottom: -4em; animation: upvote 1.5s ease-in; }
 .upv:nth-child(16) { left: 65%; bottom: -3.5em; animation: upvote 1.6s ease-out; }
