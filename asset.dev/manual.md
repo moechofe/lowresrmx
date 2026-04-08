@@ -1268,6 +1268,14 @@ The important thing is not the number of `RETURN` statements in the code but the
 
 Users can print the current stack using the [debugger `TRACE` command](#dbg-trace).
 
+---
+
+    GOSUB ...
+    ...
+    RETURN label
+
+This form will go to the `label` and empty [the stack](#stack-sub-routine-and-return) at the same time.
+
 #### `ON GOTO`<br>`ON GOSUB`
 
     ON value GOTO label0[, label1...]
