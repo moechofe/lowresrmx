@@ -1477,7 +1477,6 @@ enum ErrorCode itp_evaluateCommand(struct Core *core)
 		}
 		break;
 
-	case TokenLET:
 	case TokenIdentifier:
 	case TokenStringIdentifier:
 		return cmd_LET(core);

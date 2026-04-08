@@ -25,14 +25,6 @@ enum ErrorCode cmd_LET(struct Core *core)
 {
 	struct Interpreter *interpreter = core->interpreter;
 
-	// LET keyword is optional
-	if (interpreter->pc->type == TokenLET)
-	{
-		++interpreter->pc;
-		if (interpreter->pc->type != TokenIdentifier && interpreter->pc->type != TokenStringIdentifier)
-			return ErrorSyntax;
-	}
-
 	// identifier
 	enum ErrorCode errorCode = ErrorNone;
 	enum ValueType valueType = ValueTypeNull;
