@@ -45,8 +45,18 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
   var diskDocument: ProjectDocument?
   var coreWrapper: CoreWrapper?
   var imageData: Data?
+
 	var screenScale: Double = 1.0
+	var screenWidth: CGFloat = 0.0
+	var screenHeight: CGFloat = 0.0
+
 	var isCompatMode: Bool = false
+
+	// safe area insets
+	var top: CGFloat = 0.0
+	var left: CGFloat = 0.0
+	var right: CGFloat = 0.0
+	var bottom: CGFloat = 0.0
 
   var isDebugEnabled = false {
     didSet {
@@ -279,11 +289,6 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
 
 		self.view.backgroundColor = .black
 
-    let top: CGFloat
-    let left: CGFloat
-    let right: CGFloat
-    let bottom: CGFloat
-
     if #available(iOS 11.0, *) {
       top = view.safeAreaInsets.top
       left = view.safeAreaInsets.left
@@ -298,19 +303,19 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
 
     // compute size of the nxview
 
-    let w = view.bounds.width
-    let h = view.bounds.height
-    let r = w / h
+    screenWidth = view.bounds.width
+    screenHeight = view.bounds.height
+    let r = screenWidth / screenHeight
 
     var width: CGFloat
     var height: CGFloat
 
     if r >= 9.0 / 16.0 {
-      width = w
+      width = screenWidth
 			screenScale = width / 216.0
       height = 384.0 * screenScale
     } else {
-      height = h
+      height = screenHeight
       screenScale = height / 384.0
 //      if (isCompatMode && screenScale > screenScale.rounded(.towardZero))
 //      {
@@ -334,13 +339,7 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
     // send shown and safe size
 
     if let coreWrapper = coreWrapper {
-      coreWrapper.input.width = Int32(w / screenScale)
-      coreWrapper.input.height = Int32(h / screenScale)
 
-      coreWrapper.input.left = Int32(left / screenScale)
-      coreWrapper.input.top = Int32(top / screenScale)
-      coreWrapper.input.right = Int32(right / screenScale)
-      coreWrapper.input.bottom = Int32(bottom / screenScale)
     }
   }
 
@@ -488,6 +487,14 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
     if presentedViewController != nil {
       return
     }
+
+    coreWrapper.input.width = Int32(screenWidth / screenScale)
+    coreWrapper.input.height = Int32(screenHeight / screenScale)
+
+    coreWrapper.input.left = Int32(left / screenScale)
+    coreWrapper.input.top = Int32(top / screenScale)
+    coreWrapper.input.right = Int32(right / screenScale)
+    coreWrapper.input.bottom = Int32(bottom / screenScale)
 
     withUnsafeMutablePointer(to: &coreWrapper.input) { inputPtr in
         core_update(&coreWrapper.core, inputPtr)
