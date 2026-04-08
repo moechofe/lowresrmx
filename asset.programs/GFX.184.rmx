@@ -1,4 +1,4 @@
-version$="0.183"
+version$="0.184"
 'offical graphics editor for Retro Game Creator (LowResRMX) for iOS
 'author: martin mauchauffee
 
@@ -11,7 +11,6 @@ version$="0.183"
 'todo: is fltshow needed? floe -1 can be enough as long as oldfloe is set, and it's a mess, fltshow is set to -1 but floe stay -1
 'fixme: I keep it, it's less CPU comsuption in raster
 'todo: add sentence on top of the file selector to indicate which type of file
-'todo: can i remove the variable editor?, fedmode is pretty usefull
 'todo: there is some `bg source beda` and some `bg source usraddr(layfile(3))`, who win?
 'todo: actually, it should never be `layfile(3)`
 'todo: most of the time, I can remove `if tapped then`
@@ -24,6 +23,7 @@ version$="0.183"
 'todo: canvas is in non energy mode at start, but get it after dragging something
 'todo: redo energy mode
 'todo: prevent the toolbar to scroll back to start at every toolbar changed
+'todo: I should not limit the loading of file: not a background/palette
 
 
 
@@ -164,7 +164,7 @@ bedbot=0
 'cedzoom= zoomed layer on backed
 'cedscale= similar to bedzoom but store the zoom factor (1 or 2)
 cedtool=0
-cedzoom=0 :cedscale=1
+cedzoom=1 :cedscale=2
 
 'about currently edited layer in backed
 'laybgl,laybgt,laybgr,laybgb= bounding box of the current layer relative to the loaded background, in cell coordinates
@@ -616,7 +616,6 @@ sub usrloadimpl(new,old,dst,addr,minz)
 '(out) addr address where the file has been loaded
 '(in) minz minimal size required
   'unload previous loaded file
-trace "usrloadimpl()"
   if old>=0 then call usrfree(old)
   addr=0
   call usrlook(max(minz,fsize(new)),0,wramstart,wramend,addr,-1)
@@ -663,7 +662,6 @@ sub usrloadbg(new,old,dst)
 '(in) new file number of the file to load
 '(in) old file number to free before load
 '(out) dst destination variable that will contains the loaded file number at success
-trace "usrloadbg()"
   if fsize(new)=0 then
     message "empty file"
     exit sub
@@ -698,7 +696,6 @@ sub usrloadpal(new,old,dst)
 '(in) new file number of the file to load
 '(in) old file number to free before load
 '(out) dst destination variable that will contains the loaded file number at success
-trace "usrloadpal()"
   if fsize(new)=0 then
     message "empty file"
     exit sub
@@ -740,7 +737,6 @@ sub usrloadchr(new,old,dst)
 '(in) new file number of the file to load
 '(in) old file number to free before load
 '(out) dst destination variable that will contains the loaded file number at success
-trace "usrloadchr()"
   if fsize(new)=0 then
     message "empty file"
     exit sub
@@ -1056,7 +1052,9 @@ bedchanged=0
 
 'needed by the canvas of the character editor
 'cedx,cedy= canvas position, used to pan the canvas, in float pixel coords
+'cedcenter= ask to center
 cedx=0 :cedy=0
+cedcenter=1
 
 
 'needed for the file toolbar
@@ -2493,6 +2491,7 @@ chared_loop:
   if tlbchanged then gosub tlb_redraw
   if fltchanged then gosub flt_redraw
   if cnvchanged then gosub cnv_redraw
+  if cedcenter then gosub ced_center
 
   call checkresize :if resized then goto chared
   call gesture
@@ -2554,12 +2553,20 @@ ced_limit:
   curr=tlbcurr-4
   if fltshow then curr=fltcurr-4
   w=shownw-8*s :h=curr-8*s
-  curr=tlbcurr-4
-  if fltshow then curr=fltcurr-4
   if cedx>-(w)/2+3*s then cedx=-(w)/2+3*s
   if cedx<-(w)/2-3*s then cedx=-(w)/2-3*s
   if cedy>-(h)/2+3*s then cedy=-(h)/2+3*s
   if cedy<-(h)/2-3*s then cedy=-(h)/2-3*s
+  scroll 3,cedx,cedy
+  return
+
+ced_center:
+  cedcenter=0
+  s=8*cedscale
+  curr=tlbcurr-4
+  if fltshow then curr=fltcurr-4
+  w=shownw :h=curr
+  cedx=-(w-8*s)/2 :cedy=-(h-8*s)/2
   scroll 3,cedx,cedy
   return
 
@@ -3659,8 +3666,6 @@ tlb_2_load: 'wid=2
       call updlayer(laye)
       call ungesture
       cnvchanged=-1
-      'neweditor=1
-      'goto backed
     else if fedmode=1 then
       call usrloadpal(fedlife,pallife,pallife)
       call ungesture
