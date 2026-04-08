@@ -611,7 +611,6 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
   }
 
   @objc func keyboardDidShow(_ notification: NSNotification) {
-    NSLog("Keyboard ON")
     if let userInfo = notification.userInfo,
       let keyboardRectangle = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect
     {

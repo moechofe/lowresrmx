@@ -226,7 +226,7 @@
 
 - (void)help:(id)sender {
 	[self.editorDelegate editorTextView:self didSelectHelpWithRange:self.selectedRange];
-	NSLog(@"Help for range: %@", NSStringFromRange(self.selectedRange));
+	// NSLog(@"Help for range: %@", NSStringFromRange(self.selectedRange));
 }
 
 - (void)indentRight:(id)sender {

@@ -48,7 +48,7 @@ class ShareActivity: UIActivity {
 		guard !didPrepare else { return }
 		didPrepare = true
 
-		NSLog("prepare withActivityItems %@", activityItems)
+		// NSLog("prepare withActivityItems %@", activityItems)
 
 		if let path = activityItems.first as? URL {
 			let programUrl = path
