@@ -12,6 +12,7 @@ protocol ExplorerItemCellDelegate: AnyObject {
     func explorerItemCell(_ cell: ExplorerItemCell, didSelectRename item: ExplorerItem)
     func explorerItemCell(_ cell: ExplorerItemCell, didSelectDelete item: ExplorerItem)
     func explorerItemCell(_ cell: ExplorerItemCell, didSelectDuplicate item: ExplorerItem)
+    func explorerItemCell(_ cell: ExplorerItemCell, didSelectShare item: ExplorerItem)
 }
 
 class ExplorerItemCell: UICollectionViewCell {
@@ -48,6 +49,12 @@ class ExplorerItemCell: UICollectionViewCell {
         
 //        backgroundColor = AppStyle.darkGrayColor()
     }
+    
+    @objc func shareItem(_ sender: Any?) {
+				if let delegate = delegate {
+						delegate.explorerItemCell(self, didSelectShare: item!)
+				}
+		}
     
     @objc func renameItem(_ sender: Any?) {
         if let delegate = delegate {

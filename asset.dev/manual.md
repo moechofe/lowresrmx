@@ -537,6 +537,8 @@ Instructions tell the fantasy hardware to do something.
 
 Valid characters for identifiers are: ASCII letters, digits and the underscore (_). However, they cannot start with a digit and they cannot have more than 21 characters.
 
+Identifiers are case-insensitive; `K` is the same as `k`.
+
 **Important:** Not all identifiers are valid because some of them are reserved by the language itself. Check the [list of reserved keywords](#reserved-keywords) and learn them to avoid common mistakes.
 
 ### Variables and assignation

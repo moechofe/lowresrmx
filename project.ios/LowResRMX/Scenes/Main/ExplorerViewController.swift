@@ -297,6 +297,14 @@ class ExplorerViewController: UIViewController, UICollectionViewDelegateFlowLayo
         navigationController?.pushViewController(vc, animated: true)
     }
 
+    func shareItem(_ item: ExplorerItem) {
+				let activityItems: [Any] = [item.fileUrl]
+				let shareActivity = ShareActivity()
+				let activityVC = UIActivityViewController(activityItems: activityItems, applicationActivities: [shareActivity])
+				activityVC.popoverPresentationController?.sourceView = self.view
+				self.present(activityVC, animated: true, completion: nil)
+		}
+
     func deleteItem(_ item: ExplorerItem) {
         metadataQuery?.disableUpdates()
 
@@ -405,12 +413,16 @@ class ExplorerViewController: UIViewController, UICollectionViewDelegateFlowLayo
             let deleteAction = UIAction(title: "Delete...", image: UIImage(systemName: "minus.circle"), attributes: .destructive) { [weak self] (action) in
                 self?.explorerItemCell(cell, didSelectDelete: item)
             }
-            return UIMenu(title: "", children: [renameAction, duplicateAction, deleteAction])
+						let shareAction = UIAction(title: "Share...", image: UIImage(systemName: "square.and.arrow.up")) { [weak self] (action) in
+								self?.explorerItemCell(cell, didSelectShare: item)
+						}
+            return UIMenu(title: "", children: [shareAction, renameAction, duplicateAction, deleteAction])
         }
     }
 
     func collectionView(_ collectionView: UICollectionView, shouldShowMenuForItemAt indexPath: IndexPath) -> Bool {
         UIMenuController.shared.menuItems = [
+						UIMenuItem(title: "Share...", action: #selector(ExplorerItemCell.shareItem)),
             UIMenuItem(title: "Rename...", action: #selector(ExplorerItemCell.renameItem)),
             UIMenuItem(title: "Duplicate", action: #selector(ExplorerItemCell.duplicateItem)),
             UIMenuItem(title: "Delete...", action: #selector(ExplorerItemCell.deleteItem))
@@ -466,6 +478,10 @@ class ExplorerViewController: UIViewController, UICollectionViewDelegateFlowLayo
             pop.permittedArrowDirections = [.down, .up]
         }
     }
+
+		func explorerItemCell(_ cell: ExplorerItemCell, didSelectShare item: ExplorerItem) {
+				shareItem(item)
+		}
 
     func explorerItemCell(_ cell: ExplorerItemCell, didSelectDuplicate item: ExplorerItem) {
         duplicateItem(item)
