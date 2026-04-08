@@ -399,9 +399,10 @@ struct TypedValue fnc_LEN(struct Core *core)
 			rcstring_release(stringValue.v.stringValue);
 		}
 	}
+
 	else
 	{
-		value.type = ValueTypeError;
+		value = val_makeError(ErrorSyntax);
 	}
 
 	return value;
