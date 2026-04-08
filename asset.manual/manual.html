@@ -1531,6 +1531,12 @@ update:
 <p>This example has one <code>RETURN</code>, two labels and three <code>GOSUB</code>. The best practice mentioned above is not followed here, but here is the explanation.</p>
 <p>The important thing is not the number of <code>RETURN</code> statements in the code but the number of times the command is executed. Users need to understand that one <code>GOSUB</code> execution will <a href="#stack-sub-routine-and-return">increase by one the size of the stack</a>, and one execution of <code>RETURN</code> will reduce the same stack by exactly one. If the stack size is empty every time the <a href="#wait-vblwait-frame"><code>WAIT VBL</code></a> instruction is executed, it's a good sign. It means that the stack will not overflow.</p>
 <p>Users can print the current stack using the <a href="#dbg-trace">debugger <code>TRACE</code> command</a>.</p>
+<hr />
+<pre><code>GOSUB ...
+...
+RETURN label
+</code></pre>
+<p>This form will go to the <code>label</code> and empty <a href="#stack-sub-routine-and-return">the stack</a> at the same time.</p>
 <h4 data-keyword="ON,GOTO,ON,GOSUB" data-title="ON GOTO/ON GOSUB" id="on-gotoon-gosub" tabindex="-1"><code>ON GOTO</code><br /><code>ON GOSUB</code></h4>
 <pre><code>ON value GOTO label0[, label1...]
 </code></pre>
