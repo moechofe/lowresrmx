@@ -730,7 +730,7 @@ The sprite numbers range starts at 0, so the last one is 169.</p>
 <blockquote>
 <p>Manually editing the virtual files data is NOT RECOMMENDED as it can lead to unexpected behavior. Instead, use the provided tools and APIs to manipulate the virtual files.</p>
 </blockquote>
-<h3 id="virtual-file" tabindex="-1">Virtual file</h3>
+<h3 id="virtual-file-rom-entries" tabindex="-1">Virtual file &amp; ROM entries</h3>
 <p>There are 16 virtual files identified by a number <code>id</code> and can contain a <code>comment$</code>.</p>
 <pre><code>#id:comment$
 data
@@ -740,8 +740,16 @@ data
 <li><code>comment$</code> is a string <strong>without double quotes</strong> of 32 characters max.</li>
 <li><code>data</code> is a list of hexadecimal literals.</li>
 </ul>
-<p>When the program is started, the content of the files is loaded and <a href="#memory-mapping">mapped to the memory</a>.</p>
-<p>The memory address for the files starts at $10000, and the best way to know this address is to use the <code>=ROM</code> function.</p>
+<p>When the program is started, the content of the files is loaded and <a href="#memory-mapping">mapped to memory</a>. It is called a ROM entry. Each entry get a different memory address.</p>
+<p>The first entry gets the address $10000, and the best way to know this address is to use the <a href="#address-rom-file"><code>=ROM</code></a> function.</p>
+<p>Some ROM entries have a specific purpose to provide convenience to the user:</p>
+<ul>
+<li>#0 When empty, allow to use the default font</li>
+<li>#1 Default entry for palettes</li>
+<li>#2 Default entry for characters</li>
+<li>#3 Default entry for background data.</li>
+<li>#15 Default entry for sounds and music.</li>
+</ul>
 <p>Check the <a href="#file-api">file API</a>.</p>
 <h3 id="memory" tabindex="-1">Memory</h3>
 <p>The fantasy hardware simulates a <a href="#memory-mapping">memory mapping</a>, making access to the cartridge ROM and registers accessible using an address ($0000..$1FFFF).</p>
@@ -792,6 +800,7 @@ PRINT &quot;second instruction&quot;
 </li>
 </ol>
 <p>Valid characters for identifiers are: ASCII letters, digits and the underscore (_). However, they cannot start with a digit and they cannot have more than 21 characters.</p>
+<p>Identifiers are case-insensitive; <code>K</code> is the same as <code>k</code>.</p>
 <p><strong>Important:</strong> Not all identifiers are valid because some of them are reserved by the language itself. Check the <a href="#reserved-keywords">list of reserved keywords</a> and learn them to avoid common mistakes.</p>
 <h3 id="variables-and-assignation" tabindex="-1">Variables and assignation</h3>
 <p>A variable is a value that is retained in the fantasy hardware memory as long as the program is running. Variables can be used to store positions, scores, HP and all sorts of information. The purpose of a variable is to store a value to retrieve it later.</p>
@@ -3130,7 +3139,7 @@ This command will be removed at some point.</p>
     <div>56</div><div>57</div><div>58</div><div>59</div><div>60</div><div>61</div><div>62</div><div>63</div>
 </div>
 <h3 id="memory-mapping" tabindex="-1">Memory mapping</h3>
-<p>When a program is started, the <a href="#virtual-file">virtual files</a> are mapped at address $10000. User can access it using <a href="#address-rom-file"><code>ROM</code></a>, <a href="#value-peek-address"><code>PEEK</code></a>, <a href="#character-mcell-c-x-y"><code>MCELL.C</code></a>…</p>
+<p>When a program is started, the <a href="#virtual-file">virtual files</a> are mapped at address $10000. User can access it using <a href="#address-rom-file"><code>=ROM</code></a>, <a href="#value-peek-address"><code>PEEK</code></a>, <a href="#character-mcell-c-x-y"><code>MCELL.C</code></a>…</p>
 <table>
 <thead>
 <tr>

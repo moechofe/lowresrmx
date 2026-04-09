@@ -448,7 +448,7 @@ The virtual files data are encoded in hexadecimal and SHOULD respect a specific 
 
 > Manually editing the virtual files data is NOT RECOMMENDED as it can lead to unexpected behavior. Instead, use the provided tools and APIs to manipulate the virtual files.
 
-### Virtual file
+### Virtual file & ROM entries
 
 There are 16 virtual files identified by a number `id` and can contain a `comment$`.
 
@@ -459,13 +459,19 @@ There are 16 virtual files identified by a number `id` and can contain a `commen
 - `comment$` is a string **without double quotes** of 32 characters max.
 - `data` is a list of hexadecimal literals.
 
-When the program is started, the content of the files is loaded and [mapped to the memory](#memory-mapping).
+When the program is started, the content of the files is loaded and [mapped to memory](#memory-mapping). It is called a ROM entry. Each entry get a different memory address.
 
-The memory address for the files starts at $10000, and the best way to know this address is to use the `=ROM` function.
+The first entry gets the address $10000, and the best way to know this address is to use the [`=ROM`](#address-rom-file) function.
+
+Some ROM entries have a specific purpose to provide convenience to the user:
+
+- #0 When empty, allow to use the default font
+- #1 Default entry for palettes
+- #2 Default entry for characters
+- #3 Default entry for background data.
+- #15 Default entry for sounds and music.
 
 Check the [file API](#file-api).
-
-TODO: default file and usage, check if already exists in the manual
 
 ### Memory
 
@@ -3087,7 +3093,7 @@ This annex provides technical information about how things work under the hood.
 
 ### Memory mapping
 
-When a program is started, the [virtual files](#virtual-file) are mapped at address $10000. User can access it using [`ROM`](#address-rom-file), [`PEEK`](#value-peek-address), [`MCELL.C`](#character-mcell-c-x-y)…
+When a program is started, the [virtual files](#virtual-file) are mapped at address $10000. User can access it using [`=ROM`](#address-rom-file), [`PEEK`](#value-peek-address), [`MCELL.C`](#character-mcell-c-x-y)…
 
 TODO: writable
 
