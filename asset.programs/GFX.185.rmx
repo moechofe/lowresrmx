@@ -1,4 +1,4 @@
-version$="0.184"
+version$="0.185"
 'offical graphics editor for Retro Game Creator (LowResRMX) for iOS
 'author: martin mauchauffee
 
@@ -24,6 +24,7 @@ version$="0.184"
 'todo: redo energy mode
 'todo: prevent the toolbar to scroll back to start at every toolbar changed
 'todo: I should not limit the loading of file: not a background/palette
+'todo: remove `gosub tlb_redraw`
 
 
 
@@ -164,7 +165,7 @@ bedbot=0
 'cedzoom= zoomed layer on backed
 'cedscale= similar to bedzoom but store the zoom factor (1 or 2)
 cedtool=0
-cedzoom=1 :cedscale=2
+cedzoom=-1 :cedscale=2
 
 'about currently edited layer in backed
 'laybgl,laybgt,laybgr,laybgb= bounding box of the current layer relative to the loaded background, in cell coordinates
@@ -529,7 +530,6 @@ sub usrload(f,t,a,minz)
     usrdime(f,0)=peek(a+2)
     usrdime(f,1)=peek(a+3)
   end if
-  'trace "load",f,hex$(usraddr(f)),hex$(usrsize(f))
 end sub
 
 sub usrtype(f,t,t$)
@@ -626,7 +626,6 @@ sub usrloadimpl(new,old,dst,addr,minz)
   t=0 : t$=""
   call usrtype(new,t,t$)
   call usrload(new,t,addr,minz)
-  message "file #"+hex$(new)+" loaded"
   'fill remaining space with zeroes
   if fsize(new)<minz then
     fill addr+fsize(new),minz-fsize(new)
@@ -657,18 +656,20 @@ sub usrnewbg(w,h,new,dst)
   dst=new
 end sub
 
-sub usrloadbg(new,old,dst)
+sub usrloadbg(new,old,dst,err)
 'helper to load a background file
 '(in) new file number of the file to load
 '(in) old file number to free before load
 '(out) dst destination variable that will contains the loaded file number at success
+'(out) err 1= empty file, 2= not a background
+  err=0
   if fsize(new)=0 then
-    message "empty file"
+    err=1
     exit sub
   end if
   t=0 :t$="" :call usrtype(new,t,t$)
   if t<>3 and t<>1 then
-    message "not a background"
+    err=2
     exit sub
   end if
   'todo: check for changes not saved
@@ -691,20 +692,22 @@ sub usrdefaultbg
   call usebackground(3)
 end sub
 
-sub usrloadpal(new,old,dst)
+sub usrloadpal(new,old,dst,err)
 'helper to load a palette file
 '(in) new file number of the file to load
 '(in) old file number to free before load
 '(out) dst destination variable that will contains the loaded file number at success
+'(out) err =1 empty file, =2 not a palette
+  err=0
   if fsize(new)=0 then
-    message "empty file"
+    err=1
     exit sub
   end if
-  t=0 :t$="" :call usrtype(new,t,t$)
-  if t<>1 then
-    message "not a palette"
-    exit sub
-  end if
+  ' t=0 :t$="" :call usrtype(new,t,t$)
+  ' if t<>1 then
+  '   message "not a palette"
+  '   exit sub
+  ' end if
   addr=0
   call usrloadimpl(new,old,dst,addr,32)
   if addr then
@@ -732,21 +735,23 @@ sub usrdefaultpal
   call usecolor(1)
 end sub
 
-sub usrloadchr(new,old,dst)
+sub usrloadchr(new,old,dst,err)
 'helper to load a palette file
 '(in) new file number of the file to load
 '(in) old file number to free before load
 '(out) dst destination variable that will contains the loaded file number at success
+'(out) err =1 empty file
+  err=0
   if fsize(new)=0 then
-    message "empty file"
+    err=1
     exit sub
   end if
-  t=0 :t$="" :call usrtype(new,t,t$)
-  if t<>2 and t<>1 then
-    message "not characters"
-    pause
-    exit sub
-  end if
+  ' t=0 :t$="" :call usrtype(new,t,t$)
+  ' if t<>2 and t<>1 then
+  '   message "not characters"
+  '   pause
+  '   exit sub
+  ' end if
   addr=0
   call usrloadimpl(new,old,dst,addr,4096)
   if addr then
@@ -754,7 +759,7 @@ sub usrloadchr(new,old,dst)
   end if
 end sub
 
-sub usrdefaultchr
+sub usrdefaultchr(example)
   addr=0
   call usrlook(4096,0,wramstart,wramend,addr,-1)
   'because it's the start of the program, we can be sure there is enough memory
@@ -764,7 +769,11 @@ sub usrdefaultchr
   usrtype(2)=1
   usrdime(2,0)=0 :usrdime(2,1)=0
   usrchanged(2)=0
-  copy rom(12),9*16 to addr
+  if example then
+    copy rom(12),9*16 to addr
+  else
+    fill addr,$1000
+  end if
   cara=addr
   call usecharacter(2)
 end sub
@@ -994,9 +1003,10 @@ tedchanged=0
 'usedfreed= a used file has been freed, background, characters, palette.
 usedfreed=0
 
-'backup editor params
+'needed for the file selector
 'oldtole= old value for tole
 'oldfloe= old value for floe
+'oldcane= old value for cane
 
 'enable or disable low energy mode
 'energytool= editing tool is used
@@ -1056,6 +1066,9 @@ bedchanged=0
 cedx=0 :cedy=0
 cedcenter=1
 
+'needed for loading operation
+err=0
+
 
 'needed for the file toolbar
 'fedmode= file load/save mode
@@ -1083,21 +1096,21 @@ firselected=0
 
 'load user's palettes from file 1 or load default palettes
 pallife=-1
-call usrloadpal(1,-1,pallife)
+call usrloadpal(1,-1,pallife,err)
 if pallife=-1 then
   call usrdefaultpal
 end if
 
 'load user's characters from file 2 or load default characters
 cedlife=-1
-call usrloadchr(2,-1,cedlife)
+call usrloadchr(2,-1,cedlife,err)
 if cedlife=-1 then
-  call usrdefaultchr
+  call usrdefaultchr(-1)
 end if
 
 'load user's background from file 3 or load default background
 bedlife=-1
-call usrloadbg(3,-1,bedlife)
+call usrloadbg(3,-1,bedlife,err)
 if bedlife=-1 then
   call usrdefaultbg
   bedzoom=-1
@@ -2475,9 +2488,6 @@ chared:
   cedx=-(shownw-8*8*cedscale)/2
   cedy=-(fltcurr-4-8*8*cedscale)/2
 
-  ' gosub tlb_redraw
-  ' gosub flt_redraw
-  ' gosub cnv_redraw
   gosub flt_update
 
   'fixme: useless, check sub r2
@@ -2661,10 +2671,6 @@ backed:
   copy cara,$400 to $8000
   'TODO: other things should be copied too, I think
 
-  'redraw the whole screen
-  ' gosub tlb_redraw
-  ' gosub flt_redraw
-  ' gosub cnv_redraw
   fltcursor=(bedtool<>0)
   gosub flt_update
 
@@ -3615,6 +3621,8 @@ tlb_2_back: 'wid=0
 'go back to the previous toolbar
   if tapped then
     trace "=tlb_2_back"
+    trace "editor",editor
+    trace "fedmode",fedmode
     call ungesture
     if editor=1 then
       'go back to the previous toolbar
@@ -3637,6 +3645,9 @@ tlb_2_back: 'wid=0
 tlb_2_save: 'wid=1
 'save currently edited user's data to file
   if tapped then
+    trace "=tlb_2_save"
+    trace "editor",editor
+    trace "fedmode",fedmode
     if fedmode=0 then
       call usrlife(bedlife,fedlife)
       call usrsave(bedlife)
@@ -3653,26 +3664,42 @@ tlb_2_save: 'wid=1
       message "not implemented"
     end if
     call ungesture
-    gosub tlb_redraw
+    if editor=2 then
+      tole=7 :tlbchanged=-1
+      floe=0 :fltshow=-1 :fltchanged=-1
+      gosub ced_limit
+    else
+      pause
+    end if
   end if
   return
 tlb_2_load: 'wid=2
 'load currently edited user's data from file
   if tapped then
     if fedmode=0 then
-      call usrloadbg(fedlife,bedlife,bedlife)
+      call usrloadbg(fedlife,bedlife,bedlife,err)
+      if err=0 then message "file #"+hex$(bedlife)+" loaded"
+      if err=1 then message "empty file"
+      if err=2 then message "not a background"
       call stplayer(3,bedlife)
       call uselayer(3)
       call updlayer(laye)
-      call ungesture
+      ' call ungesture
       cnvchanged=-1
+      if err=0 then goto tlb_2_back
     else if fedmode=1 then
-      call usrloadpal(fedlife,pallife,pallife)
-      call ungesture
+      call usrloadpal(fedlife,pallife,pallife,err)
+      if err=0 then message "file #"+hex$(pallife)+" loaded"
+      if err=1 then message "empty file"
+      ' call ungesture
+      if err=0 then goto tlb_2_back
     else if fedmode=2 then
-      call usrloadchr(fedlife,cedlife,cedlife)
-      call ungesture
+      call usrloadchr(fedlife,cedlife,cedlife,err)
+      if err=0 then message "file #"+hex$(cedlife)+" loaded"
+      if err=1 then message "empty file"
+      ' call ungesture
       cnvchanged=-1
+      if err=0 then goto tlb_2_back
     end if
   end if
   return
@@ -3685,6 +3712,7 @@ tlb_2_file: 'wid=3
     'save toolbar and floating content
     oldtole=tole
     oldfloe=floe
+    oldcane=cane
   else
     bg 0 :attr 1
     text 8,2,hex$(fedlife)
@@ -3728,11 +3756,13 @@ tlb_2_free:
       message "not implemented"
     end if
 tlb_2_free_cancel:
+trace "=tlb_2_free_cancel"
     call ungesture
     gosub tlb_redraw
   end if
   return
 tlb_2_reaction:
+trace "=tlb_2_reaction"
   'used background freed
   if fedlife=bedlife then
     call usrdefaultbg
@@ -3754,6 +3784,11 @@ tlb_2_new:
       call ungesture
       tole=6
       goto tlb_redraw
+    else if fedmode=2 then
+      call usrfree(cedlife)
+      call usrdefaultchr(0)
+      cnvchanged=-1
+      goto tlb_2_back
     else
       message "not implemented"
     end if
@@ -3833,6 +3868,7 @@ tlb_3_back: 'wid=8
   end if
   return
 tlb_3_edit: 'wid=9
+trace "=tlb_3_edit"
 'show the colors selector floating content
   if tapped then
     call ungesture
@@ -3892,7 +3928,7 @@ tlb_4_back: 'wid=0
     call ungesture
     tole=oldtole :tlbchanged=-1
     'floe=oldfloe :fltchanged=-1
-    cane=0 :cnvchanged=-1
+    cane=oldcane :cnvchanged=-1
     neweditor=-editor
   end if
   return
@@ -3903,7 +3939,7 @@ tlb_4_select: 'wid=1
     fedselected=-1
     tole=oldtole :tlbchanged=-1
     ' floe=oldfloe :fltchanged=-1
-    cane=0 :cnvchanged=-1
+    cane=oldcane :cnvchanged=-1
     neweditor=-editor
   end if
   return
@@ -3954,6 +3990,7 @@ tlb_5_color: 'wid=0..3
   pal 3 :text 5,7,right$("0"+str$(peek(pcla+cole)),2)
   return
 tlb_5_back: 'wid=4
+trace "=tlb_5_back"
 'go back to the previous toolbar
   if tapped then
     call ungesture
@@ -3999,6 +4036,7 @@ tlb_6_input:
   on wid goto tlb_6_back, tlb_6_width, tlb_6_height, tlb_6_new
 
 tlb_6_back: 'wid=0
+trace "=tlb_6_back"
 'cancel selection, go back to the previous toolbar
   call ungesture
   keyboard off
@@ -4115,6 +4153,7 @@ tlb_7_redraw:
   tlbrow1=5 :tlbrow2=8
   gosub tlb_setup
   gosub flt_show
+  gosub tlb_7_zoom
   return
 tlb_7_data:
   data 8 :'number of widget
