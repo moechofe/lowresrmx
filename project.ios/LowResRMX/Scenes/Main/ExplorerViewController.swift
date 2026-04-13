@@ -401,9 +401,9 @@ class ExplorerViewController: UIViewController, UICollectionViewDelegateFlowLayo
 
     @available(iOS 13.0, *)
     func collectionView(_ collectionView: UICollectionView, contextMenuConfigurationForItemAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
-        guard let item = items?[indexPath.item], let cell = collectionView.cellForItem(at: indexPath) as? ExplorerItemCell else { return nil }
+        guard let cell = collectionView.cellForItem(at: indexPath) as? ExplorerItemCell, let item = cell.item else { return nil }
 
-        return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { actions -> UIMenu? in
+        return UIContextMenuConfiguration(identifier: item.fileUrl as NSURL, previewProvider: nil) { actions -> UIMenu? in
             let renameAction = UIAction(title: "Rename...", image: UIImage(systemName: "pencil")) { [weak self] (action) in
                 self?.explorerItemCell(cell, didSelectRename: item)
             }
@@ -418,6 +418,16 @@ class ExplorerViewController: UIViewController, UICollectionViewDelegateFlowLayo
 						}
             return UIMenu(title: "", children: [shareAction, renameAction, duplicateAction, deleteAction])
         }
+    }
+
+    @available(iOS 13.0, *)
+    func collectionView(_ collectionView: UICollectionView, willDisplayContextMenu configuration: UIContextMenuConfiguration, animator: UIContextMenuInteractionAnimating?) {
+        metadataQuery?.disableUpdates()
+    }
+
+    @available(iOS 13.0, *)
+    func collectionView(_ collectionView: UICollectionView, willEndContextMenuInteraction configuration: UIContextMenuConfiguration, animator: UIContextMenuInteractionAnimating?) {
+        metadataQuery?.enableUpdates()
     }
 
     func collectionView(_ collectionView: UICollectionView, shouldShowMenuForItemAt indexPath: IndexPath) -> Bool {
