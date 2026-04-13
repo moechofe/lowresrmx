@@ -1,4 +1,4 @@
-version$="0.185"
+version$="0.186"
 'offical graphics editor for Retro Game Creator (LowResRMX) for iOS
 'author: martin mauchauffee
 
@@ -31,33 +31,33 @@ version$="0.185"
 
 files
 
-'beta version intro
-palette 0,2,8,8,2
-shownw=0 :shownh=0
-do
-  if shownw<>shown.w or shownh<>shown.h then
-    shownw=shown.w :shownh=shown.h
-    cls
-    window 2,3,shownw/8-4,shownh/8-6,0
-    print "work in progress."
-    print "gfx ";version$
-    print
-    print "- include a basic background editor."
-    print
-    print "- include a palette editor."
-    print
-    print "- include a basic character editor."
-    print
-    print "- access internal documentation from file toolbar."
-    print
-    print "tap to continue..."
-  end if
-  wait vbl
-  if tap then goto eon
-loop
-eon: cls: palette 0,4,4,4,4
-wait vbl
-shownw=0 :shownh=0
+' 'beta version intro
+' palette 0,2,8,8,2
+' shownw=0 :shownh=0
+' do
+'   if shownw<>shown.w or shownh<>shown.h then
+'     shownw=shown.w :shownh=shown.h
+'     cls
+'     window 2,3,shownw/8-4,shownh/8-6,0
+'     print "work in progress."
+'     print "gfx ";version$
+'     print
+'     print "- include a basic background editor."
+'     print
+'     print "- include a palette editor."
+'     print
+'     print "- include a basic character editor."
+'     print
+'     print "- access internal documentation from file toolbar."
+'     print
+'     print "tap to continue..."
+'   end if
+'   wait vbl
+'   if tap then goto eon
+' loop
+' eon: cls: palette 0,4,4,4,4
+' wait vbl
+' shownw=0 :shownh=0
 
 
 'file#1 ui palettes
@@ -3027,9 +3027,8 @@ flt_redraw:
     on floe gosub flt_0_redraw, flt_1_redraw
   else
     fltstart=999 : fltend=999 : fltcurr=999
-    'fltshow=0
   end if
-  gosub flt_update
+  if fltcursor then gosub flt_update
   return
 
 flt_setup:
@@ -3095,7 +3094,6 @@ fltg_0_none:
   goto flt_show
 
 fltg_0_dragging:
-' trace "=fltg_0_dragging"
 'handle dragging of the charalist
   if justed then
     fltoldx=lstx :fltoldy=lsty
@@ -3272,15 +3270,12 @@ tlbg_none:
       x=(touch.x+tlbdrag)\8 :y=(touch.y-tlbcurr)\8
       'fix y position when bottom is shorten
       if short and y1>=tlbrow1 then
-        trace "shorten",y1,">=",tlbrow1
         if y1>=tlbrow2 then dec y1 :dec y2
         dec y1 :dec y2
       end if
       'tap was inside widget
       if x>=x1 and x<=x2 and y>=y1 and y<=y2 then
-
         on tole goto tlb_0_input, tlb_1_input, tlb_2_input, tlb_3_input, tlb_4_input, tlb_5_input, tlb_6_input, tlb_7_input
-
       end if
     end if
   wend
@@ -3463,7 +3458,6 @@ tlb_0_draw: 'wid=7
     end if
   end if
   if bedoldt>0 then
-    trace "repaint draw"
     'copy the right text for the button
     bg 0 :bg source rom(6)
     bg copy (bedoldt-1)*4,0,4,1 to 8,1
@@ -3593,7 +3587,6 @@ tlb_1_rect: 'wid=3
 'pal#1,2,3 ui
 
 tlb_2_redraw:
-trace "=tlb_2_redraw"
   bg 0 :bg source rom(3) :attr %100001
   bg fill 0,0 to 31,31 char 1
   pal 1 : text 3,0,fedtitle$
@@ -3620,9 +3613,6 @@ tlb_2_input:
 tlb_2_back: 'wid=0
 'go back to the previous toolbar
   if tapped then
-    trace "=tlb_2_back"
-    trace "editor",editor
-    trace "fedmode",fedmode
     call ungesture
     if editor=1 then
       'go back to the previous toolbar
@@ -3630,7 +3620,7 @@ tlb_2_back: 'wid=0
       if fedmode=1 then tole=3
       if fedmode=2 then tole=0
       tlbchanged=-1
-      floe=0 :fltshow=-1 :fltchanged=-1 :'gosub flt_redraw
+      floe=0 :fltshow=-1 :fltchanged=-1
       gosub bed_limit
     else if editor=2 then
       'go back to the previous toolbar
@@ -3645,31 +3635,23 @@ tlb_2_back: 'wid=0
 tlb_2_save: 'wid=1
 'save currently edited user's data to file
   if tapped then
-    trace "=tlb_2_save"
-    trace "editor",editor
-    trace "fedmode",fedmode
     if fedmode=0 then
       call usrlife(bedlife,fedlife)
       call usrsave(bedlife)
       message "file #"+hex$(bedlife)+" saved"
+      goto tlb_2_back
     else if fedmode=1 then
       call usrlife(pallife,fedlife)
       call usrsave(pallife)
       message "file #"+hex$(pallife)+" saved"
+      goto tlb_2_back
     else if fedmode=2 then
       call usrlife(cedlife,fedlife)
       call usrsavechr(cedlife)
       message "file #"+hex$(pallife)+" saved"
+      goto tlb_2_back
     else
       message "not implemented"
-    end if
-    call ungesture
-    if editor=2 then
-      tole=7 :tlbchanged=-1
-      floe=0 :fltshow=-1 :fltchanged=-1
-      gosub ced_limit
-    else
-      pause
     end if
   end if
   return
@@ -3755,28 +3737,22 @@ tlb_2_free:
       'TODO: implement me
       message "not implemented"
     end if
-tlb_2_free_cancel:
-trace "=tlb_2_free_cancel"
-    call ungesture
-    gosub tlb_redraw
   end if
+tlb_2_free_cancel:
   return
 tlb_2_reaction:
-trace "=tlb_2_reaction"
   'used background freed
-  if fedlife=bedlife then
-    call usrdefaultbg
-    call stplayer(3,3)
-    call uselayer(3)
-    call updlayer(laye)
-    usedfreed=-1
-  'used characters freed
-  else if fedlife=cedlife then
-  'used palette freed
-  else if fedlife=pallife then
-  end if
-  call ungesture
-  gosub tlb_redraw
+  ' if fedlife=bedlife then
+  '   call usrdefaultbg
+  '   call stplayer(3,3)
+  '   call uselayer(3)
+  '   call updlayer(laye)
+  '   usedfreed=-1
+  ' 'used characters freed
+  ' else if fedlife=cedlife then
+  ' 'used palette freed
+  ' else if fedlife=pallife then
+  ' end if
   return
 tlb_2_new:
   if tapped then
@@ -3811,7 +3787,6 @@ tlb_2_manual:
 'pal#1,2,3 ui
 
 tlb_3_redraw:
-trace "=tlb_3_redraw"
   bg 0 :bg source rom(3) :attr %100001
   bg fill 0,0 to 31,31 char 1
   bg copy 0,9,29,3 to 0,0
@@ -3868,15 +3843,14 @@ tlb_3_back: 'wid=8
   end if
   return
 tlb_3_edit: 'wid=9
-trace "=tlb_3_edit"
 'show the colors selector floating content
   if tapped then
     call ungesture
-    tole=5 :gosub tlb_redraw
-    floe=1 :gosub flt_redraw
+    if editor=1 then bedtool=0
+    tole=5 :tlbchanged=-1
+    floe=1 :fltshow=-1 :fltchanged=-1
     call usepal((pale))
     call usecolor((cole))
-    gosub flt_show
   end if
   return
 tlb_3_file: 'wid=10
@@ -3987,19 +3961,16 @@ tlb_5_color: 'wid=0..3
     gosub flt_show
   end if
   'update color number
-  pal 3 :text 5,7,right$("0"+str$(peek(pcla+cole)),2)
+  bg 0 :pal 3 :text 5,7,right$("0"+str$(peek(pcla+cole)),2)
   return
 tlb_5_back: 'wid=4
-trace "=tlb_5_back"
 'go back to the previous toolbar
   if tapped then
     call ungesture
     sprite off
-    'XXX: do not tlb_redraw before flt_redraw
-    floe=0 :gosub flt_redraw
-    tole=3 :gosub tlb_redraw
-    gosub flt_setup
-    gosub flt_update
+    tole=3 :tlbchanged=-1
+    floe=0 :fltshow=-1 :fltchanged=-1
+    if editor=1 then fltcursor=(bedtool<>0)
   end if
   return
 
@@ -4036,7 +4007,6 @@ tlb_6_input:
   on wid goto tlb_6_back, tlb_6_width, tlb_6_height, tlb_6_new
 
 tlb_6_back: 'wid=0
-trace "=tlb_6_back"
 'cancel selection, go back to the previous toolbar
   call ungesture
   keyboard off
