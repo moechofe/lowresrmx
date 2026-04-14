@@ -195,7 +195,7 @@ if(preg_match('/\/publish$/',$urlPath)&&$isPost)
 		"vote",0,
 		"comm",0,
 		"w",$where,
-		"ct",date(DATE_ATOM),
+		"ut",date(DATE_ATOM),
 	);
 
 	// Update the rank of the post
@@ -251,7 +251,7 @@ if(preg_match('/\/post$/',$urlPath)&&$isPost)
 		"vote",0,
 		"comm",0,
 		"w",$where,
-		"ct",date(DATE_ATOM),
+		"ut",date(DATE_ATOM),
 	);
 
 	// Update the rank of the post
@@ -368,6 +368,9 @@ if(preg_match("/\/($MATCH_ENTRY_TOKEN)\/replace$/",$urlPath,$matches)&&$isPost)
 		"author",$author,
 		"name",$name,
 	);
+
+	// Update date for rank
+	redis()->hset("r:$first_id:d","ut",date(DATE_ATOM));
 
 	// Mark the program as publish
 	redis()->hset("p:$program_id","first",$first_id);

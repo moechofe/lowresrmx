@@ -4,9 +4,11 @@ function updRank(string $first_id):int
 {
 	$members=hgetall(redis()->hgetall("r:$first_id:d"));
 	$where=$members['w'];
-	$ct=date_create($members['ct']);
+	$ut=date_create($members['ut']);
+	// fallback
+	if(empty($ut)) $ut=date_create($members['ct']);
 
-	$diff=date_diff($ct,date_create());
+	$diff=date_diff($ut,date_create());
 	$age=(int)$diff->days*24+(int)$diff->h;
 
 	// Compute the points
