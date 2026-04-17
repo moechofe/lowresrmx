@@ -1,4 +1,4 @@
-version$="0.186"
+version$="0.187"
 'offical graphics editor for Retro Game Creator (LowResRMX) for iOS
 'author: martin mauchauffee
 
@@ -17,17 +17,14 @@ version$="0.186"
 'todo: variable `first` is not well-named
 'todo: lstchara is used instead of care in backed
 'todo: check if tedchanged is usefull
-'todo: remove gotos in tlb_x_xxx that do not lead to a return shortly
-'todo: remove goto backed
 'todo: add one width space to tlb_7 between color block 0 and 1,2,3. It should require to add space to the kolor editor too.
-'todo: canvas is in non energy mode at start, but get it after dragging something
 'todo: redo energy mode
 'todo: prevent the toolbar to scroll back to start at every toolbar changed
-'todo: I should not limit the loading of file: not a background/palette
 'todo: remove `gosub tlb_redraw`
-
-
-
+'todo: test copy brush from wide bg source, more than 64.
+'todo: fast palette switch using drag left or right.
+'todo: remove "dot." in ROM(6)
+'todo: try to allow copy brush from charalist
 
 files
 
@@ -129,6 +126,8 @@ global cane,tole,floe
 '=3 pan layer start
 '=4 pan layer size
 '=5 pan layer dest
+'=6 copy cells to brush
+'=7 paste brush to layer
 'bedoldt= old value for bedtool
 'bedzoom= zoomed layer on backed
 'bedscale= similar to bedzoom but store the zoom factor (1 or 2)
@@ -148,7 +147,7 @@ global bedlife
 'bedtool,bedzoom,bedscale,bedhoriz,bedverti,bedprio,bedx,bedy,bedbot
 
 'temp:
-bedzoom=0 :bedscale=1
+bedzoom=-1 :bedscale=2
 bedhoriz=0 :bedverti=0 :bedprio=0
 bedx=0 :bedy=0
 bedtool=0 :bedoldt=1
@@ -467,6 +466,7 @@ end sub
 '===================== userdata:
 'keep info about loaded files in memory
 
+'(f)= the file 0..15, =16 is special, it is used for brush, bg copy/pasta operation
 'usraddr(f)= the memory address where the file is loaded
 'usrsize(f)= the size of the file loaded
 'usrname$(f)= the name of the file loaded
@@ -477,7 +477,7 @@ end sub
 '=3 backgrounds
 'usrdime(f,)= for background, the width and height
 'usrchanged(f)= something has changed
-dim global usraddr(15),usrsize(15),usrname$(15),usrtype(15),usrdime(15,1),usrchanged(15)
+dim global usraddr(16),usrsize(16),usrname$(16),usrtype(16),usrdime(16,1),usrchanged(16)
 
 'to report loading and saving error
 'TODO: not used, remove?
@@ -498,7 +498,7 @@ sub usrlook(space,start,low,hig,addr,ignore)
   addr=0
   'not enough space
   if space>hig-low then exit sub
-  for i=start to 15
+  for i=start to 16
     if usrsize(i)>0 and i<>ignore then
       'look below this file
       call usrlook(space,i+1,low,usraddr(i),addr,ignore)
@@ -580,6 +580,7 @@ sub usrsavechr(f)
 '(in) f file number
   usrsize(f)=max(usrsize(f),4096)
   for a=usraddr(f)+usrsize(f)-16 to usraddr(f) step -16
+    'end/right trim empty character
     if peekl(a)=0 and peekl(a+4)=0 and peekl(a+8)=0 and peekl(a+12)=0 then
       add usrsize(f),-16
     else
@@ -715,6 +716,7 @@ sub usrloadpal(new,old,dst,err)
     call usepalettes(dst)
     call usepal((pale))
     call usecolor((cole))
+    bedpala=pala
   end if
 end sub
 
@@ -730,6 +732,7 @@ sub usrdefaultpal
   usrchanged(1)=0
   copy rom(11),32 to addr
   pala=addr
+  bedpala=pala
   call usepalettes(1)
   call usepal(0)
   call usecolor(1)
@@ -1056,9 +1059,14 @@ fltui=0 :fltg=0
 '=1 gesture is targeting canvas (including dragging outside of it but started inside it)
 cnvg=0
 
+'needed for backed
 'bedchanged= layers has been panned or layout has changed and canvas and must be redrawn
 'beddrawn= layers has been drawn
+'bedpala= during mode view, fixed palette will be used instead of user's ones
+'bedhasbru= brush was selected
 bedchanged=0
+global bedpala
+bedhasbru=0
 
 'needed by the canvas of the character editor
 'cedx,cedy= canvas position, used to pan the canvas, in float pixel coords
@@ -1632,7 +1640,8 @@ else if raster=shownh-1 then
 
 else if raster=0 then
   'copy user's color
-  copy pala,32 to $ff00
+  'copy pala,32 to $ff00
+  copy bedpala,32 to $ff00
   'show user's layer, hide ui layer
   poke $ff32,%11100
   'copy oob out-of-bound character
@@ -2775,7 +2784,7 @@ bed_limit:
   return
 
 bed_initrender:
-'initialize progressive render
+'initialize progressive renderer
   bedcl=0 :bedcr=0 :bedct=0 :bedcb=0
   gosub bed_initcanvas
   'init for 1st draw, fill the canvas
@@ -2789,8 +2798,10 @@ bed_initrender:
   system 8,bedzoom
   if bedlife>=0 then
   'XXX: not working without background
+    'fixme: should be `bg laye`
     bg 3
-    bg source usraddr(layfile(3))
+    'bg source usraddr(layfile(3))
+    bg source beda
   end if
   pal oobp :bg fill 0,0 to 63,63 char oobc
   bg copy bedpl,bedpt,bedpr-bedpl+1,bedpb-bedpt+1 to bedpl,bedpt
@@ -2815,7 +2826,8 @@ bed_uddraw:
 'continue draw missing layer's cells until the whole canvas has been redraw
   energyredraw=1 :bedchanged=0
   bg 3
-  bg source usraddr(layfile(3))
+  'bg source usraddr(layfile(3))
+  bg source beda
   pal oobp
   'render missing cells at left
   if bedcl<bedpl and bedpl>layl(3) then
@@ -2887,14 +2899,17 @@ bed_uddraw:
 
 bed_input:
 'handle input on the canvas depending of the current tool
-  on bedtool goto bed_0_input, bed_1_input, bed_2_input, bed_3_input, bed_4_input, bed_5_input
+  on bedtool goto bed_pan_input, bed_pen_input, bed_rect_input, bed_start_input, bed_size_input, bed_dest_input, bed_copy_input, bed_paste_input
 
-bed_0_input:
+bed_pan_input:
 'handle canvas pan
-  if tapped then return
+  gosub bed_detectcell
+  if tapped and pressedy<fltcurr then
+    message str$(bed_ex)+","+str$(bed_ey)+" $"+hex$(bed_ex,2)+",$"+hex$(bed_ey,2)
+    return
+  end if
   energytool=1
   if pressed and justed then
-    'bed_0
     'store starting coordinates and old coordinates
     bedxs=bedx :bedys=bedy :bedox=bedx :bedoy=bedy
   end if
@@ -2910,7 +2925,7 @@ bed_0_input:
   end if
   return
 
-bed_1_input:
+bed_pen_input:
 'handle layer draw using a pen
   'if tapped then return
   energytool=1
@@ -2946,8 +2961,115 @@ bed_1_input:
   usrchanged(bedlife)=-1
   return
 
+
+
+
+
+bed_copy_input:
+'handle layer copy cells
+'pal#0 non selected
+'pal#1 selected
+  gosub bed_detectcell
+  on bedhasbru gosub bed_copy_input_0, bed_copy_input_1
+  if beddrawn then
+    'unselect entire layer
+    bg laye
+    bg tint laybgl,laybgt to laybgr,laybgb pal 0
+    'paint user selection
+    gosub bed_rectangulize
+    bg tint l,t to r,b pal 1
+  end if
+  return
+bed_copy_input_0:
+  if not beddrawn then return
+  'check for out of layer
+  if bed_ex<laybgl or bed_ex>laybgr or bed_ey<laybgt or bed_ey>laybgb then return
+  if pressed and justed then
+    bedpala=rom(10)
+    system laye+1,1
+    bedhasbru=1
+  end if
+  return
+bed_copy_input_1:
+  if released then
+    bedhasbru=0
+    bedpala=pala
+    system laye+1,0
+    gosub bed_redraw
+    gosub bed_rectangulize
+    y=laye
+    gosub bed_copy_brush
+    'switch to paste tool
+    bedtool=7 :gosub tlb_1_repaint
+  end if
+  return
+
+bed_paste_input:
+'handle pasted copied brush
+  gosub bed_detectcell
+  if beddrawn then gosub bed_paste_brush
+  return
+
+bed_copy_brush:
+'will reserve memory space and copy characters
+'(in) y layer (1,2,3) for user background and 0 for charalist
+'(in) l,t,r,b AAABB selection
+  'trace "layer",y
+  'trace "aabb",l,t,r,b
+  'clear previous brush
+  call usrfree(16)
+  'reserve memory space in file 16
+  w=r-l+1 :h=b-t+1 :s=w*h*16
+  addr=0
+  call usrlook(s,0,wramstart,wramend,addr,-1)
+  if addr=0 then
+    message "not enough memory"
+    return
+  end if
+  'trace "addr",addr
+  usraddr(16)=addr :usrsize(16)=s
+  usrdime(16,0)=w :usrdime(16,1)=h
+  'copy select chara to brush
+  'bg source laye,64,64
+  bg source beda
+  for y=t to b :for x=l to r
+    'copy cell and attr
+    pokew addr,peekw(beda+4+(y*bedw+x)*2)
+    add addr,2
+  next x :next y
+  message str$(w)+","+str$(h)+" copied"
+  return
+
+bed_paste_brush:
+'will paste brush copied to memory
+  if usrsize(16)=0 then
+    message "nothing was copied"
+    return
+  else
+    bg laye :bg source beda
+    addr=usraddr(16)
+    for y=bed_ey to bed_ey+usrdime(16,1)-1 :for x=bed_ex to bed_ex+usrdime(16,0)-1
+      if x>=laybgl and x<=laybgr and y>=laybgt and y<=laybgb then
+        attr peek(addr+1)
+        'paste in video ram
+        cell x,y,peek(addr)
+        'paste in memory
+        mcell x,y,peek(addr)
+      end if
+      add addr,2
+    next x :next y
+
+    'todo: bg source
+    'todo: draw bg
+    'todo: draw mem
+  end if
+  return
+
 bed_detectcell:
 'determine which cells are drawn. because each layer can have a different position relative to the canvas.
+'(out) beddrawn
+'(out) bed_sx,bed_sy
+'(out) bed_ex,bed_ey
   'compute cell coords of touch relative to the canvas
   x=floor((touch.x+bedx)/8/bedscale)
   y=floor((touch.y+bedy)/8/bedscale)
@@ -2971,6 +3093,16 @@ bed_detectcell:
     end if
   end if
   return
+
+bed_rectangulize:
+'(out) l,t,r,b AAABB selection
+'make sure the rectangle selection is inside the current edited layer and ordered correctly, start is top-left, end is bottom-right
+  l=clamp(min(bed_sx,bed_ex),laybgl,laybgr)
+  t=clamp(min(bed_sy,bed_ey),laybgt,laybgb)
+  r=clamp(max(bed_sx,bed_ex),laybgl,laybgr)
+  b=clamp(max(bed_sy,bed_ey),laybgt,laybgb)
+  return
+
 
 'todo: I think it should be in backed
 bed_attr:
@@ -3367,11 +3499,11 @@ tlb_0_input:
 tlb_0_pan: 'wid=0
 'enable panning tool
   if tapped then
-    call ungesture
-    tapped=0
+    'tapped=0
     call statepushsetting(bgundolst$(),bgundoidx,"t",bedtool*16+bedoldt)
     bedtool=0
     fltcursor=0
+    call ungesture
     gosub tlb_0_draw
   end if
   restore tlb_0_data
@@ -3459,10 +3591,11 @@ tlb_0_draw: 'wid=7
   end if
   if bedoldt>0 then
     'copy the right text for the button
+    'fixme: no need to other text than pan, draw and rect. It is impossible to exit tole=1 with other than those tools
     bg 0 :bg source rom(6)
     bg copy (bedoldt-1)*4,0,4,1 to 8,1
     restore tlb_0_data
-    call repaintwidget(7,1,2,bedtool>=1 and bedtool<=3)
+    call repaintwidget(7,1,2,(bedtool>=1 and bedtool<=3) or bedtool=6)
   end if
   return
 tlb_0_undo: 'wid=8
@@ -3524,27 +3657,32 @@ tlb_1_redraw:
   bg copy 0,18,29,3 to 0,0
   bg copy 0,21,29,3 to 0,4
   bg copy 0,24,29,3 to 0,8
-  gosub tlb_0_zoom
-  gosub tlb_1_draw
-  gosub tlb_1_rect
+  gosub tlb_1_repaint
   tlbrow=13-short*3 :tlbcol=26
   tlbraster1=24 :tlbraster2=48
   tlbrow1=4 :tlbrow2=7
   gosub tlb_setup
   return
 tlb_1_data:
-  data 4 :'number of widget
+  data 7 :'number of widget
   data 7,0,12,2 :'wid=0 back
   data 14,0,19,2 :'wid=1 zoom
   data 2,4,7,6 :'wid=2 draw
   data 8,4,13,6 :'wid=3 rect
+  data 15,4,20,6 :'wid=4 copy
+  data 2,0,6,2 :'wid=5 pan
+  data 21,4,26,6 :'wid=6 paste
 tlb_1_input:
-  on wid goto tlb_1_back, tlb_0_zoom, tlb_1_draw, tlb_1_rect
+  on wid goto tlb_1_back, tlb_0_zoom, tlb_1_draw, tlb_1_rect, tlb_1_copy, tlb_1_pan, tlb_1_paste
 tlb_1_back: 'wid=0
 'go back to the first toolbar of backed
   bedbot=0
   call ungesture
   tole=0 :tlbchanged=-1
+  if bedtool>=6 and bedtool<=7 then
+    trace "bedoldt",bedoldt
+    bedtool=bedoldt
+  end if
   if bedtool>=1 and bedtool<=3 then
     fltcursor=1
     gosub flt_update
@@ -3553,11 +3691,9 @@ tlb_1_back: 'wid=0
 tlb_1_draw: 'wid=2
 'the current drawing tool
   if tapped then
+    call ungesture
     bedtool=1 :bedoldt=1
-    goto tlb_1_back
-  else
-    restore tlb_1_data
-    call repaintwidget(2,1,2,bedtool=1)
+    gosub tlb_1_repaint
   end if
   return
 tlb_1_rect: 'wid=3
@@ -3566,12 +3702,43 @@ tlb_1_rect: 'wid=3
     message "not finished"
     return
     bedtool=2 :bedoldt=2
-    goto tlb_1_back
-  else
-    restore tlb_1_data
-    call repaintwidget(3,1,2,bedtool=2)
+    gosub tlb_1_repaint
   end if
   return
+tlb_1_copy: 'wid=4
+'copy rectangle region
+  if tapped then
+    call ungesture
+    message "not finished"
+    bedtool=6 :gosub tlb_1_repaint
+    fltcursor=0
+  end if
+  return
+tlb_1_pan: 'wid=5
+'enable panning tool
+  if tapped then
+    call ungesture
+    if bedtool<>0 then bedoldt=bedtool
+    bedtool=0 :gosub tlb_1_repaint
+    fltcursor=0
+  end if
+  return
+tlb_1_paste: 'wid=6
+'enable pasting brush
+  if tapped then
+    call ungesture
+    bedtool=7 :gosub tlb_1_repaint
+    fltcursor=0
+  end if
+  return
+tlb_1_repaint:
+  restore tlb_1_data :call repaintwidget(2,1,2,bedtool=1)
+  restore tlb_1_data :call repaintwidget(3,1,2,bedtool=2)
+  restore tlb_1_data :call repaintwidget(4,1,2,bedtool=6)
+  restore tlb_1_data :call repaintwidget(5,1,2,bedtool=0)
+  restore tlb_1_data :call repaintwidget(6,1,2,bedtool=7)
+  return
+
 
 
 
@@ -4521,7 +4688,7 @@ FFFFFFFFFFFFFFFF0000071F1F3F3F3F
 0501050106090F013C013C013C013C01
 0F090101060105010501050105010609
 01010601050105010501050106090101
-010101010101040124012F0134010409
+0101010101010401300121012E010409
 1F012201210123012B011F0901010401
 3A012F012F012D010409010104013501
 2E0124012F0104090101010101010101
@@ -4582,10 +4749,10 @@ FFFFFFFFFFFFFFFF0000071F1F3F3F3F
 01010101010101010101010101010101
 01010101010101010101061105110511
 0511051105110511061901010F113C11
-3C113C113C110F190101010101010101
+3C113C113C110F190101010121010101
 06010501050105010501060906010501
 05010501050106090601050105010501
-0501060901010F013C013C013C013C01
+0501060901012E013C013C013C013C01
 0F090101010101010101040133012901
 3A012501040904012C01210139013201
 0409040126012F012E01340104090101
@@ -5146,6 +5313,10 @@ FE00FF00
 00704060404000000006050505060000
 00704060404000000007040604070000
 00704060404000000007040604040000
+
+#10:VIEW MODE PALETTE
+060504033E3D3C3B0605040306050403
+06050403060504030605040306050403
 
 #11:DEFAULT PALETTE
 0903050600131512003F3E3D002E2D2C
