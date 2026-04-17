@@ -7,12 +7,12 @@
 //
 
 import UIKit
+import SwiftUI
 
 enum TabIndex: Int {
     case explorer
     case help
-    //case about
-    //case community
+    case community
 }
 
 class TabBarController: UITabBarController {
@@ -25,11 +25,17 @@ class TabBarController: UITabBarController {
         let explorerVC = self.storyboard!.instantiateViewController(withIdentifier: "ExplorerNav")
         let helpStoryboard = UIStoryboard(name: "Help", bundle: nil)
         let helpVC = helpStoryboard.instantiateInitialViewController()!
+        
+        let communityView = CommunityView()
+        let communityVC = UIHostingController(rootView: communityView)
+        let communityNav = UINavigationController(rootViewController: communityVC)
+        communityVC.navigationItem.title = "Community"
 
         explorerVC.tabBarItem = item(title: "My Programs", imageName: "programs")
         helpVC.tabBarItem = item(title: "Help", imageName: "help")
+        communityNav.tabBarItem = item(title: "Community", imageName: "community")
 
-        self.viewControllers = [explorerVC, helpVC]
+        self.viewControllers = [explorerVC, helpVC, communityNav]
 
         NotificationCenter.default.addObserver(self, selector: #selector(didAddProgram), name: NSNotification.Name(rawValue: "ProjectManagerDidAddProgram"), object: nil)
     }
@@ -39,17 +45,16 @@ class TabBarController: UITabBarController {
         AppController.shared.checkShowProgram()
     }
 
-    //override var keyCommands: [UIKeyCommand]? {
-    //    if presentedViewController != nil {
-    //        return nil
-    //    }
-    //    return [
-    //        UIKeyCommand(input: "1", modifierFlags: .command, action: #selector(onTab1), discoverabilityTitle: "Show My Programs"),
-    //        UIKeyCommand(input: "2", modifierFlags: .command, action: #selector(onTab2), discoverabilityTitle: "Show Help"),
-    //        UIKeyCommand(input: "3", modifierFlags: .command, action: #selector(onTab3), discoverabilityTitle: "Show About"),
-    //        UIKeyCommand(input: "4", modifierFlags: .command, action: #selector(onTab4), discoverabilityTitle: "Show Community")
-    //    ]
-    //}
+    override var keyCommands: [UIKeyCommand]? {
+        if presentedViewController != nil {
+            return nil
+        }
+        return [
+            UIKeyCommand(title: "Show My Programs", action: #selector(onTab1), input: "1", modifierFlags: .command),
+            UIKeyCommand(title: "Show Help", action: #selector(onTab2), input: "2", modifierFlags: .command),
+            UIKeyCommand(title: "Show Community", action: #selector(onTab3), input: "3", modifierFlags: .command)
+        ]
+    }
 
     func item(title: String, imageName: String) -> UITabBarItem {
         return UITabBarItem(title: title, image: UIImage(named: imageName), selectedImage: nil)
@@ -101,9 +106,9 @@ class TabBarController: UITabBarController {
         selectedIndex = 1
     }
 
-    //@objc func onTab3() {
-    //    selectedIndex = 2
-    //}
+    @objc func onTab3() {
+        selectedIndex = 2
+    }
 
     //@objc func onTab4() {
     //    selectedIndex = 3

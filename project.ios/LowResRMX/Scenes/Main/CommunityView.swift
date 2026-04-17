@@ -4,9 +4,6 @@ struct CommunityView: View {
     var body: some View {
         ScrollView {
 					VStack(spacing: 24) {
-                Text("Community")
-                    .font(.largeTitle)
-                    .padding(.top)
                 VStack(alignment: .leading, spacing: 8) {
                     Text("“Fellow creators, the archives await. [Visit the community portal](https://ret.ro.it) to preserve your works and explore the legacy of programs recovered within.”")
                         .font(.title2)

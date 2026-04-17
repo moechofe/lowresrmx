@@ -31,10 +31,11 @@ class ExplorerViewController: UIViewController, UICollectionViewDelegateFlowLayo
 //        view.backgroundColor = AppStyle.darkGrayColor()
 
         let addProjectItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(onAddProjectTapped))
+        // let communityItem = UIBarButtonItem(image: UIImage(named: "community"), style: .plain, target: self, action: #selector(onCommunityTapped))
         let actionItem = UIBarButtonItem(image: UIImage(named: "gear"), style: .plain, target: self, action: #selector(onActionTapped))
 
         navigationItem.leftBarButtonItem = actionItem
-        navigationItem.rightBarButtonItem = addProjectItem
+        navigationItem.rightBarButtonItems = [addProjectItem/*, communityItem*/]
 
         collectionView.dataSource = self
         collectionView.delegate = self
@@ -224,6 +225,10 @@ class ExplorerViewController: UIViewController, UICollectionViewDelegateFlowLayo
             }
         }
     }
+
+    // @objc func onCommunityTapped(_ sender: Any) {
+    //     tabBarController?.selectedIndex = TabIndex.community.rawValue
+    // }
 
     @objc func onActionTapped(_ sender: UIBarButtonItem) {
         let alert = UIAlertController(title: "Options", message: nil, preferredStyle: .actionSheet)
