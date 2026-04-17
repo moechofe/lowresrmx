@@ -302,11 +302,17 @@ class ExplorerViewController: UIViewController, UICollectionViewDelegateFlowLayo
         navigationController?.pushViewController(vc, animated: true)
     }
 
-    func shareItem(_ item: ExplorerItem) {
+    func shareItem(_ item: ExplorerItem, from cell: UIView? = nil) {
 				let activityItems: [Any] = [item.fileUrl]
 				let shareActivity = ShareActivity()
 				let activityVC = UIActivityViewController(activityItems: activityItems, applicationActivities: [shareActivity])
-				activityVC.popoverPresentationController?.sourceView = self.view
+				activityVC.popoverPresentationController?.sourceView = cell ?? self.view
+				if let cell = cell {
+					activityVC.popoverPresentationController?.sourceRect = cell.bounds
+				} else {
+					activityVC.popoverPresentationController?.sourceRect = CGRect(x: self.view.bounds.midX, y: self.view.bounds.midY, width:0, height: 0)
+					activityVC.popoverPresentationController?.permittedArrowDirections = []
+				}
 				self.present(activityVC, animated: true, completion: nil)
 		}
 
@@ -495,7 +501,7 @@ class ExplorerViewController: UIViewController, UICollectionViewDelegateFlowLayo
     }
 
 		func explorerItemCell(_ cell: ExplorerItemCell, didSelectShare item: ExplorerItem) {
-				shareItem(item)
+				shareItem(item, from: cell)
 		}
 
     func explorerItemCell(_ cell: ExplorerItemCell, didSelectDuplicate item: ExplorerItem) {

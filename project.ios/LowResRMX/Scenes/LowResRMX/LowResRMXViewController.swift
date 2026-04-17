@@ -338,9 +338,9 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
 
     // send shown and safe size
 
-    if let coreWrapper = coreWrapper {
-
-    }
+//    if let coreWrapper = coreWrapper {
+//
+//    }
   }
 
   func compileAndStartProgram(sourceCode: String) -> LowResRMXError? {
