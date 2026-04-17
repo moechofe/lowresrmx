@@ -197,6 +197,7 @@
 		5B6334F62F3F3ECF00E8198A /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B6334F52F3F3ECF00E8198A /* SceneDelegate.swift */; };
 		5B7D1D7A2D43F1D200B871FA /* Clibsodium in Frameworks */ = {isa = PBXBuildFile; productRef = 5B7D1D792D43F1D200B871FA /* Clibsodium */; };
 		5B7D1D7C2D43F1D200B871FA /* Sodium in Frameworks */ = {isa = PBXBuildFile; productRef = 5B7D1D7B2D43F1D200B871FA /* Sodium */; };
+		5BEC340A2F88DE3C005985F8 /* CommunityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BEC34092F88DE3C005985F8 /* CommunityView.swift */; };
 		5BF536CE2D848C1F00548D6A /* overlay_debugger.c in Sources */ = {isa = PBXBuildFile; fileRef = 5BF536CD2D848C1F00548D6A /* overlay_debugger.c */; };
 		5BF536CF2D848C1F00548D6A /* overlay_debugger.c in Sources */ = {isa = PBXBuildFile; fileRef = 5BF536CD2D848C1F00548D6A /* overlay_debugger.c */; };
 		920E1B1A1F77FF7A00664382 /* ExplorerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 920E1B191F77FF7A00664382 /* ExplorerViewController.swift */; };
@@ -403,6 +404,7 @@
 		5B6334F52F3F3ECF00E8198A /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		5BBE96AF2F3DC826004D9DF3 /* config.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = config.h; sourceTree = "<group>"; };
 		5BE6C6562F2CFC3C00A5EEA7 /* overlay_debugger.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = overlay_debugger.h; sourceTree = "<group>"; };
+		5BEC34092F88DE3C005985F8 /* CommunityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommunityView.swift; sourceTree = "<group>"; };
 		5BF536CD2D848C1F00548D6A /* overlay_debugger.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = overlay_debugger.c; sourceTree = "<group>"; };
 		920E1B191F77FF7A00664382 /* ExplorerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExplorerViewController.swift; sourceTree = "<group>"; };
 		920E1B1B1F78000800664382 /* ExplorerItemCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExplorerItemCell.swift; sourceTree = "<group>"; };
@@ -794,6 +796,7 @@
 		926EB1DD1F757FC90048A6CF /* Main */ = {
 			isa = PBXGroup;
 			children = (
+				5BEC34092F88DE3C005985F8 /* CommunityView.swift */,
 				5B3C38732E8E64320048C9FE /* EditorSettingViewController.swift */,
 				926EB1D11F757DDD0048A6CF /* Main.storyboard */,
 				9227DC211FC8C17A00BC89FD /* SplashViewController.swift */,
@@ -1202,6 +1205,7 @@
 				920E1B4A1F7816FA00664382 /* BlockerView.m in Sources */,
 				5B34ED822AC5835700220A80 /* audio_chip.c in Sources */,
 				920E1B1A1F77FF7A00664382 /* ExplorerViewController.swift in Sources */,
+				5BEC340A2F88DE3C005985F8 /* CommunityView.swift in Sources */,
 				5B34ED242AC5835600220A80 /* cmd_memory.c in Sources */,
 				920E1B541F7816FA00664382 /* StandardTableViewCell.m in Sources */,
 				5B34ED6A2AC5835600220A80 /* default_characters.c in Sources */,
@@ -1275,7 +1279,7 @@
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 36;
+				CURRENT_PROJECT_VERSION = 39;
 				DEVELOPMENT_ASSET_PATHS = "Widgets/Preview\\ Assets.xcassets";
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				INFOPLIST_FILE = Widgets/Info.plist;
@@ -1308,7 +1312,7 @@
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 36;
+				CURRENT_PROJECT_VERSION = 39;
 				DEVELOPMENT_ASSET_PATHS = "Widgets/Preview\\ Assets.xcassets";
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				INFOPLIST_FILE = Widgets/Info.plist;
@@ -1458,7 +1462,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = "";
 				CODE_SIGN_ENTITLEMENTS = LowResRMX/LowResRMX.entitlements;
-				CURRENT_PROJECT_VERSION = 36;
+				CURRENT_PROJECT_VERSION = 39;
 				DEVELOPMENT_TEAM = YWZ55H4QT9;
 				INFOPLIST_FILE = "$(SRCROOT)/LowResRMX/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "Game Creator";
@@ -1482,7 +1486,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = "";
 				CODE_SIGN_ENTITLEMENTS = LowResRMX/LowResRMX.entitlements;
-				CURRENT_PROJECT_VERSION = 36;
+				CURRENT_PROJECT_VERSION = 39;
 				DEVELOPMENT_TEAM = YWZ55H4QT9;
 				INFOPLIST_FILE = "$(SRCROOT)/LowResRMX/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "Game Creator";

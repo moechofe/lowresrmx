@@ -69,6 +69,10 @@ class IndexSideBar: UIControl {
     override func layoutSubviews() {
         super.layoutSubviews()
         updateBarPositions()
+        if labels != nil {
+            hideLabels()
+            showLabels()
+        }
     }
 
     private func updateBarPositions() {
@@ -152,6 +156,10 @@ class IndexSideBar: UIControl {
     }
 
     override func beginTracking(_ touch: UITouch, with event: UIEvent?) -> Bool {
+        textView.resignFirstResponder()
+        // Force layout update if keyboard resignation caused changes
+        superview?.layoutIfNeeded()
+        
         if shouldUpdateOnTouch {
             update()
         }
@@ -168,6 +176,9 @@ class IndexSideBar: UIControl {
     }
 
     override func endTracking(_ touch: UITouch?, with event: UIEvent?) {
+        if let marker = oldMarker {
+            textView.selectedRange = NSMakeRange(marker.range.location, 0)
+        }
         oldMarker = nil
         unhighlight()
         hideLabels()

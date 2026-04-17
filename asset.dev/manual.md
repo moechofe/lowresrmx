@@ -3130,7 +3130,7 @@ For each cell:
 | address | purpose                   |
 | -------:| ------------------------- |
 |      +0 | character number (0..255) |
-|      +2 | cell attributes           |
+|      +1 | cell attributes           |
 
 ### Cell attributes
 

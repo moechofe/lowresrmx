@@ -208,6 +208,13 @@ Create and fill the `sources/private.php` file using the given `private.sample.p
 
     > Used to have a custom URL on the website must be unique.
 
+<!--
+- _(list)_ `"u:USER_ID:n"` user's notification `USER_CONTENT`
+
+    `USER_CONTENT`: `TYPE`":"`ID`
+ -->
+
+
 #### Rank related
 
 - _(zset)_ `"r:WHERE_ID` list the first message entries
@@ -228,10 +235,8 @@ Create and fill the `sources/private.php` file using the given `private.sample.p
     - _(int)_ `["vote"]` Cached upvotes
     - _(int)_ `["comm"]` Counter of comment posted
     _ _(str)_ `["w"]` WHERE_ID of the forum
-    - _(str)_ `["ct"]` ATOM timestamp for creation time
+    - _(str)_ `["ct"]` ATOM timestamp for creation time **deprecated**
     - _(str)_ `["ut"]` ATOM timestamp for update time
-
-        > TODO: `["ut"]` not used, is it usefull?
 
 #### Admin related
 
