@@ -266,6 +266,7 @@ if(preg_match('/\/post$/',$urlPath)&&$isPost)
 // API that return a list of post published by a user
 if(preg_match('/\/published$/',$urlPath)&&$isGet)
 {
+	// TODO: should it be 'search'? like API /match
 	if(!checkRateLimit('search',getClientIP())) tooManyRequests("Fail to respect limit");
 
 	list($user_id,$csrf_token)=validateSessionAndGetUserId();

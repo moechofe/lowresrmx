@@ -165,7 +165,7 @@ if(preg_match('/^\/discord$/',$urlPath)&&$isGet&&!empty($_GET['code'])&&!empty($
 	redis()->rpush("u:$user_id:s",$session_id);
 
 	redis()->hsetnx("u:$user_id","name",$profile_response['username']);
-	$picture="https://cdn.discordapp.com/avatars/)$user_id}/{$profile_response['avatar']}.png";
+	$picture="https://cdn.discordapp.com/avatars/{$profile_response['id']}/{$profile_response['avatar']}.png";
 	redis()->hset("u:$user_id","picture",$picture);
 	redis()->hsetnx("u:$user_id","author",$profile_response['username']);
 	redis()->hsetnx("u:$user_id","locale",$profile_response['locale']?:'en');

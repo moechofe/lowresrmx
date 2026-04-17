@@ -6,7 +6,7 @@ require_once __DIR__.'/rank.php';
 require_once __DIR__.'/markdown.php';
 
 // API that return a list of ranked programs as a JSON array.
-if(preg_match('/\/ranked$/',$urlPath)&&$isGet)
+if(preg_match('/^\/ranked$/',$urlPath)&&$isGet)
 {
 	$where=@$_GET['w'];
 	if(!in_array($where,PROGRAM_VALID_FORUM)) $where='all';
@@ -44,7 +44,7 @@ if(preg_match('/\/ranked$/',$urlPath)&&$isGet)
 }
 
 // API that return a list of programs sorted by the last one first.
-if(preg_match('/\/latest$/',$urlPath)&&$isGet)
+if(preg_match('/^\/latest$/',$urlPath)&&$isGet)
 {
 	$where=@$_GET['w'];
 	if(!in_array($where,PROGRAM_VALID_FORUM)) $where='all';
@@ -82,8 +82,10 @@ if(preg_match('/\/latest$/',$urlPath)&&$isGet)
 }
 
 // API that return a list of ranked programs as a JSON array that match a query.
-if(preg_match('/\/match$/',$urlPath)&&$isGet&&!empty($_GET['q']))
+if(preg_match('/^\/match$/',$urlPath)&&$isGet&&!empty($_GET['q']))
 {
+	// FIXME: when not connect, all search are limited together
+	// TODO: authorize search for logged user only
 	if(!checkRateLimit('search',getClientIP())) tooManyRequests("Fail to respect limit");
 
 	$where=@$_GET['w'];
@@ -127,4 +129,15 @@ if(preg_match('/\/match$/',$urlPath)&&$isGet&&!empty($_GET['q']))
 	header("X-Robots-Tag: noindex", true);
 	header(HEADER_SCAN_CURSOR.":".$cursor,true);
 	echo json_encode($matched);
+}
+
+// API that return a list of posted and published of a user
+if(preg_match('/^\/last_entry$/',$urlPath)&&$isGet&&!empty($_GET['a']))
+{
+	$who=@$_GET['a'];
+
+	// TODO: copy /published from share.php
+	// TODO: I should check for status? online, banned...
+
+	die('ok');
 }

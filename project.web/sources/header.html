@@ -23,18 +23,13 @@
 			<li><a href="/chat.html" class="chat">Chat</a></li>
 			<li><a href="/help.html" class="help">Help</a></li>
 		</ul>
-		<ul class="new is-list is-signed" hidden>
-			<li><button class="new-topic" class="primary"><span class="icon-plus"></span></button></li>
-		</ul>
 		<!--<ul class="search">
 			<li><input type="search" name="search" placeholder="Search" aria-label="Search" /></li>
 		</ul>-->
 		<ul class="is-not-signed menu" hidden>
 			<li>
 				<details class="dropdown">
-					<summary>
-						Sign in
-					</summary>
+					<summary>🙋</summary>
 					<ul dir="rtl">
 						<li class="sign-in"><button class="google-sign-in">Sign in with Google</button></li>
 						<li class="sign-in"><button class="discord-sign-in">Sign in with Discord</button></li>
@@ -44,8 +39,10 @@
 			</li>
 		</ul>
 		<ul class="is-signed menu" hidden>
+			<li class="new"><button class="new-topic" class="primary"><span class="icon-plus"></span></button></li>
 			<li class="user-profile">
 				<details class="dropdown">
+					<summary class="profile"><img></summary>
 					<summary class="name"></summary>
 					<ul dir="rtl">
 						<li><a href="./share.html">Share a program</a></li>

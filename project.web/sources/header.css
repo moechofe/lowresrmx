@@ -3,9 +3,9 @@ html { background-color:#f7f2ed; min-width:340px; }
 body .message { background-color: #c66; color: #fff; font-weight: bold; font-size: 1.5em; padding: 0.5em; }
 body .message a { color: #fff; text-decoration-color: #fff; }
 
-header { user-select:none; }
+header { user-select:none; padding-bottom: 0 !important; }
 header .burger { display:none; }
-@media (max-width:840px) {
+@media (max-width:400px) {
 	header .burger { display:flex; }
 	header .links { display:none; }
 }
@@ -42,9 +42,9 @@ blockquote { padding-top: 0.25em; padding-bottom: 0.25em; }
 
 dialog.error { user-select: none; }
 
-ul.new button.new-topic::after { content: "New Topic"; }
-@media (max-width:940px) { ul.new button.new-topic::after { content: "New"; } }
-@media (max-width:430px) { ul.new button.new-topic { width: 43px; } ul.new button.new-topic::after { content: unset; } }
+.new button.new-topic::after { content: "New Topic"; }
+@media (max-width:940px) { .new button.new-topic::after { content: "New"; } }
+@media (max-width:440px) { .new button.new-topic { width: 43px; } .new button.new-topic::after { content: unset; } }
 
 body:not(:is(.help,.chat)) header .new { display: none; }
 
@@ -52,6 +52,8 @@ body:not(:is(.help,.chat)) header .new { display: none; }
 
 li.sign-in { display:block; padding-left:12px !important; padding-right:12px !important; }
 li.sign-in button { display:block; width:100%; font-size: 17px !important; height: 38px !important; line-height: 0px !important; }
+
+.user-profile .profile img { height: 1lh; width: auto; vertical-align: middle; }
 
 .google-sign-in { background-color:white; background-size:fit; background-image:url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="none"><g clip-path="url(%23a)"><path fill="%234285F4" d="M29.6 20.227c0-.709-.064-1.39-.182-2.045H20v3.868h5.382a4.6 4.6 0 0 1-1.996 3.018v2.51h3.232c1.891-1.742 2.982-4.305 2.982-7.35"/><path fill="%2334A853" d="M20 30c2.7 0 4.964-.895 6.618-2.423l-3.232-2.509c-.895.6-2.04.955-3.386.955-2.605 0-4.81-1.76-5.595-4.123h-3.341v2.59A10 10 0 0 0 20 30"/><path fill="%23FBBC04" d="M14.405 21.9c-.2-.6-.314-1.24-.314-1.9s.114-1.3.314-1.9v-2.59h-3.341A10 10 0 0 0 10 20c0 1.614.386 3.14 1.064 4.49z"/><path fill="%23E94235" d="M20 13.977c1.468 0 2.786.505 3.823 1.496l2.868-2.869C24.959 10.992 22.695 10 20 10c-3.91 0-7.29 2.24-8.936 5.51l3.34 2.59c.787-2.364 2.991-4.123 5.596-4.123"/></g><defs><clipPath id="a"><path fill="%23fff" d="M10 10h20v20H10z"/></clipPath></defs></svg>'); background-position:left center; color:black; border-color:black; padding-left:40px; font-weight:600; }
 

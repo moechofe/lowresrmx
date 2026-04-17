@@ -108,7 +108,16 @@ const setupSign=()=>new Promise(res=>{
 		if(signed!==false)
 		{
 			signed=/** @type !IsSigned */(signed);
-			text(query('.user-profile .name'),signed.author?signed.author:"No author name yet");
+			if(signed.picture)
+			{
+				attr(query('.user-profile .profile img'),'src',signed.picture);
+				remove(query('.user-profile .name'));
+			}
+			else
+			{
+				text(query('.user-profile .name'),signed.author?signed.author:"No author name yet");
+				remove(query('.user-profile .profile'));
+			}
 			//query('.user-profile .picture').style.backgroundImage="url('"+signed.picture+"')";
 			csrf=signed.token;
 			queryAll('.is-signed').forEach((item)=>show(item));
