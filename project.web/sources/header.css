@@ -6,8 +6,8 @@ body .message a { color: #fff; text-decoration-color: #fff; }
 header { user-select:none; padding-bottom: 0 !important; }
 header .burger { display:none; }
 @media (max-width:400px) {
-	header .burger { display:flex; }
-	header .links { display:none; }
+	body.chat header .burger, body.help header .burger { display:flex; }
+	body.chat header .links, body.help header .links { display:none; }
 }
 
 body.community a:not(.community) { color: var(--pico-secondary); }

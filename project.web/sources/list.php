@@ -12,7 +12,7 @@ if(preg_match('/^\/ranked$/',$urlPath)&&$isGet)
 	if(!in_array($where,PROGRAM_VALID_FORUM)) $where='all';
 
 	// TODO: handle more than 99 programs.
-	$list=redis()->zrevrange("r:$where",0,99);
+	$list=redis()->zrange("r:$where",0,99);
 
 	$published=[];
 

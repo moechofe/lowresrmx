@@ -5,6 +5,7 @@ require_once __DIR__.'/admin.php';
 require_once __DIR__.'/token.php';
 require_once __DIR__.'/rank.php';
 require_once __DIR__.'/markdown.php';
+require_once __DIR__.'/webhook.php';
 
 // Receive the upload token from /upload.php and store a program in Redis linked to the user who uploaded it.
 // Then it will redirect to /share.html
@@ -204,6 +205,28 @@ if(preg_match('/\/publish$/',$urlPath)&&$isPost)
 	header("Content-Type: application/json",true);
 	header("X-Robots-Tag: noindex", true);
 	echo json_encode($first_id);
+
+	// // Discord webhook
+	// $hooked=sendDiscordWebhook(
+	// 	webhookUrl: DISCORD_WEBHOOK_SHOW,
+	// 	payload: [
+	// 		'content' => "New program shared",
+	// 		'username' => $author,
+	// 		'tts' => false,
+	// 		'embeds' => [[
+	// 			'title' => $name,
+	// 			'type' => "rich",
+	// 			'description' => "$title\n[Play it in your browser](".WEBSITE_URL."$program_id.player)",
+	// 			'url' => WEBSITE_URL."$first_id.html",
+	// 			'timestamp' => date(DATE_ATOM),
+	// 			'color' => hexdec("cea57c"),
+	// 			'thumbnail' => WEBSITE_URL."$program_id.png",
+	// 			// 'author' => $author,
+	// 		]]
+	// 	]
+	// );
+	// error_log("Hook response: ".json_encode($hooked));
+
 	exit;
 }
 
@@ -383,5 +406,27 @@ if(preg_match("/\/($MATCH_ENTRY_TOKEN)\/replace$/",$urlPath,$matches)&&$isPost)
 	// Is the changement in the date is enough?
 
 	header("X-Robots-Tag: noindex", true);
+
+	// // Discord webhook
+	// $hooked=sendDiscordWebhook(
+	// 	webhookUrl: DISCORD_WEBHOOK_SHOW,
+	// 	payload: [
+	// 		'content' => "Old program updated",
+	// 		'username' => $author,
+	// 		'tts' => false,
+	// 		'embeds' => [[
+	// 			'title' => $name,
+	// 			'type' => "rich",
+	// 			'description' => "$title\n[Play it in your browser](".WEBSITE_URL."$program_id.player)",
+	// 			'url' => WEBSITE_URL."$first_id.html",
+	// 			'timestamp' => date(DATE_ATOM),
+	// 			'color' => hexdec("cea57c"),
+	// 			'thumbnail' => WEBSITE_URL."$program_id.png",
+	// 			// 'author' => $author,
+	// 		]]
+	// 	]
+	// );
+	// error_log("Hook response: ".json_encode($hooked));
+
 	exit;
 }
