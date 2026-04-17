@@ -428,8 +428,8 @@
 		}
 	}
 
-	// Colorize ON var GOTO/GOSUB/RESTORE label1, label2, ...
-	NSRegularExpression *onGotoGosubRegex = [NSRegularExpression regularExpressionWithPattern:@"\\bON\\s+[A-Za-z_][A-Za-z0-9_\\(\\)]*\\s+(GOTO|GOSUB|RESTORE)\\s+([A-Za-z_][A-Za-z0-9_]*(?:\\s*,\\s*[A-Za-z_][A-Za-z0-9_]*)*)" options:NSRegularExpressionCaseInsensitive error:nil];
+	// Colorize ON var GOTO/GOSUB label1, label2, ...
+	NSRegularExpression *onGotoGosubRegex = [NSRegularExpression regularExpressionWithPattern:@"\\bON\\s+[A-Za-z_][A-Za-z0-9_\\(\\)]*\\s+(GOTO|GOSUB)\\s+([A-Za-z_][A-Za-z0-9_]*(?:\\s*,\\s*[A-Za-z_][A-Za-z0-9_]*)*)" options:NSRegularExpressionCaseInsensitive error:nil];
 	NSArray<NSTextCheckingResult *> *onGotoGosubMatches = [onGotoGosubRegex matchesInString:text options:0 range:range];
 	for (NSTextCheckingResult *match in onGotoGosubMatches) {
 		BOOL inString = NO;
