@@ -302,7 +302,7 @@
 	UIColor *subsColor = [UIColor colorWithRed:0.1020 green:0.3725 blue:0.7059 alpha:1.0];
 
 	// End of code, start of DATA block
-	NSRegularExpression *endOfCodeRegex = [NSRegularExpression regularExpressionWithPattern:@"#[0-9]+:" options:0 error:nil];
+	NSRegularExpression *endOfCodeRegex = [NSRegularExpression regularExpressionWithPattern:@"^#[0-9]+:" options:NSRegularExpressionAnchorsMatchLines error:nil];
 	NSArray<NSTextCheckingResult *> *endOfCodeMatches = [endOfCodeRegex matchesInString:text options:0 range:range];
 
 	// After a certain point, we are in the DATA block and should not apply syntax
