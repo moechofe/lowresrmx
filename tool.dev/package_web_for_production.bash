@@ -82,7 +82,7 @@ tar cfJ "$PACKAGE_FILE" --owner=0 --group=0 --no-same-owner --no-same-permission
 index.php \
 redis.php admin.php \
 common.php \
-markdown.php \
+markdown.php webhook.php \
 token.php sign.php sign-in.html \
 upload.php download.php \
 sign-in.css sign-in.js \
