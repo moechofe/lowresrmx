@@ -262,7 +262,6 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
         }
         sourceCodeTextView.contentInset = insets
         sourceCodeTextView.scrollIndicatorInsets = insets
-        indexSideBarConstraint.constant = -insets.bottom
     }
 
     @objc func applicationWillResignActive(_ notification: Notification) {
