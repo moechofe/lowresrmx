@@ -1,4 +1,4 @@
-version$="0.187"
+version$="0.188"
 'offical graphics editor for Retro Game Creator (LowResRMX) for iOS
 'author: martin mauchauffee
 
@@ -3339,7 +3339,9 @@ flt_1_update:
   sprite 147-i,l,y+i*8,fltui+2
   sprite 131-i,r,y+i*8,fltui+2
   next i
-  return
+  call ungesture
+  goto tlb_5_color
+  'return
 
 
 
@@ -3679,10 +3681,8 @@ tlb_1_back: 'wid=0
   bedbot=0
   call ungesture
   tole=0 :tlbchanged=-1
-  if bedtool>=6 and bedtool<=7 then
-    trace "bedoldt",bedoldt
-    bedtool=bedoldt
-  end if
+  if bedoldt>=6 and bedoldt<=7 then bedoldt=1
+  if bedtool>=6 and bedtool<=7 then bedtool=bedoldt
   if bedtool>=1 and bedtool<=3 then
     fltcursor=1
     gosub flt_update
@@ -3709,7 +3709,6 @@ tlb_1_copy: 'wid=4
 'copy rectangle region
   if tapped then
     call ungesture
-    message "not finished"
     bedtool=6 :gosub tlb_1_repaint
     fltcursor=0
   end if

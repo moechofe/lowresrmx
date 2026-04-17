@@ -59,7 +59,7 @@ do
     x=clamp(int((touch.x+scroll.x(3)+32)/8/w)-2,0,5)
     y=clamp(int((touch.y-safe.t)/rasteradd),0,10)
     c=clamp(y*6+x-1,0,63)
-    message "color: "+str$(c)
+    message "color: "+str$(c)+" $"+hex$(c,2)
   end if
 loop
 
