@@ -16,3 +16,7 @@ set_target_properties(core_plugin PROPERTIES
 )
 
 target_compile_definitions(core_plugin PUBLIC DART_SHARED_LIB)
+
+if (ANDROID)
+  target_link_libraries(core_plugin android log)
+endif()

@@ -106,13 +106,7 @@ class _MyRunPageState extends State<MyRunPage> {
   @override
   void initState() {
     super.initState();
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-    SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.dark,
-      systemNavigationBarColor: Colors.transparent,
-      systemNavigationBarIconBrightness: Brightness.dark,
-    ));
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
 
     programPreference = MyProgramPreference(widget.executedName);
 
@@ -343,6 +337,7 @@ class _MyRunPageState extends State<MyRunPage> {
                 MyScreenPaint(
 									imageNotifier: imageNotifier,
                 ),
+								// buildMeasurement(context),
               ],
             )));
   }

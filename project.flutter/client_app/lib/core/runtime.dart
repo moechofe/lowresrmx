@@ -376,15 +376,13 @@ void isolateEntryPoint(List<Object?> arguments) {
       } else if (message is IsolateMessageType &&
           message == IsolateMessageType.renderFrame) {
         // Render the frame
-        var stopwatch = Stopwatch()..start();
+        // var stopwatch = Stopwatch()..start();
         Error err = runtime.update();
-        updateTime =
-            stopwatch.elapsed.inMicroseconds / Duration.microsecondsPerSecond;
-        stopwatch.reset();
+        // updateTime = stopwatch.elapsed.inMicroseconds / Duration.microsecondsPerSecond;
+        // stopwatch.reset();
         runtime.renderFrame();
-        renderTime =
-            stopwatch.elapsed.inMicroseconds / Duration.microsecondsPerSecond;
-        sendPort.send(MeasurementMsg(updateTime, renderTime));
+        // renderTime = stopwatch.elapsed.inMicroseconds / Duration.microsecondsPerSecond;
+        // sendPort.send(MeasurementMsg(updateTime, renderTime));
         if (runtime.textureId != null) {
           sendPort.send(IsolateMessageType.notifyFrame);
         } else {
