@@ -4,6 +4,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 
 import 'package:lowresrmx/core/runtime.dart';
+import 'package:provider/provider.dart';
 
 // final debugPaint = Paint()
 //   ..color = const Color.fromRGBO(0, 255, 0, 1.0)
@@ -53,10 +54,22 @@ class _MyScreenPaintState extends State<MyScreenPaint> {
   @override
   Widget build(BuildContext context) {
 		log("MyScreenPaint.build() Not good if called multiple times.");
-    return CustomPaint(
-      size:
-          Size(Runtime.screenWidth.toDouble(), Runtime.screenHeight.toDouble()),
-      painter: MyScreenPainter(widget.imageNotifier), //context.watch<Runtime>()),
-    );
+		final comport = context.watch<ComPort>();
+		if (comport.textureId != null) {
+			return SizedBox(
+				width: Runtime.screenWidth.toDouble(), height: Runtime.screenHeight.toDouble(),
+				child: Texture(
+					textureId: comport.textureId!,
+					filterQuality: FilterQuality.none,
+					),
+			);
+		}	else {
+			return CustomPaint(
+				size:
+						Size(Runtime.screenWidth.toDouble(), Runtime.screenHeight.toDouble()),
+				painter: MyScreenPainter(widget.imageNotifier), //context.watch<Runtime>()),
+			);
+		}
+
   }
 }

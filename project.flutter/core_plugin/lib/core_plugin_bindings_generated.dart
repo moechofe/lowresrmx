@@ -182,6 +182,53 @@ class CorePluginBindings {
   late final _runnerRender = _runnerRenderPtr
       .asFunction<void Function(ffi.Pointer<Runner>, ffi.Pointer<ffi.Void>)>();
 
+  void runnerRegisterNativeTexture(
+    int textureId,
+    ffi.Pointer<ffi.Void> nativeHandle,
+  ) {
+    return _runnerRegisterNativeTexture(
+      textureId,
+      nativeHandle,
+    );
+  }
+
+  late final _runnerRegisterNativeTexturePtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Void Function(ffi.Int64,
+              ffi.Pointer<ffi.Void>)>>('runnerRegisterNativeTexture');
+  late final _runnerRegisterNativeTexture = _runnerRegisterNativeTexturePtr
+      .asFunction<void Function(int, ffi.Pointer<ffi.Void>)>();
+
+  void runnerUnregisterNativeTexture(
+    int textureId,
+  ) {
+    return _runnerUnregisterNativeTexture(
+      textureId,
+    );
+  }
+
+  late final _runnerUnregisterNativeTexturePtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64)>>(
+          'runnerUnregisterNativeTexture');
+  late final _runnerUnregisterNativeTexture =
+      _runnerUnregisterNativeTexturePtr.asFunction<void Function(int)>();
+
+  void runnerRenderToTexture(
+    ffi.Pointer<Runner> runner,
+    int textureId,
+  ) {
+    return _runnerRenderToTexture(
+      runner,
+      textureId,
+    );
+  }
+
+  late final _runnerRenderToTexturePtr = _lookup<
+          ffi.NativeFunction<ffi.Void Function(ffi.Pointer<Runner>, ffi.Int64)>>(
+      'runnerRenderToTexture');
+  late final _runnerRenderToTexture = _runnerRenderToTexturePtr
+      .asFunction<void Function(ffi.Pointer<Runner>, int)>();
+
   void runnerTrace(
     ffi.Pointer<Runner> arg0,
     bool arg1,

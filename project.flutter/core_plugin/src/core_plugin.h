@@ -55,6 +55,9 @@ FFI_PLUGIN_EXPORT struct CoreError runnerUpdate(Runner*,Input*);
 
 FFI_PLUGIN_EXPORT bool runnerShouldRender(Runner*);
 FFI_PLUGIN_EXPORT void runnerRender(Runner*,void*);
+FFI_PLUGIN_EXPORT void runnerRegisterNativeTexture(int64_t textureId, void* nativeHandle);
+FFI_PLUGIN_EXPORT void runnerUnregisterNativeTexture(int64_t textureId);
+FFI_PLUGIN_EXPORT void runnerRenderToTexture(Runner* runner, int64_t textureId);
 
 FFI_PLUGIN_EXPORT void runnerTrace(Runner*,bool);
 

@@ -5,6 +5,7 @@
 list(APPEND FLUTTER_PLUGIN_LIST
   share_plus
   sw_rend
+  texture_rgba_renderer
   url_launcher_windows
 )
 

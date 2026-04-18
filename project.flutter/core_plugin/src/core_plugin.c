@@ -144,6 +144,121 @@ FFI_PLUGIN_EXPORT bool runnerShouldRender(Runner *runner)
 	return core_shouldRender(runner->core);
 }
 
+#if __ANDROID__
+#include <android/native_window_jni.h>
+#endif
+
+typedef struct NativeTexture {
+    int64_t textureId;
+    void *nativeHandle;
+} NativeTexture;
+
+#define MAX_NATIVE_TEXTURES 4
+static NativeTexture nativeTextures[MAX_NATIVE_TEXTURES];
+
+FFI_PLUGIN_EXPORT void runnerRegisterNativeTexture(int64_t textureId, void* nativeHandle)
+{
+    for (int i = 0; i < MAX_NATIVE_TEXTURES; i++) {
+        if (nativeTextures[i].textureId == 0 || nativeTextures[i].textureId == textureId) {
+            nativeTextures[i].textureId = textureId;
+            nativeTextures[i].nativeHandle = nativeHandle;
+            return;
+        }
+    }
+}
+
+FFI_PLUGIN_EXPORT void runnerUnregisterNativeTexture(int64_t textureId)
+{
+    for (int i = 0; i < MAX_NATIVE_TEXTURES; i++) {
+        if (nativeTextures[i].textureId == textureId) {
+#if __ANDROID__
+            if (nativeTextures[i].nativeHandle) {
+                ANativeWindow_release((ANativeWindow *)nativeTextures[i].nativeHandle);
+            }
+#endif
+            nativeTextures[i].textureId = 0;
+            nativeTextures[i].nativeHandle = NULL;
+            return;
+        }
+    }
+}
+
+#if __ANDROID__
+#include <jni.h>
+#include <android/log.h>
+
+#define JNI_EXPORT __attribute__((visibility("default")))
+
+JNI_EXPORT void JNICALL
+Java_com_lowresrmx_core_1plugin_CorePlugin_nativeRegisterTexture(JNIEnv *env, jobject thiz, jlong texture_id, jobject surface) {
+    ANativeWindow *window = ANativeWindow_fromSurface(env, surface);
+    if (window) {
+        ANativeWindow_acquire(window);
+        runnerRegisterNativeTexture(texture_id, window);
+    }
+}
+
+JNI_EXPORT void JNICALL
+Java_com_lowresrmx_core_1plugin_CorePlugin_nativeUnregisterTexture(JNIEnv *env, jobject thiz, jlong texture_id) {
+    runnerUnregisterNativeTexture(texture_id);
+}
+
+JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved) {
+    __android_log_print(ANDROID_LOG_INFO, "core_plugin", "JNI_OnLoad called");
+    return JNI_VERSION_1_6;
+}
+#endif
+
+FFI_PLUGIN_EXPORT void runnerRenderToTexture(Runner* runner, int64_t textureId)
+{
+    if (!runner->core) return;
+
+    void *nativeHandle = NULL;
+    for (int i = 0; i < MAX_NATIVE_TEXTURES; i++) {
+        if (nativeTextures[i].textureId == textureId) {
+            nativeHandle = nativeTextures[i].nativeHandle;
+            break;
+        }
+    }
+
+    if (!nativeHandle) return;
+
+#if __ANDROID__
+    ANativeWindow *window = (ANativeWindow *)nativeHandle;
+    ANativeWindow_Buffer buffer;
+    if (ANativeWindow_lock(window, &buffer, NULL) == 0) {
+        if (buffer.bits != NULL) {
+            if (buffer.stride == SCREEN_WIDTH) {
+                video_renderScreen(runner->core, (uint32_t *)buffer.bits);
+            } else {
+                // If stride is different, we need to render row by row or adjust video_renderScreen.
+                // For now, let's just log it.
+                __android_log_print(ANDROID_LOG_WARN, "core_plugin", "Stride mismatch: %d != %d", buffer.stride, SCREEN_WIDTH);
+                
+                // Temporary: allocate a temporary buffer and copy if stride doesn't match
+                uint32_t *temp = malloc(SCREEN_WIDTH * SCREEN_HEIGHT * 4);
+                if (temp) {
+                    video_renderScreen(runner->core, temp);
+                    for (int y = 0; y < SCREEN_HEIGHT; y++) {
+                        memcpy((uint32_t *)buffer.bits + y * buffer.stride, temp + y * SCREEN_WIDTH, SCREEN_WIDTH * 4);
+                    }
+                    free(temp);
+                }
+            }
+        }
+        ANativeWindow_unlockAndPost(window);
+    } else {
+        __android_log_print(ANDROID_LOG_ERROR, "core_plugin", "ANativeWindow_lock failed");
+    }
+#elif __APPLE__
+    // On iOS, nativeHandle is the base address of the CVPixelBuffer
+    video_renderScreen(runner->core, (uint32_t *)nativeHandle);
+#else
+    // Placeholder for other platforms
+    video_renderScreen(runner->core, (uint32_t *)nativeHandle);
+#endif
+}
+
 FFI_PLUGIN_EXPORT void runnerRender(Runner *runner,void *pixels)
 {
 	if(!runner->core) return;

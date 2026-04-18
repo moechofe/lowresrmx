@@ -3,10 +3,20 @@ import 'dart:ffi' as ffi;
 import 'dart:io';
 
 import 'package:ffi/ffi.dart';
+import 'package:flutter/services.dart';
 
 import 'core_plugin_bindings_generated.dart';
 
 const String _libName = 'core_plugin';
+const MethodChannel _channel = MethodChannel('com.lowresrmx/core_plugin');
+
+Future<int> registerTexture() async {
+  return (await _channel.invokeMethod<int>('registerTexture'))!;
+}
+
+Future<void> unregisterTexture(int textureId) async {
+  await _channel.invokeMethod('unregisterTexture', textureId);
+}
 
 /// The dynamic library in which the symbols for [CorePluginBindings] can be found.
 final ffi.DynamicLibrary _dylib = () {
@@ -27,6 +37,10 @@ final CorePluginBindings _bindings = CorePluginBindings(_dylib);
 
 void runnerInit(ffi.Pointer<Runner> runner) => _bindings.runnerInit(runner);
 void runnerDeinit(ffi.Pointer<Runner> runner) => _bindings.runnerDeinit(runner);
+
+void runnerRegisterNativeTexture(int textureId, ffi.Pointer<ffi.Void> nativeHandle) => _bindings.runnerRegisterNativeTexture(textureId, nativeHandle);
+void runnerUnregisterNativeTexture(int textureId) => _bindings.runnerUnregisterNativeTexture(textureId);
+void runnerRenderToTexture(ffi.Pointer<Runner> runner, int textureId) => _bindings.runnerRenderToTexture(runner, textureId);
 
 CoreError runnerCompileProgram(ffi.Pointer<Runner> runner, String code) => _bindings.runnerCompileProgram(runner, code.toNativeUtf8().cast<ffi.Char>());
 

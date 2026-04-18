@@ -18,6 +18,7 @@ import 'dart:developer';
 import 'dart:ffi' as ffi;
 import 'dart:isolate';
 import 'dart:ui' as ui;
+import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -106,6 +107,7 @@ enum IsolateMessageType {
 	audioStart,
 	audioStop,
 	renderAudio,
+  notifyFrame,
 }
 
 // FIXME: Message should have Message in their name. Common!
@@ -196,10 +198,8 @@ class Runtime extends ChangeNotifier {
   ui.Image? image;
   String? dataDiskToSave;
   bool keyboardOpen = false;
-	// AudioSource? audioStream;
-
-  /// During input mode, the keyboard should be openned on a tap.
-  bool inputMode = false;
+	bool inputMode = false;
+  int? textureId;
 
   final ffi.Pointer<Input> input = calloc();
   final ffi.Pointer<Runner> runner = calloc();
@@ -285,10 +285,14 @@ class Runtime extends ChangeNotifier {
   }
 
   void renderFrame() {
-		// if(runnerShouldRender(runner)) {
+		// Faster, use texture uploaded to the GPU
+    if (textureId != null) {
+      runnerRenderToTexture(runner, textureId!);
+		// Slower, recreate an image using pixel buffer
+    } else {
     	runnerRender(runner, pixels);
     	bytesList = pixels.asTypedList(bufferSize);
-		// }
+    }
   }
 
 	void renderAudio() {
@@ -323,19 +327,31 @@ class Runtime extends ChangeNotifier {
 }
 
 /// Used to hold the [Runtime] instance into an isolate.
-void isolateEntryPoint(List<Object> arguments) {
-	RootIsolateToken rootIsolateToken = arguments[0] as RootIsolateToken;
-	BackgroundIsolateBinaryMessenger.ensureInitialized(rootIsolateToken);
+void isolateEntryPoint(List<Object?> arguments) {
+  final RootIsolateToken rootIsolateToken = arguments[0] as RootIsolateToken;
+  final SendPort sendPort = arguments[1] as SendPort;
+  final int textureId = arguments[2] as int;
+  final int? nativeHandle = arguments[3] as int?;
 
-	SendPort sendPort = arguments[1] as SendPort;
+  BackgroundIsolateBinaryMessenger.ensureInitialized(rootIsolateToken);
+
   final ReceivePort receivePort = ReceivePort();
   final Runtime runtime = Runtime();
-  // late final Ticker ticker;
-  // Duration totalDuration = Duration.zero;
+
+  runtime.textureId = textureId;
+
+  if (nativeHandle != null) {
+    runnerRegisterNativeTexture(
+      textureId, ffi.Pointer.fromAddress(nativeHandle));
+  }
 
   double updateTime, renderTime;
 
-  runtime.initState();
+  try {
+    runtime.initState();
+  } catch (e) {
+    log("Error during runtime.initState: $e");
+  }
 
   // Remember the keyboard state to avoid sending the same message each frame.
   bool currKeyboardOpen = false;
@@ -344,76 +360,90 @@ void isolateEntryPoint(List<Object> arguments) {
   sendPort.send(receivePort.sendPort);
 
   receivePort.listen((message) async {
-    if (message is CompileAndRunMsg) {
-      // Receive the code and compile it, then send back the error. Start running if no error
-      final Error err = await runtime.compileAndStart(message.code, message.dataDisk);
-      sendPort.send(err);
-    } else if (message is CompileOnlyMsg) {
-      // Receive the code and compile it, then send back the error
-      final Error err = runtime.compileOnly(message.code);
-      sendPort.send(err);
-      // Also send the list of outline entries
-      final List<OutlineEntry> outline = runtime.getOutline();
-      sendPort.send(outline);
-    } else if (message is IsolateMessageType &&
-        message == IsolateMessageType.renderFrame) {
-      // Render the frame
-      var stopwatch = Stopwatch()..start();
-      Error err = runtime.update();
-      updateTime =
-          stopwatch.elapsed.inMicroseconds / Duration.microsecondsPerSecond;
-      stopwatch.reset();
-      runtime.renderFrame();
-      renderTime =
-          stopwatch.elapsed.inMicroseconds / Duration.microsecondsPerSecond;
-      sendPort.send(MeasurementMsg(updateTime, renderTime));
-      sendPort.send(runtime.bytesList!);
-      if (!err.ok) {
-        sendPort.send(RunningErrorMsg(err));
+    try {
+      if (message is CompileAndRunMsg) {
+        // Receive the code and compile it, then send back the error. Start running if no error
+        final Error err =
+            await runtime.compileAndStart(message.code, message.dataDisk);
+        sendPort.send(err);
+      } else if (message is CompileOnlyMsg) {
+        // Receive the code and compile it, then send back the error
+        final Error err = runtime.compileOnly(message.code);
+        sendPort.send(err);
+        // Also send the list of outline entries
+        final List<OutlineEntry> outline = runtime.getOutline();
+        sendPort.send(outline);
+      } else if (message is IsolateMessageType &&
+          message == IsolateMessageType.renderFrame) {
+        // Render the frame
+        var stopwatch = Stopwatch()..start();
+        Error err = runtime.update();
+        updateTime =
+            stopwatch.elapsed.inMicroseconds / Duration.microsecondsPerSecond;
+        stopwatch.reset();
+        runtime.renderFrame();
+        renderTime =
+            stopwatch.elapsed.inMicroseconds / Duration.microsecondsPerSecond;
+        sendPort.send(MeasurementMsg(updateTime, renderTime));
+        if (runtime.textureId != null) {
+          sendPort.send(IsolateMessageType.notifyFrame);
+        } else {
+          sendPort.send(runtime.bytesList!);
+        }
+        if (!err.ok) {
+          sendPort.send(RunningErrorMsg(err));
+        }
+        if (runtime.dataDiskToSave != null) {
+          sendPort.send(DataDiskMsg(runtime.dataDiskToSave!));
+          runtime.dataDiskToSave = null;
+        }
+        if (runtime.keyboardOpen != currKeyboardOpen) {
+          sendPort.send(KeyboardVisibleMsg(runtime.keyboardOpen));
+          currKeyboardOpen = runtime.keyboardOpen;
+        }
+        if (runtime.inputMode != currInputMode) {
+          sendPort.send(InputModeMsg(runtime.inputMode));
+          currInputMode = runtime.inputMode;
+        }
+      } else if (message is IsolateMessageType &&
+          message == IsolateMessageType.audioStart) {
+        runtime.audio.start();
+      } else if (message is IsolateMessageType &&
+          message == IsolateMessageType.renderAudio) {
+        runtime.renderAudio();
+      } else if (message is IsolateMessageType &&
+          message == IsolateMessageType.audioStop) {
+        runtime.audio.stop();
+      } else if (message is OrientationChangeMsg) {
+        // Receive the screen size and the safe area
+        runtime.resize(message.width, message.height, message.safeTop,
+            message.safeLeft, message.safeBottom, message.safeRight);
+      } else if (message is KeyboardKeyDownMsg) {
+        runtime.keyDown(message.ascii);
+      } else if (message is Offset) {
+        // Receive the touch event
+        runtime.touchOn(message);
+      } else if (message is IsolateMessageType &&
+          message == IsolateMessageType.touchOff) {
+        // Receive the touch off event
+        runtime.touchOff();
+      } else if (message is IsolateMessageType &&
+          message == IsolateMessageType.traceOn) {
+        // Receive the trace on event
+        runtime.trace(true);
+      } else if (message is IsolateMessageType &&
+          message == IsolateMessageType.traceOff) {
+        // Receive the trace off event
+        runtime.trace(false);
+      } else if (message is IsolateMessageType &&
+          message == IsolateMessageType.thumbnail) {
+        runtime.renderFrame();
+        sendPort.send(ThumbnailMsg(runtime.bytesList!));
       }
-      if (runtime.dataDiskToSave != null) {
-        sendPort.send(DataDiskMsg(runtime.dataDiskToSave!));
-        runtime.dataDiskToSave = null;
-      }
-      if (runtime.keyboardOpen != currKeyboardOpen) {
-        sendPort.send(KeyboardVisibleMsg(runtime.keyboardOpen));
-        currKeyboardOpen = runtime.keyboardOpen;
-      }
-      if (runtime.inputMode != currInputMode) {
-        sendPort.send(InputModeMsg(runtime.inputMode));
-        currInputMode = runtime.inputMode;
-      }
-		} else if (message is IsolateMessageType && message == IsolateMessageType.audioStart) {
-			runtime.audio.start();
-		} else if (message is IsolateMessageType && message == IsolateMessageType.renderAudio) {
-			runtime.renderAudio();
-		} else if (message is IsolateMessageType && message == IsolateMessageType.audioStop) {
-			runtime.audio.stop();
-    } else if (message is OrientationChangeMsg) {
-      // Receive the screen size and the safe area
-      runtime.resize(message.width, message.height, message.safeTop,
-          message.safeLeft, message.safeBottom, message.safeRight);
-    } else if (message is KeyboardKeyDownMsg) {
-      runtime.keyDown(message.ascii);
-    } else if (message is Offset) {
-      // Receive the touch event
-      runtime.touchOn(message);
-    } else if (message is IsolateMessageType &&
-        message == IsolateMessageType.touchOff) {
-      // Receive the touch off event
-      runtime.touchOff();
-    } else if (message is IsolateMessageType &&
-        message == IsolateMessageType.traceOn) {
-      // Receive the trace on event
-      runtime.trace(true);
-    } else if (message is IsolateMessageType &&
-        message == IsolateMessageType.traceOff) {
-      // Receive the trace off event
-      runtime.trace(false);
-    } else if (message is IsolateMessageType &&
-        message == IsolateMessageType.thumbnail) {
-      runtime.renderFrame();
-      sendPort.send(ThumbnailMsg(runtime.bytesList!));
+    } catch (e, stack) {
+      log("Isolate error: $e\n$stack");
+      sendPort.send(RunningErrorMsg(
+          Error(code: -1, msg: "Isolate crashed: $e", position: -1)));
     }
   });
 }
@@ -465,15 +495,37 @@ class ComPort {
   StreamController<double> decodeTime = StreamController<double>();
   StreamController<double> runtimeDeltaTime = StreamController<double>();
 
+  int? textureId;
+
   /// Setup the communication with the isolate and listen for messages
   Future<SendPort> init() async {
+    final int id = await registerTexture();
+    textureId = id;
+    int? handle;
+    if (Platform.isIOS) {
+      handle = await const MethodChannel('com.lowresrmx/core_plugin')
+          .invokeMethod<int>('getBufferAddress', id);
+    }
+
     receivePort = ReceivePort();
-    isolate = await Isolate.spawn(isolateEntryPoint, [RootIsolateToken.instance!, receivePort.sendPort]);
+    isolate = await Isolate.spawn(isolateEntryPoint,
+        [RootIsolateToken.instance!, receivePort.sendPort, id, handle]);
+
     receivePort.listen((message) {
       if (message is SendPort) {
         // Store the sendPort to be used later
         sendPort = message;
         ready.complete(sendPort);
+      } else if (message is IsolateMessageType &&
+          message == IsolateMessageType.notifyFrame) {
+        // Notify the UI that a new frame is available for the texture
+        const MethodChannel('com.lowresrmx/core_plugin')
+            .invokeMethod('notifyFrameAvailable', textureId);
+        // We still trigger a frame callback if needed for UI rebuilds
+        if (onImage != null) {
+          // Note: In texture mode, we don't have a ui.Image object here.
+          // The UI should use the Texture widget.
+        }
       } else if (message is Error) {
         // Receive the error from the compilation
         compileCompleter!.complete(message);

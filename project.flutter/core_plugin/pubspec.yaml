@@ -23,8 +23,11 @@ flutter:
   plugin:
     platforms:
       android:
+        package: com.lowresrmx.core_plugin
+        pluginClass: CorePlugin
         ffiPlugin: true
       ios:
+        pluginClass: CorePlugin
         ffiPlugin: true
       linux:
         ffiPlugin: true
