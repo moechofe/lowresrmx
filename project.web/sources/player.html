@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="player.css">
 <link rel="icon" href="favicon.ico" type="image/x-icon">
 </head>
-<body data-pid="<?=rawurlencode($pid)?>">
+<body data-pid="<?=rawurlencode($pid?$pid:$eid)?>">
 <div class="container">
 	<div class="device">
 		<div class="case"></div>

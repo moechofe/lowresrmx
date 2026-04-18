@@ -87,6 +87,8 @@ if(in_array($urlPath,[
 		'txt'=>'text/plain',
 		'xml'=>'application/xml',
 	][$info['extension']]);
+	header("Content-Length: ".filesize(__DIR__.$urlPath));
+  header("X-Content-Type-Options: nosniff");
 	readfile(__DIR__.$urlPath);
 	exit;
 }

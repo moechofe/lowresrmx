@@ -1,5 +1,3 @@
-
-
 <?php
 /**
  * discord.msg.send.php v0.8

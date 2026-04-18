@@ -53,7 +53,7 @@ for file in chat.css community.css documentation.css entry.css footer.css header
 done
 
 # JS files
-for file in chat.js community.js entry.js help.js setting.js share.js show.js sign-in.js player.js about.js; do
+for file in chat.js community.js entry.js help.js setting.js share.js show.js sign-in.js about.js; do
 	echo "compiling: $file"
 	2>/dev/null \
 	php "$SOURCE_DIR/$file" \
@@ -69,8 +69,8 @@ for file in admin.php comment.php common.php download.php entry.php favicon.ico 
 	cp "$SOURCE_DIR/$file" "$TEMP_DIR/$file"
 done
 
-# WASM file
-for file in player.wasm; do
+# WASM/JS file
+for file in player.wasm player.js; do
 	echo "copying: $file"
 	cp "$SOURCE_DIR/$file" "$TEMP_DIR/$file"
 done

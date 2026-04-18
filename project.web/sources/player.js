@@ -1,9 +1,8 @@
-var Module = {
-	canvas: document.getElementById('canvas'),
-	arguments: [`./${document.querySelector("body").dataset["pid"]}.rmx`],
-	print: console.log.bind(console),
-	printErr: console.warn.bind(console),
-};
+var Module = {};
+Module.canvas = document.getElementById('canvas');
+Module.arguments = [`./${document.querySelector("body").dataset["pid"]}.rmx`];
+Module.print = console.log.bind(console);
+Module.printErr = console.warn.bind(console);
 // include: shell.js
 // include: minimum_runtime_check.js
 (function() {
