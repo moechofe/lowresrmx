@@ -339,6 +339,94 @@ void core_handleInput(struct Core *core, struct CoreInput *input)
 		ioRegisters->status.touch = 0;
 	}
 
+	// Gesture detection
+	ioRegisters->status.touchChange = 0;
+	ioRegisters->status.touchTap = 0;
+	if (input->touch)
+	{
+		if (!core->machineInternals->hasDrag)
+		{
+			core->machineInternals->hasDrag = sqrtf(powf(input->touchX - ioRegisters->pressedX, 2) + powf(input->touchY - ioRegisters->pressedY, 2))>=8;
+			if (core->machineInternals->hasDrag)
+			{
+				core->machineInternals->longEnabled = false;
+				ioRegisters->status.touchLong = 0;
+			}
+		}
+		if (!core->machineInternals->gesturePressed)
+		{
+			// just pressed
+			core->machineInternals->gesturePressed = true;
+			core->machineInternals->gestureLonged = false;
+			core->machineInternals->gestureDragged = false;
+			core->machineInternals->hasDrag = false;
+			core->machineInternals->longEnabled = true;
+			core->machineInternals->gesturePressedTimer = core->interpreter->timer;
+			ioRegisters->pressedX = input->touchX;
+			ioRegisters->pressedY = input->touchY;
+			ioRegisters->status.touchTap = 0;
+			ioRegisters->status.touchDrag = 0;
+			ioRegisters->status.touchLong = 0;
+			ioRegisters->status.touchChange = 1;
+		}
+		else if (!core->machineInternals->gestureLonged
+		// && core->machineInternals->gesturePressedTimer > 0
+		&& !core->machineInternals->hasDrag
+		&& core->machineInternals->longEnabled
+		&& core->interpreter->timer - core->machineInternals->gesturePressedTimer > 32)
+		{
+			// just longed
+			core->machineInternals->gestureLonged = true;
+			// core->machineInternals->gesturePressedTimer = 0;
+			ioRegisters->status.touchLong = 1;
+			ioRegisters->status.touchChange = 1;
+		}
+		else if(!core->machineInternals->gestureDragged
+		&& core->machineInternals->gesturePressedTimer > 0
+		&& (core->interpreter->timer - core->machineInternals->gesturePressedTimer > 12
+		|| core->machineInternals->hasDrag))
+		{
+			// just dragged
+			core->machineInternals->gestureDragged = true;
+			// core->machineInternals->gesturePressedTimer = 0;
+			ioRegisters->status.touchDrag = 1;
+			ioRegisters->status.touchChange = 1;
+		}
+	}
+	else
+	{
+		if (core->machineInternals->gesturePressed)
+		{
+			if (!core->machineInternals->gestureDragged
+			&& core->interpreter->timer - core->machineInternals->gesturePressedTimer <= 12)
+			{
+				// just tapped
+				core->machineInternals->gesturePressed = false;
+				// core->machineInternals->gestureLonged = false;
+				// core->machineInternals->gestureDragged = false;
+				// core->machineInternals->hasDrag = false;
+				core->machineInternals->gesturePressedTimer = 0;
+				ioRegisters->status.touchTap = 1;
+				ioRegisters->status.touchDrag = 0;
+				ioRegisters->status.touchLong = 0;
+				ioRegisters->status.touchChange = 1;
+			}
+			else
+			{
+				// just released
+				core->machineInternals->gesturePressed = false;
+				core->machineInternals->gestureLonged = false;
+				core->machineInternals->gestureDragged = false;
+				core->machineInternals->hasDrag = false;
+				core->machineInternals->gesturePressedTimer = 0;
+				ioRegisters->status.touchTap = 0;
+				ioRegisters->status.touchDrag = 0;
+				ioRegisters->status.touchLong = 0;
+				ioRegisters->status.touchChange = 1;
+			}
+		}
+	}
+
 	ioRegisters->shown.width = input->width;
 	ioRegisters->shown.height = input->height;
 
@@ -2905,6 +2993,7 @@ enum ErrorCode cmd_GOTO(struct Core *core)
 	else if (interpreter->pass == PassRun)
 	{
 		interpreter->pc = tokenGOTO->jumpToken; // after label
+		if (interpreter->logGoto) log_goto(core,tokenIdentifier->symbolIndex);
 	}
 	return ErrorNone;
 }
@@ -2939,6 +3028,7 @@ enum ErrorCode cmd_GOSUB(struct Core *core)
 			return errorCode;
 
 		interpreter->pc = tokenGOSUB->jumpToken; // after label
+		if (interpreter->logGosub) log_gosub(core,tokenIdentifier->symbolIndex);
 	}
 	return ErrorNone;
 }
@@ -2983,11 +3073,13 @@ enum ErrorCode cmd_RETURN(struct Core *core)
 				interpreter->pc = tokenRETURN->jumpToken; // after label
 				// clear stack
 				interpreter->numLabelStackItems = 0;
+				if (interpreter->logGosub) log_return(core, true);
 			}
 			else
 			{
 				// jump back
 				interpreter->pc = itemGOSUB->token; // after GOSUB
+				if (interpreter->logGosub) log_return(core, false);
 			}
 		}
 		else
@@ -3999,6 +4091,7 @@ enum ErrorCode cmd_KEYBOARD(struct Core *core)
 		core->machine->ioRegisters.status.keyboardVisible = (type == TokenON);
 #ifdef SIMULATED_KEYBOARD
 		interpreter->simulatedKeyboardOn = (type == TokenON);
+		core->machine->ioRegisters.keyboardHeight = (type == TokenON) ? 154 : 0;
 #endif
 		delegate_controlsDidChange(core);
 	}
@@ -4018,11 +4111,7 @@ struct TypedValue fnc_KEYBOARD(struct Core *core)
 
 	if (interpreter->pass == PassRun)
 	{
-#ifdef SIMULATED_KEYBOARD
-		value.v.floatValue = interpreter->simulatedKeyboardOn ? 154 : 0;
-#else
 		value.v.floatValue = core->machine->ioRegisters.keyboardHeight;
-#endif
 	}
 	return value;
 }
@@ -4155,6 +4244,74 @@ struct TypedValue fnc_SAFE(struct Core *core)
 	}
 	return value;
 }
+
+struct TypedValue fnc_TOUCH_PX_PY(struct Core *core)
+{
+	struct Interpreter *interpreter = core->interpreter;
+
+	// TOUCH.?
+	enum TokenType type = interpreter->pc->type;
+	++interpreter->pc;
+
+	struct TypedValue value;
+	value.type = ValueTypeFloat;
+
+	if (interpreter->pass == PassRun)
+	{
+		if (type == TokenTOUCHPX)
+		{
+			value.v.floatValue = core->machine->ioRegisters.pressedX;
+		}
+		else if (type == TokenTOUCHPY)
+		{
+			value.v.floatValue = core->machine->ioRegisters.pressedY;
+		}
+		else
+		{
+			assert(0);
+		}
+	}
+	return value;
+}
+
+struct TypedValue fnc_TOUCH_TAP_DRAG_LONG_CHANGE(struct Core *core)
+{
+	struct Interpreter *interpreter = core->interpreter;
+
+	// TOUCH.?
+	enum TokenType type = interpreter->pc->type;
+	++interpreter->pc;
+
+	struct TypedValue value;
+	value.type = ValueTypeFloat;
+
+	if (interpreter->pass == PassRun)
+	{
+		if (type == TokenTOUCHTAP)
+		{
+			value.v.floatValue = core->machine->ioRegisters.status.touchTap ? BAS_TRUE : BAS_FALSE;
+		}
+		else if (type == TokenTOUCHDRAG)
+		{
+			value.v.floatValue = core->machine->ioRegisters.status.touchDrag ? BAS_TRUE : BAS_FALSE;
+		}
+		else if (type == TokenTOUCHLONG)
+		{
+			value.v.floatValue = core->machine->ioRegisters.status.touchLong ? BAS_TRUE : BAS_FALSE;
+		}
+		else if (type == TokenTOUCHCHANGE)
+		{
+			value.v.floatValue = core->machine->ioRegisters.status.touchChange ? BAS_TRUE : BAS_FALSE;
+		}
+		else
+		{
+			assert(0);
+		}
+	}
+	return value;
+}
+
+
 //
 // Copyright 2017 Timo Kloss
 //
@@ -6454,9 +6611,10 @@ struct TypedValue fnc_LEN(struct Core *core)
 			rcstring_release(stringValue.v.stringValue);
 		}
 	}
+
 	else
 	{
-		value.type = ValueTypeError;
+		value = val_makeError(ErrorSyntax);
 	}
 
 	return value;
@@ -7604,6 +7762,45 @@ enum ErrorCode cmd_WINDOW(struct Core *core)
 	return itp_endOfCommand(interpreter);
 }
 
+struct TypedValue fnc_WINDOW(struct Core *core)
+{
+	struct Interpreter *interpreter = core->interpreter;
+
+	// WINDOW.?
+	enum TokenType type = interpreter->pc->type;
+	++interpreter->pc;
+
+	struct TypedValue value;
+	value.type = ValueTypeFloat;
+
+	if (interpreter->pass == PassRun)
+	{
+		switch (type)
+		{
+		case TokenWINDOWX:
+			value.v.floatValue = interpreter->textLib.windowX;
+			break;
+
+		case TokenWINDOWY:
+			value.v.floatValue = interpreter->textLib.windowY;
+			break;
+
+		case TokenWINDOWW:
+			value.v.floatValue = interpreter->textLib.windowWidth;
+			break;
+
+		case TokenWINDOWH:
+			value.v.floatValue = interpreter->textLib.windowHeight;
+			break;
+
+		default:
+			assert(0);
+			break;
+		}
+	}
+	return value;
+}
+
 enum ErrorCode cmd_FONT(struct Core *core)
 {
 	struct Interpreter *interpreter = core->interpreter;
@@ -7805,14 +8002,6 @@ enum ErrorCode cmd_MESSAGE(struct Core *core)
 enum ErrorCode cmd_LET(struct Core *core)
 {
 	struct Interpreter *interpreter = core->interpreter;
-
-	// LET keyword is optional
-	if (interpreter->pc->type == TokenLET)
-	{
-		++interpreter->pc;
-		if (interpreter->pc->type != TokenIdentifier && interpreter->pc->type != TokenStringIdentifier)
-			return ErrorSyntax;
-	}
 
 	// identifier
 	enum ErrorCode errorCode = ErrorNone;
@@ -8306,6 +8495,7 @@ struct CoreError err_noCoreError(void)
 #include "core.h"
 #include "core.h"
 #include "core.h"
+#include "core.h"
 
 struct TypedValue itp_evaluateExpressionLevel(struct Core *core, int level);
 struct TypedValue itp_evaluatePrimaryExpression(struct Core *core);
@@ -8410,6 +8600,8 @@ struct CoreError itp_compileProgram(struct Core *core, const char *sourceCode)
 	interpreter->state = StateEvaluate;
 	interpreter->mode = ModeNone;
 	interpreter->pauseAtWait = false;
+	interpreter->logGoto = false;
+	interpreter->logGosub = false;
 	interpreter->currentDataToken = interpreter->firstData;
 	interpreter->currentDataValueToken = interpreter->firstData ? interpreter->firstData + 1 : NULL;
 	interpreter->isSingleLineIf = false;
@@ -9604,6 +9796,12 @@ struct TypedValue itp_evaluateFunction(struct Core *core)
 	case TokenCURSORY:
 		return fnc_CURSOR(core);
 
+	case TokenWINDOWX:
+	case TokenWINDOWY:
+	case TokenWINDOWW:
+	case TokenWINDOWH:
+		return fnc_WINDOW(core);
+
 		// case TokenUP:
 		// case TokenDOWN:
 		// case TokenLEFT:
@@ -9634,6 +9832,16 @@ struct TypedValue itp_evaluateFunction(struct Core *core)
 	case TokenTOUCHX:
 	case TokenTOUCHY:
 		return fnc_TOUCH_X_Y(core);
+
+	case TokenTOUCHPX:
+	case TokenTOUCHPY:
+		return fnc_TOUCH_PX_PY(core);
+
+	case TokenTOUCHTAP:
+	case TokenTOUCHDRAG:
+	case TokenTOUCHLONG:
+	case TokenTOUCHCHANGE:
+		return fnc_TOUCH_TAP_DRAG_LONG_CHANGE(core);
 
 	case TokenSHOWNW:
 	case TokenSHOWNH:
@@ -9721,7 +9929,6 @@ enum ErrorCode itp_evaluateCommand(struct Core *core)
 		}
 		break;
 
-	case TokenLET:
 	case TokenIdentifier:
 	case TokenStringIdentifier:
 		return cmd_LET(core);
@@ -10871,6 +11078,12 @@ const char *TokenStrings[] = {
     "TIMER",
     "TINT",
     //"TOUCHSCREEN",
+		"TOUCH.PX",
+		"TOUCH.PY",
+		"TOUCH.TAP",
+		"TOUCH.DRAG",
+		"TOUCH.LONG",
+		"TOUCH.CHANGE",
     "TOUCH.X",
     "TOUCH.Y",
     "TOUCH",
@@ -10888,6 +11101,10 @@ const char *TokenStrings[] = {
     "WAVE",
     "WEND",
     "WHILE",
+		"WINDOW.X",
+		"WINDOW.Y",
+		"WINDOW.W",
+		"WINDOW.H",
     "WINDOW",
 
     "SHOWN.W",
@@ -10957,438 +11174,429 @@ const char *TokenStrings[] = {
 
 struct CoreError tok_tokenizeProgram(struct Tokenizer *tokenizer, const char *sourceCode)
 {
-    // const char *uppercaseSourceCode = uppercaseString(sourceCode);
-    // if (!uppercaseSourceCode) return err_makeCoreError(ErrorOutOfMemory, -1);
-
-    // struct CoreError error = tok_tokenizeUppercaseProgram(tokenizer, uppercaseSourceCode);
-    // free((void *)uppercaseSourceCode);
-
-    // return error;
-
-		return tok_tokenizeUppercaseProgram(tokenizer, sourceCode);
+	return tok_tokenizeUppercaseProgram(tokenizer, sourceCode);
 }
 
 struct CoreError tok_tokenizeUppercaseProgram(struct Tokenizer *tokenizer, const char *sourceCode)
 {
-    const char *character = sourceCode;
+	const char *character = sourceCode;
 
-		// TODO: I'm not sure I need this
-		int allowMultipleStatements = 1;
+	// PROGRAM
 
-    // PROGRAM
+	while (*character && *character != '#')
+	{
+		int tokenSourcePosition = (int)(character - sourceCode);
+		if (tokenizer->numTokens >= MAX_TOKENS - 1)
+		{
+			return err_makeCoreError(ErrorTooManyTokens, tokenSourcePosition);
+		}
+		struct Token *token = &tokenizer->tokens[tokenizer->numTokens];
+		token->sourcePosition = tokenSourcePosition;
 
-    while (*character && *character != '#')
-    {
-        int tokenSourcePosition = (int)(character - sourceCode);
-        if (tokenizer->numTokens >= MAX_TOKENS - 1)
-        {
-            return err_makeCoreError(ErrorTooManyTokens, tokenSourcePosition);
-        }
-        struct Token *token = &tokenizer->tokens[tokenizer->numTokens];
-        token->sourcePosition = tokenSourcePosition;
+		// line break \n or \n\r
+		if (*character == '\n')
+		{
+			token->type = TokenEol;
+			tokenizer->numTokens++;
+			character++;
+			if (*character == '\r')
+			{
+				character++;
+			}
+			continue;
+		}
 
-        // line break \n or \n\r
-        if (*character == '\n')
-        {
-            token->type = TokenEol;
-						 allowMultipleStatements = 1;
-            tokenizer->numTokens++;
-            character++;
-            if (*character == '\r') { character++; }
-            continue;
-        }
+		// line break \r or \r\n
+		if (*character == '\r')
+		{
+			token->type = TokenEol;
+			tokenizer->numTokens++;
+			character++;
+			if (*character == '\n')
+			{
+				character++;
+			}
+			continue;
+		}
 
-        // line break \r or \r\n
-        if (*character == '\r')
-        {
-            token->type = TokenEol;
-						allowMultipleStatements = 1;
-            tokenizer->numTokens++;
-            character++;
-            if (*character == '\n') { character++; }
-            continue;
-        }
+		// space
+		if (*character == ' ' || *character == '\t')
+		{
+			character++;
+			continue;
+		}
 
-        // space
-        if (*character == ' ' || *character == '\t')
-        {
-            character++;
-            continue;
-        }
+		if (*character == ':')
+		{
+			token->type = TokenEol;
+			tokenizer->numTokens++;
+			character++;
+			continue;
+		}
 
-				if (*character == ':') // && allowMultipleStatements == 1)
+		// string
+		if (*character == '"')
+		{
+			character++;
+			const char *firstCharacter = character;
+			while (*character && *character != '"')
+			{
+				if (*character == '\n')
 				{
-						token->type = TokenEol;
-						tokenizer->numTokens++;
-						character++;
-						continue;
+					return err_makeCoreError(ErrorUnterminatedString, (int)(character - sourceCode));
 				}
+				else if (*character < 0)
+				{
+					return err_makeCoreError(ErrorUnexpectedCharacter, (int)(character - sourceCode));
+				}
+				character++;
+			}
+			int len = (int)(character - firstCharacter);
+			struct RCString *string = rcstring_new(firstCharacter, len);
+			if (!string)
+				return err_makeCoreError(ErrorOutOfMemory, tokenSourcePosition);
+			token->type = TokenString;
+			token->stringValue = string;
+			tokenizer->numTokens++;
+			character++;
+			continue;
+		}
 
-        // string
-        if (*character == '"')
-        {
-            character++;
-            const char *firstCharacter = character;
-            while (*character && *character != '"')
-            {
-                if (*character == '\n')
-                {
-                    return err_makeCoreError(ErrorUnterminatedString, (int)(character - sourceCode));
-                }
-                else if (*character < 0)
-                {
-                    return err_makeCoreError(ErrorUnexpectedCharacter, (int)(character - sourceCode));
-                }
-                character++;
-            }
-            int len = (int)(character - firstCharacter);
-            struct RCString *string = rcstring_new(firstCharacter, len);
-            if (!string) return err_makeCoreError(ErrorOutOfMemory, tokenSourcePosition);
-            token->type = TokenString;
-            token->stringValue = string;
-            tokenizer->numTokens++;
-            character++;
-            continue;
-        }
+		// number
+		if (strchr(CharSetDigits, *character))
+		{
+			float number = 0;
+			int afterDot = 0;
+			while (*character)
+			{
+				if (strchr(CharSetDigits, *character))
+				{
+					int digit = (int)*character - (int)'0';
+					if (afterDot == 0)
+					{
+						number *= 10;
+						number += digit;
+					}
+					else
+					{
+						number += (float)digit / afterDot;
+						afterDot *= 10;
+					}
+					character++;
+				}
+				else if (*character == '.' && afterDot == 0)
+				{
+					afterDot = 10;
+					character++;
+				}
+				else
+				{
+					break;
+				}
+			}
+			token->type = TokenFloat;
+			token->floatValue = number;
+			tokenizer->numTokens++;
+			continue;
+		}
 
-        // number
-        if (strchr(CharSetDigits, *character))
-        {
-            float number = 0;
-            int afterDot = 0;
-            while (*character)
-            {
-                if (strchr(CharSetDigits, *character))
-                {
-                    int digit = (int)*character - (int)'0';
-                    if (afterDot == 0)
-                    {
-                        number *= 10;
-                        number += digit;
-                    }
-                    else
-                    {
-                        number += (float)digit / afterDot;
-                        afterDot *= 10;
-                    }
-                    character++;
-                }
-                else if (*character == '.' && afterDot == 0)
-                {
-                    afterDot = 10;
-                    character++;
-                }
-                else
-                {
-                    break;
-                }
-            }
-            token->type = TokenFloat;
-            token->floatValue = number;
-            tokenizer->numTokens++;
-            continue;
-        }
+		// hex number
+		if (*character == '$')
+		{
+			character++;
+			int number = 0;
+			while (*character)
+			{
+				char *spos = strchr(CharSetHex, uppercaseChar(*character));
+				if (spos)
+				{
+					int digit = (int)(spos - CharSetHex);
+					number <<= 4;
+					number += digit;
+					character++;
+				}
+				else
+				{
+					break;
+				}
+			}
+			token->type = TokenFloat;
+			token->floatValue = number;
+			tokenizer->numTokens++;
+			continue;
+		}
 
-        // hex number
-        if (*character == '$')
-        {
-            character++;
-            int number = 0;
-            while (*character)
-            {
-                char *spos = strchr(CharSetHex, uppercaseChar(*character));
-                if (spos)
-                {
-                    int digit = (int)(spos - CharSetHex);
-                    number <<= 4;
-                    number += digit;
-                    character++;
-                }
-                else
-                {
-                    break;
-                }
-            }
-            token->type = TokenFloat;
-            token->floatValue = number;
-            tokenizer->numTokens++;
-            continue;
-        }
+		// bin number
+		if (*character == '%')
+		{
+			character++;
+			int number = 0;
+			while (*character)
+			{
+				if (*character == '0' || *character == '1')
+				{
+					int digit = *character - '0';
+					number <<= 1;
+					number += digit;
+					character++;
+				}
+				else
+				{
+					break;
+				}
+			}
+			token->type = TokenFloat;
+			token->floatValue = number;
+			tokenizer->numTokens++;
+			continue;
+		}
 
-        // bin number
-        if (*character == '%')
-        {
-            character++;
-            int number = 0;
-            while (*character)
-            {
-                if (*character == '0' || *character == '1')
-                {
-                    int digit = *character - '0';
-                    number <<= 1;
-                    number += digit;
-                    character++;
-                }
-                else
-                {
-                    break;
-                }
-            }
-            token->type = TokenFloat;
-            token->floatValue = number;
-            tokenizer->numTokens++;
-            continue;
-        }
+		// Keyword
+		enum TokenType foundKeywordToken = TokenUndefined;
+		for (int i = 0; i < Token_count; i++)
+		{
+			const char *keyword = TokenStrings[i];
+			if (keyword)
+			{
+				size_t keywordLen = strlen(keyword);
+				int keywordIsAlphaNum = strchr(CharSetAlphaNum, keyword[0]) != NULL;
+				for (int pos = 0; pos <= keywordLen; pos++)
+				{
+					char textCharacter = uppercaseChar(character[pos]);
 
-        // Keyword
-        enum TokenType foundKeywordToken = TokenUndefined;
-        for (int i = 0; i < Token_count; i++)
-        {
-            const char *keyword = TokenStrings[i];
-            if (keyword)
-            {
-                size_t keywordLen = strlen(keyword);
-                int keywordIsAlphaNum = strchr(CharSetAlphaNum, keyword[0]) != NULL;
-                for (int pos = 0; pos <= keywordLen; pos++)
-                {
-                    char textCharacter = uppercaseChar(character[pos]);
-
-                    if (pos < keywordLen)
-                    {
-                        char symbCharacter = keyword[pos];
-                        if (symbCharacter != textCharacter)
-                        {
-                            // not matching
-                            break;
-                        }
-                    }
-                    else if (keywordIsAlphaNum && textCharacter && strchr(CharSetAlphaNum, textCharacter))
-                    {
-                        // matching, but word is longer, so seems to be an identifier
-                        break;
-                    }
-                    else
-                    {
-                        // symbol found!
-                        foundKeywordToken = i;
-                        character += keywordLen;
-                        break;
-                    }
-                }
-                if (foundKeywordToken != TokenUndefined)
-                {
-                    break;
-                }
-            }
-        }
-        if (foundKeywordToken != TokenUndefined)
-        {
-            if (foundKeywordToken == TokenApostrophe)
-            {
-                // comment, skip until end of line
-                while (*character)
-                {
-                    if (*character < 0)
-                    {
-                        return err_makeCoreError(ErrorUnexpectedCharacter, (int)(character - sourceCode));
-                    }
-                    if (*character == '\n')
-                    {
-                        character++;
-                        break;
-                    }
-                    character++;
-                }
-            }
-            else if (foundKeywordToken > Token_reserved)
-            {
-                return err_makeCoreError(ErrorReservedKeyword, tokenSourcePosition);
-            }
-            token->type = foundKeywordToken;
-            tokenizer->numTokens++;
-            continue;
-        }
-
-        // Symbol
-        if (strchr(CharSetLetters, uppercaseChar(*character)))
-        {
-            const char *firstCharacter = character;
-            char isString = 0;
-            while (*character)
-            {
-                if (strchr(CharSetAlphaNum, uppercaseChar(*character)))
-                {
-                    character++;
-                }
-                else
-                {
-                    if (*character == '$')
-                    {
-                        isString = 1;
-                        character++;
-                    }
-                    break;
-                }
-            }
-            if (tokenizer->numSymbols >= MAX_SYMBOLS)
-            {
-                return err_makeCoreError(ErrorTooManySymbols, tokenSourcePosition);
-            }
-            int len = (int)(character - firstCharacter);
-            if (len >= SYMBOL_NAME_SIZE)
-            {
-                return err_makeCoreError(ErrorSymbolNameTooLong, tokenSourcePosition);
-            }
-            char symbolName[SYMBOL_NAME_SIZE];
-						for (size_t i = 0; i < len; i++)
+					if (pos < keywordLen)
+					{
+						char symbCharacter = keyword[pos];
+						if (symbCharacter != textCharacter)
 						{
-							symbolName[i] = uppercaseChar(firstCharacter[i]);
+							// not matching
+							break;
 						}
-            // memcpy(symbolName, firstCharacter, len);
-            symbolName[len] = 0;
-            int symbolIndex = -1;
-            // find existing symbol
-            for (int i = 0; i < MAX_SYMBOLS && tokenizer->symbols[i].name[0] != 0; i++)
-            {
-                if (strcmp(symbolName, tokenizer->symbols[i].name) == 0)
-                {
-                    symbolIndex = i;
-                    break;
-                }
-            }
-            if (symbolIndex == -1)
-            {
-                // add new symbol
-                strcpy(tokenizer->symbols[tokenizer->numSymbols].name, symbolName);
-                symbolIndex = tokenizer->numSymbols++;
-            }
-            if (isString)
-            {
-                token->type = TokenStringIdentifier;
-            }
-            else if (*character == ':')
-            {
-								token->type = TokenLabel;
-								allowMultipleStatements = 0;
-								character++;
-								enum ErrorCode errorCode = tok_setJumpLabel(tokenizer, symbolIndex, token + 1);
-								if (errorCode != ErrorNone) return err_makeCoreError(errorCode, tokenSourcePosition);
+					}
+					else if (keywordIsAlphaNum && textCharacter && strchr(CharSetAlphaNum, textCharacter))
+					{
+						// matching, but word is longer, so seems to be an identifier
+						break;
+					}
+					else
+					{
+						// symbol found!
+						foundKeywordToken = i;
+						character += keywordLen;
+						break;
+					}
+				}
+				if (foundKeywordToken != TokenUndefined)
+				{
+					break;
+				}
+			}
+		}
+		if (foundKeywordToken != TokenUndefined)
+		{
+			if (foundKeywordToken == TokenApostrophe)
+			{
+				// comment, skip until end of line
+				while (*character)
+				{
+					if (*character < 0)
+					{
+						return err_makeCoreError(ErrorUnexpectedCharacter, (int)(character - sourceCode));
+					}
+					if (*character == '\n')
+					{
+						character++;
+						break;
+					}
+					character++;
+				}
+			}
+			else if (foundKeywordToken > Token_reserved)
+			{
+				return err_makeCoreError(ErrorReservedKeyword, tokenSourcePosition);
+			}
+			token->type = foundKeywordToken;
+			tokenizer->numTokens++;
+			continue;
+		}
 
-								token->symbolIndex = symbolIndex;
-								tokenizer->numTokens++;
+		// Symbol
+		if (strchr(CharSetLetters, uppercaseChar(*character)))
+		{
+			const char *firstCharacter = character;
+			char isString = 0;
+			while (*character)
+			{
+				if (strchr(CharSetAlphaNum, uppercaseChar(*character)))
+				{
+					character++;
+				}
+				else
+				{
+					if (*character == '$')
+					{
+						isString = 1;
+						character++;
+					}
+					break;
+				}
+			}
+			if (tokenizer->numSymbols >= MAX_SYMBOLS)
+			{
+				return err_makeCoreError(ErrorTooManySymbols, tokenSourcePosition);
+			}
+			int len = (int)(character - firstCharacter);
+			if (len >= SYMBOL_NAME_SIZE)
+			{
+				return err_makeCoreError(ErrorSymbolNameTooLong, tokenSourcePosition);
+			}
+			char symbolName[SYMBOL_NAME_SIZE];
+			for (size_t i = 0; i < len; i++)
+			{
+				symbolName[i] = uppercaseChar(firstCharacter[i]);
+			}
+			// memcpy(symbolName, firstCharacter, len);
+			symbolName[len] = 0;
+			int symbolIndex = -1;
+			// find existing symbol
+			for (int i = 0; i < MAX_SYMBOLS && tokenizer->symbols[i].name[0] != 0; i++)
+			{
+				if (strcmp(symbolName, tokenizer->symbols[i].name) == 0)
+				{
+					symbolIndex = i;
+					break;
+				}
+			}
+			if (symbolIndex == -1)
+			{
+				// add new symbol
+				strcpy(tokenizer->symbols[tokenizer->numSymbols].name, symbolName);
+				symbolIndex = tokenizer->numSymbols++;
+			}
+			if (isString)
+			{
+				token->type = TokenStringIdentifier;
+			}
+			else if (*character == ':')
+			{
+				token->type = TokenLabel;
+				character++;
+				enum ErrorCode errorCode = tok_setJumpLabel(tokenizer, symbolIndex, token + 1);
+				if (errorCode != ErrorNone)
+					return err_makeCoreError(errorCode, tokenSourcePosition);
 
-								int tokenSourcePosition = (int)(character - sourceCode);
-								if (tokenizer->numTokens >= MAX_TOKENS - 1)
-								{
-										return err_makeCoreError(ErrorTooManyTokens, tokenSourcePosition);
-								}
-								token = &tokenizer->tokens[tokenizer->numTokens];
-								token->sourcePosition = tokenSourcePosition;
-								token->type = TokenEol;
-								tokenizer->numTokens++;
-								continue;
-            }
-            else
-            {
-                token->type = TokenIdentifier;
-                if (tokenizer->numTokens > 0 && tokenizer->tokens[tokenizer->numTokens - 1].type == TokenSUB)
-                {
-                    enum ErrorCode errorCode = tok_setSub(tokenizer, symbolIndex, token + 1);
-                    if (errorCode != ErrorNone) return err_makeCoreError(errorCode, tokenSourcePosition);
-                }
-            }
-            token->symbolIndex = symbolIndex;
-            tokenizer->numTokens++;
-            continue;
-        }
+				token->symbolIndex = symbolIndex;
+				tokenizer->numTokens++;
 
-        // Unexpected character
-        return err_makeCoreError(ErrorUnexpectedCharacter, tokenSourcePosition);
-    }
+				int tokenSourcePosition = (int)(character - sourceCode);
+				if (tokenizer->numTokens >= MAX_TOKENS - 1)
+				{
+					return err_makeCoreError(ErrorTooManyTokens, tokenSourcePosition);
+				}
+				token = &tokenizer->tokens[tokenizer->numTokens];
+				token->sourcePosition = tokenSourcePosition;
+				token->type = TokenEol;
+				tokenizer->numTokens++;
+				continue;
+			}
+			else
+			{
+				token->type = TokenIdentifier;
+				if (tokenizer->numTokens > 0 && tokenizer->tokens[tokenizer->numTokens - 1].type == TokenSUB)
+				{
+					enum ErrorCode errorCode = tok_setSub(tokenizer, symbolIndex, token + 1);
+					if (errorCode != ErrorNone)
+						return err_makeCoreError(errorCode, tokenSourcePosition);
+				}
+			}
+			token->symbolIndex = symbolIndex;
+			tokenizer->numTokens++;
+			continue;
+		}
 
-    // add EOL to the end
-    struct Token *token = &tokenizer->tokens[tokenizer->numTokens];
-    token->sourcePosition = (int)(character - sourceCode);
-    token->type = TokenEol;
-    tokenizer->numTokens++;
+		// Unexpected character
+		return err_makeCoreError(ErrorUnexpectedCharacter, tokenSourcePosition);
+	}
 
-    return err_noCoreError();
+	// add EOL to the end
+	struct Token *token = &tokenizer->tokens[tokenizer->numTokens];
+	token->sourcePosition = (int)(character - sourceCode);
+	token->type = TokenEol;
+	tokenizer->numTokens++;
+
+	return err_noCoreError();
 }
 
 void tok_freeTokens(struct Tokenizer *tokenizer)
 {
-    // Free string tokens
-    for (int i = 0; i < tokenizer->numTokens; i++)
-    {
-        struct Token *token = &tokenizer->tokens[i];
-        if (token->type == TokenString)
-        {
-            rcstring_release(token->stringValue);
-        }
-    }
-    memset(tokenizer, 0, sizeof(struct Tokenizer));
+	// Free string tokens
+	for (int i = 0; i < tokenizer->numTokens; i++)
+	{
+		struct Token *token = &tokenizer->tokens[i];
+		if (token->type == TokenString)
+		{
+			rcstring_release(token->stringValue);
+		}
+	}
+	memset(tokenizer, 0, sizeof(struct Tokenizer));
 }
 
 struct JumpLabelItem *tok_getJumpLabel(struct Tokenizer *tokenizer, int symbolIndex)
 {
-    struct JumpLabelItem *item;
-    for (int i = 0; i < tokenizer->numJumpLabelItems; i++)
-    {
-        item = &tokenizer->jumpLabelItems[i];
-        if (item->symbolIndex == symbolIndex)
-        {
-            return item;
-        }
-    }
-    return NULL;
+	struct JumpLabelItem *item = &tokenizer->jumpLabelItems[symbolIndex];
+	if (item->token != NULL)
+	{
+		return item;
+	}
+	return NULL;
 }
 
 enum ErrorCode tok_setJumpLabel(struct Tokenizer *tokenizer, int symbolIndex, struct Token *token)
 {
-    if (tok_getJumpLabel(tokenizer, symbolIndex) != NULL)
-    {
-        return ErrorLabelAlreadyDefined;
-    }
-    if (tokenizer->numJumpLabelItems >= MAX_JUMP_LABEL_ITEMS)
-    {
-        return ErrorTooManyLabels;
-    }
-    struct JumpLabelItem *item = &tokenizer->jumpLabelItems[tokenizer->numJumpLabelItems];
-    item->symbolIndex = symbolIndex;
-    item->token = token;
-    tokenizer->numJumpLabelItems++;
-    return ErrorNone;
+	if (tok_getJumpLabel(tokenizer, symbolIndex) != NULL)
+	{
+		return ErrorLabelAlreadyDefined;
+	}
+	if (tokenizer->numJumpLabelItems >= MAX_JUMP_LABEL_ITEMS)
+	{
+		return ErrorTooManyLabels;
+	}
+	struct JumpLabelItem *item = &tokenizer->jumpLabelItems[symbolIndex];
+	item->symbolIndex = symbolIndex;
+	item->token = token;
+	tokenizer->numJumpLabelItems++;
+	return ErrorNone;
 }
 
 struct SubItem *tok_getSub(struct Tokenizer *tokenizer, int symbolIndex)
 {
-    struct SubItem *item;
-    for (int i = 0; i < tokenizer->numSubItems; i++)
-    {
-        item = &tokenizer->subItems[i];
-        if (item->symbolIndex == symbolIndex)
-        {
-            return item;
-        }
-    }
-    return NULL;
+	struct SubItem *item;
+	for (int i = 0; i < tokenizer->numSubItems; i++)
+	{
+		item = &tokenizer->subItems[i];
+		if (item->symbolIndex == symbolIndex)
+		{
+			return item;
+		}
+	}
+	return NULL;
 }
 
 enum ErrorCode tok_setSub(struct Tokenizer *tokenizer, int symbolIndex, struct Token *token)
 {
-    if (tok_getSub(tokenizer, symbolIndex) != NULL)
-    {
-        return ErrorSubAlreadyDefined;
-    }
-    if (tokenizer->numSubItems >= MAX_SUB_ITEMS)
-    {
-        return ErrorTooManySubprograms;
-    }
-    struct SubItem *item = &tokenizer->subItems[tokenizer->numSubItems];
-    item->symbolIndex = symbolIndex;
-    item->token = token;
-    tokenizer->numSubItems++;
-    return ErrorNone;
+	if (tok_getSub(tokenizer, symbolIndex) != NULL)
+	{
+		return ErrorSubAlreadyDefined;
+	}
+	if (tokenizer->numSubItems >= MAX_SUB_ITEMS)
+	{
+		return ErrorTooManySubprograms;
+	}
+	struct SubItem *item = &tokenizer->subItems[tokenizer->numSubItems];
+	item->symbolIndex = symbolIndex;
+	item->token = token;
+	tokenizer->numSubItems++;
+	return ErrorNone;
 }
 //
 // Copyright 2017 Timo Kloss
@@ -13867,7 +14075,7 @@ int machine_peek(struct Core *core, int address)
 	// || (address >= 0x0f800 && address < 0x0fb00) // nothing 1
 	|| (address >= 0x0fefc && address < 0x0ff00) // nothing 2
 	|| (address >= 0x0ff34 && address < 0x0ff40) // nothing 3
-	|| (address >= 0x0ff8c && address < 0x0ffa0) // nothing 4
+	|| (address >= 0x0ff94 && address < 0x0ffa0) // nothing 4
 	|| (address >= 0x0ffb0 && address < 0x10000) // nothing 5
 	)
 	{
@@ -13952,7 +14160,7 @@ bool machine_poke(struct Core *core, int address, int value)
 	}
 	else if (address >= 0x0ff70 && address < 0x0ffa0) // io registers
 	{
-		if (address == 0xff87) {} // haptic
+		if (address == 0xff86) {} // haptic
 		else return false; // read only
 	}
 
@@ -14452,6 +14660,8 @@ void video_renderScreen(struct Core *core, uint32_t *outputRGB)
 #include "core.h"
 #include "core.h"
 #include "core.h"
+#include "core.h"
+#include "core.h"
 #include <math.h>
 #include <string.h>
 
@@ -14477,14 +14687,34 @@ void overlay_updateLayout(struct Core *core, struct CoreInput *input)
 	struct IORegisters *io = &core->machine->ioRegisters;
 	struct TextLib *lib = &core->overlay->textLib;
 	int k = io->keyboardHeight;
+	int oldHeight = lib->windowHeight;
 #ifdef SIMULATED_KEYBOARD
 	if (core->interpreter->simulatedKeyboardOn) k = 154;
 #endif
 	int b = io->safe.bottom > k ? io->safe.bottom : k;
+	int new_height = io->shown.height / 8 - (io->safe.top + 7) / 8 - (b + 7) / 8 - 1; // give
+
+	// keyboard has been shown, make sure to scroll the overlay
+	if (k > 0 && new_height < oldHeight)
+	{
+		// how many cells are covered by the keyboard
+		int cursor_y = lib->cursorY + lib->windowY;
+		// int new_bottom = io->shown.height / 8 - (lib->windowY + new_height); //keyboard_height_in_cells;
+		int need_to_scroll_up = cursor_y - new_height;
+
+		if (need_to_scroll_up > 0)
+		{
+			struct Plane *plane = txtlib_getBackground(lib, lib->windowBg);
+			txtlib_scroll(plane, lib->windowX, lib->windowY, lib->windowX + lib->windowWidth - 1, lib->windowY + lib->windowHeight - 1, 0, -need_to_scroll_up);
+
+			lib->cursorY -= need_to_scroll_up;
+		}
+	}
+
 	lib->windowX = (io->safe.left + 7) / 8;
 	lib->windowY = (io->safe.top + 7) / 8;
 	lib->windowWidth = io->shown.width / 8 - (io->safe.left + 7) / 8 - (io->safe.right + 7) / 8;
-	lib->windowHeight = io->shown.height / 8 - (io->safe.top + 7) / 8 - (b + 7) / 8 - 1; // give space for message
+	lib->windowHeight = new_height;
 }
 
 void overlay_reset(struct Core *core)
@@ -14713,6 +14943,7 @@ uint8_t overlayCharacters[] = {
 #include "core.h"
 #include "core.h"
 #include "core.h"
+#include "core.h"
 #include <string.h>
 #include <stdlib.h>
 
@@ -14900,7 +15131,6 @@ static void print_code(struct Core *core)
 		print_line_of_code(core, next, ' ');
 
 	txtlib_printText(textLib, "\n");
-	txtlib_scrollWindowIfNeeded(textLib);
 }
 
 static bool autoNext = false;
@@ -15012,6 +15242,10 @@ static void process_command_line(struct Core *core)
 
 			struct ControlsInfo info;
 			info.keyboardMode = KeyboardModeOff;
+#ifdef SIMULATED_KEYBOARD
+			core->interpreter->simulatedKeyboardOn = false;
+			core->machine->ioRegisters.keyboardHeight = 0;
+#endif
 			core->delegate->controlsDidChange(core->delegate->context, info);
 		}
 
@@ -15200,6 +15434,7 @@ static void process_command_line(struct Core *core)
 													t->type == TokenPOKE ? true : false);
 		}
 
+		// execute next line of code
 		else if (t->type == TokenNEXT)
 		{
 			enum ErrorCode errorCode = ErrorNone;
@@ -15214,6 +15449,33 @@ static void process_command_line(struct Core *core)
 			{
 				print_code(core);
 				autoNext = true;
+			}
+		}
+
+		else if (t->type == TokenGOTO || t->type == TokenGOSUB)
+		{
+			struct Token *cmdToken=t;
+			t = &toks.tokens[i++];
+			if (t->type == TokenON || t->type == TokenOFF)
+			{
+				if (cmdToken->type == TokenGOTO)
+				{
+					core->interpreter->logGoto = t->type == TokenON;
+					txtlib_printText(&core->overlay->textLib, "  log goto ");
+				}
+				else if (cmdToken->type == TokenGOSUB)
+				{
+					core->interpreter->logGosub = t->type == TokenON;
+					txtlib_printText(&core->overlay->textLib, "  log gosub ");
+				}
+				txtlib_printText(&core->overlay->textLib, (t->type == TokenON)?"on":"off");
+				new_line(core);
+			}
+			else
+			{
+				txtlib_printText(&core->overlay->textLib, "  syntax error");
+				new_line(core);
+				return;
 			}
 		}
 
@@ -15248,6 +15510,10 @@ void overlay_debugger(struct Core *core)
 
 	struct ControlsInfo info;
 	info.keyboardMode = KeyboardModeOn;
+#ifdef SIMULATED_KEYBOARD
+	core->interpreter->simulatedKeyboardOn = true;
+	core->machine->ioRegisters.keyboardHeight = 154;
+#endif
 	core->delegate->controlsDidChange(core->delegate->context, info);
 
 	if (autoNext)
@@ -15345,6 +15611,33 @@ void overlay_debugger(struct Core *core)
 			}
 		}
 	}
+}
+
+void log_goto(struct Core *core,int symbolIndex)
+{
+	struct TextLib *lib = &core->overlay->textLib;
+	struct Tokenizer *tokenizer = &core->interpreter->tokenizer;
+	txtlib_printText(lib, "goto ");
+	txtlib_printText(lib, tokenizer->symbols[symbolIndex].name);
+	new_line(core);
+}
+
+void log_gosub(struct Core *core,int symbolIndex)
+{
+	struct TextLib *lib = &core->overlay->textLib;
+	struct Tokenizer *tokenizer = &core->interpreter->tokenizer;
+	txtlib_printText(lib, "gosub ");
+	txtlib_printText(lib, tokenizer->symbols[symbolIndex].name);
+	new_line(core);
+}
+
+void log_return(struct Core *core,bool clear)
+{
+	struct TextLib *lib = &core->overlay->textLib;
+	struct Tokenizer *tokenizer = &core->interpreter->tokenizer;
+	txtlib_printText(lib, "return");
+	if (clear) txtlib_printText(lib, "and clear stack");
+	new_line(core);
 }
 /*
  * PCG Random Number Generation for C.

@@ -31,6 +31,10 @@ dependencies:
   flutter_keyboard_visibility: ^6.0.0
   share_plus: ^12.0.1
   file_picker: ^10.3.6
+  google_sign_in: ^7.2.0
+  extension_google_sign_in_as_googleapis_auth: ^3.0.0
+  googleapis: ^16.0.0
+  cloud_sync_drive: ^0.1.1
 
 dev_dependencies:
   flutter_test:

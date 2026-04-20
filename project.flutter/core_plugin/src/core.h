@@ -131,6 +131,10 @@ union IOStatus
 	{
 		uint8_t touch : 1;
 		uint8_t keyboardVisible : 1;
+		uint8_t touchTap : 1;
+		uint8_t touchDrag : 1;
+		uint8_t touchLong : 1;
+		uint8_t touchChange : 1;
 	};
 	uint8_t value;
 };
@@ -155,11 +159,15 @@ struct IORegisters
 	char key;
 	// 0x0ff85
 	union IOStatus status;
-	// 0x0ff87
-	uint8_t haptic;
+	// 0x0ff86 + padding
+	uint16_t haptic;
 	// 0x0ff88
 	int keyboardHeight;
 	// 0x0ff8c
+	float pressedX;
+	// 0x0ff90
+	float pressedY;
+	// 0x0ff94
 };
 
 #endif /* io_chip_h */
@@ -561,8 +569,8 @@ struct Machine {
     struct AudioRegisters audioRegisters;
 
     // 0x0FF70..0x0FFA0
-    struct IORegisters ioRegisters; // 28 Bytes
-    uint8_t nothing4[0x30 - sizeof(struct IORegisters)]; // 20 Bytes
+    struct IORegisters ioRegisters; // 36 Bytes
+    uint8_t nothing4[0x30 - sizeof(struct IORegisters)]; // 12 Bytes
 
     // 0x0FFA0..0x0FFB0
     struct DmaRegisters dmaRegisters; // 6 Bytes
@@ -583,7 +591,9 @@ struct MachineInternals {
     bool hasAccessedPersistent;
     bool hasChangedPersistent;
     bool isEnergySaving;
-		bool planeColor0IsOpaque[4];
+		bool planeColor0IsOpaque[4]; // TODO: should be mapped
+		bool gesturePressed,gestureLonged,longEnabled,gestureDragged,hasDrag;
+		float gesturePressedTimer;
 };
 
 void machine_init(struct Core *core);
@@ -683,6 +693,9 @@ struct TextLib
 	int blink;
 };
 
+struct Plane *txtlib_getBackground(struct TextLib *lib, int bg);
+void txtlib_scroll(struct Plane *plane, int fromX, int fromY, int toX, int toY, int deltaX, int deltaY);
+void txtlib_setCellAt(struct Plane *plane, int x, int y, int character, union CharacterAttributes attr);
 void txtlib_printText(struct TextLib *lib, const char *text);
 bool txtlib_deleteBackward(struct TextLib *lib);
 void txtlib_writeText(struct TextLib *lib, const char *text, int x, int y);
@@ -777,7 +790,7 @@ void overlay_draw(struct Core *core, bool ingame);
 #ifndef interpreter_config_h
 #define interpreter_config_h
 
-#define MAX_TOKENS 16384
+#define MAX_TOKENS 32768
 #define MAX_SYMBOLS 2048
 #define MAX_LABEL_STACK_ITEMS 128
 #define MAX_JUMP_LABEL_ITEMS 256
@@ -1025,6 +1038,12 @@ enum TokenType
 	TokenTIMER,
 	TokenTINT,
 	// TokenTOUCHSCREEN,
+	TokenTOUCHPX,
+	TokenTOUCHPY,
+	TokenTOUCHTAP,
+	TokenTOUCHDRAG,
+	TokenTOUCHLONG,
+	TokenTOUCHCHANGE,
 	TokenTOUCHX,
 	TokenTOUCHY,
 	TokenTOUCH,
@@ -1042,6 +1061,10 @@ enum TokenType
 	TokenWAVE,
 	TokenWEND,
 	TokenWHILE,
+	TokenWINDOWX,
+	TokenWINDOWY,
+	TokenWINDOWW,
+	TokenWINDOWH,
 	TokenWINDOW,
 
 	TokenSHOWNW,
@@ -1061,6 +1084,7 @@ enum TokenType
 	TokenCEIL,
 	TokenFLOOR,
 	TokenHAPTIC,
+
 
 	// Reserved Keywords
 	Token_reserved,
@@ -1124,31 +1148,34 @@ extern const char *TokenStrings[];
 
 #include <stdio.h>
 
-struct Symbol {
-    char name[SYMBOL_NAME_SIZE];
+struct Symbol
+{
+	char name[SYMBOL_NAME_SIZE];
 };
 
-struct JumpLabelItem {
-    int symbolIndex;
-    struct Token *token;
+struct JumpLabelItem
+{
+	int symbolIndex;
+	struct Token *token;
 };
 
-struct SubItem {
-    int symbolIndex;
-    struct Token *token;
+struct SubItem
+{
+	int symbolIndex;
+	struct Token *token;
 };
 
 struct Tokenizer
 {
-    struct Token tokens[MAX_TOKENS];
-    int numTokens;
-    struct Symbol symbols[MAX_SYMBOLS];
-    int numSymbols;
+	struct Token tokens[MAX_TOKENS];
+	int numTokens;
+	struct Symbol symbols[MAX_SYMBOLS];
+	int numSymbols;
 
-    struct JumpLabelItem jumpLabelItems[MAX_JUMP_LABEL_ITEMS];
-    int numJumpLabelItems;
-    struct SubItem subItems[MAX_SUB_ITEMS];
-    int numSubItems;
+	struct JumpLabelItem jumpLabelItems[MAX_SYMBOLS];
+	int numJumpLabelItems;
+	struct SubItem subItems[MAX_SUB_ITEMS];
+	int numSubItems;
 };
 
 struct CoreError tok_tokenizeProgram(struct Tokenizer *tokenizer, const char *sourceCode);
@@ -1763,6 +1790,7 @@ struct Interpreter
 	int interruptOverCycles;
 	bool debug;
 	bool pauseAtWait;
+	bool logGoto,logGosub;
 	int cpuLoadDisplay;
 	int cpuLoadMax;
 	int cpuLoadTimer;
@@ -2286,6 +2314,7 @@ enum ErrorCode cmd_TEXT(struct Core *core);
 enum ErrorCode cmd_NUMBER(struct Core *core);
 enum ErrorCode cmd_CLS(struct Core *core);
 enum ErrorCode cmd_WINDOW(struct Core *core);
+struct TypedValue fnc_WINDOW(struct Core *core);
 enum ErrorCode cmd_FONT(struct Core *core);
 enum ErrorCode cmd_LOCATE(struct Core *core);
 struct TypedValue fnc_CURSOR(struct Core *core);
@@ -2326,10 +2355,15 @@ extern uint8_t DefaultCharacters[][16];
 #ifndef overlay_debugger_h
 #define overlay_debugger_h
 
+#include <stdbool.h>
+
 struct Core;
 
 void trigger_debugger(struct Core *core);
 void overlay_debugger(struct Core *core);
+void log_goto(struct Core *core,int symbolIndex);
+void log_gosub(struct Core *core,int symbolIndex);
+void log_return(struct Core *core,bool clear);
 
 #endif /* overlay_debugger_h */
 /**
