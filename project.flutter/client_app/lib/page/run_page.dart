@@ -382,12 +382,15 @@ class _MyRunPageState extends State<MyRunPage> {
             child: PopupMenuButton<MyRunMenuOption>(
                 child: ClipRRect(
                     borderRadius: BorderRadius.circular(100),
-                    child: Container(
-                      width: 32,
-                      height: 32,
-                      color: Colors.black45,
-                      child: Icon(Icons.adaptive.more),
-                    )),
+                    child: Opacity(
+											opacity: 0.35,
+											child: Container(
+												width: 32,
+												height: 32,
+												color: Colors.black,
+												child: Icon(Icons.adaptive.more, color: Colors.white),
+											),
+										)),
                 itemBuilder: (BuildContext context) => [
                       const PopupMenuItem(
                         value: MyRunMenuOption.returnEditor,
