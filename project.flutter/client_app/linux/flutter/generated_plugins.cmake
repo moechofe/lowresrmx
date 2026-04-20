@@ -4,7 +4,6 @@
 
 list(APPEND FLUTTER_PLUGIN_LIST
   sw_rend
-  texture_rgba_renderer
   url_launcher_linux
 )
 
