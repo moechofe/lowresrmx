@@ -6,9 +6,9 @@ end_of_line=lf
 charset=utf-8
 trim_trailing_whitespace=true
 insert_final_newline=true
-[*.{json,md}]
+[*.md]
 indent_style=space
 indent_size=4
-[*.{nx,rmx,yml,yaml}]
+[*.{nx,rmx,yml,yaml,json}]
 indent_style=space
 indent_size=2
