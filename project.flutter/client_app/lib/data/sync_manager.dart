@@ -21,8 +21,9 @@ class SyncManager with ChangeNotifier {
   void _init() {
     final GoogleSignIn signIn = GoogleSignIn.instance;
 		_signInInitialized = signIn.initialize(
-			// TODO: hide this
-
+			// It is safe
+			clientId: "204783433847-laro4ojkci5oriqqv956dp2n4pjigpuu.apps.googleusercontent.com",
+			serverClientId: "204783433847-3m9hqdqcofo8lsj1bqkh3bm2upa4kvjh.apps.googleusercontent.com",
 		);
 
     signIn.authenticationEvents.listen((event) async {
