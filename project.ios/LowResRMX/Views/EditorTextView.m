@@ -294,12 +294,12 @@
 	NSArray *keywords = @[
 		@"ABS", @"ADD", @"AND", @"ASC", @"AT", @"ATAN", @"ATTR", @"BG", @"BIN", @"CALL", @"CEIL", @"CELL", @"CELL\\.A", @"CELL\\.C", @"CHAR", @"CHR", @"CLAMP", @"CLS", @"CLW", @"COLOR", @"COMPAT", @"COPY", @"COS", @"CURSOR\\.X", @"CURSOR\\.Y", @"DATA", @"DEC", @"DIM", @"DMA", @"DO", @"EASE", @"ELSE", @"EMITTER", @"END", @"ENVELOPE", @"EXIT", @"EXP", @"FILE", @"FILES", @"FILL", @"FLIP", @"FLOOR", @"FONT", @"FOR", @"FSIZE", @"GLOBAL", @"GOSUB", @"GOTO", @"HAPTIC", @"HEX", @"HIT", @"IF", @"INC", @"INKEY", @"INPUT", @"INSTR", @"INT", @"KEYBOARD", @"LEFT", @"LEN", @"LET", @"LFO", @"LFO\\.A", @"LOAD", @"LOCATE", @"LOG", @"LOOP", @"MAX", @"MCELL", @"MCELL\\.A", @"MCELL\\.C", @"MESSAGE", @"MID", @"MIN", @"MOD", @"MUSIC", @"NEXT", @"NOT", @"NUMBER", @"OFF", @"ON", @"OR", @"PAL", @"PALETTE", @"PARTICLE", @"PAUSE", @"PEEK", @"PEEKL", @"PEEKW", @"PI", @"PLAY", @"POKE", @"POKEL", @"POKEW", @"PRINT", @"PRIO", @"RANDOMIZE", @"RASTER", @"READ", @"REPEAT", @"RESTORE", @"RETURN", @"RIGHT", @"RND", @"ROL", @"ROM", @"ROR", @"SAFE\\.B", @"SAFE\\.L", @"SAFE\\.R", @"SAFE\\.T", @"SAVE", @"SCROLL", @"SCROLL\\.X", @"SCROLL\\.Y", @"SGN", @"SHOWN\\.H", @"SHOWN\\.W", @"SIN", @"SIZE", @"SKIP", @"SOUND", @"SOURCE", @"SPRITE", @"SPRITE\\.A", @"SPRITE\\.C", @"SPRITE\\.X", @"SPRITE\\.Y", @"SQR", @"STEP", @"STOP", @"STR", @"SUB", @"SWAP", @"SYSTEM", @"TAN", @"TAP", @"TEXT", @"THEN", @"TIMER", @"TINT", @"TO", @"TOUCH", @"TOUCH\\.X", @"TOUCH\\.Y", @"TOUCH\\.TAP", @"TOUCH\\.DRAG", @"TOUCH\\.LONG", @"TOUCH\\.CHANGE", @"TOUCH\\.PX", @"TOUCH\\.PY", @"TRACE", @"TRACK", @"UBOUND", @"UNTIL", @"VAL", @"VBL", @"VIEW", @"VOLUME", @"WAIT", @"WAVE", @"WEND", @"WHILE", @"WINDOW", @"WINDOW\\.X", @"WINDOW\\.Y", @"WINDOW\\.W", @"WINDOW\\.H", @"XOR", ];
 
-	UIColor *keywordColor = [UIColor colorWithRed:0.5059 green:0.2392 blue:0.6118 alpha:1.0];
-	UIColor *numberColor = [UIColor colorWithRed:0.6471 green:0.1137 blue:0.1765 alpha:1.0];
-	UIColor *stringColor = [UIColor colorWithRed:0.6471 green:0.1137 blue:0.1765 alpha:1.0];
-	UIColor *commentColor = [UIColor colorWithRed:0.4667 green:0.4627 blue:0.4824 alpha:1.0];
-	UIColor *labelColor = [UIColor colorWithRed:0.7765 green:0.2745 blue:0.0000 alpha:1.0];
-	UIColor *subsColor = [UIColor colorWithRed:0.1020 green:0.3725 blue:0.7059 alpha:1.0];
+	UIColor *keywordColor = [UIColor colorNamed:@"syntax_keywoard"];
+	UIColor *numberColor = [UIColor colorNamed:@"syntax_number"];
+	UIColor *stringColor = [UIColor colorNamed:@"syntax_string"];
+	UIColor *commentColor = [UIColor colorNamed:@"syntax_comment"];
+	UIColor *labelColor = [UIColor colorNamed:@"syntax_label"];
+	UIColor *subsColor = [UIColor colorNamed:@"syntax_subs"];
 
 	// End of code, start of DATA block
 	NSRegularExpression *endOfCodeRegex = [NSRegularExpression regularExpressionWithPattern:@"^#[0-9]+:" options:NSRegularExpressionAnchorsMatchLines error:nil];
