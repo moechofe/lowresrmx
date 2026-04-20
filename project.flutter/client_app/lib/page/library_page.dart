@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:lowresrmx/data/library.dart';
 import 'package:lowresrmx/data/preference.dart';
+import 'package:lowresrmx/data/sync_manager.dart';
 import 'package:lowresrmx/page/manual_page.dart';
 import 'package:lowresrmx/page/settings_page.dart';
 import 'package:lowresrmx/widget/library_grid.dart';
@@ -151,6 +152,16 @@ class _MyLibraryPageState extends State<MyLibraryPage> {
 		}
     return Scaffold(
         appBar: AppBar(title: const Text("Programs"), actions: [
+          Consumer<SyncManager>(
+            builder: (context, sync, child) {
+              if (!sync.isLoggedIn) return const SizedBox.shrink();
+              return Icon(
+                sync.isAuthorized ? Icons.cloud_done_rounded : Icons.cloud_off_rounded,
+                size: 20,
+                color: sync.isAuthorized ? null : Theme.of(context).colorScheme.error,
+              );
+            },
+          ),
           buildMorePopupMenu(context),
           const SizedBox(width: 8.0),
         ]),

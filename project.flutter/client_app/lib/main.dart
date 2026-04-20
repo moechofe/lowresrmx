@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:lowresrmx/core/runtime.dart';
 import 'package:lowresrmx/data/library.dart';
 import 'package:lowresrmx/data/preference.dart';
+import 'package:lowresrmx/data/sync_manager.dart';
 import 'package:lowresrmx/page/edit_page.dart';
 import 'package:lowresrmx/page/library_page.dart';
 import 'package:lowresrmx/theme.dart';
@@ -49,6 +50,7 @@ class MyAppState extends State<MyApp> {
     log("MyApp.build() Not good if called multiple times.");
     return MultiProvider(
         providers: [
+          ChangeNotifierProvider<SyncManager>(create: (_) => SyncManager()),
           ChangeNotifierProvider<MyLibrary>(create: (_) => MyLibrary()),
           Provider<ComPort>(create: (_) => comPort),
           ChangeNotifierProvider<MyEditorPreference>(

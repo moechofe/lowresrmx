@@ -59,7 +59,7 @@ abstract class MyPreference {
     final keys =
         prefs.getKeys().where((key) => key.startsWith("$program-")).toList();
     for (final key in keys) {
-      await prefs.remove(key);
+      prefs.remove(key);
     }
   }
 
@@ -70,7 +70,7 @@ abstract class MyPreference {
 
 	static Future<void> setEditorFontSize(double fontSize) async {
 		final prefs = await SharedPreferences.getInstance();
-		await prefs.setDouble("editorFontSize", fontSize);
+		prefs.setDouble("editorFontSize", fontSize);
 	}
 
 	static Future<String> getPreviouslyInstalledVersion() async {
@@ -80,7 +80,17 @@ abstract class MyPreference {
 
 	static Future<void> setPreviouslyInstalledVersion(String version) async {
 		final prefs = await SharedPreferences.getInstance();
-		await prefs.setString("previouslyInstalledVersion", version);
+		prefs.setString("previouslyInstalledVersion", version);
+	}
+
+	static Future<bool> getGoogleSigned() async {
+		final prefs = await SharedPreferences.getInstance();
+		return prefs.getBool("googleSigned") ?? false;
+	}
+
+	static Future<void> setGoogleSigned(bool value) async {
+		final prefs = await SharedPreferences.getInstance();
+		prefs.setBool("googleSigned", value);
 	}
 }
 
