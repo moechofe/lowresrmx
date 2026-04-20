@@ -22,17 +22,18 @@ class SyncManager with ChangeNotifier {
     final GoogleSignIn signIn = GoogleSignIn.instance;
 		_signInInitialized = signIn.initialize(
 			// TODO: hide this
-			clientId: "204783433847-laro4ojkci5oriqqv956dp2n4pjigpuu.apps.googleusercontent.com",
-			serverClientId: "204783433847-3m9hqdqcofo8lsj1bqkh3bm2upa4kvjh.apps.googleusercontent.com",
+
 		);
 
     signIn.authenticationEvents.listen((event) async {
       if (event is GoogleSignInAuthenticationEventSignIn) {
         _currentUser = event.user;
         _isAuthorized = (await _currentUser?.authorizationClient.authorizationForScopes(googleScopes)) != null;
+				MyPreference.setGoogleSigned(_isAuthorized);
       } else if (event is GoogleSignInAuthenticationEventSignOut) {
         _currentUser = null;
         _isAuthorized = false;
+				MyPreference.setGoogleSigned(_isAuthorized);
       }
       notifyListeners();
     });
@@ -59,6 +60,7 @@ class SyncManager with ChangeNotifier {
   Future<void> requestDrivePermissions() async {
     if (_currentUser == null) return;
     _isAuthorized = await _currentUser?.authorizationClient.authorizeScopes(googleScopes) != null;
+		MyPreference.setGoogleSigned(_isAuthorized);
     notifyListeners();
   }
 }
