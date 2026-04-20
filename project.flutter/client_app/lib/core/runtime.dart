@@ -345,7 +345,7 @@ void isolateEntryPoint(List<Object?> arguments) {
       textureId, ffi.Pointer.fromAddress(nativeHandle));
   }
 
-  double updateTime, renderTime;
+  // double updateTime, renderTime;
 
   try {
     runtime.initState();

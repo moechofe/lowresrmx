@@ -191,11 +191,13 @@ FFI_PLUGIN_EXPORT void runnerUnregisterNativeTexture(int64_t textureId)
 
 JNI_EXPORT void JNICALL
 Java_com_lowresrmx_core_1plugin_CorePlugin_nativeRegisterTexture(JNIEnv *env, jobject thiz, jlong texture_id, jobject surface) {
-    ANativeWindow *window = ANativeWindow_fromSurface(env, surface);
-    if (window) {
-        ANativeWindow_acquire(window);
-        runnerRegisterNativeTexture(texture_id, window);
-    }
+	ANativeWindow *window = ANativeWindow_fromSurface(env, surface);
+	if (window) {
+		// Force RGBA_8888
+		ANativeWindow_setBuffersGeometry(window, SCREEN_WIDTH, SCREEN_HEIGHT, WINDOW_FORMAT_RGBA_8888);
+		ANativeWindow_acquire(window);
+		runnerRegisterNativeTexture(texture_id, window);
+	}
 }
 
 JNI_EXPORT void JNICALL
@@ -234,7 +236,7 @@ FFI_PLUGIN_EXPORT void runnerRenderToTexture(Runner* runner, int64_t textureId)
                 // If stride is different, we need to render row by row or adjust video_renderScreen.
                 // For now, let's just log it.
                 __android_log_print(ANDROID_LOG_WARN, "core_plugin", "Stride mismatch: %d != %d", buffer.stride, SCREEN_WIDTH);
-                
+
                 // Temporary: allocate a temporary buffer and copy if stride doesn't match
                 uint32_t *temp = malloc(SCREEN_WIDTH * SCREEN_HEIGHT * 4);
                 if (temp) {
