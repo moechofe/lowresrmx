@@ -37,6 +37,11 @@ class ExplorerViewController: UIViewController, UICollectionViewDelegateFlowLayo
         navigationItem.leftBarButtonItem = actionItem
         navigationItem.rightBarButtonItems = [addProjectItem/*, communityItem*/]
 
+//        FIXME: this is not better
+//        if #available(iOS 26.0, *) {
+//					navigationItem.leftBarButtonItem?.hidesSharedBackground = true
+//				}
+
         collectionView.dataSource = self
         collectionView.delegate = self
 

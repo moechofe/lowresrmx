@@ -385,8 +385,6 @@ However it is a lot of work to create an app like this. If you like it, please c
                     <tabBar key="tabBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="XgI-WL-F9F">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="49"/>
                         <autoresizingMask key="autoresizingMask"/>
-                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                        <color key="barTintColor" systemColor="secondarySystemBackgroundColor"/>
                     </tabBar>
                 </tabBarController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="wR1-HP-Cmk" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -524,7 +522,6 @@ However it is a lot of work to create an app like this. If you like it, please c
                         <rect key="frame" x="0.0" y="20" width="320" height="54"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                        <color key="barTintColor" systemColor="secondarySystemBackgroundColor"/>
                     </navigationBar>
                     <toolbar key="toolbar" opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" translucent="NO" id="cpb-BQ-cAU">
                         <autoresizingMask key="autoresizingMask"/>
@@ -634,7 +631,6 @@ However it is a lot of work to create an app like this. If you like it, please c
                             </activityIndicatorView>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="jSf-LH-K3l"/>
-                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
                             <constraint firstItem="4B5-Tz-hRA" firstAttribute="centerY" secondItem="EsH-iL-o4a" secondAttribute="centerY" id="0L0-gA-5Z7"/>
                             <constraint firstItem="mgK-pS-p2l" firstAttribute="leading" secondItem="jSf-LH-K3l" secondAttribute="leading" id="FUe-gW-3JO"/>
@@ -663,11 +659,12 @@ However it is a lot of work to create an app like this. If you like it, please c
                     <navigationBar key="navigationBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" translucent="NO" id="arr-IJ-JtF">
                         <rect key="frame" x="0.0" y="20" width="320" height="54"/>
                         <autoresizingMask key="autoresizingMask"/>
-                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <navigationBarAppearance key="standardAppearance"/>
                     </navigationBar>
                     <nil name="viewControllers"/>
                     <toolbar key="toolbar" opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="Mek-Wh-PjX">
                         <autoresizingMask key="autoresizingMask"/>
+                        <toolbarAppearance key="standardAppearance"/>
                     </toolbar>
                     <connections>
                         <segue destination="4FR-4E-1pq" kind="relationship" relationship="rootViewController" id="PyJ-ui-eNC"/>
