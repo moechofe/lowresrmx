@@ -11,6 +11,7 @@ import 'package:provider/provider.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 late final ComPort comPort;
+
 void main() async {
 	WidgetsFlutterBinding.ensureInitialized();
 	PackageInfo packageInfo = await PackageInfo.fromPlatform();

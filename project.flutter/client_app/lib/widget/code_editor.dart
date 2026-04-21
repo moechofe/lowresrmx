@@ -37,7 +37,7 @@ class _MyCodeEditorState extends State<MyCodeEditor> {
         : styleLight;
     return CodeEditor(
       focusNode: widget.focusNode,
-      autofocus: true,
+      autofocus: false,
       controller: widget.editingController,
       findController: widget.findController,
 			scrollController: widget.scrollController,

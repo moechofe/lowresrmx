@@ -12,6 +12,8 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path/path.dart' as p;
 import 'package:provider/provider.dart';
 import 'package:share_handler/share_handler.dart';
+import 'package:flutter/services.dart';
+import 'package:app_links/app_links.dart';
 
 enum MyLibraryMenuOption {
   setting,
@@ -34,20 +36,24 @@ class MyLibraryPage extends StatefulWidget {
 class _MyLibraryPageState extends State<MyLibraryPage> {
   MyLibrarySort sort = MyLibrarySort.name;
   StreamSubscription<SharedMedia>? streamSubscription;
+  StreamSubscription<Uri>? appLinksSubscription;
   SharedMedia? sharedMedia;
   TextEditingController? nameController;
+  String? importedProgram;
+  bool importedError = false;
 
   @override
   void initState() {
     super.initState();
-		if (Platform.isAndroid || Platform.isIOS) {
-    	initSharedMedia();
-		}
+    if (Platform.isAndroid || Platform.isIOS) {
+      initSharedMedia();
+    }
   }
 
   @override
   void dispose() {
     streamSubscription?.cancel();
+    appLinksSubscription?.cancel();
     super.dispose();
   }
 
@@ -66,6 +72,7 @@ class _MyLibraryPageState extends State<MyLibraryPage> {
   }
 
   Future<void> initSharedMedia() async {
+    // For shared from device
     final handler = ShareHandlerPlatform.instance;
     final media = await handler.getInitialSharedMedia();
     if (media != null && mediaIsAProgram(media)) {
@@ -79,12 +86,39 @@ class _MyLibraryPageState extends State<MyLibraryPage> {
         });
       }
     });
+
+    // For shared from browser
+    final appLinks = AppLinks();
+    appLinks.getInitialLink().then((uri) {
+      if (uri != null) {
+        handleUri(uri);
+      }
+    });
+    appLinksSubscription = appLinks.uriLinkStream.listen((uri) {
+      if (!mounted) return;
+      handleUri(uri);
+    });
   }
 
-	Future<String> getVersionInfo() async {
-  	PackageInfo packageInfo = await PackageInfo.fromPlatform();
-		return packageInfo.version;
-	}
+  void handleUri(Uri uri) async {
+    if (uri.scheme != "lowresrmx") return;
+    final pid = uri.queryParameters['i'];
+    final name = uri.queryParameters['n'];
+		importedError = true;
+    if (pid != null && name != null) {
+      final newProgram = await MyLibrary.importFromRetroit(pid, name);
+      if (newProgram != null)
+			{
+				importedProgram = newProgram;
+				importedError = false;
+			}
+    }
+  }
+
+  Future<String> getVersionInfo() async {
+    PackageInfo packageInfo = await PackageInfo.fromPlatform();
+    return packageInfo.version;
+  }
 
   void gotoSettings(BuildContext context) {
     Navigator.of(context).push(MaterialPageRoute(
@@ -145,20 +179,24 @@ class _MyLibraryPageState extends State<MyLibraryPage> {
   @override
   Widget build(BuildContext context) {
     log("MyLibraryPage.build()");
-		if (sharedMedia != null) {
-			WidgetsBinding.instance.addPostFrameCallback((_) {
-				showSaveSharedMedia(sharedMedia!.attachments![0]!.path);
-			});
-		}
+    if (sharedMedia != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        showSaveSharedMedia(sharedMedia!.attachments![0]!.path);
+      });
+    }
     return Scaffold(
         appBar: AppBar(title: const Text("Programs"), actions: [
           Consumer<SyncManager>(
             builder: (context, sync, child) {
               if (!sync.isLoggedIn) return const SizedBox.shrink();
               return Icon(
-                sync.isAuthorized ? Icons.cloud_done_rounded : Icons.cloud_off_rounded,
+                sync.isAuthorized
+                    ? Icons.cloud_done_rounded
+                    : Icons.cloud_off_rounded,
                 size: 20,
-                color: sync.isAuthorized ? null : Theme.of(context).colorScheme.error,
+                color: sync.isAuthorized
+                    ? null
+                    : Theme.of(context).colorScheme.error,
               );
             },
           ),
@@ -180,10 +218,10 @@ class _MyLibraryPageState extends State<MyLibraryPage> {
       child: ListView(
         children: [
           const MyManualTile(),
-					buildSettingItem(context),
-					buildReinstallItem(context),
+          buildSettingItem(context),
+          buildReinstallItem(context),
           const Divider(),
-					buildAboutItem(context),
+          buildAboutItem(context),
         ],
       ),
     );
@@ -199,32 +237,33 @@ class _MyLibraryPageState extends State<MyLibraryPage> {
         });
   }
 
-	Widget buildReinstallItem(BuildContext context) {
-		return ListTile(
-			leading: const Icon(Icons.restore_rounded),
-			title: const Text("Reinstall default programs"),
-			subtitle: const Text("Will erase modification mades on them."),
-			titleAlignment: ListTileTitleAlignment.top,
-			onTap: () async {
-				// TODO: implement me
-			},
-		);
-	}
+  Widget buildReinstallItem(BuildContext context) {
+    return ListTile(
+      leading: const Icon(Icons.restore_rounded),
+      title: const Text("Reinstall default programs"),
+      subtitle: const Text("Will erase modification mades on them."),
+      titleAlignment: ListTileTitleAlignment.top,
+      onTap: () async {
+        // TODO: implement me
+      },
+    );
+  }
 
-	Widget buildAboutItem(BuildContext context) {
-		return ListTile(
-			title: const Text("LowResRMX version"),
-			subtitle: FutureBuilder(
-				future: getVersionInfo(),
-				builder: (context, snapshot) {
-					if (snapshot.hasData) {
-						return Text(snapshot.data!);
-					}
-					return const Text("…");
-				},
-			) , titleAlignment: ListTileTitleAlignment.top,
-		);
-	}
+  Widget buildAboutItem(BuildContext context) {
+    return ListTile(
+      title: const Text("LowResRMX version"),
+      subtitle: FutureBuilder(
+        future: getVersionInfo(),
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            return Text(snapshot.data!);
+          }
+          return const Text("…");
+        },
+      ),
+      titleAlignment: ListTileTitleAlignment.top,
+    );
+  }
 
   void showSaveSharedMedia(String inputFile) async {
     // Retrieve media name and content
@@ -235,12 +274,17 @@ class _MyLibraryPageState extends State<MyLibraryPage> {
       return;
     }
     final String mediaCode = await mediaFile.readAsString();
+    showSaveProgram(mediaCode, name: mediaName);
+  }
+
+  void showSaveProgram(String mediaCode, {String? name}) async {
+    final String mediaName = name ?? "unnamed";
     nameController = TextEditingController(text: mediaName);
     if (!mounted) return;
     String? newName = await showDialog<String?>(
         context: context,
         builder: (BuildContext context) {
-          String newName = p.basenameWithoutExtension(inputFile);
+          String newName = mediaName;
           return AlertDialog(
               icon: const Icon(Icons.drive_file_rename_outline_rounded),
               title: const Text("Name"),
@@ -268,10 +312,10 @@ class _MyLibraryPageState extends State<MyLibraryPage> {
       final String automaticName = p.basenameWithoutExtension(newFile.path);
       await MyLibrary.writeCode(automaticName, mediaCode);
       await MyLibrary.renameProgram(automaticName, newName);
-			setState(() {
-				sharedMedia = null;
-				nameController = null;
-			});
+      setState(() {
+        sharedMedia = null;
+        nameController = null;
+      });
     }
   }
 }

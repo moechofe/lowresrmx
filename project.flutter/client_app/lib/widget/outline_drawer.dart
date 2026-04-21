@@ -118,7 +118,7 @@ class _MyOutlineDrawerState extends State<MyOutlineDrawer> {
 
   Widget buildSearchBar(BuildContext context) {
     return TextField(
-			autofocus: true,
+			autofocus: false,
       controller: searchController,
       decoration: InputDecoration(
         hintText: "Search",

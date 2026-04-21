@@ -35,6 +35,7 @@ dependencies:
   extension_google_sign_in_as_googleapis_auth: ^3.0.0
   googleapis: ^16.0.0
   cloud_sync_drive: ^0.1.1
+  app_links: ^6.3.2
 
 dev_dependencies:
   flutter_test:

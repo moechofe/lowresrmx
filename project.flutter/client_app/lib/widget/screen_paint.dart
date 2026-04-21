@@ -56,12 +56,27 @@ class _MyScreenPaintState extends State<MyScreenPaint> {
 		log("MyScreenPaint.build() Not good if called multiple times.");
 		final comport = context.watch<ComPort>();
 		if (comport.textureId != null) {
-			return SizedBox(
-				width: Runtime.screenWidth.toDouble(), height: Runtime.screenHeight.toDouble(),
-				child: Texture(
-					textureId: comport.textureId!,
-					filterQuality: FilterQuality.none,
-					),
+			// return LayoutBuilder(builder: (context, constraints) {
+			// 	final FittedSizes fitted = applyBoxFit(
+			// 		BoxFit.cover,
+			// 		Size(Runtime.screenWidth.toDouble(), Runtime.screenHeight.toDouble()),
+			// 		constraints.biggest);
+			// 	return Center(child: SizedBox.fromSize(
+			// 		size: fitted.destination,
+			// 		child: Texture(textureId: comport.textureId!, filterQuality: FilterQuality.none)
+			// 	));
+
+			// });
+			// return SizedBox(
+			// 	width: Runtime.screenWidth.toDouble(), height: Runtime.screenHeight.toDouble(),
+			// 	child: Texture(
+			// 		textureId: comport.textureId!,
+			// 		filterQuality: FilterQuality.none,
+			// 		),
+			// );
+			return Texture(
+				textureId: comport.textureId!,
+				filterQuality: FilterQuality.none
 			);
 		}	else {
 			return CustomPaint(

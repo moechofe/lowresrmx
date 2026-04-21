@@ -1,16 +1,13 @@
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
 import 'package:flutter/services.dart';
-
-import 'package:path/path.dart' as p;
 import 'package:image/image.dart' as img;
-
 import 'package:lowresrmx/data/preference.dart';
-// import 'package:lowresrmx/data/firestore.dart';
+import 'package:lowresrmx/data/retroit.dart';
+import 'package:path/path.dart' as p;
 
 enum MyLibrarySort {
   name,
@@ -50,20 +47,26 @@ class MyLibrary extends ChangeNotifier {
     return File(codePath);
   }
 
-  static Future<File> createProgram() async {
-    final Directory libraryDir = await getLibraryDir();
-    String programPath = p.join(libraryDir.path, "unnamed$extension");
-    File programFile = File(programPath);
+	static Future<String> findUniqueName(String name) async {
+		final Directory libraryDir = await getLibraryDir();
+    String programPath = p.join(libraryDir.path, "$name$extension");
+		File programFile = File(programPath);
     int counter = -1;
     while (await programFile.exists()) {
       counter += 1;
-      programPath = p.join(libraryDir.path, "unnamed $counter$extension");
+      programPath = p.join(libraryDir.path, "$name $counter$extension");
       programFile = File(programPath);
     }
+		return counter>=0 ? "$name $counter$extension" : name;
+	}
+
+  static Future<File> createProgram() async {
+    final Directory libraryDir = await getLibraryDir();
+		final name = await findUniqueName("unnamed");
+		// TODO: why not using getCodeFile
+    String programPath = p.join(libraryDir.path, "$name$extension");
+    File programFile = File(programPath);
     await programFile.create();
-
-    // MyFirestore.createProgram(p.basenameWithoutExtension(programPath));
-
     MyLibrary().notifyListeners();
     return programFile;
   }
@@ -210,4 +213,16 @@ class MyLibrary extends ChangeNotifier {
 			await file.writeAsBytes(byteData.buffer.asUint8List());
 		}
   }
+
+	static Future<String?> importFromRetroit(String pid, String name) async {
+		final values = await Future.wait([downloadProgram(pid), downloadThumbnail(pid)]);
+		final prg=values[0] as String;
+		final png=values[1] as img.Image?;
+		if (png == null) { return null; }
+		else {
+			final uniqueName = await findUniqueName(name);
+			await Future.wait([writeCode(uniqueName, prg), writeThumbnail(uniqueName, png)]);
+			return uniqueName;
+		}
+	}
 }
