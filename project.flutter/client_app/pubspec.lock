@@ -98,7 +98,7 @@ packages:
     source: hosted
     version: "1.1.2"
   cloud_sync_core:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: cloud_sync_core
       sha256: "528be414178a6caf0c49e99bb14b87f910e93655cdf34b7feb294dd1006b5257"
