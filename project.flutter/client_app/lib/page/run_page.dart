@@ -329,17 +329,14 @@ class _MyRunPageState extends State<MyRunPage> {
         width: constraints.maxWidth,
         height: constraints.maxHeight,
         // Make the screen scaled and aligned to the top left.
-        child: FittedBox(
-            fit: BoxFit.cover,
-            alignment: Alignment.topLeft,
-            child: Stack(
-              children: [
-                MyScreenPaint(
-									imageNotifier: imageNotifier,
-                ),
-								// buildMeasurement(context),
-              ],
-            )));
+        child: Stack(
+          children: [
+            MyScreenPaint(
+              imageNotifier: imageNotifier,
+            ),
+            // buildMeasurement(context),
+          ],
+        ));
   }
 
   Container buildMeasurement(BuildContext context) {
