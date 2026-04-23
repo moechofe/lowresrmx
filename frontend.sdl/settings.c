@@ -161,7 +161,7 @@ void settings_setParameter(struct Parameters *parameters, const char *key, const
     }
     else if (strcmp(key, "mapping") == 0)
     {
-        int i = atoi(value);
+        int i = SDL_atoi(value);
         if (i >= 0 && i <= 1)
         {
             parameters->mapping = i;
@@ -180,7 +180,7 @@ void settings_setParameter(struct Parameters *parameters, const char *key, const
     }
     else if (strcmp(key, "zoom") == 0)
     {
-        int i = atoi(value);
+        int i = SDL_atoi(value);
         if (i >= 0 && i <= 3)
         {
 #ifdef __EMSCRIPTEN__

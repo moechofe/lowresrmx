@@ -19,7 +19,9 @@
 //
 
 #if defined(_WIN32)
-#include <SDL.h>
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_stdinc.h>
 #else
-#include <SDL2/SDL.h>
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_stdinc.h>
 #endif

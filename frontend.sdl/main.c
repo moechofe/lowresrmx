@@ -65,12 +65,12 @@ const int keyboardControls[2][2][8] = {
 
 void update(void *arg);
 void updateScreenRect(int winW, int winH);
-void configureJoysticks(void);
-void closeJoysticks(void);
+// void configureJoysticks(void);
+// void closeJoysticks(void);
 void setTouchPosition(int windowX, int windowY);
 void toggleZoom(void);
 void changeVolume(int delta);
-void audioCallback(void *userdata, Uint8 *stream, int len);
+void audioCallback(void *userdata, SDL_AudioStream *stream, int additional_amount, int total_amount);
 void saveScreenshot(void *pixels, int scale);
 
 #ifdef __EMSCRIPTEN__
@@ -81,8 +81,7 @@ void onerror(const char *filename);
 SDL_Window *window = NULL;
 SDL_Renderer *renderer = NULL;
 SDL_Texture *texture = NULL;
-SDL_AudioDeviceID audioDevice = 0;
-SDL_AudioSpec audioSpec;
+SDL_AudioStream *audioStream = NULL;
 
 struct Runner runner;
 #if DEV_MENU
@@ -96,7 +95,7 @@ char mainProgramFilename[FILENAME_MAX] = "";
 
 int numJoysticks = 0;
 SDL_Joystick *joysticks[2] = {NULL, NULL};
-SDL_Rect screenRect;
+SDL_FRect screenRect;
 bool quit = false;
 bool releasedTouch = false;
 bool audioStarted = false;
@@ -128,48 +127,44 @@ int main(int argc, const char *argv[])
 	{
 		SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK);
 
-		SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
+		// SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
 		SDL_Event event;
 		while (SDL_PollEvent(&event))
 		{
 			switch (event.type)
 			{
-			case SDL_DROPFILE:
+			case SDL_EVENT_DROP_FILE:
 			{
-				strncpy(mainProgramFilename, event.drop.file, FILENAME_MAX - 1);
-				SDL_free(event.drop.file);
+				strncpy(mainProgramFilename, event.drop.data, FILENAME_MAX - 1);
+				// TODO: Do I need to free?
+				// SDL_free(event.drop.data);
 				break;
 			}
 			}
 		}
 
-		Uint32 windowFlags = SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE;
-		if (settings.session.fullscreen)
-		{
-			windowFlags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
-		}
+		Uint32 windowFlags = SDL_WINDOW_RESIZABLE;
 
 		const char *windowTitle = "LowResRMX";
 
-		window = SDL_CreateWindow(windowTitle, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH * defaultWindowScale, SCREEN_HEIGHT * defaultWindowScale, windowFlags);
-		renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+		window = SDL_CreateWindow(windowTitle, SCREEN_WIDTH * defaultWindowScale, SCREEN_HEIGHT * defaultWindowScale, windowFlags);
+		renderer = SDL_CreateRenderer(window, NULL);
 		texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, SCREEN_WIDTH, SCREEN_HEIGHT);
+
+		if (settings.session.fullscreen)
+		{
+			SDL_SetWindowFullscreen(window, false);
+		}
 
 		SDL_AudioSpec desiredAudioSpec = {
 				.freq = 44100,
-				.format = AUDIO_S16,
+				.format = SDL_AUDIO_S16LE,
 				.channels = NUM_CHANNELS,
-#ifdef __EMSCRIPTEN__
-				.samples = 2048, // sample FRAMES
-#else
-				.samples = 1470, // sample FRAMES
-#endif
-				.userdata = runner.core,
-				.callback = audioCallback};
+		};
 
-		audioDevice = SDL_OpenAudioDevice(NULL, 0, &desiredAudioSpec, &audioSpec, SDL_AUDIO_ALLOW_FREQUENCY_CHANGE);
+		audioStream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &desiredAudioSpec, &audioCallback, runner.core);
 
-		configureJoysticks();
+		// configureJoysticks();
 
 		bootNX();
 		if (hasProgram())
@@ -206,9 +201,9 @@ int main(int argc, const char *argv[])
 #endif
 	}
 
-	closeJoysticks();
+	// closeJoysticks();
 
-	SDL_CloseAudioDevice(audioDevice);
+	SDL_DestroyAudioStream(audioStream);
 
 	SDL_DestroyTexture(texture);
 	SDL_DestroyRenderer(renderer);
@@ -379,14 +374,7 @@ void getRamFilename(char *outputString)
 
 void updateMouseMode()
 {
-	if (!mouseEnabled && (SDL_GetWindowFlags(window) & SDL_WINDOW_FULLSCREEN_DESKTOP))
-	{
-		SDL_ShowCursor(SDL_DISABLE);
-	}
-	else
-	{
-		SDL_ShowCursor(SDL_ENABLE);
-	}
+	SDL_ShowCursor();
 }
 
 void setMouseEnabled(bool enabled)
@@ -411,34 +399,34 @@ void update(void *arg)
 	{
 		switch (event.type)
 		{
-		case SDL_QUIT:
+		case SDL_EVENT_QUIT:
 			quit = true;
 			break;
 
-		case SDL_WINDOWEVENT:
-			switch (event.window.event)
-			{
-			case SDL_WINDOWEVENT_RESIZED:
-			{
-				updateScreenRect(event.window.data1, event.window.data2);
-				forceRender = true;
-				break;
-			}
-			}
+		// case SDL_WINDOWEVENT:
+		// 	switch (event.window.event)
+		// 	{
+		case SDL_EVENT_WINDOW_RESIZED:
+		// {
+			updateScreenRect(event.window.data1, event.window.data2);
+			forceRender = true;
 			break;
+		// }
+			// }
+			// break;
 
-		case SDL_DROPFILE:
+		case SDL_EVENT_DROP_FILE:
 		{
-			if (hasPostfix(event.drop.file, ".rmx") || hasPostfix(event.drop.file, ".RMX"))
+			if (hasPostfix(event.drop.data, ".rmx") || hasPostfix(event.drop.data, ".RMX"))
 			{
 #if DEV_MENU
-				bool handled = (mainState == MainStateDevMenu && dev_handleDropFile(&devMenu, event.drop.file));
+				bool handled = (mainState == MainStateDevMenu && dev_handleDropFile(&devMenu, event.drop.data));
 				if (!handled)
 				{
-					selectProgram(event.drop.file);
+					selectProgram(event.drop.data);
 				}
 #else
-				selectProgram(event.drop.file);
+				selectProgram(event.drop.data);
 #endif
 				forceRender = true;
 			}
@@ -446,16 +434,16 @@ void update(void *arg)
 			{
 				overlay_message(runner.core, "NOT NX FORMAT");
 			}
-			SDL_free(event.drop.file);
+			// SDL_free(event.drop.data);
 			break;
 		}
 
-		case SDL_KEYDOWN:
+		case SDL_EVENT_KEY_DOWN:
 		{
-			SDL_Keycode keycode = event.key.keysym.sym;
-			SDL_Scancode scancode = event.key.keysym.scancode;
+			SDL_Keycode keycode = event.key.key;
+			SDL_Scancode scancode = event.key.scancode;
 
-			if (event.key.keysym.mod == 0)
+			if (event.key.mod == 0)
 			{
 				hasInput = true;
 			}
@@ -496,9 +484,9 @@ void update(void *arg)
 
 #if HOT_KEYS
 			// system
-			if (event.key.keysym.mod & KMOD_CTRL)
+			if (event.key.mod & SDL_KMOD_CTRL)
 			{
-				if (keycode == SDLK_d)
+				if (keycode == SDLK_D)
 				{
 					core_setDebug(runner.core, !core_getDebug(runner.core));
 					if (core_getDebug(runner.core))
@@ -510,20 +498,20 @@ void update(void *arg)
 						overlay_message(runner.core, "DEBUG OFF");
 					}
 				}
-				else if (keycode == SDLK_f)
-				{
-					if (SDL_GetWindowFlags(window) & SDL_WINDOW_FULLSCREEN_DESKTOP)
-					{
-						SDL_SetWindowFullscreen(window, 0);
-					}
-					else
-					{
-						SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
-					}
-					updateMouseMode();
-					forceRender = true;
-				}
-				else if (keycode == SDLK_r)
+				// else if (keycode == SDLK_f)
+				// {
+				// 	if (SDL_GetWindowFlags(window) & SDL_WINDOW_FULLSCREEN_DESKTOP)
+				// 	{
+				// 		SDL_SetWindowFullscreen(window, 0);
+				// 	}
+				// 	else
+				// 	{
+				// 		SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
+				// 	}
+				// 	updateMouseMode();
+				// 	forceRender = true;
+				// }
+				else if (keycode == SDLK_R)
 				{
 					if (hasProgram())
 					{
@@ -531,16 +519,16 @@ void update(void *arg)
 						overlay_message(runner.core, "RELOADED");
 					}
 				}
-				else if (keycode == SDLK_e)
+				else if (keycode == SDLK_E)
 				{
 					rebootNX();
 				}
-				else if (keycode == SDLK_s)
+				else if (keycode == SDLK_S)
 				{
-					screenshotRequestedWithScale = (event.key.keysym.mod & KMOD_SHIFT) ? 1 : 4;
+					screenshotRequestedWithScale = (event.key.mod & SDL_KMOD_SHIFT) ? 1 : 4;
 					forceRender = true;
 				}
-				else if (keycode == SDLK_z)
+				else if (keycode == SDLK_Z)
 				{
 					toggleZoom();
 					forceRender = true;
@@ -593,7 +581,7 @@ void update(void *arg)
 			break;
 		}
 
-		case SDL_TEXTINPUT:
+		case SDL_EVENT_TEXT_INPUT:
 		{
 			char key = event.text.text[0];
 			hasInput = true;
@@ -608,7 +596,7 @@ void update(void *arg)
 			break;
 		}
 
-		case SDL_MOUSEBUTTONDOWN:
+		case SDL_EVENT_MOUSE_BUTTON_DOWN:
 		{
 			hasInput = true;
 			setTouchPosition(event.button.x, event.button.y);
@@ -616,38 +604,38 @@ void update(void *arg)
 			break;
 		}
 
-		case SDL_MOUSEBUTTONUP:
+		case SDL_EVENT_MOUSE_BUTTON_UP:
 		{
 			releasedTouch = true;
 			break;
 		}
 
-		case SDL_MOUSEMOTION:
+		case SDL_EVENT_MOUSE_MOTION:
 		{
 			setTouchPosition(event.motion.x, event.motion.y);
 			break;
 		}
 
-		case SDL_JOYDEVICEADDED:
-		case SDL_JOYDEVICEREMOVED:
-		{
-			configureJoysticks();
-			break;
-		}
+		// case SDL_JOYDEVICEADDED:
+		// case SDL_JOYDEVICEREMOVED:
+		// {
+		// 	configureJoysticks();
+		// 	break;
+		// }
 
-		case SDL_JOYBUTTONDOWN:
-		{
-			hasInput = true;
-			if (event.jbutton.button == 2)
-			{
-				coreInput.pause = true;
-			}
-			break;
-		}
+		// case SDL_JOYBUTTONDOWN:
+		// {
+		// 	hasInput = true;
+		// 	if (event.jbutton.button == 2)
+		// 	{
+		// 		coreInput.pause = true;
+		// 	}
+		// 	break;
+		// }
 		}
 	}
 
-	const Uint8 *state = SDL_GetKeyboardState(NULL);
+	// const bool *state = SDL_GetKeyboardState(NULL);
 
 	switch (mainState)
 	{
@@ -703,10 +691,10 @@ void update(void *arg)
 
 	hasUsedInputLastUpdate = coreInput.out_hasUsedInput;
 
-	if (!audioStarted && audioDevice)
+	if (!audioStarted && audioStream)
 	{
 		audioStarted = true;
-		SDL_PauseAudioDevice(audioDevice, 0);
+		SDL_ResumeAudioStreamDevice(audioStream);
 	}
 
 	if (core_shouldRender(runner.core) || forceRender)
@@ -726,7 +714,7 @@ void update(void *arg)
 		}
 
 		SDL_UnlockTexture(texture);
-		SDL_RenderCopy(renderer, texture, NULL, &screenRect);
+		SDL_RenderTexture(renderer, texture, NULL, &screenRect);
 
 		SDL_RenderPresent(renderer);
 	}
@@ -783,32 +771,32 @@ void updateScreenRect(int winW, int winH)
 		break;
 	}
 
-	SDL_SetTextInputRect(&screenRect);
+	// SDL_SetTextInputRect(&screenRect);
 }
 
-void configureJoysticks()
-{
-	closeJoysticks();
-	numJoysticks = SDL_NumJoysticks();
-	if (numJoysticks > 2)
-	{
-		numJoysticks = 2;
-	}
-	for (int i = 0; i < numJoysticks; i++)
-	{
-		joysticks[i] = SDL_JoystickOpen(i);
-	}
-}
+// void configureJoysticks()
+// {
+// 	closeJoysticks();
+// 	numJoysticks = SDL_NumJoysticks();
+// 	if (numJoysticks > 2)
+// 	{
+// 		numJoysticks = 2;
+// 	}
+// 	for (int i = 0; i < numJoysticks; i++)
+// 	{
+// 		joysticks[i] = SDL_JoystickOpen(i);
+// 	}
+// }
 
-void closeJoysticks()
-{
-	for (int i = 0; i < numJoysticks; i++)
-	{
-		SDL_JoystickClose(joysticks[i]);
-		joysticks[i] = NULL;
-	}
-	numJoysticks = 0;
-}
+// void closeJoysticks()
+// {
+// 	for (int i = 0; i < numJoysticks; i++)
+// 	{
+// 		SDL_JoystickClose(joysticks[i]);
+// 		joysticks[i] = NULL;
+// 	}
+// 	numJoysticks = 0;
+// }
 
 void setTouchPosition(int windowX, int windowY)
 {
@@ -840,11 +828,21 @@ void changeVolume(int delta)
 	overlay_message(runner.core, message);
 }
 
-void audioCallback(void *userdata, Uint8 *stream, int len)
+#define AUDIO_CALLBACK_BUFFER_SIZE 16384
+static int16_t audio_callback_buffer[AUDIO_CALLBACK_BUFFER_SIZE / sizeof(int16_t)];
+
+void audioCallback(void *userdata, SDL_AudioStream *stream, int additional_amount, int total_amount)
 {
-	int16_t *samples = (int16_t *)stream;
-	int numSamples = len / NUM_CHANNELS;
-	audio_renderAudio(userdata, samples, numSamples, audioSpec.freq, volume);
+	while (additional_amount > 0)
+	{
+		int bytes_to_process = (additional_amount > (int)sizeof(audio_callback_buffer)) ? (int)sizeof(audio_callback_buffer) : additional_amount;
+		int num_samples = bytes_to_process / sizeof(int16_t);
+
+		audio_renderAudio(userdata, audio_callback_buffer, num_samples, 44100, volume);
+		SDL_PutAudioStreamData(stream, audio_callback_buffer, bytes_to_process);
+
+		additional_amount -= bytes_to_process;
+	}
 }
 
 void saveScreenshot(void *pixels, int scale)

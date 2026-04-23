@@ -34,6 +34,7 @@ void controlsDidChange(void *context, struct ControlsInfo controlsInfo);
 void persistentRamWillAccess(void *context, uint8_t *destination, int size);
 void persistentRamDidChange(void *context, uint8_t *data, int size);
 
+extern SDL_Window *window;
 
 void runner_init(struct Runner *runner)
 {
@@ -211,17 +212,19 @@ void diskDriveIsFull(void *context, struct DataManager *diskDataManager)
 /** Called when keyboard or gamepad settings changed */
 void controlsDidChange(void *context, struct ControlsInfo controlsInfo)
 {
+	struct Runner *runner = context;
+
 	if (   controlsInfo.keyboardMode == KeyboardModeOn
 	|| (controlsInfo.keyboardMode == KeyboardModeOptional && !SDL_HasScreenKeyboardSupport()) )
 	{
-		if (!SDL_IsTextInputActive())
+		if (!SDL_TextInputActive(window))
 		{
-			SDL_StartTextInput();
+			SDL_StartTextInput(window);
 		}
 	}
-	else if (SDL_IsTextInputActive())
+	else if (SDL_TextInputActive(window))
 	{
-		SDL_StopTextInput();
+		SDL_StopTextInput(window);
 	}
 	setMouseEnabled(true);
 }

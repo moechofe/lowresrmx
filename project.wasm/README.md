@@ -9,7 +9,7 @@ Follow: https://emscripten.org/docs/getting_started/downloads.html#platform-note
     ./emsdk install latest
     ./emsdk activate latest
 
-To compile:
+# Compile
 
     cd project.wasm
     source ~/Documents/emsdk/emsdk_env.sh
