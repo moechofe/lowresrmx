@@ -17259,7 +17259,7 @@ bool settings_filename(char *destination);
 void settings_setParameter(struct Parameters *parameters, const char *key, const char *value);
 void settings_saveAs(struct Settings *settings, const char *filename);
 
-void settings_init(struct Settings *settings, char *filenameOut, int argc, const char * argv[])
+void settings_init(struct Settings *settings, char *filenameOut, int argc, char * argv[])
 {
     memset(settings, 0, sizeof(struct Settings));
 
