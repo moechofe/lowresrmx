@@ -23,7 +23,7 @@
 
 #include <stdio.h>
 #include <stdbool.h>
-#include <sdl_include.h>
+#include "sdl_include.h"
 #include "core.h"
 
 struct Runner {

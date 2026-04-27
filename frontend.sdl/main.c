@@ -105,7 +105,7 @@ bool hasUsedInputLastUpdate = false;
 int screenshotRequestedWithScale = 0;
 int volume = 0; // 0 = max, it's a bit shift
 
-int main(int argc, const char *argv[])
+int main(int argc, char *argv[])
 {
 	memset(&coreInput, 0, sizeof(struct CoreInput));
 

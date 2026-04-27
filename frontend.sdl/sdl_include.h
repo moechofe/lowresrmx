@@ -21,6 +21,10 @@
 #if defined(_WIN32)
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_stdinc.h>
+#elif defined(__ANDROID__)
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
+#include <SDL3/SDL_stdinc.h>
 #else
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_stdinc.h>

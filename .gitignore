@@ -8,3 +8,6 @@ node_modules
 package-lock.json
 package.json
 venv
+.cxx
+.idea
+.gradle
