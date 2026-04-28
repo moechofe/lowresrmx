@@ -1,3 +1,4 @@
 <resources>
 	<string name="app_name">GAME NAME</string>
+	<string name="audio_playback_attribution">This app plays audio</string>
 </resources>

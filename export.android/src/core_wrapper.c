@@ -21,13 +21,13 @@ void corewrapper_init() {
 
 // JNI method to initialize CoreWrapper (call once from Java, e.g. in onCreate)
 JNIEXPORT void JNICALL
-Java_lowresrmx_author_name_game_name_MyActivity_nativeInitCoreWrapper(JNIEnv *env, jobject thiz) {
+Java_lowresrmx_author_1name_game_1name_MyActivity_nativeInitCoreWrapper(JNIEnv *env, jobject thiz) {
   corewrapper_init();
 }
 
 // JNI method to call core_update
 JNIEXPORT void JNICALL
-Java_lowresrmx_author_name_game_name_MyActivity_nativeCoreUpdate(JNIEnv *env, jobject thiz) {
+Java_lowresrmx_author_1name_game_1name_MyActivity_nativeCoreUpdate(JNIEnv *env, jobject thiz) {
   core_update(&g_coreWrapper.core, &g_coreWrapper.input);
 }
 
