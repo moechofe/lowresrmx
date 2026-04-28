@@ -15,5 +15,5 @@ dependencyResolutionManagement {
         mavenCentral()
     }
 }
-rootProject.name = "sdlcross"
+rootProject.name = "lowresrmx"
 include ':app'

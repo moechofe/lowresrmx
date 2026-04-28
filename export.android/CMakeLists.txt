@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0...4.0)
-project(sdlcross C)
+project(lowresrmx C)
 
 find_package(SDL3 REQUIRED CONFIG)
 
@@ -9,15 +9,16 @@ if(ANDROID)
 	endfunction()
 endif()
 
-add_sdl_executable(sdlcross
+add_sdl_executable(${PROJECT_NAME}
 	src/all.c
+	src/core_wrapper.c
 )
 
-target_link_libraries(sdlcross PRIVATE SDL3::SDL3)
+target_link_libraries(${PROJECT_NAME} PRIVATE SDL3::SDL3)
 
-set_target_properties(sdlcross PROPERTIES
+set_target_properties(${PROJECT_NAME} PROPERTIES
 	CXX_STANDARD 11
 )
 if(NOT MSVC)
-    target_compile_options(sdlcross PRIVATE)
+    target_compile_options(${PROJECT_NAME} PRIVATE)
 endif()
