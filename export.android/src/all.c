@@ -10728,7 +10728,11 @@ const char *uppercaseString(const char *source)
     return buffer;
 }
 
+#if defined(__ANDROID__)
+char uppercaseChar(const char sourceChar)
+#else
 const char uppercaseChar(const char sourceChar)
+#endif
 {
 		char finalChar = sourceChar;
 		if (finalChar >= 'a' && finalChar <= 'z')
@@ -16113,7 +16117,11 @@ bool hasUsedInputLastUpdate = false;
 int screenshotRequestedWithScale = 0;
 int volume = 0; // 0 = max, it's a bit shift
 
+#if defined(__ANDROID__)
 int main(int argc, char *argv[])
+#else
+int main(int argc, const char *argv[])
+#endif
 {
 	memset(&coreInput, 0, sizeof(struct CoreInput));
 
@@ -16151,7 +16159,11 @@ int main(int argc, char *argv[])
 			}
 		}
 
+#if defined(__ANDROID__)
+		Uint32 windowFlags = SDL_WINDOW_RESIZABLE | SDL_WINDOW_MAXIMIZED | SDL_WINDOW_FULLSCREEN;
+#else
 		Uint32 windowFlags = SDL_WINDOW_RESIZABLE;
+#endif
 
 		const char *windowTitle = "LowResRMX";
 
@@ -16159,10 +16171,14 @@ int main(int argc, char *argv[])
 		renderer = SDL_CreateRenderer(window, NULL);
 		texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, SCREEN_WIDTH, SCREEN_HEIGHT);
 
+#if defined(__ANDROID__)
+		SDL_SetWindowFullscreen(window, false);
+#else
 		if (settings.session.fullscreen)
 		{
 			SDL_SetWindowFullscreen(window, false);
 		}
+#endif
 
 		SDL_AudioSpec desiredAudioSpec = {
 				.freq = 44100,
@@ -16417,6 +16433,8 @@ void update(void *arg)
 		case SDL_EVENT_WINDOW_RESIZED:
 		// {
 			updateScreenRect(event.window.data1, event.window.data2);
+			overlay_clear(runner.core);
+			overlay_updateState(runner.core);
 			forceRender = true;
 			break;
 		// }
@@ -16730,55 +16748,86 @@ void update(void *arg)
 
 void updateScreenRect(int winW, int winH)
 {
-	switch (settings.session.zoom)
-	{
-	case ZoomPixelPerfect:
-	{
-		int factor = fmax(1, fmin(winW / SCREEN_WIDTH, winH / SCREEN_HEIGHT));
+	SDL_Log("updateScreenRect %dx%d",winW,winH);
 
-		int nxScreenW = SCREEN_WIDTH * factor;
-		int nxScreenH = SCREEN_HEIGHT * factor;
+	float r=(float)winW/(float)winH;
 
-		screenRect.w = nxScreenW;
-		screenRect.h = nxScreenH;
-		screenRect.x = (winW - nxScreenW) / 2;
-		screenRect.y = (winH - nxScreenH) / 2;
-		break;
+	float width,height,scale;
+
+	if (r>=9.0/16.0)
+	{
+		width=(float)winW;
+		scale=width/216.0;
+		height=384.0*scale;
 	}
-	case ZoomLarge:
+	else
 	{
-		float factor = fmax(1, fmin(winW / (float)SCREEN_WIDTH, winH / (float)SCREEN_HEIGHT));
-
-		int nxScreenW = SCREEN_WIDTH * factor;
-		int nxScreenH = SCREEN_HEIGHT * factor;
-
-		screenRect.w = nxScreenW;
-		screenRect.h = nxScreenH;
-		screenRect.x = (winW - nxScreenW) / 2;
-		screenRect.y = (winH - nxScreenH) / 2;
-		break;
-	}
-	case ZoomOverscan:
-	{
-		float factor = fmax(winW / (float)SCREEN_WIDTH, winH / (float)SCREEN_HEIGHT);
-
-		int nxScreenW = SCREEN_WIDTH * factor;
-		int nxScreenH = SCREEN_HEIGHT * factor;
-
-		screenRect.w = nxScreenW;
-		screenRect.h = nxScreenH;
-		screenRect.x = (winW - nxScreenW) / 2;
-		screenRect.y = (winH - nxScreenH) / 2;
-		break;
-	}
-	case ZoomSqueeze:
-		screenRect.w = winW;
-		screenRect.h = winH;
-		screenRect.x = 0;
-		screenRect.y = 0;
-		break;
+		height=(float)winH;
+		scale=height/384.0;
+		width=216.0*scale;
 	}
 
+	SDL_Log("s:%.03f w:%.03f h:%.03f",scale,width,height);
+
+	screenRect.w = width;
+	screenRect.h = height;
+	screenRect.x = 0;
+	screenRect.y = 0;
+
+	coreInput.width=(int)((float)winW/scale);
+	coreInput.height=(int)((float)winH/scale);
+
+	SDL_Log("shown: %dx%d",coreInput.width,coreInput.height);
+
+// 	switch (settings.session.zoom)
+// 	{
+// 	case ZoomPixelPerfect:
+// 	{
+// 		int factor = fmax(1, fmin(winW / SCREEN_WIDTH, winH / SCREEN_HEIGHT));
+
+// 		int nxScreenW = SCREEN_WIDTH * factor;
+// 		int nxScreenH = SCREEN_HEIGHT * factor;
+
+// 		screenRect.w = nxScreenW;
+// 		screenRect.h = nxScreenH;
+// 		screenRect.x = (winW - nxScreenW) / 2;
+// 		screenRect.y = (winH - nxScreenH) / 2;
+// 		break;
+// 	}
+// 	case ZoomLarge:
+// 	{
+// 		float factor = fmax(1, fmin(winW / (float)SCREEN_WIDTH, winH / (float)SCREEN_HEIGHT));
+
+// 		int nxScreenW = SCREEN_WIDTH * factor;
+// 		int nxScreenH = SCREEN_HEIGHT * factor;
+
+// 		screenRect.w = nxScreenW;
+// 		screenRect.h = nxScreenH;
+// 		screenRect.x = (winW - nxScreenW) / 2;
+// 		screenRect.y = (winH - nxScreenH) / 2;
+// 		break;
+// 	}
+// 	case ZoomOverscan:
+// 	{
+// 		float factor = fmax(winW / (float)SCREEN_WIDTH, winH / (float)SCREEN_HEIGHT);
+
+// 		int nxScreenW = SCREEN_WIDTH * factor;
+// 		int nxScreenH = SCREEN_HEIGHT * factor;
+
+// 		screenRect.w = nxScreenW;
+// 		screenRect.h = nxScreenH;
+// 		screenRect.x = (winW - nxScreenW) / 2;
+// 		screenRect.y = (winH - nxScreenH) / 2;
+// 		break;
+// 	}
+// 	case ZoomSqueeze:
+// 		screenRect.w = winW;
+// 		screenRect.h = winH;
+// 		screenRect.x = 0;
+// 		screenRect.y = 0;
+// 		break;
+// 	}
+// #endif
 	// SDL_SetTextInputRect(&screenRect);
 }
 
@@ -17259,7 +17308,7 @@ bool settings_filename(char *destination);
 void settings_setParameter(struct Parameters *parameters, const char *key, const char *value);
 void settings_saveAs(struct Settings *settings, const char *filename);
 
-void settings_init(struct Settings *settings, char *filenameOut, int argc, char * argv[])
+void settings_init(struct Settings *settings, char *filenameOut, int argc, const char * argv[])
 {
     memset(settings, 0, sizeof(struct Settings));
 

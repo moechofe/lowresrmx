@@ -2,27 +2,37 @@ package lowresrmx.author_name.game_name;
 
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.view.View;
+import android.util.Log;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 import org.libsdl.app.SDLActivity;
 
 public class MyActivity extends SDLActivity {
 
-	public native void nativeInitCoreWrapper();
-	public native void nativeCoreUpdate();
-
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		nativeInitCoreWrapper();
+
+	final View decorView = getWindow().getDecorView();
+	decorView.post(new Runnable() {
+		@Override
+		public void run() {
+			WindowInsetsControllerCompat windowInsetsController = WindowCompat.getInsetsController(getWindow(), decorView);
+			if (windowInsetsController != null) {
+				windowInsetsController.hide(WindowInsetsCompat.Type.systemBars());
+				windowInsetsController.setSystemBarsBehavior(
+					WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+				);
+			}
+		}
+	});
 	}
 
 	@Override
 	protected String[] getLibraries() {
 		return new String[] { "lowresrmx" };
-	}
-
-	@Override
-	public void onConfigurationChanged(Configuration newConfig) {
-		super.onConfigurationChanged(newConfig);
-		nativeCoreUpdate();
 	}
 }

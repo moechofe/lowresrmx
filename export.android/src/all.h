@@ -37,7 +37,7 @@
 extern "C" {
 #endif
 
-
+  
 #ifndef SL_GLOBMATCH_NEGATE
 #define SL_GLOBMATCH_NEGATE '^'       /* std char set negation char */
 #endif
@@ -2223,7 +2223,11 @@ struct CoreError stats_update(struct Stats *stats, const char *sourceCode);
 #include <stdio.h>
 
 const char *uppercaseString(const char *source);
+#if defined(__ANDROID__)
+char uppercaseChar(const char sourceChar);
+#else
 const char uppercaseChar(const char sourceChar);
+#endif
 const char *lineString(const char *source, int pos);
 int lineNumber(const char *source, int pos);
 void stringConvertCopy(char *dest, const char *source, size_t length);
@@ -2624,7 +2628,7 @@ struct Settings {
     char toolNames[MAX_TOOLS][TOOL_NAME_SIZE];
 };
 
-void settings_init(struct Settings *settings, char *filenameOut, int argc, char * argv[]);
+void settings_init(struct Settings *settings, char *filenameOut, int argc, const char * argv[]);
 void settings_save(struct Settings *settings);
 bool settings_addTool(struct Settings *settings, const char *filename);
 void settings_removeTool(struct Settings *settings, int index);

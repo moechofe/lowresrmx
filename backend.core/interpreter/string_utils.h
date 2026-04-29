@@ -24,7 +24,11 @@
 #include <stdio.h>
 
 const char *uppercaseString(const char *source);
+#if defined(__ANDROID__)
 char uppercaseChar(const char sourceChar);
+#else
+const char uppercaseChar(const char sourceChar);
+#endif
 const char *lineString(const char *source, int pos);
 int lineNumber(const char *source, int pos);
 void stringConvertCopy(char *dest, const char *source, size_t length);

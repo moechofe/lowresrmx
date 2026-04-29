@@ -45,7 +45,11 @@ const char *uppercaseString(const char *source)
     return buffer;
 }
 
+#if defined(__ANDROID__)
+char uppercaseChar(const char sourceChar)
+#else
 const char uppercaseChar(const char sourceChar)
+#endif
 {
 		char finalChar = sourceChar;
 		if (finalChar >= 'a' && finalChar <= 'z')
