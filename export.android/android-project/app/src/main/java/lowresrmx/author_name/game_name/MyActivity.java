@@ -15,20 +15,26 @@ public class MyActivity extends SDLActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+	}
 
-	final View decorView = getWindow().getDecorView();
-	decorView.post(new Runnable() {
-		@Override
-		public void run() {
-			WindowInsetsControllerCompat windowInsetsController = WindowCompat.getInsetsController(getWindow(), decorView);
-			if (windowInsetsController != null) {
-				windowInsetsController.hide(WindowInsetsCompat.Type.systemBars());
-				windowInsetsController.setSystemBarsBehavior(
-					WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-				);
-			}
+	@Override
+	public void onWindowFocusChanged(boolean hasFocus) {
+		super.onWindowFocusChanged(hasFocus);
+		if (hasFocus) {
+			hideSystemUI();
 		}
-	});
+	}
+
+	private void hideSystemUI() {
+		View decorView = getWindow().getDecorView();
+		WindowInsetsControllerCompat windowInsetsController =
+				WindowCompat.getInsetsController(getWindow(), decorView);
+		if (windowInsetsController != null) {
+			windowInsetsController.hide(WindowInsetsCompat.Type.systemBars());
+			windowInsetsController.setSystemBarsBehavior(
+					WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+		}
 	}
 
 	@Override

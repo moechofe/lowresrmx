@@ -16172,7 +16172,7 @@ int main(int argc, const char *argv[])
 		texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, SCREEN_WIDTH, SCREEN_HEIGHT);
 
 #if defined(__ANDROID__)
-		SDL_SetWindowFullscreen(window, false);
+		SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
 #else
 		if (settings.session.fullscreen)
 		{
