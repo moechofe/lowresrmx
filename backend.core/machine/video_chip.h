@@ -48,7 +48,7 @@
 #endif
 #endif
 #if __ANDROID__
-#define ABGR 1
+#define ABGR 0
 #endif
 #if __linux__
 #endif

@@ -65,6 +65,7 @@ const int keyboardControls[2][2][8] = {
 
 void update(void *arg);
 void updateScreenRect(int winW, int winH);
+void updateSafeArea();
 // void configureJoysticks(void);
 // void closeJoysticks(void);
 void setTouchPosition(int windowX, int windowY);
@@ -82,6 +83,7 @@ SDL_Window *window = NULL;
 SDL_Renderer *renderer = NULL;
 SDL_Texture *texture = NULL;
 SDL_AudioStream *audioStream = NULL;
+float rendererScale = 1;
 
 struct Runner runner;
 #if DEV_MENU
@@ -154,6 +156,7 @@ int main(int argc, const char *argv[])
 		window = SDL_CreateWindow(windowTitle, SCREEN_WIDTH * defaultWindowScale, SCREEN_HEIGHT * defaultWindowScale, windowFlags);
 		renderer = SDL_CreateRenderer(window, NULL);
 		texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, SCREEN_WIDTH, SCREEN_HEIGHT);
+		SDL_SetTextureScaleMode(texture, SDL_SCALEMODE_PIXELART);
 
 #if defined(__ANDROID__)
 		SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
@@ -172,7 +175,11 @@ int main(int argc, const char *argv[])
 
 		audioStream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &desiredAudioSpec, &audioCallback, runner.core);
 
-		// configureJoysticks();
+		int width, height;
+		SDL_GetWindowSize(window, &width, &height);
+		updateScreenRect(width, height);
+		updateSafeArea();
+		core_handleInput(runner.core, &coreInput);
 
 		bootNX();
 		if (hasProgram())
@@ -180,9 +187,6 @@ int main(int argc, const char *argv[])
 			machine_poke(runner.core, bootIntroStateAddress, BootIntroStateProgramAvailable);
 		}
 
-		int width, height;
-		SDL_GetWindowSize(window, &width, &height);
-		updateScreenRect(width, height);
 
 #ifdef __EMSCRIPTEN__
 		emscripten_set_main_loop_arg(update, NULL, -1, true);
@@ -411,19 +415,29 @@ void update(void *arg)
 			quit = true;
 			break;
 
-		// case SDL_WINDOWEVENT:
-		// 	switch (event.window.event)
-		// 	{
 		case SDL_EVENT_WINDOW_RESIZED:
-		// {
 			updateScreenRect(event.window.data1, event.window.data2);
 			overlay_clear(runner.core);
 			overlay_updateState(runner.core);
 			forceRender = true;
 			break;
-		// }
-			// }
-			// break;
+
+		case SDL_EVENT_WINDOW_SAFE_AREA_CHANGED:
+			updateSafeArea();
+			overlay_clear(runner.core);
+			overlay_updateState(runner.core);
+			forceRender = true;
+			break;
+
+		case SDL_EVENT_SCREEN_KEYBOARD_SHOWN:
+			runner.core->machine->ioRegisters.status.keyboardVisible = true;
+			SDL_Log("Keyboard was set on");
+			break;
+
+		case SDL_EVENT_SCREEN_KEYBOARD_HIDDEN:
+			runner.core->machine->ioRegisters.status.keyboardVisible = false;
+			SDL_Log("Keyboard was set off");
+			break;
 
 		case SDL_EVENT_DROP_FILE:
 		{
@@ -730,38 +744,55 @@ void update(void *arg)
 	}
 }
 
+void updateSafeArea()
+{
+	SDL_Rect area;
+	int w,h;
+	SDL_GetWindowSize(window,&w,&h);
+	SDL_GetWindowSafeArea(window,&area);
+	SDL_Log("Output %dx%d",w,h);
+	SDL_Log("Safe %dx%d %dx%d",area.x,area.y,area.w,area.h);
+
+	coreInput.left=(int)((float)area.x/rendererScale);
+	coreInput.top=(int)((float)area.y/rendererScale);
+	coreInput.right=(int)((float)(w-area.w-area.x)/rendererScale);
+	coreInput.right=(int)((float)(h-area.h-area.y)/rendererScale);
+
+	SDL_Log("SAFE: %dx%dx%dx%d",coreInput.left,coreInput.top,coreInput.right,coreInput.bottom);
+}
+
 void updateScreenRect(int winW, int winH)
 {
-	// SDL_Log("updateScreenRect %dx%d",winW,winH);
+	SDL_Log("updateScreenRect %dx%d",winW,winH);
 
 	float r=(float)winW/(float)winH;
 
-	float width,height,scale;
+	float width,height;
 
 	if (r>=9.0/16.0)
 	{
 		width=(float)winW;
-		scale=width/216.0;
-		height=384.0*scale;
+		rendererScale=width/216.0;
+		height=384.0*rendererScale;
 	}
 	else
 	{
 		height=(float)winH;
-		scale=height/384.0;
-		width=216.0*scale;
+		rendererScale=height/384.0;
+		width=216.0*rendererScale;
 	}
 
-	// SDL_Log("s:%.03f w:%.03f h:%.03f",scale,width,height);
+	SDL_Log("s:%.03f w:%.03f h:%.03f",rendererScale,width,height);
 
 	screenRect.w = width;
 	screenRect.h = height;
 	screenRect.x = 0;
 	screenRect.y = 0;
 
-	coreInput.width=(int)((float)winW/scale);
-	coreInput.height=(int)((float)winH/scale);
+	coreInput.width=(int)((float)winW/rendererScale);
+	coreInput.height=(int)((float)winH/rendererScale);
 
-	// SDL_Log("shown: %dx%d",coreInput.width,coreInput.height);
+	SDL_Log("SHOWN: %dx%d",coreInput.width,coreInput.height);
 
 // 	switch (settings.session.zoom)
 // 	{

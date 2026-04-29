@@ -387,6 +387,7 @@ void txtlib_clearScreen(struct TextLib *lib)
 	reg->attr.planeCEnabled = 1;
 	reg->attr.planeDEnabled = 1;
 
+	// TODO: copy code from runStartupSequence here
 	lib->windowX = 0;
 	lib->windowY = 0;
 	lib->windowWidth = 27;

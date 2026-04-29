@@ -429,6 +429,7 @@ void core_handleInput(struct Core *core, struct CoreInput *input)
 	ioRegisters->safe.bottom = input->bottom;
 
 	struct TextLib *textLib = &core->interpreter->textLib;
+	// FIXME: also appear in runStartupSequence()
 	if (textLib->windowWidth == 0 && textLib->windowHeight == 0)
 	{
 		textLib->windowX = (input->left + 7) / 8;
@@ -436,6 +437,7 @@ void core_handleInput(struct Core *core, struct CoreInput *input)
 		textLib->windowWidth = input->width / 8 - (input->left + 7) / 8 - (input->right + 7) / 8;
 		textLib->windowHeight = input->height / 8 - (input->top + 7) / 8 - (input->bottom + 7) / 8;
 	}
+	SDL_Log("core_handleInput textLib->windowWidth=%d textLib->windowY=%d",textLib->windowWidth,textLib->windowY);
 	if (input->pause)
 	{
 		if (core->interpreter->state == StatePaused)
@@ -12692,95 +12694,97 @@ extern uint32_t better_palette[];
 
 void runStartupSequence(struct Core *core)
 {
-    struct DataEntry *entries = core->interpreter->romDataManager.entries;
+	struct DataEntry *entries = core->interpreter->romDataManager.entries;
 
-    // init font and window
-    struct TextLib *textLib = &core->interpreter->textLib;
-    textLib->fontCharOffset = FONT_CHAR_OFFSET;
-    txtlib_clearScreen(textLib);
+	// init font and window
+	struct TextLib *textLib = &core->interpreter->textLib;
+	textLib->fontCharOffset = FONT_CHAR_OFFSET;
+	txtlib_clearScreen(textLib);
 
-    struct IORegisters *io = &core->machine->ioRegisters;
+	// It was too early
+	struct IORegisters *io = &core->machine->ioRegisters;
+	SDL_Log("runStartupSequence %d,%d",io->safe.left,io->safe.top);
 
-    textLib->windowX = (io->safe.left+7)/8;
-    textLib->windowY = (io->safe.top+7)/8;
-    textLib->windowWidth = io->shown.width/8 - (io->safe.left+7)/8 - (io->safe.right+7)/8;
-    textLib->windowHeight = io->shown.height/8 - (io->safe.top+7)/8 - (io->safe.bottom+7)/8;
+	textLib->windowX = (io->safe.left+7)/8;
+	textLib->windowY = (io->safe.top+7)/8;
+	textLib->windowWidth = io->shown.width/8 - (io->safe.left+7)/8 - (io->safe.right+7)/8;
+	textLib->windowHeight = io->shown.height/8 - (io->safe.top+7)/8 - (io->safe.bottom+7)/8;
 
-    // default characters/font
-    if (strcmp(entries[0].comment, "FONT") == 0)
-    {
-        memcpy(&core->machine->videoRam.characters[FONT_CHAR_OFFSET], &core->machine->cartridgeRom[entries[0].start], entries[0].length);
-    }
+	// default characters/font
+	if (strcmp(entries[0].comment, "FONT") == 0)
+	{
+		memcpy(&core->machine->videoRam.characters[FONT_CHAR_OFFSET], &core->machine->cartridgeRom[entries[0].start], entries[0].length);
+	}
 
-    // default palettes
-    uint8_t *colors = core->machine->colorRegisters.colors;
+	// default palettes
+	uint8_t *colors = core->machine->colorRegisters.colors;
 
-    colors[0] = 2;
-    colors[1] = 5;
-    colors[2] = 7;
-    colors[3] = 3;
+	colors[0] = 2;
+	colors[1] = 5;
+	colors[2] = 7;
+	colors[3] = 3;
 
-    colors[4] = 2;
-    colors[5] = 61;
-    colors[6] = 62;
-    colors[7] = 3;
+	colors[4] = 2;
+	colors[5] = 61;
+	colors[6] = 62;
+	colors[7] = 3;
 
-    colors[8] = 2;
-    colors[9] = 18;
-    colors[10] = 19;
-    colors[11] = 3;
+	colors[8] = 2;
+	colors[9] = 18;
+	colors[10] = 19;
+	colors[11] = 3;
 
-    colors[12] = 2;
-    colors[13] = 35;
-    colors[14] = 34;
-    colors[15] = 3;
+	colors[12] = 2;
+	colors[13] = 35;
+	colors[14] = 34;
+	colors[15] = 3;
 
-    colors[16] = 2;
-    colors[17] = 53;
-    colors[18] = 54;
-    colors[19] = 3;
+	colors[16] = 2;
+	colors[17] = 53;
+	colors[18] = 54;
+	colors[19] = 3;
 
-    colors[20] = 2;
-    colors[21] = 13;
-    colors[22] = 14;
-    colors[23] = 3;
+	colors[20] = 2;
+	colors[21] = 13;
+	colors[22] = 14;
+	colors[23] = 3;
 
-    colors[24] = 2;
-    colors[25] = 45;
-    colors[26] = 46;
-    colors[27] = 3;
+	colors[24] = 2;
+	colors[25] = 45;
+	colors[26] = 46;
+	colors[27] = 3;
 
-    colors[28] = 2;
-    colors[29] = 26;
-    colors[30] = 27;
-    colors[31] = 3;
+	colors[28] = 2;
+	colors[29] = 26;
+	colors[30] = 27;
+	colors[31] = 3;
 
-    // main palettes
-    int palLen = entries[1].length;
-    if (palLen > 32) palLen = 32;
-    memcpy(core->machine->colorRegisters.colors, &core->machine->cartridgeRom[entries[1].start], palLen);
+	// main palettes
+	int palLen = entries[1].length;
+	if (palLen > 32) palLen = 32;
+	memcpy(core->machine->colorRegisters.colors, &core->machine->cartridgeRom[entries[1].start], palLen);
 
-    // main characters
-    memcpy(core->machine->videoRam.characters, &core->machine->cartridgeRom[entries[2].start], entries[2].length);
+	// main characters
+	memcpy(core->machine->videoRam.characters, &core->machine->cartridgeRom[entries[2].start], entries[2].length);
 
-    // main background source
-    int bgStart = entries[3].start;
-    core->interpreter->textLib.sourceAddress = 0x10000 + bgStart + 4;
-    core->interpreter->textLib.sourceWidth = core->machine->cartridgeRom[bgStart + 2];
-    core->interpreter->textLib.sourceHeight = core->machine->cartridgeRom[bgStart + 3];
+	// main background source
+	int bgStart = entries[3].start;
+	core->interpreter->textLib.sourceAddress = 0x10000 + bgStart + 4;
+	core->interpreter->textLib.sourceWidth = core->machine->cartridgeRom[bgStart + 2];
+	core->interpreter->textLib.sourceHeight = core->machine->cartridgeRom[bgStart + 3];
 
-    // voices
-    for (int i = 0; i < NUM_VOICES; i++)
-    {
-        struct Voice *voice = &core->machine->audioRegisters.voices[i];
-        voice->attr.pulseWidth = 8;
-        voice->status.volume = 15;
-        voice->status.mix = 3;
-        voice->envS = 15;
-    }
+	// voices
+	for (int i = 0; i < NUM_VOICES; i++)
+	{
+		struct Voice *voice = &core->machine->audioRegisters.voices[i];
+		voice->attr.pulseWidth = 8;
+		voice->status.volume = 15;
+		voice->status.mix = 3;
+		voice->envS = 15;
+	}
 
-    // main sound source
-    core->interpreter->audioLib.sourceAddress = 0x10000 + entries[15].start;
+	// main sound source
+	core->interpreter->audioLib.sourceAddress = 0x10000 + entries[15].start;
 }
 //
 // Copyright 2016 Timo Kloss
@@ -16077,6 +16081,7 @@ const int keyboardControls[2][2][8] = {
 
 void update(void *arg);
 void updateScreenRect(int winW, int winH);
+void updateSafeArea();
 // void configureJoysticks(void);
 // void closeJoysticks(void);
 void setTouchPosition(int windowX, int windowY);
@@ -16094,6 +16099,7 @@ SDL_Window *window = NULL;
 SDL_Renderer *renderer = NULL;
 SDL_Texture *texture = NULL;
 SDL_AudioStream *audioStream = NULL;
+float rendererScale = 1;
 
 struct Runner runner;
 #if DEV_MENU
@@ -16166,6 +16172,7 @@ int main(int argc, const char *argv[])
 		window = SDL_CreateWindow(windowTitle, SCREEN_WIDTH * defaultWindowScale, SCREEN_HEIGHT * defaultWindowScale, windowFlags);
 		renderer = SDL_CreateRenderer(window, NULL);
 		texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, SCREEN_WIDTH, SCREEN_HEIGHT);
+		SDL_SetTextureScaleMode(texture, SDL_SCALEMODE_PIXELART);
 
 #if defined(__ANDROID__)
 		SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
@@ -16184,7 +16191,11 @@ int main(int argc, const char *argv[])
 
 		audioStream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &desiredAudioSpec, &audioCallback, runner.core);
 
-		// configureJoysticks();
+		int width, height;
+		SDL_GetWindowSize(window, &width, &height);
+		updateScreenRect(width, height);
+		updateSafeArea();
+		core_handleInput(runner.core, &coreInput);
 
 		bootNX();
 		if (hasProgram())
@@ -16192,9 +16203,6 @@ int main(int argc, const char *argv[])
 			machine_poke(runner.core, bootIntroStateAddress, BootIntroStateProgramAvailable);
 		}
 
-		int width, height;
-		SDL_GetWindowSize(window, &width, &height);
-		updateScreenRect(width, height);
 
 #ifdef __EMSCRIPTEN__
 		emscripten_set_main_loop_arg(update, NULL, -1, true);
@@ -16423,19 +16431,29 @@ void update(void *arg)
 			quit = true;
 			break;
 
-		// case SDL_WINDOWEVENT:
-		// 	switch (event.window.event)
-		// 	{
 		case SDL_EVENT_WINDOW_RESIZED:
-		// {
 			updateScreenRect(event.window.data1, event.window.data2);
 			overlay_clear(runner.core);
 			overlay_updateState(runner.core);
 			forceRender = true;
 			break;
-		// }
-			// }
-			// break;
+
+		case SDL_EVENT_WINDOW_SAFE_AREA_CHANGED:
+			updateSafeArea();
+			overlay_clear(runner.core);
+			overlay_updateState(runner.core);
+			forceRender = true;
+			break;
+
+		case SDL_EVENT_SCREEN_KEYBOARD_SHOWN:
+			runner.core->machine->ioRegisters.status.keyboardVisible = true;
+			SDL_Log("Keyboard was set on");
+			break;
+
+		case SDL_EVENT_SCREEN_KEYBOARD_HIDDEN:
+			runner.core->machine->ioRegisters.status.keyboardVisible = false;
+			SDL_Log("Keyboard was set off");
+			break;
 
 		case SDL_EVENT_DROP_FILE:
 		{
@@ -16742,38 +16760,55 @@ void update(void *arg)
 	}
 }
 
+void updateSafeArea()
+{
+	SDL_Rect area;
+	int w,h;
+	SDL_GetWindowSize(window,&w,&h);
+	SDL_GetWindowSafeArea(window,&area);
+	SDL_Log("Output %dx%d",w,h);
+	SDL_Log("Safe %dx%d %dx%d",area.x,area.y,area.w,area.h);
+
+	coreInput.left=(int)((float)area.x/rendererScale);
+	coreInput.top=(int)((float)area.y/rendererScale);
+	coreInput.right=(int)((float)(w-area.w-area.x)/rendererScale);
+	coreInput.right=(int)((float)(h-area.h-area.y)/rendererScale);
+
+	SDL_Log("SAFE: %dx%dx%dx%d",coreInput.left,coreInput.top,coreInput.right,coreInput.bottom);
+}
+
 void updateScreenRect(int winW, int winH)
 {
-	// SDL_Log("updateScreenRect %dx%d",winW,winH);
+	SDL_Log("updateScreenRect %dx%d",winW,winH);
 
 	float r=(float)winW/(float)winH;
 
-	float width,height,scale;
+	float width,height;
 
 	if (r>=9.0/16.0)
 	{
 		width=(float)winW;
-		scale=width/216.0;
-		height=384.0*scale;
+		rendererScale=width/216.0;
+		height=384.0*rendererScale;
 	}
 	else
 	{
 		height=(float)winH;
-		scale=height/384.0;
-		width=216.0*scale;
+		rendererScale=height/384.0;
+		width=216.0*rendererScale;
 	}
 
-	// SDL_Log("s:%.03f w:%.03f h:%.03f",scale,width,height);
+	SDL_Log("s:%.03f w:%.03f h:%.03f",rendererScale,width,height);
 
 	screenRect.w = width;
 	screenRect.h = height;
 	screenRect.x = 0;
 	screenRect.y = 0;
 
-	coreInput.width=(int)((float)winW/scale);
-	coreInput.height=(int)((float)winH/scale);
+	coreInput.width=(int)((float)winW/rendererScale);
+	coreInput.height=(int)((float)winH/rendererScale);
 
-	// SDL_Log("shown: %dx%d",coreInput.width,coreInput.height);
+	SDL_Log("SHOWN: %dx%d",coreInput.width,coreInput.height);
 
 // 	switch (settings.session.zoom)
 // 	{

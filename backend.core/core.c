@@ -288,6 +288,7 @@ void core_handleInput(struct Core *core, struct CoreInput *input)
 	ioRegisters->safe.bottom = input->bottom;
 
 	struct TextLib *textLib = &core->interpreter->textLib;
+	// FIXME: also appear in runStartupSequence()
 	if (textLib->windowWidth == 0 && textLib->windowHeight == 0)
 	{
 		textLib->windowX = (input->left + 7) / 8;
@@ -295,6 +296,7 @@ void core_handleInput(struct Core *core, struct CoreInput *input)
 		textLib->windowWidth = input->width / 8 - (input->left + 7) / 8 - (input->right + 7) / 8;
 		textLib->windowHeight = input->height / 8 - (input->top + 7) / 8 - (input->bottom + 7) / 8;
 	}
+	SDL_Log("core_handleInput textLib->windowWidth=%d textLib->windowY=%d",textLib->windowWidth,textLib->windowY);
 	if (input->pause)
 	{
 		if (core->interpreter->state == StatePaused)

@@ -1,17 +1,23 @@
 
 do
   cls
-  bg fill 0,0 to 63,63 char 1
-  sw=(shown.w+7)\8
-  sh=(shown.h+7)\8
-  bg fill 1,1 to sw-2,sh-2 char 0
-  window 2,2,sw-4,sh-4,0
+  ' bg fill 0,0 to 63,63 char 1
+  ' sw=(shown.w-safe.l-safe.r+7)\8
+  ' sh=(shown.h-safe.t-max(safe.b,keyboard)+7)\8
+  ' bg fill 0,0 to sw,sh char 0
+  ' scroll 0,-shown.w+(sw*8)/2,-shown.h+(sh*8)/2
   print "shown.w",shown.w
   print "shown.h",shown.h
   print "safe.l",safe.l
   print "safe.t",safe.t
   print "safe.r",safe.r
   print "safe.b",safe.b
+  print "keyboard",keyboard
+  if tap and keyboard=0 then
+    keyboard on
+  else if tap and keyboard>0 then
+    keyboard off
+  end if
   wait vbl
 loop
 
