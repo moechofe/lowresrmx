@@ -80,6 +80,42 @@ struct CoreError runner_loadProgram(struct Runner *runner, const char *filename)
 {
     struct CoreError error = err_noCoreError();
 
+#if defined(__ANDROID__)
+
+		SDL_Storage *title=SDL_OpenTitleStorage(NULL,0);
+		if(title==NULL)
+		{
+			SDL_Log("Fail to access storage");
+			error = err_makeCoreError(ErrorCouldNotOpenProgram, -1);
+		}
+		else
+		{
+			while(!SDL_StorageReady(title))SDL_Delay(1);
+
+			uint64_t size=0;
+			if (SDL_GetStorageFileSize(title,"app.rmx",&size) && size > 0)
+			{
+				char *sourceCode = calloc(1, size + 1);
+				if (SDL_ReadStorageFile(title,"app.rmx",sourceCode,size))
+				{
+					error = core_compileProgram(runner->core, sourceCode, true);
+					free(sourceCode);
+				}
+				else
+				{
+					SDL_Log("Fail to read file");
+					error = err_makeCoreError(ErrorCouldNotOpenProgram, -1);
+				}
+			}
+			else
+			{
+				SDL_Log("Fail to read size");
+				error = err_makeCoreError(ErrorCouldNotOpenProgram, -1);
+			}
+		}
+
+#else
+
     FILE *file = fopen_utf8(filename, "rb");
     if (file)
     {
@@ -106,6 +142,8 @@ struct CoreError runner_loadProgram(struct Runner *runner, const char *filename)
     {
         error = err_makeCoreError(ErrorCouldNotOpenProgram, -1);
     }
+
+#endif
 
     return error;
 }

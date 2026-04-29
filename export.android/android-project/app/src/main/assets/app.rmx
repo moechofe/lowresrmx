@@ -1,0 +1,21 @@
+
+do
+  cls
+  bg fill 0,0 to 63,63 char 1
+  sw=(shown.w+7)\8
+  sh=(shown.h+7)\8
+  bg fill 1,1 to sw-2,sh-2 char 0
+  window 2,2,sw-4,sh-4,0
+  print "shown.w",shown.w
+  print "shown.h",shown.h
+  print "safe.l",safe.l
+  print "safe.t",safe.t
+  print "safe.r",safe.r
+  print "safe.b",safe.b
+  wait vbl
+loop
+
+#2:MAIN CHARACTERS
+00000000000000000000000000000000
+FFFFFFFFFFFFFFFF0000000000000000
+

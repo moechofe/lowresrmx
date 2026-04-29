@@ -38,6 +38,13 @@ public class MyActivity extends SDLActivity {
 	}
 
 	@Override
+	protected String[] getArguments() {
+		return new String[] {
+			"app.rmx"
+		};
+	}
+
+	@Override
 	protected String[] getLibraries() {
 		return new String[] { "lowresrmx" };
 	}
