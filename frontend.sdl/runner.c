@@ -85,7 +85,7 @@ struct CoreError runner_loadProgram(struct Runner *runner, const char *filename)
 		SDL_Storage *title=SDL_OpenTitleStorage(NULL,0);
 		if(title==NULL)
 		{
-			SDL_Log("Fail to access storage");
+			// SDL_Log("Fail to access storage");
 			error = err_makeCoreError(ErrorCouldNotOpenProgram, -1);
 		}
 		else
@@ -103,13 +103,13 @@ struct CoreError runner_loadProgram(struct Runner *runner, const char *filename)
 				}
 				else
 				{
-					SDL_Log("Fail to read file");
+					// SDL_Log("Fail to read file");
 					error = err_makeCoreError(ErrorCouldNotOpenProgram, -1);
 				}
 			}
 			else
 			{
-				SDL_Log("Fail to read size");
+				// SDL_Log("Fail to read size");
 				error = err_makeCoreError(ErrorCouldNotOpenProgram, -1);
 			}
 		}

@@ -428,16 +428,6 @@ void core_handleInput(struct Core *core, struct CoreInput *input)
 	ioRegisters->safe.left = input->left;
 	ioRegisters->safe.bottom = input->bottom;
 
-	struct TextLib *textLib = &core->interpreter->textLib;
-	// FIXME: also appear in runStartupSequence()
-	if (textLib->windowWidth == 0 && textLib->windowHeight == 0)
-	{
-		textLib->windowX = (input->left + 7) / 8;
-		textLib->windowY = (input->top + 7) / 8;
-		textLib->windowWidth = input->width / 8 - (input->left + 7) / 8 - (input->right + 7) / 8;
-		textLib->windowHeight = input->height / 8 - (input->top + 7) / 8 - (input->bottom + 7) / 8;
-	}
-	SDL_Log("core_handleInput textLib->windowWidth=%d textLib->windowY=%d",textLib->windowWidth,textLib->windowY);
 	if (input->pause)
 	{
 		if (core->interpreter->state == StatePaused)
@@ -12701,14 +12691,7 @@ void runStartupSequence(struct Core *core)
 	textLib->fontCharOffset = FONT_CHAR_OFFSET;
 	txtlib_clearScreen(textLib);
 
-	// It was too early
-	struct IORegisters *io = &core->machine->ioRegisters;
-	SDL_Log("runStartupSequence %d,%d",io->safe.left,io->safe.top);
-
-	textLib->windowX = (io->safe.left+7)/8;
-	textLib->windowY = (io->safe.top+7)/8;
-	textLib->windowWidth = io->shown.width/8 - (io->safe.left+7)/8 - (io->safe.right+7)/8;
-	textLib->windowHeight = io->shown.height/8 - (io->safe.top+7)/8 - (io->safe.bottom+7)/8;
+	// TODO: should setup overlay window here
 
 	// default characters/font
 	if (strcmp(entries[0].comment, "FONT") == 0)
@@ -13150,6 +13133,20 @@ void txtlib_clearWindow(struct TextLib *lib)
 	lib->core->interpreter->cycles += lib->windowWidth * lib->windowHeight * 2;
 }
 
+void txtlib_resetWindow(struct TextLib *lib)
+{
+	struct Core *core = lib->core;
+	struct IORegisters *io = &core->machine->ioRegisters;
+
+	lib->windowX = (io->safe.left+7)/8;
+	lib->windowY = (io->safe.top+7)/8;
+	lib->windowWidth = io->shown.width/8 - (io->safe.left+7)/8 - (io->safe.right+7)/8;
+	lib->windowHeight = io->shown.height/8 - (io->safe.top+7)/8 - (io->safe.bottom+7)/8;
+	lib->cursorX = 0;
+	lib->cursorY = 0;
+	lib->bg = 0;
+}
+
 void txtlib_clearScreen(struct TextLib *lib)
 {
 	struct VideoRegisters *reg = &lib->core->machine->videoRegisters;
@@ -13173,13 +13170,7 @@ void txtlib_clearScreen(struct TextLib *lib)
 	reg->attr.planeCEnabled = 1;
 	reg->attr.planeDEnabled = 1;
 
-	lib->windowX = 0;
-	lib->windowY = 0;
-	lib->windowWidth = 27;
-	lib->windowHeight = 48;
-	lib->cursorX = 0;
-	lib->cursorY = 0;
-	lib->bg = 0;
+	txtlib_resetWindow(lib);
 
 	lib->core->interpreter->cycles += PLANE_COLUMNS * PLANE_ROWS * 2 * 2;
 }
@@ -14544,6 +14535,7 @@ void overlay_init(struct Core *core)
 	lib->charAttr.priority = 1;
 	lib->charAttr.palette = 1;
 	lib->fontCharOffset = 0;
+	// TODO: This is too early the window dimension is not know yet
 	lib->windowX = 0;
 	lib->windowY = 0;
 	lib->windowWidth = 216 / 8;
@@ -15916,7 +15908,8 @@ void dev_onButtonTap(struct DevMenu *devMenu)
         else if (button == 5)
         {
             // Eject
-            rebootNX();
+						// TODO: Can't do that anymore, as I need coreInput
+            // rebootNX();
         }
     }
     else if (devMenu->currentMenu == DevModeMenuTools)
@@ -16191,13 +16184,13 @@ int main(int argc, const char *argv[])
 
 		audioStream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &desiredAudioSpec, &audioCallback, runner.core);
 
+		// Will serve as fill coreInput that will be used later to init SHOWN, SAFE and WINDOW
 		int width, height;
 		SDL_GetWindowSize(window, &width, &height);
 		updateScreenRect(width, height);
 		updateSafeArea();
-		core_handleInput(runner.core, &coreInput);
 
-		bootNX();
+		bootNX(&coreInput);
 		if (hasProgram())
 		{
 			machine_poke(runner.core, bootIntroStateAddress, BootIntroStateProgramAvailable);
@@ -16244,7 +16237,7 @@ int main(int argc, const char *argv[])
 	return 0;
 }
 
-void bootNX()
+void bootNX(struct CoreInput *input)
 {
 	mainState = MainStateBootIntro;
 
@@ -16254,16 +16247,19 @@ void bootNX()
 		core_traceError(runner.core, error);
 	}
 
+	// Will use coreInput that was feed with screen and safe to setup SHOWN and SAFE
+	core_handleInput(runner.core, input);
+
 	runner.core->interpreter->debug = false;
 	core_willRunProgram(runner.core, SDL_GetTicks() / 1000);
 }
 
-void rebootNX()
+void rebootNX(struct CoreInput *input)
 {
 	core_willSuspendProgram(runner.core);
 
 	mainProgramFilename[0] = 0;
-	bootNX();
+	bootNX(&coreInput);
 }
 
 bool hasProgram()
@@ -16308,6 +16304,7 @@ void runMainProgram()
 	}
 	else
 	{
+		core_handleInput(runner.core, &coreInput);
 		core_willRunProgram(runner.core, SDL_GetTicks() / 1000);
 		mainState = MainStateRunningProgram;
 	}
@@ -16322,6 +16319,7 @@ void runToolProgram(const char *filename)
 	{
 		mainState = MainStateRunningTool;
 		runner.core->interpreter->debug = false;
+		core_handleInput(runner.core, &coreInput);
 		core_willRunProgram(runner.core, SDL_GetTicks() / 1000);
 	}
 	else
@@ -16447,12 +16445,12 @@ void update(void *arg)
 
 		case SDL_EVENT_SCREEN_KEYBOARD_SHOWN:
 			runner.core->machine->ioRegisters.status.keyboardVisible = true;
-			SDL_Log("Keyboard was set on");
+			// SDL_Log("Keyboard was set on");
 			break;
 
 		case SDL_EVENT_SCREEN_KEYBOARD_HIDDEN:
 			runner.core->machine->ioRegisters.status.keyboardVisible = false;
-			SDL_Log("Keyboard was set off");
+			// SDL_Log("Keyboard was set off");
 			break;
 
 		case SDL_EVENT_DROP_FILE:
@@ -16561,7 +16559,7 @@ void update(void *arg)
 				}
 				else if (keycode == SDLK_E)
 				{
-					rebootNX();
+					rebootNX(&coreInput);
 				}
 				else if (keycode == SDLK_S)
 				{
@@ -16766,20 +16764,20 @@ void updateSafeArea()
 	int w,h;
 	SDL_GetWindowSize(window,&w,&h);
 	SDL_GetWindowSafeArea(window,&area);
-	SDL_Log("Output %dx%d",w,h);
-	SDL_Log("Safe %dx%d %dx%d",area.x,area.y,area.w,area.h);
+	// SDL_Log("Output %dx%d",w,h);
+	// SDL_Log("Safe %dx%d %dx%d",area.x,area.y,area.w,area.h);
 
 	coreInput.left=(int)((float)area.x/rendererScale);
 	coreInput.top=(int)((float)area.y/rendererScale);
 	coreInput.right=(int)((float)(w-area.w-area.x)/rendererScale);
-	coreInput.right=(int)((float)(h-area.h-area.y)/rendererScale);
+	coreInput.bottom=(int)((float)(h-area.h-area.y)/rendererScale);
 
-	SDL_Log("SAFE: %dx%dx%dx%d",coreInput.left,coreInput.top,coreInput.right,coreInput.bottom);
+	// SDL_Log("SAFE: %dx%dx%dx%d",coreInput.left,coreInput.top,coreInput.right,coreInput.bottom);
 }
 
 void updateScreenRect(int winW, int winH)
 {
-	SDL_Log("updateScreenRect %dx%d",winW,winH);
+	// SDL_Log("updateScreenRect %dx%d",winW,winH);
 
 	float r=(float)winW/(float)winH;
 
@@ -16798,7 +16796,7 @@ void updateScreenRect(int winW, int winH)
 		width=216.0*rendererScale;
 	}
 
-	SDL_Log("s:%.03f w:%.03f h:%.03f",rendererScale,width,height);
+	// SDL_Log("s:%.03f w:%.03f h:%.03f",rendererScale,width,height);
 
 	screenRect.w = width;
 	screenRect.h = height;
@@ -16808,7 +16806,7 @@ void updateScreenRect(int winW, int winH)
 	coreInput.width=(int)((float)winW/rendererScale);
 	coreInput.height=(int)((float)winH/rendererScale);
 
-	SDL_Log("SHOWN: %dx%d",coreInput.width,coreInput.height);
+	// SDL_Log("SHOWN: %dx%d",coreInput.width,coreInput.height);
 
 // 	switch (settings.session.zoom)
 // 	{
@@ -17050,7 +17048,7 @@ struct CoreError runner_loadProgram(struct Runner *runner, const char *filename)
 		SDL_Storage *title=SDL_OpenTitleStorage(NULL,0);
 		if(title==NULL)
 		{
-			SDL_Log("Fail to access storage");
+			// SDL_Log("Fail to access storage");
 			error = err_makeCoreError(ErrorCouldNotOpenProgram, -1);
 		}
 		else
@@ -17068,13 +17066,13 @@ struct CoreError runner_loadProgram(struct Runner *runner, const char *filename)
 				}
 				else
 				{
-					SDL_Log("Fail to read file");
+					// SDL_Log("Fail to read file");
 					error = err_makeCoreError(ErrorCouldNotOpenProgram, -1);
 				}
 			}
 			else
 			{
-				SDL_Log("Fail to read size");
+				// SDL_Log("Fail to read size");
 				error = err_makeCoreError(ErrorCouldNotOpenProgram, -1);
 			}
 		}

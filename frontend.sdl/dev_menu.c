@@ -317,7 +317,8 @@ void dev_onButtonTap(struct DevMenu *devMenu)
         else if (button == 5)
         {
             // Eject
-            rebootNX();
+						// TODO: Can't do that anymore, as I need coreInput
+            // rebootNX();
         }
     }
     else if (devMenu->currentMenu == DevModeMenuTools)

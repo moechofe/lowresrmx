@@ -175,13 +175,13 @@ int main(int argc, const char *argv[])
 
 		audioStream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &desiredAudioSpec, &audioCallback, runner.core);
 
+		// Will serve as fill coreInput that will be used later to init SHOWN, SAFE and WINDOW
 		int width, height;
 		SDL_GetWindowSize(window, &width, &height);
 		updateScreenRect(width, height);
 		updateSafeArea();
-		core_handleInput(runner.core, &coreInput);
 
-		bootNX();
+		bootNX(&coreInput);
 		if (hasProgram())
 		{
 			machine_poke(runner.core, bootIntroStateAddress, BootIntroStateProgramAvailable);
@@ -228,7 +228,7 @@ int main(int argc, const char *argv[])
 	return 0;
 }
 
-void bootNX()
+void bootNX(struct CoreInput *input)
 {
 	mainState = MainStateBootIntro;
 
@@ -238,16 +238,19 @@ void bootNX()
 		core_traceError(runner.core, error);
 	}
 
+	// Will use coreInput that was feed with screen and safe to setup SHOWN and SAFE
+	core_handleInput(runner.core, input);
+
 	runner.core->interpreter->debug = false;
 	core_willRunProgram(runner.core, SDL_GetTicks() / 1000);
 }
 
-void rebootNX()
+void rebootNX(struct CoreInput *input)
 {
 	core_willSuspendProgram(runner.core);
 
 	mainProgramFilename[0] = 0;
-	bootNX();
+	bootNX(&coreInput);
 }
 
 bool hasProgram()
@@ -292,6 +295,7 @@ void runMainProgram()
 	}
 	else
 	{
+		core_handleInput(runner.core, &coreInput);
 		core_willRunProgram(runner.core, SDL_GetTicks() / 1000);
 		mainState = MainStateRunningProgram;
 	}
@@ -306,6 +310,7 @@ void runToolProgram(const char *filename)
 	{
 		mainState = MainStateRunningTool;
 		runner.core->interpreter->debug = false;
+		core_handleInput(runner.core, &coreInput);
 		core_willRunProgram(runner.core, SDL_GetTicks() / 1000);
 	}
 	else
@@ -431,12 +436,12 @@ void update(void *arg)
 
 		case SDL_EVENT_SCREEN_KEYBOARD_SHOWN:
 			runner.core->machine->ioRegisters.status.keyboardVisible = true;
-			SDL_Log("Keyboard was set on");
+			// SDL_Log("Keyboard was set on");
 			break;
 
 		case SDL_EVENT_SCREEN_KEYBOARD_HIDDEN:
 			runner.core->machine->ioRegisters.status.keyboardVisible = false;
-			SDL_Log("Keyboard was set off");
+			// SDL_Log("Keyboard was set off");
 			break;
 
 		case SDL_EVENT_DROP_FILE:
@@ -545,7 +550,7 @@ void update(void *arg)
 				}
 				else if (keycode == SDLK_E)
 				{
-					rebootNX();
+					rebootNX(&coreInput);
 				}
 				else if (keycode == SDLK_S)
 				{
@@ -750,20 +755,20 @@ void updateSafeArea()
 	int w,h;
 	SDL_GetWindowSize(window,&w,&h);
 	SDL_GetWindowSafeArea(window,&area);
-	SDL_Log("Output %dx%d",w,h);
-	SDL_Log("Safe %dx%d %dx%d",area.x,area.y,area.w,area.h);
+	// SDL_Log("Output %dx%d",w,h);
+	// SDL_Log("Safe %dx%d %dx%d",area.x,area.y,area.w,area.h);
 
 	coreInput.left=(int)((float)area.x/rendererScale);
 	coreInput.top=(int)((float)area.y/rendererScale);
 	coreInput.right=(int)((float)(w-area.w-area.x)/rendererScale);
-	coreInput.right=(int)((float)(h-area.h-area.y)/rendererScale);
+	coreInput.bottom=(int)((float)(h-area.h-area.y)/rendererScale);
 
-	SDL_Log("SAFE: %dx%dx%dx%d",coreInput.left,coreInput.top,coreInput.right,coreInput.bottom);
+	// SDL_Log("SAFE: %dx%dx%dx%d",coreInput.left,coreInput.top,coreInput.right,coreInput.bottom);
 }
 
 void updateScreenRect(int winW, int winH)
 {
-	SDL_Log("updateScreenRect %dx%d",winW,winH);
+	// SDL_Log("updateScreenRect %dx%d",winW,winH);
 
 	float r=(float)winW/(float)winH;
 
@@ -782,7 +787,7 @@ void updateScreenRect(int winW, int winH)
 		width=216.0*rendererScale;
 	}
 
-	SDL_Log("s:%.03f w:%.03f h:%.03f",rendererScale,width,height);
+	// SDL_Log("s:%.03f w:%.03f h:%.03f",rendererScale,width,height);
 
 	screenRect.w = width;
 	screenRect.h = height;
@@ -792,7 +797,7 @@ void updateScreenRect(int winW, int winH)
 	coreInput.width=(int)((float)winW/rendererScale);
 	coreInput.height=(int)((float)winH/rendererScale);
 
-	SDL_Log("SHOWN: %dx%d",coreInput.width,coreInput.height);
+	// SDL_Log("SHOWN: %dx%d",coreInput.width,coreInput.height);
 
 // 	switch (settings.session.zoom)
 // 	{

@@ -37,6 +37,7 @@ void overlay_init(struct Core *core)
 	lib->charAttr.priority = 1;
 	lib->charAttr.palette = 1;
 	lib->fontCharOffset = 0;
+	// TODO: This is too early the window dimension is not know yet
 	lib->windowX = 0;
 	lib->windowY = 0;
 	lib->windowWidth = 216 / 8;

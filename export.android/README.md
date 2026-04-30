@@ -1,29 +1,39 @@
 
-# Rename the package name
+# Rename the application-id
 
-    1. Pickup a value for application-id/package-name, it has to be unique but I can't know until you'll try to publish your app on Google Play Store.
+    1. Pickup a value for **application-id** (or package-name), it has to be unique but you can't know if it's available until you'll try to publish your app on Google Play Store.
+
+        `tld.author_domain.game_name`
 
     2. Edit `android-project/app/build.gradle`:
 
-        Change `android.namespace` and `android.defaultConfig.applicationId` values. E.g. `lowresrmx.author_name.game_name`.
+        Change `android.namespace` and `android.defaultConfig.applicationId` values with your **application-id**.
+
+    3. Edit `android-project/app/src/main/java/lowresrmx/author_name/game_name/MyActivity.java`:
+
+        Change `package` value by your **application-id**.
 
     3. Browse `android-project/app/src/main/java`:
 
-        Rename the directories to match the application-id. E.g.: `lowresrmx/author_name/game_name`.
+        Rename the directories hierarchy to match the **application-id**, each dots replaced by slashes. E.g.: `tld/author_domain/game_name`.
 
-    4. Edit `android-project/app/src/main/res/values/strings.xml`:
+# Change the loaded program
+
+    1. Copy your program into `android-project/app/src/main/assets/app.rmx`.
+
+# Change the logo image, application name and splash screen color
+
+    1. Edit `android-project/app/src/main/res/values/strings.xml`:
 
         Change `resources.string` value with the visible name of your app. E.g.: "Super Game".
 
+    2. Find an icon generator online, e.g.: https://icon.kitchen/
 
+    3. Download, uncompress and browse to `IconKitchen-Output/android/res/`
 
+        Replace all the folders that start by `mipmap-...` to `android-project/app/src/main/res`
 
+    4. Edit `android-project/app/src/main/res/values/colors.xml`
 
-Generate one big file with backend.core and frontend.sdl:
-
-    bash tool.dev/tool.dev/merge_for_android_export.bash
-
-Download the android release and place it into `app/libs/SDL3-x.y.z.aar`
-
-Replace file name `dependencies.implementation` in `app/build.gradle`
+        Change `resources.color` value with your color.
 

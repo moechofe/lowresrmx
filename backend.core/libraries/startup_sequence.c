@@ -37,14 +37,7 @@ void runStartupSequence(struct Core *core)
 	textLib->fontCharOffset = FONT_CHAR_OFFSET;
 	txtlib_clearScreen(textLib);
 
-	// It was too early
-	struct IORegisters *io = &core->machine->ioRegisters;
-	SDL_Log("runStartupSequence %d,%d",io->safe.left,io->safe.top);
-
-	textLib->windowX = (io->safe.left+7)/8;
-	textLib->windowY = (io->safe.top+7)/8;
-	textLib->windowWidth = io->shown.width/8 - (io->safe.left+7)/8 - (io->safe.right+7)/8;
-	textLib->windowHeight = io->shown.height/8 - (io->safe.top+7)/8 - (io->safe.bottom+7)/8;
+	// TODO: should setup overlay window here
 
 	// default characters/font
 	if (strcmp(entries[0].comment, "FONT") == 0)

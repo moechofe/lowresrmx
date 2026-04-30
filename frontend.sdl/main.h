@@ -38,8 +38,10 @@ enum Zoom {
     ZoomSqueeze,
 };
 
-void bootNX(void);
-void rebootNX(void);
+struct CoreInput;
+
+void bootNX(struct CoreInput *input);
+void rebootNX(struct CoreInput *input);
 bool hasProgram(void);
 const char *getMainProgramFilename(void);
 void selectProgram(const char *filename);

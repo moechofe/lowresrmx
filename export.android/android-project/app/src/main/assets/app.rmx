@@ -1,27 +1,43 @@
 
+'top and bottom unsafe zone
+bg 1
+bg fill 0,0 to 63,0 char 1
+sub r
+if raster<safe.t or raster>=shown.h-safe.b then
+  scroll 1,0,-raster
+else
+  scroll 1,0,-raster-8
+end if
+end sub
+on raster call r
+
+'left unsafe zone
+bg 2
+bg fill 62,0 to 63,63 char 1
+scroll 2,-safe.l,0
+
+'right unsafe zone
+bg 3
+bg fill 0,0 to 1,63 char 1
+scroll 3,-shown.w+safe.r,0
+
+print "safe zone are region where visual content is not hidden by camera notch or system bars."
+print "but also, are zone guaranty to be accessible by a finger touch."
+print
+print "the =safe.l/t/r/b function return how many pixels not taking part of the safe zone in the left, top, right and bottom side of the device screen."
+print
+print "on ipad, even when device is rotated, the safe values do not change."
+
 do
-  cls
-  ' bg fill 0,0 to 63,63 char 1
-  ' sw=(shown.w-safe.l-safe.r+7)\8
-  ' sh=(shown.h-safe.t-max(safe.b,keyboard)+7)\8
-  ' bg fill 0,0 to sw,sh char 0
-  ' scroll 0,-shown.w+(sw*8)/2,-shown.h+(sh*8)/2
-  print "shown.w",shown.w
-  print "shown.h",shown.h
-  print "safe.l",safe.l
-  print "safe.t",safe.t
-  print "safe.r",safe.r
-  print "safe.b",safe.b
-  print "keyboard",keyboard
-  if tap and keyboard=0 then
-    keyboard on
-  else if tap and keyboard>0 then
-    keyboard off
-  end if
-  wait vbl
+wait vbl
 loop
 
-#2:MAIN CHARACTERS
+
+#1:MAIN PALETTES
+0903020800131512003F3E3D002E2D2C
+0022201F00363534001E190200060504
+
+#2:DEFAULT CHARACTERS
 00000000000000000000000000000000
 FFFFFFFFFFFFFFFF0000000000000000
 

@@ -755,6 +755,7 @@ void txtlib_writeText(struct TextLib *lib, const char *text, int x, int y);
 void txtlib_writeNumber(struct TextLib *lib, int number, int digits, int x, int y);
 void txtlib_inputBegin(struct TextLib *lib);
 bool txtlib_inputUpdate(struct TextLib *lib);
+void txtlib_resetWindow(struct TextLib *lib);
 void txtlib_clearWindow(struct TextLib *lib);
 void txtlib_clearScreen(struct TextLib *lib);
 void txtlib_clearBackground(struct TextLib *lib, int bg);
@@ -4320,8 +4321,10 @@ enum Zoom {
     ZoomSqueeze,
 };
 
-void bootNX(void);
-void rebootNX(void);
+struct CoreInput;
+
+void bootNX(struct CoreInput *input);
+void rebootNX(struct CoreInput *input);
 bool hasProgram(void);
 const char *getMainProgramFilename(void);
 void selectProgram(const char *filename);

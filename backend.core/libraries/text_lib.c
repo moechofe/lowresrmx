@@ -364,6 +364,20 @@ void txtlib_clearWindow(struct TextLib *lib)
 	lib->core->interpreter->cycles += lib->windowWidth * lib->windowHeight * 2;
 }
 
+void txtlib_resetWindow(struct TextLib *lib)
+{
+	struct Core *core = lib->core;
+	struct IORegisters *io = &core->machine->ioRegisters;
+
+	lib->windowX = (io->safe.left+7)/8;
+	lib->windowY = (io->safe.top+7)/8;
+	lib->windowWidth = io->shown.width/8 - (io->safe.left+7)/8 - (io->safe.right+7)/8;
+	lib->windowHeight = io->shown.height/8 - (io->safe.top+7)/8 - (io->safe.bottom+7)/8;
+	lib->cursorX = 0;
+	lib->cursorY = 0;
+	lib->bg = 0;
+}
+
 void txtlib_clearScreen(struct TextLib *lib)
 {
 	struct VideoRegisters *reg = &lib->core->machine->videoRegisters;
@@ -387,14 +401,7 @@ void txtlib_clearScreen(struct TextLib *lib)
 	reg->attr.planeCEnabled = 1;
 	reg->attr.planeDEnabled = 1;
 
-	// TODO: copy code from runStartupSequence here
-	lib->windowX = 0;
-	lib->windowY = 0;
-	lib->windowWidth = 27;
-	lib->windowHeight = 48;
-	lib->cursorX = 0;
-	lib->cursorY = 0;
-	lib->bg = 0;
+	txtlib_resetWindow(lib);
 
 	lib->core->interpreter->cycles += PLANE_COLUMNS * PLANE_ROWS * 2 * 2;
 }
