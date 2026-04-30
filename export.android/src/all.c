@@ -16082,6 +16082,8 @@ void toggleZoom(void);
 void changeVolume(int delta);
 void audioCallback(void *userdata, SDL_AudioStream *stream, int additional_amount, int total_amount);
 void saveScreenshot(void *pixels, int scale);
+void initHaptic();
+void handleHaptic(int value);
 
 #ifdef __EMSCRIPTEN__
 void onloaded(const char *filename);
@@ -16092,6 +16094,7 @@ SDL_Window *window = NULL;
 SDL_Renderer *renderer = NULL;
 SDL_Texture *texture = NULL;
 SDL_AudioStream *audioStream = NULL;
+SDL_Haptic *haptic = NULL;
 float rendererScale = 1;
 
 struct Runner runner;
@@ -16115,6 +16118,13 @@ int messageNumber = 0;
 bool hasUsedInputLastUpdate = false;
 int screenshotRequestedWithScale = 0;
 int volume = 0; // 0 = max, it's a bit shift
+
+struct CoreDelegate delegate;
+void core_controlsDidChange(void *context,struct ControlsInfo controlsInfo)
+{
+	SDL_Log("core_controlsDidChange");
+	handleHaptic(controlsInfo.hapticMode);
+}
 
 #if defined(__ANDROID__)
 int main(int argc, char *argv[])
@@ -16140,7 +16150,7 @@ int main(int argc, const char *argv[])
 
 	if (runner_isOkay(&runner))
 	{
-		SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK);
+		SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_HAPTIC);
 
 		// SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
 		SDL_Event event;
@@ -16181,8 +16191,13 @@ int main(int argc, const char *argv[])
 				.format = SDL_AUDIO_S16LE,
 				.channels = NUM_CHANNELS,
 		};
-
 		audioStream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &desiredAudioSpec, &audioCallback, runner.core);
+
+		// Used and android for haptic feedback and keyboard closed
+		initHaptic();
+		delegate.context=runner.core;
+		delegate.controlsDidChange=&core_controlsDidChange;
+		core_setDelegate(runner.core, &delegate);
 
 		// Will serve as fill coreInput that will be used later to init SHOWN, SAFE and WINDOW
 		int width, height;
@@ -16369,7 +16384,11 @@ void getDiskFilename(char *outputString)
 
 void getRamFilename(char *outputString)
 {
-	char *prefPath = SDL_GetPrefPath("martin_mauchauffee", "LowResRMX");
+#if defined(__ANDROID__)
+    const char *prefPath = SDL_GetAndroidInternalStoragePath();
+#else
+    char *prefPath = SDL_GetPrefPath("martin_mauchauffee", "LowResRMX");
+#endif
 	if (prefPath)
 	{
 		strncpy(outputString, prefPath, FILENAME_MAX - 1);
@@ -16391,7 +16410,11 @@ void getRamFilename(char *outputString)
 			*postfix = 0;
 		}
 		strncat(outputString, ".dat", FILENAME_MAX - 1);
-	}
+
+#if !defined(__ANDROID__)
+        SDL_free(prefPath);
+#endif
+    }
 	else
 	{
 		outputString[0] = 0;
@@ -16966,6 +16989,28 @@ void onerror(const char *filename)
 }
 
 #endif
+
+void initHaptic()
+{
+	SDL_HapticID *haptics=SDL_GetHaptics(NULL);
+	if(haptics)
+	{
+		haptic=SDL_OpenHaptic(haptics[0]);
+		if(!haptic) SDL_Log("Haptic: %s",SDL_GetError());
+		SDL_free(haptics);
+	}
+
+	if(!haptic) return;
+
+	if(!SDL_InitHapticRumble(haptic)) return;
+}
+
+void handleHaptic(int value)
+{
+	if(!haptic) return;
+
+	SDL_PlayHapticRumble(haptic, 0.5, 200);
+}
 //
 // Copyright 2017-2018 Timo Kloss
 //
