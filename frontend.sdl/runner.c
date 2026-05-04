@@ -35,6 +35,7 @@ void persistentRamWillAccess(void *context, uint8_t *destination, int size);
 void persistentRamDidChange(void *context, uint8_t *data, int size);
 
 extern SDL_Window *window;
+extern SDL_Haptic *haptic;
 
 void runner_init(struct Runner *runner)
 {
@@ -265,6 +266,12 @@ void controlsDidChange(void *context, struct ControlsInfo controlsInfo)
 		SDL_StopTextInput(window);
 	}
 	setMouseEnabled(true);
+
+	// TODO: need more core here
+	// if(haptic)
+	// {
+	// 	SDL_PlayHapticRumble(haptic, 0.5, 200);
+	// }
 }
 
 /** Called when persistent RAM will be accessed the first time */

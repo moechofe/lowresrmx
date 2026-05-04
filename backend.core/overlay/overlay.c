@@ -52,7 +52,7 @@ void overlay_updateLayout(struct Core *core, struct CoreInput *input)
 	struct TextLib *lib = &core->overlay->textLib;
 	int k = io->keyboardHeight;
 	int oldHeight = lib->windowHeight;
-#ifdef SIMULATED_KEYBOARD
+#if SIMULATED_KEYBOARD
 	if (core->interpreter->simulatedKeyboardOn) k = 154;
 #endif
 	int b = io->safe.bottom > k ? io->safe.bottom : k;

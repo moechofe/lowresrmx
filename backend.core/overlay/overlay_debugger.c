@@ -313,7 +313,7 @@ static void process_command_line(struct Core *core)
 
 			struct ControlsInfo info;
 			info.keyboardMode = KeyboardModeOff;
-#ifdef SIMULATED_KEYBOARD
+#if SIMULATED_KEYBOARD
 			core->interpreter->simulatedKeyboardOn = false;
 			core->machine->ioRegisters.keyboardHeight = 0;
 #endif

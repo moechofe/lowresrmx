@@ -26,6 +26,8 @@
 #include "string_utils.h"
 #include "startup_sequence.h"
 
+extern float rendererScale;
+
 const char CoreInputKeyReturn = '\n';
 const char CoreInputKeyBackspace = '\b';
 const char CoreInputKeyRight = 17;
@@ -340,7 +342,7 @@ void core_setKeyboardEnabled(struct Core *core, bool enabled)
 
 void core_setKeyboardHeight(struct Core *core, int height)
 {
-	core->machine->ioRegisters.keyboardHeight = height;
+	core->machine->ioRegisters.keyboardHeight = (int)((float)height/rendererScale);
 }
 
 void core_orientationChanged(struct Core *core)

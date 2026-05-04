@@ -1,21 +1,62 @@
 package lowresrmx.author_name.game_name;
 
-import android.content.res.Configuration;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
-import android.util.Log;
-import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
 import org.libsdl.app.SDLActivity;
+import androidx.core.content.ContextCompat;
+import androidx.core.splashscreen.SplashScreen;
 
 public class MyActivity extends SDLActivity {
 
+	private static native void nativeSetKeyboardEnabled(boolean enabled);
+	private static native void nativeSetKeyboardHeight(int height);
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
+
+		SplashScreen splashScreen = SplashScreen.installSplashScreen(this);
+		splashScreen.setKeepOnScreenCondition(() -> false);
+
 		super.onCreate(savedInstanceState);
+
+		if (mLayout != null) {
+			mLayout.setBackgroundColor(ContextCompat.getColor(this, R.color.splash_background));
+		}
+
 		WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+
+		// Keyboard height detection
+		final View decorView = getWindow().getDecorView();
+		decorView.getViewTreeObserver().addOnGlobalLayoutListener(new android.view.ViewTreeObserver.OnGlobalLayoutListener() {
+			private int lastKeyboardHeight = 0;
+			private boolean lastKeyboardShown = false;
+			@Override
+			public void onGlobalLayout() {
+				android.graphics.Rect r = new android.graphics.Rect();
+				decorView.getWindowVisibleDisplayFrame(r);
+				int screenHeight = decorView.getRootView().getHeight();
+				int keyboardHeight = screenHeight - r.bottom;
+				// Use a threshold to avoid false positives from system UI
+				int threshold = (int)(screenHeight * 0.15); // 15% of screen height
+				boolean isKeyboardVisible = keyboardHeight > threshold;
+				if (keyboardHeight != lastKeyboardHeight) {
+					lastKeyboardHeight = keyboardHeight;
+					if (!lastKeyboardShown && isKeyboardVisible) {
+						nativeSetKeyboardEnabled(true);
+						nativeSetKeyboardHeight(keyboardHeight);
+					}
+					else if (lastKeyboardShown && !isKeyboardVisible) {
+						nativeSetKeyboardEnabled(false);
+						nativeSetKeyboardHeight(0);
+					}
+					lastKeyboardShown = isKeyboardVisible;
+				}
+			}
+		});
 	}
 
 	@Override
@@ -38,11 +79,7 @@ public class MyActivity extends SDLActivity {
 	}
 
 	@Override
-	protected String[] getArguments() {
-		return new String[] {
-			"app.rmx"
-		};
-	}
+	protected String[] getArguments() { return new String[] { "app.rmx" }; }
 
 	@Override
 	protected String[] getLibraries() {

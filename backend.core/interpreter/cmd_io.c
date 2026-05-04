@@ -40,7 +40,7 @@ enum ErrorCode cmd_KEYBOARD(struct Core *core)
 	if (interpreter->pass == PassRun)
 	{
 		core->machine->ioRegisters.status.keyboardVisible = (type == TokenON);
-#ifdef SIMULATED_KEYBOARD
+#if SIMULATED_KEYBOARD
 		interpreter->simulatedKeyboardOn = (type == TokenON);
 		core->machine->ioRegisters.keyboardHeight = (type == TokenON) ? 154 : 0;
 #endif

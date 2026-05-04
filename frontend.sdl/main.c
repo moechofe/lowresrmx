@@ -66,15 +66,19 @@ const int keyboardControls[2][2][8] = {
 void update(void *arg);
 void updateScreenRect(int winW, int winH);
 void updateSafeArea();
-// void configureJoysticks(void);
-// void closeJoysticks(void);
 void setTouchPosition(int windowX, int windowY);
 void toggleZoom(void);
 void changeVolume(int delta);
 void audioCallback(void *userdata, SDL_AudioStream *stream, int additional_amount, int total_amount);
 void saveScreenshot(void *pixels, int scale);
 void initHaptic();
-void handleHaptic(int value);
+
+bool eventFilter(void *userdata, SDL_Event *event)
+{
+	if(event->type == SDL_EVENT_WILL_ENTER_BACKGROUND) core_willSuspendProgram(userdata);
+
+	return false;
+}
 
 #ifdef __EMSCRIPTEN__
 void onloaded(const char *filename);
@@ -109,13 +113,6 @@ int messageNumber = 0;
 bool hasUsedInputLastUpdate = false;
 int screenshotRequestedWithScale = 0;
 int volume = 0; // 0 = max, it's a bit shift
-
-struct CoreDelegate delegate;
-void core_controlsDidChange(void *context,struct ControlsInfo controlsInfo)
-{
-	SDL_Log("core_controlsDidChange");
-	handleHaptic(controlsInfo.hapticMode);
-}
 
 #if defined(__ANDROID__)
 int main(int argc, char *argv[])
@@ -186,9 +183,8 @@ int main(int argc, const char *argv[])
 
 		// Used and android for haptic feedback and keyboard closed
 		initHaptic();
-		delegate.context=runner.core;
-		delegate.controlsDidChange=&core_controlsDidChange;
-		core_setDelegate(runner.core, &delegate);
+
+		SDL_AddEventWatch(&eventFilter, runner.core);
 
 		// Will serve as fill coreInput that will be used later to init SHOWN, SAFE and WINDOW
 		int width, height;
@@ -376,9 +372,9 @@ void getDiskFilename(char *outputString)
 void getRamFilename(char *outputString)
 {
 #if defined(__ANDROID__)
-    const char *prefPath = SDL_GetAndroidInternalStoragePath();
+  const char *prefPath = SDL_GetAndroidInternalStoragePath();
 #else
-    char *prefPath = SDL_GetPrefPath("martin_mauchauffee", "LowResRMX");
+	char *prefPath = SDL_GetPrefPath("martin_mauchauffee", "LowResRMX");
 #endif
 	if (prefPath)
 	{
@@ -441,6 +437,14 @@ void update(void *arg)
 		{
 		case SDL_EVENT_QUIT:
 			quit = true;
+			break;
+
+		case SDL_EVENT_KEYBOARD_ADDED:
+			int ga = 123;
+			break;
+
+		case SDL_EVENT_KEYBOARD_REMOVED:
+			int bu = 123;
 			break;
 
 		case SDL_EVENT_WINDOW_RESIZED:
@@ -994,11 +998,4 @@ void initHaptic()
 	if(!haptic) return;
 
 	if(!SDL_InitHapticRumble(haptic)) return;
-}
-
-void handleHaptic(int value)
-{
-	if(!haptic) return;
-
-	SDL_PlayHapticRumble(haptic, 0.5, 200);
 }
