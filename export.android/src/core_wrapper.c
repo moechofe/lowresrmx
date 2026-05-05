@@ -12,9 +12,3 @@ JNIEXPORT void JNICALL
 Java_lowresrmx_author_1name_game_1name_MyActivity_nativeSetKeyboardHeight(JNIEnv *env, jclass clazz, jint height) {
 	core_setKeyboardHeight(runner.core, (int)height);
 }
-
-// JNIEXPORT void JNICALL
-// Java_lowresrmx_author_1name_game_1name_MyActivity_nativeControlsDidChange(JNIEnv *nev, jclass clazz) {
-// 	delegate_controlsDidChange(runner.core);
-// }
-

@@ -23,10 +23,6 @@ public class MyActivity extends SDLActivity {
 
 		super.onCreate(savedInstanceState);
 
-		if (mLayout != null) {
-			mLayout.setBackgroundColor(ContextCompat.getColor(this, R.color.splash_background));
-		}
-
 		WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
 
 		// Keyboard height detection
