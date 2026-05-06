@@ -48,6 +48,7 @@ void overlay_init(struct Core *core)
 
 void overlay_updateLayout(struct Core *core, struct CoreInput *input)
 {
+	// TODO: why this is not in core_handleInput
 	struct IORegisters *io = &core->machine->ioRegisters;
 	struct TextLib *lib = &core->overlay->textLib;
 	int k = io->keyboardHeight;

@@ -167,7 +167,9 @@ const char *bootIntroSourceCode = "POKE $A000,2\nSTOP\n";
 #include <math.h>
 #include <string.h>
 
+#if SDL_SCALING
 extern float rendererScale;
+#endif
 
 const char CoreInputKeyReturn = '\n';
 const char CoreInputKeyBackspace = '\b';
@@ -448,6 +450,19 @@ void core_handleInput(struct Core *core, struct CoreInput *input)
 
 	input->out_hasUsedInput = processedOtherInput || ioRegisters->key || ioRegisters->status.value;
 	// || ioRegisters->gamepads[0].value || ioRegisters->gamepads[1].value;
+
+	if (input->keyboardChange > 0)
+	{
+		int ga = 123;
+		ioRegisters->status.keyboardVisible = true;
+		ioRegisters->keyboardHeight = input->keyboardHeight;
+	}
+	else if(input->keyboardChange < 0)
+	{
+		int bu = 123;
+		ioRegisters->status.keyboardVisible = false;
+		ioRegisters->keyboardHeight = input->keyboardHeight;
+	}
 }
 
 void core_willSuspendProgram(struct Core *core)
@@ -483,7 +498,11 @@ void core_setKeyboardEnabled(struct Core *core, bool enabled)
 
 void core_setKeyboardHeight(struct Core *core, int height)
 {
+#if SDL_SCALING
 	core->machine->ioRegisters.keyboardHeight = (int)((float)height/rendererScale);
+#else
+	core->machine->ioRegisters.keyboardHeight = height;
+#endif
 }
 
 void core_orientationChanged(struct Core *core)
@@ -14341,8 +14360,8 @@ void video_renderScreen(struct Core *core, uint32_t *outputRGB)
     struct IORegisters *io = &core->machine->ioRegisters;
 		struct MachineInternals *mi = core->machineInternals;
 
-		int sw=io->shown.width!=0?io->shown.width:SCREEN_WIDTH;
-    int sh=io->shown.height!=0?io->shown.height:SCREEN_HEIGHT;
+		int sw=io->shown.width;//!=0?io->shown.width:SCREEN_WIDTH;
+    int sh=io->shown.height;//!=0?io->shown.height:SCREEN_HEIGHT;
 
     int width=SCREEN_WIDTH;
     int height=SCREEN_HEIGHT;
@@ -14548,6 +14567,7 @@ void overlay_init(struct Core *core)
 
 void overlay_updateLayout(struct Core *core, struct CoreInput *input)
 {
+	// TODO: why this is not in core_handleInput
 	struct IORegisters *io = &core->machine->ioRegisters;
 	struct TextLib *lib = &core->overlay->textLib;
 	int k = io->keyboardHeight;
@@ -16041,7 +16061,6 @@ void dev_clearPersistentRam(struct DevMenu *devMenu)
 //
 
 
-
 #if SCREENSHOTS
 #endif
 
@@ -16101,7 +16120,9 @@ SDL_Renderer *renderer = NULL;
 SDL_Texture *texture = NULL;
 SDL_AudioStream *audioStream = NULL;
 SDL_Haptic *haptic = NULL;
+#if SDL_SCALING
 float rendererScale = 1;
+#endif
 
 struct Runner runner;
 #if DEV_MENU

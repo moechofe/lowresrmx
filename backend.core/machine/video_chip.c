@@ -197,9 +197,6 @@ void video_renderSprites(struct SpriteRegisters *reg, struct VideoRam *ram, int 
     }
 }
 
-// static int old_width=-1,old_height;
-// static bool old_compat;
-
 void video_renderScreen(struct Core *core, uint32_t *outputRGB)
 {
     uint8_t scanlineBuffer[SCREEN_WIDTH];
@@ -213,8 +210,8 @@ void video_renderScreen(struct Core *core, uint32_t *outputRGB)
     struct IORegisters *io = &core->machine->ioRegisters;
 		struct MachineInternals *mi = core->machineInternals;
 
-		int sw=io->shown.width!=0?io->shown.width:SCREEN_WIDTH;
-    int sh=io->shown.height!=0?io->shown.height:SCREEN_HEIGHT;
+		int sw=io->shown.width;
+    int sh=io->shown.height;
 
     int width=SCREEN_WIDTH;
     int height=SCREEN_HEIGHT;

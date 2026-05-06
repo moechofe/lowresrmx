@@ -21,6 +21,8 @@
 #ifndef config_h
 #define config_h
 
+#define SDL_SCALING 1
+
 #if defined(__EMSCRIPTEN__) || defined(__ANDROID__)
 #define SIMULATED_KEYBOARD 0
 #define DEV_MENU 0

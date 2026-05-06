@@ -2093,6 +2093,8 @@ struct CoreInput
 	bool touch;
 	char key;
 	bool out_hasUsedInput;
+	int keyboardChange;
+	int keyboardHeight;
 };
 
 extern const char CoreInputKeyReturn;
@@ -2495,6 +2497,8 @@ void log_log(int level, const char *file, int line, const char *fmt, ...);
 
 #ifndef config_h
 #define config_h
+
+#define SDL_SCALING 1
 
 #if defined(__EMSCRIPTEN__) || defined(__ANDROID__)
 #define SIMULATED_KEYBOARD 0

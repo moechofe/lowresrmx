@@ -51,6 +51,8 @@ struct CoreInput
 	bool touch;
 	char key;
 	bool out_hasUsedInput;
+	int keyboardChange;
+	int keyboardHeight;
 };
 
 extern const char CoreInputKeyReturn;

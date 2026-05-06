@@ -76,6 +76,9 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
   private var audioPlayer: LowResRMXAudioPlayer!
   private var numOnscreenGamepads = 0
   private var keyboardTop: CGFloat?
+	private var keyboardWasShown = false
+	private var keyboardWasHidden = false
+	private var keyboardNewHeight = 0
 
   override func viewDidLoad() {
     super.viewDidLoad()
@@ -103,6 +106,79 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
 
     if let coreWrapper = coreWrapper {
       // program already compiled
+
+
+
+
+
+// TODO: I need to setup the size of the window io.shown.width before
+// TODO: I need to setup the size of the window io.shown.width before
+// TODO: I need to setup the size of the window io.shown.width before
+// TODO: I need to setup the size of the window io.shown.width before
+// TODO: I need to setup the size of the window io.shown.width before
+// TODO: I need to setup the size of the window io.shown.width before
+// TODO: I need to setup the size of the window io.shown.width before
+// TODO: I need to setup the size of the window io.shown.width before
+// TODO: I need to setup the size of the window io.shown.width before
+// TODO: I need to setup the size of the window io.shown.width before
+// TODO: I need to setup the size of the window io.shown.width before
+// TODO: I need to setup the size of the window io.shown.width before
+// TODO: I need to setup the size of the window io.shown.width before
+// TODO: I need to setup the size of the window io.shown.width before
+// TODO: I need to setup the size of the window io.shown.width before
+// TODO: I need to setup the size of the window io.shown.width before
+// TODO: I need to setup the size of the window io.shown.width before
+// TODO: I need to setup the size of the window io.shown.width before
+// TODO: I need to setup the size of the window io.shown.width before
+// TODO: I need to setup the size of the window io.shown.width before
+// TODO: I need to setup the size of the window io.shown.width before
+// TODO: I need to setup the size of the window io.shown.width before
+// TODO: I need to setup the size of the window io.shown.width before
+// TODO: I need to setup the size of the window io.shown.width before
+// TODO: I need to setup the size of the window io.shown.width before
+// TODO: I need to setup the size of the window io.shown.width before
+// TODO: I need to setup the size of the window io.shown.width before
+// TODO: I need to setup the size of the window io.shown.width before
+// TODO: I need to setup the size of the window io.shown.width before
+// TODO: I need to setup the size of the window io.shown.width before
+// TODO: I need to setup the size of the window io.shown.width before
+// TODO: I need to setup the size of the window io.shown.width before
+// TODO: I need to setup the size of the window io.shown.width before
+// TODO: I need to setup the size of the window io.shown.width before
+// TODO: I need to setup the size of the window io.shown.width before
+// TODO: I need to setup the size of the window io.shown.width before
+// TODO: I need to setup the size of the window io.shown.width before
+// TODO: I need to setup the size of the window io.shown.width before
+// TODO: I need to setup the size of the window io.shown.width before
+// TODO: I need to setup the size of the window io.shown.width before
+// TODO: I need to setup the size of the window io.shown.width before
+// TODO: I need to setup the size of the window io.shown.width before
+// TODO: I need to setup the size of the window io.shown.width before
+// TODO: I need to setup the size of the window io.shown.width before
+// TODO: I need to setup the size of the window io.shown.width before
+// TODO: I need to setup the size of the window io.shown.width before
+// TODO: I need to setup the size of the window io.shown.width before
+// TODO: I need to setup the size of the window io.shown.width before
+// TODO: I need to setup the size of the window io.shown.width before
+// TODO: I need to setup the size of the window io.shown.width before
+// TODO: I need to setup the size of the window io.shown.width before
+// TODO: I need to setup the size of the window io.shown.width before
+// TODO: I need to setup the size of the window io.shown.width before
+// TODO: I need to setup the size of the window io.shown.width before
+// TODO: I need to setup the size of the window io.shown.width before
+// TODO: I need to setup the size of the window io.shown.width before
+
+
+			// Can I call core_handleInput here
+			computeScreenInfos()
+			coreWrapper.input.width = Int32(screenWidth / screenScale)
+			coreWrapper.input.height = Int32(screenHeight / screenScale)
+			coreWrapper.input.left = Int32(left / screenScale)
+			coreWrapper.input.top = Int32(top / screenScale)
+			coreWrapper.input.right = Int32(right / screenScale)
+			coreWrapper.input.bottom = Int32(bottom / screenScale)
+			core_handleInput(&coreWrapper.core, &coreWrapper.input)
+
       core_willRunProgram(
         &coreWrapper.core, Int(CFAbsoluteTimeGetCurrent() - AppController.shared.bootTime))
       core_setDebug(&coreWrapper.core, isDebugEnabled)
@@ -283,12 +359,8 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
   override var preferredScreenEdgesDeferringSystemGestures: UIRectEdge {
     return .all
   }
-
-  override func viewDidLayoutSubviews() {
-    super.viewDidLayoutSubviews()
-
-		self.view.backgroundColor = .black
-
+  
+  func computeScreenInfos() {
     if #available(iOS 11.0, *) {
       top = view.safeAreaInsets.top
       left = view.safeAreaInsets.left
@@ -317,11 +389,6 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
     } else {
       height = screenHeight
       screenScale = height / 384.0
-//      if (isCompatMode && screenScale > screenScale.rounded(.towardZero))
-//      {
-//				screenScale = screenScale.rounded(.towardZero)
-//				height = 384.0 / screenScale;
-//			}
       width = 216.0 * screenScale
     }
 
@@ -331,16 +398,14 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
       width: width,
       height: height
     )
+	}
 
-    // NSLog("nxView: \(width)x\(height)")
-    // NSLog("wrapper: \(Int32(w / screenScale))x\(Int32(h / screenScale))")
-    // NSLog("screenScale: \(screenScale)")
+  override func viewDidLayoutSubviews() {
+    super.viewDidLayoutSubviews()
 
-    // send shown and safe size
-
-//    if let coreWrapper = coreWrapper {
-//
-//    }
+		self.view.backgroundColor = .black
+		
+		computeScreenInfos()
   }
 
   func compileAndStartProgram(sourceCode: String) -> LowResRMXError? {
@@ -496,6 +561,23 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
     coreWrapper.input.right = Int32(right / screenScale)
     coreWrapper.input.bottom = Int32(bottom / screenScale)
 
+		if(keyboardWasShown)
+		{
+			coreWrapper.input.keyboardChange = 1
+			coreWrapper.input.keyboardHeight = Int32(keyboardNewHeight)
+		}
+		else if(keyboardWasHidden)
+		{
+			coreWrapper.input.keyboardChange = -1;
+			coreWrapper.input.keyboardHeight = Int32(keyboardNewHeight)
+		}
+		else
+		{
+			coreWrapper.input.keyboardChange = 0;
+		}
+		keyboardWasShown = false
+		keyboardWasHidden = false
+
     withUnsafeMutablePointer(to: &coreWrapper.input) { inputPtr in
         core_update(&coreWrapper.core, inputPtr)
     }
@@ -547,7 +629,7 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
         }
       }
     }
-    if !handled {
+    if !handled && event != nil {
       super.pressesBegan(presses, with: event)
     }
   }
@@ -615,16 +697,20 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
       let keyboardRectangle = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect
     {
       if let coreWrapper = coreWrapper {
+				keyboardWasShown = true
+				keyboardNewHeight = Int(Int32(ceil(keyboardRectangle.height / screenScale)))
         //core_setKeyboardEnabled(&coreWrapper.core, true)
-        core_setKeyboardHeight(&coreWrapper.core, Int32(ceil(keyboardRectangle.height / screenScale)))
+        //core_setKeyboardHeight(&coreWrapper.core, Int32(ceil(keyboardRectangle.height / screenScale)))
       }
     }
   }
 
   @objc func keyboardDidHide(_ notification: NSNotification) {
-    if let coreWrapper = coreWrapper {
-      core_setKeyboardEnabled(&coreWrapper.core, false)
-      core_setKeyboardHeight(&coreWrapper.core, Int32(0))
+		if let coreWrapper = coreWrapper {
+			keyboardWasHidden = true
+			keyboardNewHeight = 0
+      // core_setKeyboardEnabled(&coreWrapper.core, false)
+      //core_setKeyboardHeight(&coreWrapper.core, Int32(0))
     }
   }
 

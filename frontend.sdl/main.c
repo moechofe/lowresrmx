@@ -19,7 +19,6 @@
 //
 
 #include "config.h"
-
 #include "main.h"
 #include "core.h"
 #include "runner.h"
@@ -90,7 +89,9 @@ SDL_Renderer *renderer = NULL;
 SDL_Texture *texture = NULL;
 SDL_AudioStream *audioStream = NULL;
 SDL_Haptic *haptic = NULL;
+#if SDL_SCALING
 float rendererScale = 1;
+#endif
 
 struct Runner runner;
 #if DEV_MENU

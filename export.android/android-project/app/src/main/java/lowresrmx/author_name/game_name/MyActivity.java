@@ -1,14 +1,11 @@
 package lowresrmx.author_name.game_name;
 
-import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
 import org.libsdl.app.SDLActivity;
-import androidx.core.content.ContextCompat;
-import androidx.core.splashscreen.SplashScreen;
 
 public class MyActivity extends SDLActivity {
 
@@ -17,9 +14,6 @@ public class MyActivity extends SDLActivity {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
-
-		SplashScreen splashScreen = SplashScreen.installSplashScreen(this);
-		splashScreen.setKeepOnScreenCondition(() -> false);
 
 		super.onCreate(savedInstanceState);
 

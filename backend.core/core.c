@@ -24,9 +24,12 @@
 #include <string.h>
 #include "overlay.h"
 #include "string_utils.h"
+#include "config.h"
 #include "startup_sequence.h"
 
+#if SDL_SCALING
 extern float rendererScale;
+#endif
 
 const char CoreInputKeyReturn = '\n';
 const char CoreInputKeyBackspace = '\b';
@@ -307,6 +310,19 @@ void core_handleInput(struct Core *core, struct CoreInput *input)
 
 	input->out_hasUsedInput = processedOtherInput || ioRegisters->key || ioRegisters->status.value;
 	// || ioRegisters->gamepads[0].value || ioRegisters->gamepads[1].value;
+
+	if (input->keyboardChange > 0)
+	{
+		int ga = 123;
+		ioRegisters->status.keyboardVisible = true;
+		ioRegisters->keyboardHeight = input->keyboardHeight;
+	}
+	else if(input->keyboardChange < 0)
+	{
+		int bu = 123;
+		ioRegisters->status.keyboardVisible = false;
+		ioRegisters->keyboardHeight = input->keyboardHeight;
+	}
 }
 
 void core_willSuspendProgram(struct Core *core)
@@ -342,7 +358,11 @@ void core_setKeyboardEnabled(struct Core *core, bool enabled)
 
 void core_setKeyboardHeight(struct Core *core, int height)
 {
+#if SDL_SCALING
 	core->machine->ioRegisters.keyboardHeight = (int)((float)height/rendererScale);
+#else
+	core->machine->ioRegisters.keyboardHeight = height;
+#endif
 }
 
 void core_orientationChanged(struct Core *core)
