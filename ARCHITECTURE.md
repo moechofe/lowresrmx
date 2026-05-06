@@ -1,48 +1,48 @@
 
 - 📂 `asset.dev`
 
-    Contains some original assets from LowResNX, the bitmap fonts included in the core, the source for the documentation.
+    Assets source.
 
 - 📂 `asset.manual`
 
-    The exported manual included in the mobile apps.
+    Manual included in the iOS app.
 
 - 📂 `asset.programs`
 
-    Programs to be included in the mobile apps.
+    Programs included in the iOS app.
 
 - 📂 `backend.core`
 
     The backend engine containing the intepreter.
 
+- 📂 `export.android`
+
+    Android Studio template project for user's program.
+
 - 📂 `frontend.sdl`
 
-    A frontend using SDL used to create a desktop app.
+    SDL frontend for the desktop app, the wasm player and Android export player.
 
 - 📂 `plugin.vscode`
 
-    A syntax highlight  for Visual Studio Code.
+    Syntax highlight extension for Visual Studio Code.
 
 - 📂 `project.cmake`
 
-    A CMake project to build the desktop app.
+    CMake project to build the desktop app.
 
 - 📂 `project.flutter`
 
-    A mobile app for Android.
+    Flutter project for for Android app.
 
 - 📂 `project.ios`
 
-    A mobile app modified from the original LowResNX app by "Timo".
+    Xcode project for the iOS app.
 
-- 📂 `project.web`
+- 📂 `project.wasm`
 
-    A makefile project to build the web player.
-
-- 📂 `test.programs`
-
-    A collection of programs to test the features. It's generally a mess.
+    Emscripten project for the WASM player.
 
 - 📂 `tool.dev`
 
-    Developer script.
+    Developer scripts.
