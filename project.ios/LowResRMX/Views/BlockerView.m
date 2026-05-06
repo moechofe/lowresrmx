@@ -17,7 +17,6 @@
 //    misrepresented as being the original software.
 // 3. This notice may not be removed or altered from any source distribution.
 #import "BlockerView.h"
-#import "AppStyle.h"
 
 static BlockerView *_currentInstance;
 
@@ -83,8 +82,6 @@ static BlockerView *_currentInstance;
 {
 	[super awakeFromNib];
 	self.alpha = 0;
-//  self.activityIndicatorView.color = [AppStyle whiteColor];
-//  self.backgroundColor = [[AppStyle darkGrayColor] colorWithAlphaComponent:0.25];
 }
 
 @end

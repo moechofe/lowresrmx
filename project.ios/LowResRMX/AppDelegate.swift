@@ -37,8 +37,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate
 		didFinishLaunchingWithOptions _: [UIApplication.LaunchOptionsKey: Any]?
 	) -> Bool
 	{
-		AppStyle.setAppearance()
-
 		return true
 	}
 

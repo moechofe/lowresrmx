@@ -66,21 +66,9 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
 
 		navigationItem.title = document.localizedName
 
-		//        view.backgroundColor = AppStyle.darkGrayColor()
-		//        sourceCodeTextView.backgroundColor = AppStyle.darkGrayColor()
-		//        sourceCodeTextView.textColor = AppStyle.brightTintColor()
-		//        sourceCodeTextView.tintColor = AppStyle.whiteColor()
-		//        sourceCodeTextView.indicatorStyle = .white
-
 		sourceCodeTextView.layoutManager.allowsNonContiguousLayout = false
 		sourceCodeTextView.delegate = self
 		sourceCodeTextView.editorDelegate = self
-
-		//        sourceCodeTextView.keyboardAppearance = .dark
-		//        if let keyboardToolbar = sourceCodeTextView.keyboardToolbar {
-		//            keyboardToolbar.isTranslucent = true
-		//            keyboardToolbar.barStyle = .black
-		//        }
 
 		sourceCodeTextView.text = document.sourceCode ?? ""
 		sourceCodeTextView?.applyColoration(AppController.shared.editorSyntaxHighlightingMode.rawValue, in: NSMakeRange(0, sourceCodeTextView.text.count))

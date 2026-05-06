@@ -31,10 +31,7 @@ class WebViewController: UIViewController
 	{
 		let config = WKWebViewConfiguration()
 		webView = WKWebView(frame: CGRect.zero, configuration: config)
-
-		//        webView.backgroundColor = AppStyle.darkGrayColor()
 		webView.isOpaque = false
-		//        webView.scrollView.indicatorStyle = .white
 		view = webView
 	}
 

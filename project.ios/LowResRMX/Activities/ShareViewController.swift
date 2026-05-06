@@ -34,16 +34,7 @@ class ShareViewController: UIViewController, WKNavigationDelegate
 		let config = WKWebViewConfiguration()
 		webView = WKWebView(frame: CGRect.zero, configuration: config)
 
-		//        webView.layer.borderColor = UIColor.green.cgColor
-		//        webView.layer.borderWidth = 2.0
-		//        webView.layer.backgroundColor = UIColor.blue.cgColor
-
-		// webView.backgroundColor = AppStyle.darkGrayColor()
-		//        webView.backgroundColor = UIColor.lightGray
-		//        webView.tintColor = UIColor.red
 		webView.isOpaque = false
-		//        webView.scrollView.backgroundColor = UIColor.black
-		//        webView.scrollView.indicatorStyle = .white
 		webView.navigationDelegate = self
 		view = webView
 	}
@@ -52,18 +43,7 @@ class ShareViewController: UIViewController, WKNavigationDelegate
 	{
 		super.viewDidLoad()
 
-		//        let nba = UINavigationBar.appearance()
-		//        nba.tintColor = UIColor.white
-		//        if #available(iOS 13.0, *) {
-		//            self.view.backgroundColor = .systemBackground
-		//        } else {
-		//            // Fallback on earlier versions
-		//        }
-
-		//        self.modalPresentationStyle = .fullScreen
 		modalPresentationStyle = .popover
-		//        self.tabBarController?.tabBar.tintColor = UIColor.brown
-		//        self.popoverPresentationController?.backgroundColor=UIColor.brown
 
 		navigationItem.title = "Share with Community"
 		navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(cancel))
@@ -82,31 +62,6 @@ class ShareViewController: UIViewController, WKNavigationDelegate
 		webView.stopLoading()
 		activity?.activityDidFinish(false)
 	}
-
-//
-	//    func uploadProgram() {
-	//        guard let programUrl = programUrl, let imageUrl = imageUrl else {
-	//            showError()
-	//            return
-	//        }
-//
-	//        let programData = try? Data(contentsOf: programUrl)
-	//        let imageData = try? Data(contentsOf: imageUrl)
-//
-//				let url = URL(string: "\(AppDelegate.baseURL)/share.html")!
-	//        var urlRequest = URLRequest(url: AppDelegate.baseURL.appendingPathComponent("app_posting.php"))
-	//        urlRequest.httpMethod = "POST"
-//
-	//        var parameters: [String: Any] = [:]
-	//        if let programData = programData {
-	//            parameters["program_file"] = MultipartFile(filename: programUrl.lastPathComponent, data: programData, mime: "text/plain")
-	//        }
-	//        if let imageData = imageData {
-	//            parameters["image_file"] = MultipartFile(filename: imageUrl.lastPathComponent, data: imageData, mime: "image/png")
-	//        }
-	//        urlRequest.setMultipartBody(parameters: parameters)
-	//        webView.load(urlRequest)
-	//    }
 
 	func showError(_ error: Error? = nil)
 	{
@@ -151,22 +106,6 @@ class ShareViewController: UIViewController, WKNavigationDelegate
 		}
 		decisionHandler(.allow)
 	}
-
-//
-	//    func webView(_ webView: WKWebView, decidePolicyFor navigationResponse: WKNavigationResponse, decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void) {
-	//        decisionHandler(.allow)
-//
-	//        if let response = navigationResponse.response as? HTTPURLResponse {
-	//            if  let userId = response.allHeaderFields["x-lowresnx-user-id"] as? String,
-	//                let username = response.allHeaderFields["x-lowresnx-username"] as? String {
-//
-	//                AppController.shared.didLogIn(userId: userId, username: username)
-	//                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-	//                    self.uploadProgram()
-	//                }
-	//            }
-	//        }
-	//    }
 
 	func webView(_: WKWebView, didStartProvisionalNavigation _: WKNavigation!)
 	{

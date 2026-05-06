@@ -40,19 +40,11 @@ class ExplorerViewController: UIViewController, UICollectionViewDelegateFlowLayo
 	{
 		super.viewDidLoad()
 
-		//        view.backgroundColor = AppStyle.darkGrayColor()
-
 		let addProjectItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(onAddProjectTapped))
-		// let communityItem = UIBarButtonItem(image: UIImage(named: "community"), style: .plain, target: self, action: #selector(onCommunityTapped))
 		let actionItem = UIBarButtonItem(image: UIImage(named: "gear"), style: .plain, target: self, action: #selector(onActionTapped))
 
 		navigationItem.leftBarButtonItem = actionItem
-		navigationItem.rightBarButtonItems = [addProjectItem /* , communityItem */ ]
-
-		//        FIXME: this is not better
-		//        if #available(iOS 26.0, *) {
-//					navigationItem.leftBarButtonItem?.hidesSharedBackground = true
-//				}
+		navigationItem.rightBarButtonItems = [addProjectItem]
 
 		collectionView.dataSource = self
 		collectionView.delegate = self

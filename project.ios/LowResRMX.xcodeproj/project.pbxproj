@@ -224,7 +224,6 @@
 		9227DC1E1FC8BB0700BC89FD /* ProjectManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9227DC1D1FC8BB0700BC89FD /* ProjectManager.swift */; };
 		9227DC221FC8C17A00BC89FD /* SplashViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9227DC211FC8C17A00BC89FD /* SplashViewController.swift */; };
 		9234247522C3FACC002431CD /* ClearRamActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9234247422C3FACC002431CD /* ClearRamActivity.swift */; };
-		923AFD691F77EB27002F6A5B /* AppStyle.m in Sources */ = {isa = PBXBuildFile; fileRef = 925CC6B41F7589BA0059C230 /* AppStyle.m */; };
 		923AFD721F77ED34002F6A5B /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 926EB1D11F757DDD0048A6CF /* Main.storyboard */; };
 		923AFD7C1F77ED52002F6A5B /* Help.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 926EB1FC1F7582A70048A6CF /* Help.storyboard */; };
 		923AFD7D1F77ED52002F6A5B /* HelpContent.m in Sources */ = {isa = PBXBuildFile; fileRef = 926EB1F61F7582A50048A6CF /* HelpContent.m */; };
@@ -445,8 +444,6 @@
 		925CC69F1F75896F0059C230 /* UITextView+Utils.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UITextView+Utils.m"; sourceTree = "<group>"; };
 		925CC6A31F75896F0059C230 /* GORLabel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GORLabel.h; sourceTree = "<group>"; };
 		925CC6A41F75896F0059C230 /* GORLabel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = GORLabel.m; sourceTree = "<group>"; };
-		925CC6B11F7589B90059C230 /* AppStyle.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppStyle.h; sourceTree = "<group>"; };
-		925CC6B41F7589BA0059C230 /* AppStyle.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppStyle.m; sourceTree = "<group>"; };
 		925CC6B91F758A360059C230 /* ReplayKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ReplayKit.framework; path = System/Library/Frameworks/ReplayKit.framework; sourceTree = SDKROOT; };
 		92612124223D73BE0079A486 /* WebViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewController.swift; sourceTree = "<group>"; };
 		926EB1D11F757DDD0048A6CF /* Main.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Main.storyboard; sourceTree = "<group>"; };
@@ -760,8 +757,6 @@
 			isa = PBXGroup;
 			children = (
 				92817748221FDA72005B7A24 /* AppController.swift */,
-				925CC6B11F7589B90059C230 /* AppStyle.h */,
-				925CC6B41F7589BA0059C230 /* AppStyle.m */,
 				923C310F20587965003C89AC /* ToolsMenuConfiguration.swift */,
 				9227DC1D1FC8BB0700BC89FD /* ProjectManager.swift */,
 				9276994B1F7D649800211D15 /* ExplorerItem.swift */,
@@ -1250,7 +1245,6 @@
 				5B34ED722AC5835600220A80 /* startup_sequence.c in Sources */,
 				9234247522C3FACC002431CD /* ClearRamActivity.swift in Sources */,
 				92A7E14B223B91FD00ED2487 /* ShareViewController.swift in Sources */,
-				923AFD691F77EB27002F6A5B /* AppStyle.m in Sources */,
 				5B34ED482AC5835600220A80 /* cmd_screen.c in Sources */,
 				923AFD801F77ED52002F6A5B /* HelpTableViewController.m in Sources */,
 				924AB3F2205D986C00BCF977 /* IndexSideBar.swift in Sources */,

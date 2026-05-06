@@ -22,11 +22,9 @@
 
 #import "HelpSplitViewController.h"
 #import "HelpContent.h"
-#import "AppStyle.h"
 #import "NSString+Utils.h"
 #import "UITextView+Utils.h"
 #import "UIViewController+LowResCoder.h"
-
 #import "EditorTextView.h"
 #import "SearchToolbar.h"
 #import "BlockerView.h"

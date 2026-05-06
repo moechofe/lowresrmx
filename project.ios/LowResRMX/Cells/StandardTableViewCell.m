@@ -18,17 +18,12 @@
 // 3. This notice may not be removed or altered from any source distribution.
 
 #import "StandardTableViewCell.h"
-#import "AppStyle.h"
 
 @implementation StandardTableViewCell
 
 - (void)awakeFromNib
 {
 	[super awakeFromNib];
-
-	// Initialization code
-//    self.textLabel.textColor = [AppStyle darkColor];
-//    self.detailTextLabel.textColor = [AppStyle darkColor];
 }
 
 @end

@@ -53,17 +53,11 @@ class ExplorerItemCell: UICollectionViewCell
 		let imageLayer = previewImageView.layer
 		imageLayer.cornerRadius = 2
 		imageLayer.masksToBounds = true
-		//        previewImageView.backgroundColor = AppStyle.mediumTintColor()
 
 		shadowView.layer.cornerRadius = 0
 		shadowView.layer.shadowOffset = CGSize(width: 0, height: 1)
 		shadowView.layer.shadowOpacity = 1.0
 		shadowView.layer.shadowRadius = 2.0
-
-		//        nameLabel.shadowColor = UIColor.black
-		// nameLabel.shadowOffset = CGSize(width: 0, height: 2)
-
-		//        backgroundColor = AppStyle.darkGrayColor()
 	}
 
 	@objc func shareItem(_: Any?)
