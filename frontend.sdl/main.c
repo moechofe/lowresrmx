@@ -1,14 +1,14 @@
-//
-// Copyright 2017-2020 Timo Kloss
-//
+// Copyright 2018 Timo Kloss
+// Copyright 2021-2026 Martin Mauchauffée
+
 // This software is provided 'as-is', without any express or implied
 // warranty. In no event will the authors be held liable for any damages
 // arising from the use of this software.
-//
+
 // Permission is granted to anyone to use this software for any purpose,
 // including commercial applications, and to alter it and redistribute it
 // freely, subject to the following restrictions:
-//
+
 // 1. The origin of this software must not be misrepresented; you must not
 //    claim that you wrote the original software. If you use this software
 //    in a product, an acknowledgment in the product documentation would be
@@ -16,18 +16,17 @@
 // 2. Altered source versions must be plainly marked as such, and must not be
 //    misrepresented as being the original software.
 // 3. This notice may not be removed or altered from any source distribution.
-//
 
-#include "config.h"
 #include "main.h"
+#include "boot_intro.h"
+#include "config.h"
 #include "core.h"
-#include "runner.h"
 #include "dev_menu.h"
+#include "runner.h"
+#include "sdl_include.h"
 #include "settings.h"
 #include "system_paths.h"
 #include "utils.h"
-#include "boot_intro.h"
-#include "sdl_include.h"
 
 #if SCREENSHOTS
 #include "screenshot.h"
@@ -47,20 +46,18 @@ const int defaultWindowScale = 1;
 const int joyAxisThreshold = 16384;
 
 const int keyboardControls[2][2][8] = {
-		// mapping 0
-		{
-				// up, down, left, right, button A, button B, alt. button A, alt. button B
-				{SDL_SCANCODE_UP, SDL_SCANCODE_DOWN, SDL_SCANCODE_LEFT, SDL_SCANCODE_RIGHT,
-				 SDL_SCANCODE_Z, SDL_SCANCODE_X, SDL_SCANCODE_N, SDL_SCANCODE_M},
-				{SDL_SCANCODE_E, SDL_SCANCODE_D, SDL_SCANCODE_S, SDL_SCANCODE_F,
-				 SDL_SCANCODE_TAB, SDL_SCANCODE_Q, SDL_SCANCODE_LSHIFT, SDL_SCANCODE_A}},
-		// mapping 1
-		{
-				// up, down, left, right, button A, button B, alt. button A, alt. button B
-				{SDL_SCANCODE_UP, SDL_SCANCODE_DOWN, SDL_SCANCODE_LEFT, SDL_SCANCODE_RIGHT,
-				 SDL_SCANCODE_J, SDL_SCANCODE_K, SDL_SCANCODE_I, SDL_SCANCODE_U},
-				{SDL_SCANCODE_UP, SDL_SCANCODE_DOWN, SDL_SCANCODE_LEFT, SDL_SCANCODE_RIGHT,
-				 SDL_SCANCODE_H, SDL_SCANCODE_L, SDL_SCANCODE_O, SDL_SCANCODE_Y}}};
+	// mapping 0
+	{// up, down, left, right, button A, button B, alt. button A, alt. button B
+	 {SDL_SCANCODE_UP, SDL_SCANCODE_DOWN, SDL_SCANCODE_LEFT, SDL_SCANCODE_RIGHT, SDL_SCANCODE_Z, SDL_SCANCODE_X,
+	  SDL_SCANCODE_N, SDL_SCANCODE_M},
+	 {SDL_SCANCODE_E, SDL_SCANCODE_D, SDL_SCANCODE_S, SDL_SCANCODE_F, SDL_SCANCODE_TAB, SDL_SCANCODE_Q,
+	  SDL_SCANCODE_LSHIFT, SDL_SCANCODE_A}},
+	// mapping 1
+	{// up, down, left, right, button A, button B, alt. button A, alt. button B
+	 {SDL_SCANCODE_UP, SDL_SCANCODE_DOWN, SDL_SCANCODE_LEFT, SDL_SCANCODE_RIGHT, SDL_SCANCODE_J, SDL_SCANCODE_K,
+	  SDL_SCANCODE_I, SDL_SCANCODE_U},
+	 {SDL_SCANCODE_UP, SDL_SCANCODE_DOWN, SDL_SCANCODE_LEFT, SDL_SCANCODE_RIGHT, SDL_SCANCODE_H, SDL_SCANCODE_L,
+	  SDL_SCANCODE_O, SDL_SCANCODE_Y}}};
 
 void update(void *arg);
 void updateScreenRect(int winW, int winH);
@@ -74,7 +71,8 @@ void initHaptic();
 
 bool eventFilter(void *userdata, SDL_Event *event)
 {
-	if(event->type == SDL_EVENT_WILL_ENTER_BACKGROUND) core_willSuspendProgram(userdata);
+	if (event->type == SDL_EVENT_WILL_ENTER_BACKGROUND)
+		core_willSuspendProgram(userdata);
 
 	return false;
 }
@@ -147,8 +145,7 @@ int main(int argc, const char *argv[])
 		{
 			switch (event.type)
 			{
-			case SDL_EVENT_DROP_FILE:
-			{
+			case SDL_EVENT_DROP_FILE: {
 				strncpy(mainProgramFilename, event.drop.data, FILENAME_MAX - 1);
 				// TODO: Do I need to free?
 				// SDL_free(event.drop.data);
@@ -161,9 +158,11 @@ int main(int argc, const char *argv[])
 
 		const char *windowTitle = "LowResRMX";
 
-		window = SDL_CreateWindow(windowTitle, SCREEN_WIDTH * defaultWindowScale, SCREEN_HEIGHT * defaultWindowScale, windowFlags);
+		window = SDL_CreateWindow(windowTitle, SCREEN_WIDTH * defaultWindowScale, SCREEN_HEIGHT * defaultWindowScale,
+								  windowFlags);
 		renderer = SDL_CreateRenderer(window, NULL);
-		texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, SCREEN_WIDTH, SCREEN_HEIGHT);
+		texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, SCREEN_WIDTH,
+									SCREEN_HEIGHT);
 		SDL_SetTextureScaleMode(texture, SDL_SCALEMODE_PIXELART);
 
 #if defined(__ANDROID__)
@@ -176,11 +175,12 @@ int main(int argc, const char *argv[])
 #endif
 
 		SDL_AudioSpec desiredAudioSpec = {
-				.freq = 44100,
-				.format = SDL_AUDIO_S16LE,
-				.channels = NUM_CHANNELS,
+			.freq = 44100,
+			.format = SDL_AUDIO_S16LE,
+			.channels = NUM_CHANNELS,
 		};
-		audioStream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &desiredAudioSpec, &audioCallback, runner.core);
+		audioStream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &desiredAudioSpec, &audioCallback,
+												runner.core);
 
 		// Used and android for haptic feedback and keyboard closed
 		initHaptic();
@@ -198,7 +198,6 @@ int main(int argc, const char *argv[])
 		{
 			machine_poke(runner.core, bootIntroStateAddress, BootIntroStateProgramAvailable);
 		}
-
 
 #ifdef __EMSCRIPTEN__
 		emscripten_set_main_loop_arg(update, NULL, -1, true);
@@ -373,7 +372,7 @@ void getDiskFilename(char *outputString)
 void getRamFilename(char *outputString)
 {
 #if defined(__ANDROID__)
-  const char *prefPath = SDL_GetAndroidInternalStoragePath();
+	const char *prefPath = SDL_GetAndroidInternalStoragePath();
 #else
 	char *prefPath = SDL_GetPrefPath("martin_mauchauffee", "LowResRMX");
 #endif
@@ -400,9 +399,9 @@ void getRamFilename(char *outputString)
 		strncat(outputString, ".dat", FILENAME_MAX - 1);
 
 #if !defined(__ANDROID__)
-        SDL_free(prefPath);
+		SDL_free(prefPath);
 #endif
-    }
+	}
 	else
 	{
 		outputString[0] = 0;
@@ -472,8 +471,7 @@ void update(void *arg)
 			// SDL_Log("Keyboard was set off");
 			break;
 
-		case SDL_EVENT_DROP_FILE:
-		{
+		case SDL_EVENT_DROP_FILE: {
 			if (hasPostfix(event.drop.data, ".rmx") || hasPostfix(event.drop.data, ".RMX"))
 			{
 #if DEV_MENU
@@ -495,8 +493,7 @@ void update(void *arg)
 			break;
 		}
 
-		case SDL_EVENT_KEY_DOWN:
-		{
+		case SDL_EVENT_KEY_DOWN: {
 			SDL_Keycode keycode = event.key.key;
 			SDL_Scancode scancode = event.key.scancode;
 
@@ -638,8 +635,7 @@ void update(void *arg)
 			break;
 		}
 
-		case SDL_EVENT_TEXT_INPUT:
-		{
+		case SDL_EVENT_TEXT_INPUT: {
 			char key = event.text.text[0];
 			hasInput = true;
 			if (key >= ' ' && key <= '_')
@@ -653,42 +649,39 @@ void update(void *arg)
 			break;
 		}
 
-		case SDL_EVENT_MOUSE_BUTTON_DOWN:
-		{
+		case SDL_EVENT_MOUSE_BUTTON_DOWN: {
 			hasInput = true;
 			setTouchPosition(event.button.x, event.button.y);
 			coreInput.touch = true;
 			break;
 		}
 
-		case SDL_EVENT_MOUSE_BUTTON_UP:
-		{
+		case SDL_EVENT_MOUSE_BUTTON_UP: {
 			releasedTouch = true;
 			break;
 		}
 
-		case SDL_EVENT_MOUSE_MOTION:
-		{
+		case SDL_EVENT_MOUSE_MOTION: {
 			setTouchPosition(event.motion.x, event.motion.y);
 			break;
 		}
 
-		// case SDL_JOYDEVICEADDED:
-		// case SDL_JOYDEVICEREMOVED:
-		// {
-		// 	configureJoysticks();
-		// 	break;
-		// }
+			// case SDL_JOYDEVICEADDED:
+			// case SDL_JOYDEVICEREMOVED:
+			// {
+			// 	configureJoysticks();
+			// 	break;
+			// }
 
-		// case SDL_JOYBUTTONDOWN:
-		// {
-		// 	hasInput = true;
-		// 	if (event.jbutton.button == 2)
-		// 	{
-		// 		coreInput.pause = true;
-		// 	}
-		// 	break;
-		// }
+			// case SDL_JOYBUTTONDOWN:
+			// {
+			// 	hasInput = true;
+			// 	if (event.jbutton.button == 2)
+			// 	{
+			// 		coreInput.pause = true;
+			// 	}
+			// 	break;
+			// }
 		}
 	}
 
@@ -780,16 +773,16 @@ void update(void *arg)
 void updateSafeArea()
 {
 	SDL_Rect area;
-	int w,h;
-	SDL_GetWindowSize(window,&w,&h);
-	SDL_GetWindowSafeArea(window,&area);
+	int w, h;
+	SDL_GetWindowSize(window, &w, &h);
+	SDL_GetWindowSafeArea(window, &area);
 	// SDL_Log("Output %dx%d",w,h);
 	// SDL_Log("Safe %dx%d %dx%d",area.x,area.y,area.w,area.h);
 
-	coreInput.left=(int)((float)area.x/rendererScale);
-	coreInput.top=(int)((float)area.y/rendererScale);
-	coreInput.right=(int)((float)(w-area.w-area.x)/rendererScale);
-	coreInput.bottom=(int)((float)(h-area.h-area.y)/rendererScale);
+	coreInput.left = (int)((float)area.x / rendererScale);
+	coreInput.top = (int)((float)area.y / rendererScale);
+	coreInput.right = (int)((float)(w - area.w - area.x) / rendererScale);
+	coreInput.bottom = (int)((float)(h - area.h - area.y) / rendererScale);
 
 	// SDL_Log("SAFE: %dx%dx%dx%d",coreInput.left,coreInput.top,coreInput.right,coreInput.bottom);
 }
@@ -798,21 +791,21 @@ void updateScreenRect(int winW, int winH)
 {
 	// SDL_Log("updateScreenRect %dx%d",winW,winH);
 
-	float r=(float)winW/(float)winH;
+	float r = (float)winW / (float)winH;
 
-	float width,height;
+	float width, height;
 
-	if (r>=9.0/16.0)
+	if (r >= 9.0 / 16.0)
 	{
-		width=(float)winW;
-		rendererScale=width/216.0;
-		height=384.0*rendererScale;
+		width = (float)winW;
+		rendererScale = width / 216.0;
+		height = 384.0 * rendererScale;
 	}
 	else
 	{
-		height=(float)winH;
-		rendererScale=height/384.0;
-		width=216.0*rendererScale;
+		height = (float)winH;
+		rendererScale = height / 384.0;
+		width = 216.0 * rendererScale;
 	}
 
 	// SDL_Log("s:%.03f w:%.03f h:%.03f",rendererScale,width,height);
@@ -822,60 +815,60 @@ void updateScreenRect(int winW, int winH)
 	screenRect.x = 0;
 	screenRect.y = 0;
 
-	coreInput.width=(int)((float)winW/rendererScale);
-	coreInput.height=(int)((float)winH/rendererScale);
+	coreInput.width = (int)((float)winW / rendererScale);
+	coreInput.height = (int)((float)winH / rendererScale);
 
 	// SDL_Log("SHOWN: %dx%d",coreInput.width,coreInput.height);
 
-// 	switch (settings.session.zoom)
-// 	{
-// 	case ZoomPixelPerfect:
-// 	{
-// 		int factor = fmax(1, fmin(winW / SCREEN_WIDTH, winH / SCREEN_HEIGHT));
+	// 	switch (settings.session.zoom)
+	// 	{
+	// 	case ZoomPixelPerfect:
+	// 	{
+	// 		int factor = fmax(1, fmin(winW / SCREEN_WIDTH, winH / SCREEN_HEIGHT));
 
-// 		int nxScreenW = SCREEN_WIDTH * factor;
-// 		int nxScreenH = SCREEN_HEIGHT * factor;
+	// 		int nxScreenW = SCREEN_WIDTH * factor;
+	// 		int nxScreenH = SCREEN_HEIGHT * factor;
 
-// 		screenRect.w = nxScreenW;
-// 		screenRect.h = nxScreenH;
-// 		screenRect.x = (winW - nxScreenW) / 2;
-// 		screenRect.y = (winH - nxScreenH) / 2;
-// 		break;
-// 	}
-// 	case ZoomLarge:
-// 	{
-// 		float factor = fmax(1, fmin(winW / (float)SCREEN_WIDTH, winH / (float)SCREEN_HEIGHT));
+	// 		screenRect.w = nxScreenW;
+	// 		screenRect.h = nxScreenH;
+	// 		screenRect.x = (winW - nxScreenW) / 2;
+	// 		screenRect.y = (winH - nxScreenH) / 2;
+	// 		break;
+	// 	}
+	// 	case ZoomLarge:
+	// 	{
+	// 		float factor = fmax(1, fmin(winW / (float)SCREEN_WIDTH, winH / (float)SCREEN_HEIGHT));
 
-// 		int nxScreenW = SCREEN_WIDTH * factor;
-// 		int nxScreenH = SCREEN_HEIGHT * factor;
+	// 		int nxScreenW = SCREEN_WIDTH * factor;
+	// 		int nxScreenH = SCREEN_HEIGHT * factor;
 
-// 		screenRect.w = nxScreenW;
-// 		screenRect.h = nxScreenH;
-// 		screenRect.x = (winW - nxScreenW) / 2;
-// 		screenRect.y = (winH - nxScreenH) / 2;
-// 		break;
-// 	}
-// 	case ZoomOverscan:
-// 	{
-// 		float factor = fmax(winW / (float)SCREEN_WIDTH, winH / (float)SCREEN_HEIGHT);
+	// 		screenRect.w = nxScreenW;
+	// 		screenRect.h = nxScreenH;
+	// 		screenRect.x = (winW - nxScreenW) / 2;
+	// 		screenRect.y = (winH - nxScreenH) / 2;
+	// 		break;
+	// 	}
+	// 	case ZoomOverscan:
+	// 	{
+	// 		float factor = fmax(winW / (float)SCREEN_WIDTH, winH / (float)SCREEN_HEIGHT);
 
-// 		int nxScreenW = SCREEN_WIDTH * factor;
-// 		int nxScreenH = SCREEN_HEIGHT * factor;
+	// 		int nxScreenW = SCREEN_WIDTH * factor;
+	// 		int nxScreenH = SCREEN_HEIGHT * factor;
 
-// 		screenRect.w = nxScreenW;
-// 		screenRect.h = nxScreenH;
-// 		screenRect.x = (winW - nxScreenW) / 2;
-// 		screenRect.y = (winH - nxScreenH) / 2;
-// 		break;
-// 	}
-// 	case ZoomSqueeze:
-// 		screenRect.w = winW;
-// 		screenRect.h = winH;
-// 		screenRect.x = 0;
-// 		screenRect.y = 0;
-// 		break;
-// 	}
-// #endif
+	// 		screenRect.w = nxScreenW;
+	// 		screenRect.h = nxScreenH;
+	// 		screenRect.x = (winW - nxScreenW) / 2;
+	// 		screenRect.y = (winH - nxScreenH) / 2;
+	// 		break;
+	// 	}
+	// 	case ZoomSqueeze:
+	// 		screenRect.w = winW;
+	// 		screenRect.h = winH;
+	// 		screenRect.x = 0;
+	// 		screenRect.y = 0;
+	// 		break;
+	// 	}
+	// #endif
 	// SDL_SetTextInputRect(&screenRect);
 }
 
@@ -940,7 +933,9 @@ void audioCallback(void *userdata, SDL_AudioStream *stream, int additional_amoun
 {
 	while (additional_amount > 0)
 	{
-		int bytes_to_process = (additional_amount > (int)sizeof(audio_callback_buffer)) ? (int)sizeof(audio_callback_buffer) : additional_amount;
+		int bytes_to_process = (additional_amount > (int)sizeof(audio_callback_buffer))
+								   ? (int)sizeof(audio_callback_buffer)
+								   : additional_amount;
 		int num_samples = bytes_to_process / sizeof(int16_t);
 
 		audio_renderAudio(userdata, audio_callback_buffer, num_samples, 44100, volume);
@@ -967,9 +962,7 @@ void saveScreenshot(void *pixels, int scale)
 
 #ifdef __EMSCRIPTEN__
 
-EM_JS(void, ready, (), {
-	document.querySelector('body').classList.add("app-ready");
-});
+EM_JS(void, ready, (), { document.querySelector('body').classList.add("app-ready"); });
 
 void onloaded(const char *filename)
 {
@@ -988,15 +981,18 @@ void onerror(const char *filename)
 
 void initHaptic()
 {
-	SDL_HapticID *haptics=SDL_GetHaptics(NULL);
-	if(haptics)
+	SDL_HapticID *haptics = SDL_GetHaptics(NULL);
+	if (haptics)
 	{
-		haptic=SDL_OpenHaptic(haptics[0]);
-		if(!haptic) SDL_Log("Haptic: %s",SDL_GetError());
+		haptic = SDL_OpenHaptic(haptics[0]);
+		if (!haptic)
+			SDL_Log("Haptic: %s", SDL_GetError());
 		SDL_free(haptics);
 	}
 
-	if(!haptic) return;
+	if (!haptic)
+		return;
 
-	if(!SDL_InitHapticRumble(haptic)) return;
+	if (!SDL_InitHapticRumble(haptic))
+		return;
 }
