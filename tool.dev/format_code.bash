@@ -3,6 +3,7 @@
 # apt install clang
 # brew install fd
 # brew install swiftformat
+# brew install uncrustify
 
 ROOT="$(readlink -f "$(dirname "${BASH_SOURCE[0]}")/..")"
 
@@ -20,3 +21,5 @@ ContinuationIndentWidth: 0 \
 }" -i
 
 fd '\.swift$' project.ios | xargs -n1 swiftformat --quiet --swift-version 5.9 --allman true  --indent tab
+
+fd '\.[h|m]$' project.ios | xargs uncrustify -q -c tool.dev/uncrustify.cfg --no-backup -l OC

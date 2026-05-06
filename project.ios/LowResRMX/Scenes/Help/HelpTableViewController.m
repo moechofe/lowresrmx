@@ -24,96 +24,96 @@
 
 - (void)viewDidLoad
 {
-    [super viewDidLoad];
+	[super viewDidLoad];
 
-    _cancelItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel target:self action:@selector(onCancelTapped:)];
+	_cancelItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel target:self action:@selector(onCancelTapped:)];
 
-    self.tableView.indicatorStyle = UIScrollViewIndicatorStyleWhite;
+	self.tableView.indicatorStyle = UIScrollViewIndicatorStyleWhite;
 }
 
 - (void)viewWillAppear:(BOOL)animated
 {
-    [super viewWillAppear:animated];
+	[super viewWillAppear:animated];
 
-    self.helpContent = AppController.shared.helpContent;
+	self.helpContent = AppController.shared.helpContent;
 
-    [self updateBarButtonCollapsed:self.splitViewController.collapsed];
+	[self updateBarButtonCollapsed:self.splitViewController.collapsed];
 }
 
 - (void)updateBarButtonCollapsed:(BOOL)collapsed
 {
-    if (collapsed)
-    {
-        self.navigationItem.rightBarButtonItem = self.cancelItem;
-    }
-    else
-    {
-        self.navigationItem.rightBarButtonItem = nil;
-    }
+	if (collapsed)
+	{
+		self.navigationItem.rightBarButtonItem = self.cancelItem;
+	}
+	else
+	{
+		self.navigationItem.rightBarButtonItem = nil;
+	}
 }
 
 - (void)onCancelTapped:(id)sender
 {
-    HelpSplitViewController *helpVC = (HelpSplitViewController *)self.splitViewController;
-    [self.splitViewController showDetailViewController:helpVC.detailNavigationController sender:self];
+	HelpSplitViewController *helpVC = (HelpSplitViewController *)self.splitViewController;
+	[self.splitViewController showDetailViewController:helpVC.detailNavigationController sender:self];
 }
 
 #pragma mark - Table view data source
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
 {
-    // Return the number of sections.
-    return 1;
+	// Return the number of sections.
+	return 1;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
-    // Return the number of rows in the section.
-    return [self filteredChapters].count;
+	// Return the number of rows in the section.
+	return [self filteredChapters].count;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    HelpChapter *chapter = [self filteredChapters][indexPath.row];
-    NSString *cellIdentifier;
-    if (chapter.level == 0)
-    {
-        cellIdentifier = @"ChapterCell";
-    }
-    else if (chapter.level == 1)
-    {
-        cellIdentifier = @"SubchapterCell";
-    }
-    else
-    {
-				// Normally, not used
-        cellIdentifier = @"CommandCell";
-    }
-    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellIdentifier forIndexPath:indexPath];
+	HelpChapter *chapter = [self filteredChapters][indexPath.row];
+	NSString *cellIdentifier;
+	if (chapter.level == 0)
+	{
+		cellIdentifier = @"ChapterCell";
+	}
+	else if (chapter.level == 1)
+	{
+		cellIdentifier = @"SubchapterCell";
+	}
+	else
+	{
+		// Normally, not used
+		cellIdentifier = @"CommandCell";
+	}
+	UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellIdentifier forIndexPath:indexPath];
 
-    cell.textLabel.text = chapter.title;
-    cell.indentationLevel = chapter.level;
+	cell.textLabel.text = chapter.title;
+	cell.indentationLevel = chapter.level;
 
-    return cell;
+	return cell;
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    HelpChapter *chapter = [self filteredChapters][indexPath.row];
-    HelpSplitViewController *helpVC = (HelpSplitViewController *)self.splitViewController;
-    [helpVC showChapter:chapter.htmlChapter];
+	HelpChapter *chapter = [self filteredChapters][indexPath.row];
+	HelpSplitViewController *helpVC = (HelpSplitViewController *)self.splitViewController;
+	[helpVC showChapter:chapter.htmlChapter];
 
-    [tableView deselectRowAtIndexPath:indexPath animated:YES];
+	[tableView deselectRowAtIndexPath:indexPath animated:YES];
 }
 
 - (NSArray<HelpChapter *> *)filteredChapters {
-    NSMutableArray<HelpChapter *> *filtered = [NSMutableArray array];
-    for (HelpChapter *chapter in self.helpContent.chapters) {
-        if (chapter.level == 0 || chapter.level == 1) {
-            [filtered addObject:chapter];
-        }
-    }
-    return filtered;
+	NSMutableArray<HelpChapter *> *filtered = [NSMutableArray array];
+	for (HelpChapter *chapter in self.helpContent.chapters) {
+		if (chapter.level == 0 || chapter.level == 1) {
+			[filtered addObject:chapter];
+		}
+	}
+	return filtered;
 }
 
 @end

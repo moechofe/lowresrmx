@@ -11,7 +11,7 @@
 
 static BlockerView *_currentInstance;
 
-@interface BlockerView()
+@interface BlockerView ()
 @property (weak, nonatomic) IBOutlet UIActivityIndicatorView *activityIndicatorView;
 @end
 
@@ -51,8 +51,8 @@ static BlockerView *_currentInstance;
 	[container addSubview:_currentInstance];
 	[_currentInstance.activityIndicatorView startAnimating];
 	[UIView animateWithDuration:0.3 animations:^{
-		_currentInstance.alpha = 1.0;
-	}];
+	         _currentInstance.alpha = 1.0;
+	 }];
 }
 
 + (void)dismiss
@@ -62,10 +62,10 @@ static BlockerView *_currentInstance;
 		BlockerView *view = _currentInstance;
 		_currentInstance = nil;
 		[UIView animateWithDuration:0.3 animations:^{
-			view.alpha = 0.0;
-		} completion:^(BOOL finished) {
-			[view removeFromSuperview];
-		}];
+		         view.alpha = 0.0;
+		 } completion:^(BOOL finished) {
+		         [view removeFromSuperview];
+		 }];
 	}
 }
 

@@ -12,9 +12,9 @@
 
 - (CGRect)textRectForBounds:(CGRect)bounds limitedToNumberOfLines:(NSInteger)numberOfLines
 {
-    CGRect rect = [super textRectForBounds:bounds limitedToNumberOfLines:numberOfLines];
-    rect = UIEdgeInsetsInsetRect(rect, self.insets);
-    return rect;
+	CGRect rect = [super textRectForBounds:bounds limitedToNumberOfLines:numberOfLines];
+	rect = UIEdgeInsetsInsetRect(rect, self.insets);
+	return rect;
 }
 
 @end

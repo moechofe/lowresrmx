@@ -21,49 +21,49 @@
 
 - (instancetype)initWithURL:(NSURL *)url
 {
-    if (self = [super init])
-    {
-        self.headerTags = @[/*@"h1", */@"h2", @"h3", @"h4"/*, @"h5", @"h6"*/];
-        _url = url;
-        _manualHtml = [NSString stringWithContentsOfURL:url encoding:NSUTF8StringEncoding error:nil];
-        _chapters = [NSMutableArray array];
+	if (self = [super init])
+	{
+		self.headerTags = @[/*@"h1", */ @"h2", @"h3", @"h4" /*, @"h5", @"h6"*/];
+		_url = url;
+		_manualHtml = [NSString stringWithContentsOfURL:url encoding:NSUTF8StringEncoding error:nil];
+		_chapters = [NSMutableArray array];
 
-        NSXMLParser *parser = [[NSXMLParser alloc] initWithContentsOfURL:url];
-        parser.delegate = self;
-        [parser parse];
-    }
-    return self;
+		NSXMLParser *parser = [[NSXMLParser alloc] initWithContentsOfURL:url];
+		parser.delegate = self;
+		[parser parse];
+	}
+	return self;
 }
 
 - (NSArray<HelpChapter *> *)chaptersForSearchKeyword:(NSString *)text
 {
-    text = [[text stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] uppercaseString];
-    NSMutableArray *results = [NSMutableArray array];
-    for (HelpChapter *chapter in self.chapters)
-    {
-				if (chapter.level == 2)
-				{
-						if (chapter.keywords && [chapter.keywords indexOfObject:text] != NSNotFound)
-						{
-								[results addObject:chapter];
-						}
-				}
-    }
-    return results;
+	text = [[text stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] uppercaseString];
+	NSMutableArray *results = [NSMutableArray array];
+	for (HelpChapter *chapter in self.chapters)
+	{
+		if (chapter.level == 2)
+		{
+			if (chapter.keywords && [chapter.keywords indexOfObject:text] != NSNotFound)
+			{
+				[results addObject:chapter];
+			}
+		}
+	}
+	return results;
 }
 
 - (NSArray<HelpChapter *> *)chaptersForSearchAny:(NSString *)text
 {
-    text = [[text stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] uppercaseString];
-    NSMutableArray *results = [NSMutableArray array];
-    for (HelpChapter *chapter in self.chapters)
-    {
-        if (chapter.title && [chapter.title localizedCaseInsensitiveContainsString:text])
-        {
-            [results addObject:chapter];
-        }
-    }
-    return results;
+	text = [[text stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] uppercaseString];
+	NSMutableArray *results = [NSMutableArray array];
+	for (HelpChapter *chapter in self.chapters)
+	{
+		if (chapter.title && [chapter.title localizedCaseInsensitiveContainsString:text])
+		{
+			[results addObject:chapter];
+		}
+	}
+	return results;
 }
 
 #pragma mark - XML Parser
@@ -71,61 +71,61 @@
 - (void)parser:(NSXMLParser *)parser didStartElement:(NSString *)elementName namespaceURI:(NSString *)namespaceURI qualifiedName:(NSString *)qName attributes:(NSDictionary *)attributeDict
 {
 //    NSLog(@"tag: %@",elementName);
-    if ([self.headerTags indexOfObject:elementName.lowercaseString] != NSNotFound)
-    {
+	if ([self.headerTags indexOfObject:elementName.lowercaseString] != NSNotFound)
+	{
 //				NSLog(@"header id: %@",attributeDict[@"id"]);
-        self.currentTag = elementName;
-        self.currentTagId = attributeDict[@"id"];
-        self.currentTagName = attributeDict[@"data-keyword"];
-				self.currentTagTitle = attributeDict[@"data-title"];
-    }
+		self.currentTag = elementName;
+		self.currentTagId = attributeDict[@"id"];
+		self.currentTagName = attributeDict[@"data-keyword"];
+		self.currentTagTitle = attributeDict[@"data-title"];
+	}
 }
 
 - (void)parser:(NSXMLParser *)parser foundCharacters:(NSString *)string
 {
 //		NSLog(@"char: %@",string);
-    if (self.currentTag)
-    {
-				if (_currentChapter == nil)
-				{
+	if (self.currentTag)
+	{
+		if (_currentChapter == nil)
+		{
 //						NSLog(@"header tag: %@",self.headerTags);
-						_currentChapter = [[HelpChapter alloc] init];
-						if (self.currentTagTitle && self.currentTagTitle.length > 0) {
-							_currentChapter.title = self.currentTagTitle;
-						} else {
-							_currentChapter.title = string;
-						}
-						_currentChapter.htmlChapter = self.currentTagId;
-						_currentChapter.keywords = [self.currentTagName componentsSeparatedByString:@","];
-						_currentChapter.level = (int)[self.headerTags indexOfObject:self.currentTag.lowercaseString];
-				}
-				else
-				{
-						if (self.currentTagTitle && self.currentTagTitle.length > 0) {
-							_currentChapter.title = self.currentTagTitle;
-						} else {
-							_currentChapter.title = string;
-						}
-				}
-        //
-    }
+			_currentChapter = [[HelpChapter alloc] init];
+			if (self.currentTagTitle && self.currentTagTitle.length > 0) {
+				_currentChapter.title = self.currentTagTitle;
+			} else {
+				_currentChapter.title = string;
+			}
+			_currentChapter.htmlChapter = self.currentTagId;
+			_currentChapter.keywords = [self.currentTagName componentsSeparatedByString:@","];
+			_currentChapter.level = (int)[self.headerTags indexOfObject:self.currentTag.lowercaseString];
+		}
+		else
+		{
+			if (self.currentTagTitle && self.currentTagTitle.length > 0) {
+				_currentChapter.title = self.currentTagTitle;
+			} else {
+				_currentChapter.title = string;
+			}
+		}
+		//
+	}
 }
 
 - (void)parser:(NSXMLParser *)parser didEndElement:(NSString *)elementName namespaceURI:(NSString *)namespaceURI qualifiedName:(NSString *)qName
 {
-    if ([elementName isEqualToString:self.currentTag])
-    {
-				[self.chapters addObject:_currentChapter];
-				self.currentChapter = nil;
-        self.currentTag = nil;
-        self.currentTagId = nil;
-        self.currentTagName = nil;
-    }
+	if ([elementName isEqualToString:self.currentTag])
+	{
+		[self.chapters addObject:_currentChapter];
+		self.currentChapter = nil;
+		self.currentTag = nil;
+		self.currentTagId = nil;
+		self.currentTagName = nil;
+	}
 }
 
 - (void)parser:(NSXMLParser *)parser parseErrorOccurred:(NSError *)parseError
 {
-    NSLog(@"Help parse error: %@ code: %ld", parseError.localizedDescription,(long)parseError.code);
+	NSLog(@"Help parse error: %@ code: %ld", parseError.localizedDescription,(long)parseError.code);
 }
 
 @end

@@ -17,25 +17,25 @@
 
 - (void)viewDidLoad
 {
-    [super viewDidLoad];
+	[super viewDidLoad];
 
-    self.delegate = self;
-    self.preferredDisplayMode = UISplitViewControllerDisplayModeOneBesideSecondary;
-    self.preferredPrimaryColumnWidthFraction = 0.3;
+	self.delegate = self;
+	self.preferredDisplayMode = UISplitViewControllerDisplayModeOneBesideSecondary;
+	self.preferredPrimaryColumnWidthFraction = 0.3;
 
-    _detailNavigationController = self.viewControllers.lastObject;
+	_detailNavigationController = self.viewControllers.lastObject;
 }
 
 - (void)showChapter:(NSString *)chapter
 {
-    UINavigationController *nc = self.viewControllers.lastObject;
-    if (self.viewControllers.count == 1 && nc.viewControllers.count == 1)
-    {
-        [self showDetailViewController:self.detailNavigationController sender:self];
-    }
+	UINavigationController *nc = self.viewControllers.lastObject;
+	if (self.viewControllers.count == 1 && nc.viewControllers.count == 1)
+	{
+		[self showDetailViewController:self.detailNavigationController sender:self];
+	}
 
-    HelpTextViewController *textViewController = (HelpTextViewController *)self.detailNavigationController.topViewController;
-    textViewController.chapter = chapter;
+	HelpTextViewController *textViewController = (HelpTextViewController *)self.detailNavigationController.topViewController;
+	textViewController.chapter = chapter;
 }
 
 @end

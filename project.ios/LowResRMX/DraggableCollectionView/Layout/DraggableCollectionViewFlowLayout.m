@@ -9,7 +9,7 @@
 
 @interface DraggableCollectionViewFlowLayout ()
 {
-    LSCollectionViewLayoutHelper *_layoutHelper;
+	LSCollectionViewLayoutHelper *_layoutHelper;
 }
 @end
 
@@ -17,15 +17,15 @@
 
 - (LSCollectionViewLayoutHelper *)layoutHelper
 {
-    if(_layoutHelper == nil) {
-        _layoutHelper = [[LSCollectionViewLayoutHelper alloc] initWithCollectionViewLayout:self];
-    }
-    return _layoutHelper;
+	if(_layoutHelper == nil) {
+		_layoutHelper = [[LSCollectionViewLayoutHelper alloc] initWithCollectionViewLayout:self];
+	}
+	return _layoutHelper;
 }
 
 - (NSArray *)layoutAttributesForElementsInRect:(CGRect)rect
 {
-    return [self.layoutHelper modifiedLayoutAttributesForElements:[super layoutAttributesForElementsInRect:rect]];
+	return [self.layoutHelper modifiedLayoutAttributesForElements:[super layoutAttributesForElementsInRect:rect]];
 }
 
 @end

@@ -95,31 +95,31 @@
 }
 
 - (void)searchBar:(UISearchBar *)searchBar textDidChange:(NSString *)searchText {
-    HelpContent *helpContent = AppController.shared.helpContent;
-    NSArray<HelpChapter *> *results = [helpContent chaptersForSearchAny:searchText];
-    self.lastSearchResults = results;
-		self.lastFoundChapter = nil;
-    if (results.count > 0) {
-        self.lastFoundChapter = results[0];
+	HelpContent *helpContent = AppController.shared.helpContent;
+	NSArray<HelpChapter *> *results = [helpContent chaptersForSearchAny:searchText];
+	self.lastSearchResults = results;
+	self.lastFoundChapter = nil;
+	if (results.count > 0) {
+		self.lastFoundChapter = results[0];
 
-    }
+	}
 }
 
 - (void)searchBarSearchButtonClicked:(UISearchBar *)searchBar {
-    if (self.lastSearchResults.count > 0) {
-				if (self.lastFoundChapter == nil) {
-						self.lastFoundChapter = self.lastSearchResults[0];
-				} else {
-						NSUInteger index = [self.lastSearchResults indexOfObject:self.lastFoundChapter];
-						if (index < self.lastSearchResults.count - 1) {
-								self.lastFoundChapter = self.lastSearchResults[index + 1];
-						} else {
-								self.lastFoundChapter = self.lastSearchResults[0];
-						}
-				}
-        HelpSplitViewController *helpVC = (HelpSplitViewController *)self.splitViewController;
-        [helpVC showChapter:self.lastFoundChapter.htmlChapter];
-    }
+	if (self.lastSearchResults.count > 0) {
+		if (self.lastFoundChapter == nil) {
+			self.lastFoundChapter = self.lastSearchResults[0];
+		} else {
+			NSUInteger index = [self.lastSearchResults indexOfObject:self.lastFoundChapter];
+			if (index < self.lastSearchResults.count - 1) {
+				self.lastFoundChapter = self.lastSearchResults[index + 1];
+			} else {
+				self.lastFoundChapter = self.lastSearchResults[0];
+			}
+		}
+		HelpSplitViewController *helpVC = (HelpSplitViewController *)self.splitViewController;
+		[helpVC showChapter:self.lastFoundChapter.htmlChapter];
+	}
 }
 
 @end

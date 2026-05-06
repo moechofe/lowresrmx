@@ -13,17 +13,17 @@
 
 - (void)collapseSecondaryViewController:(UIViewController *)secondaryViewController forSplitViewController:(UISplitViewController *)splitViewController
 {
-    [super collapseSecondaryViewController:secondaryViewController forSplitViewController:splitViewController];
-    HelpTableViewController *helpVC = self.viewControllers.firstObject;
-    [helpVC updateBarButtonCollapsed:YES];
+	[super collapseSecondaryViewController:secondaryViewController forSplitViewController:splitViewController];
+	HelpTableViewController *helpVC = self.viewControllers.firstObject;
+	[helpVC updateBarButtonCollapsed:YES];
 }
 
 - (UIViewController *)separateSecondaryViewControllerForSplitViewController:(UISplitViewController *)splitViewController
 {
-    UIViewController *vc = [super separateSecondaryViewControllerForSplitViewController:splitViewController];
-    HelpTableViewController *helpVC = self.viewControllers.firstObject;
-    [helpVC updateBarButtonCollapsed:NO];
-    return vc;
+	UIViewController *vc = [super separateSecondaryViewControllerForSplitViewController:splitViewController];
+	HelpTableViewController *helpVC = self.viewControllers.firstObject;
+	[helpVC updateBarButtonCollapsed:NO];
+	return vc;
 }
 
 @end
