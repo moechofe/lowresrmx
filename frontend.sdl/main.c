@@ -463,14 +463,6 @@ void update(void *arg)
 			quit = true;
 			break;
 
-		case SDL_EVENT_KEYBOARD_ADDED:
-			int ga = 123;
-			break;
-
-		case SDL_EVENT_KEYBOARD_REMOVED:
-			int bu = 123;
-			break;
-
 		case SDL_EVENT_WINDOW_RESIZED:
 			updateScreenRect(event.window.data1, event.window.data2);
 			overlay_clear(runner.core);
