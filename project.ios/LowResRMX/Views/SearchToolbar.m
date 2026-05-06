@@ -7,7 +7,6 @@
 //
 
 #import "SearchToolbar.h"
-#import "AppStyle.h"
 
 @interface SearchToolbar() <UITextFieldDelegate, UITraitEnvironment>
 
@@ -25,17 +24,29 @@
 - (void)awakeFromNib
 {
     [super awakeFromNib];
-//    self.backgroundColor = [AppStyle mediumTintColor];
-//    self.tintColor = [AppStyle brightTintColor];
-//    self.findTextField.tintColor = [AppStyle mediumTintColor];
-//    self.replaceTextField.tintColor = [AppStyle mediumTintColor];
     self.findTextField.delegate = self;
     self.replaceTextField.delegate = self;
+
+    [self updateColors];
+}
+
+- (void)updateColors
+{
+    // Use system dynamic colors for automatic light/dark mode adaptation
+    self.backgroundColor = [UIColor systemBackgroundColor];
+    self.tintColor = [UIColor systemBlueColor];
+    self.findTextField.backgroundColor = [UIColor secondarySystemBackgroundColor];
+    self.replaceTextField.backgroundColor = [UIColor secondarySystemBackgroundColor];
+    self.findTextField.textColor = [UIColor labelColor];
+    self.replaceTextField.textColor = [UIColor labelColor];
+    self.findTextField.tintColor = [UIColor systemBlueColor];
+    self.replaceTextField.tintColor = [UIColor systemBlueColor];
 }
 
 - (void)traitCollectionDidChange:(UITraitCollection *)previousTraitCollection
 {
     [super traitCollectionDidChange:previousTraitCollection];
+    [self updateColors];
     if (self.traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassRegular)
     {
         _findTextField.clearButtonMode = UITextFieldViewModeAlways;
@@ -83,12 +94,12 @@
     // Scale the search toolbar font size relative to the editor font
     // Use a slightly smaller size for the search fields (multiply by 0.9)
     CGFloat searchFontSize = fontSize * 0.9;
-    
+
     // Set minimum font size of 12pt for readability
     if (searchFontSize < 12.0) {
         searchFontSize = 12.0;
     }
-    
+
     UIFont *font = [UIFont systemFontOfSize:searchFontSize];
     self.findTextField.font = font;
     self.replaceTextField.font = font;
