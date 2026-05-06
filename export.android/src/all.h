@@ -1,5 +1,5 @@
 //
-// Copyright 2018 Timo Kloss
+// Copyright 2016-2024 Timo Kloss
 //
 // This software is provided 'as-is', without any express or implied
 // warranty. In no event will the authors be held liable for any damages
@@ -37,7 +37,7 @@
 extern "C" {
 #endif
 
-  
+
 #ifndef SL_GLOBMATCH_NEGATE
 #define SL_GLOBMATCH_NEGATE '^'       /* std char set negation char */
 #endif
@@ -1497,7 +1497,7 @@ bool sprlib_checkCollision(struct SpritesLib *lib, int checkIndex, int firstInde
 
 #endif /* sprites_lib_h */
 //
-// Copyright 2018 Timo Kloss
+// Copyright 2016-2024 Timo Kloss
 //
 // This software is provided 'as-is', without any express or implied
 // warranty. In no event will the authors be held liable for any damages
@@ -2476,7 +2476,7 @@ void log_log(int level, const char *file, int line, const char *fmt, ...);
 
 #endif
 //
-// Copyright 2018 Timo Kloss
+// Copyright 2016-2024 Timo Kloss
 //
 // This software is provided 'as-is', without any express or implied
 // warranty. In no event will the authors be held liable for any damages
@@ -2554,7 +2554,7 @@ struct CoreError runner_loadProgram(struct Runner *runner, const char *filename)
 
 #endif /* runner_h */
 //
-// Copyright 2018 Timo Kloss
+// Copyright 2016-2024 Timo Kloss
 //
 // This software is provided 'as-is', without any express or implied
 // warranty. In no event will the authors be held liable for any damages
@@ -4219,7 +4219,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ------------------------------------------------------------------------------
 */
 //
-// Copyright 2018 Timo Kloss
+// Copyright 2016-2024 Timo Kloss
 //
 // This software is provided 'as-is', without any express or implied
 // warranty. In no event will the authors be held liable for any damages
@@ -4256,7 +4256,7 @@ FILE* fopen_utf8(const char* filename, const char* mode);
 
 #endif /* system_paths_h */
 //
-// Copyright 2018 Timo Kloss
+// Copyright 2016-2024 Timo Kloss
 //
 // This software is provided 'as-is', without any express or implied
 // warranty. In no event will the authors be held liable for any damages

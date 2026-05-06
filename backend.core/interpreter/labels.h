@@ -1,4 +1,4 @@
-// Copyright 2018 Timo Kloss
+// Copyright 2016-2024 Timo Kloss
 // Copyright 2021-2026 Martin Mauchauffée
 
 // This software is provided 'as-is', without any express or implied

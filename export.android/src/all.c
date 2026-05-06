@@ -1270,7 +1270,7 @@ const char *CharSetLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ_";
 const char *CharSetAlphaNum = "ABCDEFGHIJKLMNOPQRSTUVWXYZ_0123456789";
 const char *CharSetHex = "0123456789ABCDEF";
 //
-// Copyright 2018 Timo Kloss
+// Copyright 2016-2024 Timo Kloss
 //
 // This software is provided 'as-is', without any express or implied
 // warranty. In no event will the authors be held liable for any damages
@@ -3819,47 +3819,47 @@ enum ErrorCode cmd_LOAD(struct Core *core)
     // LOAD
     struct Token *startPc = interpreter->pc;
     ++interpreter->pc;
-    
+
     // file value
     struct TypedValue fileValue = itp_evaluateNumericExpression(core, 0, MAX_ENTRIES - 1);
     if (fileValue.type == ValueTypeError) return fileValue.v.errorCode;
-    
+
     // comma
     if (interpreter->pc->type != TokenComma) return ErrorSyntax;
     ++interpreter->pc;
-    
+
     // address value
     struct TypedValue addressValue = itp_evaluateExpression(core, TypeClassNumeric);
     if (addressValue.type == ValueTypeError) return addressValue.v.errorCode;
-    
+
     int maxLength = 0;
     int offset = 0;
     if (interpreter->pc->type == TokenComma)
     {
         ++interpreter->pc;
-        
+
         // max length value
         struct TypedValue maxLengthValue = itp_evaluateNumericExpression(core, 0, DATA_SIZE);
         if (maxLengthValue.type == ValueTypeError) return maxLengthValue.v.errorCode;
         maxLength = maxLengthValue.v.floatValue;
-        
+
         if (interpreter->pc->type == TokenComma)
         {
             ++interpreter->pc;
-            
+
             // offset value
             struct TypedValue offsetValue = itp_evaluateNumericExpression(core, 0, DATA_SIZE);
             if (offsetValue.type == ValueTypeError) return offsetValue.v.errorCode;
             offset = offsetValue.v.floatValue;
         }
     }
-    
+
     if (interpreter->pass == PassRun)
     {
         bool pokeFailed = false;
         bool ready = disk_loadFile(core, fileValue.v.floatValue, addressValue.v.floatValue, maxLength, offset, &pokeFailed);
         if (pokeFailed) return ErrorIllegalMemoryAccess;
-        
+
         interpreter->exitEvaluation = true;
         if (!ready)
         {
@@ -3869,7 +3869,7 @@ enum ErrorCode cmd_LOAD(struct Core *core)
             return ErrorNone;
         }
     }
-    
+
     return itp_endOfCommand(interpreter);
 }
 
@@ -3877,19 +3877,19 @@ enum ErrorCode cmd_SAVE(struct Core *core)
 {
     struct Interpreter *interpreter = core->interpreter;
     if (interpreter->pass == PassRun && interpreter->mode == ModeInterrupt) return ErrorNotAllowedInInterrupt;
-    
+
     // SAVE
     struct Token *startPc = interpreter->pc;
     ++interpreter->pc;
-    
+
     // file value
     struct TypedValue fileValue = itp_evaluateNumericExpression(core, 0, MAX_ENTRIES - 1);
     if (fileValue.type == ValueTypeError) return fileValue.v.errorCode;
-    
+
     // comma
     if (interpreter->pc->type != TokenComma) return ErrorSyntax;
     ++interpreter->pc;
-    
+
     // comment value
     struct TypedValue commentValue = itp_evaluateExpression(core, TypeClassString);
     if (commentValue.type == ValueTypeError) return commentValue.v.errorCode;
@@ -3897,7 +3897,7 @@ enum ErrorCode cmd_SAVE(struct Core *core)
     // comma
     if (interpreter->pc->type != TokenComma) return ErrorSyntax;
     ++interpreter->pc;
-    
+
     // address value
     struct TypedValue addressValue = itp_evaluateExpression(core, TypeClassNumeric);
     if (addressValue.type == ValueTypeError) return addressValue.v.errorCode;
@@ -3905,11 +3905,11 @@ enum ErrorCode cmd_SAVE(struct Core *core)
     // comma
     if (interpreter->pc->type != TokenComma) return ErrorSyntax;
     ++interpreter->pc;
-    
+
     // length value
     struct TypedValue lengthValue = itp_evaluateNumericExpression(core, 1, DATA_SIZE);
     if (lengthValue.type == ValueTypeError) return lengthValue.v.errorCode;
-    
+
     if (interpreter->pass == PassRun)
     {
         int address = addressValue.v.floatValue;
@@ -3920,7 +3920,7 @@ enum ErrorCode cmd_SAVE(struct Core *core)
         }
         bool ready = disk_saveFile(core, fileValue.v.floatValue, commentValue.v.stringValue->chars, address, length);
         rcstring_release(commentValue.v.stringValue);
-        
+
         interpreter->exitEvaluation = true;
         if (!ready)
         {
@@ -3930,7 +3930,7 @@ enum ErrorCode cmd_SAVE(struct Core *core)
             return ErrorNone;
         }
     }
-    
+
     return itp_endOfCommand(interpreter);
 }
 
@@ -3938,15 +3938,15 @@ enum ErrorCode cmd_FILES(struct Core *core)
 {
     struct Interpreter *interpreter = core->interpreter;
     if (interpreter->pass == PassRun && interpreter->mode == ModeInterrupt) return ErrorNotAllowedInInterrupt;
-    
+
     // FILES
     struct Token *startPc = interpreter->pc;
     ++interpreter->pc;
-    
+
     if (interpreter->pass == PassRun)
     {
         bool ready = disk_prepare(core);
-        
+
         interpreter->exitEvaluation = true;
         if (!ready)
         {
@@ -3956,21 +3956,21 @@ enum ErrorCode cmd_FILES(struct Core *core)
             return ErrorNone;
         }
     }
-    
+
     return itp_endOfCommand(interpreter);
 }
 
 struct TypedValue fnc_FILE(struct Core *core)
 {
     struct Interpreter *interpreter = core->interpreter;
-    
+
     // FILE$
     ++interpreter->pc;
-    
+
     // bracket open
     if (interpreter->pc->type != TokenBracketOpen) return val_makeError(ErrorSyntax);
     ++interpreter->pc;
-    
+
     // file value
     struct TypedValue fileValue = itp_evaluateNumericExpression(core, 0, MAX_ENTRIES - 1);
     if (fileValue.type == ValueTypeError) return fileValue;
@@ -3981,14 +3981,14 @@ struct TypedValue fnc_FILE(struct Core *core)
 
     struct TypedValue resultValue;
     resultValue.type = ValueTypeString;
-    
+
     if (interpreter->pass == PassRun)
     {
         if (core->diskDrive->dataManager.data == NULL) return val_makeError(ErrorDirectoryNotLoaded);
-        
+
         int index = fileValue.v.floatValue;
         struct DataEntry *entry = &core->diskDrive->dataManager.entries[index];
-        
+
         size_t len = strlen(entry->comment);
         resultValue.v.stringValue = rcstring_new(entry->comment, len);
         rcstring_retain(resultValue.v.stringValue);
@@ -4000,32 +4000,32 @@ struct TypedValue fnc_FILE(struct Core *core)
 struct TypedValue fnc_FSIZE(struct Core *core)
 {
     struct Interpreter *interpreter = core->interpreter;
-    
+
     // FSIZE
     ++interpreter->pc;
-    
+
     // bracket open
     if (interpreter->pc->type != TokenBracketOpen) return val_makeError(ErrorSyntax);
     ++interpreter->pc;
-    
+
     // file value
     struct TypedValue fileValue = itp_evaluateNumericExpression(core, 0, MAX_ENTRIES - 1);
     if (fileValue.type == ValueTypeError) return fileValue;
-    
+
     // bracket close
     if (interpreter->pc->type != TokenBracketClose) return val_makeError(ErrorSyntax);
     ++interpreter->pc;
-    
+
     struct TypedValue resultValue;
     resultValue.type = ValueTypeFloat;
-    
+
     if (interpreter->pass == PassRun)
     {
         if (core->diskDrive->dataManager.data == NULL) return val_makeError(ErrorDirectoryNotLoaded);
-        
+
         int index = fileValue.v.floatValue;
         struct DataEntry *entry = &core->diskDrive->dataManager.entries[index];
-        
+
         resultValue.v.floatValue = entry->length;
     }
     return resultValue;
@@ -10237,82 +10237,82 @@ bool is_equal_approx(float x, float y)
 enum ErrorCode itp_evaluateSimpleAttributes(struct Core *core, struct SimpleAttributes *attrs)
 {
     struct Interpreter *interpreter = core->interpreter;
-    
+
     attrs->pal = -1;
     attrs->flipX = -1;
     attrs->flipY = -1;
     attrs->prio = -1;
     attrs->size = -1;
-    
+
     bool changed = false;
     bool checked = false;
-    
+
     do
     {
         checked = false;
-        
+
         // PAL
         if (interpreter->pc->type == TokenPAL && attrs->pal == -1)
         {
             ++interpreter->pc;
-            
+
             struct TypedValue value = itp_evaluateNumericExpression(core, 0, NUM_PALETTES - 1);
             if (value.type == ValueTypeError) return value.v.errorCode;
             attrs->pal = value.v.floatValue;
-            
+
             checked = true;
         }
-        
+
         // FLIP
         if (interpreter->pc->type == TokenFLIP && attrs->flipX == -1)
         {
             ++interpreter->pc;
-            
+
             struct TypedValue fxValue = itp_evaluateNumericExpression(core, -1, 1);
             if (fxValue.type == ValueTypeError) return fxValue.v.errorCode;
             attrs->flipX = fxValue.v.floatValue ? 1 : 0;
-            
+
             // comma
             if (interpreter->pc->type != TokenComma) return ErrorSyntax;
             ++interpreter->pc;
-            
+
             struct TypedValue fyValue = itp_evaluateNumericExpression(core, -1, 1);
             if (fyValue.type == ValueTypeError) return fyValue.v.errorCode;
             attrs->flipY = fyValue.v.floatValue ? 1 : 0;
-            
+
             checked = true;
         }
-        
+
         // PRIO
         if (interpreter->pc->type == TokenPRIO && attrs->prio == -1)
         {
             ++interpreter->pc;
-            
+
             struct TypedValue value = itp_evaluateNumericExpression(core, -1, 1);
             if (value.type == ValueTypeError) return value.v.errorCode;
             attrs->prio = value.v.floatValue ? 1 : 0;
-            
+
             checked = true;
         }
-        
+
         // SIZE
         if (interpreter->pc->type == TokenSIZE && attrs->size == -1)
         {
             ++interpreter->pc;
-            
+
             struct TypedValue value = itp_evaluateNumericExpression(core, 0, 3);
             if (value.type == ValueTypeError) return value.v.errorCode;
             attrs->size = value.v.floatValue;
-            
+
             checked = true;
         }
-        
+
         changed |= checked;
     }
     while (checked);
-    
+
     if (!changed) return ErrorSyntax;
-    
+
     return ErrorNone;
 }
 
@@ -10323,44 +10323,44 @@ struct TypedValue itp_evaluateCharAttributes(struct Core *core, union CharacterA
     {
         // bracket open
         interpreter->pc++;
-        
+
         // obsolete syntax!
-        
+
         union CharacterAttributes resultAttr = oldAttr;
-        
+
         struct TypedValue palValue = {ValueTypeNull, 0};
         struct TypedValue fxValue = {ValueTypeNull, 0};
         struct TypedValue fyValue = {ValueTypeNull, 0};
         struct TypedValue priValue = {ValueTypeNull, 0};
         struct TypedValue sValue = {ValueTypeNull, 0};
-        
+
         // palette value
         palValue = itp_evaluateOptionalNumericExpression(core, 0, NUM_PALETTES - 1);
         if (palValue.type == ValueTypeError) return palValue;
-        
+
         // comma
         if (interpreter->pc->type == TokenComma)
         {
             ++interpreter->pc;
-            
+
             // flip x value
             fxValue = itp_evaluateOptionalNumericExpression(core, -1, 1);
             if (fxValue.type == ValueTypeError) return fxValue;
-            
+
             // comma
             if (interpreter->pc->type == TokenComma)
             {
                 ++interpreter->pc;
-                
+
                 // flip y value
                 fyValue = itp_evaluateOptionalNumericExpression(core, -1, 1);
                 if (fyValue.type == ValueTypeError) return fyValue;
-                
+
                 // comma
                 if (interpreter->pc->type == TokenComma)
                 {
                     ++interpreter->pc;
-                    
+
                     // priority value
                     priValue = itp_evaluateOptionalNumericExpression(core, -1, 1);
                     if (priValue.type == ValueTypeError) return priValue;
@@ -10369,7 +10369,7 @@ struct TypedValue itp_evaluateCharAttributes(struct Core *core, union CharacterA
                     if (interpreter->pc->type == TokenComma)
                     {
                         ++interpreter->pc;
-                        
+
                         // size value
                         sValue = itp_evaluateOptionalNumericExpression(core, 0, 3);
                         if (sValue.type == ValueTypeError) return sValue;
@@ -10377,11 +10377,11 @@ struct TypedValue itp_evaluateCharAttributes(struct Core *core, union CharacterA
                 }
             }
         }
-        
+
         // bracket close
         if (interpreter->pc->type != TokenBracketClose) return val_makeError(ErrorSyntax);
         interpreter->pc++;
-        
+
         if (interpreter->pass == PassRun)
         {
             if (palValue.type != ValueTypeNull) resultAttr.palette = palValue.v.floatValue;
@@ -10390,7 +10390,7 @@ struct TypedValue itp_evaluateCharAttributes(struct Core *core, union CharacterA
             if (priValue.type != ValueTypeNull) resultAttr.priority = priValue.v.floatValue;
             if (sValue.type != ValueTypeNull) resultAttr.size = sValue.v.floatValue;
         }
-        
+
         struct TypedValue resultValue;
         resultValue.type = ValueTypeFloat;
         resultValue.v.floatValue = resultAttr.value;
@@ -10409,9 +10409,9 @@ struct TypedValue itp_evaluateCharAttributes(struct Core *core, union CharacterA
 //     {
 //         // bracket open
 //         interpreter->pc++;
-        
+
 //         union DisplayAttributes resultAttr = oldAttr;
-        
+
 //         struct TypedValue sValue = {ValueTypeNull, 0};
 //         struct TypedValue bg0Value = {ValueTypeNull, 0};
 //         struct TypedValue bg1Value = {ValueTypeNull, 0};
@@ -10430,7 +10430,7 @@ struct TypedValue itp_evaluateCharAttributes(struct Core *core, union CharacterA
 //         if (interpreter->pc->type == TokenComma)
 //         {
 //             ++interpreter->pc;
-            
+
 //             // bg0 value
 //             bg0Value = itp_evaluateOptionalNumericExpression(core, -1, 1);
 //             if (bg0Value.type == ValueTypeError) return bg0Value;
@@ -10439,25 +10439,25 @@ struct TypedValue itp_evaluateCharAttributes(struct Core *core, union CharacterA
 //             if (interpreter->pc->type == TokenComma)
 //             {
 //                 ++interpreter->pc;
-                
+
 //                 // bg1 value
 //                 bg1Value = itp_evaluateOptionalNumericExpression(core, -1, 1);
 //                 if (bg1Value.type == ValueTypeError) return bg1Value;
-                
+
 //                 // comma
 //                 if (interpreter->pc->type == TokenComma)
 //                 {
 //                     ++interpreter->pc;
-                    
+
 //                     // bg0 cell size value
 //                     bg0SizeValue = itp_evaluateOptionalNumericExpression(core, -1, 1);
 //                     if (bg0SizeValue.type == ValueTypeError) return bg0SizeValue;
-                    
+
 //                     // comma
 //                     if (interpreter->pc->type == TokenComma)
 //                     {
 //                         ++interpreter->pc;
-                        
+
 //                         // bg1 cell size value
 //                         bg1SizeValue = itp_evaluateOptionalNumericExpression(core, -1, 1);
 //                         if (bg1SizeValue.type == ValueTypeError) return bg1SizeValue;
@@ -10466,7 +10466,7 @@ struct TypedValue itp_evaluateCharAttributes(struct Core *core, union CharacterA
 //                         if (interpreter->pc->type == TokenComma)
 //                         {
 //                             ++interpreter->pc;
-                            
+
 //                             // bg2 cell size value
 //                             bg1SizeValue = itp_evaluateOptionalNumericExpression(core, -1, 1);
 //                             if (bg1SizeValue.type == ValueTypeError) return bg1SizeValue;
@@ -10475,11 +10475,11 @@ struct TypedValue itp_evaluateCharAttributes(struct Core *core, union CharacterA
 //                 }
 //             }
 //         }
-        
+
 //         // bracket close
 //         if (interpreter->pc->type != TokenBracketClose) return val_makeError(ErrorSyntax);
 //         interpreter->pc++;
-        
+
 //         if (interpreter->pass == PassRun)
 //         {
 //             if (sValue.type != ValueTypeNull) resultAttr.spritesEnabled = sValue.v.floatValue;
@@ -10488,7 +10488,7 @@ struct TypedValue itp_evaluateCharAttributes(struct Core *core, union CharacterA
 //             if (bg0SizeValue.type != ValueTypeNull) resultAttr.planeACellSize = bg0SizeValue.v.floatValue;
 //             if (bg1SizeValue.type != ValueTypeNull) resultAttr.planeBCellSize = bg1SizeValue.v.floatValue;
 //         }
-        
+
 //         struct TypedValue resultValue;
 //         resultValue.type = ValueTypeFloat;
 //         resultValue.v.floatValue = resultAttr.value;
@@ -10507,52 +10507,52 @@ struct TypedValue itp_evaluateLFOAttributes(struct Core *core, union LFOAttribut
     {
         // bracket open
         interpreter->pc++;
-        
+
         union LFOAttributes resultAttr = oldAttr;
-        
+
         struct TypedValue wavValue = {ValueTypeNull, 0};
         struct TypedValue invValue = {ValueTypeNull, 0};
         struct TypedValue envValue = {ValueTypeNull, 0};
         struct TypedValue triValue = {ValueTypeNull, 0};
-        
+
         // wave value
         wavValue = itp_evaluateOptionalNumericExpression(core, 0, 3);
         if (wavValue.type == ValueTypeError) return wavValue;
-        
+
         // comma
         if (interpreter->pc->type == TokenComma)
         {
             ++interpreter->pc;
-            
+
             // invert value
             invValue = itp_evaluateOptionalNumericExpression(core, -1, 1);
             if (invValue.type == ValueTypeError) return invValue;
-            
+
             // comma
             if (interpreter->pc->type == TokenComma)
             {
                 ++interpreter->pc;
-                
+
                 // env mode value
                 envValue = itp_evaluateOptionalNumericExpression(core, -1, 1);
                 if (envValue.type == ValueTypeError) return envValue;
-                
+
                 // comma
                 if (interpreter->pc->type == TokenComma)
                 {
                     ++interpreter->pc;
-                    
+
                     // trigger value
                     triValue = itp_evaluateOptionalNumericExpression(core, -1, 1);
                     if (triValue.type == ValueTypeError) return triValue;
                 }
             }
         }
-        
+
         // bracket close
         if (interpreter->pc->type != TokenBracketClose) return val_makeError(ErrorSyntax);
         interpreter->pc++;
-        
+
         if (interpreter->pass == PassRun)
         {
             if (wavValue.type != ValueTypeNull) resultAttr.wave = wavValue.v.floatValue;
@@ -10560,7 +10560,7 @@ struct TypedValue itp_evaluateLFOAttributes(struct Core *core, union LFOAttribut
             if (envValue.type != ValueTypeNull) resultAttr.envMode = envValue.v.floatValue;
             if (triValue.type != ValueTypeNull) resultAttr.trigger = triValue.v.floatValue;
         }
-        
+
         struct TypedValue resultValue;
         resultValue.type = ValueTypeFloat;
         resultValue.v.floatValue = resultAttr.value;
@@ -11779,7 +11779,7 @@ void var_freeArrayVariables(struct Interpreter *interpreter, int minSubLevel)
     }
 }
 //
-// Copyright 2018 Timo Kloss
+// Copyright 2016-2024 Timo Kloss
 //
 // This software is provided 'as-is', without any express or implied
 // warranty. In no event will the authors be held liable for any damages
@@ -17343,7 +17343,7 @@ void persistentRamDidChange(void *context, uint8_t *data, int size)
 #endif
 }
 //
-// Copyright 2018 Timo Kloss
+// Copyright 2016-2024 Timo Kloss
 //
 // This software is provided 'as-is', without any express or implied
 // warranty. In no event will the authors be held liable for any damages
@@ -17689,7 +17689,7 @@ void settings_removeTool(struct Settings *settings, int index)
     }
 }
 //
-// Copyright 2018 Timo Kloss
+// Copyright 2016-2024 Timo Kloss
 //
 // This software is provided 'as-is', without any express or implied
 // warranty. In no event will the authors be held liable for any damages
@@ -17751,7 +17751,7 @@ FILE* fopen_utf8(const char* filename, const char* mode)
 #endif
 }
 //
-// Copyright 2018 Timo Kloss
+// Copyright 2016-2024 Timo Kloss
 //
 // This software is provided 'as-is', without any express or implied
 // warranty. In no event will the authors be held liable for any damages
@@ -17775,7 +17775,7 @@ FILE* fopen_utf8(const char* filename, const char* mode)
 void displayName(const char *filename, char *destination, size_t size)
 {
     memset(destination, 0, size);
-    
+
     const char *nameStart = filename;
     char *slash = strrchr(filename, PATH_SEPARATOR_CHAR);
     if (slash)
@@ -17783,7 +17783,7 @@ void displayName(const char *filename, char *destination, size_t size)
         nameStart = slash + 1;
     }
     strncpy(destination, nameStart, size - 1);
-    
+
     char *dot = strrchr(nameStart, '.');
     if (dot)
     {
