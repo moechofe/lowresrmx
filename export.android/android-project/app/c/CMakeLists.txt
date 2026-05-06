@@ -10,8 +10,8 @@ if(ANDROID)
 endif()
 
 add_sdl_executable(${PROJECT_NAME}
-	src/all.c
-	src/core_wrapper.c
+	all.c
+	core_wrapper.c
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE SDL3::SDL3)

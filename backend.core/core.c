@@ -313,13 +313,11 @@ void core_handleInput(struct Core *core, struct CoreInput *input)
 
 	if(input->keyboardChange > 0)
 	{
-		int ga = 123;
 		ioRegisters->status.keyboardVisible = true;
 		ioRegisters->keyboardHeight = input->keyboardHeight;
 	}
 	else if(input->keyboardChange < 0)
 	{
-		int bu = 123;
 		ioRegisters->status.keyboardVisible = false;
 		ioRegisters->keyboardHeight = input->keyboardHeight;
 	}

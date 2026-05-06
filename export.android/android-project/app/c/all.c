@@ -462,13 +462,11 @@ void core_handleInput(struct Core *core, struct CoreInput *input)
 
 	if(input->keyboardChange > 0)
 	{
-		int ga = 123;
 		ioRegisters->status.keyboardVisible = true;
 		ioRegisters->keyboardHeight = input->keyboardHeight;
 	}
 	else if(input->keyboardChange < 0)
 	{
-		int bu = 123;
 		ioRegisters->status.keyboardVisible = false;
 		ioRegisters->keyboardHeight = input->keyboardHeight;
 	}
@@ -17996,14 +17994,6 @@ void update(void *arg)
 		{
 		case SDL_EVENT_QUIT:
 			quit = true;
-			break;
-
-		case SDL_EVENT_KEYBOARD_ADDED:
-			int ga = 123;
-			break;
-
-		case SDL_EVENT_KEYBOARD_REMOVED:
-			int bu = 123;
 			break;
 
 		case SDL_EVENT_WINDOW_RESIZED:
