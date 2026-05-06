@@ -1,14 +1,14 @@
-//
-// Copyright 2017 Timo Kloss
-//
+// Copyright 2018 Timo Kloss
+// Copyright 2021-2026 Martin Mauchauffée
+
 // This software is provided 'as-is', without any express or implied
 // warranty. In no event will the authors be held liable for any damages
 // arising from the use of this software.
-//
+
 // Permission is granted to anyone to use this software for any purpose,
 // including commercial applications, and to alter it and redistribute it
 // freely, subject to the following restrictions:
-//
+
 // 1. The origin of this software must not be misrepresented; you must not
 //    claim that you wrote the original software. If you use this software
 //    in a product, an acknowledgment in the product documentation would be
@@ -16,10 +16,9 @@
 // 2. Altered source versions must be plainly marked as such, and must not be
 //    misrepresented as being the original software.
 // 3. This notice may not be removed or altered from any source distribution.
-//
 
-#include "config.h"
 #include "cmd_io.h"
+#include "config.h"
 #include "core.h"
 #include "overlay_debugger.h"
 #include <assert.h>
@@ -33,11 +32,11 @@ enum ErrorCode cmd_KEYBOARD(struct Core *core)
 
 	// ON/OFF
 	enum TokenType type = interpreter->pc->type;
-	if (type != TokenON && type != TokenOFF)
+	if(type != TokenON && type != TokenOFF)
 		return ErrorSyntax;
 	++interpreter->pc;
 
-	if (interpreter->pass == PassRun)
+	if(interpreter->pass == PassRun)
 	{
 		core->machine->ioRegisters.status.keyboardVisible = (type == TokenON);
 #if SIMULATED_KEYBOARD
@@ -60,7 +59,7 @@ struct TypedValue fnc_KEYBOARD(struct Core *core)
 	struct TypedValue value;
 	value.type = ValueTypeFloat;
 
-	if (interpreter->pass == PassRun)
+	if(interpreter->pass == PassRun)
 	{
 		value.v.floatValue = core->machine->ioRegisters.keyboardHeight;
 	}
@@ -77,7 +76,7 @@ struct TypedValue fnc_TOUCH(struct Core *core)
 	struct TypedValue value;
 	value.type = ValueTypeFloat;
 
-	if (interpreter->pass == PassRun)
+	if(interpreter->pass == PassRun)
 	{
 		value.v.floatValue = core->machine->ioRegisters.status.touch ? BAS_TRUE : BAS_FALSE;
 	}
@@ -94,9 +93,10 @@ struct TypedValue fnc_TAP(struct Core *core)
 	struct TypedValue value;
 	value.type = ValueTypeFloat;
 
-	if (interpreter->pass == PassRun)
+	if(interpreter->pass == PassRun)
 	{
-		value.v.floatValue = (core->machine->ioRegisters.status.touch && !core->interpreter->lastFrameIOStatus.touch) ? BAS_TRUE : BAS_FALSE;
+		value.v.floatValue =
+		(core->machine->ioRegisters.status.touch && !core->interpreter->lastFrameIOStatus.touch) ? BAS_TRUE : BAS_FALSE;
 	}
 	return value;
 }
@@ -112,13 +112,13 @@ struct TypedValue fnc_TOUCH_X_Y(struct Core *core)
 	struct TypedValue value;
 	value.type = ValueTypeFloat;
 
-	if (interpreter->pass == PassRun)
+	if(interpreter->pass == PassRun)
 	{
-		if (type == TokenTOUCHX)
+		if(type == TokenTOUCHX)
 		{
 			value.v.floatValue = core->machine->ioRegisters.touchX;
 		}
-		else if (type == TokenTOUCHY)
+		else if(type == TokenTOUCHY)
 		{
 			value.v.floatValue = core->machine->ioRegisters.touchY;
 		}
@@ -141,13 +141,13 @@ struct TypedValue fnc_SHOWN(struct Core *core)
 	struct TypedValue value;
 	value.type = ValueTypeFloat;
 
-	if (interpreter->pass == PassRun)
+	if(interpreter->pass == PassRun)
 	{
-		if (type == TokenSHOWNW)
+		if(type == TokenSHOWNW)
 		{
 			value.v.floatValue = core->machine->ioRegisters.shown.width;
 		}
-		else if (type == TokenSHOWNH)
+		else if(type == TokenSHOWNH)
 		{
 			value.v.floatValue = core->machine->ioRegisters.shown.height;
 		}
@@ -170,21 +170,21 @@ struct TypedValue fnc_SAFE(struct Core *core)
 	struct TypedValue value;
 	value.type = ValueTypeFloat;
 
-	if (interpreter->pass == PassRun)
+	if(interpreter->pass == PassRun)
 	{
-		if (type == TokenSAFEL)
+		if(type == TokenSAFEL)
 		{
 			value.v.floatValue = core->machine->ioRegisters.safe.left;
 		}
-		else if (type == TokenSAFET)
+		else if(type == TokenSAFET)
 		{
 			value.v.floatValue = core->machine->ioRegisters.safe.top;
 		}
-		else if (type == TokenSAFER)
+		else if(type == TokenSAFER)
 		{
 			value.v.floatValue = core->machine->ioRegisters.safe.right;
 		}
-		else if (type == TokenSAFEB)
+		else if(type == TokenSAFEB)
 		{
 			value.v.floatValue = core->machine->ioRegisters.safe.bottom;
 		}
@@ -207,13 +207,13 @@ struct TypedValue fnc_TOUCH_PX_PY(struct Core *core)
 	struct TypedValue value;
 	value.type = ValueTypeFloat;
 
-	if (interpreter->pass == PassRun)
+	if(interpreter->pass == PassRun)
 	{
-		if (type == TokenTOUCHPX)
+		if(type == TokenTOUCHPX)
 		{
 			value.v.floatValue = core->machine->ioRegisters.pressedX;
 		}
-		else if (type == TokenTOUCHPY)
+		else if(type == TokenTOUCHPY)
 		{
 			value.v.floatValue = core->machine->ioRegisters.pressedY;
 		}
@@ -236,21 +236,21 @@ struct TypedValue fnc_TOUCH_TAP_DRAG_LONG_CHANGE(struct Core *core)
 	struct TypedValue value;
 	value.type = ValueTypeFloat;
 
-	if (interpreter->pass == PassRun)
+	if(interpreter->pass == PassRun)
 	{
-		if (type == TokenTOUCHTAP)
+		if(type == TokenTOUCHTAP)
 		{
 			value.v.floatValue = core->machine->ioRegisters.status.touchTap ? BAS_TRUE : BAS_FALSE;
 		}
-		else if (type == TokenTOUCHDRAG)
+		else if(type == TokenTOUCHDRAG)
 		{
 			value.v.floatValue = core->machine->ioRegisters.status.touchDrag ? BAS_TRUE : BAS_FALSE;
 		}
-		else if (type == TokenTOUCHLONG)
+		else if(type == TokenTOUCHLONG)
 		{
 			value.v.floatValue = core->machine->ioRegisters.status.touchLong ? BAS_TRUE : BAS_FALSE;
 		}
-		else if (type == TokenTOUCHCHANGE)
+		else if(type == TokenTOUCHCHANGE)
 		{
 			value.v.floatValue = core->machine->ioRegisters.status.touchChange ? BAS_TRUE : BAS_FALSE;
 		}
@@ -261,5 +261,3 @@ struct TypedValue fnc_TOUCH_TAP_DRAG_LONG_CHANGE(struct Core *core)
 	}
 	return value;
 }
-
-

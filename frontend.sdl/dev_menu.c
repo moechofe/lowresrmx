@@ -49,8 +49,8 @@ void dev_updateButtons(struct DevMenu *devMenu);
 void dev_onButtonTap(struct DevMenu *devMenu);
 void dev_showToolsMenu(struct DevMenu *devMenu);
 void dev_showClearRamMenu(struct DevMenu *devMenu);
-void dev_showMenu(struct DevMenu *devMenu, const char *message, const char *buttons[], int numButtons,
-				  int numRemoveButtons);
+void dev_showMenu(
+struct DevMenu *devMenu, const char *message, const char *buttons[], int numButtons, int numRemoveButtons);
 void dev_clearPersistentRam(struct DevMenu *devMenu);
 
 void dev_init(struct DevMenu *devMenu, struct Runner *runner, struct Settings *settings)
@@ -62,7 +62,7 @@ void dev_init(struct DevMenu *devMenu, struct Runner *runner, struct Settings *s
 
 void dev_show(struct DevMenu *devMenu, bool reload)
 {
-	if (reload)
+	if(reload)
 	{
 		devMenu->lastError = runner_loadProgram(devMenu->runner, getMainProgramFilename());
 	}
@@ -105,7 +105,7 @@ void dev_show(struct DevMenu *devMenu, bool reload)
 	displayName(getMainProgramFilename(), progName, 19);
 	txtlib_writeText(textLib, progName, 1, 2);
 
-	if (devMenu->lastError.code != ErrorNone)
+	if(devMenu->lastError.code != ErrorNone)
 	{
 		dev_showError(devMenu, devMenu->lastError);
 	}
@@ -128,31 +128,31 @@ void dev_update(struct DevMenu *devMenu, struct CoreInput *input)
 	int cx = core->machine->ioRegisters.touchX / 8;
 	int cy = core->machine->ioRegisters.touchY / 8;
 
-	if (devMenu->currentMenu == DevModeMenuMain)
+	if(devMenu->currentMenu == DevModeMenuMain)
 	{
-		if (devMenu->currentButton >= 0)
+		if(devMenu->currentButton >= 0)
 		{
 			int bcx = devButtons[devMenu->currentButton].cx;
 			int bcy = devButtons[devMenu->currentButton].cy;
 			bool isInside = (cx >= bcx && cy >= bcy && cx <= bcx + 1 && cy <= bcy + 1);
-			if (!touch || !isInside)
+			if(!touch || !isInside)
 			{
 				txtlib_setCellsAttr(textLib, bcx, bcy, bcx + 1, bcy + 1, 0, -1, -1, -1);
 
-				if (isInside)
+				if(isInside)
 				{
 					dev_onButtonTap(devMenu);
 				}
 				devMenu->currentButton = -1;
 			}
 		}
-		else if (touch && !devMenu->lastTouch)
+		else if(touch && !devMenu->lastTouch)
 		{
-			for (int i = 0; i < 6; i++)
+			for(int i = 0; i < 6; i++)
 			{
 				int bcx = devButtons[i].cx;
 				int bcy = devButtons[i].cy;
-				if (cx >= bcx && cy >= bcy && cx <= bcx + 1 && cy <= bcy + 1)
+				if(cx >= bcx && cy >= bcy && cx <= bcx + 1 && cy <= bcy + 1)
 				{
 					txtlib_setCellsAttr(textLib, bcx, bcy, bcx + 1, bcy + 1, 1, -1, -1, -1);
 					devMenu->currentButton = i;
@@ -162,25 +162,25 @@ void dev_update(struct DevMenu *devMenu, struct CoreInput *input)
 	}
 	else
 	{
-		if (devMenu->currentButton >= 0)
+		if(devMenu->currentButton >= 0)
 		{
 			int bcy = 1 + devMenu->currentButton * 3;
 			bool isInside = (cy >= bcy && cy <= bcy + 2);
-			if (!touch || !isInside)
+			if(!touch || !isInside)
 			{
 				txtlib_setCellsAttr(textLib, 0, bcy, 19, bcy + 2, 0, -1, -1, -1);
 
-				if (isInside)
+				if(isInside)
 				{
 					dev_onButtonTap(devMenu);
 				}
 				devMenu->currentButton = -1;
 			}
 		}
-		else if (touch && !devMenu->lastTouch)
+		else if(touch && !devMenu->lastTouch)
 		{
 			int button = (cy - 1) / 3;
-			if (button >= 0 && button < devMenu->currentMenuSize)
+			if(button >= 0 && button < devMenu->currentMenuSize)
 			{
 				int bcy = 1 + button * 3;
 				txtlib_setCellsAttr(textLib, 0, bcy, 19, bcy + 2, 1, -1, -1, -1);
@@ -195,9 +195,9 @@ void dev_update(struct DevMenu *devMenu, struct CoreInput *input)
 
 bool dev_handleDropFile(struct DevMenu *devMenu, const char *filename)
 {
-	if (devMenu->currentMenu == DevModeMenuTools)
+	if(devMenu->currentMenu == DevModeMenuTools)
 	{
-		if (settings_addTool(devMenu->settings, filename))
+		if(settings_addTool(devMenu->settings, filename))
 		{
 			settings_save(devMenu->settings);
 			dev_showToolsMenu(devMenu);
@@ -244,7 +244,7 @@ void dev_showError(struct DevMenu *devMenu, struct CoreError error)
 	textLib->charAttr.palette = 2;
 	txtlib_printText(textLib, err_getString(error.code));
 	txtlib_printText(textLib, "\n");
-	if (error.sourcePosition >= 0 && core->interpreter->sourceCode)
+	if(error.sourcePosition >= 0 && core->interpreter->sourceCode)
 	{
 		textLib->charAttr.palette = 0;
 		int number = lineNumber(core->interpreter->sourceCode, error.sourcePosition);
@@ -253,7 +253,7 @@ void dev_showError(struct DevMenu *devMenu, struct CoreError error)
 		txtlib_printText(textLib, lineNumberText);
 
 		const char *line = lineString(core->interpreter->sourceCode, error.sourcePosition);
-		if (line)
+		if(line)
 		{
 			textLib->charAttr.palette = 5;
 			txtlib_printText(textLib, "\n");
@@ -266,7 +266,7 @@ void dev_showError(struct DevMenu *devMenu, struct CoreError error)
 void dev_updateButtons(struct DevMenu *devMenu)
 {
 	struct Plane *bg = &devMenu->runner->core->machine->videoRam.planeA;
-	if (devMenu->runner->core->interpreter->debug)
+	if(devMenu->runner->core->interpreter->debug)
 	{
 		bg->cells[5][7].character = 30;
 		bg->cells[5][8].character = 31;
@@ -282,45 +282,45 @@ void dev_onButtonTap(struct DevMenu *devMenu)
 {
 	int button = devMenu->currentButton;
 
-	if (devMenu->currentMenu == DevModeMenuMain)
+	if(devMenu->currentMenu == DevModeMenuMain)
 	{
-		if (button == 0)
+		if(button == 0)
 		{
 			// Run
 			runMainProgram();
 		}
-		else if (button == 1)
+		else if(button == 1)
 		{
 			// Check
 			dev_show(devMenu, true);
 		}
-		else if (button == 2)
+		else if(button == 2)
 		{
 			dev_showToolsMenu(devMenu);
 		}
-		else if (button == 3)
+		else if(button == 3)
 		{
 			// Debug On/Off
 			devMenu->runner->core->interpreter->debug = !devMenu->runner->core->interpreter->debug;
 			dev_updateButtons(devMenu);
 		}
-		else if (button == 4)
+		else if(button == 4)
 		{
 			dev_showClearRamMenu(devMenu);
 		}
-		else if (button == 5)
+		else if(button == 5)
 		{
 			// Eject
 			// TODO: Can't do that anymore, as I need coreInput
 			// rebootNX();
 		}
 	}
-	else if (devMenu->currentMenu == DevModeMenuTools)
+	else if(devMenu->currentMenu == DevModeMenuTools)
 	{
-		if (devMenu->currentButton < devMenu->settings->numTools)
+		if(devMenu->currentButton < devMenu->settings->numTools)
 		{
 			int cx = devMenu->runner->core->machine->ioRegisters.touchX / 8;
-			if (cx >= 18)
+			if(cx >= 18)
 			{
 				settings_removeTool(devMenu->settings, devMenu->currentButton);
 				settings_save(devMenu->settings);
@@ -336,9 +336,9 @@ void dev_onButtonTap(struct DevMenu *devMenu)
 			dev_show(devMenu, false);
 		}
 	}
-	else if (devMenu->currentMenu == DevModeMenuClearRam)
+	else if(devMenu->currentMenu == DevModeMenuClearRam)
 	{
-		if (devMenu->currentButton == 0)
+		if(devMenu->currentButton == 0)
 		{
 			dev_clearPersistentRam(devMenu);
 		}
@@ -353,13 +353,13 @@ void dev_showToolsMenu(struct DevMenu *devMenu)
 	devMenu->currentMenu = DevModeMenuTools;
 	const char *menu[MENU_SIZE];
 	int count = 0;
-	for (int i = 0; i < devMenu->settings->numTools; i++)
+	for(int i = 0; i < devMenu->settings->numTools; i++)
 	{
 		menu[count++] = devMenu->settings->toolNames[i];
 	}
 	menu[count++] = "CANCEL";
 	dev_showMenu(devMenu, "EDIT ROM WITH TOOL", menu, count, count - 1);
-	if (count < MENU_SIZE)
+	if(count < MENU_SIZE)
 	{
 		textLib->charAttr.palette = 5;
 		txtlib_writeText(textLib, "DRAG & DROP PROGRAM", 0, 14);
@@ -384,8 +384,8 @@ void dev_showClearRamMenu(struct DevMenu *devMenu)
 	txtlib_writeText(textLib, "OF THIS PROGRAM", 2, 15);
 }
 
-void dev_showMenu(struct DevMenu *devMenu, const char *message, const char *buttons[], int numButtons,
-				  int numRemoveButtons)
+void dev_showMenu(
+struct DevMenu *devMenu, const char *message, const char *buttons[], int numButtons, int numRemoveButtons)
 {
 	struct TextLib *textLib = &devMenu->textLib;
 
@@ -397,16 +397,16 @@ void dev_showMenu(struct DevMenu *devMenu, const char *message, const char *butt
 	txtlib_writeText(textLib, message, (int)(20 - strlen(message)) / 2, 0);
 
 	textLib->charAttr.palette = 0;
-	for (int i = 0; i < numButtons; i++)
+	for(int i = 0; i < numButtons; i++)
 	{
 		int y = 1 + i * 3;
 		txtlib_setCells(textLib, 0, y, 19, y, 3);
 		txtlib_setCells(textLib, 0, y + 2, 19, y + 2, 5);
 		int tx = (int)(20 - strlen(buttons[i])) / 2;
-		if (tx < 0)
+		if(tx < 0)
 			tx = 0;
 		txtlib_writeText(textLib, buttons[i], tx, y + 1);
-		if (i < numRemoveButtons)
+		if(i < numRemoveButtons)
 		{
 			txtlib_setCell(textLib, 19, y, 20);
 		}

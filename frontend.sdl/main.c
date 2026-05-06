@@ -46,18 +46,42 @@ const int defaultWindowScale = 1;
 const int joyAxisThreshold = 16384;
 
 const int keyboardControls[2][2][8] = {
-	// mapping 0
-	{// up, down, left, right, button A, button B, alt. button A, alt. button B
-	 {SDL_SCANCODE_UP, SDL_SCANCODE_DOWN, SDL_SCANCODE_LEFT, SDL_SCANCODE_RIGHT, SDL_SCANCODE_Z, SDL_SCANCODE_X,
-	  SDL_SCANCODE_N, SDL_SCANCODE_M},
-	 {SDL_SCANCODE_E, SDL_SCANCODE_D, SDL_SCANCODE_S, SDL_SCANCODE_F, SDL_SCANCODE_TAB, SDL_SCANCODE_Q,
-	  SDL_SCANCODE_LSHIFT, SDL_SCANCODE_A}},
-	// mapping 1
-	{// up, down, left, right, button A, button B, alt. button A, alt. button B
-	 {SDL_SCANCODE_UP, SDL_SCANCODE_DOWN, SDL_SCANCODE_LEFT, SDL_SCANCODE_RIGHT, SDL_SCANCODE_J, SDL_SCANCODE_K,
-	  SDL_SCANCODE_I, SDL_SCANCODE_U},
-	 {SDL_SCANCODE_UP, SDL_SCANCODE_DOWN, SDL_SCANCODE_LEFT, SDL_SCANCODE_RIGHT, SDL_SCANCODE_H, SDL_SCANCODE_L,
-	  SDL_SCANCODE_O, SDL_SCANCODE_Y}}};
+// mapping 0
+{// up, down, left, right, button A, button B, alt. button A, alt. button B
+{SDL_SCANCODE_UP,
+SDL_SCANCODE_DOWN,
+SDL_SCANCODE_LEFT,
+SDL_SCANCODE_RIGHT,
+SDL_SCANCODE_Z,
+SDL_SCANCODE_X,
+SDL_SCANCODE_N,
+SDL_SCANCODE_M},
+{SDL_SCANCODE_E,
+SDL_SCANCODE_D,
+SDL_SCANCODE_S,
+SDL_SCANCODE_F,
+SDL_SCANCODE_TAB,
+SDL_SCANCODE_Q,
+SDL_SCANCODE_LSHIFT,
+SDL_SCANCODE_A}},
+// mapping 1
+{// up, down, left, right, button A, button B, alt. button A, alt. button B
+{SDL_SCANCODE_UP,
+SDL_SCANCODE_DOWN,
+SDL_SCANCODE_LEFT,
+SDL_SCANCODE_RIGHT,
+SDL_SCANCODE_J,
+SDL_SCANCODE_K,
+SDL_SCANCODE_I,
+SDL_SCANCODE_U},
+{SDL_SCANCODE_UP,
+SDL_SCANCODE_DOWN,
+SDL_SCANCODE_LEFT,
+SDL_SCANCODE_RIGHT,
+SDL_SCANCODE_H,
+SDL_SCANCODE_L,
+SDL_SCANCODE_O,
+SDL_SCANCODE_Y}}};
 
 void update(void *arg);
 void updateScreenRect(int winW, int winH);
@@ -71,7 +95,7 @@ void initHaptic();
 
 bool eventFilter(void *userdata, SDL_Event *event)
 {
-	if (event->type == SDL_EVENT_WILL_ENTER_BACKGROUND)
+	if(event->type == SDL_EVENT_WILL_ENTER_BACKGROUND)
 		core_willSuspendProgram(userdata);
 
 	return false;
@@ -135,15 +159,15 @@ int main(int argc, const char *argv[])
 	dev_init(&devMenu, &runner, &settings);
 #endif
 
-	if (runner_isOkay(&runner))
+	if(runner_isOkay(&runner))
 	{
 		SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_HAPTIC);
 
 		// SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
 		SDL_Event event;
-		while (SDL_PollEvent(&event))
+		while(SDL_PollEvent(&event))
 		{
-			switch (event.type)
+			switch(event.type)
 			{
 			case SDL_EVENT_DROP_FILE: {
 				strncpy(mainProgramFilename, event.drop.data, FILENAME_MAX - 1);
@@ -158,29 +182,29 @@ int main(int argc, const char *argv[])
 
 		const char *windowTitle = "LowResRMX";
 
-		window = SDL_CreateWindow(windowTitle, SCREEN_WIDTH * defaultWindowScale, SCREEN_HEIGHT * defaultWindowScale,
-								  windowFlags);
+		window = SDL_CreateWindow(
+		windowTitle, SCREEN_WIDTH * defaultWindowScale, SCREEN_HEIGHT * defaultWindowScale, windowFlags);
 		renderer = SDL_CreateRenderer(window, NULL);
-		texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, SCREEN_WIDTH,
-									SCREEN_HEIGHT);
+		texture =
+		SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, SCREEN_WIDTH, SCREEN_HEIGHT);
 		SDL_SetTextureScaleMode(texture, SDL_SCALEMODE_PIXELART);
 
 #if defined(__ANDROID__)
 		SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
 #else
-		if (settings.session.fullscreen)
+		if(settings.session.fullscreen)
 		{
 			SDL_SetWindowFullscreen(window, false);
 		}
 #endif
 
 		SDL_AudioSpec desiredAudioSpec = {
-			.freq = 44100,
-			.format = SDL_AUDIO_S16LE,
-			.channels = NUM_CHANNELS,
+		.freq = 44100,
+		.format = SDL_AUDIO_S16LE,
+		.channels = NUM_CHANNELS,
 		};
-		audioStream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &desiredAudioSpec, &audioCallback,
-												runner.core);
+		audioStream =
+		SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &desiredAudioSpec, &audioCallback, runner.core);
 
 		// Used and android for haptic feedback and keyboard closed
 		initHaptic();
@@ -194,7 +218,7 @@ int main(int argc, const char *argv[])
 		updateSafeArea();
 
 		bootNX(&coreInput);
-		if (hasProgram())
+		if(hasProgram())
 		{
 			machine_poke(runner.core, bootIntroStateAddress, BootIntroStateProgramAvailable);
 		}
@@ -203,17 +227,17 @@ int main(int argc, const char *argv[])
 		emscripten_set_main_loop_arg(update, NULL, -1, true);
 #else
 
-		while (!quit)
+		while(!quit)
 		{
 			Uint32 ticks = SDL_GetTicks();
 
 			update(NULL);
 
-			if (!settings.session.disabledelay || runner.core->machineInternals->isEnergySaving)
+			if(!settings.session.disabledelay || runner.core->machineInternals->isEnergySaving)
 			{
 				// limit to 60 FPS
 				Uint32 ticksDelta = SDL_GetTicks() - ticks;
-				if (ticksDelta < 16)
+				if(ticksDelta < 16)
 				{
 					SDL_Delay(16 - ticksDelta);
 				}
@@ -244,7 +268,7 @@ void bootNX(struct CoreInput *input)
 	mainState = MainStateBootIntro;
 
 	struct CoreError error = core_compileProgram(runner.core, bootIntroSourceCode, true);
-	if (error.code != ErrorNone)
+	if(error.code != ErrorNone)
 	{
 		core_traceError(runner.core, error);
 	}
@@ -277,7 +301,7 @@ const char *getMainProgramFilename()
 void selectProgram(const char *filename)
 {
 	strncpy(mainProgramFilename, filename, FILENAME_MAX - 1);
-	if (mainState == MainStateBootIntro)
+	if(mainState == MainStateBootIntro)
 	{
 		machine_poke(runner.core, bootIntroStateAddress, BootIntroStateProgramAvailable);
 	}
@@ -295,7 +319,7 @@ void runMainProgram()
 #if DEV_MENU
 	devMenu.lastError = error;
 #endif
-	if (error.code != ErrorNone)
+	if(error.code != ErrorNone)
 	{
 #if DEV_MENU
 		core_setDebug(runner.core, true);
@@ -317,7 +341,7 @@ void runToolProgram(const char *filename)
 	core_willSuspendProgram(runner.core);
 
 	struct CoreError error = runner_loadProgram(&runner, filename);
-	if (error.code == ErrorNone)
+	if(error.code == ErrorNone)
 	{
 		mainState = MainStateRunningTool;
 		runner.core->interpreter->debug = false;
@@ -348,7 +372,7 @@ bool usesMainProgramAsDisk()
 
 void getDiskFilename(char *outputString)
 {
-	if (usesMainProgramAsDisk())
+	if(usesMainProgramAsDisk())
 	{
 		strncpy(outputString, mainProgramFilename, FILENAME_MAX - 1);
 	}
@@ -356,7 +380,7 @@ void getDiskFilename(char *outputString)
 	{
 		strncpy(outputString, mainProgramFilename, FILENAME_MAX - 1);
 		char *separator = strrchr(outputString, PATH_SEPARATOR_CHAR);
-		if (separator)
+		if(separator)
 		{
 			separator++;
 			*separator = 0;
@@ -376,12 +400,12 @@ void getRamFilename(char *outputString)
 #else
 	char *prefPath = SDL_GetPrefPath("martin_mauchauffee", "LowResRMX");
 #endif
-	if (prefPath)
+	if(prefPath)
 	{
 		strncpy(outputString, prefPath, FILENAME_MAX - 1);
 
 		char *separator = strrchr(mainProgramFilename, PATH_SEPARATOR_CHAR);
-		if (separator)
+		if(separator)
 		{
 			separator++;
 			strncat(outputString, separator, FILENAME_MAX - 1);
@@ -392,7 +416,7 @@ void getRamFilename(char *outputString)
 		}
 
 		char *postfix = strrchr(outputString, '.');
-		if (postfix)
+		if(postfix)
 		{
 			*postfix = 0;
 		}
@@ -425,15 +449,15 @@ void update(void *arg)
 	bool hasInput = false;
 	bool forceRender = false;
 
-	if (releasedTouch)
+	if(releasedTouch)
 	{
 		coreInput.touch = false;
 		releasedTouch = false;
 	}
 
-	while (SDL_PollEvent(&event))
+	while(SDL_PollEvent(&event))
 	{
-		switch (event.type)
+		switch(event.type)
 		{
 		case SDL_EVENT_QUIT:
 			quit = true;
@@ -472,11 +496,11 @@ void update(void *arg)
 			break;
 
 		case SDL_EVENT_DROP_FILE: {
-			if (hasPostfix(event.drop.data, ".rmx") || hasPostfix(event.drop.data, ".RMX"))
+			if(hasPostfix(event.drop.data, ".rmx") || hasPostfix(event.drop.data, ".RMX"))
 			{
 #if DEV_MENU
 				bool handled = (mainState == MainStateDevMenu && dev_handleDropFile(&devMenu, event.drop.data));
-				if (!handled)
+				if(!handled)
 				{
 					selectProgram(event.drop.data);
 				}
@@ -497,53 +521,53 @@ void update(void *arg)
 			SDL_Keycode keycode = event.key.key;
 			SDL_Scancode scancode = event.key.scancode;
 
-			if (event.key.mod == 0)
+			if(event.key.mod == 0)
 			{
 				hasInput = true;
 			}
 
 			// text input
-			if (keycode == SDLK_RETURN)
+			if(keycode == SDLK_RETURN)
 			{
 				coreInput.key = CoreInputKeyReturn;
 			}
-			else if (keycode == SDLK_BACKSPACE)
+			else if(keycode == SDLK_BACKSPACE)
 			{
 				coreInput.key = CoreInputKeyBackspace;
 			}
-			else if (scancode == SDL_SCANCODE_UP)
+			else if(scancode == SDL_SCANCODE_UP)
 			{
 				coreInput.key = CoreInputKeyUp;
 			}
-			else if (scancode == SDL_SCANCODE_DOWN)
+			else if(scancode == SDL_SCANCODE_DOWN)
 			{
 				coreInput.key = CoreInputKeyDown;
 			}
-			else if (scancode == SDL_SCANCODE_LEFT)
+			else if(scancode == SDL_SCANCODE_LEFT)
 			{
 				coreInput.key = CoreInputKeyLeft;
 			}
-			else if (scancode == SDL_SCANCODE_RIGHT)
+			else if(scancode == SDL_SCANCODE_RIGHT)
 			{
 				coreInput.key = CoreInputKeyRight;
 			}
-			else if (scancode == SDL_SCANCODE_DELETE)
+			else if(scancode == SDL_SCANCODE_DELETE)
 			{
 				coreInput.key = CoreInputKeyDelete;
 			}
-			else if (keycode >= SDLK_0 && keycode <= SDLK_9)
+			else if(keycode >= SDLK_0 && keycode <= SDLK_9)
 			{
 				coreInput.key = keycode;
 			}
 
 #if HOT_KEYS
 			// system
-			if (event.key.mod & SDL_KMOD_CTRL)
+			if(event.key.mod & SDL_KMOD_CTRL)
 			{
-				if (keycode == SDLK_D)
+				if(keycode == SDLK_D)
 				{
 					core_setDebug(runner.core, !core_getDebug(runner.core));
-					if (core_getDebug(runner.core))
+					if(core_getDebug(runner.core))
 					{
 						overlay_message(runner.core, "DEBUG ON");
 					}
@@ -565,68 +589,68 @@ void update(void *arg)
 				// 	updateMouseMode();
 				// 	forceRender = true;
 				// }
-				else if (keycode == SDLK_R)
+				else if(keycode == SDLK_R)
 				{
-					if (hasProgram())
+					if(hasProgram())
 					{
 						runMainProgram();
 						overlay_message(runner.core, "RELOADED");
 					}
 				}
-				else if (keycode == SDLK_E)
+				else if(keycode == SDLK_E)
 				{
 					rebootNX(&coreInput);
 				}
-				else if (keycode == SDLK_S)
+				else if(keycode == SDLK_S)
 				{
 					screenshotRequestedWithScale = (event.key.mod & SDL_KMOD_SHIFT) ? 1 : 4;
 					forceRender = true;
 				}
-				else if (keycode == SDLK_Z)
+				else if(keycode == SDLK_Z)
 				{
 					toggleZoom();
 					forceRender = true;
 				}
-				else if (keycode == SDLK_PLUS)
+				else if(keycode == SDLK_PLUS)
 				{
 					changeVolume(-1);
 				}
-				else if (keycode == SDLK_MINUS)
+				else if(keycode == SDLK_MINUS)
 				{
 					changeVolume(+1);
 				}
 			}
-			else if (keycode == SDLK_ESCAPE)
+			else if(keycode == SDLK_ESCAPE)
 			{
 				// XXX: Always quit when press ESCAPE
 				// quit = true;
-				if (settings.session.disabledev)
+				if(settings.session.disabledev)
 				{
 					quit = true;
 				}
 #if DEV_MENU
-				else if (hasProgram())
+				else if(hasProgram())
 				{
-					if (mainState != MainStateDevMenu)
+					if(mainState != MainStateDevMenu)
 					{
 						showDevMenu();
 					}
 				}
 #endif
 			}
-			else if (settings.session.mapping == 1 && !core_isKeyboardEnabled(runner.core))
+			else if(settings.session.mapping == 1 && !core_isKeyboardEnabled(runner.core))
 			{
-				if (keycode == SDLK_SPACE)
+				if(keycode == SDLK_SPACE)
 				{
 					toggleZoom();
 					forceRender = true;
 					hasInput = false;
 				}
-				else if (scancode == SDL_SCANCODE_KP_PLUS)
+				else if(scancode == SDL_SCANCODE_KP_PLUS)
 				{
 					changeVolume(-1);
 				}
-				else if (scancode == SDL_SCANCODE_KP_MINUS)
+				else if(scancode == SDL_SCANCODE_KP_MINUS)
 				{
 					changeVolume(+1);
 				}
@@ -638,11 +662,11 @@ void update(void *arg)
 		case SDL_EVENT_TEXT_INPUT: {
 			char key = event.text.text[0];
 			hasInput = true;
-			if (key >= ' ' && key <= '_')
+			if(key >= ' ' && key <= '_')
 			{
 				coreInput.key = key;
 			}
-			else if (key >= 'a' && key <= 'z')
+			else if(key >= 'a' && key <= 'z')
 			{
 				coreInput.key = key - 32;
 			}
@@ -687,19 +711,19 @@ void update(void *arg)
 
 	// const bool *state = SDL_GetKeyboardState(NULL);
 
-	switch (mainState)
+	switch(mainState)
 	{
 	case MainStateUndefined:
 		break;
 
 	case MainStateBootIntro:
-		if (hasInput && !hasProgram())
+		if(hasInput && !hasProgram())
 		{
 			// user hint
 			overlay_message(runner.core, "DRAG .RMX INTO WINDOW");
 		}
 		core_update(runner.core, &coreInput);
-		if (machine_peek(runner.core, bootIntroStateAddress) == BootIntroStateReadyToRun)
+		if(machine_peek(runner.core, bootIntroStateAddress) == BootIntroStateReadyToRun)
 		{
 			machine_poke(runner.core, bootIntroStateAddress, BootIntroStateDone);
 #ifdef __EMSCRIPTEN__
@@ -713,17 +737,17 @@ void update(void *arg)
 	case MainStateRunningProgram:
 	case MainStateRunningTool:
 		core_update(runner.core, &coreInput);
-		if (hasInput)
+		if(hasInput)
 		{
-			if (runner.core->interpreter->state == StateEnd)
+			if(runner.core->interpreter->state == StateEnd)
 			{
 				overlay_message(runner.core, "END OF PROGRAM");
 			}
-			else if (!coreInput.out_hasUsedInput && !hasUsedInputLastUpdate)
+			else if(!coreInput.out_hasUsedInput && !hasUsedInputLastUpdate)
 			{
 				// user hints for controls
 				// union IOAttributes attr = runner.core->machine->ioRegisters.attr;
-				if (runner.core->machine->ioRegisters.status.keyboardVisible)
+				if(runner.core->machine->ioRegisters.status.keyboardVisible)
 				// if (attr.keyboardEnabled)
 				{
 					overlay_message(runner.core, "KEYBOARD");
@@ -741,13 +765,13 @@ void update(void *arg)
 
 	hasUsedInputLastUpdate = coreInput.out_hasUsedInput;
 
-	if (!audioStarted && audioStream)
+	if(!audioStarted && audioStream)
 	{
 		audioStarted = true;
 		SDL_ResumeAudioStreamDevice(audioStream);
 	}
 
-	if (core_shouldRender(runner.core) || forceRender)
+	if(core_shouldRender(runner.core) || forceRender)
 	{
 		SDL_RenderClear(renderer);
 
@@ -757,7 +781,7 @@ void update(void *arg)
 
 		video_renderScreen(runner.core, pixels);
 
-		if (screenshotRequestedWithScale > 0)
+		if(screenshotRequestedWithScale > 0)
 		{
 			saveScreenshot(pixels, screenshotRequestedWithScale);
 			screenshotRequestedWithScale = 0;
@@ -795,7 +819,7 @@ void updateScreenRect(int winW, int winH)
 
 	float width, height;
 
-	if (r >= 9.0 / 16.0)
+	if(r >= 9.0 / 16.0)
 	{
 		width = (float)winW;
 		rendererScale = width / 216.0;
@@ -917,9 +941,9 @@ void toggleZoom()
 void changeVolume(int delta)
 {
 	volume += delta;
-	if (volume < 0)
+	if(volume < 0)
 		volume = 0;
-	if (volume > 6)
+	if(volume > 6)
 		volume = 6;
 	char message[16];
 	sprintf(message, "VOLUME %d%%", 100 >> volume);
@@ -931,11 +955,11 @@ static int16_t audio_callback_buffer[AUDIO_CALLBACK_BUFFER_SIZE / sizeof(int16_t
 
 void audioCallback(void *userdata, SDL_AudioStream *stream, int additional_amount, int total_amount)
 {
-	while (additional_amount > 0)
+	while(additional_amount > 0)
 	{
 		int bytes_to_process = (additional_amount > (int)sizeof(audio_callback_buffer))
-								   ? (int)sizeof(audio_callback_buffer)
-								   : additional_amount;
+							   ? (int)sizeof(audio_callback_buffer)
+							   : additional_amount;
 		int num_samples = bytes_to_process / sizeof(int16_t);
 
 		audio_renderAudio(userdata, audio_callback_buffer, num_samples, 44100, volume);
@@ -949,7 +973,7 @@ void saveScreenshot(void *pixels, int scale)
 {
 #if SCREENSHOTS
 	bool succeeded = screenshot_save(pixels, scale);
-	if (succeeded)
+	if(succeeded)
 	{
 		overlay_message(runner.core, "SCREENSHOT SAVED");
 	}
@@ -982,17 +1006,17 @@ void onerror(const char *filename)
 void initHaptic()
 {
 	SDL_HapticID *haptics = SDL_GetHaptics(NULL);
-	if (haptics)
+	if(haptics)
 	{
 		haptic = SDL_OpenHaptic(haptics[0]);
-		if (!haptic)
+		if(!haptic)
 			SDL_Log("Haptic: %s", SDL_GetError());
 		SDL_free(haptics);
 	}
 
-	if (!haptic)
+	if(!haptic)
 		return;
 
-	if (!SDL_InitHapticRumble(haptic))
+	if(!SDL_InitHapticRumble(haptic))
 		return;
 }

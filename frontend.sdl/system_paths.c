@@ -50,10 +50,10 @@ FILE *fopen_utf8(const char *filename, const char *mode)
 	WCHAR nameW[FILENAME_MAX] = {0};
 	WCHAR modeW[16] = {0};
 	int len = MultiByteToWideChar(CP_UTF8, 0, filename, -1, nameW, FILENAME_MAX);
-	if (len > 0 && MultiByteToWideChar(CP_UTF8, 0, mode, -1, modeW, 16) > 0)
+	if(len > 0 && MultiByteToWideChar(CP_UTF8, 0, mode, -1, modeW, 16) > 0)
 	{
 		FILE *ret = NULL;
-		if (_wfopen_s(&ret, nameW, modeW) == 0)
+		if(_wfopen_s(&ret, nameW, modeW) == 0)
 			return ret;
 	}
 	return NULL;

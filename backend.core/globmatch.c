@@ -48,128 +48,128 @@
 #define SL_GLOBMATCH_FALSE 0
 
 /******************************************************************/ /**
- * @brief Check if a string matches a globbing pattern.
- *
- * @param string  The string to check.
- * @param pattern The globbing pattern to match.
- *
- * @returns 0 if string does not match pattern and non-zero otherwise.
- **********************************************************************/
-int
-sl_globmatch (char *string, char *pattern)
+																	  * @brief Check if a string matches a globbing
+																	  *pattern.
+																	  *
+																	  * @param string  The string to check.
+																	  * @param pattern The globbing pattern to match.
+																	  *
+																	  * @returns 0 if string does not match pattern and
+																	  *non-zero otherwise.
+																	  **********************************************************************/
+int sl_globmatch(char *string, char *pattern)
 {
-  int negate;
-  int match;
-  int c;
+	int negate;
+	int match;
+	int c;
 
-  while (*pattern)
-  {
-    if (!*string && *pattern != '*')
-      return SL_GLOBMATCH_FALSE;
+	while(*pattern)
+	{
+		if(!*string && *pattern != '*')
+			return SL_GLOBMATCH_FALSE;
 
-    switch (c = *pattern++)
-    {
+		switch(c = *pattern++)
+		{
 
-    case '*':
-      while (*pattern == '*')
-        pattern++;
+		case '*':
+			while(*pattern == '*')
+				pattern++;
 
-      if (!*pattern)
-        return SL_GLOBMATCH_TRUE;
+			if(!*pattern)
+				return SL_GLOBMATCH_TRUE;
 
-      if (*pattern != '?' && *pattern != '[' && *pattern != '\\')
-        while (*string && *pattern != *string)
-          string++;
+			if(*pattern != '?' && *pattern != '[' && *pattern != '\\')
+				while(*string && *pattern != *string)
+					string++;
 
-      while (*string)
-      {
-        if (sl_globmatch (string, pattern))
-          return SL_GLOBMATCH_TRUE;
-        string++;
-      }
-      return SL_GLOBMATCH_FALSE;
+			while(*string)
+			{
+				if(sl_globmatch(string, pattern))
+					return SL_GLOBMATCH_TRUE;
+				string++;
+			}
+			return SL_GLOBMATCH_FALSE;
 
-    case '?':
-      if (*string)
-        break;
-      return SL_GLOBMATCH_FALSE;
+		case '?':
+			if(*string)
+				break;
+			return SL_GLOBMATCH_FALSE;
 
-    /* set specification is inclusive, that is [a-z] is a, z and
-	   * everything in between. this means [z-a] may be interpreted
-	   * as a set that contains z, a and nothing in between.
-	   */
-    case '[':
-      if (*pattern != SL_GLOBMATCH_NEGATE)
-        negate = SL_GLOBMATCH_FALSE;
-      else
-      {
-        negate = SL_GLOBMATCH_TRUE;
-        pattern++;
-      }
+		/* set specification is inclusive, that is [a-z] is a, z and
+		 * everything in between. this means [z-a] may be interpreted
+		 * as a set that contains z, a and nothing in between.
+		 */
+		case '[':
+			if(*pattern != SL_GLOBMATCH_NEGATE)
+				negate = SL_GLOBMATCH_FALSE;
+			else
+			{
+				negate = SL_GLOBMATCH_TRUE;
+				pattern++;
+			}
 
-      match = SL_GLOBMATCH_FALSE;
+			match = SL_GLOBMATCH_FALSE;
 
-      while (!match && (c = *pattern++))
-      {
-        if (!*pattern)
-          return SL_GLOBMATCH_FALSE;
+			while(!match && (c = *pattern++))
+			{
+				if(!*pattern)
+					return SL_GLOBMATCH_FALSE;
 
-        if (*pattern == '-') /* c-c */
-        {
-          if (!*++pattern)
-            return SL_GLOBMATCH_FALSE;
-          if (*pattern != ']')
-          {
-            if (*string == c || *string == *pattern ||
-                (*string > c && *string < *pattern))
-              match = SL_GLOBMATCH_TRUE;
-          }
-          else
-          { /* c-] */
-            if (*string >= c)
-              match = SL_GLOBMATCH_TRUE;
-            break;
-          }
-        }
-        else /* cc or c] */
-        {
-          if (c == *string)
-            match = SL_GLOBMATCH_TRUE;
-          if (*pattern != ']')
-          {
-            if (*pattern == *string)
-              match = SL_GLOBMATCH_TRUE;
-          }
-          else
-            break;
-        }
-      }
+				if(*pattern == '-') /* c-c */
+				{
+					if(!*++pattern)
+						return SL_GLOBMATCH_FALSE;
+					if(*pattern != ']')
+					{
+						if(*string == c || *string == *pattern || (*string > c && *string < *pattern))
+							match = SL_GLOBMATCH_TRUE;
+					}
+					else
+					{ /* c-] */
+						if(*string >= c)
+							match = SL_GLOBMATCH_TRUE;
+						break;
+					}
+				}
+				else /* cc or c] */
+				{
+					if(c == *string)
+						match = SL_GLOBMATCH_TRUE;
+					if(*pattern != ']')
+					{
+						if(*pattern == *string)
+							match = SL_GLOBMATCH_TRUE;
+					}
+					else
+						break;
+				}
+			}
 
-      if (negate == match)
-        return SL_GLOBMATCH_FALSE;
+			if(negate == match)
+				return SL_GLOBMATCH_FALSE;
 
-      /*
-	   * if there is a match, skip past the charset and continue on
-	   */
-      while (*pattern && *pattern != ']')
-        pattern++;
-      if (!*pattern++) /* oops! */
-        return SL_GLOBMATCH_FALSE;
-      break;
+			/*
+			 * if there is a match, skip past the charset and continue on
+			 */
+			while(*pattern && *pattern != ']')
+				pattern++;
+			if(!*pattern++) /* oops! */
+				return SL_GLOBMATCH_FALSE;
+			break;
 
-    case '\\':
-      if (*pattern)
-        c = *pattern++;
-      break;
+		case '\\':
+			if(*pattern)
+				c = *pattern++;
+			break;
 
-      default:
-      if (c != *string)
-        return SL_GLOBMATCH_FALSE;
-      break;
-    }
+		default:
+			if(c != *string)
+				return SL_GLOBMATCH_FALSE;
+			break;
+		}
 
-    string++;
-  }
+		string++;
+	}
 
-  return !*string;
+	return !*string;
 }

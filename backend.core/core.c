@@ -1,14 +1,14 @@
-//
-// Copyright 2016-2020 Timo Kloss
-//
+// Copyright 2018 Timo Kloss
+// Copyright 2021-2026 Martin Mauchauffée
+
 // This software is provided 'as-is', without any express or implied
 // warranty. In no event will the authors be held liable for any damages
 // arising from the use of this software.
-//
+
 // Permission is granted to anyone to use this software for any purpose,
 // including commercial applications, and to alter it and redistribute it
 // freely, subject to the following restrictions:
-//
+
 // 1. The origin of this software must not be misrepresented; you must not
 //    claim that you wrote the original software. If you use this software
 //    in a product, an acknowledgment in the product documentation would be
@@ -16,16 +16,15 @@
 // 2. Altered source versions must be plainly marked as such, and must not be
 //    misrepresented as being the original software.
 // 3. This notice may not be removed or altered from any source distribution.
-//
 
 #include "core.h"
-#include <stdlib.h>
-#include <math.h>
-#include <string.h>
-#include "overlay.h"
-#include "string_utils.h"
 #include "config.h"
+#include "overlay.h"
 #include "startup_sequence.h"
+#include "string_utils.h"
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
 
 #if SDL_SCALING
 extern float rendererScale;
@@ -46,23 +45,23 @@ void core_init(struct Core *core)
 	memset(core, 0, sizeof(struct Core));
 
 	core->machine = calloc(1, sizeof(struct Machine));
-	if (!core->machine)
+	if(!core->machine)
 		exit(EXIT_FAILURE);
 
 	core->machineInternals = calloc(1, sizeof(struct MachineInternals));
-	if (!core->machineInternals)
+	if(!core->machineInternals)
 		exit(EXIT_FAILURE);
 
 	core->interpreter = calloc(1, sizeof(struct Interpreter));
-	if (!core->interpreter)
+	if(!core->interpreter)
 		exit(EXIT_FAILURE);
 
 	core->diskDrive = calloc(1, sizeof(struct DiskDrive));
-	if (!core->diskDrive)
+	if(!core->diskDrive)
 		exit(EXIT_FAILURE);
 
 	core->overlay = calloc(1, sizeof(struct Overlay));
-	if (!core->overlay)
+	if(!core->overlay)
 		exit(EXIT_FAILURE);
 
 	machine_init(core);
@@ -111,7 +110,7 @@ void core_traceError(struct Core *core, struct CoreError error)
 	struct TextLib *lib = &core->overlay->textLib;
 	txtlib_printText(lib, err_getString(error.code));
 	txtlib_printText(lib, "\n");
-	if (error.sourcePosition >= 0 && core->interpreter->sourceCode)
+	if(error.sourcePosition >= 0 && core->interpreter->sourceCode)
 	{
 		int number = lineNumber(core->interpreter->sourceCode, error.sourcePosition);
 		char lineNumberText[30];
@@ -119,7 +118,7 @@ void core_traceError(struct Core *core, struct CoreError error)
 		txtlib_printText(lib, lineNumberText);
 
 		const char *line = lineString(core->interpreter->sourceCode, error.sourcePosition);
-		if (line)
+		if(line)
 		{
 			txtlib_printText(lib, line);
 			txtlib_printText(lib, "\n");
@@ -156,28 +155,30 @@ void core_handleInput(struct Core *core, struct CoreInput *input)
 
 	bool processedOtherInput = false;
 
-	if (input->key != 0)
+	if(input->key != 0)
 	{
 		// if (ioRegisters->status.keyboardEnabled)
 		// if (ioAttr.keyboardEnabled)
 		// {
-			char key = input->key;
-			if ((key >= 32 && key < 127) || key == CoreInputKeyBackspace || key == CoreInputKeyReturn || key == CoreInputKeyDown || key == CoreInputKeyUp || key == CoreInputKeyRight || key == CoreInputKeyLeft || key == CoreInputKeyDelete)
-			{
-				ioRegisters->key = key;
-			}
+		char key = input->key;
+		if((key >= 32 && key < 127) || key == CoreInputKeyBackspace || key == CoreInputKeyReturn ||
+		   key == CoreInputKeyDown || key == CoreInputKeyUp || key == CoreInputKeyRight || key == CoreInputKeyLeft ||
+		   key == CoreInputKeyDelete)
+		{
+			ioRegisters->key = key;
+		}
 		// }
 		input->key = 0;
 		machine_suspendEnergySaving(core, 2);
 	}
 
-	if (input->touch)
+	if(input->touch)
 	{
 		{
 			ioRegisters->status.touch = 1;
 			float x = input->touchX;
 			float y = input->touchY;
-			if (core->interpreter->compat)
+			if(core->interpreter->compat)
 			{
 				int sw = ioRegisters->shown.width != 0 ? ioRegisters->shown.width : SCREEN_WIDTH;
 				int sh = ioRegisters->shown.height != 0 ? ioRegisters->shown.height : SCREEN_HEIGHT;
@@ -199,18 +200,19 @@ void core_handleInput(struct Core *core, struct CoreInput *input)
 	// Gesture detection
 	ioRegisters->status.touchChange = 0;
 	ioRegisters->status.touchTap = 0;
-	if (input->touch)
+	if(input->touch)
 	{
-		if (!core->machineInternals->hasDrag)
+		if(!core->machineInternals->hasDrag)
 		{
-			core->machineInternals->hasDrag = sqrtf(powf(input->touchX - ioRegisters->pressedX, 2) + powf(input->touchY - ioRegisters->pressedY, 2))>=8;
-			if (core->machineInternals->hasDrag)
+			core->machineInternals->hasDrag =
+			sqrtf(powf(input->touchX - ioRegisters->pressedX, 2) + powf(input->touchY - ioRegisters->pressedY, 2)) >= 8;
+			if(core->machineInternals->hasDrag)
 			{
 				core->machineInternals->longEnabled = false;
 				ioRegisters->status.touchLong = 0;
 			}
 		}
-		if (!core->machineInternals->gesturePressed)
+		if(!core->machineInternals->gesturePressed)
 		{
 			// just pressed
 			core->machineInternals->gesturePressed = true;
@@ -226,11 +228,10 @@ void core_handleInput(struct Core *core, struct CoreInput *input)
 			ioRegisters->status.touchLong = 0;
 			ioRegisters->status.touchChange = 1;
 		}
-		else if (!core->machineInternals->gestureLonged
-		// && core->machineInternals->gesturePressedTimer > 0
-		&& !core->machineInternals->hasDrag
-		&& core->machineInternals->longEnabled
-		&& core->interpreter->timer - core->machineInternals->gesturePressedTimer > 32)
+		else if(!core->machineInternals->gestureLonged
+				// && core->machineInternals->gesturePressedTimer > 0
+				&& !core->machineInternals->hasDrag && core->machineInternals->longEnabled &&
+				core->interpreter->timer - core->machineInternals->gesturePressedTimer > 32)
 		{
 			// just longed
 			core->machineInternals->gestureLonged = true;
@@ -238,10 +239,9 @@ void core_handleInput(struct Core *core, struct CoreInput *input)
 			ioRegisters->status.touchLong = 1;
 			ioRegisters->status.touchChange = 1;
 		}
-		else if(!core->machineInternals->gestureDragged
-		&& core->machineInternals->gesturePressedTimer > 0
-		&& (core->interpreter->timer - core->machineInternals->gesturePressedTimer > 12
-		|| core->machineInternals->hasDrag))
+		else if(!core->machineInternals->gestureDragged && core->machineInternals->gesturePressedTimer > 0 &&
+				(core->interpreter->timer - core->machineInternals->gesturePressedTimer > 12 ||
+				 core->machineInternals->hasDrag))
 		{
 			// just dragged
 			core->machineInternals->gestureDragged = true;
@@ -252,10 +252,10 @@ void core_handleInput(struct Core *core, struct CoreInput *input)
 	}
 	else
 	{
-		if (core->machineInternals->gesturePressed)
+		if(core->machineInternals->gesturePressed)
 		{
-			if (!core->machineInternals->gestureDragged
-			&& core->interpreter->timer - core->machineInternals->gesturePressedTimer <= 12)
+			if(!core->machineInternals->gestureDragged &&
+			   core->interpreter->timer - core->machineInternals->gesturePressedTimer <= 12)
 			{
 				// just tapped
 				core->machineInternals->gesturePressed = false;
@@ -292,9 +292,9 @@ void core_handleInput(struct Core *core, struct CoreInput *input)
 	ioRegisters->safe.left = input->left;
 	ioRegisters->safe.bottom = input->bottom;
 
-	if (input->pause)
+	if(input->pause)
 	{
-		if (core->interpreter->state == StatePaused)
+		if(core->interpreter->state == StatePaused)
 		{
 			core->interpreter->state = StateEvaluate;
 			overlay_updateState(core);
@@ -311,7 +311,7 @@ void core_handleInput(struct Core *core, struct CoreInput *input)
 	input->out_hasUsedInput = processedOtherInput || ioRegisters->key || ioRegisters->status.value;
 	// || ioRegisters->gamepads[0].value || ioRegisters->gamepads[1].value;
 
-	if (input->keyboardChange > 0)
+	if(input->keyboardChange > 0)
 	{
 		int ga = 123;
 		ioRegisters->status.keyboardVisible = true;
@@ -327,7 +327,7 @@ void core_handleInput(struct Core *core, struct CoreInput *input)
 
 void core_willSuspendProgram(struct Core *core)
 {
-	if (core->machineInternals->hasChangedPersistent)
+	if(core->machineInternals->hasChangedPersistent)
 	{
 		delegate_persistentRamDidChange(core, core->machine->persistentRam, PERSISTENT_RAM_SIZE);
 		core->machineInternals->hasChangedPersistent = false;
@@ -337,7 +337,8 @@ void core_willSuspendProgram(struct Core *core)
 void core_setDebug(struct Core *core, bool enabled)
 {
 	core->interpreter->debug = enabled;
-	if(!enabled) overlay_clear(core);
+	if(!enabled)
+		overlay_clear(core);
 	overlay_updateState(core);
 }
 
@@ -359,7 +360,7 @@ void core_setKeyboardEnabled(struct Core *core, bool enabled)
 void core_setKeyboardHeight(struct Core *core, int height)
 {
 #if SDL_SCALING
-	core->machine->ioRegisters.keyboardHeight = (int)((float)height/rendererScale);
+	core->machine->ioRegisters.keyboardHeight = (int)((float)height / rendererScale);
 #else
 	core->machine->ioRegisters.keyboardHeight = height;
 #endif
@@ -374,7 +375,9 @@ void core_orientationChanged(struct Core *core)
 bool core_shouldRender(struct Core *core)
 {
 	enum State state = core->interpreter->state;
-	bool shouldRender = (!core->machineInternals->isEnergySaving && state != StateEnd && state != StateNoProgram) || core->machineInternals->energySavingTimer > 0 || core->machineInternals->energySavingTimer % 20 == 0;
+	bool shouldRender = (!core->machineInternals->isEnergySaving && state != StateEnd && state != StateNoProgram) ||
+						core->machineInternals->energySavingTimer > 0 ||
+						core->machineInternals->energySavingTimer % 20 == 0;
 
 	core->machineInternals->energySavingTimer--;
 	return shouldRender;

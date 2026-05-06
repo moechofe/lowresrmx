@@ -1,3 +1,22 @@
+// Copyright 2018 Timo Kloss
+// Copyright 2021-2026 Martin Mauchauffée
+
+// This software is provided 'as-is', without any express or implied
+// warranty. In no event will the authors be held liable for any damages
+// arising from the use of this software.
+
+// Permission is granted to anyone to use this software for any purpose,
+// including commercial applications, and to alter it and redistribute it
+// freely, subject to the following restrictions:
+
+// 1. The origin of this software must not be misrepresented; you must not
+//    claim that you wrote the original software. If you use this software
+//    in a product, an acknowledgment in the product documentation would be
+//    appreciated but is not required.
+// 2. Altered source versions must be plainly marked as such, and must not be
+//    misrepresented as being the original software.
+// 3. This notice may not be removed or altered from any source distribution.
+
 #include "particles_lib.h"
 
 #include "core.h"
@@ -21,10 +40,10 @@ void prtclib_setupPool(struct ParticlesLib *lib, int firstSprite, int poolCount,
 	lib->pool_next_id = 0;
 	lib->particles_data_addr = particleAddr;
 
-	for (int particle_id = 0; particle_id < lib->pool_count; ++particle_id)
+	for(int particle_id = 0; particle_id < lib->pool_count; ++particle_id)
 	{
 		int particle = lib->particles_data_addr + particle_id * PARTICLE_MEM_SIZE; // 6 bytes
-		machine_poke_short(lib->core, particle+PARTICLE_MEM_LIFETIME, 0);
+		machine_poke_short(lib->core, particle + PARTICLE_MEM_LIFETIME, 0);
 	}
 
 	pcg32_srandom_r(&pcg, 20321911116532, (intptr_t)&pcg);
@@ -43,7 +62,7 @@ void prtclib_setSpawnerLabel(struct ParticlesLib *lib, int emitterId, struct Tok
 
 void prtclib_spawn(struct ParticlesLib *lib, int emitterId, float posX, float posY)
 {
-	if (emitterId < 0 && emitterId >= lib->emitters_count)
+	if(emitterId < 0 && emitterId >= lib->emitters_count)
 		return;
 
 	int emitter = lib->emitters_data_addr + emitterId * EMITTER_MEM_SIZE; // 6 bytes
@@ -71,7 +90,7 @@ void prtclib_spawn(struct ParticlesLib *lib, int emitterId, float posX, float po
 
 void prtclib_stop(struct ParticlesLib *lib, int emitterId)
 {
-	if (emitterId < 0 && emitterId >= lib->emitters_count)
+	if(emitterId < 0 && emitterId >= lib->emitters_count)
 		return;
 
 	int emitter = lib->emitters_data_addr + emitterId * EMITTER_MEM_SIZE; // 6 bytes
@@ -87,7 +106,7 @@ void prtclib_update(struct Core *core, struct ParticlesLib *lib)
 	enum ErrorCode errorCode;
 
 	// update emitters
-	for (int emitter_id = 0; emitter_id < lib->emitters_count; ++emitter_id)
+	for(int emitter_id = 0; emitter_id < lib->emitters_count; ++emitter_id)
 	{
 		int emitter = lib->emitters_data_addr + emitter_id * EMITTER_MEM_SIZE; // 6 bytes
 
@@ -98,7 +117,7 @@ void prtclib_update(struct Core *core, struct ParticlesLib *lib)
 
 		// wait for delay to end
 		int delay = machine_peek(lib->core, emitter + EMITTER_MEM_DELAY);
-		if (delay > 0)
+		if(delay > 0)
 		{
 			machine_poke(lib->core, emitter + EMITTER_MEM_DELAY, delay - 1);
 			continue;
@@ -106,7 +125,7 @@ void prtclib_update(struct Core *core, struct ParticlesLib *lib)
 
 		// is there more to repeat?
 		int repeat = machine_peek(lib->core, emitter + EMITTER_MEM_REPEAT);
-		if (repeat > 0)
+		if(repeat > 0)
 		{
 			float shape = dat_readFloat(lib->emitters_label[emitter_id], EMITTER_DATA_SHAPE, 1);
 			float outer = dat_readFloat(lib->emitters_label[emitter_id], EMITTER_DATA_OUTER, 0);
@@ -125,7 +144,7 @@ void prtclib_update(struct Core *core, struct ParticlesLib *lib)
 			// reset delay
 			machine_poke(lib->core, emitter + EMITTER_MEM_DELAY, delay);
 
-			for (int i = 0; i < count; ++i)
+			for(int i = 0; i < count; ++i)
 			{
 				// spawn a particle
 				int particle_id = lib->pool_next_id;
@@ -141,9 +160,9 @@ void prtclib_update(struct Core *core, struct ParticlesLib *lib)
 				int sign;
 
 				// inner, outer ring
-				if (outer > 0 && outer > inner && shape != 0)
+				if(outer > 0 && outer > inner && shape != 0)
 				{
-					if (shape > 0)
+					if(shape > 0)
 					{
 						float angle = (float)ldexp(pcg32_random_r(&pcg), -32);
 						float r = (float)sqrt(ldexp(pcg32_random_r(&pcg), -32));
@@ -153,7 +172,7 @@ void prtclib_update(struct Core *core, struct ParticlesLib *lib)
 						sprite_distance_x = cosf(angle * M_PI * 2) * space_x;
 						sprite_distance_y = sinf(angle * M_PI * 2) * space_y * shape;
 					}
-					else if (inner == 0)
+					else if(inner == 0)
 					{
 						sign = pcg32_boundedrand_r(&pcg, 2) * 2 - 1;
 						sprite_distance_x = (float)pcg32_boundedrand_r(&pcg, outer) * sign;
@@ -166,12 +185,13 @@ void prtclib_update(struct Core *core, struct ParticlesLib *lib)
 						int sign;
 						float spectral = outer + outer * -shape;
 						double choose = ldexp(pcg32_random_r(&pcg), -32) * spectral;
-						if (choose < outer)
+						if(choose < outer)
 						{
 							// horizontal
 							sign = pcg32_boundedrand_r(&pcg, 2) * 2 - 1;
 							sprite_distance_x = (float)pcg32_boundedrand_r(&pcg, outer * 2) - outer;
-							sprite_distance_y = ((float)pcg32_boundedrand_r(&pcg, outer - inner) + inner) * sign * -shape;
+							sprite_distance_y =
+							((float)pcg32_boundedrand_r(&pcg, outer - inner) + inner) * sign * -shape;
 						}
 						else
 						{
@@ -188,7 +208,7 @@ void prtclib_update(struct Core *core, struct ParticlesLib *lib)
 					sprite_distance_y = 0;
 				}
 
-				if (gravity > 0)
+				if(gravity > 0)
 				{
 					int a = 0;
 				}
@@ -207,13 +227,12 @@ void prtclib_update(struct Core *core, struct ParticlesLib *lib)
 
 				// lifetime
 				machine_poke_short(lib->core, particle + PARTICLE_MEM_LIFETIME, 0);
-
 			}
 		}
 	}
 
 	// update particles
-	for (int particle_id = 0; particle_id < lib->pool_count; ++particle_id)
+	for(int particle_id = 0; particle_id < lib->pool_count; ++particle_id)
 	{
 		int particle = lib->particles_data_addr + particle_id * PARTICLE_MEM_SIZE; // 6 bytes
 
@@ -235,7 +254,7 @@ void prtclib_interrupt(struct Core *core, struct ParticlesLib *lib)
 {
 	enum ErrorCode errorCode;
 
-	for (int particle_id = 0; particle_id < lib->pool_count; ++particle_id)
+	for(int particle_id = 0; particle_id < lib->pool_count; ++particle_id)
 	{
 		int particle = lib->particles_data_addr + particle_id * PARTICLE_MEM_SIZE; // 6 bytes
 
@@ -249,15 +268,15 @@ void prtclib_interrupt(struct Core *core, struct ParticlesLib *lib)
 		itp_runInterrupt(core, InterruptTypeParticle);
 	}
 
-	for (int emitter_id = 0; emitter_id < lib->emitters_count; ++emitter_id)
+	for(int emitter_id = 0; emitter_id < lib->emitters_count; ++emitter_id)
 	{
 		int emitter = lib->emitters_data_addr + emitter_id * EMITTER_MEM_SIZE; // 6 bytes
 
 		int repeat = machine_peek(lib->core, emitter + EMITTER_MEM_REPEAT);
-		if (repeat > 0)
+		if(repeat > 0)
 		{
 			uint8_t count = dat_readU8(lib->emitters_label[emitter_id], EMITTER_DATA_COUNT, 0);
-			if (count > 0)
+			if(count > 0)
 			{
 				lib->interrupt_emitter_id = emitter_id;
 				lib->interrupt_emitter_addr = emitter;
@@ -269,10 +288,10 @@ void prtclib_interrupt(struct Core *core, struct ParticlesLib *lib)
 
 void prtclib_clear(struct Core *core, struct ParticlesLib *lib)
 {
-	for (int particle_id = 0; particle_id < lib->pool_count; ++particle_id)
+	for(int particle_id = 0; particle_id < lib->pool_count; ++particle_id)
 	{
-		int particle = lib->particles_data_addr + particle_id*PARTICLE_MEM_SIZE; // 6 bytes
-		machine_poke_short(lib->core, particle+PARTICLE_MEM_LIFETIME, 0);
+		int particle = lib->particles_data_addr + particle_id * PARTICLE_MEM_SIZE; // 6 bytes
+		machine_poke_short(lib->core, particle + PARTICLE_MEM_LIFETIME, 0);
 
 		int sprite_id = lib->first_sprite_id + particle_id;
 		struct Sprite *spr = &lib->core->machine->spriteRegisters.sprites[sprite_id];

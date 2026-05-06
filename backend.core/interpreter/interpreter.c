@@ -1,14 +1,14 @@
-//
-// Copyright 2016-2020 Timo Kloss
-//
+// Copyright 2018 Timo Kloss
+// Copyright 2021-2026 Martin Mauchauffée
+
 // This software is provided 'as-is', without any express or implied
 // warranty. In no event will the authors be held liable for any damages
 // arising from the use of this software.
-//
+
 // Permission is granted to anyone to use this software for any purpose,
 // including commercial applications, and to alter it and redistribute it
 // freely, subject to the following restrictions:
-//
+
 // 1. The origin of this software must not be misrepresented; you must not
 //    claim that you wrote the original software. If you use this software
 //    in a product, an acknowledgment in the product documentation would be
@@ -16,34 +16,32 @@
 // 2. Altered source versions must be plainly marked as such, and must not be
 //    misrepresented as being the original software.
 // 3. This notice may not be removed or altered from any source distribution.
-//
 
 #include "interpreter.h"
-#include <stdlib.h>
-#include <assert.h>
-#include <string.h>
-#include <math.h>
-#include <stdint.h>
-#include "core.h"
-#include "default_characters.h"
 #include "cmd_audio.h"
-#include "cmd_control.h"
-#include "cmd_variables.h"
-#include "cmd_data.h"
-#include "cmd_strings.h"
-#include "cmd_memory.h"
-#include "cmd_text.h"
-#include "cmd_maths.h"
 #include "cmd_background.h"
+#include "cmd_control.h"
+#include "cmd_data.h"
+#include "cmd_files.h"
+#include "cmd_io.h"
+#include "cmd_maths.h"
+#include "cmd_memory.h"
+#include "cmd_particle.h"
 #include "cmd_screen.h"
 #include "cmd_sprites.h"
-#include "cmd_io.h"
-#include "cmd_files.h"
+#include "cmd_strings.h"
 #include "cmd_subs.h"
 #include "cmd_text.h"
-#include "string_utils.h"
-#include "cmd_particle.h"
+#include "cmd_variables.h"
+#include "core.h"
+#include "default_characters.h"
 #include "pcg_basic.h"
+#include "string_utils.h"
+#include <assert.h>
+#include <math.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
 
 struct TypedValue itp_evaluateExpressionLevel(struct Core *core, int level);
 struct TypedValue itp_evaluatePrimaryExpression(struct Core *core);
@@ -57,7 +55,7 @@ void itp_init(struct Core *core)
 
 	// global null string
 	interpreter->nullString = rcstring_new(NULL, 0);
-	if (!interpreter->nullString)
+	if(!interpreter->nullString)
 		exit(EXIT_FAILURE);
 }
 
@@ -68,7 +66,7 @@ void itp_deinit(struct Core *core)
 	itp_freeProgram(core);
 
 	// Free null string
-	if (interpreter->nullString)
+	if(interpreter->nullString)
 	{
 		rcstring_release(interpreter->nullString);
 		interpreter->nullString = NULL;
@@ -85,26 +83,26 @@ struct CoreError itp_compileProgram(struct Core *core, const char *sourceCode)
 
 	size_t len = strlen(sourceCode);
 	char *buffer = malloc(len + 1);
-	if (buffer)
+	if(buffer)
 		memcpy(buffer, sourceCode, len + 1);
 	else
 		return err_makeCoreError(ErrorOutOfMemory, -1);
 	interpreter->sourceCode = buffer;
 
 	struct CoreError error = tok_tokenizeUppercaseProgram(&interpreter->tokenizer, interpreter->sourceCode);
-	if (error.code != ErrorNone)
+	if(error.code != ErrorNone)
 	{
 		return error;
 	}
 
 	struct DataManager *romDataManager = &interpreter->romDataManager;
 	error = data_uppercaseImport(romDataManager, interpreter->sourceCode, false);
-	if (error.code != ErrorNone)
+	if(error.code != ErrorNone)
 		return error;
 
 	// add default characters if ROM entry 0 is unused
 	struct DataEntry *entry0 = &romDataManager->entries[0];
-	if (entry0->length == 0 && (DATA_SIZE - data_currentSize(romDataManager)) >= 1024)
+	if(entry0->length == 0 && (DATA_SIZE - data_currentSize(romDataManager)) >= 1024)
 	{
 		data_setEntry(romDataManager, 0, "FONT", (uint8_t *)DefaultCharacters, 1024);
 	}
@@ -123,16 +121,16 @@ struct CoreError itp_compileProgram(struct Core *core, const char *sourceCode)
 	do
 	{
 		errorCode = itp_evaluateCommand(core);
-	} while (errorCode == ErrorNone && interpreter->pc->type != TokenUndefined);
+	} while(errorCode == ErrorNone && interpreter->pc->type != TokenUndefined);
 
-	if (errorCode != ErrorNone)
+	if(errorCode != ErrorNone)
 		return err_makeCoreError(errorCode, interpreter->pc->sourcePosition);
 
-	if (interpreter->numLabelStackItems > 0)
+	if(interpreter->numLabelStackItems > 0)
 	{
 		struct LabelStackItem *item = &interpreter->labelStackItems[interpreter->numLabelStackItems - 1];
 		errorCode = itp_labelStackError(item);
-		if (errorCode != ErrorNone)
+		if(errorCode != ErrorNone)
 		{
 			return err_makeCoreError(errorCode, item->token->sourcePosition);
 		}
@@ -173,13 +171,12 @@ void itp_runProgram(struct Core *core)
 {
 	struct Interpreter *interpreter = core->interpreter;
 
-	switch (interpreter->state)
+	switch(interpreter->state)
 	{
-	case StateEvaluate:
-	{
-		if (interpreter->waitTap)
+	case StateEvaluate: {
+		if(interpreter->waitTap)
 		{
-			if (core->machine->ioRegisters.status.touch && !interpreter->lastFrameIOStatus.touch)
+			if(core->machine->ioRegisters.status.touch && !interpreter->lastFrameIOStatus.touch)
 			{
 				interpreter->waitTap = false;
 			}
@@ -189,7 +186,7 @@ void itp_runProgram(struct Core *core)
 			}
 		}
 
-		if (interpreter->waitCount > 0)
+		if(interpreter->waitCount > 0)
 		{
 			--interpreter->waitCount;
 			break;
@@ -199,18 +196,19 @@ void itp_runProgram(struct Core *core)
 		interpreter->exitEvaluation = false;
 		enum ErrorCode errorCode = ErrorNone;
 
-		while (errorCode == ErrorNone && interpreter->cycles < MAX_CYCLES_TOTAL_PER_FRAME && interpreter->state == StateEvaluate && !interpreter->exitEvaluation)
+		while(errorCode == ErrorNone && interpreter->cycles < MAX_CYCLES_TOTAL_PER_FRAME &&
+			  interpreter->state == StateEvaluate && !interpreter->exitEvaluation)
 		{
 			errorCode = itp_evaluateCommand(core);
 		}
 
-		if (interpreter->cycles >= MAX_CYCLES_TOTAL_PER_FRAME)
+		if(interpreter->cycles >= MAX_CYCLES_TOTAL_PER_FRAME)
 		{
 			machine_suspendEnergySaving(core, 2);
 		}
 
 		interpreter->mode = ModeNone;
-		if (errorCode != ErrorNone)
+		if(errorCode != ErrorNone)
 		{
 			itp_endProgram(core);
 			delegate_interpreterDidFail(core, err_makeCoreError(errorCode, interpreter->pc->sourcePosition));
@@ -218,9 +216,8 @@ void itp_runProgram(struct Core *core)
 		break;
 	}
 
-	case StateInput:
-	{
-		if (txtlib_inputUpdate(&interpreter->textLib))
+	case StateInput: {
+		if(txtlib_inputUpdate(&interpreter->textLib))
 		{
 			interpreter->state = StateEvaluate;
 			cmd_endINPUT(core);
@@ -240,19 +237,18 @@ void itp_runInterrupt(struct Core *core, enum InterruptType type)
 {
 	struct Interpreter *interpreter = core->interpreter;
 
-	switch (interpreter->state)
+	switch(interpreter->state)
 	{
 	case StateEvaluate:
 	case StateInput:
 	case StatePaused:
-	case StateWaitForDisk:
-	{
+	case StateWaitForDisk: {
 		struct Token *startToken = NULL;
 
 		int mainCycles = interpreter->cycles;
 		interpreter->cycles = 0;
 
-		switch (type)
+		switch(type)
 		{
 		case InterruptTypeRaster:
 			startToken = interpreter->currentOnRasterToken;
@@ -277,7 +273,7 @@ void itp_runInterrupt(struct Core *core, enum InterruptType type)
 			break;
 		}
 
-		if (startToken)
+		if(startToken)
 		{
 			interpreter->mode = ModeInterrupt;
 			interpreter->exitEvaluation = false;
@@ -287,25 +283,26 @@ void itp_runInterrupt(struct Core *core, enum InterruptType type)
 
 			enum ErrorCode errorCode = ErrorNone;
 
-			if (type == InterruptTypeParticle)
+			if(type == InterruptTypeParticle)
 			{
-				if (interpreter->pc->type == TokenBracketOpen)
+				if(interpreter->pc->type == TokenBracketOpen)
 				{
 					// SUB gnagna (
 					++interpreter->pc;
 
 					// SUB gnagna ( sprite_id
 					struct Token *tokenIdentifier = interpreter->pc;
-					if (tokenIdentifier->type != TokenIdentifier && tokenIdentifier->type != TokenStringIdentifier)
+					if(tokenIdentifier->type != TokenIdentifier && tokenIdentifier->type != TokenStringIdentifier)
 						errorCode = ErrorSyntax;
 					enum ValueType varType = itp_getIdentifierTokenValueType(tokenIdentifier);
-					if (varType == ValueTypeFloat)
+					if(varType == ValueTypeFloat)
 					{
 						// pass by value
-						struct SimpleVariable *variable = var_createSimpleVariable(interpreter, &errorCode, 1, 1, varType, NULL);
-						if (variable)
+						struct SimpleVariable *variable =
+						var_createSimpleVariable(interpreter, &errorCode, 1, 1, varType, NULL);
+						if(variable)
 						{
-							if (interpreter->pass == PassRun)
+							if(interpreter->pass == PassRun)
 								variable->v.floatValue = (float)interpreter->particlesLib.interrupt_sprite_id;
 							variable->symbolIndex = tokenIdentifier->symbolIndex;
 						}
@@ -315,22 +312,23 @@ void itp_runInterrupt(struct Core *core, enum InterruptType type)
 						errorCode = ErrorTypeMismatch;
 
 					// SUB gnagna ( sprite_id, )
-					if (interpreter->pc->type != TokenComma)
+					if(interpreter->pc->type != TokenComma)
 						errorCode = ErrorArgumentCountMismatch;
 					++interpreter->pc;
 
 					// SUB gnagna ( sprite_id, particle_addr
 					tokenIdentifier = interpreter->pc;
-					if (tokenIdentifier->type != TokenIdentifier && tokenIdentifier->type != TokenStringIdentifier)
+					if(tokenIdentifier->type != TokenIdentifier && tokenIdentifier->type != TokenStringIdentifier)
 						errorCode = ErrorSyntax;
 					varType = itp_getIdentifierTokenValueType(tokenIdentifier);
-					if (varType == ValueTypeFloat)
+					if(varType == ValueTypeFloat)
 					{
 						// pass by value
-						struct SimpleVariable *variable = var_createSimpleVariable(interpreter, &errorCode, 1, 1, varType, NULL);
-						if (variable)
+						struct SimpleVariable *variable =
+						var_createSimpleVariable(interpreter, &errorCode, 1, 1, varType, NULL);
+						if(variable)
 						{
-							if (interpreter->pass == PassRun)
+							if(interpreter->pass == PassRun)
 								variable->v.floatValue = (float)interpreter->particlesLib.interrupt_particle_addr;
 							variable->symbolIndex = tokenIdentifier->symbolIndex;
 						}
@@ -340,7 +338,7 @@ void itp_runInterrupt(struct Core *core, enum InterruptType type)
 						errorCode = ErrorTypeMismatch;
 
 					// SUB gnagna ( sprite_id, particle_addr )
-					if (interpreter->pc->type != TokenBracketClose)
+					if(interpreter->pc->type != TokenBracketClose)
 						errorCode = ErrorSyntax;
 					++interpreter->pc;
 				}
@@ -348,25 +346,26 @@ void itp_runInterrupt(struct Core *core, enum InterruptType type)
 					errorCode = ErrorArgumentCountMismatch;
 			}
 
-			else if (type == InterruptTypeEmitter)
+			else if(type == InterruptTypeEmitter)
 			{
-				if (interpreter->pc->type == TokenBracketOpen)
+				if(interpreter->pc->type == TokenBracketOpen)
 				{
 					// SUB gnagna (
 					++interpreter->pc;
 
 					// SUB gnagna ( emitter_id
 					struct Token *tokenIdentifier = interpreter->pc;
-					if (tokenIdentifier->type != TokenIdentifier && tokenIdentifier->type != TokenStringIdentifier)
+					if(tokenIdentifier->type != TokenIdentifier && tokenIdentifier->type != TokenStringIdentifier)
 						errorCode = ErrorSyntax;
 					enum ValueType varType = itp_getIdentifierTokenValueType(tokenIdentifier);
-					if (varType == ValueTypeFloat)
+					if(varType == ValueTypeFloat)
 					{
 						// pass by value
-						struct SimpleVariable *variable = var_createSimpleVariable(interpreter, &errorCode, 1, 1, varType, NULL);
-						if (variable)
+						struct SimpleVariable *variable =
+						var_createSimpleVariable(interpreter, &errorCode, 1, 1, varType, NULL);
+						if(variable)
 						{
-							if (interpreter->pass == PassRun)
+							if(interpreter->pass == PassRun)
 								variable->v.floatValue = (float)interpreter->particlesLib.interrupt_emitter_id;
 							variable->symbolIndex = tokenIdentifier->symbolIndex;
 						}
@@ -376,22 +375,23 @@ void itp_runInterrupt(struct Core *core, enum InterruptType type)
 						errorCode = ErrorTypeMismatch;
 
 					// SUB gnagna ( emitter_id, )
-					if (interpreter->pc->type != TokenComma)
+					if(interpreter->pc->type != TokenComma)
 						errorCode = ErrorArgumentCountMismatch;
 					++interpreter->pc;
 
 					// SUB gnagna ( emitter_id, emitter_addr
 					tokenIdentifier = interpreter->pc;
-					if (tokenIdentifier->type != TokenIdentifier && tokenIdentifier->type != TokenStringIdentifier)
+					if(tokenIdentifier->type != TokenIdentifier && tokenIdentifier->type != TokenStringIdentifier)
 						errorCode = ErrorSyntax;
 					varType = itp_getIdentifierTokenValueType(tokenIdentifier);
-					if (varType == ValueTypeFloat)
+					if(varType == ValueTypeFloat)
 					{
 						// pass by value
-						struct SimpleVariable *variable = var_createSimpleVariable(interpreter, &errorCode, 1, 1, varType, NULL);
-						if (variable)
+						struct SimpleVariable *variable =
+						var_createSimpleVariable(interpreter, &errorCode, 1, 1, varType, NULL);
+						if(variable)
 						{
-							if (interpreter->pass == PassRun)
+							if(interpreter->pass == PassRun)
 								variable->v.floatValue = (float)interpreter->particlesLib.interrupt_emitter_addr;
 							variable->symbolIndex = tokenIdentifier->symbolIndex;
 						}
@@ -401,7 +401,7 @@ void itp_runInterrupt(struct Core *core, enum InterruptType type)
 						errorCode = ErrorTypeMismatch;
 
 					// SUB gnagna ( emitter_id, emitter_addr )
-					if (interpreter->pc->type != TokenBracketClose)
+					if(interpreter->pc->type != TokenBracketClose)
 						errorCode = ErrorSyntax;
 					++interpreter->pc;
 				}
@@ -409,7 +409,7 @@ void itp_runInterrupt(struct Core *core, enum InterruptType type)
 					errorCode = ErrorArgumentCountMismatch;
 			}
 
-			if (errorCode != ErrorNone)
+			if(errorCode != ErrorNone)
 			{
 				itp_endProgram(core);
 				delegate_interpreterDidFail(core, err_makeCoreError(errorCode, interpreter->pc->sourcePosition));
@@ -417,21 +417,23 @@ void itp_runInterrupt(struct Core *core, enum InterruptType type)
 
 			errorCode = lab_pushLabelStackItem(interpreter, LabelTypeONCALL, NULL);
 
-			while (errorCode == ErrorNone
-						 // cycles can exceed interrupt limit (see interruptOverCycles), but there is still a hard limit for extreme cases
-						 && interpreter->cycles < MAX_CYCLES_TOTAL_PER_FRAME && !interpreter->exitEvaluation)
+			while(errorCode == ErrorNone
+				  // cycles can exceed interrupt limit (see interruptOverCycles), but there is still a hard limit for
+				  // extreme cases
+				  && interpreter->cycles < MAX_CYCLES_TOTAL_PER_FRAME && !interpreter->exitEvaluation)
 			{
 				errorCode = itp_evaluateCommand(core);
 			}
 
 			interpreter->mode = ModeNone;
 
-			if (interpreter->cycles >= MAX_CYCLES_TOTAL_PER_FRAME)
+			if(interpreter->cycles >= MAX_CYCLES_TOTAL_PER_FRAME)
 			{
 				itp_endProgram(core);
-				delegate_interpreterDidFail(core, err_makeCoreError(ErrorTooManyCPUCyclesInInterrupt, interpreter->pc->sourcePosition));
+				delegate_interpreterDidFail(
+				core, err_makeCoreError(ErrorTooManyCPUCyclesInInterrupt, interpreter->pc->sourcePosition));
 			}
-			else if (errorCode != ErrorNone)
+			else if(errorCode != ErrorNone)
 			{
 				itp_endProgram(core);
 				delegate_interpreterDidFail(core, err_makeCoreError(errorCode, interpreter->pc->sourcePosition));
@@ -444,7 +446,7 @@ void itp_runInterrupt(struct Core *core, enum InterruptType type)
 
 		// calculate cycles exceeding limit
 		interpreter->interruptOverCycles += interpreter->cycles - interpreter->maxCycles;
-		if (interpreter->interruptOverCycles < 0)
+		if(interpreter->interruptOverCycles < 0)
 		{
 			interpreter->interruptOverCycles = 0;
 		}
@@ -470,7 +472,7 @@ void itp_didFinishVBL(struct Core *core)
 
 	// timer
 	interpreter->timer++;
-	if (interpreter->timer >= TIMER_WRAP_VALUE)
+	if(interpreter->timer >= TIMER_WRAP_VALUE)
 	{
 		interpreter->timer = 0;
 	}
@@ -494,12 +496,12 @@ void itp_didFinishVBL(struct Core *core)
 
 	// CPU load (rounded up)
 	int currentCpuLoad = (interpreter->cycles * 100 + MAX_CYCLES_TOTAL_PER_FRAME - 1) / MAX_CYCLES_TOTAL_PER_FRAME;
-	if (currentCpuLoad > interpreter->cpuLoadMax)
+	if(currentCpuLoad > interpreter->cpuLoadMax)
 	{
 		interpreter->cpuLoadMax = currentCpuLoad;
 	}
 	++interpreter->cpuLoadTimer;
-	if (interpreter->cpuLoadTimer >= 30)
+	if(interpreter->cpuLoadTimer >= 30)
 	{
 		interpreter->cpuLoadTimer = 0;
 		interpreter->cpuLoadDisplay = interpreter->cpuLoadMax;
@@ -508,7 +510,7 @@ void itp_didFinishVBL(struct Core *core)
 
 	// reset CPU cycles
 	interpreter->cycles = interpreter->cycles - MAX_CYCLES_TOTAL_PER_FRAME;
-	if (interpreter->cycles < 0)
+	if(interpreter->cycles < 0)
 	{
 		interpreter->cycles = 0;
 	}
@@ -538,7 +540,7 @@ void itp_freeProgram(struct Core *core)
 	var_freeArrayVariables(interpreter, SUB_LEVEL_GLOBAL);
 	tok_freeTokens(&interpreter->tokenizer);
 
-	if (interpreter->sourceCode)
+	if(interpreter->sourceCode)
 	{
 		free((void *)interpreter->sourceCode);
 		interpreter->sourceCode = NULL;
@@ -547,11 +549,11 @@ void itp_freeProgram(struct Core *core)
 
 enum ValueType itp_getIdentifierTokenValueType(struct Token *token)
 {
-	if (token->type == TokenIdentifier)
+	if(token->type == TokenIdentifier)
 	{
 		return ValueTypeFloat;
 	}
-	else if (token->type == TokenStringIdentifier)
+	else if(token->type == TokenStringIdentifier)
 	{
 		return ValueTypeString;
 	}
@@ -564,14 +566,14 @@ union Value *itp_readVariable(struct Core *core, enum ValueType *type, enum Erro
 
 	struct Token *tokenIdentifier = interpreter->pc;
 
-	if (tokenIdentifier->type != TokenIdentifier && tokenIdentifier->type != TokenStringIdentifier)
+	if(tokenIdentifier->type != TokenIdentifier && tokenIdentifier->type != TokenStringIdentifier)
 	{
 		*errorCode = ErrorSyntax;
 		return NULL;
 	}
 
 	enum ValueType varType = itp_getIdentifierTokenValueType(tokenIdentifier);
-	if (type)
+	if(type)
 	{
 		*type = varType;
 	}
@@ -580,16 +582,16 @@ union Value *itp_readVariable(struct Core *core, enum ValueType *type, enum Erro
 	++interpreter->pc;
 	++interpreter->cycles;
 
-	if (interpreter->pc->type == TokenBracketOpen)
+	if(interpreter->pc->type == TokenBracketOpen)
 	{
 		// array
 		++interpreter->pc;
 
 		struct ArrayVariable *variable = NULL;
-		if (interpreter->pass == PassRun)
+		if(interpreter->pass == PassRun)
 		{
 			variable = var_getArrayVariable(interpreter, symbolIndex, interpreter->subLevel);
-			if (!variable)
+			if(!variable)
 			{
 				*errorCode = ErrorArrayNotDimensionized;
 				return NULL;
@@ -599,10 +601,10 @@ union Value *itp_readVariable(struct Core *core, enum ValueType *type, enum Erro
 		int indices[MAX_ARRAY_DIMENSIONS];
 		int numDimensions = 0;
 
-		for (int i = 0; i < MAX_ARRAY_DIMENSIONS; i++)
+		for(int i = 0; i < MAX_ARRAY_DIMENSIONS; i++)
 		{
 			struct TypedValue indexValue = itp_evaluateExpression(core, TypeClassNumeric);
-			if (indexValue.type == ValueTypeError)
+			if(indexValue.type == ValueTypeError)
 			{
 				*errorCode = indexValue.v.errorCode;
 				return NULL;
@@ -610,9 +612,10 @@ union Value *itp_readVariable(struct Core *core, enum ValueType *type, enum Erro
 
 			numDimensions++;
 
-			if (interpreter->pass == PassRun)
+			if(interpreter->pass == PassRun)
 			{
-				if (numDimensions <= variable->numDimensions && (indexValue.v.floatValue < 0 || indexValue.v.floatValue >= variable->dimensionSizes[i]))
+				if(numDimensions <= variable->numDimensions &&
+				   (indexValue.v.floatValue < 0 || indexValue.v.floatValue >= variable->dimensionSizes[i]))
 				{
 					*errorCode = ErrorIndexOutOfBounds;
 					return NULL;
@@ -621,7 +624,7 @@ union Value *itp_readVariable(struct Core *core, enum ValueType *type, enum Erro
 				indices[i] = indexValue.v.floatValue;
 			}
 
-			if (interpreter->pc->type == TokenComma)
+			if(interpreter->pc->type == TokenComma)
 			{
 				++interpreter->pc;
 			}
@@ -631,16 +634,16 @@ union Value *itp_readVariable(struct Core *core, enum ValueType *type, enum Erro
 			}
 		}
 
-		if (interpreter->pc->type != TokenBracketClose)
+		if(interpreter->pc->type != TokenBracketClose)
 		{
 			*errorCode = ErrorSyntax;
 			return NULL;
 		}
 		++interpreter->pc;
 
-		if (interpreter->pass == PassRun)
+		if(interpreter->pass == PassRun)
 		{
-			if (numDimensions != variable->numDimensions)
+			if(numDimensions != variable->numDimensions)
 			{
 				*errorCode = ErrorWrongNumberOfDimensions;
 				return NULL;
@@ -651,27 +654,28 @@ union Value *itp_readVariable(struct Core *core, enum ValueType *type, enum Erro
 	else
 	{
 		// simple variable
-		if (interpreter->pass == PassRun)
+		if(interpreter->pass == PassRun)
 		{
 			struct SimpleVariable *variable = var_getSimpleVariable(interpreter, symbolIndex, interpreter->subLevel);
-			if (!variable)
+			if(!variable)
 			{
 				// check if variable name is already used for array
-				if (var_getArrayVariable(interpreter, symbolIndex, interpreter->subLevel))
+				if(var_getArrayVariable(interpreter, symbolIndex, interpreter->subLevel))
 				{
 					*errorCode = ErrorArrayVariableWithoutIndex;
 					return NULL;
 				}
-				if (!forWriting)
+				if(!forWriting)
 				{
 					*errorCode = ErrorVariableNotInitialized;
 					return NULL;
 				}
-				variable = var_createSimpleVariable(interpreter, errorCode, symbolIndex, interpreter->subLevel, varType, NULL);
-				if (!variable)
+				variable =
+				var_createSimpleVariable(interpreter, errorCode, symbolIndex, interpreter->subLevel, varType, NULL);
+				if(!variable)
 					return NULL;
 			}
-			if (variable->isReference)
+			if(variable->isReference)
 			{
 				return variable->v.reference;
 			}
@@ -683,13 +687,13 @@ union Value *itp_readVariable(struct Core *core, enum ValueType *type, enum Erro
 
 enum ErrorCode itp_checkTypeClass(struct Interpreter *interpreter, enum ValueType valueType, enum TypeClass typeClass)
 {
-	if (interpreter->pass == PassPrepare && valueType != ValueTypeError)
+	if(interpreter->pass == PassPrepare && valueType != ValueTypeError)
 	{
-		if (typeClass == TypeClassString && valueType != ValueTypeString)
+		if(typeClass == TypeClassString && valueType != ValueTypeString)
 		{
 			return ErrorTypeMismatch;
 		}
-		else if (typeClass == TypeClassNumeric && valueType != ValueTypeFloat)
+		else if(typeClass == TypeClassNumeric && valueType != ValueTypeFloat)
 		{
 			return ErrorTypeMismatch;
 		}
@@ -700,10 +704,10 @@ enum ErrorCode itp_checkTypeClass(struct Interpreter *interpreter, enum ValueTyp
 struct TypedValue itp_evaluateExpression(struct Core *core, enum TypeClass typeClass)
 {
 	struct TypedValue value = itp_evaluateExpressionLevel(core, 0);
-	if (value.type != ValueTypeError)
+	if(value.type != ValueTypeError)
 	{
 		enum ErrorCode errorCode = itp_checkTypeClass(core->interpreter, value.type, typeClass);
-		if (errorCode != ErrorNone)
+		if(errorCode != ErrorNone)
 		{
 			value.type = ValueTypeError;
 			value.v.errorCode = errorCode;
@@ -715,24 +719,24 @@ struct TypedValue itp_evaluateExpression(struct Core *core, enum TypeClass typeC
 struct TypedValue itp_evaluateNumericExpression(struct Core *core, int min, int max)
 {
 	struct TypedValue value = itp_evaluateExpressionLevel(core, 0);
-	if (value.type != ValueTypeError)
+	if(value.type != ValueTypeError)
 	{
 		enum ErrorCode errorCode = ErrorNone;
-		if (core->interpreter->pass == PassPrepare)
+		if(core->interpreter->pass == PassPrepare)
 		{
-			if (value.type != ValueTypeFloat)
+			if(value.type != ValueTypeFloat)
 			{
 				errorCode = ErrorTypeMismatch;
 			}
 		}
-		else if (core->interpreter->pass == PassRun)
+		else if(core->interpreter->pass == PassRun)
 		{
-			if ((int)value.v.floatValue < min || (int)value.v.floatValue > max)
+			if((int)value.v.floatValue < min || (int)value.v.floatValue > max)
 			{
 				errorCode = ErrorInvalidParameter;
 			}
 		}
-		if (errorCode != ErrorNone)
+		if(errorCode != ErrorNone)
 		{
 			value.type = ValueTypeError;
 			value.v.errorCode = errorCode;
@@ -743,7 +747,8 @@ struct TypedValue itp_evaluateNumericExpression(struct Core *core, int min, int 
 
 struct TypedValue itp_evaluateOptionalExpression(struct Core *core, enum TypeClass typeClass)
 {
-	if (core->interpreter->pc->type == TokenComma || core->interpreter->pc->type == TokenBracketClose || itp_isEndOfCommand(core->interpreter))
+	if(core->interpreter->pc->type == TokenComma || core->interpreter->pc->type == TokenBracketClose ||
+	   itp_isEndOfCommand(core->interpreter))
 	{
 		struct TypedValue value;
 		value.type = ValueTypeNull;
@@ -754,7 +759,8 @@ struct TypedValue itp_evaluateOptionalExpression(struct Core *core, enum TypeCla
 
 struct TypedValue itp_evaluateOptionalNumericExpression(struct Core *core, int min, int max)
 {
-	if (core->interpreter->pc->type == TokenComma || core->interpreter->pc->type == TokenBracketClose || itp_isEndOfCommand(core->interpreter))
+	if(core->interpreter->pc->type == TokenComma || core->interpreter->pc->type == TokenBracketClose ||
+	   itp_isEndOfCommand(core->interpreter))
 	{
 		struct TypedValue value;
 		value.type = ValueTypeNull;
@@ -765,7 +771,7 @@ struct TypedValue itp_evaluateOptionalNumericExpression(struct Core *core, int m
 
 bool itp_isTokenLevel(enum TokenType token, int level)
 {
-	switch (level)
+	switch(level)
 	{
 	case 0:
 		return token == TokenXOR || token == TokenOR;
@@ -774,7 +780,8 @@ bool itp_isTokenLevel(enum TokenType token, int level)
 		//        case 2:
 		//            return token == TokenNOT;
 	case 3:
-		return token == TokenEq || token == TokenUneq || token == TokenGr || token == TokenLe || token == TokenGrEq || token == TokenLeEq;
+		return token == TokenEq || token == TokenUneq || token == TokenGr || token == TokenLe || token == TokenGrEq ||
+			   token == TokenLeEq;
 	case 4:
 		return token == TokenPlus || token == TokenMinus;
 	case 5:
@@ -794,15 +801,15 @@ struct TypedValue itp_evaluateExpressionLevel(struct Core *core, int level)
 	struct Interpreter *interpreter = core->interpreter;
 	enum TokenType type = interpreter->pc->type;
 
-	if (level == 2 && type == TokenNOT)
+	if(level == 2 && type == TokenNOT)
 	{
 		++interpreter->pc;
 		++interpreter->cycles;
 		struct TypedValue value = itp_evaluateExpressionLevel(core, level + 1);
-		if (value.type == ValueTypeError)
+		if(value.type == ValueTypeError)
 			return value;
 		enum ErrorCode errorCode = itp_checkTypeClass(core->interpreter, value.type, TypeClassNumeric);
-		if (errorCode != ErrorNone)
+		if(errorCode != ErrorNone)
 		{
 			value.type = ValueTypeError;
 			value.v.errorCode = errorCode;
@@ -814,130 +821,118 @@ struct TypedValue itp_evaluateExpressionLevel(struct Core *core, int level)
 		interpreter->lastVariableValue = NULL;
 		return value;
 	}
-	if (level == 7 && (type == TokenPlus || type == TokenMinus)) // unary
+	if(level == 7 && (type == TokenPlus || type == TokenMinus)) // unary
 	{
 		++interpreter->pc;
 		++interpreter->cycles;
 		struct TypedValue value = itp_evaluateExpressionLevel(core, level + 1);
-		if (value.type == ValueTypeError)
+		if(value.type == ValueTypeError)
 			return value;
 		enum ErrorCode errorCode = itp_checkTypeClass(core->interpreter, value.type, TypeClassNumeric);
-		if (errorCode != ErrorNone)
+		if(errorCode != ErrorNone)
 		{
 			value.type = ValueTypeError;
 			value.v.errorCode = errorCode;
 		}
-		else if (type == TokenMinus)
+		else if(type == TokenMinus)
 		{
 			value.v.floatValue = -value.v.floatValue;
 		}
 		interpreter->lastVariableValue = NULL;
 		return value;
 	}
-	if (level == 9)
+	if(level == 9)
 	{
 		return itp_evaluatePrimaryExpression(core);
 	}
 
 	struct TypedValue value = itp_evaluateExpressionLevel(core, level + 1);
-	if (value.type == ValueTypeError)
+	if(value.type == ValueTypeError)
 		return value;
 
-	while (itp_isTokenLevel(interpreter->pc->type, level))
+	while(itp_isTokenLevel(interpreter->pc->type, level))
 	{
 		enum TokenType type = interpreter->pc->type;
 		++interpreter->pc;
 		++interpreter->cycles;
 		struct TypedValue rightValue = itp_evaluateExpressionLevel(core, level + 1);
-		if (rightValue.type == ValueTypeError)
+		if(rightValue.type == ValueTypeError)
 			return rightValue;
 
 		struct TypedValue newValue;
-		if (value.type != rightValue.type)
+		if(value.type != rightValue.type)
 		{
 			newValue.type = ValueTypeError;
 			newValue.v.errorCode = ErrorTypeMismatch;
 			return newValue;
 		}
 
-		if (value.type == ValueTypeFloat)
+		if(value.type == ValueTypeFloat)
 		{
 			newValue.type = ValueTypeFloat;
-			switch (type)
+			switch(type)
 			{
-			case TokenXOR:
-			{
+			case TokenXOR: {
 				int leftInt = value.v.floatValue;
 				int rightInt = rightValue.v.floatValue;
 				newValue.v.floatValue = (leftInt ^ rightInt);
 				break;
 			}
-			case TokenOR:
-			{
+			case TokenOR: {
 				int leftInt = value.v.floatValue;
 				int rightInt = rightValue.v.floatValue;
 				newValue.v.floatValue = (leftInt | rightInt);
 				break;
 			}
-			case TokenAND:
-			{
+			case TokenAND: {
 				int leftInt = value.v.floatValue;
 				int rightInt = rightValue.v.floatValue;
 				newValue.v.floatValue = (leftInt & rightInt);
 				break;
 			}
-			case TokenEq:
-			{
+			case TokenEq: {
 				if(is_equal_approx(value.v.floatValue, rightValue.v.floatValue))
 					newValue.v.floatValue = BAS_TRUE;
 				else
 					newValue.v.floatValue = BAS_FALSE;
 				break;
 			}
-			case TokenUneq:
-			{
+			case TokenUneq: {
 				if(is_equal_approx(value.v.floatValue, rightValue.v.floatValue))
 					newValue.v.floatValue = BAS_FALSE;
 				else
 					newValue.v.floatValue = BAS_TRUE;
 				break;
 			}
-			case TokenGr:
-			{
+			case TokenGr: {
 				newValue.v.floatValue = (value.v.floatValue > rightValue.v.floatValue) ? BAS_TRUE : BAS_FALSE;
 				break;
 			}
-			case TokenLe:
-			{
+			case TokenLe: {
 				newValue.v.floatValue = (value.v.floatValue < rightValue.v.floatValue) ? BAS_TRUE : BAS_FALSE;
 				break;
 			}
-			case TokenGrEq:
-			{
+			case TokenGrEq: {
 				newValue.v.floatValue = (value.v.floatValue >= rightValue.v.floatValue) ? BAS_TRUE : BAS_FALSE;
 				break;
 			}
-			case TokenLeEq:
-			{
+			case TokenLeEq: {
 				newValue.v.floatValue = (value.v.floatValue <= rightValue.v.floatValue) ? BAS_TRUE : BAS_FALSE;
 				break;
 			}
-			case TokenPlus:
-			{
+			case TokenPlus: {
 				newValue.v.floatValue = value.v.floatValue + rightValue.v.floatValue;
 				break;
 			}
-			case TokenMinus:
-			{
+			case TokenMinus: {
 				newValue.v.floatValue = value.v.floatValue - rightValue.v.floatValue;
 				break;
 			}
-			case TokenMOD:
-			{
-				if (interpreter->pass == PassRun)
+			case TokenMOD: {
+				if(interpreter->pass == PassRun)
 				{
 					int rightInt = (int)rightValue.v.floatValue;
-					if (rightInt == 0)
+					if(rightInt == 0)
 					{
 						newValue.type = ValueTypeError;
 						newValue.v.errorCode = ErrorDivisionByZero;
@@ -949,16 +944,14 @@ struct TypedValue itp_evaluateExpressionLevel(struct Core *core, int level)
 				}
 				break;
 			}
-			case TokenMul:
-			{
+			case TokenMul: {
 				newValue.v.floatValue = value.v.floatValue * rightValue.v.floatValue;
 				break;
 			}
-			case TokenDiv:
-			{
-				if (interpreter->pass == PassRun)
+			case TokenDiv: {
+				if(interpreter->pass == PassRun)
 				{
-					if (rightValue.v.floatValue == 0.0f)
+					if(rightValue.v.floatValue == 0.0f)
 					{
 						newValue.type = ValueTypeError;
 						newValue.v.errorCode = ErrorDivisionByZero;
@@ -970,12 +963,11 @@ struct TypedValue itp_evaluateExpressionLevel(struct Core *core, int level)
 				}
 				break;
 			}
-			case TokenDivInt:
-			{
-				if (interpreter->pass == PassRun)
+			case TokenDivInt: {
+				if(interpreter->pass == PassRun)
 				{
 					int rightInt = (int)rightValue.v.floatValue;
-					if (rightInt == 0)
+					if(rightInt == 0)
 					{
 						newValue.type = ValueTypeError;
 						newValue.v.errorCode = ErrorDivisionByZero;
@@ -987,80 +979,77 @@ struct TypedValue itp_evaluateExpressionLevel(struct Core *core, int level)
 				}
 				break;
 			}
-			case TokenPow:
-			{
+			case TokenPow: {
 				newValue.v.floatValue = powf(value.v.floatValue, rightValue.v.floatValue);
 				break;
 			}
-			default:
-			{
+			default: {
 				newValue.type = ValueTypeError;
 				newValue.v.errorCode = ErrorSyntax;
 			}
 			}
 		}
-		else if (value.type == ValueTypeString)
+		else if(value.type == ValueTypeString)
 		{
-			switch (type)
+			switch(type)
 			{
-			case TokenEq:
-			{
+			case TokenEq: {
 				newValue.type = ValueTypeFloat;
-				if (interpreter->pass == PassRun)
+				if(interpreter->pass == PassRun)
 				{
-					newValue.v.floatValue = (strcmp(value.v.stringValue->chars, rightValue.v.stringValue->chars) == 0) ? BAS_TRUE : BAS_FALSE;
+					newValue.v.floatValue =
+					(strcmp(value.v.stringValue->chars, rightValue.v.stringValue->chars) == 0) ? BAS_TRUE : BAS_FALSE;
 				}
 				break;
 			}
-			case TokenUneq:
-			{
+			case TokenUneq: {
 				newValue.type = ValueTypeFloat;
-				if (interpreter->pass == PassRun)
+				if(interpreter->pass == PassRun)
 				{
-					newValue.v.floatValue = (strcmp(value.v.stringValue->chars, rightValue.v.stringValue->chars) != 0) ? BAS_TRUE : BAS_FALSE;
+					newValue.v.floatValue =
+					(strcmp(value.v.stringValue->chars, rightValue.v.stringValue->chars) != 0) ? BAS_TRUE : BAS_FALSE;
 				}
 				break;
 			}
-			case TokenGr:
-			{
+			case TokenGr: {
 				newValue.type = ValueTypeFloat;
-				if (interpreter->pass == PassRun)
+				if(interpreter->pass == PassRun)
 				{
-					newValue.v.floatValue = (strcmp(value.v.stringValue->chars, rightValue.v.stringValue->chars) > 0) ? BAS_TRUE : BAS_FALSE;
+					newValue.v.floatValue =
+					(strcmp(value.v.stringValue->chars, rightValue.v.stringValue->chars) > 0) ? BAS_TRUE : BAS_FALSE;
 				}
 				break;
 			}
-			case TokenLe:
-			{
+			case TokenLe: {
 				newValue.type = ValueTypeFloat;
-				if (interpreter->pass == PassRun)
+				if(interpreter->pass == PassRun)
 				{
-					newValue.v.floatValue = (strcmp(value.v.stringValue->chars, rightValue.v.stringValue->chars) < 0) ? BAS_TRUE : BAS_FALSE;
+					newValue.v.floatValue =
+					(strcmp(value.v.stringValue->chars, rightValue.v.stringValue->chars) < 0) ? BAS_TRUE : BAS_FALSE;
 				}
 				break;
 			}
-			case TokenGrEq:
-			{
+			case TokenGrEq: {
 				newValue.type = ValueTypeFloat;
-				if (interpreter->pass == PassRun)
+				if(interpreter->pass == PassRun)
 				{
-					newValue.v.floatValue = (strcmp(value.v.stringValue->chars, rightValue.v.stringValue->chars) >= 0) ? BAS_TRUE : BAS_FALSE;
+					newValue.v.floatValue =
+					(strcmp(value.v.stringValue->chars, rightValue.v.stringValue->chars) >= 0) ? BAS_TRUE : BAS_FALSE;
 				}
 				break;
 			}
-			case TokenLeEq:
-			{
+			case TokenLeEq: {
 				newValue.type = ValueTypeFloat;
-				if (interpreter->pass == PassRun)
+				if(interpreter->pass == PassRun)
 				{
-					newValue.v.floatValue = (strcmp(value.v.stringValue->chars, rightValue.v.stringValue->chars) <= 0) ? BAS_TRUE : BAS_FALSE;
+					newValue.v.floatValue =
+					(strcmp(value.v.stringValue->chars, rightValue.v.stringValue->chars) <= 0) ? BAS_TRUE : BAS_FALSE;
 				}
 				break;
 			}
-			case TokenPlus:
-			{
+			case TokenPlus: {
 				newValue.type = ValueTypeString;
-				if (interpreter->pass == PassRun)
+				if(interpreter->pass == PassRun)
 				{
 					size_t len1 = strlen(value.v.stringValue->chars);
 					size_t len2 = strlen(rightValue.v.stringValue->chars);
@@ -1079,19 +1068,17 @@ struct TypedValue itp_evaluateExpressionLevel(struct Core *core, int level)
 			case TokenMul:
 			case TokenDiv:
 			case TokenDivInt:
-			case TokenPow:
-			{
+			case TokenPow: {
 				newValue.type = ValueTypeError;
 				newValue.v.errorCode = ErrorTypeMismatch;
 				break;
 			}
-			default:
-			{
+			default: {
 				newValue.type = ValueTypeError;
 				newValue.v.errorCode = ErrorSyntax;
 			}
 			}
-			if (interpreter->pass == PassRun)
+			if(interpreter->pass == PassRun)
 			{
 				rcstring_release(value.v.stringValue);
 				rcstring_release(rightValue.v.stringValue);
@@ -1105,7 +1092,7 @@ struct TypedValue itp_evaluateExpressionLevel(struct Core *core, int level)
 
 		value = newValue;
 		interpreter->lastVariableValue = NULL;
-		if (value.type == ValueTypeError)
+		if(value.type == ValueTypeError)
 			break;
 	}
 	return value;
@@ -1117,7 +1104,7 @@ struct TypedValue itp_evaluatePrimaryExpression(struct Core *core)
 
 	// check for function
 	struct TypedValue value = itp_evaluateFunction(core);
-	if (value.type != ValueTypeNull)
+	if(value.type != ValueTypeNull)
 	{
 		++interpreter->cycles;
 		interpreter->lastVariableValue = NULL;
@@ -1127,21 +1114,19 @@ struct TypedValue itp_evaluatePrimaryExpression(struct Core *core)
 	interpreter->lastVariableValue = NULL;
 
 	// native types
-	switch (interpreter->pc->type)
+	switch(interpreter->pc->type)
 	{
-	case TokenFloat:
-	{
+	case TokenFloat: {
 		value.type = ValueTypeFloat;
 		value.v.floatValue = interpreter->pc->floatValue;
 		++interpreter->pc;
 		++interpreter->cycles;
 		break;
 	}
-	case TokenString:
-	{
+	case TokenString: {
 		value.type = ValueTypeString;
 		value.v.stringValue = interpreter->pc->stringValue;
-		if (interpreter->pass == PassRun)
+		if(interpreter->pass == PassRun)
 		{
 			rcstring_retain(interpreter->pc->stringValue);
 		}
@@ -1150,21 +1135,20 @@ struct TypedValue itp_evaluatePrimaryExpression(struct Core *core)
 		break;
 	}
 	case TokenIdentifier:
-	case TokenStringIdentifier:
-	{
+	case TokenStringIdentifier: {
 		enum ErrorCode errorCode = ErrorNone;
 		enum ValueType valueType = ValueTypeNull;
 
 		// is a label name
 		struct JumpLabelItem *item = tok_getJumpLabel(&interpreter->tokenizer, interpreter->pc->symbolIndex);
-		if (item)
+		if(item)
 		{
 			struct RCString *str = dat_readString(item->token, 0);
-			if (str)
+			if(str)
 			{
 				value.type = ValueTypeString;
 				value.v.stringValue = str;
-				if (interpreter->pass == PassRun)
+				if(interpreter->pass == PassRun)
 					rcstring_retain(value.v.stringValue);
 			}
 			else
@@ -1179,12 +1163,12 @@ struct TypedValue itp_evaluatePrimaryExpression(struct Core *core)
 
 		// is a variable name
 		union Value *varValue = itp_readVariable(core, &valueType, &errorCode, false);
-		if (varValue)
+		if(varValue)
 		{
 			value.type = valueType;
 			value.v = *varValue;
 			interpreter->lastVariableValue = varValue;
-			if (interpreter->pass == PassRun && valueType == ValueTypeString)
+			if(interpreter->pass == PassRun && valueType == ValueTypeString)
 			{
 				rcstring_retain(varValue->stringValue);
 			}
@@ -1195,13 +1179,12 @@ struct TypedValue itp_evaluatePrimaryExpression(struct Core *core)
 		value.v.errorCode = errorCode;
 		break;
 	}
-	case TokenBracketOpen:
-	{
+	case TokenBracketOpen: {
 		++interpreter->pc;
 		value = itp_evaluateExpression(core, TypeClassAny);
-		if (value.type == ValueTypeError)
+		if(value.type == ValueTypeError)
 			return value;
-		if (interpreter->pc->type != TokenBracketClose)
+		if(interpreter->pc->type != TokenBracketClose)
 		{
 			value.type = ValueTypeError;
 			value.v.errorCode = ErrorSyntax;
@@ -1213,8 +1196,7 @@ struct TypedValue itp_evaluatePrimaryExpression(struct Core *core)
 		}
 		break;
 	}
-	default:
-	{
+	default: {
 		value.type = ValueTypeError;
 		value.v.errorCode = ErrorSyntax;
 	}
@@ -1231,7 +1213,7 @@ bool itp_isEndOfCommand(struct Interpreter *interpreter)
 enum ErrorCode itp_endOfCommand(struct Interpreter *interpreter)
 {
 	enum TokenType type = interpreter->pc->type;
-	if (type == TokenEol)
+	if(type == TokenEol)
 	{
 		interpreter->isSingleLineIf = false;
 		++interpreter->pc;
@@ -1248,7 +1230,7 @@ enum TokenType itp_getNextTokenType(struct Interpreter *interpreter)
 struct TypedValue itp_evaluateFunction(struct Core *core)
 {
 	struct Interpreter *interpreter = core->interpreter;
-	switch (interpreter->pc->type)
+	switch(interpreter->pc->type)
 	{
 	case TokenASC:
 		return fnc_ASC(core);
@@ -1434,14 +1416,14 @@ enum ErrorCode itp_evaluateCommand(struct Core *core)
 {
 	struct Interpreter *interpreter = core->interpreter;
 	enum TokenType type = interpreter->pc->type;
-	if (type != TokenApostrophe && type != TokenEol && type != TokenUndefined)
+	if(type != TokenApostrophe && type != TokenEol && type != TokenUndefined)
 	{
 		++interpreter->cycles;
 	}
-	switch (type)
+	switch(type)
 	{
 	case TokenUndefined:
-		if (interpreter->pass == PassRun)
+		if(interpreter->pass == PassRun)
 		{
 			itp_endProgram(core);
 		}
@@ -1453,7 +1435,7 @@ enum ErrorCode itp_evaluateCommand(struct Core *core)
 
 	case TokenLabel:
 		++interpreter->pc;
-		if (interpreter->pc->type != TokenEol)
+		if(interpreter->pc->type != TokenEol)
 			return ErrorSyntax;
 		++interpreter->pc;
 		break;
@@ -1464,7 +1446,7 @@ enum ErrorCode itp_evaluateCommand(struct Core *core)
 		break;
 
 	case TokenEND:
-		switch (itp_getNextTokenType(interpreter))
+		switch(itp_getNextTokenType(interpreter))
 		{
 		case TokenIF:
 			return cmd_END_IF(core);
@@ -1610,7 +1592,7 @@ enum ErrorCode itp_evaluateCommand(struct Core *core)
 		return cmd_CLW(core);
 
 	case TokenBG:
-		switch (itp_getNextTokenType(interpreter))
+		switch(itp_getNextTokenType(interpreter))
 		{
 		case TokenSOURCE:
 			return cmd_BG_SOURCE(core);
@@ -1670,7 +1652,7 @@ enum ErrorCode itp_evaluateCommand(struct Core *core)
 		return cmd_SPRITE_A(core);
 
 	case TokenSPRITE:
-		switch (itp_getNextTokenType(interpreter))
+		switch(itp_getNextTokenType(interpreter))
 		{
 		case TokenOFF:
 			return cmd_SPRITE_OFF(core);
@@ -1714,7 +1696,7 @@ enum ErrorCode itp_evaluateCommand(struct Core *core)
 		return cmd_GLOBAL(core);
 
 	case TokenEXIT:
-		switch (itp_getNextTokenType(interpreter))
+		switch(itp_getNextTokenType(interpreter))
 		{
 		case TokenSUB:
 			return cmd_EXIT_SUB(core);
@@ -1727,7 +1709,7 @@ enum ErrorCode itp_evaluateCommand(struct Core *core)
 		return cmd_PAUSE(core);
 
 	case TokenSOUND:
-		switch (itp_getNextTokenType(interpreter))
+		switch(itp_getNextTokenType(interpreter))
 		{
 			//                case TokenCOPY:
 			//                    return cmd_SOUND_COPY(core);
@@ -1747,7 +1729,7 @@ enum ErrorCode itp_evaluateCommand(struct Core *core)
 		return cmd_ENVELOPE(core);
 
 	case TokenLFO:
-		switch (itp_getNextTokenType(interpreter))
+		switch(itp_getNextTokenType(interpreter))
 		{
 		case TokenWAVE:
 			return cmd_LFO_WAVE(core);
@@ -1796,7 +1778,7 @@ enum ErrorCode itp_evaluateCommand(struct Core *core)
 
 enum ErrorCode itp_labelStackError(struct LabelStackItem *item)
 {
-	switch (item->type)
+	switch(item->type)
 	{
 	case LabelTypeIF:
 	case LabelTypeELSEIF:
@@ -1831,10 +1813,10 @@ enum ErrorCode itp_labelStackError(struct LabelStackItem *item)
 
 bool is_zero_approx(float x)
 {
-  return fabsf(x) < FLT_EPSILON*2;
+	return fabsf(x) < FLT_EPSILON * 2;
 }
 
 bool is_equal_approx(float x, float y)
 {
-	return fabsf(x - y) < FLT_EPSILON*2;
+	return fabsf(x - y) < FLT_EPSILON * 2;
 }

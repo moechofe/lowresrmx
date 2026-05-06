@@ -1,14 +1,14 @@
-//
-// Copyright 2017 Timo Kloss
-//
+// Copyright 2018 Timo Kloss
+// Copyright 2021-2026 Martin Mauchauffée
+
 // This software is provided 'as-is', without any express or implied
 // warranty. In no event will the authors be held liable for any damages
 // arising from the use of this software.
-//
+
 // Permission is granted to anyone to use this software for any purpose,
 // including commercial applications, and to alter it and redistribute it
 // freely, subject to the following restrictions:
-//
+
 // 1. The origin of this software must not be misrepresented; you must not
 //    claim that you wrote the original software. If you use this software
 //    in a product, an acknowledgment in the product documentation would be
@@ -16,13 +16,12 @@
 // 2. Altered source versions must be plainly marked as such, and must not be
 //    misrepresented as being the original software.
 // 3. This notice may not be removed or altered from any source distribution.
-//
 
 #include "startup_sequence.h"
 #include "core.h"
-#include <string.h>
-#include <stdint.h>
 #include "io_chip.h"
+#include <stdint.h>
+#include <string.h>
 
 #define FONT_CHAR_OFFSET 192
 
@@ -40,9 +39,11 @@ void runStartupSequence(struct Core *core)
 	// TODO: should setup overlay window here
 
 	// default characters/font
-	if (strcmp(entries[0].comment, "FONT") == 0)
+	if(strcmp(entries[0].comment, "FONT") == 0)
 	{
-		memcpy(&core->machine->videoRam.characters[FONT_CHAR_OFFSET], &core->machine->cartridgeRom[entries[0].start], entries[0].length);
+		memcpy(&core->machine->videoRam.characters[FONT_CHAR_OFFSET],
+		&core->machine->cartridgeRom[entries[0].start],
+		entries[0].length);
 	}
 
 	// default palettes
@@ -90,7 +91,8 @@ void runStartupSequence(struct Core *core)
 
 	// main palettes
 	int palLen = entries[1].length;
-	if (palLen > 32) palLen = 32;
+	if(palLen > 32)
+		palLen = 32;
 	memcpy(core->machine->colorRegisters.colors, &core->machine->cartridgeRom[entries[1].start], palLen);
 
 	// main characters
@@ -103,7 +105,7 @@ void runStartupSequence(struct Core *core)
 	core->interpreter->textLib.sourceHeight = core->machine->cartridgeRom[bgStart + 3];
 
 	// voices
-	for (int i = 0; i < NUM_VOICES; i++)
+	for(int i = 0; i < NUM_VOICES; i++)
 	{
 		struct Voice *voice = &core->machine->audioRegisters.voices[i];
 		voice->attr.pulseWidth = 8;

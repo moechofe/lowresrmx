@@ -1,14 +1,14 @@
-//
-// Copyright 2016-2020 Timo Kloss
-//
+// Copyright 2018 Timo Kloss
+// Copyright 2021-2026 Martin Mauchauffée
+
 // This software is provided 'as-is', without any express or implied
 // warranty. In no event will the authors be held liable for any damages
 // arising from the use of this software.
-//
+
 // Permission is granted to anyone to use this software for any purpose,
 // including commercial applications, and to alter it and redistribute it
 // freely, subject to the following restrictions:
-//
+
 // 1. The origin of this software must not be misrepresented; you must not
 //    claim that you wrote the original software. If you use this software
 //    in a product, an acknowledgment in the product documentation would be
@@ -16,20 +16,19 @@
 // 2. Altered source versions must be plainly marked as such, and must not be
 //    misrepresented as being the original software.
 // 3. This notice may not be removed or altered from any source distribution.
-//
 
 #ifndef core_h
 #define core_h
 
 #define CORE_VERSION "2.0"
 
-#include <stdio.h>
-#include <stdbool.h>
+#include "core_delegate.h"
+#include "disk_drive.h"
+#include "interpreter.h"
 #include "machine.h"
 #include "overlay.h"
-#include "interpreter.h"
-#include "disk_drive.h"
-#include "core_delegate.h"
+#include <stdbool.h>
+#include <stdio.h>
 
 struct Core
 {
@@ -79,7 +78,8 @@ void core_setKeyboardHeight(struct Core *core, int height);
 bool core_shouldRender(struct Core *core);
 void core_orientationChanged(struct Core *core);
 
-void core_setInputGamepad(struct CoreInput *input, int player, bool up, bool down, bool left, bool right, bool buttonA, bool buttonB);
+void core_setInputGamepad(
+struct CoreInput *input, int player, bool up, bool down, bool left, bool right, bool buttonA, bool buttonB);
 
 void core_diskLoaded(struct Core *core);
 

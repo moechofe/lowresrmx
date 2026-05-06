@@ -1,14 +1,14 @@
-//
-// Copyright 2017-2018 Timo Kloss
-//
+// Copyright 2018 Timo Kloss
+// Copyright 2021-2026 Martin Mauchauffée
+
 // This software is provided 'as-is', without any express or implied
 // warranty. In no event will the authors be held liable for any damages
 // arising from the use of this software.
-//
+
 // Permission is granted to anyone to use this software for any purpose,
 // including commercial applications, and to alter it and redistribute it
 // freely, subject to the following restrictions:
-//
+
 // 1. The origin of this software must not be misrepresented; you must not
 //    claim that you wrote the original software. If you use this software
 //    in a product, an acknowledgment in the product documentation would be
@@ -16,10 +16,9 @@
 // 2. Altered source versions must be plainly marked as such, and must not be
 //    misrepresented as being the original software.
 // 3. This notice may not be removed or altered from any source distribution.
-//
 
-#include "config.h"
 #include "overlay.h"
+#include "config.h"
 #include "core.h"
 #include "io_chip.h"
 #include "overlay_debugger.h"
@@ -54,23 +53,30 @@ void overlay_updateLayout(struct Core *core, struct CoreInput *input)
 	int k = io->keyboardHeight;
 	int oldHeight = lib->windowHeight;
 #if SIMULATED_KEYBOARD
-	if (core->interpreter->simulatedKeyboardOn) k = 154;
+	if(core->interpreter->simulatedKeyboardOn)
+		k = 154;
 #endif
 	int b = io->safe.bottom > k ? io->safe.bottom : k;
 	int new_height = io->shown.height / 8 - (io->safe.top + 7) / 8 - (b + 7) / 8 - 1; // give
 
 	// keyboard has been shown, make sure to scroll the overlay
-	if (k > 0 && new_height < oldHeight)
+	if(k > 0 && new_height < oldHeight)
 	{
 		// how many cells are covered by the keyboard
 		int cursor_y = lib->cursorY + lib->windowY;
 		// int new_bottom = io->shown.height / 8 - (lib->windowY + new_height); //keyboard_height_in_cells;
 		int need_to_scroll_up = cursor_y - new_height;
 
-		if (need_to_scroll_up > 0)
+		if(need_to_scroll_up > 0)
 		{
 			struct Plane *plane = txtlib_getBackground(lib, lib->windowBg);
-			txtlib_scroll(plane, lib->windowX, lib->windowY, lib->windowX + lib->windowWidth - 1, lib->windowY + lib->windowHeight - 1, 0, -need_to_scroll_up);
+			txtlib_scroll(plane,
+			lib->windowX,
+			lib->windowY,
+			lib->windowX + lib->windowWidth - 1,
+			lib->windowY + lib->windowHeight - 1,
+			0,
+			-need_to_scroll_up);
 
 			lib->cursorY -= need_to_scroll_up;
 		}
@@ -92,12 +98,12 @@ void overlay_reset(struct Core *core)
 
 void overlay_updateState(struct Core *core)
 {
-	if (core->interpreter->state == StatePaused)
+	if(core->interpreter->state == StatePaused)
 	{
 		core->overlay->timer = 0;
 	}
 
-	if (!core->interpreter->debug)
+	if(!core->interpreter->debug)
 	{
 		core->overlay->textLib.cursorX = core->overlay->textLib.windowX;
 		core->overlay->textLib.cursorY = core->overlay->textLib.windowY;
@@ -107,10 +113,8 @@ void overlay_updateState(struct Core *core)
 void overlay_message(struct Core *core, const char *message)
 {
 	struct TextLib *lib = &core->overlay->textLib;
-	txtlib_setCells(lib,
-									0, lib->windowHeight - 1 + lib->windowY,
-									lib->windowWidth - 1, lib->windowHeight - 1 + lib->windowY,
-									0);
+	txtlib_setCells(
+	lib, 0, lib->windowHeight - 1 + lib->windowY, lib->windowWidth - 1, lib->windowHeight - 1 + lib->windowY, 0);
 	txtlib_writeText(lib, message, lib->windowX, lib->windowHeight - 1 + lib->windowY);
 	core->overlay->messageTimer = 127;
 	machine_suspendEnergySaving(core, 127);
@@ -120,43 +124,44 @@ void overlay_draw(struct Core *core, bool ingame)
 {
 	struct TextLib *lib = &core->overlay->textLib;
 
-	if (core->overlay->messageTimer > 0)
+	if(core->overlay->messageTimer > 0)
 	{
 		core->overlay->messageTimer--;
-		if (core->overlay->messageTimer < 27)
+		if(core->overlay->messageTimer < 27)
 		{
 			txtlib_scrollBackground(lib,
-															0, lib->windowHeight - 1 + lib->windowY,
-															lib->windowWidth - 1, lib->windowHeight - 1 + lib->windowY,
-															-1, 0);
-			txtlib_setCell(lib,
-										 lib->windowWidth - 1 + lib->windowX, lib->windowHeight - 1 + lib->windowY,
-										 0);
+			0,
+			lib->windowHeight - 1 + lib->windowY,
+			lib->windowWidth - 1,
+			lib->windowHeight - 1 + lib->windowY,
+			-1,
+			0);
+			txtlib_setCell(lib, lib->windowWidth - 1 + lib->windowX, lib->windowHeight - 1 + lib->windowY, 0);
 		}
 	}
 
-	if (ingame)
+	if(ingame)
 	{
-		if (core->interpreter->state == StatePaused)
+		if(core->interpreter->state == StatePaused)
 		{
-			if (core->overlay->timer % 40 < 20)
+			if(core->overlay->timer % 40 < 20)
 			{
 				txtlib_writeText(lib, "_", lib->windowX + lib->cursorX, lib->windowY + lib->cursorY);
 			}
 			else
 			{
 				char c[2] = {' ', 0};
-				if (lib->cursorX >= 0 && lib->cursorX < 26 && core->overlay->commandLine[lib->cursorX] != 0)
+				if(lib->cursorX >= 0 && lib->cursorX < 26 && core->overlay->commandLine[lib->cursorX] != 0)
 					*c = core->overlay->commandLine[lib->cursorX];
 				txtlib_writeText(lib, c, lib->windowX + lib->cursorX, lib->windowY + lib->cursorY);
 			}
 		}
 
-		if (core->interpreter->debug)
+		if(core->interpreter->debug)
 		{
 			txtlib_writeText(lib, "CPU", lib->windowWidth - 3 + lib->windowX, lib->windowY);
 			int cpuLoad = core->interpreter->cpuLoadDisplay;
-			if (cpuLoad < 100)
+			if(cpuLoad < 100)
 			{
 				txtlib_writeNumber(lib, cpuLoad, 2, lib->windowWidth - 3 + lib->windowX, 1 + lib->windowY);
 				txtlib_writeText(lib, "%", lib->windowWidth - 1 + lib->windowX, 1 + lib->windowY);
@@ -167,7 +172,7 @@ void overlay_draw(struct Core *core, bool ingame)
 			}
 		}
 
-		if (core->interpreter->state == StatePaused && core->interpreter->debug)
+		if(core->interpreter->state == StatePaused && core->interpreter->debug)
 		{
 			overlay_debugger(core);
 		}
@@ -179,9 +184,9 @@ void overlay_draw(struct Core *core, bool ingame)
 void overlay_clear(struct Core *core)
 {
 	struct Plane *plane = &core->overlay->plane;
-	for (int y = 0; y < PLANE_ROWS; y++)
+	for(int y = 0; y < PLANE_ROWS; y++)
 	{
-		for (int x = 0; x < PLANE_COLUMNS; x++)
+		for(int x = 0; x < PLANE_COLUMNS; x++)
 		{
 			struct Cell *cell = &plane->cells[y][x];
 			cell->character = 0;

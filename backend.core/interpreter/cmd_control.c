@@ -1,14 +1,14 @@
-//
-// Copyright 2017-2020 Timo Kloss
-//
+// Copyright 2018 Timo Kloss
+// Copyright 2021-2026 Martin Mauchauffée
+
 // This software is provided 'as-is', without any express or implied
 // warranty. In no event will the authors be held liable for any damages
 // arising from the use of this software.
-//
+
 // Permission is granted to anyone to use this software for any purpose,
 // including commercial applications, and to alter it and redistribute it
 // freely, subject to the following restrictions:
-//
+
 // 1. The origin of this software must not be misrepresented; you must not
 //    claim that you wrote the original software. If you use this software
 //    in a product, an acknowledgment in the product documentation would be
@@ -16,24 +16,23 @@
 // 2. Altered source versions must be plainly marked as such, and must not be
 //    misrepresented as being the original software.
 // 3. This notice may not be removed or altered from any source distribution.
-//
 
-#include "overlay_debugger.h"
 #include "cmd_control.h"
 #include "core.h"
+#include "overlay_debugger.h"
 #include <assert.h>
 
 enum ErrorCode cmd_END(struct Core *core)
 {
 	struct Interpreter *interpreter = core->interpreter;
 
-	if (interpreter->pass == PassRun && interpreter->mode == ModeInterrupt)
+	if(interpreter->pass == PassRun && interpreter->mode == ModeInterrupt)
 		return ErrorNotAllowedInInterrupt;
 
 	// END
 	++interpreter->pc;
 
-	if (interpreter->pass == PassRun)
+	if(interpreter->pass == PassRun)
 	{
 		itp_endProgram(core);
 		return ErrorNone;
@@ -52,23 +51,24 @@ enum ErrorCode cmd_IF(struct Core *core, bool isAfterBlockElse)
 
 	// Expression
 	struct TypedValue value = itp_evaluateExpression(core, TypeClassNumeric);
-	if (value.type == ValueTypeError)
+	if(value.type == ValueTypeError)
 		return value.v.errorCode;
 
 	// THEN
-	if (interpreter->pc->type != TokenTHEN)
+	if(interpreter->pc->type != TokenTHEN)
 		return ErrorSyntax;
 	++interpreter->pc;
 
-	if (interpreter->pass == PassPrepare)
+	if(interpreter->pass == PassPrepare)
 	{
-		if (interpreter->pc->type == TokenEol)
+		if(interpreter->pc->type == TokenEol)
 		{
 			// IF block
-			if (interpreter->isSingleLineIf)
+			if(interpreter->isSingleLineIf)
 				return ErrorExpectedCommand;
-			enum ErrorCode errorCode = lab_pushLabelStackItem(interpreter, isAfterBlockElse ? LabelTypeELSEIF : LabelTypeIF, tokenIF);
-			if (errorCode != ErrorNone)
+			enum ErrorCode errorCode =
+			lab_pushLabelStackItem(interpreter, isAfterBlockElse ? LabelTypeELSEIF : LabelTypeIF, tokenIF);
+			if(errorCode != ErrorNone)
 				return errorCode;
 
 			// Eol
@@ -79,16 +79,16 @@ enum ErrorCode cmd_IF(struct Core *core, bool isAfterBlockElse)
 			// single line IF
 			interpreter->isSingleLineIf = true;
 			struct Token *token = interpreter->pc;
-			while (token->type != TokenEol && token->type != TokenELSE)
+			while(token->type != TokenEol && token->type != TokenELSE)
 			{
 				token++;
 			}
 			tokenIF->jumpToken = token + 1; // after ELSE or Eol
 		}
 	}
-	else if (interpreter->pass == PassRun)
+	else if(interpreter->pass == PassRun)
 	{
-		if (value.v.floatValue == 0)
+		if(value.v.floatValue == 0)
 		{
 			interpreter->pc = tokenIF->jumpToken; // after ELSE or END IF, or Eol for single line
 		}
@@ -105,14 +105,14 @@ enum ErrorCode cmd_ELSE(struct Core *core)
 	struct Token *tokenELSE = interpreter->pc;
 	++interpreter->pc;
 
-	if (interpreter->pass == PassPrepare)
+	if(interpreter->pass == PassPrepare)
 	{
-		if (interpreter->isSingleLineIf)
+		if(interpreter->isSingleLineIf)
 		{
-			if (interpreter->pc->type == TokenEol)
+			if(interpreter->pc->type == TokenEol)
 				return ErrorExpectedCommand;
 			struct Token *token = interpreter->pc;
-			while (token->type != TokenEol)
+			while(token->type != TokenEol)
 			{
 				token++;
 			}
@@ -121,13 +121,13 @@ enum ErrorCode cmd_ELSE(struct Core *core)
 		else
 		{
 			struct LabelStackItem *item = lab_popLabelStackItem(interpreter);
-			if (!item)
+			if(!item)
 				return ErrorElseWithoutIf;
-			if (item->type == LabelTypeIF)
+			if(item->type == LabelTypeIF)
 			{
 				item->token->jumpToken = interpreter->pc;
 			}
-			else if (item->type == LabelTypeELSEIF)
+			else if(item->type == LabelTypeELSEIF)
 			{
 				item->token->jumpToken = interpreter->pc;
 
@@ -141,23 +141,23 @@ enum ErrorCode cmd_ELSE(struct Core *core)
 			}
 
 			enum ErrorCode errorCode = lab_pushLabelStackItem(interpreter, LabelTypeELSE, tokenELSE);
-			if (errorCode != ErrorNone)
+			if(errorCode != ErrorNone)
 				return errorCode;
 
-			if (interpreter->pc->type == TokenIF)
+			if(interpreter->pc->type == TokenIF)
 			{
 				return cmd_IF(core, true);
 			}
 			else
 			{
 				// Eol
-				if (interpreter->pc->type != TokenEol)
+				if(interpreter->pc->type != TokenEol)
 					return ErrorSyntax;
 				++interpreter->pc;
 			}
 		}
 	}
-	else if (interpreter->pass == PassRun)
+	else if(interpreter->pass == PassRun)
 	{
 		interpreter->pc = tokenELSE->jumpToken; // after END IF, or Eol for single line
 	}
@@ -172,18 +172,18 @@ enum ErrorCode cmd_END_IF(struct Core *core)
 	++interpreter->pc;
 	++interpreter->pc;
 
-	if (interpreter->pass == PassPrepare)
+	if(interpreter->pass == PassPrepare)
 	{
 		struct LabelStackItem *item = lab_popLabelStackItem(interpreter);
-		if (!item)
+		if(!item)
 		{
 			return ErrorEndIfWithoutIf;
 		}
-		else if (item->type == LabelTypeIF || item->type == LabelTypeELSE)
+		else if(item->type == LabelTypeIF || item->type == LabelTypeELSE)
 		{
 			item->token->jumpToken = interpreter->pc;
 		}
-		else if (item->type == LabelTypeELSEIF)
+		else if(item->type == LabelTypeELSEIF)
 		{
 			item->token->jumpToken = interpreter->pc;
 
@@ -198,7 +198,7 @@ enum ErrorCode cmd_END_IF(struct Core *core)
 	}
 
 	// Eol
-	if (interpreter->pc->type != TokenEol)
+	if(interpreter->pc->type != TokenEol)
 		return ErrorSyntax;
 	++interpreter->pc;
 
@@ -218,41 +218,41 @@ enum ErrorCode cmd_FOR(struct Core *core)
 	enum ErrorCode errorCode = ErrorNone;
 	enum ValueType valueType = ValueTypeNull;
 	union Value *varValue = itp_readVariable(core, &valueType, &errorCode, true);
-	if (!varValue)
+	if(!varValue)
 		return errorCode;
-	if (valueType != ValueTypeFloat)
+	if(valueType != ValueTypeFloat)
 		return ErrorTypeMismatch;
 
 	// Eq
-	if (interpreter->pc->type != TokenEq)
+	if(interpreter->pc->type != TokenEq)
 		return ErrorSyntax;
 	++interpreter->pc;
 
 	// start value
 	struct TypedValue startValue = itp_evaluateExpression(core, TypeClassNumeric);
-	if (startValue.type == ValueTypeError)
+	if(startValue.type == ValueTypeError)
 		return startValue.v.errorCode;
 
 	// TO
-	if (interpreter->pc->type != TokenTO)
+	if(interpreter->pc->type != TokenTO)
 		return ErrorSyntax;
 	++interpreter->pc;
 
 	// limit value
 	struct Token *tokenFORLimit = interpreter->pc;
 	struct TypedValue limitValue = itp_evaluateExpression(core, TypeClassNumeric);
-	if (limitValue.type == ValueTypeError)
+	if(limitValue.type == ValueTypeError)
 		return limitValue.v.errorCode;
 
 	// STEP
 	struct TypedValue stepValue;
-	if (interpreter->pc->type == TokenSTEP)
+	if(interpreter->pc->type == TokenSTEP)
 	{
 		++interpreter->pc;
 
 		// step value
 		stepValue = itp_evaluateExpression(core, TypeClassNumeric);
-		if (stepValue.type == ValueTypeError)
+		if(stepValue.type == ValueTypeError)
 			return stepValue.v.errorCode;
 	}
 	else
@@ -261,32 +261,33 @@ enum ErrorCode cmd_FOR(struct Core *core)
 		stepValue.v.floatValue = 1.0f;
 	}
 
-	if (interpreter->pass == PassPrepare)
+	if(interpreter->pass == PassPrepare)
 	{
 		lab_pushLabelStackItem(interpreter, LabelTypeFORLimit, tokenFORLimit);
 		lab_pushLabelStackItem(interpreter, LabelTypeFORVar, tokenFORVar);
 		enum ErrorCode errorCode = lab_pushLabelStackItem(interpreter, LabelTypeFOR, tokenFOR);
-		if (errorCode != ErrorNone)
+		if(errorCode != ErrorNone)
 			return errorCode;
 
 		// Eol
-		if (interpreter->pc->type != TokenEol)
+		if(interpreter->pc->type != TokenEol)
 			return ErrorSyntax;
 		++interpreter->pc;
 	}
-	else if (interpreter->pass == PassRun)
+	else if(interpreter->pass == PassRun)
 	{
 		varValue->floatValue = startValue.v.floatValue;
 
 		// limit check
-		if ((stepValue.v.floatValue > 0 && varValue->floatValue > limitValue.v.floatValue) || (stepValue.v.floatValue < 0 && varValue->floatValue < limitValue.v.floatValue))
+		if((stepValue.v.floatValue > 0 && varValue->floatValue > limitValue.v.floatValue) ||
+		   (stepValue.v.floatValue < 0 && varValue->floatValue < limitValue.v.floatValue))
 		{
 			interpreter->pc = tokenFOR->jumpToken; // after NEXT's Eol
 		}
 		else
 		{
 			// Eol
-			if (interpreter->pc->type != TokenEol)
+			if(interpreter->pc->type != TokenEol)
 				return ErrorSyntax;
 			++interpreter->pc;
 		}
@@ -302,10 +303,10 @@ enum ErrorCode cmd_NEXT(struct Core *core)
 	struct LabelStackItem *itemFORVar = NULL;
 	struct LabelStackItem *itemFOR = NULL;
 
-	if (interpreter->pass == PassPrepare)
+	if(interpreter->pass == PassPrepare)
 	{
 		itemFOR = lab_popLabelStackItem(interpreter);
-		if (!itemFOR || itemFOR->type != LabelTypeFOR)
+		if(!itemFOR || itemFOR->type != LabelTypeFOR)
 			return ErrorNextWithoutFor;
 
 		itemFORVar = lab_popLabelStackItem(interpreter);
@@ -324,46 +325,46 @@ enum ErrorCode cmd_NEXT(struct Core *core)
 	struct Token *tokenVar = interpreter->pc;
 	enum ValueType valueType = ValueTypeNull;
 	union Value *varValue = itp_readVariable(core, &valueType, &errorCode, true);
-	if (!varValue)
+	if(!varValue)
 		return errorCode;
-	if (valueType != ValueTypeFloat)
+	if(valueType != ValueTypeFloat)
 		return ErrorTypeMismatch;
 
-	if (interpreter->pass == PassPrepare)
+	if(interpreter->pass == PassPrepare)
 	{
-		if (tokenVar->symbolIndex != itemFORVar->token->symbolIndex)
+		if(tokenVar->symbolIndex != itemFORVar->token->symbolIndex)
 			return ErrorNextWithoutFor;
 	}
 
 	// Eol
-	if (interpreter->pc->type != TokenEol)
+	if(interpreter->pc->type != TokenEol)
 		return ErrorSyntax;
 	++interpreter->pc;
 
-	if (interpreter->pass == PassPrepare)
+	if(interpreter->pass == PassPrepare)
 	{
 		itemFOR->token->jumpToken = interpreter->pc;
 		tokenNEXT->jumpToken = itemFORLimit->token;
 	}
-	else if (interpreter->pass == PassRun)
+	else if(interpreter->pass == PassRun)
 	{
 		struct Token *storedPc = interpreter->pc;
 		interpreter->pc = tokenNEXT->jumpToken;
 
 		// limit value
 		struct TypedValue limitValue = itp_evaluateExpression(core, TypeClassNumeric);
-		if (limitValue.type == ValueTypeError)
+		if(limitValue.type == ValueTypeError)
 			return limitValue.v.errorCode;
 
 		// STEP
 		struct TypedValue stepValue;
-		if (interpreter->pc->type == TokenSTEP)
+		if(interpreter->pc->type == TokenSTEP)
 		{
 			++interpreter->pc;
 
 			// step value
 			stepValue = itp_evaluateExpression(core, TypeClassNumeric);
-			if (stepValue.type == ValueTypeError)
+			if(stepValue.type == ValueTypeError)
 				return stepValue.v.errorCode;
 		}
 		else
@@ -373,14 +374,15 @@ enum ErrorCode cmd_NEXT(struct Core *core)
 		}
 
 		// Eol
-		if (interpreter->pc->type != TokenEol)
+		if(interpreter->pc->type != TokenEol)
 			return ErrorSyntax;
 		++interpreter->pc;
 
 		varValue->floatValue += stepValue.v.floatValue;
 
 		// limit check
-		if ((stepValue.v.floatValue > 0 && varValue->floatValue > limitValue.v.floatValue) || (stepValue.v.floatValue < 0 && varValue->floatValue < limitValue.v.floatValue))
+		if((stepValue.v.floatValue > 0 && varValue->floatValue > limitValue.v.floatValue) ||
+		   (stepValue.v.floatValue < 0 && varValue->floatValue < limitValue.v.floatValue))
 		{
 			interpreter->pc = storedPc; // after NEXT's Eol
 		}
@@ -398,24 +400,25 @@ enum ErrorCode cmd_GOTO(struct Core *core)
 	++interpreter->pc;
 
 	// Identifier
-	if (interpreter->pc->type != TokenIdentifier)
+	if(interpreter->pc->type != TokenIdentifier)
 		return ErrorExpectedLabel;
 	struct Token *tokenIdentifier = interpreter->pc;
 	++interpreter->pc;
 
-	if (interpreter->pass == PassPrepare)
+	if(interpreter->pass == PassPrepare)
 	{
 		struct JumpLabelItem *item = tok_getJumpLabel(&interpreter->tokenizer, tokenIdentifier->symbolIndex);
-		if (!item)
+		if(!item)
 			return ErrorUndefinedLabel;
 		tokenGOTO->jumpToken = item->token;
 
 		return itp_endOfCommand(interpreter);
 	}
-	else if (interpreter->pass == PassRun)
+	else if(interpreter->pass == PassRun)
 	{
 		interpreter->pc = tokenGOTO->jumpToken; // after label
-		if (interpreter->logGoto) log_goto(core,tokenIdentifier->symbolIndex);
+		if(interpreter->logGoto)
+			log_goto(core, tokenIdentifier->symbolIndex);
 	}
 	return ErrorNone;
 }
@@ -429,28 +432,29 @@ enum ErrorCode cmd_GOSUB(struct Core *core)
 	++interpreter->pc;
 
 	// Identifier
-	if (interpreter->pc->type != TokenIdentifier)
+	if(interpreter->pc->type != TokenIdentifier)
 		return ErrorExpectedLabel;
 	struct Token *tokenIdentifier = interpreter->pc;
 	++interpreter->pc;
 
-	if (interpreter->pass == PassPrepare)
+	if(interpreter->pass == PassPrepare)
 	{
 		struct JumpLabelItem *item = tok_getJumpLabel(&interpreter->tokenizer, tokenIdentifier->symbolIndex);
-		if (!item)
+		if(!item)
 			return ErrorUndefinedLabel;
 		tokenGOSUB->jumpToken = item->token;
 
 		return itp_endOfCommand(interpreter);
 	}
-	else if (interpreter->pass == PassRun)
+	else if(interpreter->pass == PassRun)
 	{
 		enum ErrorCode errorCode = lab_pushLabelStackItem(interpreter, LabelTypeGOSUB, interpreter->pc);
-		if (errorCode != ErrorNone)
+		if(errorCode != ErrorNone)
 			return errorCode;
 
 		interpreter->pc = tokenGOSUB->jumpToken; // after label
-		if (interpreter->logGosub) log_gosub(core,tokenIdentifier->symbolIndex);
+		if(interpreter->logGosub)
+			log_gosub(core, tokenIdentifier->symbolIndex);
 	}
 	return ErrorNone;
 }
@@ -465,43 +469,45 @@ enum ErrorCode cmd_RETURN(struct Core *core)
 
 	// Identifier
 	struct Token *tokenIdentifier = NULL;
-	if (interpreter->pc->type == TokenIdentifier)
+	if(interpreter->pc->type == TokenIdentifier)
 	{
 		tokenIdentifier = interpreter->pc;
 		++interpreter->pc;
 	}
 
-	if (interpreter->pass == PassPrepare)
+	if(interpreter->pass == PassPrepare)
 	{
-		if (tokenIdentifier)
+		if(tokenIdentifier)
 		{
 			struct JumpLabelItem *item = tok_getJumpLabel(&interpreter->tokenizer, tokenIdentifier->symbolIndex);
-			if (!item)
+			if(!item)
 				return ErrorUndefinedLabel;
 			tokenRETURN->jumpToken = item->token;
 		}
 	}
-	else if (interpreter->pass == PassRun)
+	else if(interpreter->pass == PassRun)
 	{
 		struct LabelStackItem *itemGOSUB = lab_popLabelStackItem(interpreter);
-		if (!itemGOSUB)
+		if(!itemGOSUB)
 			return ErrorReturnWithoutGosub;
 
-		if (itemGOSUB->type == LabelTypeGOSUB)
+		if(itemGOSUB->type == LabelTypeGOSUB)
 		{
-			if (tokenRETURN->jumpToken)
+			if(tokenRETURN->jumpToken)
 			{
 				// jump to label
 				interpreter->pc = tokenRETURN->jumpToken; // after label
 				// clear stack
 				interpreter->numLabelStackItems = 0;
-				if (interpreter->logGosub) log_return(core, true);
+				if(interpreter->logGosub)
+					log_return(core, true);
 			}
 			else
 			{
 				// jump back
 				interpreter->pc = itemGOSUB->token; // after GOSUB
-				if (interpreter->logGosub) log_return(core, false);
+				if(interpreter->logGosub)
+					log_return(core, false);
 			}
 		}
 		else
@@ -517,22 +523,22 @@ enum ErrorCode cmd_WAIT(struct Core *core)
 {
 	struct Interpreter *interpreter = core->interpreter;
 
-	if (interpreter->pass == PassRun && interpreter->mode == ModeInterrupt)
+	if(interpreter->pass == PassRun && interpreter->mode == ModeInterrupt)
 		return ErrorNotAllowedInInterrupt;
 
 	// WAIT
 	++interpreter->pc;
 
 	int wait = 0;
-	if (interpreter->pc->type == TokenVBL)
+	if(interpreter->pc->type == TokenVBL)
 	{
 		// VBL
 		++interpreter->pc;
 	}
-	else if (interpreter->pc->type == TokenTAP)
+	else if(interpreter->pc->type == TokenTAP)
 	{
 		++interpreter->pc;
-		if (interpreter->pass == PassRun)
+		if(interpreter->pass == PassRun)
 		{
 			interpreter->exitEvaluation = true;
 			interpreter->waitTap = true;
@@ -542,16 +548,17 @@ enum ErrorCode cmd_WAIT(struct Core *core)
 	{
 		// value
 		struct TypedValue value = itp_evaluateNumericExpression(core, 1, VM_MAX);
-		if (value.type == ValueTypeError)
+		if(value.type == ValueTypeError)
 			return value.v.errorCode;
 		wait = value.v.floatValue - 1;
 	}
 
-	if (interpreter->pass == PassRun)
+	if(interpreter->pass == PassRun)
 	{
 		interpreter->exitEvaluation = true;
 		interpreter->waitCount = wait;
-		if (interpreter->pauseAtWait) interpreter->state = StatePaused;
+		if(interpreter->pauseAtWait)
+			interpreter->state = StatePaused;
 		interpreter->pauseAtWait = false;
 	}
 	return itp_endOfCommand(interpreter);
@@ -565,37 +572,38 @@ enum ErrorCode cmd_ON(struct Core *core)
 	++interpreter->pc;
 
 	// RASTER/VBL/PARTICLE/EMITTER
-	if (interpreter->pc->type == TokenRASTER || interpreter->pc->type == TokenVBL || interpreter->pc->type == TokenPARTICLE || interpreter->pc->type == TokenEMITTER)
+	if(interpreter->pc->type == TokenRASTER || interpreter->pc->type == TokenVBL ||
+	   interpreter->pc->type == TokenPARTICLE || interpreter->pc->type == TokenEMITTER)
 	{
 		enum TokenType type = interpreter->pc->type;
 		++interpreter->pc;
 
-		if (interpreter->pc->type == TokenOFF)
+		if(interpreter->pc->type == TokenOFF)
 		{
 			// OFF
 			++interpreter->pc;
 
-			if (interpreter->pass == PassRun)
+			if(interpreter->pass == PassRun)
 			{
-				if (type == TokenRASTER)
+				if(type == TokenRASTER)
 				{
 					interpreter->currentOnRasterToken = NULL;
 				}
-				else if (type == TokenVBL)
+				else if(type == TokenVBL)
 				{
 					interpreter->currentOnVBLToken = NULL;
 				}
-				else if (type == TokenPARTICLE)
+				else if(type == TokenPARTICLE)
 				{
 					interpreter->currentOnParticleToken = NULL;
 				}
-				else if (type == TokenEMITTER)
+				else if(type == TokenEMITTER)
 				{
 					interpreter->currentOnEmitterToken = NULL;
 				}
 			}
 		}
-		else if (interpreter->pc->type == TokenCALL)
+		else if(interpreter->pc->type == TokenCALL)
 		{
 			// CALL
 			// if (interpreter->pc->type != TokenCALL) return ErrorSyntax;
@@ -603,33 +611,33 @@ enum ErrorCode cmd_ON(struct Core *core)
 			++interpreter->pc;
 
 			// Identifier
-			if (interpreter->pc->type != TokenIdentifier)
+			if(interpreter->pc->type != TokenIdentifier)
 				return ErrorExpectedSubprogramName;
 			struct Token *tokenIdentifier = interpreter->pc;
 			++interpreter->pc;
 
-			if (interpreter->pass == PassPrepare)
+			if(interpreter->pass == PassPrepare)
 			{
 				struct SubItem *item = tok_getSub(&interpreter->tokenizer, tokenIdentifier->symbolIndex);
-				if (!item)
+				if(!item)
 					return ErrorUndefinedSubprogram;
 				tokenCALL->jumpToken = item->token;
 			}
-			else if (interpreter->pass == PassRun)
+			else if(interpreter->pass == PassRun)
 			{
-				if (type == TokenRASTER)
+				if(type == TokenRASTER)
 				{
 					interpreter->currentOnRasterToken = tokenCALL->jumpToken;
 				}
-				else if (type == TokenVBL)
+				else if(type == TokenVBL)
 				{
 					interpreter->currentOnVBLToken = tokenCALL->jumpToken;
 				}
-				else if (type == TokenPARTICLE)
+				else if(type == TokenPARTICLE)
 				{
 					interpreter->currentOnParticleToken = tokenCALL->jumpToken;
 				}
-				else if (type == TokenEMITTER)
+				else if(type == TokenEMITTER)
 				{
 					interpreter->currentOnEmitterToken = tokenCALL->jumpToken;
 				}
@@ -640,7 +648,7 @@ enum ErrorCode cmd_ON(struct Core *core)
 	{
 		// n value
 		struct TypedValue nValue = itp_evaluateNumericExpression(core, 0, 255);
-		if (nValue.type == ValueTypeError)
+		if(nValue.type == ValueTypeError)
 			return nValue.v.errorCode;
 		int n = nValue.v.floatValue;
 
@@ -648,17 +656,17 @@ enum ErrorCode cmd_ON(struct Core *core)
 		struct Token *tokenGOSUB = NULL;
 		struct Token *tokenRESTORE = NULL;
 
-		if (interpreter->pc->type == TokenGOTO)
+		if(interpreter->pc->type == TokenGOTO)
 		{
 			tokenGOTO = interpreter->pc;
 			++interpreter->pc;
 		}
-		else if (interpreter->pc->type == TokenGOSUB)
+		else if(interpreter->pc->type == TokenGOSUB)
 		{
 			tokenGOSUB = interpreter->pc;
 			++interpreter->pc;
 		}
-		else if (interpreter->pc->type == TokenRESTORE)
+		else if(interpreter->pc->type == TokenRESTORE)
 		{
 			tokenRESTORE = interpreter->pc;
 			++interpreter->pc;
@@ -668,63 +676,63 @@ enum ErrorCode cmd_ON(struct Core *core)
 			return ErrorSyntax;
 		}
 
-		if (interpreter->pass == PassRun)
-			while (n > 0)
+		if(interpreter->pass == PassRun)
+			while(n > 0)
 			{
 				++interpreter->pc;
-				if (interpreter->pc->type != TokenComma)
+				if(interpreter->pc->type != TokenComma)
 					return ErrorExpectedLabel;
 				++interpreter->pc;
 				--n;
 			}
 
 		// Identifier
-		if (interpreter->pc->type != TokenIdentifier)
+		if(interpreter->pc->type != TokenIdentifier)
 			return ErrorExpectedLabel;
 		struct Token *tokenIdentifier = interpreter->pc;
 		++interpreter->pc;
 
-		while (interpreter->pc->type == TokenComma)
+		while(interpreter->pc->type == TokenComma)
 		{
 			++interpreter->pc;
-			if (interpreter->pc->type != TokenIdentifier)
+			if(interpreter->pc->type != TokenIdentifier)
 				return ErrorSyntax;
 			++interpreter->pc;
 		}
 
-		if (tokenGOTO)
+		if(tokenGOTO)
 		{
 			struct JumpLabelItem *item = tok_getJumpLabel(&interpreter->tokenizer, tokenIdentifier->symbolIndex);
-			if (!item)
+			if(!item)
 				return ErrorUndefinedLabel;
 			tokenGOTO->jumpToken = item->token;
-			if (interpreter->pass == PassRun)
+			if(interpreter->pass == PassRun)
 			{
 				interpreter->pc = tokenGOTO->jumpToken; // after label
 			}
 		}
-		else if (tokenGOSUB)
+		else if(tokenGOSUB)
 		{
 			struct JumpLabelItem *item = tok_getJumpLabel(&interpreter->tokenizer, tokenIdentifier->symbolIndex);
-			if (!item)
+			if(!item)
 				return ErrorUndefinedLabel;
 			tokenGOSUB->jumpToken = item->token;
-			if (interpreter->pass == PassRun)
+			if(interpreter->pass == PassRun)
 			{
 				enum ErrorCode errorCode = lab_pushLabelStackItem(interpreter, LabelTypeGOSUB, interpreter->pc);
-				if (errorCode != ErrorNone)
+				if(errorCode != ErrorNone)
 					return errorCode;
 
 				interpreter->pc = tokenGOSUB->jumpToken; // after label
 			}
 		}
-		else if (tokenRESTORE)
+		else if(tokenRESTORE)
 		{
 			struct JumpLabelItem *item = tok_getJumpLabel(&interpreter->tokenizer, tokenIdentifier->symbolIndex);
-			if (!item)
+			if(!item)
 				return ErrorUndefinedLabel;
 			tokenRESTORE->jumpToken = item->token;
-			if (interpreter->pass == PassRun)
+			if(interpreter->pass == PassRun)
 			{
 				dat_restoreData(interpreter, tokenRESTORE->jumpToken);
 			}
@@ -744,15 +752,15 @@ enum ErrorCode cmd_DO(struct Core *core)
 	struct Token *tokenDO = interpreter->pc;
 	++interpreter->pc;
 
-	if (interpreter->pass == PassPrepare)
+	if(interpreter->pass == PassPrepare)
 	{
 		enum ErrorCode errorCode = lab_pushLabelStackItem(interpreter, LabelTypeDO, tokenDO);
-		if (errorCode != ErrorNone)
+		if(errorCode != ErrorNone)
 			return errorCode;
 	}
 
 	// Eol
-	if (interpreter->pc->type != TokenEol)
+	if(interpreter->pc->type != TokenEol)
 		return ErrorSyntax;
 	++interpreter->pc;
 
@@ -767,21 +775,21 @@ enum ErrorCode cmd_LOOP(struct Core *core)
 	struct Token *tokenLOOP = interpreter->pc;
 	++interpreter->pc;
 
-	if (interpreter->pass == PassPrepare)
+	if(interpreter->pass == PassPrepare)
 	{
 		struct LabelStackItem *item = lab_popLabelStackItem(interpreter);
-		if (!item || item->type != LabelTypeDO)
+		if(!item || item->type != LabelTypeDO)
 			return ErrorLoopWithoutDo;
 
 		tokenLOOP->jumpToken = item->token + 1;
 		item->token->jumpToken = tokenLOOP + 1;
 
 		// Eol
-		if (interpreter->pc->type != TokenEol)
+		if(interpreter->pc->type != TokenEol)
 			return ErrorSyntax;
 		++interpreter->pc;
 	}
-	else if (interpreter->pass == PassRun)
+	else if(interpreter->pass == PassRun)
 	{
 		interpreter->pc = tokenLOOP->jumpToken; // after DO
 	}
@@ -797,15 +805,15 @@ enum ErrorCode cmd_REPEAT(struct Core *core)
 	struct Token *tokenREPEAT = interpreter->pc;
 	++interpreter->pc;
 
-	if (interpreter->pass == PassPrepare)
+	if(interpreter->pass == PassPrepare)
 	{
 		enum ErrorCode errorCode = lab_pushLabelStackItem(interpreter, LabelTypeREPEAT, tokenREPEAT);
-		if (errorCode != ErrorNone)
+		if(errorCode != ErrorNone)
 			return errorCode;
 	}
 
 	// Eol
-	if (interpreter->pc->type != TokenEol)
+	if(interpreter->pc->type != TokenEol)
 		return ErrorSyntax;
 	++interpreter->pc;
 
@@ -822,33 +830,33 @@ enum ErrorCode cmd_UNTIL(struct Core *core)
 
 	// Expression
 	struct TypedValue value = itp_evaluateExpression(core, TypeClassNumeric);
-	if (value.type == ValueTypeError)
+	if(value.type == ValueTypeError)
 		return value.v.errorCode;
 
-	if (interpreter->pass == PassPrepare)
+	if(interpreter->pass == PassPrepare)
 	{
 		struct LabelStackItem *item = lab_popLabelStackItem(interpreter);
-		if (!item || item->type != LabelTypeREPEAT)
+		if(!item || item->type != LabelTypeREPEAT)
 			return ErrorUntilWithoutRepeat;
 
 		tokenUNTIL->jumpToken = item->token + 1;
 		item->token->jumpToken = interpreter->pc;
 
 		// Eol
-		if (interpreter->pc->type != TokenEol)
+		if(interpreter->pc->type != TokenEol)
 			return ErrorSyntax;
 		++interpreter->pc;
 	}
-	else if (interpreter->pass == PassRun)
+	else if(interpreter->pass == PassRun)
 	{
-		if (value.v.floatValue == 0)
+		if(value.v.floatValue == 0)
 		{
 			interpreter->pc = tokenUNTIL->jumpToken; // after REPEAT
 		}
 		else
 		{
 			// Eol
-			if (interpreter->pc->type != TokenEol)
+			if(interpreter->pc->type != TokenEol)
 				return ErrorSyntax;
 			++interpreter->pc;
 		}
@@ -865,26 +873,26 @@ enum ErrorCode cmd_WHILE(struct Core *core)
 	struct Token *tokenWHILE = interpreter->pc;
 	++interpreter->pc;
 
-	if (interpreter->pass == PassPrepare)
+	if(interpreter->pass == PassPrepare)
 	{
 		enum ErrorCode errorCode = lab_pushLabelStackItem(interpreter, LabelTypeWHILE, tokenWHILE);
-		if (errorCode != ErrorNone)
+		if(errorCode != ErrorNone)
 			return errorCode;
 	}
 
 	// Expression
 	struct TypedValue value = itp_evaluateExpression(core, TypeClassNumeric);
-	if (value.type == ValueTypeError)
+	if(value.type == ValueTypeError)
 		return value.v.errorCode;
 
 	// Eol
-	if (interpreter->pc->type != TokenEol)
+	if(interpreter->pc->type != TokenEol)
 		return ErrorSyntax;
 	++interpreter->pc;
 
-	if (interpreter->pass == PassRun)
+	if(interpreter->pass == PassRun)
 	{
-		if (value.v.floatValue == 0)
+		if(value.v.floatValue == 0)
 		{
 			interpreter->pc = tokenWHILE->jumpToken; // after WEND
 		}
@@ -901,21 +909,21 @@ enum ErrorCode cmd_WEND(struct Core *core)
 	struct Token *tokenWEND = interpreter->pc;
 	++interpreter->pc;
 
-	if (interpreter->pass == PassPrepare)
+	if(interpreter->pass == PassPrepare)
 	{
 		struct LabelStackItem *item = lab_popLabelStackItem(interpreter);
-		if (!item || item->type != LabelTypeWHILE)
+		if(!item || item->type != LabelTypeWHILE)
 			return ErrorWendWithoutWhile;
 
 		tokenWEND->jumpToken = item->token;
 		item->token->jumpToken = tokenWEND + 1;
 
 		// Eol
-		if (interpreter->pc->type != TokenEol)
+		if(interpreter->pc->type != TokenEol)
 			return ErrorSyntax;
 		++interpreter->pc;
 	}
-	else if (interpreter->pass == PassRun)
+	else if(interpreter->pass == PassRun)
 	{
 		interpreter->pc = tokenWEND->jumpToken; // on WHILE
 	}
@@ -931,18 +939,18 @@ enum ErrorCode cmd_EXIT(struct Core *core)
 	struct Token *tokenEXIT = interpreter->pc;
 	++interpreter->pc;
 
-	if (interpreter->pass == PassPrepare)
+	if(interpreter->pass == PassPrepare)
 	{
 		enum LabelType types[] = {LabelTypeFOR, LabelTypeDO, LabelTypeWHILE, LabelTypeREPEAT};
 		struct LabelStackItem *item = lab_searchLabelStackItem(interpreter, types, 4);
-		if (!item)
+		if(!item)
 			return ErrorExitNotInsideLoop;
 
 		tokenEXIT->jumpToken = item->token;
 
 		return itp_endOfCommand(interpreter);
 	}
-	else if (interpreter->pass == PassRun)
+	else if(interpreter->pass == PassRun)
 	{
 		interpreter->pc = tokenEXIT->jumpToken->jumpToken;
 	}
@@ -959,22 +967,22 @@ enum ErrorCode cmd_SYSTEM(struct Core *core)
 
 	// type value
 	struct TypedValue tValue = itp_evaluateNumericExpression(core, 0, 8);
-	if (tValue.type == ValueTypeError)
+	if(tValue.type == ValueTypeError)
 		return tValue.v.errorCode;
 
 	// comma
-	if (interpreter->pc->type != TokenComma)
+	if(interpreter->pc->type != TokenComma)
 		return ErrorSyntax;
 	++interpreter->pc;
 
 	// setting value
 	struct TypedValue sValue = itp_evaluateExpression(core, TypeClassNumeric);
-	if (sValue.type == ValueTypeError)
+	if(sValue.type == ValueTypeError)
 		return sValue.v.errorCode;
 
-	if (interpreter->pass == PassRun)
+	if(interpreter->pass == PassRun)
 	{
-		switch ((int)tValue.v.floatValue)
+		switch((int)tValue.v.floatValue)
 		{
 		case 0:
 			core->machineInternals->isEnergySaving = (sValue.v.floatValue != 0.0f);
@@ -1024,7 +1032,7 @@ enum ErrorCode cmd_COMPAT(struct Core *core)
 	// COMPAT
 	++interpreter->pc;
 
-	if (interpreter->pass == PassRun)
+	if(interpreter->pass == PassRun)
 	{
 		interpreter->compat = true;
 		delegate_controlsDidChange(core);
@@ -1037,13 +1045,13 @@ enum ErrorCode cmd_PAUSE(struct Core *core)
 {
 	struct Interpreter *interpreter = core->interpreter;
 
-	if (interpreter->pass == PassRun && interpreter->mode == ModeInterrupt)
+	if(interpreter->pass == PassRun && interpreter->mode == ModeInterrupt)
 		return ErrorNotAllowedInInterrupt;
 
 	// PAUSE
 	++interpreter->pc;
 
-	if (interpreter->pass == PassRun)
+	if(interpreter->pass == PassRun)
 	{
 		trigger_debugger(core);
 	}

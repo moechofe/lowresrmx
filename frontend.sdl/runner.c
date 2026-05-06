@@ -41,7 +41,7 @@ void runner_init(struct Runner *runner)
 	memset(runner, 0, sizeof(struct Runner));
 
 	struct Core *core = calloc(1, sizeof(struct Core));
-	if (core)
+	if(core)
 	{
 		core_init(core);
 
@@ -62,7 +62,7 @@ void runner_init(struct Runner *runner)
 
 void runner_deinit(struct Runner *runner)
 {
-	if (runner->core)
+	if(runner->core)
 	{
 		core_deinit(runner->core);
 
@@ -83,21 +83,21 @@ struct CoreError runner_loadProgram(struct Runner *runner, const char *filename)
 #if defined(__ANDROID__)
 
 	SDL_Storage *title = SDL_OpenTitleStorage(NULL, 0);
-	if (title == NULL)
+	if(title == NULL)
 	{
 		// SDL_Log("Fail to access storage");
 		error = err_makeCoreError(ErrorCouldNotOpenProgram, -1);
 	}
 	else
 	{
-		while (!SDL_StorageReady(title))
+		while(!SDL_StorageReady(title))
 			SDL_Delay(1);
 
 		uint64_t size = 0;
-		if (SDL_GetStorageFileSize(title, "app.rmx", &size) && size > 0)
+		if(SDL_GetStorageFileSize(title, "app.rmx", &size) && size > 0)
 		{
 			char *sourceCode = calloc(1, size + 1);
-			if (SDL_ReadStorageFile(title, "app.rmx", sourceCode, size))
+			if(SDL_ReadStorageFile(title, "app.rmx", sourceCode, size))
 			{
 				error = core_compileProgram(runner->core, sourceCode, true);
 				free(sourceCode);
@@ -118,14 +118,14 @@ struct CoreError runner_loadProgram(struct Runner *runner, const char *filename)
 #else
 
 	FILE *file = fopen_utf8(filename, "rb");
-	if (file)
+	if(file)
 	{
 		fseek(file, 0, SEEK_END);
 		long size = ftell(file);
 		fseek(file, 0, SEEK_SET);
 
 		char *sourceCode = calloc(1, size + 1); // +1 for terminator
-		if (sourceCode)
+		if(sourceCode)
 		{
 			fread(sourceCode, size, 1, file);
 
@@ -160,7 +160,7 @@ void interpreterDidFail(void *context, struct CoreError coreError)
 bool diskDriveWillAccess(void *context, struct DataManager *diskDataManager)
 {
 	struct Runner *runner = context;
-	if (!runner->messageShownUsingDisk && !usesMainProgramAsDisk())
+	if(!runner->messageShownUsingDisk && !usesMainProgramAsDisk())
 	{
 #ifdef __EMSCRIPTEN__
 		overlay_message(runner->core, "NO DISK");
@@ -176,21 +176,21 @@ bool diskDriveWillAccess(void *context, struct DataManager *diskDataManager)
 	getDiskFilename(diskFilename);
 
 	FILE *file = fopen_utf8(diskFilename, "rb");
-	if (file)
+	if(file)
 	{
 		fseek(file, 0, SEEK_END);
 		long size = ftell(file);
 		fseek(file, 0, SEEK_SET);
 
 		char *sourceCode = calloc(1, size + 1); // +1 for terminator
-		if (sourceCode)
+		if(sourceCode)
 		{
 			fread(sourceCode, size, 1, file);
 
 			struct CoreError error = data_import(diskDataManager, sourceCode, true);
 			free(sourceCode);
 
-			if (error.code != ErrorNone)
+			if(error.code != ErrorNone)
 			{
 				core_traceError(runner->core, error);
 			}
@@ -217,13 +217,13 @@ void diskDriveDidSave(void *context, struct DataManager *diskDataManager)
 	overlay_message(runner->core, "NO DISK");
 #else
 	char *output = data_export(diskDataManager);
-	if (output)
+	if(output)
 	{
 		char diskFilename[FILENAME_MAX];
 		getDiskFilename(diskFilename);
 
 		FILE *file = fopen_utf8(diskFilename, "wb");
-		if (file)
+		if(file)
 		{
 			fwrite(output, 1, strlen(output), file);
 			fclose(file);
@@ -253,15 +253,15 @@ void controlsDidChange(void *context, struct ControlsInfo controlsInfo)
 {
 	struct Runner *runner = context;
 
-	if (controlsInfo.keyboardMode == KeyboardModeOn ||
-		(controlsInfo.keyboardMode == KeyboardModeOptional && !SDL_HasScreenKeyboardSupport()))
+	if(controlsInfo.keyboardMode == KeyboardModeOn ||
+	   (controlsInfo.keyboardMode == KeyboardModeOptional && !SDL_HasScreenKeyboardSupport()))
 	{
-		if (!SDL_TextInputActive(window))
+		if(!SDL_TextInputActive(window))
 		{
 			SDL_StartTextInput(window);
 		}
 	}
-	else if (SDL_TextInputActive(window))
+	else if(SDL_TextInputActive(window))
 	{
 		SDL_StopTextInput(window);
 	}
@@ -282,7 +282,7 @@ void persistentRamWillAccess(void *context, uint8_t *destination, int size)
 	getRamFilename(ramFilename);
 
 	FILE *file = fopen_utf8(ramFilename, "rb");
-	if (file)
+	if(file)
 	{
 		fread(destination, sizeof(uint8_t), size, file);
 		fclose(file);
@@ -300,7 +300,7 @@ void persistentRamDidChange(void *context, uint8_t *data, int size)
 	getRamFilename(ramFilename);
 
 	FILE *file = fopen_utf8(ramFilename, "wb");
-	if (file)
+	if(file)
 	{
 		fwrite(data, 1, size, file);
 		fclose(file);

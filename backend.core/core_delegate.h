@@ -1,14 +1,14 @@
-//
-// Copyright 2017 Timo Kloss
-//
+// Copyright 2018 Timo Kloss
+// Copyright 2021-2026 Martin Mauchauffée
+
 // This software is provided 'as-is', without any express or implied
 // warranty. In no event will the authors be held liable for any damages
 // arising from the use of this software.
-//
+
 // Permission is granted to anyone to use this software for any purpose,
 // including commercial applications, and to alter it and redistribute it
 // freely, subject to the following restrictions:
-//
+
 // 1. The origin of this software must not be misrepresented; you must not
 //    claim that you wrote the original software. If you use this software
 //    in a product, an acknowledgment in the product documentation would be
@@ -16,7 +16,6 @@
 // 2. Altered source versions must be plainly marked as such, and must not be
 //    misrepresented as being the original software.
 // 3. This notice may not be removed or altered from any source distribution.
-//
 
 #ifndef core_delegate_h
 #define core_delegate_h
@@ -26,56 +25,60 @@
 
 struct Core;
 
-enum KeyboardMode {
-    KeyboardModeOff,
-    KeyboardModeOn,
-    KeyboardModeOptional
+enum KeyboardMode
+{
+	KeyboardModeOff,
+	KeyboardModeOn,
+	KeyboardModeOptional
 };
 
-enum HapticMode {
-		None,
-		Error,
-		Warning,
-		Success,
-		Heavy,
-		Light,
-		Medium,
-		Rigid,
-		Soft,
-		Selection,
+enum HapticMode
+{
+	None,
+	Error,
+	Warning,
+	Success,
+	Heavy,
+	Light,
+	Medium,
+	Rigid,
+	Soft,
+	Selection,
 };
 
-struct ControlsInfo {
-    enum KeyboardMode keyboardMode;
-		enum HapticMode hapticMode;
-    bool isAudioEnabled;
-		bool isInputState;
-		bool isCompatMode;
+struct ControlsInfo
+{
+	enum KeyboardMode keyboardMode;
+	enum HapticMode hapticMode;
+	bool isAudioEnabled;
+	bool isInputState;
+	bool isCompatMode;
 };
 
-struct CoreDelegate {
-    void *context;
+struct CoreDelegate
+{
+	void *context;
 
-    /** Called on error */
-    void (*interpreterDidFail)(void *context, struct CoreError coreError);
+	/** Called on error */
+	void (*interpreterDidFail)(void *context, struct CoreError coreError);
 
-    /** Returns true if the disk is ready, false if not. In case of not, core_diskLoaded must be called when ready. */
-    bool (*diskDriveWillAccess)(void *context, struct DataManager *diskDataManager);
+	/** Returns true if the disk is ready, false if not. In case of not, core_diskLoaded must be called when ready. */
+	bool (*diskDriveWillAccess)(void *context, struct DataManager *diskDataManager);
 
-    /** Called when a disk data entry was saved */
-    void (*diskDriveDidSave)(void *context, struct DataManager *diskDataManager);
+	/** Called when a disk data entry was saved */
+	void (*diskDriveDidSave)(void *context, struct DataManager *diskDataManager);
 
-    /** Called when a disk data entry was tried to be saved, but the disk is full */
-    void (*diskDriveIsFull)(void *context, struct DataManager *diskDataManager);
+	/** Called when a disk data entry was tried to be saved, but the disk is full */
+	void (*diskDriveIsFull)(void *context, struct DataManager *diskDataManager);
 
-    /** Called when keyboard settings changed */
-    void (*controlsDidChange)(void *context, struct ControlsInfo controlsInfo);
+	/** Called when keyboard settings changed */
+	void (*controlsDidChange)(void *context, struct ControlsInfo controlsInfo);
 
-    /** Called when persistent RAM will be accessed the first time */
-    void (*persistentRamWillAccess)(void *context, uint8_t *destination, int size);
+	/** Called when persistent RAM will be accessed the first time */
+	void (*persistentRamWillAccess)(void *context, uint8_t *destination, int size);
 
-    /** Called when persistent RAM should be saved */
-    void (*persistentRamDidChange)(void *context, uint8_t *data, int size);
+	/** Called when persistent RAM should be saved */
+	void (*persistentRamDidChange)(void *context, uint8_t *data, int size);
 };
 
 void delegate_interpreterDidFail(struct Core *core, struct CoreError coreError);

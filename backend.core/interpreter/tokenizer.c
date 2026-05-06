@@ -1,14 +1,14 @@
-//
-// Copyright 2016-2017 Timo Kloss
-//
+// Copyright 2018 Timo Kloss
+// Copyright 2021-2026 Martin Mauchauffée
+
 // This software is provided 'as-is', without any express or implied
 // warranty. In no event will the authors be held liable for any damages
 // arising from the use of this software.
-//
+
 // Permission is granted to anyone to use this software for any purpose,
 // including commercial applications, and to alter it and redistribute it
 // freely, subject to the following restrictions:
-//
+
 // 1. The origin of this software must not be misrepresented; you must not
 //    claim that you wrote the original software. If you use this software
 //    in a product, an acknowledgment in the product documentation would be
@@ -16,14 +16,13 @@
 // 2. Altered source versions must be plainly marked as such, and must not be
 //    misrepresented as being the original software.
 // 3. This notice may not be removed or altered from any source distribution.
-//
 
 #include "tokenizer.h"
-#include "error.h"
 #include "charsets.h"
-#include <string.h>
-#include <stdlib.h>
+#include "error.h"
 #include "string_utils.h"
+#include <stdlib.h>
+#include <string.h>
 
 struct CoreError tok_tokenizeProgram(struct Tokenizer *tokenizer, const char *sourceCode)
 {
@@ -36,10 +35,10 @@ struct CoreError tok_tokenizeUppercaseProgram(struct Tokenizer *tokenizer, const
 
 	// PROGRAM
 
-	while (*character && *character != '#')
+	while(*character && *character != '#')
 	{
 		int tokenSourcePosition = (int)(character - sourceCode);
-		if (tokenizer->numTokens >= MAX_TOKENS - 1)
+		if(tokenizer->numTokens >= MAX_TOKENS - 1)
 		{
 			return err_makeCoreError(ErrorTooManyTokens, tokenSourcePosition);
 		}
@@ -47,12 +46,12 @@ struct CoreError tok_tokenizeUppercaseProgram(struct Tokenizer *tokenizer, const
 		token->sourcePosition = tokenSourcePosition;
 
 		// line break \n or \n\r
-		if (*character == '\n')
+		if(*character == '\n')
 		{
 			token->type = TokenEol;
 			tokenizer->numTokens++;
 			character++;
-			if (*character == '\r')
+			if(*character == '\r')
 			{
 				character++;
 			}
@@ -60,12 +59,12 @@ struct CoreError tok_tokenizeUppercaseProgram(struct Tokenizer *tokenizer, const
 		}
 
 		// line break \r or \r\n
-		if (*character == '\r')
+		if(*character == '\r')
 		{
 			token->type = TokenEol;
 			tokenizer->numTokens++;
 			character++;
-			if (*character == '\n')
+			if(*character == '\n')
 			{
 				character++;
 			}
@@ -73,13 +72,13 @@ struct CoreError tok_tokenizeUppercaseProgram(struct Tokenizer *tokenizer, const
 		}
 
 		// space
-		if (*character == ' ' || *character == '\t')
+		if(*character == ' ' || *character == '\t')
 		{
 			character++;
 			continue;
 		}
 
-		if (*character == ':')
+		if(*character == ':')
 		{
 			token->type = TokenEol;
 			tokenizer->numTokens++;
@@ -88,17 +87,17 @@ struct CoreError tok_tokenizeUppercaseProgram(struct Tokenizer *tokenizer, const
 		}
 
 		// string
-		if (*character == '"')
+		if(*character == '"')
 		{
 			character++;
 			const char *firstCharacter = character;
-			while (*character && *character != '"')
+			while(*character && *character != '"')
 			{
-				if (*character == '\n')
+				if(*character == '\n')
 				{
 					return err_makeCoreError(ErrorUnterminatedString, (int)(character - sourceCode));
 				}
-				else if (*character < 0)
+				else if(*character < 0)
 				{
 					return err_makeCoreError(ErrorUnexpectedCharacter, (int)(character - sourceCode));
 				}
@@ -106,7 +105,7 @@ struct CoreError tok_tokenizeUppercaseProgram(struct Tokenizer *tokenizer, const
 			}
 			int len = (int)(character - firstCharacter);
 			struct RCString *string = rcstring_new(firstCharacter, len);
-			if (!string)
+			if(!string)
 				return err_makeCoreError(ErrorOutOfMemory, tokenSourcePosition);
 			token->type = TokenString;
 			token->stringValue = string;
@@ -116,16 +115,16 @@ struct CoreError tok_tokenizeUppercaseProgram(struct Tokenizer *tokenizer, const
 		}
 
 		// number
-		if (strchr(CharSetDigits, *character))
+		if(strchr(CharSetDigits, *character))
 		{
 			float number = 0;
 			int afterDot = 0;
-			while (*character)
+			while(*character)
 			{
-				if (strchr(CharSetDigits, *character))
+				if(strchr(CharSetDigits, *character))
 				{
 					int digit = (int)*character - (int)'0';
-					if (afterDot == 0)
+					if(afterDot == 0)
 					{
 						number *= 10;
 						number += digit;
@@ -137,7 +136,7 @@ struct CoreError tok_tokenizeUppercaseProgram(struct Tokenizer *tokenizer, const
 					}
 					character++;
 				}
-				else if (*character == '.' && afterDot == 0)
+				else if(*character == '.' && afterDot == 0)
 				{
 					afterDot = 10;
 					character++;
@@ -154,14 +153,14 @@ struct CoreError tok_tokenizeUppercaseProgram(struct Tokenizer *tokenizer, const
 		}
 
 		// hex number
-		if (*character == '$')
+		if(*character == '$')
 		{
 			character++;
 			int number = 0;
-			while (*character)
+			while(*character)
 			{
 				char *spos = strchr(CharSetHex, uppercaseChar(*character));
-				if (spos)
+				if(spos)
 				{
 					int digit = (int)(spos - CharSetHex);
 					number <<= 4;
@@ -180,13 +179,13 @@ struct CoreError tok_tokenizeUppercaseProgram(struct Tokenizer *tokenizer, const
 		}
 
 		// bin number
-		if (*character == '%')
+		if(*character == '%')
 		{
 			character++;
 			int number = 0;
-			while (*character)
+			while(*character)
 			{
-				if (*character == '0' || *character == '1')
+				if(*character == '0' || *character == '1')
 				{
 					int digit = *character - '0';
 					number <<= 1;
@@ -206,27 +205,27 @@ struct CoreError tok_tokenizeUppercaseProgram(struct Tokenizer *tokenizer, const
 
 		// Keyword
 		enum TokenType foundKeywordToken = TokenUndefined;
-		for (int i = 0; i < Token_count; i++)
+		for(int i = 0; i < Token_count; i++)
 		{
 			const char *keyword = TokenStrings[i];
-			if (keyword)
+			if(keyword)
 			{
 				size_t keywordLen = strlen(keyword);
 				int keywordIsAlphaNum = strchr(CharSetAlphaNum, keyword[0]) != NULL;
-				for (int pos = 0; pos <= keywordLen; pos++)
+				for(int pos = 0; pos <= keywordLen; pos++)
 				{
 					char textCharacter = uppercaseChar(character[pos]);
 
-					if (pos < keywordLen)
+					if(pos < keywordLen)
 					{
 						char symbCharacter = keyword[pos];
-						if (symbCharacter != textCharacter)
+						if(symbCharacter != textCharacter)
 						{
 							// not matching
 							break;
 						}
 					}
-					else if (keywordIsAlphaNum && textCharacter && strchr(CharSetAlphaNum, textCharacter))
+					else if(keywordIsAlphaNum && textCharacter && strchr(CharSetAlphaNum, textCharacter))
 					{
 						// matching, but word is longer, so seems to be an identifier
 						break;
@@ -239,24 +238,24 @@ struct CoreError tok_tokenizeUppercaseProgram(struct Tokenizer *tokenizer, const
 						break;
 					}
 				}
-				if (foundKeywordToken != TokenUndefined)
+				if(foundKeywordToken != TokenUndefined)
 				{
 					break;
 				}
 			}
 		}
-		if (foundKeywordToken != TokenUndefined)
+		if(foundKeywordToken != TokenUndefined)
 		{
-			if (foundKeywordToken == TokenApostrophe)
+			if(foundKeywordToken == TokenApostrophe)
 			{
 				// comment, skip until end of line
-				while (*character)
+				while(*character)
 				{
-					if (*character < 0)
+					if(*character < 0)
 					{
 						return err_makeCoreError(ErrorUnexpectedCharacter, (int)(character - sourceCode));
 					}
-					if (*character == '\n')
+					if(*character == '\n')
 					{
 						character++;
 						break;
@@ -264,7 +263,7 @@ struct CoreError tok_tokenizeUppercaseProgram(struct Tokenizer *tokenizer, const
 					character++;
 				}
 			}
-			else if (foundKeywordToken > Token_reserved)
+			else if(foundKeywordToken > Token_reserved)
 			{
 				return err_makeCoreError(ErrorReservedKeyword, tokenSourcePosition);
 			}
@@ -274,19 +273,19 @@ struct CoreError tok_tokenizeUppercaseProgram(struct Tokenizer *tokenizer, const
 		}
 
 		// Symbol
-		if (strchr(CharSetLetters, uppercaseChar(*character)))
+		if(strchr(CharSetLetters, uppercaseChar(*character)))
 		{
 			const char *firstCharacter = character;
 			char isString = 0;
-			while (*character)
+			while(*character)
 			{
-				if (strchr(CharSetAlphaNum, uppercaseChar(*character)))
+				if(strchr(CharSetAlphaNum, uppercaseChar(*character)))
 				{
 					character++;
 				}
 				else
 				{
-					if (*character == '$')
+					if(*character == '$')
 					{
 						isString = 1;
 						character++;
@@ -294,17 +293,17 @@ struct CoreError tok_tokenizeUppercaseProgram(struct Tokenizer *tokenizer, const
 					break;
 				}
 			}
-			if (tokenizer->numSymbols >= MAX_SYMBOLS)
+			if(tokenizer->numSymbols >= MAX_SYMBOLS)
 			{
 				return err_makeCoreError(ErrorTooManySymbols, tokenSourcePosition);
 			}
 			int len = (int)(character - firstCharacter);
-			if (len >= SYMBOL_NAME_SIZE)
+			if(len >= SYMBOL_NAME_SIZE)
 			{
 				return err_makeCoreError(ErrorSymbolNameTooLong, tokenSourcePosition);
 			}
 			char symbolName[SYMBOL_NAME_SIZE];
-			for (size_t i = 0; i < len; i++)
+			for(size_t i = 0; i < len; i++)
 			{
 				symbolName[i] = uppercaseChar(firstCharacter[i]);
 			}
@@ -312,37 +311,37 @@ struct CoreError tok_tokenizeUppercaseProgram(struct Tokenizer *tokenizer, const
 			symbolName[len] = 0;
 			int symbolIndex = -1;
 			// find existing symbol
-			for (int i = 0; i < MAX_SYMBOLS && tokenizer->symbols[i].name[0] != 0; i++)
+			for(int i = 0; i < MAX_SYMBOLS && tokenizer->symbols[i].name[0] != 0; i++)
 			{
-				if (strcmp(symbolName, tokenizer->symbols[i].name) == 0)
+				if(strcmp(symbolName, tokenizer->symbols[i].name) == 0)
 				{
 					symbolIndex = i;
 					break;
 				}
 			}
-			if (symbolIndex == -1)
+			if(symbolIndex == -1)
 			{
 				// add new symbol
 				strcpy(tokenizer->symbols[tokenizer->numSymbols].name, symbolName);
 				symbolIndex = tokenizer->numSymbols++;
 			}
-			if (isString)
+			if(isString)
 			{
 				token->type = TokenStringIdentifier;
 			}
-			else if (*character == ':')
+			else if(*character == ':')
 			{
 				token->type = TokenLabel;
 				character++;
 				enum ErrorCode errorCode = tok_setJumpLabel(tokenizer, symbolIndex, token + 1);
-				if (errorCode != ErrorNone)
+				if(errorCode != ErrorNone)
 					return err_makeCoreError(errorCode, tokenSourcePosition);
 
 				token->symbolIndex = symbolIndex;
 				tokenizer->numTokens++;
 
 				int tokenSourcePosition = (int)(character - sourceCode);
-				if (tokenizer->numTokens >= MAX_TOKENS - 1)
+				if(tokenizer->numTokens >= MAX_TOKENS - 1)
 				{
 					return err_makeCoreError(ErrorTooManyTokens, tokenSourcePosition);
 				}
@@ -355,10 +354,10 @@ struct CoreError tok_tokenizeUppercaseProgram(struct Tokenizer *tokenizer, const
 			else
 			{
 				token->type = TokenIdentifier;
-				if (tokenizer->numTokens > 0 && tokenizer->tokens[tokenizer->numTokens - 1].type == TokenSUB)
+				if(tokenizer->numTokens > 0 && tokenizer->tokens[tokenizer->numTokens - 1].type == TokenSUB)
 				{
 					enum ErrorCode errorCode = tok_setSub(tokenizer, symbolIndex, token + 1);
-					if (errorCode != ErrorNone)
+					if(errorCode != ErrorNone)
 						return err_makeCoreError(errorCode, tokenSourcePosition);
 				}
 			}
@@ -383,10 +382,10 @@ struct CoreError tok_tokenizeUppercaseProgram(struct Tokenizer *tokenizer, const
 void tok_freeTokens(struct Tokenizer *tokenizer)
 {
 	// Free string tokens
-	for (int i = 0; i < tokenizer->numTokens; i++)
+	for(int i = 0; i < tokenizer->numTokens; i++)
 	{
 		struct Token *token = &tokenizer->tokens[i];
-		if (token->type == TokenString)
+		if(token->type == TokenString)
 		{
 			rcstring_release(token->stringValue);
 		}
@@ -397,7 +396,7 @@ void tok_freeTokens(struct Tokenizer *tokenizer)
 struct JumpLabelItem *tok_getJumpLabel(struct Tokenizer *tokenizer, int symbolIndex)
 {
 	struct JumpLabelItem *item = &tokenizer->jumpLabelItems[symbolIndex];
-	if (item->token != NULL)
+	if(item->token != NULL)
 	{
 		return item;
 	}
@@ -406,11 +405,11 @@ struct JumpLabelItem *tok_getJumpLabel(struct Tokenizer *tokenizer, int symbolIn
 
 enum ErrorCode tok_setJumpLabel(struct Tokenizer *tokenizer, int symbolIndex, struct Token *token)
 {
-	if (tok_getJumpLabel(tokenizer, symbolIndex) != NULL)
+	if(tok_getJumpLabel(tokenizer, symbolIndex) != NULL)
 	{
 		return ErrorLabelAlreadyDefined;
 	}
-	if (tokenizer->numJumpLabelItems >= MAX_JUMP_LABEL_ITEMS)
+	if(tokenizer->numJumpLabelItems >= MAX_JUMP_LABEL_ITEMS)
 	{
 		return ErrorTooManyLabels;
 	}
@@ -424,10 +423,10 @@ enum ErrorCode tok_setJumpLabel(struct Tokenizer *tokenizer, int symbolIndex, st
 struct SubItem *tok_getSub(struct Tokenizer *tokenizer, int symbolIndex)
 {
 	struct SubItem *item;
-	for (int i = 0; i < tokenizer->numSubItems; i++)
+	for(int i = 0; i < tokenizer->numSubItems; i++)
 	{
 		item = &tokenizer->subItems[i];
-		if (item->symbolIndex == symbolIndex)
+		if(item->symbolIndex == symbolIndex)
 		{
 			return item;
 		}
@@ -437,11 +436,11 @@ struct SubItem *tok_getSub(struct Tokenizer *tokenizer, int symbolIndex)
 
 enum ErrorCode tok_setSub(struct Tokenizer *tokenizer, int symbolIndex, struct Token *token)
 {
-	if (tok_getSub(tokenizer, symbolIndex) != NULL)
+	if(tok_getSub(tokenizer, symbolIndex) != NULL)
 	{
 		return ErrorSubAlreadyDefined;
 	}
-	if (tokenizer->numSubItems >= MAX_SUB_ITEMS)
+	if(tokenizer->numSubItems >= MAX_SUB_ITEMS)
 	{
 		return ErrorTooManySubprograms;
 	}

@@ -41,35 +41,35 @@ void settings_init(struct Settings *settings, char *filenameOut, int argc, const
 	// load settings file
 
 	char filename[FILENAME_MAX];
-	if (settings_filename(filename))
+	if(settings_filename(filename))
 	{
 		FILE *file = fopen_utf8(filename, "r");
-		if (file)
+		if(file)
 		{
 			char line[FILENAME_MAX];
-			while (fgets(line, FILENAME_MAX, file))
+			while(fgets(line, FILENAME_MAX, file))
 			{
-				if (line[0] != '#')
+				if(line[0] != '#')
 				{
 					char *space = strchr(line, ' ');
-					if (space)
+					if(space)
 					{
 						*space = 0; // separate into two strings
 						char *value = space + 1;
 
 						// remove EOL characters
 						char *eolChar = strchr(value, '\n');
-						if (eolChar)
+						if(eolChar)
 						{
 							*eolChar = 0;
 						}
 						eolChar = strchr(value, '\r');
-						if (eolChar)
+						if(eolChar)
 						{
 							*eolChar = 0;
 						}
 
-						if (strcmp(line, "tool") == 0)
+						if(strcmp(line, "tool") == 0)
 						{
 							settings_addTool(settings, value);
 						}
@@ -97,13 +97,13 @@ void settings_init(struct Settings *settings, char *filenameOut, int argc, const
 
 	// parse arguments
 
-	for (int i = 1; i < argc; i++)
+	for(int i = 1; i < argc; i++)
 	{
 		const char *arg = argv[i];
-		if (*arg == '-')
+		if(*arg == '-')
 		{
 			i++;
-			if (i < argc)
+			if(i < argc)
 			{
 				settings_setParameter(&settings->session, arg + 1, argv[i]);
 			}
@@ -127,7 +127,7 @@ bool settings_filename(char *destination)
 {
 #if SETTINGS_FILE
 	char *prefPath = SDL_GetPrefPath("martin_mauchauffee", "LowResRMX");
-	if (prefPath)
+	if(prefPath)
 	{
 		strncpy(destination, prefPath, FILENAME_MAX - 1);
 		strncat(destination, "settings.txt", FILENAME_MAX - 1);
@@ -140,51 +140,51 @@ bool settings_filename(char *destination)
 
 void settings_setParameter(struct Parameters *parameters, const char *key, const char *value)
 {
-	if (strcmp(key, "fullscreen") == 0)
+	if(strcmp(key, "fullscreen") == 0)
 	{
-		if (strcmp(value, optionYes) == 0)
+		if(strcmp(value, optionYes) == 0)
 		{
 			parameters->fullscreen = true;
 		}
-		else if (strcmp(value, optionNo) == 0)
+		else if(strcmp(value, optionNo) == 0)
 		{
 			parameters->fullscreen = false;
 		}
 	}
-	else if (strcmp(key, "disabledev") == 0)
+	else if(strcmp(key, "disabledev") == 0)
 	{
-		if (strcmp(value, optionYes) == 0)
+		if(strcmp(value, optionYes) == 0)
 		{
 			parameters->disabledev = true;
 		}
-		else if (strcmp(value, optionNo) == 0)
+		else if(strcmp(value, optionNo) == 0)
 		{
 			parameters->disabledev = false;
 		}
 	}
-	else if (strcmp(key, "mapping") == 0)
+	else if(strcmp(key, "mapping") == 0)
 	{
 		int i = SDL_atoi(value);
-		if (i >= 0 && i <= 1)
+		if(i >= 0 && i <= 1)
 		{
 			parameters->mapping = i;
 		}
 	}
-	else if (strcmp(key, "disabledelay") == 0)
+	else if(strcmp(key, "disabledelay") == 0)
 	{
-		if (strcmp(value, optionYes) == 0)
+		if(strcmp(value, optionYes) == 0)
 		{
 			parameters->disabledelay = true;
 		}
-		else if (strcmp(value, optionNo) == 0)
+		else if(strcmp(value, optionNo) == 0)
 		{
 			parameters->disabledelay = false;
 		}
 	}
-	else if (strcmp(key, "zoom") == 0)
+	else if(strcmp(key, "zoom") == 0)
 	{
 		int i = SDL_atoi(value);
-		if (i >= 0 && i <= 3)
+		if(i >= 0 && i <= 3)
 		{
 #ifdef __EMSCRIPTEN__
 			parameters->zoom = 1;
@@ -203,7 +203,7 @@ void settings_save(struct Settings *settings)
 {
 #if SETTINGS_FILE
 	char filename[FILENAME_MAX];
-	if (settings_filename(filename))
+	if(settings_filename(filename))
 	{
 		settings_saveAs(settings, filename);
 	}
@@ -214,7 +214,7 @@ void settings_saveAs(struct Settings *settings, const char *filename)
 {
 #if SETTINGS_FILE
 	FILE *file = fopen_utf8(filename, "w");
-	if (file)
+	if(file)
 	{
 		fputs("# Start the application in fullscreen mode.\n# fullscreen yes/no\n", file);
 		fputs("fullscreen ", file);
@@ -223,7 +223,7 @@ void settings_saveAs(struct Settings *settings, const char *filename)
 
 		fputs("# Start the application in zoom mode: 0 = pixel perfect, 1 = large, 2 = overscan, 3 = squeeze.\n# zoom "
 			  "0-3\n",
-			  file);
+		file);
 		fprintf(file, "zoom %d\n\n", settings->file.zoom);
 
 		fputs("# Disable the Development Menu, Esc key quits LowRes NX.\n# disabledev yes/no\n", file);
@@ -240,7 +240,7 @@ void settings_saveAs(struct Settings *settings, const char *filename)
 		fputs("\n\n", file);
 
 		fputs("# Add tools for the Edit ROM menu (max 4).\n# tool My Tool.rmx\n", file);
-		for (int i = 0; i < settings->numTools; i++)
+		for(int i = 0; i < settings->numTools; i++)
 		{
 			fputs("tool ", file);
 			fputs(settings->tools[i], file);
@@ -255,7 +255,7 @@ void settings_saveAs(struct Settings *settings, const char *filename)
 bool settings_addTool(struct Settings *settings, const char *filename)
 {
 	int index = settings->numTools;
-	if (index < MAX_TOOLS)
+	if(index < MAX_TOOLS)
 	{
 		strncpy(settings->tools[index], filename, FILENAME_MAX - 1);
 		displayName(filename, settings->toolNames[index], TOOL_NAME_SIZE);
@@ -267,9 +267,9 @@ bool settings_addTool(struct Settings *settings, const char *filename)
 
 void settings_removeTool(struct Settings *settings, int index)
 {
-	if (index < settings->numTools)
+	if(index < settings->numTools)
 	{
-		for (int i = index; i < MAX_TOOLS - 1; i++)
+		for(int i = index; i < MAX_TOOLS - 1; i++)
 		{
 			strncpy(settings->tools[i], settings->tools[i + 1], FILENAME_MAX - 1);
 			strncpy(settings->toolNames[i], settings->toolNames[i + 1], TOOL_NAME_SIZE - 1);

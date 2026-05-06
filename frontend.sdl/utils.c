@@ -27,17 +27,17 @@ void displayName(const char *filename, char *destination, size_t size)
 
 	const char *nameStart = filename;
 	char *slash = strrchr(filename, PATH_SEPARATOR_CHAR);
-	if (slash)
+	if(slash)
 	{
 		nameStart = slash + 1;
 	}
 	strncpy(destination, nameStart, size - 1);
 
 	char *dot = strrchr(nameStart, '.');
-	if (dot)
+	if(dot)
 	{
 		int dotIndex = (int)(dot - nameStart);
-		if (dotIndex < size)
+		if(dotIndex < size)
 		{
 			destination[dotIndex] = 0;
 		}
@@ -48,7 +48,7 @@ bool hasPostfix(const char *string, const char *postfix)
 {
 	size_t stringLen = strlen(string);
 	size_t postfixLen = strlen(postfix);
-	if (postfixLen <= stringLen)
+	if(postfixLen <= stringLen)
 	{
 		string = string + stringLen - postfixLen;
 		return strcmp(string, postfix) == 0;

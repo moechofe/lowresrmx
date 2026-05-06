@@ -1,14 +1,14 @@
-//
-// Copyright 2016-2019 Timo Kloss
-//
+// Copyright 2018 Timo Kloss
+// Copyright 2021-2026 Martin Mauchauffée
+
 // This software is provided 'as-is', without any express or implied
 // warranty. In no event will the authors be held liable for any damages
 // arising from the use of this software.
-//
+
 // Permission is granted to anyone to use this software for any purpose,
 // including commercial applications, and to alter it and redistribute it
 // freely, subject to the following restrictions:
-//
+
 // 1. The origin of this software must not be misrepresented; you must not
 //    claim that you wrote the original software. If you use this software
 //    in a product, an acknowledgment in the product documentation would be
@@ -16,15 +16,14 @@
 // 2. Altered source versions must be plainly marked as such, and must not be
 //    misrepresented as being the original software.
 // 3. This notice may not be removed or altered from any source distribution.
-//
 
 #ifndef text_lib_h
 #define text_lib_h
 
-#include <stdio.h>
+#include "video_chip.h"
 #include <stdbool.h>
 #include <stdint.h>
-#include "video_chip.h"
+#include <stdio.h>
 
 #define INPUT_BUFFER_SIZE 256
 #define OVERLAY_BG 4
@@ -68,7 +67,8 @@ void txtlib_clearBackground(struct TextLib *lib, int bg);
 struct Cell *txtlib_getCell(struct TextLib *lib, int x, int y);
 void txtlib_setCell(struct TextLib *lib, int x, int y, int character);
 void txtlib_setCells(struct TextLib *lib, int fromX, int fromY, int toX, int toY, int character);
-void txtlib_setCellsAttr(struct TextLib *lib, int fromX, int fromY, int toX, int toY, int pal, int flipX, int flipY, int prio);
+void txtlib_setCellsAttr(
+struct TextLib *lib, int fromX, int fromY, int toX, int toY, int pal, int flipX, int flipY, int prio);
 void txtlib_scrollBackground(struct TextLib *lib, int fromX, int fromY, int toX, int toY, int deltaX, int deltaY);
 void txtlib_copyBackground(struct TextLib *lib, int srcX, int srcY, int width, int height, int dstX, int dstY);
 int txtlib_getSourceCell(struct TextLib *lib, int x, int y, bool getAttrs);

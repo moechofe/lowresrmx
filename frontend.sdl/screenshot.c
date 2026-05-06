@@ -34,17 +34,17 @@
 bool writeImage(const char *filename, int width, int height, uint32_t *pixels, int scale)
 {
 	uint8_t *data = malloc(width * height * 3 * scale * scale);
-	if (data)
+	if(data)
 	{
 		int i = 0;
-		for (int y = 0; y < height; y++)
+		for(int y = 0; y < height; y++)
 		{
-			for (int ys = 0; ys < scale; ys++)
+			for(int ys = 0; ys < scale; ys++)
 			{
-				for (int x = 0; x < width; x++)
+				for(int x = 0; x < width; x++)
 				{
 					uint32_t pixel = pixels[y * width + x];
-					for (int xs = 0; xs < scale; xs++)
+					for(int xs = 0; xs < scale; xs++)
 					{
 						data[i++] = (pixel) & 0xFF;
 						data[i++] = (pixel >> 8) & 0xFF;

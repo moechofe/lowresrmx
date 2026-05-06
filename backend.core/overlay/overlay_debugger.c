@@ -1,22 +1,39 @@
+// Copyright 2018 Timo Kloss
+// Copyright 2021-2026 Martin Mauchauffée
 
-#include "interpreter_config.h"
-#include "interpreter.h"
-#include "overlay.h"
+// This software is provided 'as-is', without any express or implied
+// warranty. In no event will the authors be held liable for any damages
+// arising from the use of this software.
+
+// Permission is granted to anyone to use this software for any purpose,
+// including commercial applications, and to alter it and redistribute it
+// freely, subject to the following restrictions:
+
+// 1. The origin of this software must not be misrepresented; you must not
+//    claim that you wrote the original software. If you use this software
+//    in a product, an acknowledgment in the product documentation would be
+//    appreciated but is not required.
+// 2. Altered source versions must be plainly marked as such, and must not be
+//    misrepresented as being the original software.
+// 3. This notice may not be removed or altered from any source distribution.
+
 #include "overlay_debugger.h"
-#include "core.h"
-#include "rcstring.h"
-#include "text_lib.h"
-#include "tokenizer.h"
-#include "token.h"
 #include "charsets.h"
-#include "variables.h"
-#include "string_utils.h"
-#include "rcstring.h"
-#include "machine.h"
-#include "globmatch.h"
 #include "config.h"
-#include <string.h>
+#include "core.h"
+#include "globmatch.h"
+#include "interpreter.h"
+#include "interpreter_config.h"
+#include "machine.h"
+#include "overlay.h"
+#include "rcstring.h"
+#include "string_utils.h"
+#include "text_lib.h"
+#include "token.h"
+#include "tokenizer.h"
+#include "variables.h"
 #include <stdlib.h>
+#include <string.h>
 
 void new_line(struct Core *core)
 {
@@ -29,14 +46,14 @@ void new_line(struct Core *core)
 
 void print_value(struct Core *core, enum ValueType type, union Value *value)
 {
-	if (type == ValueTypeFloat && value)
+	if(type == ValueTypeFloat && value)
 	{
 		char buffer[20];
 		snprintf(buffer, 20, "  %0.10g", value->floatValue);
 		txtlib_printText(&core->overlay->textLib, buffer);
 		new_line(core);
 	}
-	else if (type == ValueTypeString && value)
+	else if(type == ValueTypeString && value)
 	{
 		txtlib_printText(&core->overlay->textLib, "  \"");
 		txtlib_printText(&core->overlay->textLib, value->stringValue->chars);
@@ -50,16 +67,17 @@ void print_value(struct Core *core, enum ValueType type, union Value *value)
 	}
 }
 
-void set_value(struct Core *core, enum ValueType type, union Value *value, enum TokenType newType, float newFloat, struct RCString *newString)
+void set_value(struct Core *core, enum ValueType type, union Value *value, enum TokenType newType, float newFloat,
+struct RCString *newString)
 {
 	// NOTE: value and newValue are alreay tested before arriving here
-	if (newType == TokenFloat && type == ValueTypeFloat)
+	if(newType == TokenFloat && type == ValueTypeFloat)
 	{
 		value->floatValue = newFloat;
 	}
-	else if (newType == TokenString && type == ValueTypeString)
+	else if(newType == TokenString && type == ValueTypeString)
 	{
-		if (value->stringValue)
+		if(value->stringValue)
 			rcstring_release(value->stringValue);
 		value->stringValue = newString;
 	}
@@ -88,8 +106,8 @@ void print_command_line(struct Core *core)
 struct SimpleVariable *get_simple_var(struct Core *core, const char *looking_name)
 {
 	struct Tokenizer *tokenizer = &core->interpreter->tokenizer;
-	for (int i = 0; i < MAX_SYMBOLS && tokenizer->symbols[i].name[0] != 0; i++)
-		if (strcmp(looking_name, tokenizer->symbols[i].name) == 0)
+	for(int i = 0; i < MAX_SYMBOLS && tokenizer->symbols[i].name[0] != 0; i++)
+		if(strcmp(looking_name, tokenizer->symbols[i].name) == 0)
 			return var_getSimpleVariable(core->interpreter, i, core->interpreter->subLevel);
 	return NULL;
 }
@@ -97,22 +115,22 @@ struct SimpleVariable *get_simple_var(struct Core *core, const char *looking_nam
 struct ArrayVariable *get_array_var(struct Core *core, const char *looking_name)
 {
 	struct Tokenizer *tokenizer = &core->interpreter->tokenizer;
-	for (int i = 0; i < MAX_SYMBOLS && tokenizer->symbols[i].name[0] != 0; i++)
-		if (strcmp(looking_name, tokenizer->symbols[i].name) == 0)
+	for(int i = 0; i < MAX_SYMBOLS && tokenizer->symbols[i].name[0] != 0; i++)
+		if(strcmp(looking_name, tokenizer->symbols[i].name) == 0)
 			return var_getArrayVariable(core->interpreter, i, core->interpreter->subLevel);
 	return NULL;
 }
 
 int get_address(struct Core *core, struct Token *t)
 {
-	if (t->type != TokenFloat)
+	if(t->type != TokenFloat)
 	{
 		txtlib_printText(&core->overlay->textLib, "  syntax error");
 		new_line(core);
 		return -1;
 	}
 	int address = (int)t->floatValue;
-	if (address < 0 || address >= 0x10000)
+	if(address < 0 || address >= 0x10000)
 	{
 		txtlib_printText(&core->overlay->textLib, "  out of bounds");
 		new_line(core);
@@ -125,11 +143,11 @@ static void print_float(struct Core *core, union Value value)
 {
 	print_value(core, ValueTypeFloat, &value);
 	struct RCString *rcstring = rcstring_new(NULL, 16);
-	if (rcstring)
+	if(rcstring)
 	{
 		int width = 0;
 		int x = value.floatValue;
-		if (x < 0)
+		if(x < 0)
 		{
 			long int i = pow(16, width > 0 ? width : 16) - 1;
 			x = (unsigned int)x & i;
@@ -146,7 +164,7 @@ static void print_line_of_code(struct Core *core, int sourcePosition, const char
 {
 	int w = core->overlay->textLib.windowWidth - 1;
 	const char *line = lineString(core->interpreter->sourceCode, sourcePosition);
-	if (line)
+	if(line)
 	{
 		char buffer[27];
 		sprintf(buffer, "%c ", cursor);
@@ -165,40 +183,40 @@ static void print_code(struct Core *core)
 	const char *sourceCode = interpreter->sourceCode;
 	struct TextLib *textLib = &core->overlay->textLib;
 
-	if (pc->type == TokenUndefined)
+	if(pc->type == TokenUndefined)
 		return;
 
 	int next = pc->sourcePosition;
 
 	// make sure the first line do not start by a \n
-	while (sourceCode[next] == '\n')
+	while(sourceCode[next] == '\n')
 		++next;
 
 	int last = next - 1, prev = -1;
 
 	// reverse skip whitespace
-	while (sourceCode[last] == '\n' || sourceCode[last] == ' ')
+	while(sourceCode[last] == '\n' || sourceCode[last] == ' ')
 		--last;
 
 	// look up for previous line
-	while (last > 0 && sourceCode[last - 1] != '\n')
+	while(last > 0 && sourceCode[last - 1] != '\n')
 		--last;
 
 	// there is more line above
-	if (last > 0)
+	if(last > 0)
 	{
 		prev = last - 1;
-		while (sourceCode[prev] == '\n' || sourceCode[prev] == ' ')
+		while(sourceCode[prev] == '\n' || sourceCode[prev] == ' ')
 			--prev;
-		while (prev > 0 && sourceCode[prev - 1] != '\n')
+		while(prev > 0 && sourceCode[prev - 1] != '\n')
 			--prev;
 	}
 
-	if (prev >= 0)
+	if(prev >= 0)
 		print_line_of_code(core, prev, ' ');
-	if (last >= 0 && sourceCode[last] != '\0')
+	if(last >= 0 && sourceCode[last] != '\0')
 		print_line_of_code(core, last, '>');
-	if (next >= 0 && sourceCode[next] != '\0')
+	if(next >= 0 && sourceCode[next] != '\0')
 		print_line_of_code(core, next, ' ');
 
 	txtlib_printText(textLib, "\n");
@@ -216,47 +234,48 @@ static void process_command_line(struct Core *core)
 
 	size_t i = 0;
 	struct Token *t;
-	if (err.code == ErrorNone && toks.numTokens > 0)
+	if(err.code == ErrorNone && toks.numTokens > 0)
 	{
 		t = &toks.tokens[i++];
-		if (t->type == TokenEol)
+		if(t->type == TokenEol)
 		{
 			return;
 		}
-		else if (t->type == TokenIdentifier || t->type == TokenStringIdentifier)
+		else if(t->type == TokenIdentifier || t->type == TokenStringIdentifier)
 		{
 			t = &toks.tokens[i++];
 			struct SimpleVariable *simple = get_simple_var(core, toks.symbols[0].name);
 			struct ArrayVariable *array = get_array_var(core, toks.symbols[0].name);
-			if (!simple && !array)
+			if(!simple && !array)
 				print_value(core, ValueTypeNull, &simple->v);
 			// read simple variable
-			else if (simple && t->type == TokenEol)
+			else if(simple && t->type == TokenEol)
 			{
-				if (simple->type == ValueTypeFloat)
+				if(simple->type == ValueTypeFloat)
 					print_float(core, simple->v);
 				else
 					print_value(core, simple->type, &simple->v);
 			}
 			// write simple variable
-			else if (simple && t->type == TokenEq)
+			else if(simple && t->type == TokenEq)
 			{
 				t = &toks.tokens[i++];
 				set_value(core, simple->type, &simple->v, t->type, t->floatValue, t->stringValue);
 			}
-			else if (array && t->type == TokenEol)
+			else if(array && t->type == TokenEol)
 			{
 				// TODO: what to do here?
 			}
-			else if (array && t->type == TokenBracketOpen)
+			else if(array && t->type == TokenBracketOpen)
 			{
 				t = &toks.tokens[i++];
 				int indices[MAX_ARRAY_DIMENSIONS], dimensions = 0;
-				while (t->type != TokenBracketClose && t->type != TokenEol && t->type != TokenEq && dimensions < MAX_ARRAY_DIMENSIONS)
+				while(t->type != TokenBracketClose && t->type != TokenEol && t->type != TokenEq &&
+					  dimensions < MAX_ARRAY_DIMENSIONS)
 				{
-					if (t->type == TokenFloat)
+					if(t->type == TokenFloat)
 					{
-						if (t->floatValue < 0 || t->floatValue >= array->dimensionSizes[dimensions])
+						if(t->floatValue < 0 || t->floatValue >= array->dimensionSizes[dimensions])
 						{
 							txtlib_printText(&core->overlay->textLib, "  out of bounds");
 							new_line(core);
@@ -271,7 +290,7 @@ static void process_command_line(struct Core *core)
 						new_line(core);
 						return;
 					}
-					if (t->type != TokenComma && t->type != TokenBracketClose)
+					if(t->type != TokenComma && t->type != TokenBracketClose)
 					{
 						txtlib_printText(&core->overlay->textLib, "  syntax error");
 						new_line(core);
@@ -279,7 +298,7 @@ static void process_command_line(struct Core *core)
 					}
 					t = &toks.tokens[i++];
 				}
-				if (dimensions != array->numDimensions)
+				if(dimensions != array->numDimensions)
 				{
 					txtlib_printText(&core->overlay->textLib, "  wrong dimensions");
 					new_line(core);
@@ -287,15 +306,15 @@ static void process_command_line(struct Core *core)
 				}
 				union Value *value = var_getArrayValue(core->interpreter, array, &indices[0]);
 				// read array item
-				if (t->type == TokenEol)
+				if(t->type == TokenEol)
 				{
-					if (array->type == ValueTypeFloat)
+					if(array->type == ValueTypeFloat)
 						print_float(core, *value);
 					else
 						print_value(core, array->type, value);
 				}
 				// write array item
-				else if (t->type == TokenEq)
+				else if(t->type == TokenEq)
 				{
 					t = &toks.tokens[i++];
 					set_value(core, array->type, value, t->type, t->floatValue, t->stringValue);
@@ -304,7 +323,7 @@ static void process_command_line(struct Core *core)
 		}
 
 		// resume execution
-		else if (t->type == TokenPAUSE)
+		else if(t->type == TokenPAUSE)
 		{
 			overlay_clear(core);
 			core->overlay->textLib.cursorX = 0;
@@ -321,7 +340,7 @@ static void process_command_line(struct Core *core)
 		}
 
 		// clear screen
-		else if (t->type == TokenCLS)
+		else if(t->type == TokenCLS)
 		{
 			overlay_clear(core);
 			core->overlay->textLib.cursorX = 0;
@@ -329,65 +348,66 @@ static void process_command_line(struct Core *core)
 		}
 
 		// resume execution until next WAIT
-		else if (t->type == TokenWAIT)
+		else if(t->type == TokenWAIT)
 		{
 			core->interpreter->pauseAtWait = true;
 			core->interpreter->state = StateEvaluate;
 		}
 
 		// list variables
-		else if (t->type == TokenDIM)
+		else if(t->type == TokenDIM)
 		{
 			char filter[SYMBOL_NAME_SIZE + 2] = "*";
 			int pagination = 0;
 			t = &toks.tokens[i++];
-			if (t->type == TokenIdentifier || t->type == TokenStringIdentifier)
+			if(t->type == TokenIdentifier || t->type == TokenStringIdentifier)
 			{
 				strcat(filter, toks.symbols[t->symbolIndex].name);
 				strcat(filter, "*");
 				t = &toks.tokens[i++];
 			}
-			if (t->type == TokenFloat && t->floatValue >= 1)
+			if(t->type == TokenFloat && t->floatValue >= 1)
 				pagination = (int)t->floatValue;
 			struct Tokenizer *tokenizer = &core->interpreter->tokenizer;
 			int canPrint = (core->overlay->textLib.windowHeight - 3);
 			int printed = 0;
 			// TODO: get shown.h and safe.top and keyboard.height
-			for (int i = 0; i < MAX_SYMBOLS && tokenizer->symbols[i].name[0] != 0; i++)
+			for(int i = 0; i < MAX_SYMBOLS && tokenizer->symbols[i].name[0] != 0; i++)
 			{
-				struct SimpleVariable *simple = var_getSimpleVariable(core->interpreter, i, core->interpreter->subLevel);
+				struct SimpleVariable *simple =
+				var_getSimpleVariable(core->interpreter, i, core->interpreter->subLevel);
 				struct ArrayVariable *array = var_getArrayVariable(core->interpreter, i, core->interpreter->subLevel);
-				if (!simple && !array)
+				if(!simple && !array)
 					continue;
-				else if (pagination == 0 && printed >= canPrint)
+				else if(pagination == 0 && printed >= canPrint)
 				{
 					txtlib_printText(&core->overlay->textLib, "  ...");
 					new_line(core);
 					break;
 				}
-				else if (pagination > 0 && printed < canPrint)
+				else if(pagination > 0 && printed < canPrint)
 					printed++;
-				else if (pagination > 0)
+				else if(pagination > 0)
 				{
 					pagination--;
 					printed = 0;
 				}
-				if (simple && pagination == 0 && sl_globmatch(tokenizer->symbols[i].name, filter) > 0)
+				if(simple && pagination == 0 && sl_globmatch(tokenizer->symbols[i].name, filter) > 0)
 				{
 					txtlib_printText(&core->overlay->textLib, "  ");
 					txtlib_printText(&core->overlay->textLib, tokenizer->symbols[i].name);
 					new_line(core);
 					printed++;
 				}
-				else if (array && pagination == 0 && sl_globmatch(tokenizer->symbols[i].name, filter) > 0)
+				else if(array && pagination == 0 && sl_globmatch(tokenizer->symbols[i].name, filter) > 0)
 				{
 					txtlib_printText(&core->overlay->textLib, "  ");
 					txtlib_printText(&core->overlay->textLib, tokenizer->symbols[i].name);
-					for (int j = 0; j < array->numDimensions; j++)
+					for(int j = 0; j < array->numDimensions; j++)
 					{
 						char buffer[20];
 						snprintf(buffer, 20, ",%d", array->dimensionSizes[j] - 1);
-						if (j == 0)
+						if(j == 0)
 							buffer[0] = '(';
 						txtlib_printText(&core->overlay->textLib, buffer);
 					}
@@ -398,10 +418,10 @@ static void process_command_line(struct Core *core)
 			}
 		}
 
-		else if (t->type == TokenFloat)
+		else if(t->type == TokenFloat)
 		{
 			int address = (int)t->floatValue;
-			if (address < 0 || address >= 0x10000)
+			if(address < 0 || address >= 0x10000)
 			{
 				txtlib_printText(&core->overlay->textLib, "  out of bounds");
 				new_line(core);
@@ -409,10 +429,10 @@ static void process_command_line(struct Core *core)
 			}
 			t = &toks.tokens[i++];
 			// read memory
-			if (t->type == TokenEol)
+			if(t->type == TokenEol)
 			{
 				int peek = machine_peek(core, address);
-				if (peek == -1)
+				if(peek == -1)
 				{
 					txtlib_printText(&core->overlay->textLib, "  illegal memory access");
 					new_line(core);
@@ -424,17 +444,17 @@ static void process_command_line(struct Core *core)
 				print_float(core, value.v);
 			}
 			// write memory
-			else if (t->type == TokenEq)
+			else if(t->type == TokenEq)
 			{
 				t = &toks.tokens[i++];
-				if (t->type != TokenFloat)
+				if(t->type != TokenFloat)
 				{
 					txtlib_printText(&core->overlay->textLib, "  syntax error");
 					new_line(core);
 					return;
 				}
 				int poke = machine_poke(core, address, (int)t->floatValue);
-				if (!poke)
+				if(!poke)
 				{
 					txtlib_printText(&core->overlay->textLib, "  illegal memory access");
 					new_line(core);
@@ -444,24 +464,27 @@ static void process_command_line(struct Core *core)
 		}
 
 		// show stack trace
-		else if (t->type == TokenTRACE)
+		else if(t->type == TokenTRACE)
 		{
 			char buffer[20];
 			int number = lineNumber(core->interpreter->sourceCode, core->interpreter->pc->sourcePosition) - 1;
 			sprintf(buffer, "  %d", number);
 			txtlib_printText(&core->overlay->textLib, buffer);
 			new_line(core);
-			for (int i = 0; i < core->interpreter->numLabelStackItems; ++i)
+			for(int i = 0; i < core->interpreter->numLabelStackItems; ++i)
 			{
 				txtlib_printText(&core->overlay->textLib, "  ");
 
-				char *ptr = (char *)(&core->interpreter->sourceCode[core->interpreter->labelStackItems[i].token->sourcePosition - 1]);
-				while ((*ptr >= 'a' && *ptr <= 'z') || (*ptr >= 'A' && *ptr <= 'Z') || (*ptr >= '0' && *ptr <= '9') || *ptr == '_')
+				char *ptr = (char *)(&core->interpreter
+									  ->sourceCode[core->interpreter->labelStackItems[i].token->sourcePosition - 1]);
+				while((*ptr >= 'a' && *ptr <= 'z') || (*ptr >= 'A' && *ptr <= 'Z') || (*ptr >= '0' && *ptr <= '9') ||
+					  *ptr == '_')
 				{
 					ptr--;
 				}
-				size_t len = &core->interpreter->sourceCode[core->interpreter->labelStackItems[i].token->sourcePosition - 1] - ptr;
-				if (len > 20)
+				size_t len =
+				&core->interpreter->sourceCode[core->interpreter->labelStackItems[i].token->sourcePosition - 1] - ptr;
+				if(len > 20)
 					len = 20;
 				buffer[len] = '\0';
 				memcpy(&buffer, ptr + 1, len);
@@ -472,13 +495,13 @@ static void process_command_line(struct Core *core)
 		}
 
 		// track memory access
-		else if (t->type == TokenTRACK)
+		else if(t->type == TokenTRACK)
 		{
 			t = &toks.tokens[i++];
 			struct Token *addrToken;
-			if (t->type == TokenPEEK)
+			if(t->type == TokenPEEK)
 				addrToken = &toks.tokens[i++];
-			else if (t->type == TokenPOKE)
+			else if(t->type == TokenPOKE)
 				addrToken = &toks.tokens[i++];
 			else
 			{
@@ -486,32 +509,30 @@ static void process_command_line(struct Core *core)
 				new_line(core);
 				return;
 			}
-			if (addrToken->type != TokenFloat)
+			if(addrToken->type != TokenFloat)
 			{
 				txtlib_printText(&core->overlay->textLib, "  syntax error");
 				new_line(core);
 				return;
 			}
 			int address = (int)addrToken->floatValue;
-			if (address < 0 || address >= 0x10000)
+			if(address < 0 || address >= 0x10000)
 			{
 				txtlib_printText(&core->overlay->textLib, "  out of bounds");
 				new_line(core);
 				return;
 			}
-			machine_trackMemory(core,
-													address,
-													t->type == TokenPEEK ? true : false,
-													t->type == TokenPOKE ? true : false);
+			machine_trackMemory(
+			core, address, t->type == TokenPEEK ? true : false, t->type == TokenPOKE ? true : false);
 		}
 
 		// execute next line of code
-		else if (t->type == TokenNEXT)
+		else if(t->type == TokenNEXT)
 		{
 			enum ErrorCode errorCode = ErrorNone;
 			errorCode = itp_evaluateCommand(core);
 
-			if (errorCode != ErrorNone)
+			if(errorCode != ErrorNone)
 			{
 				itp_endProgram(core);
 				delegate_interpreterDidFail(core, err_makeCoreError(errorCode, core->interpreter->pc->sourcePosition));
@@ -523,23 +544,23 @@ static void process_command_line(struct Core *core)
 			}
 		}
 
-		else if (t->type == TokenGOTO || t->type == TokenGOSUB)
+		else if(t->type == TokenGOTO || t->type == TokenGOSUB)
 		{
-			struct Token *cmdToken=t;
+			struct Token *cmdToken = t;
 			t = &toks.tokens[i++];
-			if (t->type == TokenON || t->type == TokenOFF)
+			if(t->type == TokenON || t->type == TokenOFF)
 			{
-				if (cmdToken->type == TokenGOTO)
+				if(cmdToken->type == TokenGOTO)
 				{
 					core->interpreter->logGoto = t->type == TokenON;
 					txtlib_printText(&core->overlay->textLib, "  log goto ");
 				}
-				else if (cmdToken->type == TokenGOSUB)
+				else if(cmdToken->type == TokenGOSUB)
 				{
 					core->interpreter->logGosub = t->type == TokenON;
 					txtlib_printText(&core->overlay->textLib, "  log gosub ");
 				}
-				txtlib_printText(&core->overlay->textLib, (t->type == TokenON)?"on":"off");
+				txtlib_printText(&core->overlay->textLib, (t->type == TokenON) ? "on" : "off");
 				new_line(core);
 			}
 			else
@@ -587,7 +608,7 @@ void overlay_debugger(struct Core *core)
 #endif
 	core->delegate->controlsDidChange(core->delegate->context, info);
 
-	if (autoNext)
+	if(autoNext)
 	{
 		autoNext = false;
 		strncpy(overlay->commandLine, "NEXT", 4);
@@ -596,62 +617,66 @@ void overlay_debugger(struct Core *core)
 	}
 
 	char key = core->machine->ioRegisters.key;
-	if (key && lib->cursorX < 27)
+	if(key && lib->cursorX < 27)
 	{
 		core->machine->ioRegisters.key = 0;
 
-		if (key == CoreInputKeyBackspace)
+		if(key == CoreInputKeyBackspace)
 		{
-			if (lib->cursorX > 0 && strlen(overlay->commandLine) > 0)
+			if(lib->cursorX > 0 && strlen(overlay->commandLine) > 0)
 			{
 				// move chars after the cursor one position to the left
-				memmove(overlay->commandLine + lib->cursorX - 1, overlay->commandLine + lib->cursorX, strlen(overlay->commandLine) - lib->cursorX + 1);
+				memmove(overlay->commandLine + lib->cursorX - 1,
+				overlay->commandLine + lib->cursorX,
+				strlen(overlay->commandLine) - lib->cursorX + 1);
 				lib->cursorX--;
 				print_command_line(core);
 			}
 		}
-		else if (key == CoreInputKeyDelete)
+		else if(key == CoreInputKeyDelete)
 		{
-			if (strlen(overlay->commandLine) - lib->cursorX > 0)
+			if(strlen(overlay->commandLine) - lib->cursorX > 0)
 			{
 				// move chars after the cursor one position to the left
-				memmove(overlay->commandLine + lib->cursorX, overlay->commandLine + lib->cursorX + 1, strlen(overlay->commandLine) - lib->cursorX);
+				memmove(overlay->commandLine + lib->cursorX,
+				overlay->commandLine + lib->cursorX + 1,
+				strlen(overlay->commandLine) - lib->cursorX);
 				print_command_line(core);
 			}
 		}
-		else if (key == CoreInputKeyLeft)
+		else if(key == CoreInputKeyLeft)
 		{
-			if (lib->cursorX > 0)
+			if(lib->cursorX > 0)
 			{
 				lib->cursorX--;
 				print_command_line(core);
 			}
 		}
-		else if (key == CoreInputKeyRight)
+		else if(key == CoreInputKeyRight)
 		{
-			if (lib->cursorX < 26 && lib->cursorX < strlen(overlay->commandLine))
+			if(lib->cursorX < 26 && lib->cursorX < strlen(overlay->commandLine))
 			{
 				lib->cursorX++;
 				print_command_line(core);
 			}
 		}
-		else if (key == CoreInputKeyReturn)
+		else if(key == CoreInputKeyReturn)
 		{
-			if (strlen(overlay->commandLine) > 0)
+			if(strlen(overlay->commandLine) > 0)
 			{
 				print_command_line(core);
 				new_line(core);
 				strcpy(overlay->previousCommandLine[overlay->previouscommandLineWriteIndex++], overlay->commandLine);
-				if (overlay->previouscommandLineWriteIndex >= 9)
+				if(overlay->previouscommandLineWriteIndex >= 9)
 					overlay->previouscommandLineWriteIndex = 0;
 				overlay->previouscommandLineReadIndex = overlay->previouscommandLineWriteIndex;
 				process_command_line(core);
 				memset(core->overlay->commandLine, 0, 27);
 			}
 		}
-		else if (key == CoreInputKeyUp)
+		else if(key == CoreInputKeyUp)
 		{
-			if (strlen(overlay->previousCommandLine[(overlay->previouscommandLineReadIndex + 9 - 1) % 9]) > 0)
+			if(strlen(overlay->previousCommandLine[(overlay->previouscommandLineReadIndex + 9 - 1) % 9]) > 0)
 			{
 				overlay->previouscommandLineReadIndex = (overlay->previouscommandLineReadIndex + 9 - 1) % 9;
 				strcpy(overlay->commandLine, overlay->previousCommandLine[overlay->previouscommandLineReadIndex]);
@@ -659,9 +684,9 @@ void overlay_debugger(struct Core *core)
 				print_command_line(core);
 			}
 		}
-		else if (key == CoreInputKeyDown)
+		else if(key == CoreInputKeyDown)
 		{
-			if (strlen(overlay->previousCommandLine[(overlay->previouscommandLineReadIndex + 1) % 9]) > 0)
+			if(strlen(overlay->previousCommandLine[(overlay->previouscommandLineReadIndex + 1) % 9]) > 0)
 			{
 				overlay->previouscommandLineReadIndex = (overlay->previouscommandLineReadIndex + 1) % 9;
 				strcpy(overlay->commandLine, overlay->previousCommandLine[overlay->previouscommandLineReadIndex]);
@@ -672,7 +697,7 @@ void overlay_debugger(struct Core *core)
 		else
 		{
 			// insert char into the command line buffer
-			if (lib->cursorX < 26)
+			if(lib->cursorX < 26)
 			{
 				char tmp[27];
 				strncpy(tmp, overlay->commandLine, 27);
@@ -684,7 +709,7 @@ void overlay_debugger(struct Core *core)
 	}
 }
 
-void log_goto(struct Core *core,int symbolIndex)
+void log_goto(struct Core *core, int symbolIndex)
 {
 	struct TextLib *lib = &core->overlay->textLib;
 	struct Tokenizer *tokenizer = &core->interpreter->tokenizer;
@@ -693,7 +718,7 @@ void log_goto(struct Core *core,int symbolIndex)
 	new_line(core);
 }
 
-void log_gosub(struct Core *core,int symbolIndex)
+void log_gosub(struct Core *core, int symbolIndex)
 {
 	struct TextLib *lib = &core->overlay->textLib;
 	struct Tokenizer *tokenizer = &core->interpreter->tokenizer;
@@ -702,11 +727,12 @@ void log_gosub(struct Core *core,int symbolIndex)
 	new_line(core);
 }
 
-void log_return(struct Core *core,bool clear)
+void log_return(struct Core *core, bool clear)
 {
 	struct TextLib *lib = &core->overlay->textLib;
 	struct Tokenizer *tokenizer = &core->interpreter->tokenizer;
 	txtlib_printText(lib, "return");
-	if (clear) txtlib_printText(lib, "and clear stack");
+	if(clear)
+		txtlib_printText(lib, "and clear stack");
 	new_line(core);
 }
