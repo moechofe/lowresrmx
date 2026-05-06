@@ -8,57 +8,67 @@
 
 import UIKit
 
-class ToolsMenuConfiguration: NSObject {
+class ToolsMenuConfiguration: NSObject
+{
+	private let defaultPrograms = [
+		"GFX.188.rmx",
+	]
 
-    private let defaultPrograms = [
-        "GFX.188.rmx",
-    ]
+	private(set) var programUrls: [URL]!
 
-    private(set) var programUrls: [URL]!
+	private var userPrograms: [String]
+	{
+		get
+		{
+			UserDefaults.standard.array(forKey: "ToolsMenuConfiguration") as? [String] ?? []
+		}
+		set
+		{
+			UserDefaults.standard.set(newValue, forKey: "ToolsMenuConfiguration")
+		}
+	}
 
-    private var userPrograms: [String] {
-        get {
-            return UserDefaults.standard.array(forKey: "ToolsMenuConfiguration") as? [String] ?? []
-        }
-        set {
-            UserDefaults.standard.set(newValue, forKey: "ToolsMenuConfiguration")
-        }
-    }
+	override init()
+	{
+		super.init()
+		programUrls = defaultProgramUrls()
 
-    override init() {
-        super.init()
-        programUrls = defaultProgramUrls()
+		let documentsUrl = ProjectManager.shared.currentDocumentsUrl
+		for program in userPrograms
+		{
+			programUrls.append(documentsUrl.appendingPathComponent(program))
+		}
+	}
 
-        let documentsUrl = ProjectManager.shared.currentDocumentsUrl
-        for program in userPrograms {
-            programUrls.append(documentsUrl.appendingPathComponent(program))
-        }
-    }
+	func addProgram(url: URL)
+	{
+		if !programUrls.contains(url)
+		{
+			let program = url.lastPathComponent
+			userPrograms.append(program)
+			programUrls.append(url)
+		}
+	}
 
-    func addProgram(url: URL) {
-        if !programUrls.contains(url) {
-            let program = url.lastPathComponent
-            userPrograms.append(program)
-            programUrls.append(url)
-        }
-    }
+	func reset()
+	{
+		userPrograms = []
+		programUrls = defaultProgramUrls()
+	}
 
-    func reset() {
-        userPrograms = []
-        programUrls = defaultProgramUrls()
-    }
+	var canReset: Bool
+	{
+		!userPrograms.isEmpty
+	}
 
-    var canReset: Bool {
-        return !userPrograms.isEmpty
-    }
-
-    private func defaultProgramUrls() -> [URL] {
-        var urls = [URL]()
-        let documentsUrl = ProjectManager.shared.currentDocumentsUrl
-        for program in defaultPrograms {
-            urls.append(documentsUrl.appendingPathComponent(program))
-        }
-        return urls
-    }
-
+	private func defaultProgramUrls() -> [URL]
+	{
+		var urls = [URL]()
+		let documentsUrl = ProjectManager.shared.currentDocumentsUrl
+		for program in defaultPrograms
+		{
+			urls.append(documentsUrl.appendingPathComponent(program))
+		}
+		return urls
+	}
 }

@@ -9,39 +9,43 @@
 import UIKit
 import WebKit
 
-class WebViewController: UIViewController {
+class WebViewController: UIViewController
+{
+	private var webView: WKWebView!
 
-    private var webView: WKWebView!
+	var url: URL?
+	var isModal = true
 
-    var url: URL?
-    var isModal = true
+	override func loadView()
+	{
+		let config = WKWebViewConfiguration()
+		webView = WKWebView(frame: CGRect.zero, configuration: config)
 
-    override func loadView() {
-        let config = WKWebViewConfiguration()
-        webView = WKWebView(frame: CGRect.zero, configuration: config)
+		//        webView.backgroundColor = AppStyle.darkGrayColor()
+		webView.isOpaque = false
+		//        webView.scrollView.indicatorStyle = .white
+		view = webView
+	}
 
-//        webView.backgroundColor = AppStyle.darkGrayColor()
-        webView.isOpaque = false
-//        webView.scrollView.indicatorStyle = .white
-        view = webView
-    }
+	override func viewDidLoad()
+	{
+		super.viewDidLoad()
 
-    override func viewDidLoad() {
-        super.viewDidLoad()
+		if isModal
+		{
+			navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(done))
+		}
 
-        if isModal {
-            navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(done))
-        }
+		if let url
+		{
+			let urlRequest = URLRequest(url: url)
+			webView.load(urlRequest)
+		}
+	}
 
-        if let url = url {
-            let urlRequest = URLRequest(url: url)
-            webView.load(urlRequest)
-        }
-    }
-
-    @objc func done(_ sender: Any) {
-        webView.stopLoading()
-        presentingViewController?.dismiss(animated: true, completion: nil)
-    }
-
+	@objc func done(_: Any)
+	{
+		webView.stopLoading()
+		presentingViewController?.dismiss(animated: true, completion: nil)
+	}
 }

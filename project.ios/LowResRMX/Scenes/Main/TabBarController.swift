@@ -6,112 +6,132 @@
 //  Copyright © 2020 Inutilis Software. All rights reserved.
 //
 
-import UIKit
 import SwiftUI
+import UIKit
 
-enum TabIndex: Int {
-    case explorer
-    case help
-    case community
+enum TabIndex: Int
+{
+	case explorer
+	case help
+	case community
 }
 
-class TabBarController: UITabBarController {
+class TabBarController: UITabBarController
+{
+	override func viewDidLoad()
+	{
+		super.viewDidLoad()
 
-    override func viewDidLoad() {
-        super.viewDidLoad()
+		AppController.shared.tabBarController = self
 
-        AppController.shared.tabBarController = self
+		let explorerVC = storyboard!.instantiateViewController(withIdentifier: "ExplorerNav")
+		let helpStoryboard = UIStoryboard(name: "Help", bundle: nil)
+		let helpVC = helpStoryboard.instantiateInitialViewController()!
 
-        let explorerVC = self.storyboard!.instantiateViewController(withIdentifier: "ExplorerNav")
-        let helpStoryboard = UIStoryboard(name: "Help", bundle: nil)
-        let helpVC = helpStoryboard.instantiateInitialViewController()!
-        
-        let communityView = CommunityView()
-        let communityVC = UIHostingController(rootView: communityView)
-        let communityNav = UINavigationController(rootViewController: communityVC)
-        communityVC.navigationItem.title = "Community"
+		let communityView = CommunityView()
+		let communityVC = UIHostingController(rootView: communityView)
+		let communityNav = UINavigationController(rootViewController: communityVC)
+		communityVC.navigationItem.title = "Community"
 
-        explorerVC.tabBarItem = item(title: "My Programs", imageName: "programs")
-        helpVC.tabBarItem = item(title: "Help", imageName: "help")
-        communityNav.tabBarItem = item(title: "Community", imageName: "community")
+		explorerVC.tabBarItem = item(title: "My Programs", imageName: "programs")
+		helpVC.tabBarItem = item(title: "Help", imageName: "help")
+		communityNav.tabBarItem = item(title: "Community", imageName: "community")
 
-        self.viewControllers = [explorerVC, helpVC, communityNav]
+		viewControllers = [explorerVC, helpVC, communityNav]
 
-        NotificationCenter.default.addObserver(self, selector: #selector(didAddProgram), name: NSNotification.Name(rawValue: "ProjectManagerDidAddProgram"), object: nil)
-    }
+		NotificationCenter.default.addObserver(self, selector: #selector(didAddProgram), name: NSNotification.Name(rawValue: "ProjectManagerDidAddProgram"), object: nil)
+	}
 
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-        AppController.shared.checkShowProgram()
-    }
+	override func viewDidAppear(_ animated: Bool)
+	{
+		super.viewDidAppear(animated)
+		AppController.shared.checkShowProgram()
+	}
 
-    override var keyCommands: [UIKeyCommand]? {
-        if presentedViewController != nil {
-            return nil
-        }
-        return [
-            UIKeyCommand(title: "Show My Programs", action: #selector(onTab1), input: "1", modifierFlags: .command),
-            UIKeyCommand(title: "Show Help", action: #selector(onTab2), input: "2", modifierFlags: .command),
-            UIKeyCommand(title: "Show Community", action: #selector(onTab3), input: "3", modifierFlags: .command)
-        ]
-    }
+	override var keyCommands: [UIKeyCommand]?
+	{
+		if presentedViewController != nil
+		{
+			return nil
+		}
+		return [
+			UIKeyCommand(title: "Show My Programs", action: #selector(onTab1), input: "1", modifierFlags: .command),
+			UIKeyCommand(title: "Show Help", action: #selector(onTab2), input: "2", modifierFlags: .command),
+			UIKeyCommand(title: "Show Community", action: #selector(onTab3), input: "3", modifierFlags: .command),
+		]
+	}
 
-    func item(title: String, imageName: String) -> UITabBarItem {
-        return UITabBarItem(title: title, image: UIImage(named: imageName), selectedImage: nil)
-    }
+	func item(title: String, imageName: String) -> UITabBarItem
+	{
+		UITabBarItem(title: title, image: UIImage(named: imageName), selectedImage: nil)
+	}
 
-    func dismissPresentedViewController(completion: @escaping () -> Void) {
-        var topVC = self.selectedViewController
-        if topVC is UINavigationController {
-            topVC = (topVC as! UINavigationController).topViewController
-        }
-        if topVC?.presentedViewController != nil {
-            topVC?.dismiss(animated: true, completion: completion)
-        } else {
-            completion()
-        }
-    }
+	func dismissPresentedViewController(completion: @escaping () -> Void)
+	{
+		var topVC = selectedViewController
+		if topVC is UINavigationController
+		{
+			topVC = (topVC as! UINavigationController).topViewController
+		}
+		if topVC?.presentedViewController != nil
+		{
+			topVC?.dismiss(animated: true, completion: completion)
+		}
+		else
+		{
+			completion()
+		}
+	}
 
-    func showExplorer(animated: Bool, root: Bool) {
-        self.selectedIndex = TabIndex.explorer.rawValue;
-        let nav = self.selectedViewController as? UINavigationController
-        if root {
-            nav?.popToRootViewController(animated: animated)
-        } else {
-            /*
-            if (![nav.topViewController isKindOfClass:[ExplorerViewController class]])
-            {
-                [nav popViewControllerAnimated:animated];
-            }*/
-        }
-    }
+	func showExplorer(animated: Bool, root: Bool)
+	{
+		selectedIndex = TabIndex.explorer.rawValue
+		let nav = selectedViewController as? UINavigationController
+		if root
+		{
+			nav?.popToRootViewController(animated: animated)
+		}
+		else
+		{
+			/*
+			 if (![nav.topViewController isKindOfClass:[ExplorerViewController class]])
+			 {
+			     [nav popViewControllerAnimated:animated];
+			 }*/
+		}
+	}
 
-    func showHelp(chapter: String) {
-        self.selectedIndex = TabIndex.help.rawValue;
-        let helpVC = self.selectedViewController as! HelpSplitViewController
-        helpVC.showChapter(chapter)
-    }
+	func showHelp(chapter: String)
+	{
+		selectedIndex = TabIndex.help.rawValue
+		let helpVC = selectedViewController as! HelpSplitViewController
+		helpVC.showChapter(chapter)
+	}
 
-    @objc func didAddProgram() {
-        if self.selectedIndex != 0 {
-            self.selectedIndex = 0;
-        }
-    }
+	@objc func didAddProgram()
+	{
+		if selectedIndex != 0
+		{
+			selectedIndex = 0
+		}
+	}
 
-    @objc func onTab1() {
-        selectedIndex = 0
-    }
+	@objc func onTab1()
+	{
+		selectedIndex = 0
+	}
 
-    @objc func onTab2() {
-        selectedIndex = 1
-    }
+	@objc func onTab2()
+	{
+		selectedIndex = 1
+	}
 
-    @objc func onTab3() {
-        selectedIndex = 2
-    }
+	@objc func onTab3()
+	{
+		selectedIndex = 2
+	}
 
-    //@objc func onTab4() {
-    //    selectedIndex = 3
-    //}
-
+	// @objc func onTab4() {
+	//    selectedIndex = 3
+	// }
 }

@@ -6,87 +6,100 @@
 //  Copyright © 2018 Inutilis Software. All rights reserved.
 //
 
-import UIKit
 import AudioToolbox
 import AVFoundation
+import UIKit
 
-class LowResRMXAudioPlayer: NSObject {
+class LowResRMXAudioPlayer: NSObject
+{
+	var coreWrapper: CoreWrapper
+	private var isActive = false
+	private var queue: AudioQueueRef?
 
-    var coreWrapper: CoreWrapper
-    private var isActive = false
-    private var queue: AudioQueueRef?
+	init(coreWrapper: CoreWrapper)
+	{
+		self.coreWrapper = coreWrapper
+		super.init()
+	}
 
-    init(coreWrapper: CoreWrapper) {
-        self.coreWrapper = coreWrapper
-        super.init()
-    }
+	func start()
+	{
+		if !isActive
+		{
+			isActive = true
 
-    func start() {
-        if !isActive {
-            isActive = true
+			let session = AVAudioSession.sharedInstance()
+			do
+			{
+				try session.setCategory(AVAudioSession.Category.ambient)
+				try session.setActive(true)
+			}
+			catch
+			{
+				print("AVAudioSession", error.localizedDescription)
+			}
 
-            let session = AVAudioSession.sharedInstance()
-            do {
-                try session.setCategory(AVAudioSession.Category.ambient)
-                try session.setActive(true)
-            } catch {
-                print("AVAudioSession", error.localizedDescription)
-            }
+			var dataFormat = AudioStreamBasicDescription()
+			dataFormat.mSampleRate = session.sampleRate
+			dataFormat.mFormatID = kAudioFormatLinearPCM
+			dataFormat.mFormatFlags = kLinearPCMFormatFlagIsSignedInteger | kLinearPCMFormatFlagIsPacked
+			dataFormat.mBytesPerPacket = 4
+			dataFormat.mFramesPerPacket = 1
+			dataFormat.mBytesPerFrame = 4
+			dataFormat.mChannelsPerFrame = 2
+			dataFormat.mBitsPerChannel = 16
+			dataFormat.mReserved = 0
 
-            var dataFormat = AudioStreamBasicDescription()
-            dataFormat.mSampleRate = session.sampleRate
-            dataFormat.mFormatID = kAudioFormatLinearPCM
-            dataFormat.mFormatFlags = kLinearPCMFormatFlagIsSignedInteger | kLinearPCMFormatFlagIsPacked
-            dataFormat.mBytesPerPacket = 4
-            dataFormat.mFramesPerPacket = 1
-            dataFormat.mBytesPerFrame = 4
-            dataFormat.mChannelsPerFrame = 2
-            dataFormat.mBitsPerChannel = 16
-            dataFormat.mReserved = 0
+			let unmanagedCoreWrapper = Unmanaged.passUnretained(coreWrapper).toOpaque()
+			AudioQueueNewOutput(&dataFormat, audioQueueCallback, unmanagedCoreWrapper, nil, CFRunLoopMode.commonModes.rawValue, 0, &queue)
 
-            let unmanagedCoreWrapper = Unmanaged.passUnretained(coreWrapper).toOpaque()
-            AudioQueueNewOutput(&dataFormat, audioQueueCallback, unmanagedCoreWrapper, nil, CFRunLoopMode.commonModes.rawValue, 0, &queue)
+			guard let queue
+			else
+			{
+				return
+			}
 
-            guard let queue = queue else {
-                return
-            }
+			var buffer: AudioQueueBufferRef?
+			for _ in 0 ..< 2
+			{
+				AudioQueueAllocateBuffer(queue, 1470 * dataFormat.mBytesPerFrame, &buffer)
+				if let buffer
+				{
+					let capacity = buffer.pointee.mAudioDataBytesCapacity
+					audio_renderAudio(&coreWrapper.core, buffer.pointee.mAudioData.assumingMemoryBound(to: Int16.self), Int32(buffer.pointee.mAudioDataBytesCapacity / 2), Int32(AVAudioSession.sharedInstance().sampleRate), 0)
+					buffer.pointee.mAudioDataByteSize = capacity
+					AudioQueueEnqueueBuffer(queue, buffer, 0, nil)
+				}
+			}
 
-            var buffer: AudioQueueBufferRef?
-            for _ in 0 ..< 2 {
-                AudioQueueAllocateBuffer(queue, 1470 * dataFormat.mBytesPerFrame, &buffer)
-                if let buffer = buffer {
-                    let capacity = buffer.pointee.mAudioDataBytesCapacity
-                    audio_renderAudio(&coreWrapper.core, buffer.pointee.mAudioData.assumingMemoryBound(to: Int16.self), Int32(buffer.pointee.mAudioDataBytesCapacity / 2), Int32(AVAudioSession.sharedInstance().sampleRate), 0)
-                    buffer.pointee.mAudioDataByteSize = capacity
-                    AudioQueueEnqueueBuffer(queue, buffer, 0, nil)
-                }
-            }
+			AudioQueueStart(queue, nil)
+		}
+	}
 
-            AudioQueueStart(queue, nil)
-        }
+	func stop()
+	{
+		if isActive
+		{
+			isActive = false
 
-    }
+			if let queue
+			{
+				AudioQueueStop(queue, true)
+				AudioQueueDispose(queue, true)
+			}
+			queue = nil
 
-    func stop() {
-        if isActive {
-            isActive = false
-
-            if let queue = queue {
-                AudioQueueStop(queue, true)
-                AudioQueueDispose(queue, true)
-            }
-            queue = nil
-
-            try? AVAudioSession.sharedInstance().setActive(false)
-        }
-    }
-
+			try? AVAudioSession.sharedInstance().setActive(false)
+		}
+	}
 }
 
-func audioQueueCallback(_ userData: UnsafeMutableRawPointer?, _ audioQueue: AudioQueueRef, _ buffer: AudioQueueBufferRef) {
-    if let userData = userData {
-        let coreWrapper = Unmanaged<CoreWrapper>.fromOpaque(userData).takeUnretainedValue()
-        audio_renderAudio(&coreWrapper.core, buffer.pointee.mAudioData.assumingMemoryBound(to: Int16.self), Int32(buffer.pointee.mAudioDataBytesCapacity / 2), Int32(AVAudioSession.sharedInstance().sampleRate), 0)
-    }
-    AudioQueueEnqueueBuffer(audioQueue, buffer, 0, nil)
+func audioQueueCallback(_ userData: UnsafeMutableRawPointer?, _ audioQueue: AudioQueueRef, _ buffer: AudioQueueBufferRef)
+{
+	if let userData
+	{
+		let coreWrapper = Unmanaged<CoreWrapper>.fromOpaque(userData).takeUnretainedValue()
+		audio_renderAudio(&coreWrapper.core, buffer.pointee.mAudioData.assumingMemoryBound(to: Int16.self), Int32(buffer.pointee.mAudioDataBytesCapacity / 2), Int32(AVAudioSession.sharedInstance().sampleRate), 0)
+	}
+	AudioQueueEnqueueBuffer(audioQueue, buffer, 0, nil)
 }

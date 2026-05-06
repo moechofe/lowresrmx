@@ -9,157 +9,167 @@
 import UIKit
 import WebKit
 
-class ShareViewController: UIViewController, WKNavigationDelegate {
+class ShareViewController: UIViewController, WKNavigationDelegate
+{
+	weak var activity: ShareActivity?
+	var programUrl: URL?
+	var imageUrl: URL?
 
-	  weak var activity: ShareActivity?
-    var programUrl: URL?
-    var imageUrl: URL?
+	private var webView: WKWebView!
+	private var activityView: UIActivityIndicatorView!
 
-    private var webView: WKWebView!
-    private var activityView: UIActivityIndicatorView!
+	override func loadView()
+	{
+		let config = WKWebViewConfiguration()
+		webView = WKWebView(frame: CGRect.zero, configuration: config)
 
-    override func loadView() {
-        let config = WKWebViewConfiguration()
-        webView = WKWebView(frame: CGRect.zero, configuration: config)
+		//        webView.layer.borderColor = UIColor.green.cgColor
+		//        webView.layer.borderWidth = 2.0
+		//        webView.layer.backgroundColor = UIColor.blue.cgColor
 
-//        webView.layer.borderColor = UIColor.green.cgColor
-//        webView.layer.borderWidth = 2.0
-//        webView.layer.backgroundColor = UIColor.blue.cgColor
+		// webView.backgroundColor = AppStyle.darkGrayColor()
+		//        webView.backgroundColor = UIColor.lightGray
+		//        webView.tintColor = UIColor.red
+		webView.isOpaque = false
+		//        webView.scrollView.backgroundColor = UIColor.black
+		//        webView.scrollView.indicatorStyle = .white
+		webView.navigationDelegate = self
+		view = webView
+	}
 
+	override func viewDidLoad()
+	{
+		super.viewDidLoad()
 
+		//        let nba = UINavigationBar.appearance()
+		//        nba.tintColor = UIColor.white
+		//        if #available(iOS 13.0, *) {
+		//            self.view.backgroundColor = .systemBackground
+		//        } else {
+		//            // Fallback on earlier versions
+		//        }
 
-        //webView.backgroundColor = AppStyle.darkGrayColor()
-//        webView.backgroundColor = UIColor.lightGray
-//        webView.tintColor = UIColor.red
-        webView.isOpaque = false
-//        webView.scrollView.backgroundColor = UIColor.black
-//        webView.scrollView.indicatorStyle = .white
-        webView.navigationDelegate = self
-        view = webView
+		//        self.modalPresentationStyle = .fullScreen
+		modalPresentationStyle = .popover
+		//        self.tabBarController?.tabBar.tintColor = UIColor.brown
+		//        self.popoverPresentationController?.backgroundColor=UIColor.brown
 
-    }
+		navigationItem.title = "Share with Community"
+		navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(cancel))
 
-    override func viewDidLoad() {
-        super.viewDidLoad()
+		activityView = UIActivityIndicatorView(style: .medium)
+		activityView.sizeToFit()
+		navigationItem.rightBarButtonItem = UIBarButtonItem(customView: activityView)
 
-//        let nba = UINavigationBar.appearance()
-//        nba.tintColor = UIColor.white
-//        if #available(iOS 13.0, *) {
-//            self.view.backgroundColor = .systemBackground
-//        } else {
-//            // Fallback on earlier versions
-//        }
+		let url = URL(string: "\(AppDelegate.baseURL)/share.html")!
+		let urlRequest = URLRequest(url: url)
+		webView.load(urlRequest)
+	}
 
-//        self.modalPresentationStyle = .fullScreen
-        self.modalPresentationStyle = .popover
-//        self.tabBarController?.tabBar.tintColor = UIColor.brown
-//        self.popoverPresentationController?.backgroundColor=UIColor.brown
+	@objc func cancel(_: Any)
+	{
+		webView.stopLoading()
+		activity?.activityDidFinish(false)
+	}
 
-        navigationItem.title = "Share with Community"
-        navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(cancel))
-
-        activityView = UIActivityIndicatorView(style: .medium)
-        activityView.sizeToFit()
-        navigationItem.rightBarButtonItem = UIBarButtonItem(customView: activityView)
-
-				let url = URL(string: "\(AppDelegate.baseURL)/share.html")!
-        let urlRequest = URLRequest(url: url)
-        webView.load(urlRequest)
-    }
-
-    @objc func cancel(_ sender: Any) {
-        webView.stopLoading()
-        activity?.activityDidFinish(false)
-    }
 //
-//    func uploadProgram() {
-//        guard let programUrl = programUrl, let imageUrl = imageUrl else {
-//            showError()
-//            return
-//        }
+	//    func uploadProgram() {
+	//        guard let programUrl = programUrl, let imageUrl = imageUrl else {
+	//            showError()
+	//            return
+	//        }
 //
-//        let programData = try? Data(contentsOf: programUrl)
-//        let imageData = try? Data(contentsOf: imageUrl)
+	//        let programData = try? Data(contentsOf: programUrl)
+	//        let imageData = try? Data(contentsOf: imageUrl)
 //
 //				let url = URL(string: "\(AppDelegate.baseURL)/share.html")!
-//        var urlRequest = URLRequest(url: AppDelegate.baseURL.appendingPathComponent("app_posting.php"))
-//        urlRequest.httpMethod = "POST"
+	//        var urlRequest = URLRequest(url: AppDelegate.baseURL.appendingPathComponent("app_posting.php"))
+	//        urlRequest.httpMethod = "POST"
 //
-//        var parameters: [String: Any] = [:]
-//        if let programData = programData {
-//            parameters["program_file"] = MultipartFile(filename: programUrl.lastPathComponent, data: programData, mime: "text/plain")
-//        }
-//        if let imageData = imageData {
-//            parameters["image_file"] = MultipartFile(filename: imageUrl.lastPathComponent, data: imageData, mime: "image/png")
-//        }
-//        urlRequest.setMultipartBody(parameters: parameters)
-//        webView.load(urlRequest)
-//    }
+	//        var parameters: [String: Any] = [:]
+	//        if let programData = programData {
+	//            parameters["program_file"] = MultipartFile(filename: programUrl.lastPathComponent, data: programData, mime: "text/plain")
+	//        }
+	//        if let imageData = imageData {
+	//            parameters["image_file"] = MultipartFile(filename: imageUrl.lastPathComponent, data: imageData, mime: "image/png")
+	//        }
+	//        urlRequest.setMultipartBody(parameters: parameters)
+	//        webView.load(urlRequest)
+	//    }
 
-    func showError(_ error: Error? = nil) {
-        showAlert(withTitle: "Something Went Wrong", message: error?.localizedDescription) {
-            self.webView.stopLoading()
-            self.activity?.activityDidFinish(false)
-        }
-    }
+	func showError(_ error: Error? = nil)
+	{
+		showAlert(withTitle: "Something Went Wrong", message: error?.localizedDescription)
+		{
+			self.webView.stopLoading()
+			self.activity?.activityDidFinish(false)
+		}
+	}
 
-    // MARK: - WKNavigationDelegate
+	// MARK: - WKNavigationDelegate
 
-    func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
-        if let url = navigationAction.request.url {
-            if url.path == "/topic.php" {
-                // sharing done
-                activityView.stopAnimating()
-                decisionHandler(.cancel)
+	func webView(_: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void)
+	{
+		if let url = navigationAction.request.url
+		{
+			if url.path == "/topic.php"
+			{
+				// sharing done
+				activityView.stopAnimating()
+				decisionHandler(.cancel)
 
-                let alert = UIAlertController(title: "Your program has been published successfully.", message: nil, preferredStyle: .alert)
-                alert.addAction(UIAlertAction(title: "Open in Safari", style: .default, handler: { (action) in
-                    UIApplication.shared.open(url, options: [:], completionHandler: nil)
-                    self.activity?.activityDidFinish(true)
-                }))
-                alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { (action) in
-                    self.activity?.activityDidFinish(true)
-                }))
-                present(alert, animated: true, completion: nil)
-                return
+				let alert = UIAlertController(title: "Your program has been published successfully.", message: nil, preferredStyle: .alert)
+				alert.addAction(UIAlertAction(title: "Open in Safari", style: .default, handler: { _ in
+					UIApplication.shared.open(url, options: [:], completionHandler: nil)
+					self.activity?.activityDidFinish(true)
+				}))
+				alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { _ in
+					self.activity?.activityDidFinish(true)
+				}))
+				present(alert, animated: true, completion: nil)
+				return
+			}
+			else if navigationAction.targetFrame == nil
+			{
+				// open in new view
+				let vc = WebViewController()
+				vc.url = url
+				vc.isModal = false
+				navigationController?.pushViewController(vc, animated: true)
+			}
+		}
+		decisionHandler(.allow)
+	}
 
-            } else if navigationAction.targetFrame == nil {
-                // open in new view
-                let vc = WebViewController()
-                vc.url = url
-                vc.isModal = false
-                navigationController?.pushViewController(vc, animated: true)
-            }
-        }
-        decisionHandler(.allow)
-    }
 //
-//    func webView(_ webView: WKWebView, decidePolicyFor navigationResponse: WKNavigationResponse, decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void) {
-//        decisionHandler(.allow)
+	//    func webView(_ webView: WKWebView, decidePolicyFor navigationResponse: WKNavigationResponse, decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void) {
+	//        decisionHandler(.allow)
 //
-//        if let response = navigationResponse.response as? HTTPURLResponse {
-//            if  let userId = response.allHeaderFields["x-lowresnx-user-id"] as? String,
-//                let username = response.allHeaderFields["x-lowresnx-username"] as? String {
+	//        if let response = navigationResponse.response as? HTTPURLResponse {
+	//            if  let userId = response.allHeaderFields["x-lowresnx-user-id"] as? String,
+	//                let username = response.allHeaderFields["x-lowresnx-username"] as? String {
 //
-//                AppController.shared.didLogIn(userId: userId, username: username)
-//                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-//                    self.uploadProgram()
-//                }
-//            }
-//        }
-//    }
+	//                AppController.shared.didLogIn(userId: userId, username: username)
+	//                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+	//                    self.uploadProgram()
+	//                }
+	//            }
+	//        }
+	//    }
 
-    func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
-        activityView.startAnimating()
-    }
+	func webView(_: WKWebView, didStartProvisionalNavigation _: WKNavigation!)
+	{
+		activityView.startAnimating()
+	}
 
-    func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
-        activityView.stopAnimating()
-        showError(error)
-    }
+	func webView(_: WKWebView, didFail _: WKNavigation!, withError error: Error)
+	{
+		activityView.stopAnimating()
+		showError(error)
+	}
 
-    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-        activityView.stopAnimating()
-    }
-
+	func webView(_: WKWebView, didFinish _: WKNavigation!)
+	{
+		activityView.stopAnimating()
+	}
 }

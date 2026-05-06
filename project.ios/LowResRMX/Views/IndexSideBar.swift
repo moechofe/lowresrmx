@@ -8,305 +8,356 @@
 
 import UIKit
 
-class IndexMarker: NSObject {
-    let label: String
-    let line: Int
-    let range: NSRange
-    var currentBarY: CGFloat = 0.0
+class IndexMarker: NSObject
+{
+	let label: String
+	let line: Int
+	let range: NSRange
+	var currentBarY: CGFloat = 0.0
 
-    init(label: String, line: Int, range: NSRange) {
-        self.label = label
-        self.line = line
-        self.range = range
-    }
+	init(label: String, line: Int, range: NSRange)
+	{
+		self.label = label
+		self.line = line
+		self.range = range
+	}
 }
 
-class IndexSideBar: UIControl {
+class IndexSideBar: UIControl
+{
+	static let margin: CGFloat = 3.0
 
-    static let margin: CGFloat = 3.0
+	weak var textView: UITextView!
+	var shouldUpdateOnTouch = false
 
-    weak var textView: UITextView!
-    var shouldUpdateOnTouch = false
+	private var numLines: Int = 0
+	private var markers: [IndexMarker]?
+	private var oldMarker: IndexMarker?
+	private var highlight: UIView!
+	private var labels: [GORLabel]?
+	private var startTouchY: CGFloat = 0.0
 
-    private var numLines: Int = 0
-    private var markers: [IndexMarker]?
-    private var oldMarker: IndexMarker?
-    private var highlight: UIView!
-    private var labels: [GORLabel]?
-    private var startTouchY: CGFloat = 0.0
+	override func awakeFromNib()
+	{
+		super.awakeFromNib()
 
-    override func awakeFromNib() {
-        super.awakeFromNib()
+		// the color of the background for the whole vertical side index
+		//        backgroundColor = AppStyle.mediumGrayColor()
+		alpha = 0.5
 
-        // the color of the background for the whole vertical side index
-//        backgroundColor = AppStyle.mediumGrayColor()
-        alpha = 0.5;
+		highlight = UIView()
+		// highlight.backgroundColor = UIColor.lightGray
+		highlight.alpha = 0.25
+	}
 
-        highlight = UIView()
-        //highlight.backgroundColor = UIColor.lightGray
-        highlight.alpha = 0.25
-    }
+	override func draw(_: CGRect)
+	{
+		let context = UIGraphicsGetCurrentContext()
 
-    override func draw(_ rect: CGRect) {
-        let context = UIGraphicsGetCurrentContext()
+		let width = bounds.size.width
+		//        let rectColor = AppStyle.brightTintColor()
 
-        let width = bounds.size.width
-//        let rectColor = AppStyle.brightTintColor()
+		var markRect = CGRect(x: IndexSideBar.margin, y: 0.0, width: width - 2 * IndexSideBar.margin, height: 2.0)
+		// the color for the small markers inside the side index
+		//        context?.setFillColor(rectColor.cgColor)
+		// context?.setFillColor(UIColor.lightGray.cgColor)
 
-        var markRect = CGRect(x: IndexSideBar.margin, y: 0.0, width: width - 2 * IndexSideBar.margin, height: 2.0)
-        // the color for the small markers inside the side index
-//        context?.setFillColor(rectColor.cgColor)
-				//context?.setFillColor(UIColor.lightGray.cgColor)
+		if let markers
+		{
+			for marker in markers
+			{
+				markRect.origin.y = floor(marker.currentBarY)
+				context?.fill(markRect)
+			}
+		}
+	}
 
-        if let markers = markers {
-            for marker in markers {
-                markRect.origin.y = floor(marker.currentBarY)
-                context?.fill(markRect)
-            }
-        }
-    }
+	override func layoutSubviews()
+	{
+		super.layoutSubviews()
+		updateBarPositions()
+		if labels != nil
+		{
+			hideLabels()
+			showLabels()
+		}
+	}
 
-    override func layoutSubviews() {
-        super.layoutSubviews()
-        updateBarPositions()
-        if labels != nil {
-            hideLabels()
-            showLabels()
-        }
-    }
+	private func updateBarPositions()
+	{
+		if let markers
+		{
+			let height = bounds.size.height - 2.0 - 2 * IndexSideBar.margin
+			for marker in markers
+			{
+				marker.currentBarY = IndexSideBar.margin + CGFloat(marker.line) * height / CGFloat(numLines)
+			}
+		}
+		setNeedsDisplay()
+	}
 
-    private func updateBarPositions() {
-        if let markers = markers {
-            let height = bounds.size.height - 2.0 - 2 * IndexSideBar.margin
-            for marker in markers {
-                marker.currentBarY = IndexSideBar.margin + CGFloat(marker.line) * height / CGFloat(numLines)
-            }
-        }
-        setNeedsDisplay()
-    }
+	func update()
+	{
+		guard let text = textView.text
+		else
+		{
+			return
+		}
 
-    func update() {
-        guard let text = textView.text else {
-            return
-        }
+		let regex: NSRegularExpression
 
-        let regex: NSRegularExpression
+		let labelPart = switch AppController.shared.editorLabelIndexMode
+		{
+		case .allLabels:
+			"([^'#\\s]\\S+):"
+		case .labelsWithoutUnderscore:
+			"([^'#\\s][^\\s:_]+):"
+		default:
+			""
+		}
 
-        let labelPart: String
-        switch AppController.shared.editorLabelIndexMode {
-        case .allLabels:
-            labelPart = "([^'#\\s]\\S+):"
-        case .labelsWithoutUnderscore:
-            labelPart = "([^'#\\s][^\\s:_]+):"
-        default:
-            labelPart = ""
-        }
+		let prodecurePart = switch AppController.shared.editorProcedureIndexMode
+		{
+		case .allProcedures:
+			"SUB\\s+([^\\s\\(]+)"
+		default:
+			""
+		}
 
-        let prodecurePart: String
-        switch AppController.shared.editorProcedureIndexMode {
-        case .allProcedures:
-            prodecurePart = "SUB\\s+([^\\s\\(]+)"
-        default:
-            prodecurePart = ""
-        }
+		let markerPart = switch AppController.shared.editorManualMarkerIndexMode
+		{
+		case .manualMarkers:
+			"'''(\\S+)"
+		default:
+			""
+		}
 
-        let markerPart: String
-        switch AppController.shared.editorManualMarkerIndexMode {
-        case .manualMarkers:
-            markerPart = "'''(\\S+)"
-        default:
-            markerPart = ""
-        }
+		if labelPart.isEmpty, prodecurePart.isEmpty, markerPart.isEmpty
+		{
+			self.numLines = 0
+			self.markers = []
+			shouldUpdateOnTouch = false
+			updateBarPositions()
+			return
+		}
 
-        if (labelPart.isEmpty && prodecurePart.isEmpty && markerPart.isEmpty) {
-             self.numLines = 0
-             self.markers = []
-             self.shouldUpdateOnTouch = false
-             updateBarPositions()
-             return
-        }
+		regex = try! NSRegularExpression(pattern: "\\A\\s*(?:" + [labelPart, prodecurePart, markerPart].filter { !$0.isEmpty }.joined(separator: "|") + ")", options: .caseInsensitive)
 
-        regex = try! NSRegularExpression(pattern: "\\A\\s*(?:" + [labelPart, prodecurePart, markerPart].filter { !$0.isEmpty }.joined(separator: "|") + ")", options: .caseInsensitive)
+		var markers = [IndexMarker]()
+		var numLines = 0
 
-        var markers = [IndexMarker]()
-        var numLines = 0
+		text.enumerateSubstrings(in: text.startIndex ..< text.endIndex, options: .byLines)
+		{ string, _, enclosingRange, _ in
+			if let string
+			{
+				// print("\(numLines): \(string)")
+				if let match = regex.firstMatch(in: string, options: [], range: NSRange(location: 0, length: string.utf16.count))
+				{
+					var capturedLabel: String?
+					for i in 1 ..< match.numberOfRanges
+					{
+						if let range = Range(match.range(at: i), in: string), !range.isEmpty
+						{
+							capturedLabel = String(string[range])
+							break
+						}
+					}
+					let range = NSRange(enclosingRange, in: text)
+					markers.append(IndexMarker(label: capturedLabel ?? string.trimmingCharacters(in: .whitespacesAndNewlines), line: numLines, range: range))
+				}
+			}
+			numLines += 1
+		}
 
-        text.enumerateSubstrings(in: text.startIndex..<text.endIndex, options: .byLines) { (string, substringRange, enclosingRange, stop) in
-            if let string = string {
-                //print("\(numLines): \(string)")
-                if let match = regex.firstMatch(in: string, options: [], range: NSRange(location: 0, length: string.utf16.count)) {
-                    var capturedLabel: String?
-                    for i in 1..<match.numberOfRanges {
-                        if let range = Range(match.range(at: i), in: string), !range.isEmpty {
-                            capturedLabel = String(string[range])
-                            break
-                        }
-                    }
-                    let range = NSRange(enclosingRange, in: text)
-                    markers.append(IndexMarker(label: capturedLabel ?? string.trimmingCharacters(in: .whitespacesAndNewlines), line: numLines, range: range))
-                }
-            }
-            numLines += 1
-        }
+		self.numLines = numLines
+		self.markers = markers
+		shouldUpdateOnTouch = false
+		updateBarPositions()
+	}
 
-        self.numLines = numLines
-        self.markers = markers
-        self.shouldUpdateOnTouch = false
-        updateBarPositions()
-    }
+	override func beginTracking(_ touch: UITouch, with _: UIEvent?) -> Bool
+	{
+		textView.resignFirstResponder()
+		// Force layout update if keyboard resignation caused changes
+		superview?.layoutIfNeeded()
 
-    override func beginTracking(_ touch: UITouch, with event: UIEvent?) -> Bool {
-        textView.resignFirstResponder()
-        // Force layout update if keyboard resignation caused changes
-        superview?.layoutIfNeeded()
-        
-        if shouldUpdateOnTouch {
-            update()
-        }
-        showLabels()
-        let point = touch.location(in: self)
-        startTouchY = point.y
-        return true
-    }
+		if shouldUpdateOnTouch
+		{
+			update()
+		}
+		showLabels()
+		let point = touch.location(in: self)
+		startTouchY = point.y
+		return true
+	}
 
-    override func continueTracking(_ touch: UITouch, with event: UIEvent?) -> Bool {
-        let point = touch.location(in: self)
-        touchedAt(y: point.y)
-        return true
-    }
+	override func continueTracking(_ touch: UITouch, with _: UIEvent?) -> Bool
+	{
+		let point = touch.location(in: self)
+		touchedAt(y: point.y)
+		return true
+	}
 
-    override func endTracking(_ touch: UITouch?, with event: UIEvent?) {
-        if let marker = oldMarker {
-            textView.selectedRange = NSMakeRange(marker.range.location, 0)
-        }
-        oldMarker = nil
-        unhighlight()
-        hideLabels()
-    }
+	override func endTracking(_: UITouch?, with _: UIEvent?)
+	{
+		if let marker = oldMarker
+		{
+			textView.selectedRange = NSMakeRange(marker.range.location, 0)
+		}
+		oldMarker = nil
+		unhighlight()
+		hideLabels()
+	}
 
-    override func cancelTracking(with event: UIEvent?) {
-        oldMarker = nil
-        unhighlight()
-        hideLabels()
-    }
+	override func cancelTracking(with _: UIEvent?)
+	{
+		oldMarker = nil
+		unhighlight()
+		hideLabels()
+	}
 
-    private func touchedAt(y touchY: CGFloat) {
-        if abs(touchY - startTouchY) < 10.0 {
-            // not moved enough
-            return
-        } else {
-            // unblock scrolling
-            startTouchY = -100.0
-        }
+	private func touchedAt(y touchY: CGFloat)
+	{
+		if abs(touchY - startTouchY) < 10.0
+		{
+			// not moved enough
+			return
+		}
+		else
+		{
+			// unblock scrolling
+			startTouchY = -100.0
+		}
 
-        var bestMarker: IndexMarker?
-        var bestDist = bounds.size.height
-        var dist: CGFloat = 0.0
-        if let markers = markers {
-            for marker in markers {
-                dist = abs(marker.currentBarY - touchY)
-                if dist < 22.0 && (bestMarker == nil || dist < bestDist) {
-                    bestMarker = marker
-                    bestDist = dist
-                }
-            }
-        }
+		var bestMarker: IndexMarker?
+		var bestDist = bounds.size.height
+		var dist: CGFloat = 0.0
+		if let markers
+		{
+			for marker in markers
+			{
+				dist = abs(marker.currentBarY - touchY)
+				if dist < 22.0, bestMarker == nil || dist < bestDist
+				{
+					bestMarker = marker
+					bestDist = dist
+				}
+			}
+		}
 
-        let visibleHeight = textView.bounds.size.height - textView.contentInset.bottom
-        let maxOffset = max(0.0, textView.contentSize.height - visibleHeight)
+		let visibleHeight = textView.bounds.size.height - textView.contentInset.bottom
+		let maxOffset = max(0.0, textView.contentSize.height - visibleHeight)
 
-        var scrollCenterY: CGFloat = -1.0
-        if let bestMarker = bestMarker {
-            if bestMarker != oldMarker {
-                var rect = textView.layoutManager.boundingRect(forGlyphRange: bestMarker.range, in: textView.textContainer)
-                rect.origin.y += textView.textContainerInset.top
-                scrollCenterY = rect.origin.y + rect.size.height * 0.5
+		var scrollCenterY: CGFloat = -1.0
+		if let bestMarker
+		{
+			if bestMarker != oldMarker
+			{
+				var rect = textView.layoutManager.boundingRect(forGlyphRange: bestMarker.range, in: textView.textContainer)
+				rect.origin.y += textView.textContainerInset.top
+				scrollCenterY = rect.origin.y + rect.size.height * 0.5
 
-                rect.size.width -= 22.0
-                highlight.frame = rect
-                if highlight.superview == nil {
-                    textView.addSubview(highlight)
-                }
+				rect.size.width -= 22.0
+				highlight.frame = rect
+				if highlight.superview == nil
+				{
+					textView.addSubview(highlight)
+				}
 
-                oldMarker = bestMarker
-            }
-        } else {
-            unhighlight()
-            oldMarker = nil
+				oldMarker = bestMarker
+			}
+		}
+		else
+		{
+			unhighlight()
+			oldMarker = nil
 
-            var factor = (touchY - 22.0) / (bounds.size.height - 44.0)
-            if factor < 0.0 { factor = 0.0 }
-            if factor > 1.0 { factor = 1.0 }
+			var factor = (touchY - 22.0) / (bounds.size.height - 44.0)
+			if factor < 0.0 { factor = 0.0 }
+			if factor > 1.0 { factor = 1.0 }
 
-            scrollCenterY = factor * textView.contentSize.height
-        }
+			scrollCenterY = factor * textView.contentSize.height
+		}
 
-        if scrollCenterY != -1.0 {
-            textView.setContentOffset(CGPoint(x: 0, y: max(min(floor(scrollCenterY - visibleHeight * 0.5), maxOffset), 0.0)), animated: false)
-        }
-    }
+		if scrollCenterY != -1.0
+		{
+			textView.setContentOffset(CGPoint(x: 0, y: max(min(floor(scrollCenterY - visibleHeight * 0.5), maxOffset), 0.0)), animated: false)
+		}
+	}
 
-    private func unhighlight() {
-        if highlight.superview != nil {
-            highlight.removeFromSuperview()
-        }
-    }
+	private func unhighlight()
+	{
+		if highlight.superview != nil
+		{
+			highlight.removeFromSuperview()
+		}
+	}
 
-    private func showLabels() {
-        labels = []
+	private func showLabels()
+	{
+		labels = []
 
-        guard let markers = markers, let superview = superview else {
-            return
-        }
+		guard let markers, let superview
+		else
+		{
+			return
+		}
 
-        var lastBottom: CGFloat = 2.0
-        var lastX: CGFloat = 0.0
-        var lastY: CGFloat = 0.0
-        for marker in markers {
-            let label = GORLabel()
-            label.isUserInteractionEnabled = false
-//            label.backgroundColor = AppStyle.whiteColor()
-						label.backgroundColor = UIColor.black
-            label.insets = UIEdgeInsets(top: 0, left: -4.0, bottom: 0, right: -4.0)
-            label.layer.cornerRadius = 4.0
-            label.clipsToBounds = true
-//            label.textColor = AppStyle.darkGrayColor()
-						label.textColor = UIColor.white
-            label.font = UIFont.systemFont(ofSize: AppController.shared.editorFontSize * 0.7)
-            label.textAlignment = .center
-            label.text = marker.label
-            label.sizeToFit()
+		var lastBottom: CGFloat = 2.0
+		var lastX: CGFloat = 0.0
+		var lastY: CGFloat = 0.0
+		for marker in markers
+		{
+			let label = GORLabel()
+			label.isUserInteractionEnabled = false
+			//            label.backgroundColor = AppStyle.whiteColor()
+			label.backgroundColor = UIColor.black
+			label.insets = UIEdgeInsets(top: 0, left: -4.0, bottom: 0, right: -4.0)
+			label.layer.cornerRadius = 4.0
+			label.clipsToBounds = true
+			//            label.textColor = AppStyle.darkGrayColor()
+			label.textColor = UIColor.white
+			label.font = UIFont.systemFont(ofSize: AppController.shared.editorFontSize * 0.7)
+			label.textAlignment = .center
+			label.text = marker.label
+			label.sizeToFit()
 
-            var frame = label.frame
-            var isFirstInLine = false
-            if marker.currentBarY > lastBottom {
-                frame.origin.x = ceil(-frame.size.width - 24.0)
-                frame.origin.y = round(max(marker.currentBarY - frame.size.height * 0.5, lastBottom))
-                isFirstInLine = true
-            } else {
-                frame.origin.x = floor(lastX - frame.size.width)
-                frame.origin.y = round(lastY)
-            }
+			var frame = label.frame
+			var isFirstInLine = false
+			if marker.currentBarY > lastBottom
+			{
+				frame.origin.x = ceil(-frame.size.width - 24.0)
+				frame.origin.y = round(max(marker.currentBarY - frame.size.height * 0.5, lastBottom))
+				isFirstInLine = true
+			}
+			else
+			{
+				frame.origin.x = floor(lastX - frame.size.width)
+				frame.origin.y = round(lastY)
+			}
 
-            label.frame = superview.convert(frame, from: self)
-            lastX = frame.origin.x - 1.0
-            lastY = frame.origin.y
-            lastBottom = frame.origin.y + frame.size.height + 1.0
+			label.frame = superview.convert(frame, from: self)
+			lastX = frame.origin.x - 1.0
+			lastY = frame.origin.y
+			lastBottom = frame.origin.y + frame.size.height + 1.0
 
-            if isFirstInLine || label.frame.origin.x >= 100.0 {
-                superview.addSubview(label)
-                labels!.append(label)
-            }
-        }
-    }
+			if isFirstInLine || label.frame.origin.x >= 100.0
+			{
+				superview.addSubview(label)
+				labels!.append(label)
+			}
+		}
+	}
 
-    private func hideLabels() {
-        if let labels = labels {
-            for label in labels {
-                label.removeFromSuperview()
-            }
-        }
-        labels = nil
-    }
-
+	private func hideLabels()
+	{
+		if let labels
+		{
+			for label in labels
+			{
+				label.removeFromSuperview()
+			}
+		}
+		labels = nil
+	}
 }

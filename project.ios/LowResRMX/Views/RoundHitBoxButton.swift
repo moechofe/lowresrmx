@@ -8,20 +8,22 @@
 
 import UIKit
 
-class RoundHitBoxButton: UIButton {
-    
-    override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
-        if !isHidden && isUserInteractionEnabled {
-            let radius = bounds.size.width * 0.5
-            let diffX = radius - point.x
-            let diffY = radius - point.y
-            let distance = diffX * diffX + diffY * diffY
-            let extendedRadius = radius + 10
-            if distance <= extendedRadius * extendedRadius {
-                return self
-            }
-        }
-        return nil
-    }
-    
+class RoundHitBoxButton: UIButton
+{
+	override func hitTest(_ point: CGPoint, with _: UIEvent?) -> UIView?
+	{
+		if !isHidden, isUserInteractionEnabled
+		{
+			let radius = bounds.size.width * 0.5
+			let diffX = radius - point.x
+			let diffY = radius - point.y
+			let distance = diffX * diffX + diffY * diffY
+			let extendedRadius = radius + 10
+			if distance <= extendedRadius * extendedRadius
+			{
+				return self
+			}
+		}
+		return nil
+	}
 }
