@@ -10,4 +10,5 @@ Allow: /privacy-policy.html
 Allow: /terms-of-service.html
 Allow: /*-*-*.html
 Allow: /*-*-*.png
+Allow: /sitemap.xml
 Sitemap: https://ret.ro.it/sitemap.xml
