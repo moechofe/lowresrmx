@@ -1,4 +1,4 @@
-html { background-color:#f7f2ed; min-width:340px; }
+html { background-color:light-dark(#f7f2ed, #35312c); min-width:340px; }
 
 body .message { background-color: #c66; color: #fff; font-weight: bold; font-size: 1.5em; padding: 0.5em; }
 body .message a { color: #fff; text-decoration-color: #fff; }
@@ -10,13 +10,15 @@ header .burger { display:none; }
 	body.chat header .links, body.help header .links { display:none; }
 }
 
-body.community a:not(.community) { color: var(--pico-secondary); }
-body.chat a:not(.chat) { color: var(--pico-secondary); }
-body.show a:not(.show) { color: var(--pico-secondary); }
-body.help a:not(.help) { color: var(--pico-secondary); }
-body.share a:not(.share) { color: var(--pico-secondary); }
-body.about a:not(.about) { color: var(--pico-secondary); }
-body.entry a:not(.entry) { color: var(--pico-secondary); }
+ul.forum.burger a { color: var(--pico-primary); }
+
+body.community ul.forum a:not(.community) { color: var(--pico-secondary); }
+body.chat ul.forum a:not(.chat) { color: var(--pico-secondary); }
+body.show ul.forum a:not(.show) { color: var(--pico-secondary); }
+body.help ul.forum a:not(.help) { color: var(--pico-secondary); }
+body.share ul.forum a:not(.share) { color: var(--pico-secondary); }
+body.about ul.forum a:not(.about) { color: var(--pico-secondary); }
+body.entry ul.forum a:not(.entry) { color: var(--pico-secondary); }
 
 header .burger summary+ul { width:6em; }
 header .burger summary+ul li a { font-weight:bold; }
