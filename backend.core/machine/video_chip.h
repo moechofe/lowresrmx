@@ -183,6 +183,6 @@ struct VideoRegisters
 // ================ Functions ================
 // ===========================================
 
-void video_renderScreen(struct Core *core, uint32_t *outputRGB);
+void video_renderScreen(struct Core *core, uint32_t *outputBuffer, int pitch);
 
 #endif /* video_chip_h */

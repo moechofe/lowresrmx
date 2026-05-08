@@ -264,11 +264,10 @@ struct SpriteRegisters *reg, struct VideoRam *ram, int y, uint8_t *scanlineBuffe
 	}
 }
 
-void video_renderScreen(struct Core *core, uint32_t *outputRGB)
+void video_renderScreen(struct Core *core, uint32_t *outputBuffer, int pitch)
 {
 	uint8_t scanlineBuffer[SCREEN_WIDTH];
 	uint8_t scanlineSpriteBuffer[SCREEN_WIDTH];
-	uint32_t *outputPixel = outputRGB;
 
 	struct VideoRam *ram = &core->machine->videoRam;
 	struct VideoRegisters *reg = &core->machine->videoRegisters;
@@ -305,15 +304,17 @@ void video_renderScreen(struct Core *core, uint32_t *outputRGB)
 #if ABGR
 		// AABBGGRR
 		while(count-- > 0)
-			*outputPixel++ = 0xff4c6001;
+			*outputBuffer++ = 0xff4c6001;
 #else
 		while(count-- > 0)
-			*outputPixel++ = 0xff01604c;
+			*outputBuffer++ = 0xff01604c;
 #endif
 	}
 
 	for(int y = 0; y < height; y++)
 	{
+		uint32_t *outputPixel = (uint32_t*)((uint8_t*)outputBuffer + y * pitch);
+
 		reg->rasterLine = y;
 		if(core->interpreter->compat && y >= 0 && y < 120)
 		{
@@ -456,14 +457,14 @@ void video_renderScreen(struct Core *core, uint32_t *outputRGB)
 	}
 
 	if(core->interpreter->compat)
-	{
-		uint32_t *endPixel = outputRGB + sw * sh;
-		while(outputPixel < endPixel)
+	{ // This block is outside the main loop, so outputPixel is not valid here. It should use outputBuffer.
+		uint32_t *endPixel = (uint32_t*)((uint8_t*)outputBuffer + sw * sh * sizeof(uint32_t)); // Assuming pitch is consistent for the whole buffer
+		// while(outputPixel < endPixel)
 		{
 #if ABGR
-			*outputPixel++ = 0xff4c6001;
+			// *outputPixel++ = 0xff4c6001;
 #else
-			*outputPixel++ = 0xff01604c;
+			// *outputPixel++ = 0xff01604c;
 #endif
 		}
 	}

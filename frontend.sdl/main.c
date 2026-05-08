@@ -771,7 +771,7 @@ void update(void *arg)
 		int pitch = 0;
 		SDL_LockTexture(texture, NULL, &pixels, &pitch);
 
-		video_renderScreen(runner.core, pixels);
+		video_renderScreen(runner.core, pixels, pitch);
 
 		if(screenshotRequestedWithScale > 0)
 		{
