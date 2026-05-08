@@ -34,6 +34,10 @@
 #include "variables.h"
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
+
+bool fake_shown = false, fake_safe = false;
+int fake_width = 180, fake_height = 180, fake_left = 7, fake_right = 7, fake_top = 21, fake_bottom = 13;
 
 void new_line(struct Core *core)
 {
@@ -492,6 +496,56 @@ static void process_command_line(struct Core *core)
 				new_line(core);
 			}
 			new_line(core);
+		}
+
+		// fake shown
+		else if(t->type == TokenSHOWNW || t->type == TokenSHOWNH)
+		{
+			t = &toks.tokens[i++];
+			fake_shown = false;
+			if(t->type == TokenFloat)
+			{
+				int w = (int)t->floatValue;
+				fake_width = (w < 120) ? 120 : (w > SCREEN_WIDTH) ? SCREEN_WIDTH : w;
+				t = &toks.tokens[i++];
+				if(t->type == TokenFloat)
+				{
+					int h = (int)t->floatValue;
+					fake_height = (h < 120) ? 120 : (h > SCREEN_HEIGHT) ? SCREEN_HEIGHT : h;
+					fake_shown = true;
+				}
+			}
+		}
+
+		// fake safe
+		else if(t->type == TokenSAFEL || t->type == TokenSAFET || t->type == TokenSAFER || t->type == TokenSAFEB)
+		{
+			t = &toks.tokens[i++];
+			fake_safe = false;
+			if(t->type == TokenFloat)
+			{
+				int l = (int)t->floatValue;
+				fake_left = (l < 0) ? 0 : (l > 40) ? 40 : l;
+				t = &toks.tokens[i++];
+				if(t->type == TokenFloat)
+				{
+					int r = (int)t->floatValue;
+					fake_right = (r < 0) ? 0 : (r > 40) ? 40 : r;
+					t = &toks.tokens[i++];
+					if(t->type == TokenFloat)
+					{
+						int p = (int)t->floatValue;
+						fake_top = (p < 0) ? 0 : (p > 40) ? 40 : p;
+						t = &toks.tokens[i++];
+						if(t->type == TokenFloat)
+						{
+							int b = (int)t->floatValue;
+							fake_bottom = (b < 0) ? 0 : (b > 40) ? 40 : b;
+							fake_safe = true;
+						}
+					}
+				}
+			}
 		}
 
 		// track memory access

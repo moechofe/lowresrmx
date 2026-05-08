@@ -4200,6 +4200,9 @@ struct TypedValue fnc_FSIZE(struct Core *core)
 
 #include <assert.h>
 
+extern bool fake_shown, fake_safe;
+extern int fake_width, fake_height, fake_left, fake_right, fake_top, fake_bottom;
+
 enum ErrorCode cmd_KEYBOARD(struct Core *core)
 {
 	struct Interpreter *interpreter = core->interpreter;
@@ -4322,11 +4325,11 @@ struct TypedValue fnc_SHOWN(struct Core *core)
 	{
 		if(type == TokenSHOWNW)
 		{
-			value.v.floatValue = core->machine->ioRegisters.shown.width;
+			value.v.floatValue = fake_shown ? fake_width: core->machine->ioRegisters.shown.width;
 		}
 		else if(type == TokenSHOWNH)
 		{
-			value.v.floatValue = core->machine->ioRegisters.shown.height;
+			value.v.floatValue = fake_shown ? fake_height : core->machine->ioRegisters.shown.height;
 		}
 		else
 		{
@@ -4351,19 +4354,19 @@ struct TypedValue fnc_SAFE(struct Core *core)
 	{
 		if(type == TokenSAFEL)
 		{
-			value.v.floatValue = core->machine->ioRegisters.safe.left;
+			value.v.floatValue = fake_safe ? fake_left : core->machine->ioRegisters.safe.left;
 		}
 		else if(type == TokenSAFET)
 		{
-			value.v.floatValue = core->machine->ioRegisters.safe.top;
+			value.v.floatValue = fake_safe ? fake_top : core->machine->ioRegisters.safe.top;
 		}
 		else if(type == TokenSAFER)
 		{
-			value.v.floatValue = core->machine->ioRegisters.safe.right;
+			value.v.floatValue = fake_safe ? fake_right : core->machine->ioRegisters.safe.right;
 		}
 		else if(type == TokenSAFEB)
 		{
-			value.v.floatValue = core->machine->ioRegisters.safe.bottom;
+			value.v.floatValue = fake_safe ? fake_bottom : core->machine->ioRegisters.safe.bottom;
 		}
 		else
 		{
@@ -13208,6 +13211,9 @@ void runStartupSequence(struct Core *core)
 #include <assert.h>
 #include <string.h>
 
+extern bool fake_shown, fake_safe;
+extern int fake_width, fake_height, fake_left, fake_right, fake_top, fake_bottom;
+
 struct Plane *txtlib_getBackground(struct TextLib *lib, int bg)
 {
 	switch(bg)
@@ -13572,10 +13578,17 @@ void txtlib_resetWindow(struct TextLib *lib)
 	struct Core *core = lib->core;
 	struct IORegisters *io = &core->machine->ioRegisters;
 
-	lib->windowX = (io->safe.left + 7) / 8;
-	lib->windowY = (io->safe.top + 7) / 8;
-	lib->windowWidth = io->shown.width / 8 - (io->safe.left + 7) / 8 - (io->safe.right + 7) / 8;
-	lib->windowHeight = io->shown.height / 8 - (io->safe.top + 7) / 8 - (io->safe.bottom + 7) / 8;
+	int left = fake_safe ? fake_left : io->safe.left;
+	int right = fake_safe ? fake_right : io->safe.right;
+	int top = fake_safe ? fake_top : io->safe.top;
+	int bottom = fake_safe ? fake_bottom : io->safe.bottom;
+	int width = fake_shown ? fake_width : io->shown.width;
+	int height = fake_shown ? fake_height : io->shown.height;
+
+	lib->windowX = (left + 7) / 8;
+	lib->windowY = (top + 7) / 8;
+	lib->windowWidth = width / 8 - (left + 7) / 8 - (right + 7) / 8;
+	lib->windowHeight = height / 8 - (top + 7) / 8 - (bottom + 7) / 8;
 	lib->cursorX = 0;
 	lib->cursorY = 0;
 	lib->bg = 0;
@@ -14838,11 +14851,10 @@ struct SpriteRegisters *reg, struct VideoRam *ram, int y, uint8_t *scanlineBuffe
 	}
 }
 
-void video_renderScreen(struct Core *core, uint32_t *outputRGB)
+void video_renderScreen(struct Core *core, uint32_t *outputBuffer, int pitch)
 {
 	uint8_t scanlineBuffer[SCREEN_WIDTH];
 	uint8_t scanlineSpriteBuffer[SCREEN_WIDTH];
-	uint32_t *outputPixel = outputRGB;
 
 	struct VideoRam *ram = &core->machine->videoRam;
 	struct VideoRegisters *reg = &core->machine->videoRegisters;
@@ -14874,20 +14886,22 @@ void video_renderScreen(struct Core *core, uint32_t *outputRGB)
 		skip_before = (sw - width) / 2;
 		skip_after = sw - width - skip_before;
 
-		// draw original lowresnx background color
+		// draw original lowresnx background color at top
 		int count = (sh - height) / 2 * sw;
 #if ABGR
 		// AABBGGRR
 		while(count-- > 0)
-			*outputPixel++ = 0xff4c6001;
+			*outputBuffer++ = 0xff4c6001;
 #else
 		while(count-- > 0)
-			*outputPixel++ = 0xff01604c;
+			*outputBuffer++ = 0xff01604c;
 #endif
 	}
 
 	for(int y = 0; y < height; y++)
 	{
+		uint32_t *outputPixel = (uint32_t*)((uint8_t*)outputBuffer + y * pitch);
+
 		reg->rasterLine = y;
 		if(core->interpreter->compat && y >= 0 && y < 120)
 		{
@@ -15030,14 +15044,14 @@ void video_renderScreen(struct Core *core, uint32_t *outputRGB)
 	}
 
 	if(core->interpreter->compat)
-	{
-		uint32_t *endPixel = outputRGB + sw * sh;
-		while(outputPixel < endPixel)
+	{ // This block is outside the main loop, so outputPixel is not valid here. It should use outputBuffer.
+		uint32_t *endPixel = (uint32_t*)((uint8_t*)outputBuffer + sw * sh * sizeof(uint32_t)); // Assuming pitch is consistent for the whole buffer
+		// while(outputPixel < endPixel)
 		{
 #if ABGR
-			*outputPixel++ = 0xff4c6001;
+			// *outputPixel++ = 0xff4c6001;
 #else
-			*outputPixel++ = 0xff01604c;
+			// *outputPixel++ = 0xff01604c;
 #endif
 		}
 	}
@@ -16312,6 +16326,10 @@ uint8_t overlayCharacters[] = {
 
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
+
+bool fake_shown = false, fake_safe = false;
+int fake_width = 180, fake_height = 180, fake_left = 7, fake_right = 7, fake_top = 21, fake_bottom = 13;
 
 void new_line(struct Core *core)
 {
@@ -16770,6 +16788,56 @@ static void process_command_line(struct Core *core)
 				new_line(core);
 			}
 			new_line(core);
+		}
+
+		// fake shown
+		else if(t->type == TokenSHOWNW || t->type == TokenSHOWNH)
+		{
+			t = &toks.tokens[i++];
+			fake_shown = false;
+			if(t->type == TokenFloat)
+			{
+				int w = (int)t->floatValue;
+				fake_width = (w < 120) ? 120 : (w > SCREEN_WIDTH) ? SCREEN_WIDTH : w;
+				t = &toks.tokens[i++];
+				if(t->type == TokenFloat)
+				{
+					int h = (int)t->floatValue;
+					fake_height = (h < 120) ? 120 : (h > SCREEN_HEIGHT) ? SCREEN_HEIGHT : h;
+					fake_shown = true;
+				}
+			}
+		}
+
+		// fake safe
+		else if(t->type == TokenSAFEL || t->type == TokenSAFET || t->type == TokenSAFER || t->type == TokenSAFEB)
+		{
+			t = &toks.tokens[i++];
+			fake_safe = false;
+			if(t->type == TokenFloat)
+			{
+				int l = (int)t->floatValue;
+				fake_left = (l < 0) ? 0 : (l > 40) ? 40 : l;
+				t = &toks.tokens[i++];
+				if(t->type == TokenFloat)
+				{
+					int r = (int)t->floatValue;
+					fake_right = (r < 0) ? 0 : (r > 40) ? 40 : r;
+					t = &toks.tokens[i++];
+					if(t->type == TokenFloat)
+					{
+						int p = (int)t->floatValue;
+						fake_top = (p < 0) ? 0 : (p > 40) ? 40 : p;
+						t = &toks.tokens[i++];
+						if(t->type == TokenFloat)
+						{
+							int b = (int)t->floatValue;
+							fake_bottom = (b < 0) ? 0 : (b > 40) ? 40 : b;
+							fake_safe = true;
+						}
+					}
+				}
+			}
 		}
 
 		// track memory access
@@ -18304,7 +18372,7 @@ void update(void *arg)
 		int pitch = 0;
 		SDL_LockTexture(texture, NULL, &pixels, &pitch);
 
-		video_renderScreen(runner.core, pixels);
+		video_renderScreen(runner.core, pixels, pitch);
 
 		if(screenshotRequestedWithScale > 0)
 		{

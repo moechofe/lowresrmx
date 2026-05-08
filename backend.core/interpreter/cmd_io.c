@@ -23,6 +23,9 @@
 #include "overlay_debugger.h"
 #include <assert.h>
 
+extern bool fake_shown, fake_safe;
+extern int fake_width, fake_height, fake_left, fake_right, fake_top, fake_bottom;
+
 enum ErrorCode cmd_KEYBOARD(struct Core *core)
 {
 	struct Interpreter *interpreter = core->interpreter;
@@ -145,11 +148,11 @@ struct TypedValue fnc_SHOWN(struct Core *core)
 	{
 		if(type == TokenSHOWNW)
 		{
-			value.v.floatValue = core->machine->ioRegisters.shown.width;
+			value.v.floatValue = fake_shown ? fake_width: core->machine->ioRegisters.shown.width;
 		}
 		else if(type == TokenSHOWNH)
 		{
-			value.v.floatValue = core->machine->ioRegisters.shown.height;
+			value.v.floatValue = fake_shown ? fake_height : core->machine->ioRegisters.shown.height;
 		}
 		else
 		{
@@ -174,19 +177,19 @@ struct TypedValue fnc_SAFE(struct Core *core)
 	{
 		if(type == TokenSAFEL)
 		{
-			value.v.floatValue = core->machine->ioRegisters.safe.left;
+			value.v.floatValue = fake_safe ? fake_left : core->machine->ioRegisters.safe.left;
 		}
 		else if(type == TokenSAFET)
 		{
-			value.v.floatValue = core->machine->ioRegisters.safe.top;
+			value.v.floatValue = fake_safe ? fake_top : core->machine->ioRegisters.safe.top;
 		}
 		else if(type == TokenSAFER)
 		{
-			value.v.floatValue = core->machine->ioRegisters.safe.right;
+			value.v.floatValue = fake_safe ? fake_right : core->machine->ioRegisters.safe.right;
 		}
 		else if(type == TokenSAFEB)
 		{
-			value.v.floatValue = core->machine->ioRegisters.safe.bottom;
+			value.v.floatValue = fake_safe ? fake_bottom : core->machine->ioRegisters.safe.bottom;
 		}
 		else
 		{

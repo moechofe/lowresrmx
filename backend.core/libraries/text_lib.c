@@ -22,6 +22,9 @@
 #include <assert.h>
 #include <string.h>
 
+extern bool fake_shown, fake_safe;
+extern int fake_width, fake_height, fake_left, fake_right, fake_top, fake_bottom;
+
 struct Plane *txtlib_getBackground(struct TextLib *lib, int bg)
 {
 	switch(bg)
@@ -386,10 +389,17 @@ void txtlib_resetWindow(struct TextLib *lib)
 	struct Core *core = lib->core;
 	struct IORegisters *io = &core->machine->ioRegisters;
 
-	lib->windowX = (io->safe.left + 7) / 8;
-	lib->windowY = (io->safe.top + 7) / 8;
-	lib->windowWidth = io->shown.width / 8 - (io->safe.left + 7) / 8 - (io->safe.right + 7) / 8;
-	lib->windowHeight = io->shown.height / 8 - (io->safe.top + 7) / 8 - (io->safe.bottom + 7) / 8;
+	int left = fake_safe ? fake_left : io->safe.left;
+	int right = fake_safe ? fake_right : io->safe.right;
+	int top = fake_safe ? fake_top : io->safe.top;
+	int bottom = fake_safe ? fake_bottom : io->safe.bottom;
+	int width = fake_shown ? fake_width : io->shown.width;
+	int height = fake_shown ? fake_height : io->shown.height;
+
+	lib->windowX = (left + 7) / 8;
+	lib->windowY = (top + 7) / 8;
+	lib->windowWidth = width / 8 - (left + 7) / 8 - (right + 7) / 8;
+	lib->windowHeight = height / 8 - (top + 7) / 8 - (bottom + 7) / 8;
 	lib->cursorX = 0;
 	lib->cursorY = 0;
 	lib->bg = 0;

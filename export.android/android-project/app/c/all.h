@@ -173,7 +173,6 @@ struct CoreError err_noCoreError(void);
 #ifndef data_manager_h
 #define data_manager_h
 
-#include "error.h"
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -231,8 +230,6 @@ void data_setEntry(struct DataManager *manager, int index, const char *comment, 
 #ifndef core_delegate_h
 #define core_delegate_h
 
-#include "data_manager.h"
-#include "error.h"
 
 struct Core;
 
@@ -323,7 +320,6 @@ void delegate_persistentRamDidChange(struct Core *core, uint8_t *data, int size)
 #ifndef disk_drive_h
 #define disk_drive_h
 
-#include "data_manager.h"
 #include <stdbool.h>
 #include <stdio.h>
 
@@ -519,7 +515,6 @@ void audio_renderAudio(struct Core *core, int16_t *output, int numSamples, int o
 #ifndef audio_lib_h
 #define audio_lib_h
 
-#include "audio_chip.h"
 #include <stdbool.h>
 #include <stdio.h>
 
@@ -614,7 +609,6 @@ void rcstring_release(struct RCString *string);
 #ifndef data_h
 #define data_h
 
-#include "rcstring.h"
 #include <stdint.h>
 #include <stdio.h>
 
@@ -823,7 +817,6 @@ struct LabelStackItem *lab_searchLabelStackItem(struct Interpreter *interpreter,
 #ifndef token_h
 #define token_h
 
-#include "rcstring.h"
 #include <stdio.h>
 
 enum TokenType
@@ -1098,8 +1091,6 @@ extern const char *TokenStrings[];
 #ifndef tokenizer_h
 #define tokenizer_h
 
-#include "interpreter_config.h"
-#include "token.h"
 #include <stdio.h>
 
 struct Symbol
@@ -1326,7 +1317,7 @@ struct VideoRegisters
 // ================ Functions ================
 // ===========================================
 
-void video_renderScreen(struct Core *core, uint32_t *outputRGB);
+void video_renderScreen(struct Core *core, uint32_t *outputBuffer, int pitch);
 
 #endif /* video_chip_h */
 // Copyright 2016-2024 Timo Kloss
@@ -1353,8 +1344,6 @@ void video_renderScreen(struct Core *core, uint32_t *outputRGB);
 
 #include <stdbool.h>
 
-#include "tokenizer.h"
-#include "video_chip.h"
 
 #define EMITTER_MAX 16
 #define APPEARANCE_MAX 24
@@ -1571,7 +1560,6 @@ bool sprlib_checkCollision(struct SpritesLib *lib, int checkIndex, int firstInde
 #ifndef text_lib_h
 #define text_lib_h
 
-#include "video_chip.h"
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -1651,8 +1639,6 @@ void txtlib_scrollWindowIfNeeded(struct TextLib *lib);
 #ifndef value_h
 #define value_h
 
-#include "error.h"
-#include "rcstring.h"
 #include <stdio.h>
 
 enum ValueType
@@ -1710,8 +1696,6 @@ struct TypedValue val_makeError(enum ErrorCode errorCode);
 #ifndef variables_h
 #define variables_h
 
-#include "interpreter_config.h"
-#include "value.h"
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -1778,21 +1762,6 @@ void var_freeArrayVariables(struct Interpreter *interpreter, int minSubLevel);
 #ifndef interpreter_h
 #define interpreter_h
 
-#include "audio_lib.h"
-#include "data.h"
-#include "data_manager.h"
-#include "error.h"
-#include "interpreter_config.h"
-#include "io_chip.h"
-#include "labels.h"
-#include "particles_lib.h"
-#include "pcg_basic.h"
-#include "sprites_lib.h"
-#include "text_lib.h"
-#include "token.h"
-#include "tokenizer.h"
-#include "value.h"
-#include "variables.h"
 #include <float.h>
 #include <math.h>
 #include <stdbool.h>
@@ -1943,10 +1912,6 @@ bool is_zero_approx(float x);
 #ifndef machine_h
 #define machine_h
 
-#include "audio_chip.h"
-#include "error.h"
-#include "io_chip.h"
-#include "video_chip.h"
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -2069,7 +2034,6 @@ void machine_checkForTrakedMemoryAccess(struct Core *core, uint16_t address, boo
 #ifndef overlay_data_h
 #define overlay_data_h
 
-#include "video_chip.h"
 #include <stdint.h>
 #include <stdio.h>
 
@@ -2099,9 +2063,6 @@ extern uint8_t overlayCharacters[];
 #ifndef overlay_h
 #define overlay_h
 
-#include "overlay_data.h"
-#include "text_lib.h"
-#include "video_chip.h"
 #include <stdbool.h>
 #include <stdio.h>
 
@@ -2152,11 +2113,6 @@ void overlay_draw(struct Core *core, bool ingame);
 
 #define CORE_VERSION "2.0"
 
-#include "core_delegate.h"
-#include "disk_drive.h"
-#include "interpreter.h"
-#include "machine.h"
-#include "overlay.h"
 #include <stdbool.h>
 #include <stdio.h>
 
@@ -2273,9 +2229,6 @@ enum BootIntroState
 #ifndef core_stats_h
 #define core_stats_h
 
-#include "data_manager.h"
-#include "error.h"
-#include "tokenizer.h"
 #include <stdio.h>
 
 struct Stats
@@ -2404,9 +2357,6 @@ extern const char *CharSetHex;
 #ifndef interpreter_utils_h
 #define interpreter_utils_h
 
-#include "audio_chip.h"
-#include "value.h"
-#include "video_chip.h"
 #include <stdbool.h>
 #include <stdio.h>
 
@@ -2450,7 +2400,6 @@ struct TypedValue itp_evaluateLFOAttributes(struct Core *core, union LFOAttribut
 #ifndef cmd_text_h
 #define cmd_text_h
 
-#include "error.h"
 #include <stdbool.h>
 #include <stdio.h>
 
@@ -2652,8 +2601,6 @@ void log_log(int level, const char *file, int line, const char *fmt, ...);
 #ifndef runner_h
 #define runner_h
 
-#include "core.h"
-#include "sdl_include.h"
 #include <stdbool.h>
 #include <stdio.h>
 
@@ -2691,7 +2638,6 @@ struct CoreError runner_loadProgram(struct Runner *runner, const char *filename)
 #ifndef screenshot_h
 #define screenshot_h
 
-#include "config.h"
 
 #if SCREENSHOTS
 

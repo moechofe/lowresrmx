@@ -299,7 +299,7 @@ void video_renderScreen(struct Core *core, uint32_t *outputBuffer, int pitch)
 		skip_before = (sw - width) / 2;
 		skip_after = sw - width - skip_before;
 
-		// draw original lowresnx background color
+		// draw original lowresnx background color at top
 		int count = (sh - height) / 2 * sw;
 #if ABGR
 		// AABBGGRR
