@@ -3074,6 +3074,14 @@ Execute next instruction in the program, and stop.
 
 Start or stop logging `GOTO`s and `GOSUB`s.
 
+##### dbg: `SHOWN.W width height`<br>`SHOWN.W`
+
+Override or reset `width` and `height` of the device screen to simulate different ratios.
+
+##### dbg: `SAFE.L left top right bottom`<br>`SAFE.L`
+
+Override or reset `left`, `top`, `right` and `bottom` of the safe area to simulate different device models.
+
 ## References
 
 This annex provides technical information about how things work under the hood.
