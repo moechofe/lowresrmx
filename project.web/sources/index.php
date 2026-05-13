@@ -20,6 +20,8 @@ require_once __DIR__.'/entry.php';
 require_once __DIR__.'/comment.php';
 require_once __DIR__.'/score.php';
 
+require_once __DIR__.'/image.php';
+
 // server static files maybe
 if(in_array($urlPath,[
 	'/community.html',

@@ -183,6 +183,7 @@ const setupPostDialog=(where)=>{
 	const dialog=instanciate(post_dialog);
 	const body=query('body');
 	const content=find(dialog,'.content');
+	const publish=find(dialog,'button.publish');
 
 	/** @type {function():void} */
 	let cb=null;
@@ -194,6 +195,8 @@ const setupPostDialog=(where)=>{
 			find(dialog,'select.where').value="";
 			find(dialog,'input.title').value="";
 			find(dialog,'textarea.text').value="";
+			enable(publish);
+			unbusy(publish);
 		});
 	};
 
@@ -217,9 +220,17 @@ const setupPostDialog=(where)=>{
 	showLimit();
 	autoHeight(find(content,'textarea'),214);
 
+	change(find(content,'input[type=file]'),(event)=>{
+		const file=event.target.files[0];
+		if(!file) return;
+		disable(publish);
+		busy(publish);
+		log(file);
+	});
+
 	click(find(dialog,'button.cancel'),close);
 
-	click(find(dialog,'button.publish'),event=>{
+	click(publish,event=>{
 		const where=find(dialog,'select.where').value;
 		const title=find(dialog,'input.title').value;
 		const text=find(dialog,'textarea.text').value;

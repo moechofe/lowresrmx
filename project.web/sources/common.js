@@ -25,19 +25,21 @@ const get=(path,headers)=>fetch(path,{
 	referrerPolicy:'no-referrer',
 });
 
-/** @type {function(!File,String):!Promise<!Response>} */
-const upload=(type,file,token)=>{
+/** @type {function(string,!File):!Promise<!Response>} */
+const upload=(file)=>{
+	log(file);
 	const reader=new FileReader();
 	return new Promise((res,rej)=>{
 		reader.onload=(event)=>{
-			post('upload',event.target.result,{
-				[HEADER_FILE_TYPE]: type,
-				[HEADER_TOKEN]: token,
+			post('upi',event.target.result,{
+				[HEADER_FILE_TYPE]:file.type,
+				[HEADER_TOKEN]:csrf,
 			}).then(res).catch(rej);
 		};
-		reader.error=rej;
+		reader.onerror=rej;
 		reader.readAsArrayBuffer(file);
 	});
+	// https://developer.mozilla.org/en-US/docs/Web/API/File_API/Using_files_from_web_applications#handling_the_upload_process_for_a_file
 };
 
 /** @type {function():void} */

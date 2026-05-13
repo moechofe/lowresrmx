@@ -6,6 +6,7 @@ const LOGIN_DISCORD_KEY="";
 const LOGIN_GITHUB_KEY="";
 const UPLOAD_TOKEN_KEY="";
 const ENTRY_TOKEN_KEY="";
+const IMAGE_TOKEN_KEY="";
 
 const GOOGLE_CLIENT_ID="";
 const GOOGLE_CLIENT_SECRET="";

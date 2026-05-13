@@ -53,6 +53,12 @@ const mouseOut=(element,callback)=>{element.addEventListener('mouseout',callback
 /** @type {function(!HTMLElement,function(!Event):void):void} */
 const input=(element,callback)=>{element.addEventListener('input',callback)};
 
+/** @type {function(!HTMLElement,function(!Event):void):void} */
+const change=(element,callback)=>{element.addEventListener('change',callback)};
+
+/** @type {function(!HTMLElement,function(!Event):void):void} */
+const load=(element,callback)=>{element.addEventListener('load',callback)};
+
 /** @type {function(!HTMLElement):void} */
 const hide=(element)=>element.hidden=true;
 

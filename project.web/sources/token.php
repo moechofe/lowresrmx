@@ -35,3 +35,20 @@ function generateEntryToken():string
 }
 
 $MATCH_ENTRY_TOKEN='[a-z\']{2,15}-[a-z\']{2,15}-[0-9a-fA-F]{16}';
+
+function generateImageToken():string
+{
+	$sequence=redis()->incr("seq:image");
+	$hash=bin2hex(sodium_crypto_shorthash(strval($sequence),IMAGE_TOKEN_KEY));
+
+	$token="";
+	for($i=0;$i<2;++$i) $token.=SYLLABLE_LIST[random_int(0,count(SYLLABLE_LIST))];
+	$token.="-";
+	for($i=0;$i<2;++$i) $token.=SYLLABLE_LIST[random_int(0,count(SYLLABLE_LIST))];
+	$token.="-";
+	$token.=$hash;
+
+	return $token;
+}
+
+$MATCH_IMAGE_TOKEN='[a-z\']{2,15}-[a-z\']{2,15}-[0-9a-fA-F]{16}';

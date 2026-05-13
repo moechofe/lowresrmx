@@ -6,7 +6,7 @@ error_reporting(E_ALL);
 
 require_once __DIR__.'/private.php';
 
-defined('WEBSITE_URL') or define('WEBSITE_URL','http://lowresrmx.top:8080');
+defined('WEBSITE_URL') or define('WEBSITE_URL','http://127.0.0.1:8080');
 defined('REDIS_DSN') or define('REDIS_DSN','tcp://127.0.0.1:6379');
 defined('APP_SCHEME') or define('APP_SCHEME','lowresrmx:');
 
@@ -227,7 +227,7 @@ if(php_sapi_name()!=="cli")
 	$isPost=$_SERVER['REQUEST_METHOD']==='POST';
 	$isHttps=@$_SERVER['HTTPS']==="on";
 	$baseUrl=(@$_SERVER['REQUEST_SCHEME']?:($isHttps?"https":"http")).'://'.$_SERVER['HTTP_HOST'];
-	$isProd=in_array($_SERVER['HTTP_HOST'],["lowresrmx.top","localhost:8080","10.10.35.216:8080"])===false;
+	$isProd=in_array($_SERVER['HTTP_HOST'],["lowresrmx.top","localhost:8080","127.0.0.1:8080","10.10.35.216:8080"])===false;
 
 	header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
 	header("Cache-Control: post-check=0, pre-check=0", false);
