@@ -407,8 +407,8 @@
 		}
 	}
 
-	// Colorize GOTO/GOSUB targets
-	NSRegularExpression *gotoRegex = [NSRegularExpression regularExpressionWithPattern: @"\\b(GOTO|GOSUB)\\s+([A-Za-z_][A-Za-z0-9_]*)\\b" options:NSRegularExpressionCaseInsensitive error:nil];
+	// Colorize GOTO/GOSUB/RESTORE targets
+	NSRegularExpression *gotoRegex = [NSRegularExpression regularExpressionWithPattern: @"\\b(GOTO|GOSUB|RESTORE)\\s+([A-Za-z_][A-Za-z0-9_]*)\\b" options:NSRegularExpressionCaseInsensitive error:nil];
 	NSArray<NSTextCheckingResult *> *gotoMatches = [gotoRegex matchesInString:text options:0 range:range];
 
 	for (NSTextCheckingResult *match in gotoMatches) {
