@@ -15,4 +15,5 @@ venv
 .settings
 .classpath
 local.properties
+!build.gradle
 
