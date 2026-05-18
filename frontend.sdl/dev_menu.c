@@ -29,11 +29,15 @@
 #include "string_utils.h"
 #include "system_paths.h"
 #include "utils.h"
+#include "core.h"
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 
 #define MENU_SIZE 5
+
+// extern SDL_Window *window;
+extern struct CoreInput coreInput;
 
 struct DevButton
 {
@@ -52,7 +56,8 @@ void dev_showClearRamMenu(struct DevMenu *devMenu);
 void dev_showMenu(
 struct DevMenu *devMenu, const char *message, const char *buttons[], int numButtons, int numRemoveButtons);
 void dev_clearPersistentRam(struct DevMenu *devMenu);
-
+void updateScreenRect(int winW, int winH);
+void updateSafeArea();
 void dev_init(struct DevMenu *devMenu, struct Runner *runner, struct Settings *settings)
 {
 	memset(devMenu, 0, sizeof(struct DevMenu));
@@ -79,6 +84,8 @@ void dev_show(struct DevMenu *devMenu, bool reload)
 	itp_endProgram(core);
 	machine_reset(core, true);
 	overlay_reset(core);
+
+	core_handleInput(devMenu->runner->core, &coreInput);
 
 	core->machineInternals->isEnergySaving = true;
 
