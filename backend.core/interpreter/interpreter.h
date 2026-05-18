@@ -107,15 +107,8 @@ struct Interpreter
 
 	bool isSingleLineIf;
 
-#ifdef USE_HASH
-	simple_variable_t simpleVariables;
-#else
 	struct SimpleVariable simpleVariables[MAX_SIMPLE_VARIABLES];
-#endif
 	int numSimpleVariables;
-
-	// If USE_HASH is defined, numSimpleVariables is redundant as verstable manages its own count.
-	// Consider removing 'int numSimpleVariables;' if USE_HASH is the primary storage method.
 
 	struct ArrayVariable arrayVariables[MAX_ARRAY_VARIABLES];
 	int numArrayVariables;
