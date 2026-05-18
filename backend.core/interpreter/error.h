@@ -94,10 +94,11 @@ struct CoreError
 {
 	enum ErrorCode code;
 	int sourcePosition;
+	int symbolIndex;
 };
 
 const char *err_getString(enum ErrorCode errorCode);
-struct CoreError err_makeCoreError(enum ErrorCode code, int sourcePosition);
+struct CoreError err_makeCoreError(enum ErrorCode code, int sourcePosition, int symbolIndex);
 struct CoreError err_noCoreError(void);
 
 #endif /* error_h */

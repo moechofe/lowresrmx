@@ -58,14 +58,6 @@ struct CoreError stats_update(struct Stats *stats, const char *sourceCode)
 
 	struct CoreError error = err_noCoreError();
 
-	// const char *upperCaseSourceCode = uppercaseString(sourceCode);
-	// if (!upperCaseSourceCode)
-	// {
-	//     error = err_makeCoreError(ErrorOutOfMemory, -1);
-	//     goto cleanup;
-	// }
-
-	// error = tok_tokenizeUppercaseProgram(stats->tokenizer, upperCaseSourceCode);
 	error = tok_tokenizeUppercaseProgram(stats->tokenizer, sourceCode);
 	if(error.code != ErrorNone)
 	{

@@ -134,14 +134,14 @@ struct CoreError runner_loadProgram(struct Runner *runner, const char *filename)
 		}
 		else
 		{
-			error = err_makeCoreError(ErrorOutOfMemory, -1);
+			error = err_makeCoreError(ErrorOutOfMemory, -1, -1);
 		}
 
 		fclose(file);
 	}
 	else
 	{
-		error = err_makeCoreError(ErrorCouldNotOpenProgram, -1);
+		error = err_makeCoreError(ErrorCouldNotOpenProgram, -1, -1);
 	}
 
 #endif

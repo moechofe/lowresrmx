@@ -86,7 +86,7 @@ struct CoreError itp_compileProgram(struct Core *core, const char *sourceCode)
 	if(buffer)
 		memcpy(buffer, sourceCode, len + 1);
 	else
-		return err_makeCoreError(ErrorOutOfMemory, -1);
+		return err_makeCoreError(ErrorOutOfMemory, -1, -1);
 	interpreter->sourceCode = buffer;
 
 	struct CoreError error = tok_tokenizeUppercaseProgram(&interpreter->tokenizer, interpreter->sourceCode);
@@ -124,7 +124,7 @@ struct CoreError itp_compileProgram(struct Core *core, const char *sourceCode)
 	} while(errorCode == ErrorNone && interpreter->pc->type != TokenUndefined);
 
 	if(errorCode != ErrorNone)
-		return err_makeCoreError(errorCode, interpreter->pc->sourcePosition);
+		return err_makeCoreError(errorCode, interpreter->pc->sourcePosition, -1);
 
 	if(interpreter->numLabelStackItems > 0)
 	{
@@ -132,7 +132,7 @@ struct CoreError itp_compileProgram(struct Core *core, const char *sourceCode)
 		errorCode = itp_labelStackError(item);
 		if(errorCode != ErrorNone)
 		{
-			return err_makeCoreError(errorCode, item->token->sourcePosition);
+			return err_makeCoreError(errorCode, item->token->sourcePosition, -1);
 		}
 	}
 
@@ -210,8 +210,11 @@ void itp_runProgram(struct Core *core)
 		interpreter->mode = ModeNone;
 		if(errorCode != ErrorNone)
 		{
+			int symbolIndex=-1;
+			if(interpreter->pc->sourcePosition>0) symbolIndex=(interpreter->pc - 1)->symbolIndex;
+			struct CoreError err = err_makeCoreError(errorCode, interpreter->pc->sourcePosition, symbolIndex);
 			itp_endProgram(core);
-			delegate_interpreterDidFail(core, err_makeCoreError(errorCode, interpreter->pc->sourcePosition));
+			delegate_interpreterDidFail(core, err);
 		}
 		break;
 	}
@@ -412,7 +415,7 @@ void itp_runInterrupt(struct Core *core, enum InterruptType type)
 			if(errorCode != ErrorNone)
 			{
 				itp_endProgram(core);
-				delegate_interpreterDidFail(core, err_makeCoreError(errorCode, interpreter->pc->sourcePosition));
+				delegate_interpreterDidFail(core, err_makeCoreError(errorCode, interpreter->pc->sourcePosition, -1));
 			}
 
 			errorCode = lab_pushLabelStackItem(interpreter, LabelTypeONCALL, NULL);
@@ -431,12 +434,12 @@ void itp_runInterrupt(struct Core *core, enum InterruptType type)
 			{
 				itp_endProgram(core);
 				delegate_interpreterDidFail(
-				core, err_makeCoreError(ErrorTooManyCPUCyclesInInterrupt, interpreter->pc->sourcePosition));
+				core, err_makeCoreError(ErrorTooManyCPUCyclesInInterrupt, interpreter->pc->sourcePosition, -1));
 			}
 			else if(errorCode != ErrorNone)
 			{
 				itp_endProgram(core);
-				delegate_interpreterDidFail(core, err_makeCoreError(errorCode, interpreter->pc->sourcePosition));
+				delegate_interpreterDidFail(core, err_makeCoreError(errorCode, interpreter->pc->sourcePosition, -1));
 			}
 			else
 			{

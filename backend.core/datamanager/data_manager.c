@@ -63,14 +63,6 @@ struct CoreError data_import(struct DataManager *manager, const char *input, boo
 	assert(manager);
 	assert(input);
 
-	// const char *uppercaseInput = uppercaseString(input);
-	// if (!uppercaseInput) return err_makeCoreError(ErrorOutOfMemory, -1);
-
-	// struct CoreError error = data_uppercaseImport(manager, uppercaseInput, keepSourceCode);
-	// free((void *)uppercaseInput);
-
-	// return error;
-
 	return data_uppercaseImport(manager, input, keepSourceCode);
 }
 
@@ -128,15 +120,15 @@ struct CoreError data_uppercaseImport(struct DataManager *manager, const char *i
 				}
 			}
 			if(*character != ':')
-				return err_makeCoreError(ErrorUnexpectedCharacter, (int)(character - input));
+				return err_makeCoreError(ErrorUnexpectedCharacter, (int)(character - input), -1);
 			character++;
 
 			if(entryIndex >= MAX_ENTRIES)
-				return err_makeCoreError(ErrorIndexOutOfBounds, (int)(character - input));
+				return err_makeCoreError(ErrorIndexOutOfBounds, (int)(character - input), -1);
 
 			struct DataEntry *entry = &manager->entries[entryIndex];
 			if(entry->length > 0)
-				return err_makeCoreError(ErrorIndexAlreadyDefined, (int)(character - input));
+				return err_makeCoreError(ErrorIndexAlreadyDefined, (int)(character - input), -1);
 
 			// file comment
 			const char *comment = character;
@@ -168,7 +160,7 @@ struct CoreError data_uppercaseImport(struct DataManager *manager, const char *i
 					{
 						value |= digit;
 						if(currentDataByte >= endDataByte)
-							return err_makeCoreError(ErrorRomIsFull, (int)(character - input));
+							return err_makeCoreError(ErrorRomIsFull, (int)(character - input), -1);
 						*currentDataByte = value;
 						++currentDataByte;
 					}
@@ -176,12 +168,12 @@ struct CoreError data_uppercaseImport(struct DataManager *manager, const char *i
 				}
 				else if(*character != ' ' && *character != '\t' && *character != '\n' && *character != '\r')
 				{
-					return err_makeCoreError(ErrorUnexpectedCharacter, (int)(character - input));
+					return err_makeCoreError(ErrorUnexpectedCharacter, (int)(character - input), -1);
 				}
 				character++;
 			}
 			if(!shift)
-				return err_makeCoreError(ErrorSyntax, (int)(character - input)); // incomplete hex value
+				return err_makeCoreError(ErrorSyntax, (int)(character - input), -1); // incomplete hex value
 
 			int start = (int)(startByte - manager->data);
 			int length = (int)(currentDataByte - startByte);
@@ -199,7 +191,7 @@ struct CoreError data_uppercaseImport(struct DataManager *manager, const char *i
 		}
 		else
 		{
-			return err_makeCoreError(ErrorUnexpectedCharacter, (int)(character - input));
+			return err_makeCoreError(ErrorUnexpectedCharacter, (int)(character - input), -1);
 		}
 	}
 	return err_noCoreError();

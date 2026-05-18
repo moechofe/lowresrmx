@@ -89,9 +89,9 @@ const char *err_getString(enum ErrorCode errorCode)
 	return ErrorStrings[errorCode];
 }
 
-struct CoreError err_makeCoreError(enum ErrorCode code, int sourcePosition)
+struct CoreError err_makeCoreError(enum ErrorCode code, int sourcePosition, int symbolIndex)
 {
-	struct CoreError error = {code, sourcePosition};
+	struct CoreError error = {code, sourcePosition, symbolIndex};
 	return error;
 }
 

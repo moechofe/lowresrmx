@@ -110,6 +110,13 @@ void core_traceError(struct Core *core, struct CoreError error)
 	struct TextLib *lib = &core->overlay->textLib;
 	txtlib_printText(lib, err_getString(error.code));
 	txtlib_printText(lib, "\n");
+	if(error.code == ErrorVariableNotInitialized && error.symbolIndex>=0)
+	{
+		char symbolName[SYMBOL_NAME_SIZE];
+		sprintf(symbolName, "%s", core->interpreter->tokenizer.symbols[error.symbolIndex].name);
+		txtlib_printText(lib, symbolName);
+		txtlib_printText(lib, "\n");
+	}
 	if(error.sourcePosition >= 0 && core->interpreter->sourceCode)
 	{
 		int number = lineNumber(core->interpreter->sourceCode, error.sourcePosition);

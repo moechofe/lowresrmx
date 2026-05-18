@@ -589,7 +589,7 @@ static void process_command_line(struct Core *core)
 			if(errorCode != ErrorNone)
 			{
 				itp_endProgram(core);
-				delegate_interpreterDidFail(core, err_makeCoreError(errorCode, core->interpreter->pc->sourcePosition));
+				delegate_interpreterDidFail(core, err_makeCoreError(errorCode, core->interpreter->pc->sourcePosition, -1));
 			}
 			else
 			{
