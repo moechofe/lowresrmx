@@ -214,6 +214,13 @@ Create and fill the `sources/private.php` file using the given `private.sample.p
     `USER_CONTENT`: `TYPE`":"`ID`
  -->
 
+#### Image related
+
+- _(int)_ `"seq:image"` sequence for image token creation
+
+- _(string)_ `"i:IMAGE_ID"` temporay uploaded image filename **TTL**
+
+- _(list)_ `"f:ENTRY_TOKEN_ID:i"` `IMAGE_ID` list of used image filename in the post
 
 #### Rank related
 
@@ -243,6 +250,10 @@ Create and fill the `sources/private.php` file using the given `private.sample.p
 - _(list)_ `"adm:de"` list of users marked to delete everything
 
     - _(str)_ `USER_ID`
+
+#### Sitemap related
+
+- _(string)_ `"m:PAGE_HASH"` date
 
 ## Create a fake session
 

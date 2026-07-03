@@ -1562,7 +1562,7 @@ Omitted parameters will keep their previous values.
 Sets one or more attributes for the `sprite`:
 
 - `PAL palette` Change the `palette` (0..7),
-- `FLIP horizontal, vertical` Flip the sprite on `horizontal` and `vertical` axis,
+- `FLIP horizontal, vertical` Flip the sprite on `horizontal` and `vertical` axis (0..1),
 - `PRIO priority` change the `priority` (0..1),
 - `SIZE s` Change the size, a.k.a.: the number of characters width and height.
 

@@ -4,6 +4,8 @@ import 'package:lowresrmx/data/sync_manager.dart';
 import 'package:lowresrmx/style.dart';
 import 'package:provider/provider.dart';
 
+import 'dart:developer' show log;
+
 class MySettingsPage extends StatefulWidget {
   final MyEditorPreference settings;
 
@@ -84,7 +86,8 @@ class _MySettingsPageState extends State<MySettingsPage> {
 										Padding(
 											padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
 											child: ElevatedButton(
-												onPressed: () => sync.requestDrivePermissions(),
+												onPressed: () => log("request"),
+												// onPressed: () => sync._requestAuthorization(),
 												child: const Text("Grant Drive Permission"),
 											),
 										),

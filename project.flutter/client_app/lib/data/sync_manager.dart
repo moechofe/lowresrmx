@@ -16,6 +16,11 @@ class SyncManager with ChangeNotifier {
     _init();
   }
 
+	bool get isLoggedIn => _currentUser != null;
+	bool get isAuthorized => _authorization != null;
+
+	GoogleSignInAccount? get currentUser => _currentUser;
+
   void _init() {
     final GoogleSignIn signIn = GoogleSignIn.instance;
 		_signInInitialized = signIn.initialize(

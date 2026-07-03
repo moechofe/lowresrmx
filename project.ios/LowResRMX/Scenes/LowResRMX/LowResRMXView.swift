@@ -46,7 +46,7 @@ class LowResRMXView: UIView
 	{
 		if let coreWrapper, let dataProvider
 		{
-			video_renderScreen(&coreWrapper.core, data)
+			video_renderScreen(&coreWrapper.core, data, Int32(SCREEN_WIDTH) * 4)
 			let image = CGImage(width: Int(SCREEN_WIDTH), height: Int(SCREEN_HEIGHT), bitsPerComponent: 8, bitsPerPixel: 32, bytesPerRow: Int(SCREEN_WIDTH) * 4, space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGBitmapInfo(rawValue: CGImageAlphaInfo.noneSkipLast.rawValue), provider: dataProvider, decode: nil, shouldInterpolate: false, intent: .defaultIntent)
 
 			layer.contents = image

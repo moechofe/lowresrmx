@@ -1,4 +1,4 @@
-version$="0.188"
+version$="0.190"
 'offical graphics editor for Retro Game Creator (LowResRMX) for iOS
 'author: martin mauchauffee
 
@@ -7,8 +7,7 @@ version$="0.188"
 '2. the floating content where user can select characters or colors
 '3. the bottom toolbar where user can select tools and options
 
-
-'todo: is fltshow needed? floe -1 can be enough as long as oldfloe is set, and it's a mess, fltshow is set to -1 but floe stay -1
+'todo: is fltshow needed? flt -1 can be enough as long as oldflt is set, and it's a mess, fltshow is set to -1 but flt stay -1
 'fixme: I keep it, it's less CPU comsuption in raster
 'todo: add sentence on top of the file selector to indicate which type of file
 'todo: there is some `bg source beda` and some `bg source usraddr(layfile(3))`, who win?
@@ -25,6 +24,9 @@ version$="0.188"
 'todo: fast palette switch using drag left or right.
 'todo: remove "dot." in ROM(6)
 'todo: try to allow copy brush from charalist
+'fixme: chared+paler floating content is too high, too many chars visible in the charalist
+'todo: is `attr %100001` usefull? I though remove prio
+'todo: remove `backed:` `chared:` ..., `neweditor=`
 
 files
 
@@ -79,6 +81,7 @@ wramend=$e000
 'editor= current editor
 '=1 backed the background editor
 '=2 chared the character editor
+'=3 ranged the character arranger
 
 'pale= current user palette
 'cole= current user color, the index in the palette
@@ -89,29 +92,31 @@ global pale,cole,laye,care,kole
 laye=-1
 cole=1
 
-'address of the user's loaded palette and characters
+'pala= user's loaded palette address
+'cara= user's loaded character address
 global pala,cara
 
 'address of the user's current palette
 'use to speed up raster interrupt
 global pcla
 
-'cane= current canvas
+'cnv= current canvas
 '=0 backed
 '=1 filed
 '=2 chared
-'=3 sheeted
-'tole= current toolbar
+'=3 aranged
+'=4 sheeted
+'tlb= current toolbar
 '=0 backed first
 '=1 backed second
 '=2 backed file
 '=3 backed palette
 '=4 filer
 '...
-'floe= current floating bar
+'flt= current floating bar
 '=0 user's chara list
 '=1 64 available colors
-global cane,tole,floe
+global cnv,tlb,flt
 
 
 
@@ -165,6 +170,17 @@ bedbot=0
 'cedscale= similar to bedzoom but store the zoom factor (1 or 2)
 cedtool=0
 cedzoom=-1 :cedscale=2
+
+'about rearranger editor or ranger or red
+'redtool= rearranger current tool
+'=0 pan the canvas
+'=1 copy selection rectangle
+'=2 paste
+'=3 cut
+'=4 clear
+'redx='redy= canvas scroll position
+redtool=0
+redx=0 :redy=0
 
 'about currently edited layer in backed
 'laybgl,laybgt,laybgr,laybgb= bounding box of the current layer relative to the loaded background, in cell coordinates
@@ -239,6 +255,8 @@ sub usepal(p)
 'set the current palette to use for draw operation
   pale=p
   pcla=pala+4*pale
+  'XXX: this impact aranger and backed
+  viepala=pcla
 end sub
 
 sub usecolor(c)
@@ -374,12 +392,23 @@ sub readchr(h$,i,c$)
   inc i
 end sub
 
+sub rectangulize(l,t,r,b,x1,x2,y1,y2,xmin,xmax,ymin,ymax)
+'make sure the rectangle selection is inside the current edited layer and ordered correctly, start is top-left, end is bottom-right
+'(out) l,t,r,b AAABB selection
+'(in) x1,x2,y1,y2 the source rectangle
+'(in) xmin,xmax,ymin,ymax clamp the rectangle
+  l=clamp(min(x1,x2),xmin,xmax)
+  t=clamp(min(y1,y2),ymin,ymax)
+  r=clamp(max(x1,x2),xmin,xmax)
+  b=clamp(max(y1,y2),ymin,ymax)
+end sub
 
 
 '======================== layout:
 
 'used to detect if the layout has changed
 global shownw,shownh,resized,cnvchanged,fltchanged,tlbchanged
+'shownw=0 :shownh=0
 
 'used to signal than the "canvas" has been resized
 'this is not equivalent to 'resized' that detect layout change
@@ -466,7 +495,9 @@ end sub
 '===================== userdata:
 'keep info about loaded files in memory
 
-'(f)= the file 0..15, =16 is special, it is used for brush, bg copy/pasta operation
+'(f)= the file 0..15
+'   =16 for backed brush, bg copy/pasta operation
+'   =17 for ranged brush, chara copy/pasta operation
 'usraddr(f)= the memory address where the file is loaded
 'usrsize(f)= the size of the file loaded
 'usrname$(f)= the name of the file loaded
@@ -477,7 +508,7 @@ end sub
 '=3 backgrounds
 'usrdime(f,)= for background, the width and height
 'usrchanged(f)= something has changed
-dim global usraddr(16),usrsize(16),usrname$(16),usrtype(16),usrdime(16,1),usrchanged(16)
+dim global usraddr(17),usrsize(ubound(usraddr,1)),usrname$(ubound(usraddr,1)),usrtype(ubound(usraddr,1)),usrdime(ubound(usraddr,1),1),usrchanged(ubound(usraddr,1))
 
 'to report loading and saving error
 'TODO: not used, remove?
@@ -498,7 +529,7 @@ sub usrlook(space,start,low,hig,addr,ignore)
   addr=0
   'not enough space
   if space>hig-low then exit sub
-  for i=start to 16
+  for i=start to ubound(usraddr,1)
     if usrsize(i)>0 and i<>ignore then
       'look below this file
       call usrlook(space,i+1,low,usraddr(i),addr,ignore)
@@ -716,7 +747,8 @@ sub usrloadpal(new,old,dst,err)
     call usepalettes(dst)
     call usepal((pale))
     call usecolor((cole))
-    bedpala=pala
+    'viepala=pala
+    'redpala=pala
   end if
 end sub
 
@@ -732,7 +764,8 @@ sub usrdefaultpal
   usrchanged(1)=0
   copy rom(11),32 to addr
   pala=addr
-  bedpala=pala
+  'viepala=pala
+  'redpala=pala
   call usepalettes(1)
   call usepal(0)
   call usecolor(1)
@@ -1007,9 +1040,9 @@ tedchanged=0
 usedfreed=0
 
 'needed for the file selector
-'oldtole= old value for tole
-'oldfloe= old value for floe
-'oldcane= old value for cane
+'oldtlb= old value for tlb
+'oldflt= old value for flt
+'oldcnv= old value for cnv
 
 'enable or disable low energy mode
 'energytool= editing tool is used
@@ -1022,7 +1055,6 @@ energytool=1 :energylist=1 :energyfold=1 :energyredraw=1
 'needed by the raster function
 'fltstart,fltend,fltcurr= raster position of where the floating content start, end and the current value, in pixels
 'tlbstart,tlbend,tlbcurr= raster position of where the toolbar start, end and the current value, in pixels
-'tlbdrag= dragging positon of the toolbar, in pixels
 'tlbraster1,tlbraster2= raster position of where the toolbar is shortened relative to tlbcurr, in pixels
 global fltstart,fltend,fltcurr,tlbstart, tlbend,tlbcurr,tlbdrag,tlbraster1,tlbraster2
 fltstart=999 :fltend=999 :fltcurr=999
@@ -1031,6 +1063,7 @@ tlbraster1=999 :tlbraster2=999
 
 'needed by the toolbar
 'tlbrow,tlbcol= dimension of the toolbar, in cells
+'tlbdrag= dragging positon of the toolbar, in pixels
 'tlbw= width of the toolbar, in pixels
 'tlbfold= fold offset of the toolbar (and floating content), in pixels
 'tlbrow1,tlbrow2= when the toolbar is shortened, use those to indiquate which rows relative to the toolbar, in cells
@@ -1040,12 +1073,13 @@ tlbraster1=999 :tlbraster2=999
 '=2 (un)folding
 '=3 dragging
 tlbg=0
+tlbdrag=0
 
 'needed by the floating content
 'fltrow= number of rows of user's characters drawn in the charalist
 'fltoldx,fltoldy= old scroll value of the charalist or kolorlist
 'fltchanged= a selection has been made in charalist or kolorlist
-'fltcursor= cursor visibility
+'fltcursor= cursor visibility (0,1) /!\ NOT -1
 'fltg= floating gesture
 '=0 nothing
 '=1 dragging
@@ -1062,17 +1096,30 @@ cnvg=0
 'needed for backed
 'bedchanged= layers has been panned or layout has changed and canvas and must be redrawn
 'beddrawn= layers has been drawn
-'bedpala= during mode view, fixed palette will be used instead of user's ones
 'bedhasbru= brush was selected
 bedchanged=0
-global bedpala
 bedhasbru=0
+
+'needed for ranged
+'redg= gesture
+'redx1='redx2='redy1='redy2= selection rectangle
+redg=0
+redx1=0 :redx2=-1
+redy1=0 :redy2=0
+
+'needed for view mode
+'viepala= during mode view, fixed palette will be used instead of user's ones
+global viepala
 
 'needed by the canvas of the character editor
 'cedx,cedy= canvas position, used to pan the canvas, in float pixel coords
 'cedcenter= ask to center
 cedx=0 :cedy=0
 cedcenter=1
+
+' 'needed by the aranger editor
+' 'redpala= during mode view, fixed palette will be used instead of user's ones
+' global redpala
 
 'needed for loading operation
 err=0
@@ -1127,59 +1174,109 @@ call stplayer(3,3)
 call uselayer(3)
 call updlayer(laye)
 
-
-
-
 care=1
 
 lstchara=care
 
-
-
-'mark that canvas, floating or toolbar has changed and must be redrawn
-cnvchanged=-1 :fltchanged=-1 :tlbchanged=-1
-
 'ask to change to a new editor
-neweditor=0
+'neweditor=0
 
 'ask to show the manual
 askmanual=0
 
+editor=2
 
+switch_editor:
+gosub switch
 
-cane=2 :tole=7 :floe=0 :fltshow=-1
-on raster call r2
+font 0
+on raster call r
 on vbl call v
-goto chared
 
+do
+  if askmanual then goto manual
+  'check orientation and redraw
+  call checkresize
+  if resized then
+    cnvchanged=-1 :tlbchanged=-1 :fltchanged=-1
+  end if
+  'redraw if needed
+  if tlbchanged then gosub tlb_redraw
+  if fltchanged then gosub flt_redraw
+  if cnvchanged then gosub cnv_redraw
 
+  call gesture
+  gosub tlb_input
 
+  ' todo: find a better place
+  if usedfreed then
+    usedfreed=0
+    cnvchanged=-1
+    ' tlbchanged=-1
+    fltchanged=-1
+  end if
 
-'addr=0
-'call usrlook($1000,0,$9004,$e000,addr)
+  if flt>=0 then gosub flt_input
+  gosub cnv_input
+  gosub cnv_update
 
+  wait vbl
+loop
 
-'bedzoom=-1
-'bedscale=2
+switch:
+  on editor-1 goto switch_backed, switch_chared, switch_ranged
 
-'todo get from pram
-' cane=0 :tole=0 :floe=0 :fltshow=-1
-' on raster call r2
-' on vbl call v
-' goto backed
+switch_backed:
+  editor=1
+  cnv=0 :cnvchanged=-1
+  tlb=0 :tlbchanged=-1
+  flt=0 :fltchanged=-1
+  fltshow=-1
+  'used by the undo state
+  first=-1
+  'call canoob
+  'copy cara,$400 to $8000
+  fltcursor=abs(bedtool<>0)
+  trace "bedtool",bedtool
+  'trace "fltcursor",fltcursor
+  'gosub flt_update
+  return
 
-'goto manual
+switch_chared:
+  editor=2
+  oldtlb=tlb
+  oldflt=flt
+  oldcnv=cnv
 
+  cnv=2 :cnvchanged=-1
+  tlb=7 :tlbchanged=-1
+  flt=0 :fltchanged=-1
+  fltshow=-1
+  'center canvas
+  'todo: need to be called after screen redraw
+  'todo: maybe during cnv
+  'trace "fltcurr",fltcurr
 
-'goto filer
-'goto memed
+  'gosub flt_update
+  return
 
+switch_filed:
+  editor=-editor
+  oldtlb=tlb
+  oldflt=flt
+  oldcnv=cnv
+  cnv=1 :cnvchanged=-1
+  tlb=4 :tlbchanged=-1
+  fltshow=0
+  oldlife=fedlife
+  return
 
-
-message "end reached! not good!"
-end
-
-
+switch_ranged:
+  editor=3
+  cnv=3 :cnvchanged=-1
+  tlb=8 :tlbchanged=-1
+  fltshow=0
+  return
 
 manual:
 askmanual=0
@@ -1536,13 +1633,10 @@ manual_quit:
   copy rom(1),32 to $ff00
   cls
   wait vbl
-  on raster call r2
-  on vbl call v
-  cnvchanged=-1 :fltchanged=-1 :tlbchanged=-1
   call ungesture
-  goto backed
+  goto switch_editor
 
-sub r2
+sub r
 'change what is shown on the screen using raster interrupt.
 'the screen is divide in 3 parts for canvas, floating content and bottom toolbar. during the division a black bar of 4 pixels is shown ; used to do computation heavy things.
 
@@ -1566,6 +1660,12 @@ sub r2
 '  bg#0 ui file list
 '  bg#0(32x0..63x63) file list
 '  bg#1..3 hidden
+'  sprite hidden
+
+'canvas aranged:
+'  chr$8000..$8fff user's character
+'  pal#0 user's current palette
+'  bg#3 user's chara list
 '  sprite hidden
 
 'floating charalist:
@@ -1616,7 +1716,7 @@ sub r2
 
 '''R_CANVAS
 
-  on cane goto r_backed, r_filed, r_chared
+  on cnv goto r_backed, r_filed, r_chared, r_aranged
 
 r_backed:
 
@@ -1640,8 +1740,7 @@ else if raster=shownh-1 then
 
 else if raster=0 then
   'copy user's color
-  'copy pala,32 to $ff00
-  copy bedpala,32 to $ff00
+  copy viepala,32 to $ff00
   'show user's layer, hide ui layer
   poke $ff32,%11100
   'copy oob out-of-bound character
@@ -1649,7 +1748,7 @@ else if raster=0 then
   exit sub
 
 else if fltshow then
-  on floe goto r_charalist, r_kolorlist
+  on flt goto r_charalist, r_kolorlist
 else
   goto r_toolbar
 end if
@@ -1699,7 +1798,38 @@ r_chared:
     exit sub
 
 else if fltshow then
-  on floe goto r_charalist, r_kolorlist
+  on flt goto r_charalist, r_kolorlist
+else
+  goto r_toolbar
+end if
+
+r_aranged:
+
+if raster=shownh-2 then
+  'gray border
+  fill $ff00,32,3
+  'copy first half of user's character
+  pokew $ffa0,cara
+  pokew $ffa2,$800
+  pokew $ffa4,$8000
+  dma copy
+  exit sub
+
+else if raster=shownh-1 then
+  'copy second half of user's character
+  pokew $ffa0,cara+$800
+  pokew $ffa2,$800
+  pokew $ffa4,$8800
+  dma copy
+  exit sub
+
+else if raster=0 then
+  'copy user's color
+  copy viepala,32 to $ff00
+  'show user's chara and temporary paste
+  poke $ff32,%11000
+  exit sub
+
 else
   goto r_toolbar
 end if
@@ -1822,10 +1952,10 @@ else if raster=tlbcurr-4 then
   'gray border
   fill $ff00,32,3
 
-  if tole=2 then
+  if tlb=2 then
     palette 1,,,,0
     scroll 0,,scroll.y(0)+4
-  else if tole=5 or tole=7 then
+  else if tlb=5 or tlb=7 then
     'FIXME: this is not the patch I want, I have the same issue with the filer toolbar
     ' fill $ff00,8,3
     'colorize color chooser button
@@ -1840,12 +1970,12 @@ else if raster=tlbcurr then
   'copy the ui palette
   copy rom(1),16 to $ff00
   'color and space for file toolbar title
-  if tole=2 then palette 1,,,,0
+  if tlb=2 then palette 1,,,,0
   exit sub
 
 else if raster=tlbcurr+4 then
   'revert the color and space for file toolbar title
-  if tole=2 then
+  if tlb=2 then
     palette 1,,,,3
     scroll 0,,scroll.y(0)-4
   end if
@@ -1855,14 +1985,14 @@ else if raster=tlbcurr+8 then
   'copy user's current palette
   copy pala+pale*4,4 to $ff00
   'color and space for file toolbar title
-  if tole=2 then palette 1,,,,5
+  if tlb=2 then palette 1,,,,5
   'copy user's palette 0 to 3
-  if tole=3 then copy pala,16 to $ff10
+  if tlb=3 then copy pala,16 to $ff10
   exit sub
 
 else if raster=tlbcurr+31 then
   'copy user's palette 4 to 7
-  if tole=3 then copy pala+16,16 to $ff10
+  if tlb=3 then copy pala+16,16 to $ff10
   exit sub
 
 else if raster=tlbcurr+tlbraster1 and short then
@@ -1878,232 +2008,6 @@ else if raster=tlbcurr+tlbraster2 and short then
 end if
 end sub
 
-
-sub r
-  if raster=0 then
-    copy pala,32 to $ff00
-    if cane=0 then
-      poke $ff32,%11100
-      call canoob
-    else if cane=1 then
-      bg view on 0
-      bg view off 1
-      bg view off 2
-      bg view off 3
-      scroll 0,32*8,fedscroll
-      copy rom(1),32 to $ff00
-    end if
-
-  else if raster=tlbcurr-8 then
-    'black border
-    fill $ff00,8
-    'palette 0,0,0,0,0
-    'palette 1,0,0,0,0
-    'hide user's layers, but keep sprite
-    poke $ff32,%100011
-    'copy ui character
-    pokew $ffa2,$400
-    pokew $ffa4,$8000
-    pokew $ffa0,rom(2)
-    dma copy rom
-
-  else if raster=tlbcurr-4 then
-    'gray border
-    fill $ff00,16,3
-    'copy back user's chara that was erased by the ui chara for the chara list cursor
-    if cane=0 then copy cara+fltui*16,48 to $8000+fltui*16
-    if tole=0 then copy cara+fltui*16,48 to $8000+fltui*16
-    'unzoom bg
-    system 5,0
-    'show ui bg
-    bg view on 0
-    'place the bottom bar at the right position, for the filed title
-    scroll 0,tlbdrag,-tlbcurr
-
-  else if raster=tlbcurr then
-    'place the bottom bar at the right position
-    scroll 0,tlbdrag,-tlbcurr
-    'copy the ui palette
-    copy rom(1),32 to $ff00
-    'todo: palette 3,,5,,3, I think I already change the color in ROM(1)
-    'hide floating content cursor
-    sprite view off
-    ' 'copy the user current selected palette
-    ' if cane=0 then copy pala+pala*4,4 to $ff00
-
-  else if raster=shownh-2 and cane=0 then
-    'gray border
-    fill $ff00,32,3
-    'copy first half of user's character
-    pokew $ffa0,cara
-    pokew $ffa2,$700
-    pokew $ffa4,$8000
-    dma copy
-
-  else if raster=shownh-1 and cane=0 then
-    'copy second half of user's character
-    pokew $ffa0,cara+$700
-    pokew $ffa2,$900
-    pokew $ffa4,$8700
-    dma copy
-    'copy out-of-bound character
-    if oobe then copy rom(2)+1008,16 to $8000+oobc*16
-
-  else if raster=shownh-2 and cane=1 then
-    pokew $ffa0,rom(2)
-    pokew $ffa2,$1000
-    pokew $ffa4,$8000
-    dma copy rom
-
-  end if
-
-  'shorten the height of the bottom bar
-  if (raster=tlbcurr+tlbraster1 or raster=tlbcurr+tlbraster2) and short then
-    pokew $ff22,peekw($ff22)+8
-  end if
-
-  'show a title for the file toolbar
-  if tole=2 then
-    if raster=tlbcurr-4 then
-      palette 1,,,,0
-      pokew $ff22,peekw($ff22)+4
-    else if raster=tlbcurr then
-      palette 1,,,,0
-      pokew $ff22,peekw($ff22)+4
-    else if raster=tlbcurr+4 then
-      palette 1,,,,3
-      pokew $ff22,peekw($ff22)-4
-    else if raster=tlbcurr+8 then
-      palette 1,,,,5
-    end if
-  end if
-
-  'hide the last filed button at the top of the screen
-  if cane=1 and raster=0 and fedscroll<0 then fill $ff00,12,3
-  if cane=1 and raster+fedscroll=0 then copy rom(1),12 to $ff00
-
-  'floating content and toolbar specific raster handling
-  if fltshow and floe>=0 then on floe gosub r_floe_0,r_floe_1
-  on tole gosub r_tole_0, r_tole_, r_tole_ ,r_tole_3, r_tole_, r_tole_5, r_tole_
-
-  exit sub
-
-r_floe_0:
-  if raster=fltcurr-4 then
-    'black border
-    palette 0,0,0,0,0
-    ' bg view off 1
-
-    ' bg view off 2
-    ' bg view off 3
-    ' trace bin$(peek($ff32),8)
-    poke $ff32,0
-    'copy back the user's chara that was overiddden by a ui chara for out-of-bound visiblity cells
-    if oobe then copy cara+oobc*16,16 to $8000+oobc*16
-    'copy chara for the charalist cursor
-    copy rom(2)+64*16,48 to $8000+fltui*16
-    'color for the ui cursor
-    palette 4,,2,,0
-    'copy chara for the kolorlist
-    'if floe=1 then trace "fffffffff"
-    'if floe=1 then copy rom(2),4*16 to $8000
-    'show floating content cursor
-    if fltcursor then sprite view on
-
-  'draw the charalist in floating content part
-  else if raster=fltcurr then
-    'show ui bg
-    bg view on 0
-    'place the charalist at the right position
-    scroll 0,lstx,-fltcurr+512+lsty
-    'double the cells render size of the chara list
-    system 5,1
-    'make the background opaque
-    system 1,1
-    'copy the user current selected palette, keep the backdrop color
-    'palette 0,peek(pala),,,
-    'copy pala+pale*4+1,3 to $ff01
-    copy pala+pale*4,4 to $ff00
-
-  end if
-  return
-
-r_floe_1:
-  if raster=fltcurr-4 then
-    'black border
-    palette 0,0,0,0,0
-    poke $ff32,0
-    'copy back the user's chara that was overiddden by a ui chara for out-of-bound visiblity cells
-    'if oobe then copy cara+oobc*16,16 to $8000+oobc*16
-    'copy chara for the charalist cursor
-    copy rom(2)+64*16,48 to $8000+fltui*16
-    'color for the ui cursor
-    palette 4,,2,,0
-    'copy chara for the kolorlist
-    if floe=1 then copy rom(2),4*16 to $8000
-    'show floating content cursor
-    if fltcursor then sprite view on
-
-  'draw the kolorlist in floating content part
-  else if raster=fltcurr then
-    'show ui bg
-    bg view on 0
-    'place the charalist at the right position
-    scroll 0,kolx,-fltcurr+512+koly
-    'double the cells render size of the chara list
-    system 5,1
-    'make the background opaque
-    system 1,1
-    'copy the user current selected palette, keep the backdrop color
-    'palette 0,peek(pala),,,
-    'copy pala+pale*4+1,3 to $ff01
-    'copy pala+pale*4,4 to $ff00
-    kolraster=((raster-fltcurr+koly)\24)*8
-    copy $9004+kolraster,8 to $ff00
-
-  else if raster>fltcurr and raster<tlbcurr-8 then
-    if ((raster-fltcurr+koly) mod 24)=0 then
-      add kolraster,8
-      copy $9004+kolraster,8 to $ff00
-    end if
-  end if
-
-  return
-
-r_tole_: return
-
-r_tole_0:
-  'copy the user current selected palette
-  if raster=tlbcurr+tlbraster1 then
-    'trace hex$(pala+pale*4)
-    copy pala+pale*4,4 to $ff00
-    'fill $ff00,4,0
-  'else if raster=tlbcurr+33 then
-    'copy pala+pale*4,4 to $ff00
-  end if
-  return
-
-r_tole_3:
-  'colorize palette chooser button
-  if raster=tlbcurr+8 then
-    copy pala,16 to $ff10
-  else if raster=tlbcurr+32 then
-    copy pala+16,16 to $ff10
-  end if
-  return
-
-r_tole_5:
-  if raster=tlbcurr then
-    'colorize color chooser button
-    palette 4,,,peek(pcla),fcccol(0)
-    palette 5,,,peek(pcla+1),fcccol(1)
-    palette 6,,,peek(pcla+2),fcccol(2)
-    palette 7,,,peek(pcla+3),fcccol(3)
-  end if
-  return
-
-end sub
-
 sub v
   if fccdir=0 then exit sub
   dec fccdelay
@@ -2114,8 +2018,6 @@ sub v
   'compute if oob character can be copied
   call canoob
 end sub
-
-
 
 ' bedold_draw:
 ' 'draw on canvas bedg=9
@@ -2370,59 +2272,60 @@ end sub
 'for toolbar part:
 'bg#0 bottom bar
 
-filed:
-  system 0,0 :sprite view off
-  neweditor=0
+' filed:
+'   system 0,0 :sprite view off
+'   ' neweditor=0
 
-  'grey screen
-  fill $ff00,32,3
+'   'grey screen
+'   fill $ff00,32,3
 
-  'make sure to display the right canvas, floating content and toolbar
-  tole=4
-  fltshow=0
-  cane=1
-  gosub tlb_redraw
-  gosub cnv_redraw
+'   'make sure to display the right canvas, floating content and toolbar
+'   tlb=4
+'   fltshow=0
+'   cnv=1
+'   gosub tlb_redraw
+'   gosub cnv_redraw
 
-  'store old file to cancel selection
-  oldlife=fedlife
+'   'store old file to cancel selection
+'   oldlife=fedlife
 
-  'copy rom(1),32 to $ff00
+'   'copy rom(1),32 to $ff00
 
-  'fedscroll=-8
-  'TODO: is it possible to center to the current selected files?
+'   'fedscroll=-8
+'   'TODO: is it possible to center to the current selected files?
 
-filed_loop:
-  'file as been selected or filed get cancelled
-  if neweditor=-1 then
-    if not fedselected then fedlife=oldlife
-    fedselected=0
-    goto backed
-  else if neweditor=-2 then
-    if not fedselected then fedlife=oldlife
-    fedselected=0
-    goto chared
-  end if
+' filed_loop:
+' trace "=filed_loop"
+'   'file as been selected or filed get cancelled
+'   if neweditor=-1 then
+'     if not fedselected then fedlife=oldlife
+'     fedselected=0
+'     goto backed
+'   else if neweditor=-2 then
+'     if not fedselected then fedlife=oldlife
+'     fedselected=0
+'     goto chared
+'   end if
 
-  call checkresize :if resized then goto filed
-  call gesture
-  'detect interaction on each part
-  gosub tlb_input
-  gosub cnv_input
+'   call checkresize :if resized then goto filed
+'   call gesture
+'   'detect interaction on each part
+'   gosub tlb_input
+'   gosub cnv_input
 
-  wait vbl
-  goto filed_loop
+'   wait vbl
+'   goto filed_loop
 
-  'scroll position of the file list
-  'fedscroll=-8
+'   'scroll position of the file list
+'   'fedscroll=-8
 
-  'copy ui char
-  'TODO: usefull?
-  copy rom(2),130*16 to $8000
-  system 0,1
+'   'copy ui char
+'   'TODO: usefull?
+'   copy rom(2),130*16 to $8000
+'   system 0,1
 
-  firselected=0
-  wid=-1
+'   firselected=0
+'   wid=-1
 
 fed_redraw:
 'redraw the file list
@@ -2446,6 +2349,9 @@ fed_redraw:
     'todo: may not wait if out of screen
     wait vbl
   next f
+  return
+
+fed_update:
   return
 
 fed_input:
@@ -2472,77 +2378,85 @@ fed_input:
 
 
 
-'======================= chared:
-'a character editor
-'it shows 1 character at a time
+' '======================= chared:
+' 'a character editor
+' 'it shows 1 character at a time
 
-'for canvas part:
-'chr#0..64 editor and ui characters
-'bg#3 chara editor
-'pal#0 user's palette
+' 'for canvas part:
+' 'chr#0..64 editor and ui characters
+' 'bg#3 chara editor
+' 'pal#0 user's palette
 
-'for floating part:
-'chr#0..63 user's characters
-'chr#64 or #253 ui cursor
-'spr#131..159 ui cursor
-'bg#0 charalist
-'pal#0 user's palette
-'pal#4 ui cursor
+' 'for floating part:
+' 'chr#0..63 user's characters
+' 'chr#64 or #253 ui cursor
+' 'spr#131..159 ui cursor
+' 'bg#0 charalist
+' 'pal#0 user's palette
+' 'pal#4 ui cursor
 
-chared:
-  system 0,0 :font 0 :sprite view off
-  editor=2 :neweditor=0
+' chared:
+' trace "=chared"
 
-  'center canvas
-  cedx=-(shownw-8*8*cedscale)/2
-  cedy=-(fltcurr-4-8*8*cedscale)/2
+'   system 0,0 :font 0 :sprite view off
+'   editor=2
 
-  gosub flt_update
+'   'center canvas
+'   cedx=-(shownw-8*8*cedscale)/2
+'   cedy=-(fltcurr-4-8*8*cedscale)/2
 
-  'fixme: useless, check sub r2
-  system 8,cedzoom
+'   gosub flt_update
 
-chared_loop:
+'   'fixme: useless, check sub r
+'   system 8,cedzoom
 
-  if askmanual then goto manual
-  if neweditor=1 then goto backed
-  if neweditor=-2 then goto filed
-  if tlbchanged then gosub tlb_redraw
-  if fltchanged then gosub flt_redraw
-  if cnvchanged then gosub cnv_redraw
-  if cedcenter then gosub ced_center
+' chared_loop:
 
-  call checkresize :if resized then goto chared
-  call gesture
-  'detect interaction on each part
-  gosub tlb_input
-  if floe>=0 then gosub flt_input
-  gosub cnv_input
-  gosub cnv_update
+'   if askmanual then goto manual
+'   ' if neweditor=1 then goto backed
+'   ' if neweditor=-2 then goto filed
+'   if tlbchanged then gosub tlb_redraw
+'   if fltchanged then gosub flt_redraw
+'   if cnvchanged then gosub cnv_redraw
+'   if cedcenter then gosub ced_center
 
-  if lstchanged then
-    lstchanged=0
-    call ungesture
-    call usechar(lstchara)
-    gosub ced_recanvas
-  end if
+'   call checkresize :if resized then goto chared
+'   call gesture
+'   'detect interaction on each part
+'   gosub tlb_input
+'   if flt>=0 then gosub flt_input
+'   gosub cnv_input
+'   gosub cnv_update
 
-  if kolchanged then
-    kolchanged=0
-    usrchanged(pallife)=-1
-    call ungesture
-    poke pcla+cole,kolcolor
-  end if
+'   if lstchanged then
+'     trace "2525,lstchanged",lstchanged
+'     trace "tlb",tlb
+'     lstchanged=0
+'     call ungesture
+'     call usechar(lstchara)
+'     gosub ced_recanvas
+'   end if
 
-  'enable battery saving mode
-  'system 0,energytool and energylist and energyfold and energyredraw
-  wait vbl
-  goto chared_loop
+'   if kolchanged then
+'     kolchanged=0
+'     usrchanged(pallife)=-1
+'     call ungesture
+'     poke pcla+cole,kolcolor
+'   end if
+
+'   'enable battery saving mode
+'   'system 0,energytool and energylist and energyfold and energyredraw
+'   wait vbl
+'   goto chared_loop
 
 ced_redraw:
 'redraw the character editor
-  'fixme: useless, check sub r2
+  'fixme: useless, check sub r
   system 8,cedzoom
+
+  'center
+  cedx=-(shownw-8*8*cedscale)/2
+  cedy=-(fltcurr-4-8*8*cedscale)/2
 
   bg 3 :pal 3
   bg fill 0,0 to 63,63 char 3
@@ -2580,6 +2494,7 @@ ced_limit:
   return
 
 ced_center:
+  trace "=ced_center"
   cedcenter=0
   s=8*cedscale
   curr=tlbcurr-4
@@ -2590,6 +2505,13 @@ ced_center:
   return
 
 ced_update:
+  'user's chara was selected from the charalist
+  if lstchanged then
+    lstchanged=0
+    call ungesture
+    call usechar(lstchara)
+    gosub ced_recanvas
+  end if
   return
 
 ced_input:
@@ -2647,93 +2569,105 @@ ced_detectcell:
   return
 
 
-'======================= backed:
-'a background editor
-'it shows 3 layers of user's map in the canvas part
+' '======================= backed:
+' 'a background editor
+' 'it shows 3 layers of user's map in the canvas part
 
-'for canvas part:
-'chr#0..255 user's characters
-'chr#0/255 user's character, /!\ one can be used to draw out-of-bounds cells.
-'bg#1..3 layer for showing user's background
-'pal#0..7 user's palettes
+' 'for canvas part:
+' 'chr#0..255 user's characters
+' 'chr#0/255 user's character, /!\ one can be used to draw out-of-bounds cells.
+' 'bg#1..3 layer for showing user's background
+' 'pal#0..7 user's palettes
 
-'for floating part:
-'chr#0..63 user's characters
-'chr#64 or #253 ui cursor
-'spr#131..159 ui cursor
-'bg#0 charalist
-'pal#0 user's palette
-'pal#4 ui cursor
+' 'for floating part:
+' 'chr#0..63 user's characters
+' 'chr#64 or #253 ui cursor
+' 'spr#131..159 ui cursor
+' 'bg#0 charalist
+' 'pal#0 user's palette
+' 'pal#4 ui cursor
 
 
 
-'to avoid 100% CPU, during panning and redrawing the user's layers, backed use a progressive rendering that start from the center of the canvas, and expand until it reach the last visible cells of each layers.
+' 'to avoid 100% CPU, during panning and redrawing the user's layers, backed use a progressive rendering that start from the center of the canvas, and expand until it reach the last visible cells of each layers.
 
-backed:
-  system 0,0 :font 0 :sprite view off
-  'todo: should be set before
-  editor=1 :neweditor=0
-  first=-1
+' backed:
+' trace "=backed"
+'   system 0,0 :font 0 :sprite view off
+'   'todo: should be set before
+'   editor=1
+'   ' neweditor=0
+'   first=-1
 
-  call canoob
-  'copy user's chara for first draw
-  copy cara,$400 to $8000
-  'TODO: other things should be copied too, I think
+'   'call canoob
+'   'copy user's chara for first draw
+'   copy cara,$400 to $8000
+'   'TODO: other things should be copied too, I think
 
-  fltcursor=(bedtool<>0)
-  gosub flt_update
+'   fltcursor=abs(bedtool<>0)
+'   gosub flt_update
 
-backed_loop:
+' backed_loop:
 
-  if askmanual then goto manual
-  if neweditor=2 then goto chared
-  if neweditor=-1 then goto filed
-  if tlbchanged then gosub tlb_redraw
-  if fltchanged then gosub flt_redraw
-  if cnvchanged then gosub cnv_redraw
+'   if askmanual then goto manual
+'   ' if neweditor=2 then goto chared
+'   ' if neweditor=-1 then goto filed
+'   if tlbchanged then gosub tlb_redraw
+'   if fltchanged then gosub flt_redraw
+'   if cnvchanged then gosub cnv_redraw
 
-  call checkresize
-  if resized then goto backed
-  call gesture
-  'detect interaction on each part
-  gosub tlb_input
-  'detect loaded files changed
-  if usedfreed then
-    usedfreed=0
-    goto backed
-  end if
+'   call checkresize
+'   if resized then goto backed
+'   call gesture
+'   'detect interaction on each part
+'   gosub tlb_input
+'   'detect loaded files changed
+'   if usedfreed then
+'     usedfreed=0
+'     goto backed
+'   end if
 
-  if floe>=0 then gosub flt_input
-  gosub cnv_input
-  gosub cnv_update
-  'user's chara was selected from the charalist
-  if lstchanged then
-    lstchanged=0
-    if tole=0 or tole=1 or tole=3 then bedtool=bedoldt
-    if tole=0 then
-      call ungesture
-      gosub tlb_0_draw
-      gosub tlb_0_pan
-    end if
-  end if
-  if kolchanged then
-    kolchanged=0
-    usrchanged(pallife)=-1
-    call ungesture
-    if tole=5 then
-      poke pcla+cole,kolcolor
-    end if
-  end if
-  'file selector was requested from the bottom bar
-  ' if tedchanged<0 then
-  '   editor=tedchanged
-  '   call ungesture
-  '   goto filed
-  ' end if
-  'enable battery saving mode
-  'system 0,energytool and energylist and energyfold and energyredraw
-  wait vbl
-  goto backed_loop
+'   if flt>=0 then gosub flt_input
+'   gosub cnv_input
+'   gosub cnv_update
+
+'   'user's chara was selected from the charalist
+'   if lstchanged then
+'     trace "2713,lstchanged",lstchanged
+'     trace "bedtool",bedtool
+'     'disable copy or paste
+'     if bedtool=6 or bedtool=7 then bedtool=1
+'     lstchanged=0
+'     call ungesture
+'     if tlb=0 or tlb=1 or tlb=3 then bedtool=bedoldt
+'     if tlb=0 then
+'       gosub tlb_0_draw
+'       gosub tlb_0_pan
+'     else if tlb=1 then
+'       gosub tlb_1_repaint
+'     end if
+'   end if
+
+'   if kolchanged then
+'     kolchanged=0
+'     usrchanged(pallife)=-1
+'     call ungesture
+'     if tlb=5 then
+'       poke pcla+cole,kolcolor
+'     end if
+'   end if
+
+'   'file selector was requested from the bottom bar
+'   ' if tedchanged<0 then
+'   '   editor=tedchanged
+'   '   call ungesture
+'   '   goto filed
+'   ' end if
+'   'enable battery saving mode
+'   'system 0,energytool and energylist and energyfold and energyredraw
+
+'   wait vbl
+'   goto backed_loop
 
 bed_redraw:
 'redraw the layers entirely
@@ -2743,9 +2677,26 @@ bed_redraw:
   return
 
 bed_update:
-'only redraw missing part of the layers
+  'user's chara was selected from the charalist
+  if lstchanged then
+    trace "bed_update:lstchanged"
+    lstchanged=0
+    'disable copy or paste
+    if bedtool=6 or bedtool=7 then bedtool=1
+    call ungesture
+    'switch previous tool
+    if tlb=0 or tlb=1 or tlb=3 then bedtool=bedoldt
+    'redraw buttons according to toolbar
+    if tlb=0 then
+      gosub tlb_0_draw
+      gosub tlb_0_pan
+    else if tlb=1 then
+      gosub tlb_1_repaint
+    end if
+  end if
+  'only redraw missing part of the layers
   if bedchanged then gosub bed_uddraw
-  if tole=6 then gosub tlb_6_edit
+  if tlb=6 then gosub tlb_6_edit
   return
 
 'todo: is bed_limit called twice per frame?
@@ -2755,7 +2706,7 @@ bed_limit:
   s=8*bedscale
   w=layw(3)*s+safe.l+safe.r+40 :h=layh(3)*s+safe.t+safe.b+40
   curr=tlbcurr-4
-  ' if floe>=0 and fltshow then curr=fltcurr-4
+  ' if flt>=0 and fltshow then curr=fltcurr-4
   if fltshow then curr=fltcurr-4
   if w>shownw then
     l=layl(laye)*s-safe.l-20
@@ -2985,7 +2936,7 @@ bed_copy_input_0:
   'check for out of layer
   if bed_ex<laybgl or bed_ex>laybgr or bed_ey<laybgt or bed_ey>laybgb then return
   if pressed and justed then
-    bedpala=rom(10)
+    viepala=rom(10)
     system laye+1,1
     bedhasbru=1
   end if
@@ -2993,7 +2944,7 @@ bed_copy_input_0:
 bed_copy_input_1:
   if released then
     bedhasbru=0
-    bedpala=pala
+    viepala=pala
     system laye+1,0
     gosub bed_redraw
     gosub bed_rectangulize
@@ -3019,7 +2970,7 @@ bed_copy_brush:
   'clear previous brush
   call usrfree(16)
   'reserve memory space in file 16
-  w=r-l+1 :h=b-t+1 :s=w*h*16
+  w=r-l+1 :h=b-t+1 :s=w*h*2
   addr=0
   call usrlook(s,0,wramstart,wramend,addr,-1)
   if addr=0 then
@@ -3031,7 +2982,7 @@ bed_copy_brush:
   usrdime(16,0)=w :usrdime(16,1)=h
   'copy select chara to brush
   'bg source laye,64,64
-  bg source beda
+  'bg source beda
   for y=t to b :for x=l to r
     'copy cell and attr
     pokew addr,peekw(beda+4+(y*bedw+x)*2)
@@ -3122,16 +3073,17 @@ bed_attr:
 'for filed, it shows a list of files
 
 cnv_redraw:
+trace "=cnv_redraw",cnv
 'repaint the canvas
   cnvchanged=0
-  on cane goto bed_redraw, fed_redraw, ced_redraw
+  on cnv goto bed_redraw, fed_redraw, ced_redraw, red_redraw
 
 cnv_update:
   'fed_update not needed yet
-  on cane goto bed_update, fed_update, ced_update
+  on cnv goto bed_update, fed_update, ced_update, red_update
 
 cnv_input:
-'detect interaction on the canvas according to cane
+'detect interaction on the canvas according to cnv
   curr=tlbcurr-4
   if fltshow then curr=fltcurr-4
   if tap and touch.y<curr then
@@ -3142,9 +3094,195 @@ cnv_input:
   else
     return
   end if
-  on cane goto bed_input, fed_input, ced_input
+  on cnv goto bed_input, fed_input, ced_input, red_input
 
 
+
+'===================== aranged:
+'redraw the list of all loaded characters
+
+red_redraw:
+  gosub red_limit
+  gosub red_initrender
+  'double background
+  system 8,1
+  'opaque background
+  system 4,1
+  bg 3 :bg source rom(4)
+  bg fill 0,0 to 63,63 char 0
+  bg copy 0,0,16,16 to 0,0
+  cls 2
+  return
+
+red_input:
+  on redtool goto red_pan_input, red_copy_input, red_paste_input, red_cut_input, red_clear_input
+
+red_pan_input:
+'handle canvas pan
+  if dragged then
+    add redx,-draggedx
+    add redy,-draggedy
+    pressedx=touch.x
+    pressedy=touch.y
+    scroll 3,redx,redy
+  end if
+  return
+
+red_detectcell:
+  'compute cell coords of touch relative to the canvas
+  x=floor((touch.x+redx)/16)
+  y=floor((touch.y+redy)/16)
+  return
+
+red_rect_input:
+'handle rectangle selection
+'(out) reds rectangle status
+'  =0 nothing
+'  =1 started
+'  =2 selecting
+'  =3 ended
+  reds=0
+  on redg goto red_rect_input_0, red_rect_input_1
+red_rect_input_0:
+  if pressed and justed then
+    redg=1
+    'enable selection view
+    viepala=rom(10)
+    'system 4,1
+    gosub red_detectcell
+    redx1=x :redx2=x
+    redy1=y :redy2=y
+    reds=1
+    goto red_rect_draw
+  end if
+  return
+red_rect_input_1:
+  if released then
+    redg=0
+    viepala=pcla
+    'system 4,0
+    reds=3
+  else if dragged then
+    gosub red_detectcell
+    redx2=x :redy2=y
+    reds=2
+    goto red_rect_draw
+  end if
+  return
+red_rect_draw:
+  bg 3
+  bg tint 0,0 to 15,63 pal 0
+  l=0 :r=0 :t=0 :b=0
+  call rectangulize(l,t,r,b,redx1,redx2,redy1,redy2,0,15,0,63)
+  bg tint l,t to r,b pal 1
+  return
+
+red_copy_input:
+'handle character pixels copy
+  gosub red_rect_input
+  if reds=3 then
+    bg tint 0,0 to 15,63 pal 0
+    gosub red_copy_brush
+    message str$(w)+","+str$(h)+" copied"
+    redtool=2 :tlbchanged=-1
+    call ungesture
+  end if
+  return
+
+red_paste_input:
+'handle character pixels paste
+  if not tap then return
+  if usrsize(17)=0 then return
+  gosub red_detectcell
+  addr=usraddr(17)
+  for iy=y to y+usrdime(17,1)-1
+    for ix=x to x+usrdime(17,0)-1
+      da=cara+(iy*16+ix)*16
+      for i=0 to 15 step 2
+        pokew da,peekw(addr)
+        add da,2 :add addr,2
+      next i
+    next ix
+  next iy
+  message str$(usrdime(17,0))+","+str$(usrdime(17,1))+" pasted"
+  redtool=0 :tlbchanged=-1
+  call ungesture
+  return
+
+red_cut_input:
+'handle character pixels cut
+  gosub red_rect_input
+  if reds=3 then
+    bg tint 0,0 to 15,63 pal 0
+    gosub red_copy_brush
+    gosub red_cut_rect
+    message str$(w)+","+str$(h)+" cut"
+    redtool=2 :tlbchanged=-1
+    call ungesture
+  end if
+  return
+
+red_clear_input:
+'handle character pixels clear
+  gosub red_rect_input
+  if reds=3 then
+    bg tint 0,0 to 15,63 pal 0
+    gosub red_cut_rect
+    message str$(w)+","+str$(h)+" cleared"
+    redtool=0 :tlbchanged=-1
+    call ungesture
+  end if
+  return
+
+
+red_copy_brush:
+'will reserve memory space and copy characters
+'(in) l,t,r,b AAABB selection
+  'p=0 :gosub red_copy_draw
+  call usrfree(17)
+  w=r-l+1 :h=b-t+1 :s=w*h*16
+  addr=0
+  call usrlook(s,0,wramstart,wramend,addr,-1)
+  if addr=0 then
+    message "not enough memory"
+    return
+  end if
+  usraddr(17)=addr :usrsize(17)=s
+  usrdime(17,0)=w :usrdime(17,1)=h
+  'bg source 3,64,64
+  for y=t to b :for x=l to r
+    'copy pixels
+    sa=cara+(y*16+x)*16
+    for i=0 to 15 step 2
+      pokew addr,peekw(sa)
+      add sa,2 :add addr,2
+    next i
+  next x :next y
+  return
+
+red_cut_rect:
+'clear rectangle selection
+  w=r-l+1 :h=b-t+1 :s=w*h*16
+  for y=t to b :for x=l to r
+    da=cara+(y*16+x)*16
+    fill da,16
+  next x :next y
+  return
+
+red_update:
+  return
+
+  red_limit:
+  'make sure the canvas is visible
+  scroll 3,0,0
+  return
+
+red_initrender:
+'initialize progressive renderer
+  'redcl=0 :redcr=0 :redct=0 :redcb=0
+
+  system 8,1
+  return
 
 '===================== floating:
 'a floating content area above the toolbar and below the canvas
@@ -3156,7 +3294,7 @@ cnv_input:
 flt_redraw:
   fltchanged=0
   if fltshow then
-    on floe gosub flt_0_redraw, flt_1_redraw
+    on flt gosub flt_0_redraw, flt_1_redraw
   else
     fltstart=999 : fltend=999 : fltcurr=999
   end if
@@ -3172,9 +3310,9 @@ flt_setup:
   return
 
 flt_input:
-'detect interaction on floating content according to floe
+'detect interaction on floating content according to flt
   if not fltshow then return
-  'if floe<0 then return
+  'if flt<0 then return
   if released then fltg=0
   if dragged and fltg=1 then
     call dragdist(draggedx,1)
@@ -3185,15 +3323,16 @@ flt_input:
   else
     return
   end if
-  on floe gosub flt_0_input, flt_1_input
+  on flt gosub flt_0_input, flt_1_input
   return
 
 flt_show:
+trace "=flt_show"
 'show the cursor
 '(in) x,y position of the cursor
   fltcursor=1
 flt_update:
-  if floe>=0 then on floe goto flt_0_update, flt_1_update
+  if flt>=0 then on flt goto flt_0_update, flt_1_update
 
 
 
@@ -3201,6 +3340,7 @@ flt_update:
 'user's character selector in floating content
 
 flt_0_redraw:
+trace "=flt_0_redraw"
   bg 0 :bg source rom(4)
   bg copy 0,0,16,16 to 0,32
   fltrow=(wide+2)*2
@@ -3214,7 +3354,7 @@ flt_0_input:
 fltg_0_none:
 'handle user's character selection
   if not tapped then return
-  'if tole<>0 and tole<>1 and tole<>3 and tole<>7 then return
+  'if tlb<>0 and tlb<>1 and tlb<>3 and tlb<>7 then return
   'detect character number
   x=(touch.x+lstx)\16
   y=(touch.y+lsty-fltcurr)\16
@@ -3356,7 +3496,7 @@ tlb_setup:
   tlbcurr=tlbstart
   tlbw=tlbcol*8
   tlbfold=0
-  tlbdrag=0
+  'tlbdrag=0
   call clampscroll(tlbdrag,tlbw,8,tlbw-shownw+16)
   'TODO: are you sure?
   'during transition/loading, frames may be drawn
@@ -3364,7 +3504,7 @@ tlb_setup:
   return
 
 tlb_redraw:
-'redraw the content of the toolbar according to tole
+'redraw the content of the toolbar according to tlb
   tlbchanged=0
   if tapped then
     trace "tapped should be false"
@@ -3373,11 +3513,11 @@ tlb_redraw:
     pause
   end if
 
-  on tole gosub tlb_0_redraw, tlb_1_redraw, tlb_2_redraw, tlb_3_redraw, tlb_4_redraw, tlb_5_redraw, tlb_6_redraw, tlb_7_redraw
+  on tlb gosub tlb_0_redraw, tlb_1_redraw, tlb_2_redraw, tlb_3_redraw, tlb_4_redraw, tlb_5_redraw, tlb_6_redraw, tlb_7_redraw, tlb_8_redraw
   return
 
 tlb_input:
-'detect interaction on toolbar widgets according to tole
+'detect interaction on toolbar widgets according to tlb
   wid=-1 :'no widget
   energyfold=1
   on tlbg goto tlbg_none,tlbg_dragging,tlbg_folding
@@ -3394,7 +3534,7 @@ tlbg_none:
   end if
   if not tapped or pressedy<tlbcurr then return
   'detect button tap
-  on tole restore tlb_0_data, tlb_1_data, tlb_2_data, tlb_3_data, tlb_4_data, tlb_5_data, tlb_6_data, tlb_7_data
+  on tlb restore tlb_0_data, tlb_1_data, tlb_2_data, tlb_3_data, tlb_4_data, tlb_5_data, tlb_6_data, tlb_7_data, tlb_8_data
 
   read l :'number of widgets
   while l>0
@@ -3409,7 +3549,7 @@ tlbg_none:
       end if
       'tap was inside widget
       if x>=x1 and x<=x2 and y>=y1 and y<=y2 then
-        on tole goto tlb_0_input, tlb_1_input, tlb_2_input, tlb_3_input, tlb_4_input, tlb_5_input, tlb_6_input, tlb_7_input
+        on tlb goto tlb_0_input, tlb_1_input, tlb_2_input, tlb_3_input, tlb_4_input, tlb_5_input, tlb_6_input, tlb_7_input, tlb_8_input
       end if
     end if
   wend
@@ -3557,7 +3697,8 @@ tlb_0_prio: 'wid=4
 tlb_0_pal: 'wid=5
 'show palette chooser
   if tapped then
-    call ungesture :tole=3 :tlbchanged=-1
+    call ungesture
+    tlb=3 :tlbchanged=-1
   end if
   return
 tlb_0_layer: 'wid=6
@@ -3588,12 +3729,12 @@ tlb_0_draw: 'wid=7
     else
       bedbot=2
       if bedtool>0 then bedoldt=bedtool
-      tole=1 :tlbchanged=-1
+      tlb=1 :tlbchanged=-1
     end if
   end if
   if bedoldt>0 then
     'copy the right text for the button
-    'fixme: no need to other text than pan, draw and rect. It is impossible to exit tole=1 with other than those tools
+    'fixme: no need to other text than pan, draw and rect. It is impossible to exit tlb=1 with other than those tools
     bg 0 :bg source rom(6)
     bg copy (bedoldt-1)*4,0,4,1 to 8,1
     restore tlb_0_data
@@ -3613,7 +3754,7 @@ tlb_0_file: :'wid=9
     fedlife=bedlife
     fedtitle$="background"
     fedmode=0
-    tole=2 :tlbchanged=-1
+    tlb=2 :tlbchanged=-1
     fltshow=0
     cnvchanged=-1
     'disable drawing tool
@@ -3630,13 +3771,14 @@ tlb_0_more: 'wid=10
 tlb_0_chared: 'wid=11
 'switch to chared editor
   'message "work in progress"
-  if tapped then
+  ' if tapped then
     call ungesture
-    cane=2 :cnvchanged=-1
-    tole=7 :tlbchanged=-1
-    floe=0 :fltchanged=-1
-    neweditor=2
-  end if
+    goto switch_chared
+    ' cnv=2 :cnvchanged=-1
+    ' tlb=7 :tlbchanged=-1
+    ' flt=0 :fltchanged=-1
+    ' neweditor=2
+  ' end if
   return
 
 
@@ -3680,7 +3822,7 @@ tlb_1_back: 'wid=0
 'go back to the first toolbar of backed
   bedbot=0
   call ungesture
-  tole=0 :tlbchanged=-1
+  tlb=0 :tlbchanged=-1
   if bedoldt>=6 and bedoldt<=7 then bedoldt=1
   if bedtool>=6 and bedtool<=7 then bedtool=bedoldt
   if bedtool>=1 and bedtool<=3 then
@@ -3755,6 +3897,7 @@ tlb_1_repaint:
 tlb_2_redraw:
   bg 0 :bg source rom(3) :attr %100001
   bg fill 0,0 to 31,31 char 1
+  font 0
   pal 1 : text 3,0,fedtitle$
   bg copy 0,27,29,3 to 0,1
   bg copy 0,30,29,3 to 0,5
@@ -3782,18 +3925,18 @@ tlb_2_back: 'wid=0
     call ungesture
     if editor=1 then
       'go back to the previous toolbar
-      if fedmode=0 then tole=0
-      if fedmode=1 then tole=3
-      if fedmode=2 then tole=0
+      if fedmode=0 then tlb=0
+      if fedmode=1 then tlb=3
+      if fedmode=2 then tlb=0
       tlbchanged=-1
-      floe=0 :fltshow=-1 :fltchanged=-1
+      flt=0 :fltshow=-1 :fltchanged=-1
       gosub bed_limit
     else if editor=2 then
       'go back to the previous toolbar
-      if fedmode=1 then tole=3
-      if fedmode=2 then tole=7
+      if fedmode=1 then tlb=3
+      if fedmode=2 then tlb=7
       tlbchanged=-1
-      floe=0 :fltshow=-1 :fltchanged=-1
+      flt=0 :fltshow=-1 :fltchanged=-1
       gosub ced_limit
     end if
   end if
@@ -3853,14 +3996,9 @@ tlb_2_load: 'wid=2
   return
 tlb_2_file: 'wid=3
 'swith to file selector
-'show loaded file information
   if tapped then
     call ungesture
-    neweditor=-editor
-    'save toolbar and floating content
-    oldtole=tole
-    oldfloe=floe
-    oldcane=cane
+    goto switch_filed
   else
     bg 0 :attr 1
     text 8,2,hex$(fedlife)
@@ -3924,7 +4062,7 @@ tlb_2_new:
   if tapped then
     if fedmode=0 then
       call ungesture
-      tole=6
+      tlb=6
       goto tlb_redraw
     else if fedmode=2 then
       call usrfree(cedlife)
@@ -4002,9 +4140,11 @@ tlb_3_back: 'wid=8
 'go back to the first toolbar of backed
   if tapped then
     if editor=1 then
-      call ungesture :tole=0 :goto tlb_redraw
+      call ungesture :tlb=0 :goto tlb_redraw
     else if editor=2 then
-      call ungesture :tole=7 :goto tlb_redraw
+      call ungesture :tlb=7 :goto tlb_redraw
+    else if editor=3 then
+      call ungesture :tlb=8 :goto tlb_redraw
     end if
   end if
   return
@@ -4013,8 +4153,8 @@ tlb_3_edit: 'wid=9
   if tapped then
     call ungesture
     if editor=1 then bedtool=0
-    tole=5 :tlbchanged=-1
-    floe=1 :fltshow=-1 :fltchanged=-1
+    tlb=5 :tlbchanged=-1
+    flt=1 :fltshow=-1 :fltchanged=-1
     call usepal((pale))
     call usecolor((cole))
   end if
@@ -4026,7 +4166,7 @@ tlb_3_file: 'wid=10
     call ungesture
     fedtitle$="palette"
     fedmode=1
-    tole=2 :tlbchanged=-1
+    tlb=2 :tlbchanged=-1
     fltshow=0
     cnvchanged=-1
     'disable drawing tool
@@ -4066,10 +4206,12 @@ tlb_4_back: 'wid=0
 'cancel selection, go back to the previous toolbar
   if tapped then
     call ungesture
-    tole=oldtole :tlbchanged=-1
-    'floe=oldfloe :fltchanged=-1
-    cane=oldcane :cnvchanged=-1
-    neweditor=-editor
+    trace "oldtlb",oldtlb
+    fedlife=oldlife
+    tlb=oldtlb :tlbchanged=-1
+    'flt=oldflt :fltchanged=-1
+    cnv=oldcnv :cnvchanged=-1
+    ' neweditor=-editor
   end if
   return
 tlb_4_select: 'wid=1
@@ -4077,10 +4219,8 @@ tlb_4_select: 'wid=1
   if tapped then
     call ungesture
     fedselected=-1
-    tole=oldtole :tlbchanged=-1
-    ' floe=oldfloe :fltchanged=-1
-    cane=oldcane :cnvchanged=-1
-    neweditor=-editor
+    tlb=oldtlb :tlbchanged=-1
+    cnv=oldcnv :cnvchanged=-1
   end if
   return
 
@@ -4134,15 +4274,12 @@ tlb_5_back: 'wid=4
   if tapped then
     call ungesture
     sprite off
-    tole=3 :tlbchanged=-1
-    floe=0 :fltshow=-1 :fltchanged=-1
-    if editor=1 then fltcursor=(bedtool<>0)
+    tlb=3 :tlbchanged=-1
+    flt=0 :fltshow=-1 :fltchanged=-1
+    if editor=1 then fltcursor=abs(bedtool<>0)
   end if
   return
 
-'================= backed_more:
-'i don't know what to put here, i can't remember
-'- the oob settings
 
 
 '================== backed_new:
@@ -4161,38 +4298,32 @@ tlb_6_redraw:
   tlbrow1=4 :tlbrow2=7
   gosub tlb_setup
   return
-
 tlb_6_data:
   data 4 :'number of widget
   data 2,8,7,10 :'wid=0 back
   data 8,0,12,2 :'wid=1 width
   data 21,0,26,2 :'wid=2 height
   data 8,8,12,10 :'wid=3 new
-
 tlb_6_input:
   on wid goto tlb_6_back, tlb_6_width, tlb_6_height, tlb_6_new
-
 tlb_6_back: 'wid=0
 'cancel selection, go back to the previous toolbar
   call ungesture
   keyboard off
-  tole=2 :gosub tlb_redraw
+  tlb=2 :gosub tlb_redraw
   return
-
 tlb_6_width:
   tlb_6_x=8 :tlb_6_v=tlb_6_w
   gosub tlb_6_dim
   keyboard on
   call ungesture
   return
-
 tlb_6_height:
   tlb_6_x=22 :tlb_6_v=tlb_6_h
   gosub tlb_6_dim
   keyboard on
   call ungesture
   return
-
 tlb_6_dim:
   bg 0 :attr 1
   bg fill 8,1 to 11,1 char 3
@@ -4200,7 +4331,6 @@ tlb_6_dim:
   text 8,1,str$(tlb_6_w)
   text 22,1,str$(tlb_6_h)
   return
-
 tlb_6_size:
 'display size and compute memory location
   bg 0 :bg source rom(3) :attr %100001
@@ -4217,7 +4347,6 @@ tlb_6_size:
     text 23,5,hex$(addr+s,4)
   end if
   return
-
 tlb_6_edit:
 'update width and height
   if tlb_6_x=0 then return
@@ -4249,7 +4378,6 @@ tlb_6_edit:
   pal 1
   if (timer mod 50)>=20 then cell tlb_6_x+len(v$),1,62
   return
-
 tlb_6_new:
 'erase current file and create a new one
   'todo: check for changes not saved
@@ -4261,8 +4389,8 @@ tlb_6_new:
     call updlayer(laye)
     call ungesture
     keyboard off
-    tole=0 :tlbchanged=-1
-    floe=0 :fltshow=-1 :fltchanged=-1
+    tlb=0 :tlbchanged=-1
+    flt=0 :fltshow=-1 :fltchanged=-1
     cnvchanged=-1
     bedoldt=1
   else :'if fedmode=1 then
@@ -4284,7 +4412,7 @@ tlb_7_redraw:
   bg copy 0,42,29,5 to 0,0
   bg copy 0,59,29,3 to 0,6
   bg copy 0,62,29,3 to 0,10
-  tlbrow=15-short*3 :tlbcol=25
+  tlbrow=15-short*3 :tlbcol=26
   tlbraster1=40 :tlbraster2=64
   tlbrow1=5 :tlbrow2=8
   gosub tlb_setup
@@ -4292,7 +4420,7 @@ tlb_7_redraw:
   gosub tlb_7_zoom
   return
 tlb_7_data:
-  data 8 :'number of widget
+  data 9 :'number of widget
   data 2,0,7,4 :'wid=0 color 0
   data 9,0,14,4 :'wid=1 color 1
   data 15,0,20,4 :'wid=2 color 2
@@ -4301,18 +4429,20 @@ tlb_7_data:
   data 8,6,13,8 :'wid=5 palette
   data 15,6,20,8 :'wid=6 zoom
   data 21,10,26,12 :'wid=7 file
+  data 15,10,20,12 :'wid=8 more
 tlb_7_input:
-  on wid goto tlb_7_color, tlb_7_color, tlb_7_color, tlb_7_color, tlb_7_backed, tlb_7_pal, tlb_7_zoom, tlb_7_file
+  on wid goto tlb_7_color, tlb_7_color, tlb_7_color, tlb_7_color, tlb_7_backed, tlb_7_pal, tlb_7_zoom, tlb_7_file, tlb_7_more
 tlb_7_backed: 'wid=4
 'switch to backed editor
-  if tapped then
+  ' if tapped then
     call ungesture
-    cane=0 :cnvchanged=-1
-    tole=0 :tlbchanged=-1
-    floe=0 :fltchanged=-1
-    neweditor=1
-  end if
-  return
+    goto switch_backed
+    ' cnv=0 :cnvchanged=-1
+    ' tlb=0 :tlbchanged=-1
+    ' flt=0 :fltchanged=-1
+    ' neweditor=1
+  ' end if
+  ' return
 tlb_7_color: 'wid=0..3
 'select one of the 4 colors of the current palette
   if tapped then
@@ -4324,7 +4454,7 @@ tlb_7_pal: 'wid=5
 'show palette chooser
   if tapped then
     'todo: replace goto tlb_redraw by tlbchanged=-1
-    call ungesture :tole=3 :goto tlb_redraw
+    call ungesture :tlb=3 :goto tlb_redraw
   end if
   return
 tlb_7_zoom: 'wid=6
@@ -4349,10 +4479,120 @@ tlb_7_file: 'wid=7
     fedlife=cedlife
     fedtitle$="characters"
     fedmode=2
-    tole=2 :tlbchanged=-1
+    tlb=2 :tlbchanged=-1
     fltshow=0
     cnvchanged=-1
   end if
+  return
+tlb_7_more: 'wid=8
+  ' if tapped then
+  call ungesture
+  goto switch_ranged
+  ' cnv=3 :cnvchanged=-1
+  ' tlb=8 :tlbchanged=-1
+  ' editor=3
+  ' end if
+  return
+
+
+
+'===================== ranged:
+'toolbar to manipulate the whole characters
+'instead of just pixels
+'remove the floating content and show the whole loaded files as characters data
+'canvas: tap to select, drag
+'slid: (flag) use drag to rotate pixels
+'oob: (flag) tap to select new oob and fix palette
+'used: (flag) tap to select the first character, colorize used characters
+
+'[clr] [cut] [copy] [past]
+'[1234]  [h][v][r]  [slid]
+'[used] [oob] [back][file]
+
+tlb_8_redraw:
+trace "=tlb_8_redraw"
+  bg 0 :bg source rom(3) :pal 1
+  bg fill 0,0 to 31,31 char 1
+  bg copy 0,65,29,3 to 0,0
+  bg copy 0,68,29,3 to 0,4
+  bg copy 0,71,29,3 to 0,8
+  tlbrow=13-short*3 :tlbcol=26
+  tlbraster1=24 :tlbraster2=48
+  tlbrow1=4 :tlbrow2=7
+  gosub tlb_setup
+  gosub tlb_8_repaint
+  return
+
+tlb_8_data:
+  data 6 :'number of widget
+  data 15,8,20,10 :'wid=0 back
+  data 2,4,7,8 :'wid=1 palette
+  data 14,0,19,2 :'wid=2 copy
+  data 21,0,26,2 :'wid=3 paste
+  data 8,0,12,2 :'wid=4 cut
+  data 2,0,6,2 :'wid=5 clear
+
+tlb_8_input:
+  on wid goto tlb_8_back, tlb_8_pal, tlb_8_copy, tlb_8_paste, tlb_8_cut, tlb_8_clear
+
+tlb_8_back: 'wid=0
+  call ungesture
+  gosub switch_chared
+  return
+
+tlb_8_repaint:
+  restore tlb_8_data :call repaintwidget(2,1,2,redtool=1)
+  restore tlb_8_data :call repaintwidget(3,1,2,redtool=2)
+  restore tlb_8_data :call repaintwidget(4,1,2,redtool=3)
+  restore tlb_8_data :call repaintwidget(5,1,2,redtool=4)
+  return
+
+tlb_8_pal: 'wid=1
+'show palette chooser
+  call ungesture :tlb=3 :tlbchanged=-1
+  return
+
+tlb_8_copy: 'wid=2
+'copy tool
+  if redtool<>1 then
+    redtool=1
+  else
+    redtool=0
+  end if
+  goto tlb_8_repaint
+
+tlb_8_paste: 'wid=3
+'paste tool
+  if redtool<>2 then
+    redtool=2
+  else
+    redtool=0
+  end if
+  gosub tlb_8_repaint
+  if usrsize(17)=0 then
+    message "nothing was copied"
+    wait 5
+    redtool=1
+    goto tlb_8_repaint
+  end if
+  return
+
+tlb_8_cut: 'wid=4
+  if redtool<>3 then
+    redtool=3
+  else
+    redtool=0
+  end if
+  goto tlb_8_repaint
+  return
+
+tlb_8_clear: 'wid=5
+  if redtool<>4 then
+    redtool=4
+  else
+    redtool=0
+  end if
+  goto tlb_8_repaint
   return
 
 #1:ui palettes
@@ -4387,7 +4627,7 @@ FFFFFFFFFFFFFFFFFF81F9F3E7CFCFFF
 FFFFFFFFFFFFFFFFFFC399C39999C3FF
 FFFFFFFFFFFFFFFFFFC399C1F999C3FF
 FCFCFCFCFCFCFCFC3B3B3B3B3B3B3B3B
-00000000000000000000000000000000
+FFFFFFFFFFFFFFFFC7821038301F83C7
 FEFEFEFEFEFEFEFEFDFDFDFDFDFDFDFD
 00000000000000000000000000000000
 00000000000000000000000000000000
@@ -4748,10 +4988,10 @@ FFFFFFFFFFFFFFFF0000071F1F3F3F3F
 01010101010101010101010101010101
 01010101010101010101061105110511
 0511051105110511061901010F113C11
-3C113C113C110F190101010121010101
+3C113C113C110F190101010101010101
 06010501050105010501060906010501
 05010501050106090601050105010501
-0501060901012E013C013C013C013C01
+0501060901010F013C013C013C013C01
 0F090101010101010101040133012901
 3A012501040904012C01210139013201
 0409040126012F012E01340104090101
@@ -4848,67 +5088,67 @@ FFFFFFFFFFFFFFFF0000071F1F3F3F3F
 05010501050105010609060105010501
 05010501060901010101010101010402
 2302280221023202040A04012C012101
-390132010409010104012D012F013201
-250104090401260129012C0125010409
+39013201040901010401270132012901
+240104090401260129012C0125010409
 01010101010101010612051205120512
 0512061A061105110511051105110619
-0101061105113C113C11051106190611
-05113C113C1105110619010101013F01
-3F013F013F013F013F013F013F013F01
-3F013F013F013F013F013F013F013F01
-3F013F013F013F013F013F013F013F01
-3F013F013F013F013F013F013F013F01
-3F013F013F013F013F013F013F013F01
-3F013F013F013F013F013F013F013F01
-3F013F013F013F013F013F013F013F01
-3F013F013F013F013F013F013F013F01
-3F013F013F013F013F013F013F013F01
-3F013F013F013F013F013F013F013F01
-3F013F013F013F013F013F013F013F01
-3F013F013F013F013F013F013F013F01
-3F013F013F013F013F013F013F013F01
-3F013F013F013F013F013F013F013F01
-3F013F013F013F013F013F013F013F01
-3F013F013F013F013F013F013F013F01
-3F013F013F013F013F013F013F013F01
-3F013F013F013F013F013F013F013F01
-01010101060105010501060901010601
-05010501050105010501060906010501
+01010611051105110511051106190611
+05113C113C1105110619010101010101
+01010601050105010501060901010601
 05010501050106090101060105010501
-05010501060901010101010101010401
-2C010301040901010401330134012101
-3201340104090401330129013A012501
-04090101040124012501330134010409
-01010101010101010611051105110619
-01010611051105110511051105110619
-06110511051105110511061901010611
-05110511051105110619010101010101
-01010101010101010101010101010101
-01010101010101010101010101010101
-01010101011101010101010101010101
-01010101010101010000000000000000
-00000000000000000000000000000000
-00000000000000000000000000000000
-00000000000000000000000000000000
-00000000000000000000000000000000
-00000000000000000000000000000000
-00000000000000000000000000000000
-00000000000000000000000000000000
-00000000000000000000000000000000
-00000000000000000000000000000000
-00000000000000000000000000000000
-00000000000000000000000000000000
-00000000000000000000000000000000
-00000000000000000000000000000000
-00000000000000000000000000000000
-00000000000000000000000000000000
-00000000000000000000000000000000
-00000000000000000000000000000000
-00000000000000000000000000000000
-00000000000000000000000000000000
-00000000000000000000000000000000
-00000000000000000000000000000000
-00000000
+05010501060901010601050105010501
+05010609010101010101010104012301
+2C013201040901010401230135013401
+04090101040123012F01300139010409
+01010401300121013301340104090101
+01010101010106110511051105110619
+01010611051105110511061901010611
+05110511051105110619010106110511
+05110511051106190101010101010101
+06010501050105010501060901010101
+06010501050105010501050105010501
+06090101010106010501050105010501
+06090101010101010101040100000100
+02000300040901010101040108010301
+03010901030103011B01040901010101
+040133012C0129012401040901010101
+01010101061105113C113C1105110619
+01010101061105110511051105110511
+05110511061901010101061105110511
+05110511061901010101010101010601
+05010501050105010609010106010501
+05010501060901010F013C013C013C01
+3C010F09060105010501050105010609
+01010101010101010401350133012501
+24010409010104012F012F0122010409
+01011F012201210123012B011F090401
+260129012C0125010409010101010101
+01010611051105110511051106190101
+0611051105110511061901010F113C11
+3C113C113C110F19061105113C113C11
+05110619010101013F023F023F023F02
+3F023F023F023F023F023F023F023F02
+3F023F023F023F023F023F023F023F02
+3F023F023F023F023F023F023F023F02
+3F023F023F023F023F023F023F023F02
+3F023F023F023F023F023F023F023F02
+3F023F023F023F023F023F023F023F02
+3F023F023F023F023F023F023F023F02
+3F023F023F023F023F023F023F023F02
+3F023F023F023F023F023F023F023F02
+3F023F023F023F023F023F023F023F02
+3F023F023F0201010101060105010501
+06090101060105010501050105010501
+06090601050105010501050106090101
+06010501050105010501060901010101
+0101010104012C010301040901010401
+33013401210132013401040904013301
+29013A01250104090101040124012501
+33013401040901010101010101010611
+05110511061901010611051105110511
+05110511061906110511051105110511
+06190101061105110511051105110619
+01010101
 
 #4:charalist backgrounds
 00001010000001000200030004000500
