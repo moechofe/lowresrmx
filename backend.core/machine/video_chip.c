@@ -313,7 +313,7 @@ void video_renderScreen(struct Core *core, uint32_t *outputBuffer, int pitch)
 
 	for(int y = 0; y < height; y++)
 	{
-		uint32_t *outputPixel = (uint32_t*)((uint8_t*)outputBuffer + y * pitch);
+		uint32_t *outputPixel = (uint32_t *)((uint8_t *)outputBuffer + y * pitch);
 
 		reg->rasterLine = y;
 		if(core->interpreter->compat && y >= 0 && y < 120)
@@ -458,7 +458,9 @@ void video_renderScreen(struct Core *core, uint32_t *outputBuffer, int pitch)
 
 	if(core->interpreter->compat)
 	{ // This block is outside the main loop, so outputPixel is not valid here. It should use outputBuffer.
-		uint32_t *endPixel = (uint32_t*)((uint8_t*)outputBuffer + sw * sh * sizeof(uint32_t)); // Assuming pitch is consistent for the whole buffer
+		uint32_t *endPixel =
+		(uint32_t *)((uint8_t *)outputBuffer +
+					 sw * sh * sizeof(uint32_t)); // Assuming pitch is consistent for the whole buffer
 		// while(outputPixel < endPixel)
 		{
 #if ABGR

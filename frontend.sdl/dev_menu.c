@@ -21,6 +21,7 @@
 
 #if DEV_MENU
 
+#include "core.h"
 #include "dev_menu.h"
 #include "dev_menu_data.h"
 #include "libraries/text_lib.h"
@@ -29,7 +30,6 @@
 #include "string_utils.h"
 #include "system_paths.h"
 #include "utils.h"
-#include "core.h"
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>

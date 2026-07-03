@@ -55,14 +55,13 @@ class CoreStatsWrapper: NSObject
 			let cString = sourceCode.cString(using: .utf8)
 			let error = stats_update(&self.stats, cString)
 
-			let result: Result
-			if error.code != ErrorNone
+			let result = if error.code != ErrorNone
 			{
-				result = Result(error: LowResRMXError(error: error, sourceCode: sourceCode), numTokens: 0, romSize: 0)
+				Result(error: LowResRMXError(error: error, sourceCode: sourceCode), numTokens: 0, romSize: 0)
 			}
 			else
 			{
-				result = Result(error: nil, numTokens: Int(self.stats.numTokens), romSize: Int(self.stats.romSize))
+				Result(error: nil, numTokens: Int(self.stats.numTokens), romSize: Int(self.stats.romSize))
 			}
 
 			DispatchQueue.main.async

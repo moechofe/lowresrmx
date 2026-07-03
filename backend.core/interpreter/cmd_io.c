@@ -148,7 +148,7 @@ struct TypedValue fnc_SHOWN(struct Core *core)
 	{
 		if(type == TokenSHOWNW)
 		{
-			value.v.floatValue = fake_shown ? fake_width: core->machine->ioRegisters.shown.width;
+			value.v.floatValue = fake_shown ? fake_width : core->machine->ioRegisters.shown.width;
 		}
 		else if(type == TokenSHOWNH)
 		{

@@ -54,7 +54,7 @@
 
 	if (fromIndexPath.section != toIndexPath.section) {
 		indexPathToRemove = [NSIndexPath indexPathForItem:[collectionView numberOfItemsInSection:fromIndexPath.section] - 1
-		                     inSection:fromIndexPath.section];
+			inSection:fromIndexPath.section];
 	}
 
 	for (UICollectionViewLayoutAttributes *layoutAttributes in elements) {
@@ -64,7 +64,7 @@
 		if([layoutAttributes.indexPath isEqual:indexPathToRemove]) {
 			// Remove item in source section and insert item in target section
 			layoutAttributes.indexPath = [NSIndexPath indexPathForItem:[collectionView numberOfItemsInSection:toIndexPath.section]
-			                              inSection:toIndexPath.section];
+				inSection:toIndexPath.section];
 			if (layoutAttributes.indexPath.item != 0) {
 				layoutAttributes.center = [self.collectionViewLayout layoutAttributesForItemAtIndexPath:layoutAttributes.indexPath].center;
 			}
@@ -125,7 +125,7 @@
 		for (UICollectionViewLayoutAttributes *layoutAttributes in elements) {
 
 			if([layoutAttributes.representedElementKind isEqualToString:UICollectionElementKindSectionHeader]
-			   || [layoutAttributes.representedElementKind isEqualToString:UICollectionElementKindSectionFooter])
+				|| [layoutAttributes.representedElementKind isEqualToString:UICollectionElementKindSectionFooter])
 			{
 				continue;
 			}

@@ -29,7 +29,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly) NSString *manualHtml;
 @property (readonly) NSMutableArray *chapters;
 
-
 - (instancetype)initWithURL:(NSURL *)url;
 - (NSArray<HelpChapter *> *)chaptersForSearchKeyword:(NSString *)text;
 - (NSArray<HelpChapter *> *)chaptersForSearchAny:(NSString *)text;

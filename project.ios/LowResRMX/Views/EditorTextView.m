@@ -186,16 +186,16 @@
 	}
 
 	[NSLayoutConstraint activateConstraints:@[
-		 [scrollView.leadingAnchor constraintEqualToAnchor:accessoryView.leadingAnchor],
-		 [scrollView.topAnchor constraintEqualToAnchor:accessoryView.topAnchor],
-		 [scrollView.bottomAnchor constraintEqualToAnchor:accessoryView.bottomAnchor],
-		 [scrollView.trailingAnchor constraintEqualToAnchor:accessoryView.trailingAnchor],
+		[scrollView.leadingAnchor constraintEqualToAnchor:accessoryView.leadingAnchor],
+		[scrollView.topAnchor constraintEqualToAnchor:accessoryView.topAnchor],
+		[scrollView.bottomAnchor constraintEqualToAnchor:accessoryView.bottomAnchor],
+		[scrollView.trailingAnchor constraintEqualToAnchor:accessoryView.trailingAnchor],
 
-		 [stackView.leadingAnchor constraintEqualToAnchor:scrollView.contentLayoutGuide.leadingAnchor],
-		 [stackView.trailingAnchor constraintEqualToAnchor:scrollView.contentLayoutGuide.trailingAnchor],
-		 [stackView.topAnchor constraintEqualToAnchor:scrollView.contentLayoutGuide.topAnchor],
-		 [stackView.bottomAnchor constraintEqualToAnchor:scrollView.contentLayoutGuide.bottomAnchor],
-		 [stackView.heightAnchor constraintEqualToAnchor:scrollView.heightAnchor]
+		[stackView.leadingAnchor constraintEqualToAnchor:scrollView.contentLayoutGuide.leadingAnchor],
+		[stackView.trailingAnchor constraintEqualToAnchor:scrollView.contentLayoutGuide.trailingAnchor],
+		[stackView.topAnchor constraintEqualToAnchor:scrollView.contentLayoutGuide.topAnchor],
+		[stackView.bottomAnchor constraintEqualToAnchor:scrollView.contentLayoutGuide.bottomAnchor],
+		[stackView.heightAnchor constraintEqualToAnchor:scrollView.heightAnchor]
 	]];
 
 	self.inputAccessoryView = accessoryView;
@@ -385,7 +385,7 @@
 			}
 			if (!inStringOrComment) {
 				[updates addObject:@{ @"range" : [NSValue valueWithRange:match.range],
-				                      @"color" : keywordColor}];
+						      @"color" : keywordColor}];
 			}
 		}
 	}
@@ -524,7 +524,6 @@
 
 	return updates;
 }
-
 
 // Apply updates, aborting if token is outdated
 - (void)applyUpdates:(NSArray *)updates toStorage:(NSTextStorage *)storage range:(NSRange)range font:(UIFont *)font token:(NSUInteger)token latestTokenPtr:(NSUInteger *)latestTokenPtr {

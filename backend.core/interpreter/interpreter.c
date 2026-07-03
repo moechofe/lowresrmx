@@ -210,8 +210,9 @@ void itp_runProgram(struct Core *core)
 		interpreter->mode = ModeNone;
 		if(errorCode != ErrorNone)
 		{
-			int symbolIndex=-1;
-			if(interpreter->pc->sourcePosition>0) symbolIndex=(interpreter->pc - 1)->symbolIndex;
+			int symbolIndex = -1;
+			if(interpreter->pc->sourcePosition > 0)
+				symbolIndex = (interpreter->pc - 1)->symbolIndex;
 			struct CoreError err = err_makeCoreError(errorCode, interpreter->pc->sourcePosition, symbolIndex);
 			itp_endProgram(core);
 			delegate_interpreterDidFail(core, err);

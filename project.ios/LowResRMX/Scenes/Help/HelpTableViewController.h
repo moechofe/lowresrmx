@@ -24,4 +24,3 @@
 - (void)updateBarButtonCollapsed:(BOOL)collapsed;
 
 @end
-

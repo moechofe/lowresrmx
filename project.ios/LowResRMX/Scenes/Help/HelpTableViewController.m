@@ -30,7 +30,6 @@
 
 @end
 
-
 @implementation HelpTableViewController
 
 - (void)viewDidLoad

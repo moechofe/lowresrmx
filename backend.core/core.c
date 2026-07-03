@@ -110,7 +110,7 @@ void core_traceError(struct Core *core, struct CoreError error)
 	struct TextLib *lib = &core->overlay->textLib;
 	txtlib_printText(lib, err_getString(error.code));
 	txtlib_printText(lib, "\n");
-	if(error.code == ErrorVariableNotInitialized && error.symbolIndex>=0)
+	if(error.code == ErrorVariableNotInitialized && error.symbolIndex >= 0)
 	{
 		char symbolName[SYMBOL_NAME_SIZE];
 		sprintf(symbolName, "%s", core->interpreter->tokenizer.symbols[error.symbolIndex].name);
@@ -211,8 +211,8 @@ void core_handleInput(struct Core *core, struct CoreInput *input)
 	{
 		if(!core->machineInternals->hasDrag)
 		{
-			core->machineInternals->hasDrag =
-			sqrtf(powf(input->touchX - ioRegisters->pressedX, 2) + powf(input->touchY - ioRegisters->pressedY, 2)) >= 11.f;
+			core->machineInternals->hasDrag = sqrtf(powf(input->touchX - ioRegisters->pressedX, 2) +
+													powf(input->touchY - ioRegisters->pressedY, 2)) >= 11.f;
 			if(core->machineInternals->hasDrag)
 			{
 				core->machineInternals->longEnabled = false;

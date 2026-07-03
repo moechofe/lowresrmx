@@ -32,9 +32,9 @@
 #include "token.h"
 #include "tokenizer.h"
 #include "variables.h"
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdbool.h>
 
 bool fake_shown = false, fake_safe = false;
 int fake_width = 180, fake_height = 180, fake_left = 7, fake_right = 7, fake_top = 21, fake_bottom = 13;
@@ -480,7 +480,7 @@ static void process_command_line(struct Core *core)
 				txtlib_printText(&core->overlay->textLib, "  ");
 
 				char *ptr = (char *)(&core->interpreter
-									  ->sourceCode[core->interpreter->labelStackItems[i].token->sourcePosition - 1]);
+				->sourceCode[core->interpreter->labelStackItems[i].token->sourcePosition - 1]);
 				while((*ptr >= 'a' && *ptr <= 'z') || (*ptr >= 'A' && *ptr <= 'Z') || (*ptr >= '0' && *ptr <= '9') ||
 					  *ptr == '_')
 				{
@@ -589,7 +589,8 @@ static void process_command_line(struct Core *core)
 			if(errorCode != ErrorNone)
 			{
 				itp_endProgram(core);
-				delegate_interpreterDidFail(core, err_makeCoreError(errorCode, core->interpreter->pc->sourcePosition, -1));
+				delegate_interpreterDidFail(
+				core, err_makeCoreError(errorCode, core->interpreter->pc->sourcePosition, -1));
 			}
 			else
 			{

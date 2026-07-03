@@ -48,10 +48,7 @@ extern "C"
 
 	// If you *must* statically initialize it, here's one.
 
-#define PCG32_INITIALIZER                                                                                              \
-	{                                                                                                                  \
-		0x853c49e6748fea9bULL, 0xda3e39cb94b95bdbULL                                                                   \
-	}
+#define PCG32_INITIALIZER {0x853c49e6748fea9bULL, 0xda3e39cb94b95bdbULL}
 
 	// pcg32_srandom(initstate, initseq)
 	// pcg32_srandom_r(rng, initstate, initseq):
