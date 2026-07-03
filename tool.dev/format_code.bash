@@ -17,10 +17,18 @@ TabWidth: 4, \
 UseTab: Always, \
 SpaceBeforeParens: Never, \
 BinPackArguments: false, \
-AlignAfterOpenBracket: false, \
-ContinuationIndentWidth: 0 \
+ContinuationIndentWidth: 0, \
+AlignAfterOpenBracket: DontAlign, \
+AlignOperands: DontAlign, \
+AlignEscapedNewlines: DontAlign, \
+AlignTrailingComments: {Kind: Never, OverEmptyLines: 0}, \
+AlignConsecutiveAssignments: None, \
+AlignConsecutiveDeclarations: None, \
+AlignConsecutiveMacros: None, \
+AlignConsecutiveBitFields: None, \
+AlignArrayOfStructures: None \
 }" -i
 
-fd '\.swift$' project.ios | xargs -n1 swiftformat --quiet --swift-version 5.9 --allman true  --indent tab
+fd '\.swift$' project.ios | grep -v zstd | xargs -n1 swiftformat --quiet --swift-version 5.9 --allman true  --indent tab
 
 fd '\.[h|m]$' project.ios | xargs uncrustify -q -c tool.dev/uncrustify.cfg --no-backup --replace -l OC

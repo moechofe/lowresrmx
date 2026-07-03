@@ -145,7 +145,7 @@ int main(int argc, const char *argv[])
 {
 	memset(&coreInput, 0, sizeof(struct CoreInput));
 
-	coreInput.width = 216;	//-32;
+	coreInput.width = 216; //-32;
 	coreInput.height = 384; //-16;
 	// TEMP:
 	// coreInput.safe.left=1;
@@ -950,8 +950,8 @@ void audioCallback(void *userdata, SDL_AudioStream *stream, int additional_amoun
 	while(additional_amount > 0)
 	{
 		int bytes_to_process = (additional_amount > (int)sizeof(audio_callback_buffer))
-							   ? (int)sizeof(audio_callback_buffer)
-							   : additional_amount;
+		? (int)sizeof(audio_callback_buffer)
+		: additional_amount;
 		int num_samples = bytes_to_process / sizeof(int16_t);
 
 		audio_renderAudio(userdata, audio_callback_buffer, num_samples, 44100, volume);

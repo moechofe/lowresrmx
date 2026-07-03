@@ -280,7 +280,7 @@ enum ErrorCode cmd_FOR(struct Core *core)
 
 		// limit check
 		if((stepValue.v.floatValue > 0 && varValue->floatValue > limitValue.v.floatValue) ||
-		   (stepValue.v.floatValue < 0 && varValue->floatValue < limitValue.v.floatValue))
+		(stepValue.v.floatValue < 0 && varValue->floatValue < limitValue.v.floatValue))
 		{
 			interpreter->pc = tokenFOR->jumpToken; // after NEXT's Eol
 		}
@@ -382,7 +382,7 @@ enum ErrorCode cmd_NEXT(struct Core *core)
 
 		// limit check
 		if((stepValue.v.floatValue > 0 && varValue->floatValue > limitValue.v.floatValue) ||
-		   (stepValue.v.floatValue < 0 && varValue->floatValue < limitValue.v.floatValue))
+		(stepValue.v.floatValue < 0 && varValue->floatValue < limitValue.v.floatValue))
 		{
 			interpreter->pc = storedPc; // after NEXT's Eol
 		}
@@ -573,7 +573,7 @@ enum ErrorCode cmd_ON(struct Core *core)
 
 	// RASTER/VBL/PARTICLE/EMITTER
 	if(interpreter->pc->type == TokenRASTER || interpreter->pc->type == TokenVBL ||
-	   interpreter->pc->type == TokenPARTICLE || interpreter->pc->type == TokenEMITTER)
+	interpreter->pc->type == TokenPARTICLE || interpreter->pc->type == TokenEMITTER)
 	{
 		enum TokenType type = interpreter->pc->type;
 		++interpreter->pc;

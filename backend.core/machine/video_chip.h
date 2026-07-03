@@ -25,9 +25,9 @@
 
 #define UNIVERSAL_WIDTH 177
 #define UNIVERSAL_HEIGHT 288
-#define ICON_WIDTH 180	  // 22.5
-#define ICON_HEIGHT 180	  // 22.5
-#define SCREEN_WIDTH 216  // 27x8
+#define ICON_WIDTH 180 // 22.5
+#define ICON_HEIGHT 180 // 22.5
+#define SCREEN_WIDTH 216 // 27x8
 #define SCREEN_HEIGHT 384 // 48x8
 #define NUM_CHARACTERS 256
 #define NUM_PALETTES 8
@@ -109,10 +109,10 @@ struct Plane
 // 36Kibi
 struct VideoRam
 {
-	struct Plane planeA;						 // 8Kibi
-	struct Plane planeB;						 // 8Kibi
-	struct Plane planeC;						 // 8Kibi
-	struct Plane planeD;						 // 8Kibi
+	struct Plane planeA; // 8Kibi
+	struct Plane planeB; // 8Kibi
+	struct Plane planeC; // 8Kibi
+	struct Plane planeD; // 8Kibi
 	struct Character characters[NUM_CHARACTERS]; // 4Kibi
 };
 

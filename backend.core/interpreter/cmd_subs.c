@@ -54,7 +54,7 @@ enum ErrorCode cmd_CALL(struct Core *core)
 			// argument
 			struct Token *tokens = interpreter->pc;
 			if((interpreter->pc->type == TokenIdentifier || interpreter->pc->type == TokenStringIdentifier) &&
-			   tokens[1].type == TokenBracketOpen && tokens[2].type == TokenBracketClose)
+			tokens[1].type == TokenBracketOpen && tokens[2].type == TokenBracketClose)
 			{
 				// pass array by reference
 				if(interpreter->pass == PassRun)

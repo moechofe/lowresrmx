@@ -933,12 +933,12 @@ static unsigned int stbiw__zhash(unsigned char *data)
 #define stbiw__zlib_huff2(n) stbiw__zlib_huffa(0x190 + (n) - 144, 9)
 #define stbiw__zlib_huff3(n) stbiw__zlib_huffa(0 + (n) - 256, 7)
 #define stbiw__zlib_huff4(n) stbiw__zlib_huffa(0xc0 + (n) - 280, 8)
-#define stbiw__zlib_huff(n)                                                                                            \
-	(                                                                                                                  \
-	(n) <= 143	   ? stbiw__zlib_huff1(n)                                                                              \
-	: (n) <= 255   ? stbiw__zlib_huff2(n)                                                                              \
-	  : (n) <= 279 ? stbiw__zlib_huff3(n)                                                                              \
-				   : stbiw__zlib_huff4(n))
+#define stbiw__zlib_huff(n) \
+	( \
+	(n) <= 143	 ? stbiw__zlib_huff1(n) \
+	: (n) <= 255 ? stbiw__zlib_huff2(n) \
+	: (n) <= 279 ? stbiw__zlib_huff3(n) \
+				 : stbiw__zlib_huff4(n))
 #define stbiw__zlib_huffb(n) ((n) <= 143 ? stbiw__zlib_huff1(n) : stbiw__zlib_huff2(n))
 
 #define stbiw__ZHASH 16384
@@ -950,7 +950,7 @@ unsigned char *stbi_zlib_compress(unsigned char *data, int data_len, int *out_le
 #ifdef STBIW_ZLIB_COMPRESS
 	// user provided a zlib compress implementation, use that
 	return STBIW_ZLIB_COMPRESS(data, data_len, out_len, quality);
-#else  // use builtin
+#else // use builtin
 	static unsigned short lengthc[] = {3,
 	4,
 	5,
@@ -1027,8 +1027,8 @@ unsigned char *stbi_zlib_compress(unsigned char *data, int data_len, int *out_le
 
 	stbiw__sbpush(out, 0x78); // DEFLATE 32K window
 	stbiw__sbpush(out, 0x5e); // FLEVEL = 1
-	stbiw__zlib_add(1, 1);	  // BFINAL = 1
-	stbiw__zlib_add(1, 2);	  // BTYPE = 1 -- fixed huffman
+	stbiw__zlib_add(1, 1); // BFINAL = 1
+	stbiw__zlib_add(1, 2); // BTYPE = 1 -- fixed huffman
 
 	for(i = 0; i < stbiw__ZHASH; ++i)
 		hash_table[i] = NULL;
@@ -1410,7 +1410,7 @@ static unsigned int stbiw__crc32(unsigned char *buffer, int len)
 	return ~crc;
 }
 
-#define stbiw__wpng4(o, a, b, c, d)                                                                                    \
+#define stbiw__wpng4(o, a, b, c, d) \
 	((o)[0] = STBIW_UCHAR(a), (o)[1] = STBIW_UCHAR(b), (o)[2] = STBIW_UCHAR(c), (o)[3] = STBIW_UCHAR(d), (o) += 4)
 #define stbiw__wp32(data, v) stbiw__wpng4(data, (v) >> 24, (v) >> 16, (v) >> 8, (v));
 #define stbiw__wptag(data, s) stbiw__wpng4(data, s[0], s[1], s[2], s[3])
@@ -1759,7 +1759,7 @@ float *d0p, float *d1p, float *d2p, float *d3p, float *d4p, float *d5p, float *d
 	d4 = tmp10 - tmp11;
 
 	z1 = (tmp12 + tmp13) * 0.707106781f; // c4
-	d2 = tmp13 + z1;					 // phase 5
+	d2 = tmp13 + z1; // phase 5
 	d6 = tmp13 - z1;
 
 	// Odd part
@@ -1769,9 +1769,9 @@ float *d0p, float *d1p, float *d2p, float *d3p, float *d4p, float *d5p, float *d
 
 	// The rotator is modified from fig 4-8 to avoid extra negations.
 	z5 = (tmp10 - tmp12) * 0.382683433f; // c6
-	z2 = tmp10 * 0.541196100f + z5;		 // c2-c6
-	z4 = tmp12 * 1.306562965f + z5;		 // c2+c6
-	z3 = tmp11 * 0.707106781f;			 // c4
+	z2 = tmp10 * 0.541196100f + z5; // c2-c6
+	z4 = tmp12 * 1.306562965f + z5; // c2+c6
+	z3 = tmp11 * 0.707106781f; // c4
 
 	z11 = tmp7 + z3; // phase 5
 	z13 = tmp7 - z3;

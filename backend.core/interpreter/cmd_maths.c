@@ -425,10 +425,10 @@ struct TypedValue fnc_EASE(struct Core *core)
 	else if(e == 8 && io < 0)
 		v = x == 0 ? 0 : x == 1 ? 1 : -pow(2, 10 * x - 10) * sinf((x * 10 - 10.75) * c4);
 	else if(e == 8 && io == 0)
-		v = x == 0		? 0
-			: x == 1	? 1
-			  : x < 0.5 ? -(pow(2, 20 * x - 10) * sinf((20 * x - 11.125) * c5)) / 2
-						: (pow(2, -20 * x + 10) * sinf((20 * x - 11.125) * c5)) / 2 + 1;
+		v = x == 0 ? 0
+		: x == 1   ? 1
+		: x < 0.5  ? -(pow(2, 20 * x - 10) * sinf((20 * x - 11.125) * c5)) / 2
+				   : (pow(2, -20 * x + 10) * sinf((20 * x - 11.125) * c5)) / 2 + 1;
 	else if(e == 8 && io > 0)
 		v = x == 0 ? 0 : x == 1 ? 1 : pow(2, -10 * x) * sinf((x * 10 - 0.75) * c4) + 1;
 

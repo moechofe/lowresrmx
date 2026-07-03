@@ -65,13 +65,13 @@ void machine_reset(struct Core *core, bool resetPersistent)
 
 int machine_peek(struct Core *core, int address)
 {
-	if((address < 0)		 // outside mapped memory
-	   || (address > VM_MAX) // outside mapped memory
-	   // || (address >= 0x0f800 && address < 0x0fb00) // nothing 1
-	   || (address >= 0x0fefc && address < 0x0ff00) // nothing 2
-	   || (address >= 0x0ff34 && address < 0x0ff40) // nothing 3
-	   || (address >= 0x0ff94 && address < 0x0ffa0) // nothing 4
-	   || (address >= 0x0ffb0 && address < 0x10000) // nothing 5
+	if((address < 0) // outside mapped memory
+	|| (address > VM_MAX) // outside mapped memory
+	// || (address >= 0x0f800 && address < 0x0fb00) // nothing 1
+	|| (address >= 0x0fefc && address < 0x0ff00) // nothing 2
+	|| (address >= 0x0ff34 && address < 0x0ff40) // nothing 3
+	|| (address >= 0x0ff94 && address < 0x0ffa0) // nothing 4
+	|| (address >= 0x0ffb0 && address < 0x10000) // nothing 5
 	)
 	{
 		return -1;
@@ -141,14 +141,14 @@ int32_t machine_peek_long(struct Core *core, int address, enum ErrorCode *errorC
 
 bool machine_poke(struct Core *core, int address, int value)
 {
-	if((address < 0)		   // outside mapped memory
-	   || (address >= 0x10000) // ROM
-	   // || (address >= 0x0f800 && address < 0x0fb00) // nothing 1
-	   || (address >= 0x0fefc && address < 0x0ff00) // nothing 2
-	   || (address >= 0x0ff34 && address < 0x0ff40) // nothing 3
-	   || (address >= 0x0ff88 && address < 0x0ffa0) // nothing 4
-	   || (address >= 0x0ffb0 && address < 0x10000) // nothing 5
-	   || (address >= 0x0ffa6 && address < 0x0ffb0) // manually mapped
+	if((address < 0) // outside mapped memory
+	|| (address >= 0x10000) // ROM
+	// || (address >= 0x0f800 && address < 0x0fb00) // nothing 1
+	|| (address >= 0x0fefc && address < 0x0ff00) // nothing 2
+	|| (address >= 0x0ff34 && address < 0x0ff40) // nothing 3
+	|| (address >= 0x0ff88 && address < 0x0ffa0) // nothing 4
+	|| (address >= 0x0ffb0 && address < 0x10000) // nothing 5
+	|| (address >= 0x0ffa6 && address < 0x0ffb0) // manually mapped
 	)
 	{
 		return false;

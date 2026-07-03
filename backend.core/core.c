@@ -169,8 +169,8 @@ void core_handleInput(struct Core *core, struct CoreInput *input)
 		// {
 		char key = input->key;
 		if((key >= 32 && key < 127) || key == CoreInputKeyBackspace || key == CoreInputKeyReturn ||
-		   key == CoreInputKeyDown || key == CoreInputKeyUp || key == CoreInputKeyRight || key == CoreInputKeyLeft ||
-		   key == CoreInputKeyDelete)
+		key == CoreInputKeyDown || key == CoreInputKeyUp || key == CoreInputKeyRight || key == CoreInputKeyLeft ||
+		key == CoreInputKeyDelete)
 		{
 			ioRegisters->key = key;
 		}
@@ -211,8 +211,7 @@ void core_handleInput(struct Core *core, struct CoreInput *input)
 	{
 		if(!core->machineInternals->hasDrag)
 		{
-			core->machineInternals->hasDrag = sqrtf(powf(input->touchX - ioRegisters->pressedX, 2) +
-													powf(input->touchY - ioRegisters->pressedY, 2)) >= 11.f;
+			core->machineInternals->hasDrag = sqrtf(powf(input->touchX - ioRegisters->pressedX, 2) + powf(input->touchY - ioRegisters->pressedY, 2)) >= 11.f;
 			if(core->machineInternals->hasDrag)
 			{
 				core->machineInternals->longEnabled = false;
@@ -236,9 +235,9 @@ void core_handleInput(struct Core *core, struct CoreInput *input)
 			ioRegisters->status.touchChange = 1;
 		}
 		else if(!core->machineInternals->gestureLonged
-				// && core->machineInternals->gesturePressedTimer > 0
-				&& !core->machineInternals->hasDrag && core->machineInternals->longEnabled &&
-				core->interpreter->timer - core->machineInternals->gesturePressedTimer > 32)
+		// && core->machineInternals->gesturePressedTimer > 0
+		&& !core->machineInternals->hasDrag && core->machineInternals->longEnabled &&
+		core->interpreter->timer - core->machineInternals->gesturePressedTimer > 32)
 		{
 			// just longed
 			core->machineInternals->gestureLonged = true;
@@ -247,8 +246,8 @@ void core_handleInput(struct Core *core, struct CoreInput *input)
 			ioRegisters->status.touchChange = 1;
 		}
 		else if(!core->machineInternals->gestureDragged && core->machineInternals->gesturePressedTimer > 0 &&
-				(core->interpreter->timer - core->machineInternals->gesturePressedTimer > 12 ||
-				 core->machineInternals->hasDrag))
+		(core->interpreter->timer - core->machineInternals->gesturePressedTimer > 12 ||
+		core->machineInternals->hasDrag))
 		{
 			// just dragged
 			core->machineInternals->gestureDragged = true;
@@ -262,7 +261,7 @@ void core_handleInput(struct Core *core, struct CoreInput *input)
 		if(core->machineInternals->gesturePressed)
 		{
 			if(!core->machineInternals->gestureDragged &&
-			   core->interpreter->timer - core->machineInternals->gesturePressedTimer <= 12)
+			core->interpreter->timer - core->machineInternals->gesturePressedTimer <= 12)
 			{
 				// just tapped
 				core->machineInternals->gesturePressed = false;
@@ -381,8 +380,7 @@ bool core_shouldRender(struct Core *core)
 {
 	enum State state = core->interpreter->state;
 	bool shouldRender = (!core->machineInternals->isEnergySaving && state != StateEnd && state != StateNoProgram) ||
-						core->machineInternals->energySavingTimer > 0 ||
-						core->machineInternals->energySavingTimer % 20 == 0;
+	core->machineInternals->energySavingTimer > 0 || core->machineInternals->energySavingTimer % 20 == 0;
 
 	core->machineInternals->energySavingTimer--;
 	return shouldRender;

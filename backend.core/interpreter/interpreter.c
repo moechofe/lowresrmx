@@ -197,7 +197,7 @@ void itp_runProgram(struct Core *core)
 		enum ErrorCode errorCode = ErrorNone;
 
 		while(errorCode == ErrorNone && interpreter->cycles < MAX_CYCLES_TOTAL_PER_FRAME &&
-			  interpreter->state == StateEvaluate && !interpreter->exitEvaluation)
+		interpreter->state == StateEvaluate && !interpreter->exitEvaluation)
 		{
 			errorCode = itp_evaluateCommand(core);
 		}
@@ -422,9 +422,9 @@ void itp_runInterrupt(struct Core *core, enum InterruptType type)
 			errorCode = lab_pushLabelStackItem(interpreter, LabelTypeONCALL, NULL);
 
 			while(errorCode == ErrorNone
-				  // cycles can exceed interrupt limit (see interruptOverCycles), but there is still a hard limit for
-				  // extreme cases
-				  && interpreter->cycles < MAX_CYCLES_TOTAL_PER_FRAME && !interpreter->exitEvaluation)
+			// cycles can exceed interrupt limit (see interruptOverCycles), but there is still a hard limit for
+			// extreme cases
+			&& interpreter->cycles < MAX_CYCLES_TOTAL_PER_FRAME && !interpreter->exitEvaluation)
 			{
 				errorCode = itp_evaluateCommand(core);
 			}
@@ -619,7 +619,7 @@ union Value *itp_readVariable(struct Core *core, enum ValueType *type, enum Erro
 			if(interpreter->pass == PassRun)
 			{
 				if(numDimensions <= variable->numDimensions &&
-				   (indexValue.v.floatValue < 0 || indexValue.v.floatValue >= variable->dimensionSizes[i]))
+				(indexValue.v.floatValue < 0 || indexValue.v.floatValue >= variable->dimensionSizes[i]))
 				{
 					*errorCode = ErrorIndexOutOfBounds;
 					return NULL;
@@ -752,7 +752,7 @@ struct TypedValue itp_evaluateNumericExpression(struct Core *core, int min, int 
 struct TypedValue itp_evaluateOptionalExpression(struct Core *core, enum TypeClass typeClass)
 {
 	if(core->interpreter->pc->type == TokenComma || core->interpreter->pc->type == TokenBracketClose ||
-	   itp_isEndOfCommand(core->interpreter))
+	itp_isEndOfCommand(core->interpreter))
 	{
 		struct TypedValue value;
 		value.type = ValueTypeNull;
@@ -764,7 +764,7 @@ struct TypedValue itp_evaluateOptionalExpression(struct Core *core, enum TypeCla
 struct TypedValue itp_evaluateOptionalNumericExpression(struct Core *core, int min, int max)
 {
 	if(core->interpreter->pc->type == TokenComma || core->interpreter->pc->type == TokenBracketClose ||
-	   itp_isEndOfCommand(core->interpreter))
+	itp_isEndOfCommand(core->interpreter))
 	{
 		struct TypedValue value;
 		value.type = ValueTypeNull;
@@ -785,7 +785,7 @@ bool itp_isTokenLevel(enum TokenType token, int level)
 		//            return token == TokenNOT;
 	case 3:
 		return token == TokenEq || token == TokenUneq || token == TokenGr || token == TokenLe || token == TokenGrEq ||
-			   token == TokenLeEq;
+		token == TokenLeEq;
 	case 4:
 		return token == TokenPlus || token == TokenMinus;
 	case 5:

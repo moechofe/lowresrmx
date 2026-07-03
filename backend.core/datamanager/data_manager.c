@@ -270,9 +270,9 @@ int data_calcOutputSize(struct DataManager *manager)
 		if(entry->length > 0)
 		{
 			size += (i >= 10 ? 4 : 3) + strlen(entry->comment) + 1; // #10:comment\n
-			size += entry->length * 2;								// 2x hex letters
-			size += entry->length / 16 + 1;							// new line every 16 values
-			size += 1;												// new line
+			size += entry->length * 2; // 2x hex letters
+			size += entry->length / 16 + 1; // new line every 16 values
+			size += 1; // new line
 		}
 	}
 	if(manager->diskSourceCode)

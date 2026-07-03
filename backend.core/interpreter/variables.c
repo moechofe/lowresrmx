@@ -29,7 +29,7 @@ struct SimpleVariable *var_getSimpleVariable(struct Interpreter *interpreter, in
 	{
 		variable = &interpreter->simpleVariables[i];
 		if(variable->symbolIndex == symbolIndex &&
-		   (variable->subLevel == subLevel || variable->subLevel == SUB_LEVEL_GLOBAL))
+		(variable->subLevel == subLevel || variable->subLevel == SUB_LEVEL_GLOBAL))
 		{
 			// variable found
 			return variable;
@@ -102,7 +102,7 @@ struct ArrayVariable *var_getArrayVariable(struct Interpreter *interpreter, int 
 	{
 		variable = &interpreter->arrayVariables[i];
 		if(variable->symbolIndex == symbolIndex &&
-		   (variable->subLevel == subLevel || variable->subLevel == SUB_LEVEL_GLOBAL))
+		(variable->subLevel == subLevel || variable->subLevel == SUB_LEVEL_GLOBAL))
 		{
 			// variable found
 			return variable;

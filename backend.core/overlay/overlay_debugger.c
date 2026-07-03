@@ -275,7 +275,7 @@ static void process_command_line(struct Core *core)
 				t = &toks.tokens[i++];
 				int indices[MAX_ARRAY_DIMENSIONS], dimensions = 0;
 				while(t->type != TokenBracketClose && t->type != TokenEol && t->type != TokenEq &&
-					  dimensions < MAX_ARRAY_DIMENSIONS)
+				dimensions < MAX_ARRAY_DIMENSIONS)
 				{
 					if(t->type == TokenFloat)
 					{
@@ -482,7 +482,7 @@ static void process_command_line(struct Core *core)
 				char *ptr = (char *)(&core->interpreter
 				->sourceCode[core->interpreter->labelStackItems[i].token->sourcePosition - 1]);
 				while((*ptr >= 'a' && *ptr <= 'z') || (*ptr >= 'A' && *ptr <= 'Z') || (*ptr >= '0' && *ptr <= '9') ||
-					  *ptr == '_')
+				*ptr == '_')
 				{
 					ptr--;
 				}
