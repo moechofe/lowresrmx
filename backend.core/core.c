@@ -212,7 +212,7 @@ void core_handleInput(struct Core *core, struct CoreInput *input)
 		if(!core->machineInternals->hasDrag)
 		{
 			core->machineInternals->hasDrag =
-			sqrtf(powf(input->touchX - ioRegisters->pressedX, 2) + powf(input->touchY - ioRegisters->pressedY, 2)) >= 8;
+			sqrtf(powf(input->touchX - ioRegisters->pressedX, 2) + powf(input->touchY - ioRegisters->pressedY, 2)) >= 11.f;
 			if(core->machineInternals->hasDrag)
 			{
 				core->machineInternals->longEnabled = false;
