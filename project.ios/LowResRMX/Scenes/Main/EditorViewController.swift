@@ -27,8 +27,9 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
 	@IBOutlet var searchToolbarConstraint: NSLayoutConstraint!
 	@IBOutlet var indexSideBarConstraint: NSLayoutConstraint!
 	@IBOutlet var activityIndicatorView: UIActivityIndicatorView!
-	@IBOutlet var tokensLabel: UILabel!
-	@IBOutlet var romLabel: UILabel!
+	// Disabled for now
+//	@IBOutlet var tokensLabel: UILabel!
+//	@IBOutlet var romLabel: UILabel!
 
 	var didAppearAlready = false
 	var didOpen = false
@@ -423,25 +424,27 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
 
 	func updateStats()
 	{
-		guard let text = sourceCodeTextView.text else { return }
+		// FIXME: disabling for now
+		// I don't think, this is a valuable information
+		// Also because the bottom bar supposed to shown the token and rom count was not visibile since the day I removed the color theme.
+		// Anyway, If I redo it again, it will not be in the bottom bar.
 
-		DispatchQueue.global().async
-		{
-			let error = self.statsWrapper.update(sourceCode: text)
-			DispatchQueue.main.async
-			{
-				if error != nil
-				{
-					self.tokensLabel.text = "Tokens: ?"
-					self.romLabel.text = "ROM: ?"
-				}
-				else
-				{
-					self.tokensLabel.text = "Tokens: \(self.statsWrapper.stats.numTokens)/\(MAX_TOKENS)"
-					self.romLabel.text = "ROM: \(self.statsWrapper.stats.romSize / 1024)/\(32) kB"
-				}
-			}
-		}
+//		guard let text = sourceCodeTextView.text else { return }
+//
+//		statsWrapper.update(sourceCode: text)
+//		{ [weak self] result in
+//			guard let self else { return }
+//			if result.error != nil
+//			{
+//				tokensLabel.text = "Tokens: ?"
+//				romLabel.text = "ROM: ?"
+//			}
+//			else
+//			{
+//				tokensLabel.text = "Tokens: \(result.numTokens)/\(MAX_TOKENS)"
+//				romLabel.text = "ROM: \(result.romSize / 1024)/\(32) kB"
+//			}
+//		}
 	}
 
 	@objc func onRunTapped(_: Any?)

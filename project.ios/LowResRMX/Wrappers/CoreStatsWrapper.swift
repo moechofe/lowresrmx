@@ -21,7 +21,19 @@ import UIKit
 
 class CoreStatsWrapper: NSObject
 {
-	var stats = Stats()
+	struct Result
+	{
+		let error: LowResRMXError?
+		let numTokens: Int
+		let romSize: Int
+	}
+
+	// `stats` (and its embedded tokenizer) is mutable state that must never be
+	// touched by two threads at once: stats_update() both fills and frees the
+	// tokenizer, so concurrent calls double-free the token strings and corrupt
+	// the heap. All access is funneled through this serial queue.
+	private var stats = Stats()
+	private let queue = DispatchQueue(label: "it.ro.ret.ios.LowResRMX.corestats")
 
 	override init()
 	{
@@ -34,14 +46,29 @@ class CoreStatsWrapper: NSObject
 		stats_deinit(&stats)
 	}
 
-	func update(sourceCode: String) -> LowResRMXError?
+	/// Runs stats_update on the private serial queue and delivers a value
+	/// snapshot back on the main queue. Overlapping calls are serialized.
+	func update(sourceCode: String, completion: @escaping (Result) -> Void)
 	{
-		let cString = sourceCode.cString(using: .utf8)
-		let error = stats_update(&stats, cString)
-		if error.code != ErrorNone
+		queue.async
 		{
-			return LowResRMXError(error: error, sourceCode: sourceCode)
+			let cString = sourceCode.cString(using: .utf8)
+			let error = stats_update(&self.stats, cString)
+
+			let result: Result
+			if error.code != ErrorNone
+			{
+				result = Result(error: LowResRMXError(error: error, sourceCode: sourceCode), numTokens: 0, romSize: 0)
+			}
+			else
+			{
+				result = Result(error: nil, numTokens: Int(self.stats.numTokens), romSize: Int(self.stats.romSize))
+			}
+
+			DispatchQueue.main.async
+			{
+				completion(result)
+			}
 		}
-		return nil
 	}
 }
