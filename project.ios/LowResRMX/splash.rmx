@@ -1,7 +1,7 @@
 volume 0,0, :play 0,1
 
 sw=shown.w :sh=shown.h
-cx=(sw-24)/2 :cy=(sh-24)/2
+cx=(sw-24)/2+2 :cy=(sh-24)/2+9
 
 sprite 2,cx,cy,5 :sprite 2 size 2 pal 1
 sprite 1,cx+7,cy-6,3 :sprite 1 size 1 pal 1

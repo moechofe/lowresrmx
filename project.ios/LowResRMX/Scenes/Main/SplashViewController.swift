@@ -62,7 +62,7 @@ class SplashViewController: UIViewController
 	{
 		super.viewDidLayoutSubviews()
 
-		view.backgroundColor = .black
+		view.backgroundColor = .white
 
 		computeScreenInfos()
 	}

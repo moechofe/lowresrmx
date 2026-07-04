@@ -209,7 +209,7 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
 					{
 						return
 					}
-					var error: NSError? = if success, let sourceCode = document.sourceCode
+					let error: NSError? = if success, let sourceCode = document.sourceCode
 					{
 						strongSelf.compileAndStartProgram(sourceCode: sourceCode)
 					}
@@ -410,7 +410,7 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
 	{
 		super.viewDidLayoutSubviews()
 
-		view.backgroundColor = .black
+		view.backgroundColor = .white
 
 		computeScreenInfos()
 	}
