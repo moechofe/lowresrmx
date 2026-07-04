@@ -48,6 +48,48 @@ class SplashViewController: UIViewController
 		}
 	}
 
+	override func viewDidLayoutSubviews()
+	{
+		super.viewDidLayoutSubviews()
+
+		view.backgroundColor = .black
+
+		computeScreenInfos()
+	}
+
+	private func computeScreenInfos()
+	{
+		// compute size of the nxview
+
+		let screenWidth = view.bounds.width
+		let screenHeight = view.bounds.height
+		let r = screenWidth / screenHeight
+
+		var width: CGFloat
+		var height: CGFloat
+		var screenScale: Double
+
+		if r >= 9.0 / 16.0
+		{
+			width = screenWidth
+			screenScale = width / 216.0
+			height = 384.0 * screenScale
+		}
+		else
+		{
+			height = screenHeight
+			screenScale = height / 384.0
+			width = 216.0 * screenScale
+		}
+
+		nxView.frame = CGRect(
+			x: 0,
+			y: 0,
+			width: width,
+			height: height
+		)
+	}
+
 	override func viewDidAppear(_ animated: Bool)
 	{
 		super.viewDidAppear(animated)

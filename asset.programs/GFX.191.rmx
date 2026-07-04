@@ -1,4 +1,4 @@
-version$="0.190"
+version$="0.191"
 'offical graphics editor for Retro Game Creator (LowResRMX) for iOS
 'author: martin mauchauffee
 
@@ -30,33 +30,6 @@ version$="0.190"
 
 files
 
-' 'beta version intro
-' palette 0,2,8,8,2
-' shownw=0 :shownh=0
-' do
-'   if shownw<>shown.w or shownh<>shown.h then
-'     shownw=shown.w :shownh=shown.h
-'     cls
-'     window 2,3,shownw/8-4,shownh/8-6,0
-'     print "work in progress."
-'     print "gfx ";version$
-'     print
-'     print "- include a basic background editor."
-'     print
-'     print "- include a palette editor."
-'     print
-'     print "- include a basic character editor."
-'     print
-'     print "- access internal documentation from file toolbar."
-'     print
-'     print "tap to continue..."
-'   end if
-'   wait vbl
-'   if tap then goto eon
-' loop
-' eon: cls: palette 0,4,4,4,4
-' wait vbl
-' shownw=0 :shownh=0
 
 
 'file#1 ui palettes
@@ -1217,6 +1190,14 @@ do
   end if
 
   if flt>=0 then gosub flt_input
+
+  if kolchanged then
+    kolchanged=0
+    usrchanged(pallife)=-1
+    call ungesture
+    poke pcla+cole,kolcolor
+  end if
+
   gosub cnv_input
   gosub cnv_update
 
@@ -2508,6 +2489,7 @@ ced_update:
   'user's chara was selected from the charalist
   if lstchanged then
     lstchanged=0
+    'fixme: needed?
     call ungesture
     call usechar(lstchara)
     gosub ced_recanvas
@@ -3459,6 +3441,7 @@ fltg_1_dragging:
   'goto flt_show
 
 flt_1_update:
+trace "=flt_1_update"
   x=(kolcolor and $7)
   y=floor(kolcolor/8)
   x=clamp(x*32-kolx,-32,shownw)
