@@ -1,4 +1,4 @@
-version$="0.191"
+version$="0.192"
 'offical graphics editor for Retro Game Creator (LowResRMX) for iOS
 'author: martin mauchauffee
 
@@ -68,6 +68,10 @@ cole=1
 'pala= user's loaded palette address
 'cara= user's loaded character address
 global pala,cara
+
+'palechanged= tell other part of the program that pale has chanded
+global palechanged
+palechanged=0
 
 'address of the user's current palette
 'use to speed up raster interrupt
@@ -149,8 +153,7 @@ cedzoom=-1 :cedscale=2
 '=0 pan the canvas
 '=1 copy selection rectangle
 '=2 paste
-'=3 cut
-'=4 clear
+'=3 clear
 'redx='redy= canvas scroll position
 redtool=0
 redx=0 :redy=0
@@ -224,12 +227,19 @@ sub usebackground(f)
   bedlife=f
 end sub
 
-sub usepal(p)
+sub usecedpal(p)
 'set the current palette to use for draw operation
   pale=p
   pcla=pala+4*pale
   'XXX: this impact aranger and backed
   viepala=pcla
+end sub
+
+sub usepal(p)
+'set the current palette to use for draw operation
+  trace "=usepal"
+  pale=p
+  palechanged=-1
 end sub
 
 sub usecolor(c)
@@ -718,7 +728,7 @@ sub usrloadpal(new,old,dst,err)
   if addr then
     pala=addr
     call usepalettes(dst)
-    call usepal((pale))
+    call usecedpal((pale))
     call usecolor((cole))
     'viepala=pala
     'redpala=pala
@@ -740,7 +750,7 @@ sub usrdefaultpal
   'viepala=pala
   'redpala=pala
   call usepalettes(1)
-  call usepal(0)
+  call usecedpal(0)
   call usecolor(1)
 end sub
 
@@ -1194,8 +1204,17 @@ do
   if kolchanged then
     kolchanged=0
     usrchanged(pallife)=-1
-    call ungesture
+    'replace use'r color by the new one
     poke pcla+cole,kolcolor
+  end if
+
+  if palechanged then
+    palechanged=0
+    pcla=pala+4*pale
+    if cnv=0 then
+      'allow to paint with the palette
+      gosub bed_attr
+    end if
   end if
 
   gosub cnv_input
@@ -3055,7 +3074,6 @@ bed_attr:
 'for filed, it shows a list of files
 
 cnv_redraw:
-trace "=cnv_redraw",cnv
 'repaint the canvas
   cnvchanged=0
   on cnv goto bed_redraw, fed_redraw, ced_redraw, red_redraw
@@ -3106,6 +3124,11 @@ red_pan_input:
     add redy,-draggedy
     pressedx=touch.x
     pressedy=touch.y
+    'limit pan
+    l=-20 :r=256-shownw+20
+    t=-20-safe.t :b=256-curr+20
+    redx=clamp(redx,l,r)
+    redy=clamp(redy,t,b)
     scroll 3,redx,redy
   end if
   return
@@ -3309,7 +3332,6 @@ flt_input:
   return
 
 flt_show:
-trace "=flt_show"
 'show the cursor
 '(in) x,y position of the cursor
   fltcursor=1
@@ -3322,7 +3344,6 @@ flt_update:
 'user's character selector in floating content
 
 flt_0_redraw:
-trace "=flt_0_redraw"
   bg 0 :bg source rom(4)
   bg copy 0,0,16,16 to 0,32
   fltrow=(wide+2)*2
@@ -3441,7 +3462,6 @@ fltg_1_dragging:
   'goto flt_show
 
 flt_1_update:
-trace "=flt_1_update"
   x=(kolcolor and $7)
   y=floor(kolcolor/8)
   x=clamp(x*32-kolx,-32,shownw)
@@ -4062,8 +4082,7 @@ tlb_2_manual:
   return
 
 
-'=============== backed_palette:
-'palettes selector toolbar for backed
+'============== palette_chooser:
 '8 palette buttons
 'edit palette, file
 
@@ -4105,16 +4124,11 @@ tlb_3_pal: 'wid=0..7
 'one of the 8 palette buttons
   bg 0 :bg source rom(5)
   if tapped then
-    'if editor=0 then
-      'call statepushsetting(bgundolst$(),bgundoidx,"p",pale)
-    'end if
     'paint old button to grey
     bg copy pale*6,0,6,3 to (pale mod 4)*6+2,(pale\4)*4
     call usepal(wid)
-    if editor=1 then gosub bed_attr
   end if
-  'paint new button
-  bg 0
+  'paint new button to pink
   bg copy pale*6,3,6,3 to (pale mod 4)*6+2,(pale\4)*4
   'update palette number
   pal 3 :text 12,9,str$(pale)
@@ -4246,6 +4260,7 @@ tlb_5_input:
 tlb_5_color: 'wid=0..3
 'select one of the 4 colors of the current palette
   if tapped then
+    trace "=tlb_5_color"
     call usecolor(wid)
     gosub flt_show
   end if
@@ -4259,7 +4274,6 @@ tlb_5_back: 'wid=4
     sprite off
     tlb=3 :tlbchanged=-1
     flt=0 :fltshow=-1 :fltchanged=-1
-    if editor=1 then fltcursor=abs(bedtool<>0)
   end if
   return
 
@@ -4493,7 +4507,6 @@ tlb_7_more: 'wid=8
 '[used] [oob] [back][file]
 
 tlb_8_redraw:
-trace "=tlb_8_redraw"
   bg 0 :bg source rom(3) :pal 1
   bg fill 0,0 to 31,31 char 1
   bg copy 0,65,29,3 to 0,0
@@ -4507,16 +4520,15 @@ trace "=tlb_8_redraw"
   return
 
 tlb_8_data:
-  data 6 :'number of widget
+  data 5 :'number of widget
   data 15,8,20,10 :'wid=0 back
   data 2,4,7,8 :'wid=1 palette
-  data 14,0,19,2 :'wid=2 copy
-  data 21,0,26,2 :'wid=3 paste
-  data 8,0,12,2 :'wid=4 cut
-  data 2,0,6,2 :'wid=5 clear
+  data 7,0,12,2 :'wid=2 copy
+  data 13,0,19,2 :'wid=3 paste
+  data 2,0,6,2 :'wid=4 clear
 
 tlb_8_input:
-  on wid goto tlb_8_back, tlb_8_pal, tlb_8_copy, tlb_8_paste, tlb_8_cut, tlb_8_clear
+  on wid goto tlb_8_back, tlb_8_pal, tlb_8_copy, tlb_8_paste, tlb_8_clear
 
 tlb_8_back: 'wid=0
   call ungesture
@@ -4527,7 +4539,6 @@ tlb_8_repaint:
   restore tlb_8_data :call repaintwidget(2,1,2,redtool=1)
   restore tlb_8_data :call repaintwidget(3,1,2,redtool=2)
   restore tlb_8_data :call repaintwidget(4,1,2,redtool=3)
-  restore tlb_8_data :call repaintwidget(5,1,2,redtool=4)
   return
 
 tlb_8_pal: 'wid=1
@@ -4560,18 +4571,9 @@ tlb_8_paste: 'wid=3
   end if
   return
 
-tlb_8_cut: 'wid=4
+tlb_8_clear: 'wid=4
   if redtool<>3 then
     redtool=3
-  else
-    redtool=0
-  end if
-  goto tlb_8_repaint
-  return
-
-tlb_8_clear: 'wid=5
-  if redtool<>4 then
-    redtool=4
   else
     redtool=0
   end if
@@ -5077,15 +5079,15 @@ FFFFFFFFFFFFFFFF0000071F1F3F3F3F
 0512061A061105110511051105110619
 01010611051105110511051106190611
 05113C113C1105110619010101010101
-01010601050105010501060901010601
-05010501050106090101060105010501
+01010601050105010501060906010501
+05010501050106090601050105010501
 05010501060901010601050105010501
 05010609010101010101010104012301
-2C013201040901010401230135013401
-04090101040123012F01300139010409
-01010401300121013301340104090101
+2C0132010409040123012F0130013901
+04090401300121013301340125010409
+0101040135012E0124012F0104090101
 01010101010106110511051105110619
-01010611051105110511061901010611
+06110511051105110511061906110511
 05110511051105110619010106110511
 05110511051106190101010101010101
 06010501050105010501060901010101
