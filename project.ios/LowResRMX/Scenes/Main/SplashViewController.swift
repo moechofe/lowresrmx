@@ -31,6 +31,16 @@ class SplashViewController: UIViewController
 	private var isSetupDone = false
 	private var isAnimationDone = false
 
+	private var screenScale: Double = 1.0
+	private var screenWidth: CGFloat = 0.0
+	private var screenHeight: CGFloat = 0.0
+
+	// safe area insets
+	private var top: CGFloat = 0.0
+	private var left: CGFloat = 0.0
+	private var right: CGFloat = 0.0
+	private var bottom: CGFloat = 0.0
+
 	override func viewDidLoad()
 	{
 		super.viewDidLoad()
@@ -59,15 +69,29 @@ class SplashViewController: UIViewController
 
 	private func computeScreenInfos()
 	{
+		if #available(iOS 11.0, *)
+		{
+			top = view.safeAreaInsets.top
+			left = view.safeAreaInsets.left
+			right = view.safeAreaInsets.right
+			bottom = view.safeAreaInsets.bottom
+		}
+		else
+		{
+			top = 0
+			left = 0
+			right = 0
+			bottom = 0
+		}
+
 		// compute size of the nxview
 
-		let screenWidth = view.bounds.width
-		let screenHeight = view.bounds.height
+		screenWidth = view.bounds.width
+		screenHeight = view.bounds.height
 		let r = screenWidth / screenHeight
 
 		var width: CGFloat
 		var height: CGFloat
-		var screenScale: Double
 
 		if r >= 9.0 / 16.0
 		{
@@ -106,10 +130,19 @@ class SplashViewController: UIViewController
 
 	private func loadIntro()
 	{
-		let url = Bundle.main.url(forResource: "Boot Intro", withExtension: "rmx")!
+		let url = Bundle.main.url(forResource: "splash", withExtension: "rmx")!
 		let sourceCode = try! String(contentsOf: url)
 		let error = coreWrapper.compileProgram(sourceCode: sourceCode)
 		guard error == nil else { fatalError() }
+
+		computeScreenInfos()
+		coreWrapper.input.width = Int32(screenWidth / screenScale)
+		coreWrapper.input.height = Int32(screenHeight / screenScale)
+		coreWrapper.input.left = Int32(left / screenScale)
+		coreWrapper.input.top = Int32(top / screenScale)
+		coreWrapper.input.right = Int32(right / screenScale)
+		coreWrapper.input.bottom = Int32(bottom / screenScale)
+		core_handleInput(&coreWrapper.core, &coreWrapper.input)
 
 		core_willRunProgram(&coreWrapper.core, Int(CFAbsoluteTimeGetCurrent() - AppController.shared.bootTime))
 		machine_poke(&coreWrapper.core, 0xA000, 1)
@@ -131,6 +164,13 @@ class SplashViewController: UIViewController
 
 	@objc private func update(displaylink _: CADisplayLink)
 	{
+		coreWrapper.input.width = Int32(screenWidth / screenScale)
+		coreWrapper.input.height = Int32(screenHeight / screenScale)
+		coreWrapper.input.left = Int32(left / screenScale)
+		coreWrapper.input.top = Int32(top / screenScale)
+		coreWrapper.input.right = Int32(right / screenScale)
+		coreWrapper.input.bottom = Int32(bottom / screenScale)
+
 		withUnsafeMutablePointer(to: &coreWrapper.input)
 		{ inputPtr in
 			core_update(&coreWrapper.core, inputPtr)

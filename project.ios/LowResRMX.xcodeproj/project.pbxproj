@@ -200,6 +200,7 @@
 		5BEC340A2F88DE3C005985F8 /* CommunityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BEC34092F88DE3C005985F8 /* CommunityView.swift */; };
 		5BF536CE2D848C1F00548D6A /* overlay_debugger.c in Sources */ = {isa = PBXBuildFile; fileRef = 5BF536CD2D848C1F00548D6A /* overlay_debugger.c */; };
 		5BF536CF2D848C1F00548D6A /* overlay_debugger.c in Sources */ = {isa = PBXBuildFile; fileRef = 5BF536CD2D848C1F00548D6A /* overlay_debugger.c */; };
+		5BF81A902FF90E5300582016 /* splash.rmx in Resources */ = {isa = PBXBuildFile; fileRef = 5BF81A8F2FF90E4C00582016 /* splash.rmx */; };
 		920E1B1A1F77FF7A00664382 /* ExplorerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 920E1B191F77FF7A00664382 /* ExplorerViewController.swift */; };
 		920E1B1C1F78000800664382 /* ExplorerItemCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 920E1B1B1F78000800664382 /* ExplorerItemCell.swift */; };
 		920E1B321F78024500664382 /* NSString+Utils.m in Sources */ = {isa = PBXBuildFile; fileRef = 925CC6991F75896F0059C230 /* NSString+Utils.m */; };
@@ -220,7 +221,6 @@
 		922798952527251F004F6E1A /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 922798942527251F004F6E1A /* SwiftUI.framework */; };
 		922798982527251F004F6E1A /* Widgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 922798972527251F004F6E1A /* Widgets.swift */; };
 		9227989A25272523004F6E1A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9227989925272523004F6E1A /* Assets.xcassets */; };
-		9227DA902204302F0035615C /* Boot Intro.rmx in Resources */ = {isa = PBXBuildFile; fileRef = 9227DA8F2204302F0035615C /* Boot Intro.rmx */; };
 		9227DC1E1FC8BB0700BC89FD /* ProjectManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9227DC1D1FC8BB0700BC89FD /* ProjectManager.swift */; };
 		9227DC221FC8C17A00BC89FD /* SplashViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9227DC211FC8C17A00BC89FD /* SplashViewController.swift */; };
 		9234247522C3FACC002431CD /* ClearRamActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9234247422C3FACC002431CD /* ClearRamActivity.swift */; };
@@ -405,6 +405,7 @@
 		5BE6C6562F2CFC3C00A5EEA7 /* overlay_debugger.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = overlay_debugger.h; sourceTree = "<group>"; };
 		5BEC34092F88DE3C005985F8 /* CommunityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommunityView.swift; sourceTree = "<group>"; };
 		5BF536CD2D848C1F00548D6A /* overlay_debugger.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = overlay_debugger.c; sourceTree = "<group>"; };
+		5BF81A8F2FF90E4C00582016 /* splash.rmx */ = {isa = PBXFileReference; lastKnownFileType = text; path = splash.rmx; sourceTree = "<group>"; };
 		920E1B191F77FF7A00664382 /* ExplorerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExplorerViewController.swift; sourceTree = "<group>"; };
 		920E1B1B1F78000800664382 /* ExplorerItemCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExplorerItemCell.swift; sourceTree = "<group>"; };
 		920FC8672204C25A004707E7 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
@@ -416,7 +417,6 @@
 		922798972527251F004F6E1A /* Widgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Widgets.swift; sourceTree = "<group>"; };
 		9227989925272523004F6E1A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		9227989B25272523004F6E1A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		9227DA8F2204302F0035615C /* Boot Intro.rmx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "Boot Intro.rmx"; sourceTree = "<group>"; };
 		9227DC1D1FC8BB0700BC89FD /* ProjectManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectManager.swift; sourceTree = "<group>"; };
 		9227DC211FC8C17A00BC89FD /* SplashViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashViewController.swift; sourceTree = "<group>"; };
 		9234247422C3FACC002431CD /* ClearRamActivity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClearRamActivity.swift; sourceTree = "<group>"; };
@@ -887,10 +887,10 @@
 		92EA93BC1F744572007BEFB1 /* LowResRMX */ = {
 			isa = PBXGroup;
 			children = (
+				5BF81A8F2FF90E4C00582016 /* splash.rmx */,
 				5B6334F52F3F3ECF00E8198A /* SceneDelegate.swift */,
 				92483F7C1F7C2A4300E6D476 /* LowResRMX.entitlements */,
 				92EA93C41F744573007BEFB1 /* Assets.xcassets */,
-				9227DA8F2204302F0035615C /* Boot Intro.rmx */,
 				925CC6931F75896F0059C230 /* Extensions */,
 				92BB14BF244B0F8800611F01 /* Wrappers */,
 				925CC6AF1F75899E0059C230 /* App */,
@@ -1062,7 +1062,6 @@
 				5B34ED1A2AC5835600220A80 /* cmd_io.bc in Resources */,
 				5B34ECF82AC5835600220A80 /* labels.bc in Resources */,
 				5B34ED7E2AC5835700220A80 /* boot_intro.bc in Resources */,
-				9227DA902204302F0035615C /* Boot Intro.rmx in Resources */,
 				5B34ED3E2AC5835600220A80 /* cmd_particle.bc in Resources */,
 				5B34ED622AC5835600220A80 /* startup_sequence.bc in Resources */,
 				5B34ED5C2AC5835600220A80 /* core.bc in Resources */,
@@ -1103,6 +1102,7 @@
 				5B34EC532AC5795600220A80 /* asset.manual in Resources */,
 				5B34ED062AC5835600220A80 /* interpreter_utils.bc in Resources */,
 				5B34ED602AC5835600220A80 /* text_lib.bc in Resources */,
+				5BF81A902FF90E5300582016 /* splash.rmx in Resources */,
 			);
 		};
 /* End PBXResourcesBuildPhase section */
@@ -1273,7 +1273,7 @@
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 46;
+				CURRENT_PROJECT_VERSION = 47;
 				DEVELOPMENT_ASSET_PATHS = "Widgets/Preview\\ Assets.xcassets";
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				INFOPLIST_FILE = Widgets/Info.plist;
@@ -1306,7 +1306,7 @@
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 46;
+				CURRENT_PROJECT_VERSION = 47;
 				DEVELOPMENT_ASSET_PATHS = "Widgets/Preview\\ Assets.xcassets";
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				INFOPLIST_FILE = Widgets/Info.plist;
@@ -1456,7 +1456,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = "";
 				CODE_SIGN_ENTITLEMENTS = LowResRMX/LowResRMX.entitlements;
-				CURRENT_PROJECT_VERSION = 46;
+				CURRENT_PROJECT_VERSION = 47;
 				DEVELOPMENT_TEAM = YWZ55H4QT9;
 				INFOPLIST_FILE = "$(SRCROOT)/LowResRMX/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "Game Creator";
@@ -1480,7 +1480,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = "";
 				CODE_SIGN_ENTITLEMENTS = LowResRMX/LowResRMX.entitlements;
-				CURRENT_PROJECT_VERSION = 46;
+				CURRENT_PROJECT_VERSION = 47;
 				DEVELOPMENT_TEAM = YWZ55H4QT9;
 				INFOPLIST_FILE = "$(SRCROOT)/LowResRMX/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "Game Creator";
