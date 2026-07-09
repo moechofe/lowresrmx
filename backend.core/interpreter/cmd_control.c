@@ -571,7 +571,7 @@ enum ErrorCode cmd_ON(struct Core *core)
 	// ON
 	++interpreter->pc;
 
-	// RASTER/VBL/PARTICLE/EMITTER
+	// ON RASTER/VBL/PARTICLE/EMITTER
 	if(interpreter->pc->type == TokenRASTER || interpreter->pc->type == TokenVBL ||
 	interpreter->pc->type == TokenPARTICLE || interpreter->pc->type == TokenEMITTER)
 	{
@@ -580,7 +580,7 @@ enum ErrorCode cmd_ON(struct Core *core)
 
 		if(interpreter->pc->type == TokenOFF)
 		{
-			// OFF
+			// ON RASTER/VBL/PARTICLE/EMITTER OFF
 			++interpreter->pc;
 
 			if(interpreter->pass == PassRun)
@@ -603,14 +603,14 @@ enum ErrorCode cmd_ON(struct Core *core)
 				}
 			}
 		}
+
+		// ON RASTER/VBL/PARTICLE/EMITTER CALL
 		else if(interpreter->pc->type == TokenCALL)
 		{
-			// CALL
-			// if (interpreter->pc->type != TokenCALL) return ErrorSyntax;
 			struct Token *tokenCALL = interpreter->pc;
 			++interpreter->pc;
 
-			// Identifier
+			// ON RASTER/VBL/PARTICLE/EMITTER CALL identifier
 			if(interpreter->pc->type != TokenIdentifier)
 				return ErrorExpectedSubprogramName;
 			struct Token *tokenIdentifier = interpreter->pc;
@@ -644,9 +644,12 @@ enum ErrorCode cmd_ON(struct Core *core)
 			}
 		}
 	}
+
+	// ON n
 	else
 	{
-		// n value
+		int numArguments = 0;
+
 		struct TypedValue nValue = itp_evaluateNumericExpression(core, 0, 255);
 		if(nValue.type == ValueTypeError)
 			return nValue.v.errorCode;
@@ -655,27 +658,115 @@ enum ErrorCode cmd_ON(struct Core *core)
 		struct Token *tokenGOTO = NULL;
 		struct Token *tokenGOSUB = NULL;
 		struct Token *tokenRESTORE = NULL;
+		struct Token *tokenCALL = NULL;
 
+		// ON n GOTO
 		if(interpreter->pc->type == TokenGOTO)
 		{
 			tokenGOTO = interpreter->pc;
 			++interpreter->pc;
 		}
+
+		// ON n GOSUB
 		else if(interpreter->pc->type == TokenGOSUB)
 		{
 			tokenGOSUB = interpreter->pc;
 			++interpreter->pc;
 		}
+
+		// ON n RESTORE
 		else if(interpreter->pc->type == TokenRESTORE)
 		{
 			tokenRESTORE = interpreter->pc;
 			++interpreter->pc;
 		}
+
+		// ON n CALL
+		else if(interpreter->pc->type == TokenCALL)
+		{
+			tokenCALL = interpreter->pc;
+			++interpreter->pc;
+
+			// ON n CALL (
+			if(interpreter->pc->type == TokenBracketOpen)
+			{
+				do
+				{
+					// ( or ,
+					++interpreter->pc;
+
+					// argument
+					struct Token *tokens = interpreter->pc;
+					if((interpreter->pc->type == TokenIdentifier || interpreter->pc->type == TokenStringIdentifier) &&
+					tokens[1].type == TokenBracketOpen && tokens[2].type == TokenBracketClose)
+					{
+						// pass array by reference
+						if(interpreter->pass == PassRun)
+						{
+							struct ArrayVariable *variable =
+							var_getArrayVariable(interpreter, interpreter->pc->symbolIndex, interpreter->subLevel);
+							if(!variable)
+								return ErrorArrayNotDimensionized;
+
+							enum ErrorCode errorCode = ErrorNone;
+							var_createArrayVariable(
+							interpreter, &errorCode, numArguments + 1, interpreter->subLevel + 1, variable);
+							if(errorCode != ErrorNone)
+								return errorCode;
+						}
+						interpreter->pc += 3;
+					}
+					else
+					{
+						// expression
+						struct TypedValue value = itp_evaluateExpression(core, TypeClassAny);
+						if(value.type == ValueTypeError)
+							return value.v.errorCode;
+
+						if(interpreter->pass == PassRun)
+						{
+							enum ErrorCode errorCode = ErrorNone;
+							if(interpreter->lastVariableValue)
+							{
+								// pass by reference (simple variable or array element)
+								enum ErrorCode errorCode = ErrorNone;
+								var_createSimpleVariable(interpreter,
+								&errorCode,
+								numArguments + 1,
+								interpreter->subLevel + 1,
+								value.type,
+								interpreter->lastVariableValue);
+								if(errorCode != ErrorNone)
+									return errorCode;
+							}
+							else
+							{
+								// pass by value
+								struct SimpleVariable *variable = var_createSimpleVariable(
+								interpreter, &errorCode, numArguments + 1, interpreter->subLevel + 1, value.type, NULL);
+								if(!variable)
+									return errorCode;
+
+								variable->v = value.v;
+							}
+						}
+					}
+					++numArguments;
+				} while(interpreter->pc->type == TokenComma);
+
+				// ON n CALL ( ... )
+				if(interpreter->pc->type != TokenBracketClose)
+					return ErrorSyntax;
+				++interpreter->pc;
+			}
+		}
+
 		else
 		{
 			return ErrorSyntax;
 		}
 
+		// skip non wanted identifier
 		if(interpreter->pass == PassRun)
 			while(n > 0)
 			{
@@ -686,12 +777,13 @@ enum ErrorCode cmd_ON(struct Core *core)
 				--n;
 			}
 
-		// Identifier
+		// ON n GOTO/GOSUB/RESTORE identifier
 		if(interpreter->pc->type != TokenIdentifier)
 			return ErrorExpectedLabel;
 		struct Token *tokenIdentifier = interpreter->pc;
 		++interpreter->pc;
 
+		// ON n GOTO/GOSUB/RESTORE identifier, identifier
 		while(interpreter->pc->type == TokenComma)
 		{
 			++interpreter->pc;
@@ -735,6 +827,87 @@ enum ErrorCode cmd_ON(struct Core *core)
 			if(interpreter->pass == PassRun)
 			{
 				dat_restoreData(interpreter, tokenRESTORE->jumpToken);
+			}
+		}
+		else if(tokenCALL)
+		{
+			struct SubItem *item = tok_getSub(&interpreter->tokenizer, tokenIdentifier->symbolIndex);
+			if(!item)
+				return ErrorUndefinedSubprogram;
+			tokenCALL->jumpToken = item->token;
+			if(interpreter->pass == PassRun)
+			{
+				enum ErrorCode errorCode = lab_pushLabelStackItem(interpreter, LabelTypeCALL, interpreter->pc);
+				if(errorCode != ErrorNone)
+					return errorCode;
+
+				interpreter->pc = tokenCALL->jumpToken; // after sub name
+				interpreter->subLevel++;
+
+				// parameters
+				if(interpreter->pc->type == TokenBracketOpen)
+				{
+					int parameterIndex = 0;
+					do
+					{
+						if(parameterIndex >= numArguments)
+							return ErrorArgumentCountMismatch;
+
+						// bracket or comma
+						++interpreter->pc;
+
+						// parameter
+						struct Token *tokenIdentifier = interpreter->pc;
+						if(tokenIdentifier->type != TokenIdentifier && tokenIdentifier->type != TokenStringIdentifier)
+							return ErrorSyntax;
+						enum ValueType varType = itp_getIdentifierTokenValueType(tokenIdentifier);
+
+						struct Token *nextToken = interpreter->pc + 1;
+						if(nextToken->type == TokenBracketOpen)
+						{
+							// array
+							struct ArrayVariable *variable =
+							var_getArrayVariable(interpreter, parameterIndex + 1, interpreter->subLevel);
+							if(!variable || variable->type != varType)
+								return ErrorTypeMismatch;
+
+							variable->symbolIndex = tokenIdentifier->symbolIndex;
+
+							interpreter->pc += 2;
+
+							if(interpreter->pc->type != TokenBracketClose)
+								return ErrorSyntax;
+							++interpreter->pc;
+						}
+						else
+						{
+							// simple variable
+							struct SimpleVariable *variable =
+							var_getSimpleVariable(interpreter, parameterIndex + 1, interpreter->subLevel);
+							if(!variable || variable->type != varType)
+								return ErrorTypeMismatch;
+
+							variable->symbolIndex = tokenIdentifier->symbolIndex;
+
+							++interpreter->pc;
+						}
+
+						++parameterIndex;
+					} while(interpreter->pc->type == TokenComma);
+
+					if(parameterIndex < numArguments)
+						return ErrorArgumentCountMismatch;
+
+					if(interpreter->pc->type != TokenBracketClose)
+						return ErrorSyntax;
+					++interpreter->pc;
+				}
+				else if(numArguments > 0)
+				{
+					return ErrorArgumentCountMismatch;
+				}
+
+				return ErrorNone;
 			}
 		}
 		else

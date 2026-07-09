@@ -1,4 +1,4 @@
-version$="0.192"
+version$="0.193"
 'offical graphics editor for Retro Game Creator (LowResRMX) for iOS
 'author: martin mauchauffee
 
@@ -154,6 +154,10 @@ cedzoom=-1 :cedscale=2
 '=1 copy selection rectangle
 '=2 paste
 '=3 clear
+'=4 xflip
+'=5 yflip
+'=6 rotate
+'=7 slide
 'redx='redy= canvas scroll position
 redtool=0
 redx=0 :redy=0
@@ -237,7 +241,6 @@ end sub
 
 sub usepal(p)
 'set the current palette to use for draw operation
-  trace "=usepal"
   pale=p
   palechanged=-1
 end sub
@@ -386,6 +389,44 @@ sub rectangulize(l,t,r,b,x1,x2,y1,y2,xmin,xmax,ymin,ymax)
   b=clamp(max(y1,y2),ymin,ymax)
 end sub
 
+sub swap8bits(b)
+  b=((b and $F0)\16)or((b and $0F)*16)
+  b=((b and $CC)\4)or((b and $33)*4)
+  b=((b and $AA)\2)or((b and $55)*2)
+end sub
+
+sub toggletool(v,o,f)
+'(in/out) toogle a value on/off
+  if v<>o then
+    v=o
+  else
+    v=f
+  end if
+end sub
+
+dim global pow2(7)
+data 1,2,4,8,16,32,64,128
+for i=0 to ubound(pow2,1) :read pow2(i) :next i
+
+dim rotateold(7),rotatenew(7)
+
+sub transpose(old(),new())
+  for r=0 to 7
+    new(r)=0
+    for c=0 to 7
+      if old(c) and pow2(r) then
+        new(r) = new(r) or pow2(c)
+      end if
+    next c
+  next r
+end sub
+
+sub rotate90(old(),new())
+  call transpose(old(),new())
+  for r=0 to 7
+    call swap8bits(new(r))
+  next r
+end sub
 
 '======================== layout:
 
@@ -1214,6 +1255,8 @@ do
     if cnv=0 then
       'allow to paint with the palette
       gosub bed_attr
+    else if cnv=3 then
+      viepala=pcla
     end if
   end if
 
@@ -1237,7 +1280,6 @@ switch_backed:
   'call canoob
   'copy cara,$400 to $8000
   fltcursor=abs(bedtool<>0)
-  trace "bedtool",bedtool
   'trace "fltcursor",fltcursor
   'gosub flt_update
   return
@@ -1830,6 +1872,8 @@ else if raster=0 then
   poke $ff32,%11000
   exit sub
 
+else if fltshow then
+  on flt goto r_charalist, r_kolorlist
 else
   goto r_toolbar
 end if
@@ -2453,6 +2497,8 @@ ced_redraw:
 'redraw the character editor
   'fixme: useless, check sub r
   system 8,cedzoom
+  'non opaque background
+  system 4,0
 
   'center
   cedx=-(shownw-8*8*cedscale)/2
@@ -2494,7 +2540,6 @@ ced_limit:
   return
 
 ced_center:
-  trace "=ced_center"
   cedcenter=0
   s=8*cedscale
   curr=tlbcurr-4
@@ -3109,17 +3154,22 @@ red_redraw:
   'opaque background
   system 4,1
   bg 3 :bg source rom(4)
+  pal 0
   bg fill 0,0 to 63,63 char 0
   bg copy 0,0,16,16 to 0,0
   cls 2
   return
 
 red_input:
-  on redtool goto red_pan_input, red_copy_input, red_paste_input, red_cut_input, red_clear_input
+  on redtool goto red_pan_input, red_copy_input, red_paste_input, red_clear_input, red_xflip_input, red_yflip_input, red_rotate_input, red_slide_input
 
 red_pan_input:
 'handle canvas pan
-  if dragged then
+  if tapped then
+    gosub red_detectcell
+    c=y*16+x
+    message flt_0_t_chara+str$(c)+" $"+hex$(c)
+  else if dragged then
     add redx,-draggedx
     add redy,-draggedy
     pressedx=touch.x
@@ -3153,7 +3203,6 @@ red_rect_input_0:
     redg=1
     'enable selection view
     viepala=rom(10)
-    'system 4,1
     gosub red_detectcell
     redx1=x :redx2=x
     redy1=y :redy2=y
@@ -3214,19 +3263,6 @@ red_paste_input:
   call ungesture
   return
 
-red_cut_input:
-'handle character pixels cut
-  gosub red_rect_input
-  if reds=3 then
-    bg tint 0,0 to 15,63 pal 0
-    gosub red_copy_brush
-    gosub red_cut_rect
-    message str$(w)+","+str$(h)+" cut"
-    redtool=2 :tlbchanged=-1
-    call ungesture
-  end if
-  return
-
 red_clear_input:
 'handle character pixels clear
   gosub red_rect_input
@@ -3238,7 +3274,6 @@ red_clear_input:
     call ungesture
   end if
   return
-
 
 red_copy_brush:
 'will reserve memory space and copy characters
@@ -3272,6 +3307,138 @@ red_cut_rect:
     da=cara+(y*16+x)*16
     fill da,16
   next x :next y
+  return
+
+red_xflip_input:
+'handle character pixels xflip
+  gosub red_rect_input
+  if reds=3 then
+    bg tint 0,0 to 15,63 pal 0
+    goto red_xflip_rect
+  end if
+  return
+
+red_xflip_rect:
+  for y=t to b
+    for x=l to r
+      sa=cara+(y*16+x)*16
+      for i=0 to 15
+        b=peek(sa)
+        call swap8bits(b)
+        poke sa,b
+        inc sa
+      next i
+    next x
+  next y
+  return
+
+red_yflip_input:
+'handle character pixels yflip
+  gosub red_rect_input
+  if reds=3 then
+    bg tint 0,0 to 15,63 pal 0
+    goto red_yflip_rect
+  end if
+  return
+
+red_yflip_rect:
+  for y=t to b
+    for x=l to r
+      sa=cara+(y*16+x)*16
+      for i=0 to 3
+        b1=peek(sa+i) :b2=peek(sa+7-i)
+        poke sa+i,b2 :poke sa+7-i,b1
+        b1=peek(sa+i+8) :b2=peek(sa+7-i+8)
+        poke sa+i+8,b2 :poke sa+7-i+8,b1
+      next i
+    next x
+  next y
+  return
+
+red_rotate_input:
+'handle character pixels rotate
+  gosub red_rect_input
+  if reds=3 then
+    bg tint 0,0 to 15,63 pal 0
+    goto red_rotate_rect
+  end if
+  return
+
+red_rotate_rect:
+  for y=t to b
+    for x=l to r
+      for s=0 to 8 step 8
+        sa=cara+(y*16+x)*16+s
+        for i=0 to 7
+          rotateold(i)=peek(sa)
+          inc sa
+        next i
+        call rotate90(rotateold(),rotatenew())
+        sa=cara+(y*16+x)*16+s
+        for i=0 to 7
+          poke sa,rotatenew(i)
+          inc sa
+        next i
+      next s
+    next x
+  next y
+  return
+
+red_slide_input:
+  on redg goto red_slide_input_0, red_slide_input_1
+red_slide_input_0:
+  if tapped then
+    redg=1
+    'enable selection view
+    viepala=rom(10)
+    gosub red_detectcell
+    bg 3
+    bg tint 0,0 to 15,63 pal 0
+    l=0 :r=0 :t=0 :b=0
+    call rectangulize(l,t,r,b,x,x,y,y,0,15,0,63)
+    bg tint l,t to r,b pal 1
+  end if
+  return
+red_slide_input_1:
+  if tapped then
+    redg=0
+    viepala=pcla
+    bg tint 0,0 to 15,63 pal 0
+  else if dragged then
+    if draggedx\8<>0 then
+      pressedx=touch.x :pressedy=touch.y
+      goto red_slide_x
+    else if draggedy\8<>0 then
+      pressedx=touch.x :pressedy=touch.y
+      goto red_slide_y
+    end if
+  end if
+  return
+
+red_slide_x:
+  sa=cara+(y*16+x)*16
+  if draggedx>0 then
+    for i=0 to 15
+      ror sa+i,1
+    next i
+  else if draggedx<0 then
+    for i=0 to 15
+      rol sa+i,1
+    next i
+  end if
+  return
+
+red_slide_y:
+  sa=cara+(y*16+x)*16
+  if draggedy>0 then
+    p=peek(sa+15)
+    copy sa,15 to sa+1
+    poke sa,p
+  else if draggedy<0 then
+    p=peek(sa)
+    copy sa+1,15 to sa
+    poke sa+15,p
+  end if
   return
 
 red_update:
@@ -4137,11 +4304,16 @@ tlb_3_back: 'wid=8
 'go back to the first toolbar of backed
   if tapped then
     if editor=1 then
-      call ungesture :tlb=0 :goto tlb_redraw
+      call ungesture
+      tlb=0 :tlbchanged=-1
+      'fltcursor=0
     else if editor=2 then
-      call ungesture :tlb=7 :goto tlb_redraw
+      call ungesture
+      tlb=7 :tlbchanged=-1
     else if editor=3 then
-      call ungesture :tlb=8 :goto tlb_redraw
+      call ungesture
+      tlb=8 :tlbchanged=-1
+      'fltshow=0 :fltchanged=-1
     end if
   end if
   return
@@ -4260,7 +4432,6 @@ tlb_5_input:
 tlb_5_color: 'wid=0..3
 'select one of the 4 colors of the current palette
   if tapped then
-    trace "=tlb_5_color"
     call usecolor(wid)
     gosub flt_show
   end if
@@ -4274,6 +4445,12 @@ tlb_5_back: 'wid=4
     sprite off
     tlb=3 :tlbchanged=-1
     flt=0 :fltshow=-1 :fltchanged=-1
+    if editor=1 then
+      fltcursor=0
+    else if editor=3 then
+      fltshow=0
+      fltcursor=0
+    end if
   end if
   return
 
@@ -4520,15 +4697,19 @@ tlb_8_redraw:
   return
 
 tlb_8_data:
-  data 5 :'number of widget
+  data 9 :'number of widget
   data 15,8,20,10 :'wid=0 back
   data 2,4,7,8 :'wid=1 palette
   data 7,0,12,2 :'wid=2 copy
   data 13,0,19,2 :'wid=3 paste
   data 2,0,6,2 :'wid=4 clear
+  data 10,4,12,6 :'wid=5 xflip
+  data 13,4,15,6 :'wid=6 yflip
+  data 16,4,18,6 :'wid=7 rotate
+  data 21,4,26,6 :'wid=8 slide
 
 tlb_8_input:
-  on wid goto tlb_8_back, tlb_8_pal, tlb_8_copy, tlb_8_paste, tlb_8_clear
+  on wid goto tlb_8_back, tlb_8_pal, tlb_8_copy, tlb_8_paste, tlb_8_clear, tlb_8_xflip, tlb_8_yflip, tbl_8_rotate, tlb_8_slide
 
 tlb_8_back: 'wid=0
   call ungesture
@@ -4539,6 +4720,11 @@ tlb_8_repaint:
   restore tlb_8_data :call repaintwidget(2,1,2,redtool=1)
   restore tlb_8_data :call repaintwidget(3,1,2,redtool=2)
   restore tlb_8_data :call repaintwidget(4,1,2,redtool=3)
+  restore tlb_8_data :call repaintwidget(5,1,2,redtool=4)
+  restore tlb_8_data :call repaintwidget(6,1,2,redtool=5)
+  restore tlb_8_data :call repaintwidget(7,1,2,redtool=6)
+  restore tlb_8_data :call repaintwidget(8,1,2,redtool=7)
+  call ungesture
   return
 
 tlb_8_pal: 'wid=1
@@ -4548,20 +4734,12 @@ tlb_8_pal: 'wid=1
 
 tlb_8_copy: 'wid=2
 'copy tool
-  if redtool<>1 then
-    redtool=1
-  else
-    redtool=0
-  end if
+  call toggletool(redtool,1,0)
   goto tlb_8_repaint
 
 tlb_8_paste: 'wid=3
 'paste tool
-  if redtool<>2 then
-    redtool=2
-  else
-    redtool=0
-  end if
+  call toggletool(redtool,2,0)
   gosub tlb_8_repaint
   if usrsize(17)=0 then
     message "nothing was copied"
@@ -4572,13 +4750,25 @@ tlb_8_paste: 'wid=3
   return
 
 tlb_8_clear: 'wid=4
-  if redtool<>3 then
-    redtool=3
-  else
-    redtool=0
-  end if
+  call toggletool(redtool,3,0)
   goto tlb_8_repaint
-  return
+
+tlb_8_xflip: 'wid=5
+  call toggletool(redtool,4,0)
+  goto tlb_8_redraw
+
+tlb_8_yflip: 'wid=6
+  call toggletool(redtool,5,0)
+  goto tlb_8_redraw
+
+tbl_8_rotate: 'wid=7
+  call toggletool(redtool,6,0)
+  goto tlb_8_redraw
+
+tlb_8_slide: 'wid=8
+  call toggletool(redtool,7,0)
+  goto tlb_8_redraw
+
 
 #1:ui palettes
 03040404010305050103013001050303
@@ -4599,7 +4789,7 @@ FFFFFFFFFFFFFEFC0000071F1F3C393B
 FFFFFFFFFFFF00000000FFFFFF00FFFF
 FFFFFFFFFFFFFFFEFFFFFFFFFFFFFCFD
 FFFFFFFFFFFFFF00FFFFFFFFFFFF00FF
-00000000000000000000000000000000
+7F39CBE7D3997DFF7F29CB8181896DFF
 FFFFFFFFFFFFFFFF0000071F18303133
 FFFFFFFFFFFFFFFFFFC399918999C3FF
 FFFFFFFFFFFFFFFFFFE7C7E7E7E781FF
@@ -4615,7 +4805,7 @@ FCFCFCFCFCFCFCFC3B3B3B3B3B3B3B3B
 FFFFFFFFFFFFFFFFC7821038301F83C7
 FEFEFEFEFEFEFEFEFDFDFDFDFDFDFDFD
 00000000000000000000000000000000
-00000000000000000000000000000000
+FFBDD9E3F7C39BFFFFA5C181E7C383FF
 FFFFFFFFFFFFFFFF3333333333333333
 FFFFFFFFFFFFFFFFFFF7C1C7F1C1F7FF
 FFFFFFFFFFFFFFFFFFE7C399819999FF
@@ -5111,18 +5301,18 @@ FFFFFFFFFFFFFFFF0000071F1F3F3F3F
 01010611051105110511051106190101
 0611051105110511061901010F113C11
 3C113C113C110F19061105113C113C11
-05110619010101013F023F023F023F02
+05110619010101010101010106010501
+05010501050106090101060105010501
+05010501050105010501050105010501
+06090601050105013F02050106090101
+01013F023F023F023F023F023F023F02
 3F023F023F023F023F023F023F023F02
 3F023F023F023F023F023F023F023F02
-3F023F023F023F023F023F023F023F02
-3F023F023F023F023F023F023F023F02
-3F023F023F023F023F023F023F023F02
-3F023F023F023F023F023F023F023F02
-3F023F023F023F023F023F023F023F02
-3F023F023F023F023F023F023F023F02
-3F023F023F023F023F023F023F023F02
-3F023F023F023F023F023F023F023F02
-3F023F023F0201010101060105010501
+3F023F023F023F023F023F0201010101
+061105113C113C110511061901010611
+05110511051105110511051105110511
+05110511061906110511051105110511
+06190101010101010101060105010501
 06090101060105010501050105010501
 06090601050105010501050106090101
 06010501050105010501060901010101

@@ -88,7 +88,7 @@ The original LowRes NX, despite being an excellent development environment, lack
 
 **Control flow:**
 
-- New program control flow: [`ON GOTO`](#on-gotoon-gosub), [`ON GOSUB`](#on-gotoon-gosub) and [`ON RESTORE`](#on-restore).
+- New program control flow: [`ON GOTO`](#on-gotoon-gosub), [`ON GOSUB`](#on-gotoon-gosub) and [`ON RESTORE`](#on-restore), [`ON CALL`](#on-call).
 
 **Data:**
 
@@ -1293,8 +1293,8 @@ Jump to one of the listed `label` according to a `value`.
 `ON GOSUB` Will store the current program location on top of the stack before jumping, allowing to [`RETURN`](#gosubreturn) to this location later.
 
 Will read the `value` and jump to:
-- the first label if `value` equal 0,
-- the second label if `value` equal 1,
+- the `label0` if `value` equal 0,
+- the `label1` if `value` equal 1,
 - ...
 
 Real example:
@@ -1427,6 +1427,17 @@ Some example of proceduce calls:
     CALL attack(enemy)
     CALL array_pop(list(),index)
     CALL complex_math(vec(i)(j),vec(k)(l),result)
+
+#### `ON CALL`
+
+    ON value CALL [(parameters)] procedure0[, procedure1...]
+
+Call one of the listed `procedure` according to a `value`.
+
+Will read the `value` and call:
+- the `procedure0` if `value` equal 0,
+- the `procedure1` if `value` equal 1,
+- ...
 
 ### Embedded data
 
@@ -3637,6 +3648,7 @@ TODO: interrupts
 
 **`CALL`**:
 - [`CALL`](#call)
+- [`ON CALL`](#on-call)
 - [`ON VBL CALL procedure`](#on-vbl-call-procedure)
 - [`ON RASTER CALL procedure`](#on-raster-call-procedure)
 
@@ -3885,6 +3897,7 @@ TODO: interrupts
 - [`ON RASTER OFF`](#on-raster-off)
 
 **`ON`**:
+- [`ON CALL`](#on-call)
 - [`ON GOTO`<br>`ON GOSUB`](#on-gotoon-gosub)
 - [`ON RESTORE`](#on-restore)
 - [`KEYBOARD ON`<br>`KEYBOARD OFF`](#keyboard-onkeyboard-off)
@@ -4123,6 +4136,24 @@ TODO: interrupts
 **`TOUCH`**:
 - [`touched =TOUCH`](#touched-touch)
 - [`x =TOUCH.X`<br>`y =TOUCH.Y`](#x-touch-xy-touch-y)
+
+**`changed =TOUCH.CHANGE`**:
+- [`changed =TOUCH.CHANGE`](#changed-touch-change)
+
+**`tapped =TOUCH.DRAG`**:
+- [`tapped =TOUCH.TAP`<br>`draging =TOUCH.DRAG`<br>`long =TOUCH.LONG`](#tapped-touch-tapdraging-touch-draglong-touch-long)
+
+**`tapped =TOUCH.LONG`**:
+- [`tapped =TOUCH.TAP`<br>`draging =TOUCH.DRAG`<br>`long =TOUCH.LONG`](#tapped-touch-tapdraging-touch-draglong-touch-long)
+
+**`tapped =TOUCH.TAP`**:
+- [`tapped =TOUCH.TAP`<br>`draging =TOUCH.DRAG`<br>`long =TOUCH.LONG`](#tapped-touch-tapdraging-touch-draglong-touch-long)
+
+**`TOUCH.PX`**:
+- [`x =TOUCH.PX`<br>`y =TOUCH.PY`](#x-touch-pyx-touch-py)
+
+**`TOUCH.PY`**:
+- [`x =TOUCH.PX`<br>`y =TOUCH.PY`](#x-touch-pyx-touch-py)
 
 **`TOUCH.X`**:
 - [`x =TOUCH.X`<br>`y =TOUCH.Y`](#x-touch-xy-touch-y)

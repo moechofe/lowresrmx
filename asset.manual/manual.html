@@ -220,7 +220,7 @@ This is a heavily modified version and way more complicated to use, I recommend 
 </ul>
 <p><strong>Control flow:</strong></p>
 <ul>
-<li>New program control flow: <a href="#on-gotoon-gosub"><code>ON GOTO</code></a>, <a href="#on-gotoon-gosub"><code>ON GOSUB</code></a> and <a href="#on-restore"><code>ON RESTORE</code></a>.</li>
+<li>New program control flow: <a href="#on-gotoon-gosub"><code>ON GOTO</code></a>, <a href="#on-gotoon-gosub"><code>ON GOSUB</code></a> and <a href="#on-restore"><code>ON RESTORE</code></a>, <a href="#on-call"><code>ON CALL</code></a>.</li>
 </ul>
 <p><strong>Data:</strong></p>
 <ul>
@@ -1554,8 +1554,8 @@ RETURN label
 <p><code>ON GOSUB</code> Will store the current program location on top of the stack before jumping, allowing to <a href="#gosubreturn"><code>RETURN</code></a> to this location later.</p>
 <p>Will read the <code>value</code> and jump to:</p>
 <ul>
-<li>the first label if <code>value</code> equal 0,</li>
-<li>the second label if <code>value</code> equal 1,</li>
+<li>the <code>label0</code> if <code>value</code> equal 0,</li>
+<li>the <code>label1</code> if <code>value</code> equal 1,</li>
 <li>...</li>
 </ul>
 <p>Real example:</p>
@@ -1675,6 +1675,16 @@ CALL attack(enemy)
 CALL array_pop(list(),index)
 CALL complex_math(vec(i)(j),vec(k)(l),result)
 </code></pre>
+<h4 data-keyword="ON,CALL" data-title="ON CALL" id="on-call" tabindex="-1"><code>ON CALL</code></h4>
+<pre><code>ON value CALL [(parameters)] procedure0[, procedure1...]
+</code></pre>
+<p>Call one of the listed <code>procedure</code> according to a <code>value</code>.</p>
+<p>Will read the <code>value</code> and call:</p>
+<ul>
+<li>the <code>procedure0</code> if <code>value</code> equal 0,</li>
+<li>the <code>procedure1</code> if <code>value</code> equal 1,</li>
+<li>...</li>
+</ul>
 <h3 id="embedded-data" tabindex="-1">Embedded data</h3>
 <p>Retro Game Creator provides two ways to store data or assets inside a program.</p>
 <ul>
@@ -1769,7 +1779,7 @@ LOOP
 <p>Sets one or more attributes for the <code>sprite</code>:</p>
 <ul>
 <li><code>PAL palette</code> Change the <code>palette</code> (0..7),</li>
-<li><code>FLIP horizontal, vertical</code> Flip the sprite on <code>horizontal</code> and <code>vertical</code> axis,</li>
+<li><code>FLIP horizontal, vertical</code> Flip the sprite on <code>horizontal</code> and <code>vertical</code> axis (0..1),</li>
 <li><code>PRIO priority</code> change the <code>priority</code> (0..1),</li>
 <li><code>SIZE s</code> Change the size, a.k.a.: the number of characters width and height.</li>
 </ul>
@@ -4713,6 +4723,7 @@ PRINT 0.000000239&lt;&gt;0
 <p><strong><code>CALL</code></strong>:</p>
 <ul>
 <li><a href="#call"><code>CALL</code></a></li>
+<li><a href="#on-call"><code>ON CALL</code></a></li>
 <li><a href="#on-vbl-call-procedure"><code>ON VBL CALL procedure</code></a></li>
 <li><a href="#on-raster-call-procedure"><code>ON RASTER CALL procedure</code></a></li>
 </ul>
@@ -5031,6 +5042,7 @@ PRINT 0.000000239&lt;&gt;0
 </ul>
 <p><strong><code>ON</code></strong>:</p>
 <ul>
+<li><a href="#on-call"><code>ON CALL</code></a></li>
 <li><a href="#on-gotoon-gosub"><code>ON GOTO</code><br /><code>ON GOSUB</code></a></li>
 <li><a href="#on-restore"><code>ON RESTORE</code></a></li>
 <li><a href="#keyboard-onkeyboard-off"><code>KEYBOARD ON</code><br /><code>KEYBOARD OFF</code></a></li>
@@ -5331,6 +5343,30 @@ PRINT 0.000000239&lt;&gt;0
 <ul>
 <li><a href="#touched-touch"><code>touched =TOUCH</code></a></li>
 <li><a href="#x-touch-xy-touch-y"><code>x =TOUCH.X</code><br /><code>y =TOUCH.Y</code></a></li>
+</ul>
+<p><strong><code>changed =TOUCH.CHANGE</code></strong>:</p>
+<ul>
+<li><a href="#changed-touch-change"><code>changed =TOUCH.CHANGE</code></a></li>
+</ul>
+<p><strong><code>tapped =TOUCH.DRAG</code></strong>:</p>
+<ul>
+<li><a href="#tapped-touch-tapdraging-touch-draglong-touch-long"><code>tapped =TOUCH.TAP</code><br /><code>draging =TOUCH.DRAG</code><br /><code>long =TOUCH.LONG</code></a></li>
+</ul>
+<p><strong><code>tapped =TOUCH.LONG</code></strong>:</p>
+<ul>
+<li><a href="#tapped-touch-tapdraging-touch-draglong-touch-long"><code>tapped =TOUCH.TAP</code><br /><code>draging =TOUCH.DRAG</code><br /><code>long =TOUCH.LONG</code></a></li>
+</ul>
+<p><strong><code>tapped =TOUCH.TAP</code></strong>:</p>
+<ul>
+<li><a href="#tapped-touch-tapdraging-touch-draglong-touch-long"><code>tapped =TOUCH.TAP</code><br /><code>draging =TOUCH.DRAG</code><br /><code>long =TOUCH.LONG</code></a></li>
+</ul>
+<p><strong><code>TOUCH.PX</code></strong>:</p>
+<ul>
+<li><a href="#x-touch-pyx-touch-py"><code>x =TOUCH.PX</code><br /><code>y =TOUCH.PY</code></a></li>
+</ul>
+<p><strong><code>TOUCH.PY</code></strong>:</p>
+<ul>
+<li><a href="#x-touch-pyx-touch-py"><code>x =TOUCH.PX</code><br /><code>y =TOUCH.PY</code></a></li>
 </ul>
 <p><strong><code>TOUCH.X</code></strong>:</p>
 <ul>
