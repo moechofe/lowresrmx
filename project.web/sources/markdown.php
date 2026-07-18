@@ -91,7 +91,7 @@ count_stars:
 	}
 	else if($c=="[" && !$link)
 	{
-		if($newline && $curr!="")echo"<br/>";$newline=false;
+		if($newline && $curr!="")echo"<br>";$newline=false;
 		if($curr=="" && !$img){$curr="p";echo"<p>";}
 		if($img){echo "<figure><img src=\"";$curr="figure";}
 		else echo "<a href=\"";
@@ -147,7 +147,8 @@ close:
 	goto retry;
 
 end:
-	return ob_get_clean();
+	$dom=@Dom\HTMLDocument::createFromString(ob_get_clean());
+	return substr($dom->saveHtml($dom->body),strlen("<body>"),-strlen("</body>"));
 }
 
 function test($tested,$expected)
@@ -170,18 +171,18 @@ function test($tested,$expected)
 // test("\n\n","");
 // test("\nga\n","<p>ga</p>");
 // test("🎅","<p>🎅</p>");
-// test("ga\nbu","<p>ga<br/>bu</p>");
+// test("ga\nbu","<p>ga<br>bu</p>");
 // test("ga\n\nbu","<p>ga</p><p>bu</p>");
 // test("ga\n\n\nbu","<p>ga</p><p>bu</p>");
 // test("ga *bu* zo","<p>ga <em>bu</em> zo</p>");
 // test("ga **bu** zo","<p>ga <strong>bu</strong> zo</p>");
 // test("ga ***bu*** zo","<p>ga <strong><em>bu</em></strong> zo</p>");
 // test("ga ****bu**** zo","<p>ga <strong><em>bu</em></strong> zo</p>");
-// test("ga *bu\nu* zo","<p>ga <em>bu<br/>u</em> zo</p>");
+// test("ga *bu\nu* zo","<p>ga <em>bu<br>u</em> zo</p>");
 // test("ga **bu\n\nzo** meu","<p>ga <strong>bu</strong></p><p>zo<strong> meu</strong></p>"); // ???? is it possible?
 // test("*ga ***bu**** zo*","<p><em>ga </em><strong>bu</strong><em> zo</em></p>");
 // test("[ga](bu)","<p><a href=\"bu\">ga</a></p>");
-// test("zo\n[ga](bu)","<p>zo<br/><a href=\"bu\">ga</a></p>");
+// test("zo\n[ga](bu)","<p>zo<br><a href=\"bu\">ga</a></p>");
 // test("zo[ga]","<p>zo<a href=\"\">ga</a></p>");
 // test("zo(ga)","<p>zo(ga)</p>");
 // test("[[ga](bu)","<p><a href=\"bu\">[ga</a></p>");
@@ -194,12 +195,12 @@ function test($tested,$expected)
 // test("ga!bu","<p>ga!bu</p>");
 // test("![ga](bu)","<figure><img src=\"bu\"><figcaption>ga</figcaption></figure>");
 // test("zo![ga](bu)meu","<p>zo</p><figure><img src=\"bu\"><figcaption>ga</figcaption></figure><p>meu</p>");
-// test("![g\na](bu)","<figure><img src=\"bu\"><figcaption>g<br/>a</figcaption></figure>");
+// test("![g\na](bu)","<figure><img src=\"bu\"><figcaption>g<br>a</figcaption></figure>");
 // test("![ga](b\nu)","<figure><img src=\"b%0Au\"><figcaption>ga</figcaption></figure>");
 // test("![ga](b\tu)","<figure><img src=\"b%09u\"><figcaption>ga</figcaption></figure>");
 // test("[ga](##)","<p><a href=\"#%23\">ga</a></p>");
 // test("[ga](??)","<p><a href=\"?%3F\">ga</a></p>");
-// test("[ga](&&)","<p><a href=\"&&\">ga</a></p>");
+// test("[ga](&&)","<p><a href=\"&amp;&amp;\">ga</a></p>");
 // test("[ga](==)","<p><a href=\"==\">ga</a></p>");
 
 // echo "\n";
