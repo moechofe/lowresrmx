@@ -17,4 +17,5 @@ venv
 local.properties
 !build.gradle
 /package
-
+private.php
+dump.rdb

@@ -190,12 +190,6 @@ function checkRateLimit(string $action,string $identifier):bool
 
 function getClientIP(): string
 {
-	// Check for proxy headers (if you're behind a proxy/CDN)
-	if(!empty($_SERVER['HTTP_X_FORWARDED_FOR']))
-	{
-		$ips=explode(',',$_SERVER['HTTP_X_FORWARDED_FOR']);
-		return trim($ips[0]);
-	}
 	if(!empty($_SERVER['HTTP_X_REAL_IP']))
 	{
 		return $_SERVER['HTTP_X_REAL_IP'];
@@ -225,9 +219,10 @@ if(php_sapi_name()!=="cli")
 	// $params=getQueryParams($query);
 	$isGet=$_SERVER['REQUEST_METHOD']==='GET';
 	$isPost=$_SERVER['REQUEST_METHOD']==='POST';
-	$isHttps=@$_SERVER['HTTPS']==="on";
+	// Honor X-Forwarded-Proto set by the TLS-terminating proxy (nginx) so cookies get the Secure flag and HSTS is sent.
+	$isHttps=(@$_SERVER['HTTPS']==="on") || (strtolower(@$_SERVER['HTTP_X_FORWARDED_PROTO']??"")==="https");
 	$baseUrl=(@$_SERVER['REQUEST_SCHEME']?:($isHttps?"https":"http")).'://'.$_SERVER['HTTP_HOST'];
-	$isProd=in_array($_SERVER['HTTP_HOST'],["lowresrmx.top","localhost:8080","127.0.0.1:8080","10.10.35.216:8080"])===false;
+	$isProd=in_array($_SERVER['HTTP_HOST'],["localhost:8080","127.0.0.1:8080","10.10.35.216:8080"])===false;
 
 	header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
 	header("Cache-Control: post-check=0, pre-check=0", false);

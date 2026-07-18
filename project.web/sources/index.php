@@ -22,7 +22,7 @@ require_once __DIR__.'/score.php';
 
 require_once __DIR__.'/image.php';
 
-// server static files maybe
+// server PHP generated files
 if(in_array($urlPath,[
 	'/community.html',
 	'/community.js',
@@ -92,12 +92,6 @@ if(in_array($urlPath,[
 	header("Content-Length: ".filesize(__DIR__.$urlPath));
   header("X-Content-Type-Options: nosniff");
 	readfile(__DIR__.$urlPath);
-	exit;
-}
-
-if($urlPath==='/info' && !$isProd)
-{
-	phpinfo();
 	exit;
 }
 

@@ -116,14 +116,13 @@ if(preg_match('/^\/delete$/',$urlPath)&&$isPost)
 
 	$json=json_decode(file_get_contents('php://input'),true);
 
-	{
-		$program_id=@trim(@$json['p']);
-		if(empty($program_id)) badRequest("Fail to read program");
-		if(strlen($program_id)<=16||strlen($program_id)>=512) badRequest("Fail to read program");
+	$program_id=@trim(@$json['p']);
+	if(empty($program_id)) badRequest("Fail to read program");
+	if(strlen($program_id)<=16||strlen($program_id)>=512) badRequest("Fail to read program");
+	if(redis()->hget("p:$program_id","uid")!==$user_id) badRequest("Fail to be the owner");
 
-		redis()->del("p:$program_id");
-		redis()->lrem("u:{$user_id}:p",1,$program_id);
-	}
+	redis()->del("p:$program_id");
+	redis()->lrem("u:{$user_id}:p",1,$program_id);
 
 	header("X-Robots-Tag: noindex", true);
 	exit;
@@ -155,6 +154,7 @@ if(preg_match('/\/publish$/',$urlPath)&&$isPost)
 	if(empty($prg)) internalServerError("Fail to read program");
 	if(empty($img)) internalServerError("Fail to read image");
 	if(empty($name)) internalServerError("Fail to read program name");
+	if(redis()->hget("p:$program_id","uid")!==$user_id) badRequest("Fail to be the owner");
 
 	// prepare text content
 	$first_id=generateEntryToken();
@@ -338,12 +338,14 @@ if(preg_match("/\/($MATCH_ENTRY_TOKEN)\/replace$/",$urlPath,$matches)&&$isPost)
 {
 	$first_id=$matches[1];
 	if(!$first_id) badRequest("Fail to read entry");
-	error_log("first_id: $first_id");
 
 	list($user_id,$csrf_token)=validateSessionAndGetUserId();
 	if(!$user_id) forbidden("Fail to read user");
 	if(!validateCSRF($csrf_token)) forbidden("Fail to read token");
 	if(!checkRateLimit('publish',$user_id)) tooManyRequests("Fail to respect limit");
+
+	// Only the author of the post can replace its program
+	if(redis()->hget("f:$first_id:f","uid")!==$user_id) forbidden("Fail to be the owner");
 
 	// Check for field from the HTML form
 	$json=json_decode(file_get_contents(filename: 'php://input'),true);
@@ -361,6 +363,7 @@ if(preg_match("/\/($MATCH_ENTRY_TOKEN)\/replace$/",$urlPath,$matches)&&$isPost)
 	if(empty($prg)) internalServerError("Fail to read program");
 	if(empty($img)) internalServerError("Fail to read image");
 	if(empty($name)) internalServerError("Fail to read program name");
+	if(redis()->hget("p:$program_id","uid")!==$user_id) badRequest("Fail to be the owner");
 
 	// Retrieve old program
 	$old_program_id=redis()->hget("f:$first_id:f","pid");

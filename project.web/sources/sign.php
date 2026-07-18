@@ -222,7 +222,7 @@ elseif(preg_match('/^\/discord$/',$urlPath)&&$isGet)
 
 elseif(preg_match('/^\/github$/',$urlPath)&&$isGet&&!empty($_GET['code'])&&!empty($_GET['state']))
 {
-	error_log("State: ".json_encode($_GET['state']));
+	// error_log("State: ".json_encode($_GET['state']));
 	$state=hex2bin($_GET['state']);
 	if(!redis()->exists("l:$state")) forbidden("Fail to validate state");
 
@@ -246,10 +246,10 @@ elseif(preg_match('/^\/github$/',$urlPath)&&$isGet&&!empty($_GET['code'])&&!empt
 			'redirect_uri'=>"{$baseUrl}{$urlPath}",
 		])
 	]];
-	error_log("Token request: ".json_encode($token_request));
+	// error_log("Token request: ".json_encode($token_request));
 
 	$token_response=json_decode(file_get_contents("https://github.com/login/oauth/access_token",false,stream_context_create($token_request)),true);
-	error_log("Token response: ".json_encode($token_response));
+	// error_log("Token response: ".json_encode($token_response));
 	if(empty($token_response['access_token'])||empty($token_response['token_type'])) internalServerError("Fail to read access token");
 
 	$profile_request=['http'=>[
@@ -261,10 +261,10 @@ elseif(preg_match('/^\/github$/',$urlPath)&&$isGet&&!empty($_GET['code'])&&!empt
 			"X-GitHub-Api-Version: 2022-11-28",
 		]
 	];
-	error_log("Profile request: ".json_encode($profile_request));
+	// error_log("Profile request: ".json_encode($profile_request));
 
 	$profile_response=json_decode(file_get_contents("https://api.github.com/user",false,stream_context_create($profile_request)),true);
-	error_log("Profile response: ".json_encode($profile_response));
+	// error_log("Profile response: ".json_encode($profile_response));
 	if(empty($profile_response['id']) || empty($profile_response['login'])) internalServerError("Fail to read github id");
 
 	$user_id="{$profile_response['id']}.gh2";
@@ -315,7 +315,7 @@ elseif(preg_match('/^\/github$/',$urlPath)&&$isGet)
 
 	$sequence=redis()->incr('seq:github');
 	$state=sodium_crypto_shorthash(strval($sequence),LOGIN_GITHUB_KEY);
-	error_log("State: ".json_encode(bin2hex($state)));
+	// error_log("State: ".json_encode(bin2hex($state)));
 
 	// If a upload token is passed, the user is using the iOS app to share a program.
 	if(@preg_match("/^($MATCH_ENTRY_TOKEN)$/",@$_GET['uptoken'],$matches))
@@ -330,7 +330,7 @@ elseif(preg_match('/^\/github$/',$urlPath)&&$isGet)
 		'redirect_uri'=>"{$baseUrl}{$urlPath}",
 		'state'=>bin2hex($state),
 	]);
-	error_log("Auth request: $auth_request");
+	// error_log("Auth request: $auth_request");
 
 	header("Location: $auth_request");
 	exit;

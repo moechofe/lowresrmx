@@ -8,9 +8,9 @@ function generateUploadToken():string
 	$hash=bin2hex(sodium_crypto_shorthash(strval($sequence),UPLOAD_TOKEN_KEY));
 
 	$token="";
-	for($i=0;$i<2;++$i) $token.=SYLLABLE_LIST[random_int(0,count(SYLLABLE_LIST))];
+	for($i=0;$i<2;++$i) $token.=SYLLABLE_LIST[random_int(0,count(SYLLABLE_LIST)-1)];
 	$token.="-";
-	for($i=0;$i<2;++$i) $token.=SYLLABLE_LIST[random_int(0,count(SYLLABLE_LIST))];
+	for($i=0;$i<2;++$i) $token.=SYLLABLE_LIST[random_int(0,count(SYLLABLE_LIST)-1)];
 	$token.="-";
 	$token.=$hash;
 
@@ -25,9 +25,9 @@ function generateEntryToken():string
 	$hash=bin2hex(sodium_crypto_shorthash(strval($sequence),ENTRY_TOKEN_KEY));
 
 	$token="";
-	for($i=0;$i<2;++$i) $token.=SYLLABLE_LIST[random_int(0,count(SYLLABLE_LIST))];
+	for($i=0;$i<2;++$i) $token.=SYLLABLE_LIST[random_int(0,count(SYLLABLE_LIST)-1)];
 	$token.="-";
-	for($i=0;$i<2;++$i) $token.=SYLLABLE_LIST[random_int(0,count(SYLLABLE_LIST))];
+	for($i=0;$i<2;++$i) $token.=SYLLABLE_LIST[random_int(0,count(SYLLABLE_LIST)-1)];
 	$token.="-";
 	$token.=$hash;
 
@@ -42,9 +42,9 @@ function generateImageToken():string
 	$hash=bin2hex(sodium_crypto_shorthash(strval($sequence),IMAGE_TOKEN_KEY));
 
 	$token="";
-	for($i=0;$i<2;++$i) $token.=SYLLABLE_LIST[random_int(0,count(SYLLABLE_LIST))];
+	for($i=0;$i<2;++$i) $token.=SYLLABLE_LIST[random_int(0,count(SYLLABLE_LIST)-1)];
 	$token.="-";
-	for($i=0;$i<2;++$i) $token.=SYLLABLE_LIST[random_int(0,count(SYLLABLE_LIST))];
+	for($i=0;$i<2;++$i) $token.=SYLLABLE_LIST[random_int(0,count(SYLLABLE_LIST)-1)];
 	$token.="-";
 	$token.=$hash;
 
