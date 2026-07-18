@@ -38,7 +38,7 @@ if(preg_match('/\/delete_everything$/',$urlPath)&&$isPost)
 			'domain'=>'',
 			'secure'=>$isHttps,
 			'httponly'=>true,
-			'samesite'=>$isHttps ? 'Strict' : 'Lax'
+			'samesite'=>'Lax' // Lax (not Strict) so the session cookie is sent when returning from the OAuth provider
 		]);
 
 	header("Location: /community.html",true,302);

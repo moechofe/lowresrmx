@@ -73,7 +73,7 @@ if(preg_match('/^\/google$/',$urlPath)&&$isGet&&!empty($_GET['code'])&&!empty($_
 			'domain'=>'',
 			'secure'=>$isHttps,
 			'httponly'=>true,
-			'samesite'=>$isHttps?'Strict':'Lax'
+			'samesite'=>'Lax' // Lax (not Strict) so the session cookie is sent when returning from the OAuth provider
 		]);
 
 	// If a upload token is passed, the user is using the iOS app to share a program.
@@ -185,7 +185,7 @@ if(preg_match('/^\/discord$/',$urlPath)&&$isGet&&!empty($_GET['code'])&&!empty($
 			'domain'=>'',
 			'secure'=>$isHttps,
 			'httponly'=>true,
-			'samesite'=>$isHttps?'Strict':'Lax'
+			'samesite'=>'Lax' // Lax (not Strict) so the session cookie is sent when returning from the OAuth provider
 		]);
 
 	// If a upload token is passed, the user is using the iOS app to share a program.
@@ -305,7 +305,7 @@ elseif(preg_match('/^\/github$/',$urlPath)&&$isGet&&!empty($_GET['code'])&&!empt
 			'domain'=>'',
 			'secure'=>$isHttps,
 			'httponly'=>true,
-			'samesite'=>$isHttps?'Strict':'Lax'
+			'samesite'=>'Lax' // Lax (not Strict) so the session cookie is sent when returning from the OAuth provider
 		]);
 
 	// If a upload token is passed, the user is using the iOS app to share a program.
@@ -361,7 +361,7 @@ elseif(preg_match('/^\/is_signed$/',$urlPath)&&$isPost)
 				'domain'=>'',
 				'secure'=>$isHttps,
 				'httponly'=>true,
-				'samesite'=>$isHttps?'Strict':'Lax'
+				'samesite'=>'Lax' // Lax (not Strict) so the session cookie is sent when returning from the OAuth provider
 			]);
 
 		header("Location: /community.html",true,302);
@@ -394,7 +394,7 @@ elseif(preg_match('/^\/sign_out$/',$urlPath)&&$isPost)
 			'domain'=>'',
 			'secure'=>$isHttps,
 			'httponly'=>true,
-			'samesite'=>$isHttps?'Strict':'Lax'
+			'samesite'=>'Lax' // Lax (not Strict) so the session cookie is sent when returning from the OAuth provider
 		]);
 
 	header("Content-Type: application/json",true);
