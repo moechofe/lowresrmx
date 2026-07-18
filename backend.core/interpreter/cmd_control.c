@@ -772,18 +772,20 @@ enum ErrorCode cmd_ON(struct Core *core)
 			{
 				++interpreter->pc;
 				if(interpreter->pc->type != TokenComma)
-					return ErrorExpectedLabel;
+					return TokenCALL?ErrorExpectedSubprogramName:ErrorExpectedLabel;
 				++interpreter->pc;
 				--n;
 			}
 
-		// ON n GOTO/GOSUB/RESTORE identifier
+		// ON n GOTO/GOSUB/RESTORE/CALL identifier
 		if(interpreter->pc->type != TokenIdentifier)
-			return ErrorExpectedLabel;
+		{
+			return TokenCALL?ErrorExpectedSubprogramName:ErrorExpectedLabel;
+		}
 		struct Token *tokenIdentifier = interpreter->pc;
 		++interpreter->pc;
 
-		// ON n GOTO/GOSUB/RESTORE identifier, identifier
+		// ON n GOTO/GOSUB/RESTORE/CALL identifier, identifier
 		while(interpreter->pc->type == TokenComma)
 		{
 			++interpreter->pc;
@@ -796,7 +798,7 @@ enum ErrorCode cmd_ON(struct Core *core)
 		{
 			struct JumpLabelItem *item = tok_getJumpLabel(&interpreter->tokenizer, tokenIdentifier->symbolIndex);
 			if(!item)
-				return ErrorUndefinedLabel;
+				return ErrorUndefinedSubprogram;
 			tokenGOTO->jumpToken = item->token;
 			if(interpreter->pass == PassRun)
 			{

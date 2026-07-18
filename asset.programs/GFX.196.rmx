@@ -1,4 +1,4 @@
-version$="0.193"
+version$="0.196"
 'offical graphics editor for Retro Game Creator (LowResRMX) for iOS
 'author: martin mauchauffee
 
@@ -7,8 +7,6 @@ version$="0.193"
 '2. the floating content where user can select characters or colors
 '3. the bottom toolbar where user can select tools and options
 
-'todo: is fltshow needed? flt -1 can be enough as long as oldflt is set, and it's a mess, fltshow is set to -1 but flt stay -1
-'fixme: I keep it, it's less CPU comsuption in raster
 'todo: add sentence on top of the file selector to indicate which type of file
 'todo: there is some `bg source beda` and some `bg source usraddr(layfile(3))`, who win?
 'todo: actually, it should never be `layfile(3)`
@@ -27,6 +25,7 @@ version$="0.193"
 'fixme: chared+paler floating content is too high, too many chars visible in the charalist
 'todo: is `attr %100001` usefull? I though remove prio
 'todo: remove `backed:` `chared:` ..., `neweditor=`
+'todo: remove goto/gosub ***_redraw from tbl_***, use ***changed instead
 
 files
 
@@ -205,7 +204,7 @@ kolx=0 :koly=0
 'fedselected= file has been selected
 global fedlife,fedscroll
 fedscroll=-8
-fedselected=0
+'fedselected=0
 fedtitle$=""
 
 'about palette editor or paled or pal
@@ -1202,14 +1201,9 @@ care=1
 
 lstchara=care
 
-'ask to change to a new editor
-'neweditor=0
-
 'ask to show the manual
 askmanual=0
-
 editor=2
-
 switch_editor:
 gosub switch
 
@@ -1279,7 +1273,9 @@ switch_backed:
   first=-1
   'call canoob
   'copy cara,$400 to $8000
-  fltcursor=abs(bedtool<>0)
+  bedtool=0
+  fltcursor=0
+  'fltcursor=abs(bedtool<>0)
   'trace "fltcursor",fltcursor
   'gosub flt_update
   return
@@ -1303,10 +1299,8 @@ switch_chared:
   return
 
 switch_filed:
-  editor=-editor
-  oldtlb=tlb
-  oldflt=flt
-  oldcnv=cnv
+  'to go back
+  oldtlb=tlb :oldflt=flt :oldcnv=cnv
   cnv=1 :cnvchanged=-1
   tlb=4 :tlbchanged=-1
   fltshow=0
@@ -2063,6 +2057,10 @@ sub v
   call canoob
 end sub
 
+
+
+
+
 ' bedold_draw:
 ' 'draw on canvas bedg=9
 '   'if released then bedg=0
@@ -2633,96 +2631,87 @@ ced_detectcell:
 ' 'pal#0 user's palette
 ' 'pal#4 ui cursor
 
-
-
 ' 'to avoid 100% CPU, during panning and redrawing the user's layers, backed use a progressive rendering that start from the center of the canvas, and expand until it reach the last visible cells of each layers.
 
-' backed:
-' trace "=backed"
-'   system 0,0 :font 0 :sprite view off
-'   'todo: should be set before
-'   editor=1
-'   ' neweditor=0
-'   first=-1
+sub bed_inf_scroll(x,y)
+  scroll 1,x,y
+  scroll 2,x,y
+  scroll 3,x,y
+end sub
 
-'   'call canoob
-'   'copy user's chara for first draw
-'   copy cara,$400 to $8000
-'   'TODO: other things should be copied too, I think
+sub bed_inf_world(l,t,w,h)
+  'todo: redo this to draw every layer
+  bg 3
+  bg source beda
+  bg copy l,t,w,h to l,t
+  energyredraw=0 :bedchanged=-1
+end sub
 
-'   fltcursor=abs(bedtool<>0)
-'   gosub flt_update
-
-' backed_loop:
-
-'   if askmanual then goto manual
-'   ' if neweditor=2 then goto chared
-'   ' if neweditor=-1 then goto filed
-'   if tlbchanged then gosub tlb_redraw
-'   if fltchanged then gosub flt_redraw
-'   if cnvchanged then gosub cnv_redraw
-
-'   call checkresize
-'   if resized then goto backed
-'   call gesture
-'   'detect interaction on each part
-'   gosub tlb_input
-'   'detect loaded files changed
-'   if usedfreed then
-'     usedfreed=0
-'     goto backed
-'   end if
-
-'   if flt>=0 then gosub flt_input
-'   gosub cnv_input
-'   gosub cnv_update
-
-'   'user's chara was selected from the charalist
-'   if lstchanged then
-'     trace "2713,lstchanged",lstchanged
-'     trace "bedtool",bedtool
-'     'disable copy or paste
-'     if bedtool=6 or bedtool=7 then bedtool=1
-'     lstchanged=0
-'     call ungesture
-'     if tlb=0 or tlb=1 or tlb=3 then bedtool=bedoldt
-'     if tlb=0 then
-'       gosub tlb_0_draw
-'       gosub tlb_0_pan
-'     else if tlb=1 then
-'       gosub tlb_1_repaint
-'     end if
-'   end if
-
-'   if kolchanged then
-'     kolchanged=0
-'     usrchanged(pallife)=-1
-'     call ungesture
-'     if tlb=5 then
-'       poke pcla+cole,kolcolor
-'     end if
-'   end if
-
-'   'file selector was requested from the bottom bar
-'   ' if tedchanged<0 then
-'   '   editor=tedchanged
-'   '   call ungesture
-'   '   goto filed
-'   ' end if
-'   'enable battery saving mode
-'   'system 0,energytool and energylist and energyfold and energyredraw
-
-'   wait vbl
-'   goto backed_loop
+sub bed_inf_oob(l,t,r,b)
+  pal oobp
+  bg fill l,t to r,b char oobc
+  energyredraw=0 :bedchanged=-1
+end sub
 
 bed_redraw:
 'redraw the layers entirely
-  gosub bed_limit
-  gosub bed_initrender
-  gosub bed_attr
+  infe=0
+  'infinite world boundaries
+  'todo: should compute by taking all active layer
+  infl=layl(3) :inft=layt(3)
+  infr=layr(3) :infb=layb(3)
+  'infinite camera dimension
+  infw=shownw
+  infh=tlbcurr-4
+  if fltshow then infh=fltcurr-4
+  'infinite camera margin
+  infml=safe.l+20
+  infmt=safe.t+20
+  infmr=safe.r+20
+  infmb=safe.b+20
+  'infinite world cells
+  infs=8*bedscale
+  'double background cells size
+  system 6,bedzoom
+  system 7,bedzoom
+  system 8,bedzoom
+  'infinite world space pixel
+  infpw=(infr-infl+1)*infs
+  infph=(infb-inft+1)*infs
+  'intitial camera position
+  if bedx=0 and bedy=0 then
+    infx=-(infw-infpw)/2
+    infy=-(infh-infph)/2
+    bedx=infx :bedy=infy
+  end if
+  gosub inf_prepare
+  'infinite view drawing cursor
+  infcl=(infpl+infpr)\2
+  infct=(infpt+infpb)\2
+  infcr=infcl-1
+  infcb=infct-1
+  'infinite out-of-bound drawing cursor
+  infol=infcl
+  infot=infct
+  infor=infcr
+  infob=infcb
+  gosub inf_position
+  bedchanged=-1
   return
 
+
+
+  ' gosub bed_limit
+  ' infx=bedx :infy=bedy
+  ' 'gosub inf_position
+  ' gosub bed_initrender
+  ' gosub bed_attr
+  ' return
+
 bed_update:
+  'recompute infinite camera dimension
+  infh=tlbcurr-4
+  if fltshow then infh=fltcurr-4
   'user's chara was selected from the charalist
   if lstchanged then
     trace "bed_update:lstchanged"
@@ -2740,47 +2729,55 @@ bed_update:
       gosub tlb_1_repaint
     end if
   end if
+
   'only redraw missing part of the layers
-  if bedchanged then gosub bed_uddraw
+  ' if bedchanged then gosub bed_uddraw
+  if bedchanged then gosub inf_draw
+
   if tlb=6 then gosub tlb_6_edit
   return
 
 'todo: is bed_limit called twice per frame?
 bed_limit:
-'make sure the canvas is visible
-  'compute space needed to show the selected layer
-  s=8*bedscale
-  w=layw(3)*s+safe.l+safe.r+40 :h=layh(3)*s+safe.t+safe.b+40
-  curr=tlbcurr-4
-  ' if flt>=0 and fltshow then curr=fltcurr-4
-  if fltshow then curr=fltcurr-4
-  if w>shownw then
-    l=layl(laye)*s-safe.l-20
-    r=(layr(laye)+1)*s-shownw+safe.r+20
-    'limit when panning right or left
-    if bedx<l then bedx=l
-    if bedx>r then bedx=r
-  else
-    'not enough space in width, center if
-    bedx=-(shownw-layw(3)*s)/2
-  end if
-  if h>curr then
-    t=layt(laye)*s-safe.t-20
-    b=(layb(laye)+1)*s-curr+safe.b+20
-    'limit when panning down or up
-    if bedy<t then bedy=t
-    if bedy>b then bedy=b
-  else
-    'not enough space in height, center it
-    'todo: safe.t is not used, it should
-    bedy=-(curr-layh(3)*s)/2
-  end if
-  scroll 1,bedx,bedy
-  scroll 2,bedx,bedy
-  scroll 3,bedx,bedy
+  infx=bedx :infy=bedy
+  gosub inf_position
+  bedx=infx :bedy=infy
   return
+' 'make sure the canvas is visible
+'   'compute space needed to show the selected layer
+'   s=8*bedscale
+'   w=layw(3)*s+safe.l+safe.r+40 :h=layh(3)*s+safe.t+safe.b+40
+'   curr=tlbcurr-4
+'   ' if flt>=0 and fltshow then curr=fltcurr-4
+'   if fltshow then curr=fltcurr-4
+'   if w>shownw then
+'     l=layl(laye)*s-safe.l-20
+'     r=(layr(laye)+1)*s-shownw+safe.r+20
+'     'limit when panning right or left
+'     if bedx<l then bedx=l
+'     if bedx>r then bedx=r
+'   else
+'     'not enough space in width, center if
+'     bedx=-(shownw-layw(3)*s)/2
+'   end if
+'   if h>curr then
+'     t=layt(laye)*s-safe.t-20
+'     b=(layb(laye)+1)*s-curr+safe.b+20
+'     'limit when panning down or up
+'     if bedy<t then bedy=t
+'     if bedy>b then bedy=b
+'   else
+'     'not enough space in height, center it
+'     'todo: safe.t is not used, it should
+'     bedy=-(curr-layh(3)*s)/2
+'   end if
+'   scroll 1,bedx,bedy
+'   scroll 2,bedx,bedy
+'   scroll 3,bedx,bedy
+'   return
 
 bed_initrender:
+trace "=bed_initrender"
 'initialize progressive renderer
   bedcl=0 :bedcr=0 :bedct=0 :bedcb=0
   gosub bed_initcanvas
@@ -2800,27 +2797,52 @@ bed_initrender:
     'bg source usraddr(layfile(3))
     bg source beda
   end if
+
   pal oobp :bg fill 0,0 to 63,63 char oobc
   bg copy bedpl,bedpt,bedpr-bedpl+1,bedpb-bedpt+1 to bedpl,bedpt
+
+  ' bedpl=(bedpl+bedpr)\2
+  ' bedpr=bedpl
+  ' bedpt=(bedpt+bedpb)\2
+  ' bedpb=bedpt
+
+  ' bedchanged=-1
+
   return
 
 bed_initcanvas:
+trace "=bed_initcanvas"
 'recompute the rect of visible cells for the canvas
   ol=bedcl :ot=bedct :orr=bedcr :ob=bedcb
   d=8
   if bedzoom then d=16
   bedcl=int(bedx/d) :bedct=int(bedy/d)
+  ' trace "bedcl",bedcl
   bedcr=int((bedx+shownw)/d)
+  'todo: should use curr?
   if fltshow then
     bedcb=int((bedy+fltcurr)/d)
   else
     bedcb=int((bedy+tlbcurr)/d)
   end if
+  ' trace "bedcr",bedcr
   if ol<>bedcl or ot<>bedct or orr<>bedcr or ob<>bedcb then energyredraw=0
   return
 
 bed_uddraw:
+trace "=bed_uddraw"
+  ' trace "==="
+  ' trace "scale",s
+  ' trace "bedxy",bedx,bedy
+  ' trace "viewwh",shownw,curr
+  ' trace "scroll",scroll.x(3),scroll.y(3)
+  ' trace "layltrb",layl(3),layt(3),layr(3),layb(3)
+  ' trace "bedcltrb",bedcl,bedct,bedcr,bedcb
+  ' trace "bedpltrb",bedpl,bedpt,bedpr,bedpb
+  ' trace "bedoltrb",bedol,bedot,bedor,bedob
+  ' wait tap
 'continue draw missing layer's cells until the whole canvas has been redraw
+' trace "bed_uddraw",bedcl,bedpl,bedpl,layl(3)
   energyredraw=1 :bedchanged=0
   bg 3
   'bg source usraddr(layfile(3))
@@ -2829,7 +2851,7 @@ bed_uddraw:
   'render missing cells at left
   if bedcl<bedpl and bedpl>layl(3) then
     dec bedpl :bedol=bedpl
-    'trace "left",timer
+    ' trace "left",timer
     if bedpr-bedpl>=64 then dec bedpr
     bedor=bedpr
     bg copy bedpl,bedpt,1,bedpb-bedpt+1 to bedpl,bedpt
@@ -2861,7 +2883,7 @@ bed_uddraw:
     energyredraw=0 :bedchanged=-1
   end if
   'render missing cells at top
-  if bedct<bedpt and bedpt>layt(3)  then
+  if bedct<bedpt and bedpt>layt(3) then
     dec bedpt :bedot=bedpt
     if bedpb-bedpt>=64 then dec bedpb
     bedob=bedpb
@@ -2905,17 +2927,26 @@ bed_pan_input:
     message str$(bed_ex)+","+str$(bed_ey)+" $"+hex$(bed_ex,2)+",$"+hex$(bed_ey,2)
     return
   end if
+  goto bed_handle_pan
+
+bed_handle_pan:
   energytool=1
-  if pressed and justed then
+  'if pressed and justed then
+  if tap then
     'store starting coordinates and old coordinates
     bedxs=bedx :bedys=bedy :bedox=bedx :bedoy=bedy
-  end if
-  if dragged then
+  'end if
+  'if dragged then
+  else if dragged then
     'compute pan distance
     bedx=bedxs-draggedx : bedy=bedys-draggedy
     gosub bed_limit
+    call bed_inf_scroll(infx,infy)
+    ' infx=bedx :infy=bedy
+    ' gosub inf_position
+    ' bedx=infx :bedy=infy
     if bedox<>bedx or bedoy<>bedy then
-      gosub bed_initcanvas
+      'gosub bed_initcanvas
       bedox=bedx :bedoy=bedy
       energytool=0 :bedchanged=-1
     end if
@@ -2927,9 +2958,9 @@ bed_pen_input:
   'if tapped then return
   energytool=1
   gosub bed_detectcell
-  if not beddrawn then return
   'check for out of layer
-  if bed_ex<laybgl or bed_ex>laybgr or bed_ey<laybgt or bed_ey>laybgb then return
+  if bed_ex<laybgl or bed_ex>laybgr or bed_ey<laybgt or bed_ey>laybgb then goto bed_handle_pan
+  if not beddrawn then return
   'check for out of background data
   if bed_ex<0 or bed_ex>=bedw or bed_ey<0 or bed_ey>=bedh then return
   if justed then gosub bed_attr
@@ -3088,6 +3119,8 @@ bed_detectcell:
       lx=x :ly=y
       beddrawn=-1
     end if
+  else
+    bed_ex=laybgl :bed_ey=laybgt
   end if
   return
 
@@ -3654,6 +3687,106 @@ flt_1_update:
   'return
 
 
+'================== infinitepan:
+
+'infe= call back mode
+'  =0 backed
+'  =1 sheeted
+
+'make sure the camera position allow to see the world and some of the out-of-bound characters around it.
+inf_position:
+  infnl=0
+  'in x axis
+  if infpw+infml+infmr>infw then
+    'world is bigger than the view
+    l=infl*infs-infml
+    r=(infr+1)*infs-infw+infmr
+    'prevent to past beyond
+    if infx<l then infx=l
+    if infx>r then infx=r
+  else
+    'world is small than the view, center it
+    infx=-(infw-infpw)/2
+  end if
+  'in y axis
+  if infph+infmt+infmb>infh then
+    'world is bigger than the view
+    t=inft*infs-infmt
+    b=(infb+1)*infs-infh+infmb
+    if infy<t then infy=t
+    if infy>b then infy=b
+  else
+    'world is small than the view, center it
+    infy=-(infh-infph)/2
+  end if
+  on infe call(infx,infy) bed_inf_scroll
+  goto inf_prepare
+
+inf_prepare:
+  'rectangle of the view, the portion of the visible world
+  'a.k.a.: view position in world-cell-coords
+  infpl=int(infx/infs)
+  infpt=int(infy/infs)
+  infpr=int((infx+infw)/infs)
+  infpb=int((infy+infh)/infs)
+  return
+
+inf_draw:
+  'render missing world cells at left
+  if infpl<infcl and infcl>infl then
+    dec infcl :infol=infcl
+    if infcr-infcl>=64 then dec infcr
+    infor=infcr
+    on infe call(infcl,infct,1,infcb-infct+1) bed_inf_world
+  'render missing out-of-bound cells at left
+  else if infpl<infol then
+    dec infol
+    if infor-infol>=64 then dec infor
+    infcr=min(infor,infr)
+    on infe call(infol,0,infol,63) bed_inf_oob
+  end if
+  'render missing cells at right
+  if infpr>infcr and infcr<infr then
+    inc infcr :infor=infcr
+    if infcr-infcl>=64 then inc infcl
+    infol=infcl
+    on infe call(infcr,infct,1,infcb-infct+1) bed_inf_world
+  'render missing out-of-bound cells at right
+  else if infpr>infor then
+    inc infor
+    if infor-infol>=64 then inc infol
+    infcl=max(infol,infl)
+    on infe call(infor,0,infor,63) bed_inf_oob
+  end if
+  'render missing cells at top
+  if infpt<infct and infct>inft then
+    dec infct :infot=infct
+    if infcb-infct>=64 then dec infcb
+    infob=infcb
+    on infe call(infcl,infct,infcr-infcl+1,1) bed_inf_world
+  'render missing out-of-bound cells at top
+  else if infpt<infot then
+    dec infot
+    if infob-infot>=64 then dec infob
+    infcb=min(infob,infb)
+    on infe call(0,infot,63,infot) bed_inf_oob
+  end if
+  'render missing cells at bottom
+  if infpb>infcb and infcb<infb then
+    inc infcb :infob=infcb
+    if infcb-infct>=64 then inc infct
+    infot=infct
+    on infe call(infcl,infcb,infcr-infcl+1,1) bed_inf_world
+  'render missing out-of-bound cells at bottom
+  else if infpb>infob then
+    inc infob
+    if infob-infot>=64 then inc infot
+    infct=max(infot,inft)
+    on infe call(0,infob,63,infob) bed_inf_oob
+  end if
+  return
+
+
 
 
 '====================== toolbar:
@@ -3738,15 +3871,16 @@ tlbg_dragging:
   return
 tlbg_folding:
 'vertical drag and (un)fold of the toolbar
+  if draggedy>-10 and draggedy<10 then draggedy=0
   tlbfold=int(clamp(draggedy+tlbfini,0,shownh-32-tlbstart))
   energyfold=0
   'limit and snap position
   if released then
     tlbg=0
     a=shownh-32-tlbstart
-    if draggedy>0 and tlbfold>=8 then
+    if draggedy>0 and tlbfold>=20 then
       tlbfold=a
-    else if draggedy<0 and tlbfold<a-8 then
+    else if draggedy<0 and tlbfold<a-20 then
       tlbfold=0
     else
       tlbfold=tlbfini
@@ -4101,6 +4235,7 @@ tlb_2_back: 'wid=0
       tlbchanged=-1
       flt=0 :fltshow=-1 :fltchanged=-1
       gosub bed_limit
+      call bed_inf_scroll(infx,infy)
     else if editor=2 then
       'go back to the previous toolbar
       if fedmode=1 then tlb=3
@@ -4373,24 +4508,23 @@ tlb_4_input:
   on wid goto tlb_4_back, tlb_4_select
 tlb_4_back: 'wid=0
 'cancel selection, go back to the previous toolbar
-  if tapped then
+  'if tapped then
     call ungesture
     trace "oldtlb",oldtlb
     fedlife=oldlife
     tlb=oldtlb :tlbchanged=-1
-    'flt=oldflt :fltchanged=-1
     cnv=oldcnv :cnvchanged=-1
-    ' neweditor=-editor
-  end if
+    trace "tlb",tlb
+  'end if
   return
 tlb_4_select: 'wid=1
 'confirm selection, go back to the previous toolbar
-  if tapped then
+  'if tapped then
     call ungesture
-    fedselected=-1
+    'fedselected=-1
     tlb=oldtlb :tlbchanged=-1
     cnv=oldcnv :cnvchanged=-1
-  end if
+  'end if
   return
 
 
@@ -4608,28 +4742,21 @@ tlb_7_input:
   on wid goto tlb_7_color, tlb_7_color, tlb_7_color, tlb_7_color, tlb_7_backed, tlb_7_pal, tlb_7_zoom, tlb_7_file, tlb_7_more
 tlb_7_backed: 'wid=4
 'switch to backed editor
-  ' if tapped then
-    call ungesture
-    goto switch_backed
-    ' cnv=0 :cnvchanged=-1
-    ' tlb=0 :tlbchanged=-1
-    ' flt=0 :fltchanged=-1
-    ' neweditor=1
-  ' end if
-  ' return
+  call ungesture
+  goto switch_backed
 tlb_7_color: 'wid=0..3
 'select one of the 4 colors of the current palette
-  if tapped then
+  'if tapped then
     call usecolor(wid)
     ' gosub flt_show
-  end if
+  'end if
   return
 tlb_7_pal: 'wid=5
 'show palette chooser
-  if tapped then
+  'if tapped then
     'todo: replace goto tlb_redraw by tlbchanged=-1
     call ungesture :tlb=3 :goto tlb_redraw
-  end if
+  'end if
   return
 tlb_7_zoom: 'wid=6
 'toogle zoom level

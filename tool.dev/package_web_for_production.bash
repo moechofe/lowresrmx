@@ -6,8 +6,44 @@ SOURCE_DIR="$ROOT/project.web/sources"
 TEMP_DIR="$ROOT/package/"
 PACKAGE_FILE="$ROOT/package.tar.xz"
 
+missing=0
+
+for cmd in readlink mkdir rm cp tar grep rg php node html-minifier-next google-closure-compiler; do
+	if ! command -v "$cmd" >/dev/null 2>&1; then
+		echo "error: required command not found: $cmd" >&2
+		missing=1
+	fi
+done
+
+# if [[ -z "${HOMEBREW_PREFIX:-}" ]]; then
+# 	echo "error: HOMEBREW_PREFIX is not set (needed to locate node_modules for minify_css.js)" >&2
+# 	missing=1
+# elif [[ ! -d "$HOMEBREW_PREFIX/lib/node_modules" ]]; then
+# 	echo "error: node modules directory not found: $HOMEBREW_PREFIX/lib/node_modules" >&2
+# 	missing=1
+# fi
+
+if [[ ! -f "$DIR/minify_css.js" ]]; then
+	echo "error: helper script not found: $DIR/minify_css.js" >&2
+	missing=1
+fi
+if [[ ! -d "$SOURCE_DIR" ]]; then
+	echo "error: source directory not found: $SOURCE_DIR" >&2
+	missing=1
+fi
+
+if [[ "$missing" -ne 0 ]]; then
+	echo "aborting: unmet requirements (see errors above)" >&2
+	exit 1
+fi
+
 mkdir -p "$TEMP_DIR"
 rm -rf "$TEMP_DIR/*"
+
+# Files produced by php/minifier/compiler passes below. Only these are scanned
+# for error markers at the end (copied assets like player.js legitimately
+# contain words such as "warning" and "undefined").
+GENERATED=()
 
 # # sitemap
 # echo "generating: sitemap.xml"
@@ -27,6 +63,7 @@ for file in entry.html player.html sign-in.html; do
 	--minify-css true \
 	--output="$TEMP_DIR/$file" \
 	"$SOURCE_DIR/$file"
+	GENERATED+=("$file")
 done
 
 # static HTML files
@@ -40,6 +77,7 @@ for file in list.html chat.html community.html documentation.html footer.html he
 	--minify-js true \
 	--minify-css true \
 	> "$TEMP_DIR/$file"
+	[[ "$file" == "message.html" ]] || GENERATED+=("$file")
 done \
 
 # CSS files
@@ -50,6 +88,7 @@ for file in chat.css community.css documentation.css entry.css footer.css header
 	| NODE_PATH=$HOMEBREW_PREFIX/lib/node_modules \
 	node $DIR/minify_css.js \
 	> "$TEMP_DIR/$file"
+	GENERATED+=("$file")
 done
 
 # JS files
@@ -61,10 +100,11 @@ for file in chat.js community.js entry.js help.js setting.js share.js show.js si
 	| google-closure-compiler \
 	|& grep -vi "The compiler is waiting for input via stdin" \
 	> "$TEMP_DIR/$file"
+	GENERATED+=("$file")
 done
 
 # PHP files
-for file in admin.php comment.php common.php download.php entry.php favicon.ico index.php list.php logo-white.png logo-colored.png pico.min.css player.php rank.php redis.php robots.txt score.php setting.php share.php sign.php token.php updrank.php upload.php markdown.php webhook.php; do
+for file in admin.php comment.php common.php download.php entry.php favicon.ico index.php list.php logo-white.png logo-colored.png pico.min.css player.php rank.php redis.php robots.txt score.php setting.php share.php sign.php token.php updrank.php upload.php markdown.php webhook.php image.php; do
 	echo "copying: $file"
 	cp "$SOURCE_DIR/$file" "$TEMP_DIR/$file"
 done
@@ -74,6 +114,23 @@ for file in player.wasm player.js; do
 	echo "copying: $file"
 	cp "$SOURCE_DIR/$file" "$TEMP_DIR/$file"
 done
+
+# Verify generated files: intercept error markers leaked by php / the
+# minifier / the closure compiler into the output before packaging.
+echo "verifying: ${#GENERATED[@]} generated files"
+ERROR_MARKERS='PHP (Warning|Notice|Deprecated|Fatal error|Parse error)|(Fatal|Parse) error:|Uncaught |Stack trace|Xdebug|command not found|\[JSC_|[1-9][0-9]* error\(s\)| in .* on line [0-9]+'
+found_errors=0
+for file in "${GENERATED[@]}"; do
+	if [[ ! -s "$TEMP_DIR/$file" ]]; then
+		echo "error: generated file is empty (a pass likely failed): $file" >&2
+		found_errors=1
+	elif rg -n -i -e "$ERROR_MARKERS" "$TEMP_DIR/$file"; then
+		echo "error: error marker found in generated file: $file" >&2
+		found_errors=1
+	fi
+done
+
+[[ "$found_errors" -ne 0 ]] && exit 1
 
 # Create the package
 echo "packaging: $PACKAGE_FILE"
@@ -105,6 +162,7 @@ pico.min.css \
 about.html about.css about.js \
 documentation.html documentation.css \
 player.php player.css player.html player.js player.wasm \
+image.php \
 robots.txt
 
 # sitemap.xml
