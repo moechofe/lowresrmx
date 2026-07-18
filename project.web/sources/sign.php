@@ -5,6 +5,8 @@ require_once __DIR__.'/token.php';
 
 if(preg_match('/^\/google$/',$urlPath)&&$isGet&&!empty($_GET['code'])&&!empty($_GET['state']))
 {
+	if(!validateLoginState($_GET['state'])) forbidden("Fail to validate state binding");
+	clearLoginState();
 	$state=hex2bin($_GET['state']);
 	if(!redis()->exists("l:$state")) forbidden("Fail to validate state");
 
@@ -97,6 +99,7 @@ elseif(preg_match('/^\/google$/',$urlPath)&&$isGet)
 		$uptoken="";
 
 	redis()->set("l:$state",$uptoken,"ex",LOGIN_GOOGLE_TTL);
+	setLoginState(bin2hex($state),LOGIN_GOOGLE_TTL);
 
 	$config=json_decode(file_get_contents("https://accounts.google.com/.well-known/openid-configuration"),true);
 
@@ -114,6 +117,8 @@ elseif(preg_match('/^\/google$/',$urlPath)&&$isGet)
 
 if(preg_match('/^\/discord$/',$urlPath)&&$isGet&&!empty($_GET['code'])&&!empty($_GET['state']))
 {
+	if(!validateLoginState($_GET['state'])) forbidden("Fail to validate state binding");
+	clearLoginState();
 	$state=hex2bin($_GET['state']);
 	if(!redis()->exists("l:$state")) forbidden("Fail to validate state");
 
@@ -206,6 +211,7 @@ elseif(preg_match('/^\/discord$/',$urlPath)&&$isGet)
 		$uptoken="";
 
 	redis()->set("l:$state",$uptoken,"ex",LOGIN_DISCORD_TTL);
+	setLoginState(bin2hex($state),LOGIN_DISCORD_TTL);
 
 	$auth_request="https://discord.com/oauth2/authorize?".http_build_query([
 		'client_id'=>DISCORD_CLIENT_ID,
@@ -223,6 +229,8 @@ elseif(preg_match('/^\/discord$/',$urlPath)&&$isGet)
 elseif(preg_match('/^\/github$/',$urlPath)&&$isGet&&!empty($_GET['code'])&&!empty($_GET['state']))
 {
 	// error_log("State: ".json_encode($_GET['state']));
+	if(!validateLoginState($_GET['state'])) forbidden("Fail to validate state binding");
+	clearLoginState();
 	$state=hex2bin($_GET['state']);
 	if(!redis()->exists("l:$state")) forbidden("Fail to validate state");
 
@@ -324,6 +332,7 @@ elseif(preg_match('/^\/github$/',$urlPath)&&$isGet)
 		$uptoken="";
 
 	redis()->set("l:$state",$uptoken,"ex",LOGIN_GITHUB_TTL);
+	setLoginState(bin2hex($state),LOGIN_GITHUB_TTL);
 
 	$auth_request="https://github.com/login/oauth/authorize?".http_build_query([
 		'client_id'=>GITHUB_CLIENT_ID,

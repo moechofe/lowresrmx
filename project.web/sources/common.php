@@ -14,6 +14,7 @@ const HEADER_TOKEN='X-Application-Token';
 const HEADER_FILE_TYPE='X-Application-Type';
 const HEADER_SESSION='X-Application-Session'; // TODO: should be removed, I'm using cookies now
 const HEADER_SESSION_COOKIE='sid'; // Sauce: https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies
+const HEADER_STATE_COOKIE='ost'; // OAuth state, bound to the browser to prevent login CSRF
 const HEADER_ADMIN_ACCESS='X-Application-Request';
 const HEADER_SCAN_CURSOR='X-Application-Cursor';
 
@@ -165,6 +166,41 @@ function validateCSRF(string $stored_token):bool
 	if(!$submitted_token) return false;
 	if(strlen($stored_token)!==strlen($submitted_token)) return false;
 	return hash_equals($stored_token,$submitted_token);
+}
+
+// OAuth login CSRF protection: bind the `state` to the visitor's browser via a cookie.
+// SameSite must be Lax (not Strict) so the cookie survives the provider's cross-site redirect back.
+function setLoginState(string $hex_state,int $ttl):void
+{
+	global $isHttps;
+	setcookie(HEADER_STATE_COOKIE,$hex_state,[
+		'expires'=>time()+$ttl,
+		'path'=>'/',
+		'domain'=>'',
+		'secure'=>$isHttps,
+		'httponly'=>true,
+		'samesite'=>'Lax',
+	]);
+}
+
+function validateLoginState(string $hex_state):bool
+{
+	$cookie=(string)(@$_COOKIE[HEADER_STATE_COOKIE]);
+	if($cookie==='' || $hex_state==='') return false;
+	return hash_equals($cookie,$hex_state);
+}
+
+function clearLoginState():void
+{
+	global $isHttps;
+	setcookie(HEADER_STATE_COOKIE,"",[
+		'expires'=>time()-3600,
+		'path'=>'/',
+		'domain'=>'',
+		'secure'=>$isHttps,
+		'httponly'=>true,
+		'samesite'=>'Lax',
+	]);
 }
 
 function checkRateLimit(string $action,string $identifier):bool
