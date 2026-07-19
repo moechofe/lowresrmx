@@ -246,7 +246,6 @@
 		9294F2E21FC4BA1100A90487 /* CoreWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9294F2E11FC4BA1100A90487 /* CoreWrapper.swift */; };
 		92A001CF243780DD007AE953 /* ActionButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A001CE243780DD007AE953 /* ActionButton.swift */; };
 		92A7E148223B8EBC00ED2487 /* ShareActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A7E147223B8EBC00ED2487 /* ShareActivity.swift */; };
-		92A7E14B223B91FD00ED2487 /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A7E149223B91FD00ED2487 /* ShareViewController.swift */; };
 		92A7E14E223BCD0F00ED2487 /* URLRequest+Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A7E14D223BCD0F00ED2487 /* URLRequest+Utils.swift */; };
 		92BB14C1244B0FC700611F01 /* CoreStatsWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92BB14C0244B0FC700611F01 /* CoreStatsWrapper.swift */; };
 		92D1EFDB25278145007CC96B /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92D1EFDA25278145007CC96B /* APIClient.swift */; };
@@ -472,7 +471,6 @@
 		9294F2E11FC4BA1100A90487 /* CoreWrapper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CoreWrapper.swift; sourceTree = "<group>"; };
 		92A001CE243780DD007AE953 /* ActionButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActionButton.swift; sourceTree = "<group>"; };
 		92A7E147223B8EBC00ED2487 /* ShareActivity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareActivity.swift; sourceTree = "<group>"; };
-		92A7E149223B91FD00ED2487 /* ShareViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareViewController.swift; sourceTree = "<group>"; };
 		92A7E14D223BCD0F00ED2487 /* URLRequest+Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "URLRequest+Utils.swift"; sourceTree = "<group>"; };
 		92BB14C0244B0FC700611F01 /* CoreStatsWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreStatsWrapper.swift; sourceTree = "<group>"; };
 		92D1EFDA25278145007CC96B /* APIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIClient.swift; sourceTree = "<group>"; };
@@ -846,7 +844,6 @@
 			isa = PBXGroup;
 			children = (
 				92A7E147223B8EBC00ED2487 /* ShareActivity.swift */,
-				92A7E149223B91FD00ED2487 /* ShareViewController.swift */,
 				9234247422C3FACC002431CD /* ClearRamActivity.swift */,
 			);
 			path = Activities;
@@ -1244,7 +1241,6 @@
 				923AFD7D1F77ED52002F6A5B /* HelpContent.m in Sources */,
 				5B34ED722AC5835600220A80 /* startup_sequence.c in Sources */,
 				9234247522C3FACC002431CD /* ClearRamActivity.swift in Sources */,
-				92A7E14B223B91FD00ED2487 /* ShareViewController.swift in Sources */,
 				5B34ED482AC5835600220A80 /* cmd_screen.c in Sources */,
 				923AFD801F77ED52002F6A5B /* HelpTableViewController.m in Sources */,
 				924AB3F2205D986C00BCF977 /* IndexSideBar.swift in Sources */,
