@@ -47,11 +47,7 @@
 
     > For debian 12: sudo pecl install -f libsodium
 
-5. Install markdown extensions:
-
-    pecl install markdown
-
-6. Enable extensions for php cli on Ubuntu:
+5. Enable extensions for php cli on Ubuntu:
 
     ```bash
     cat /etc/php/8.3/cli/conf.d/30-lowresrmx.ini
@@ -61,6 +57,7 @@
     extension=phpiredis.so
     extension=sodium.so
     extension=zstd.so
+    extension=xml.so
     ```
 
 7. Check for loaded extensions:
@@ -70,6 +67,7 @@
     php -i | grep redis
     php -i | grep sodium
     php -i | grep zstd
+    php -i | grep xml
     ```
 
 Create and fill the `sources/private.php` file using the given `private.sample.php`
