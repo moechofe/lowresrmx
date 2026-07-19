@@ -70,7 +70,7 @@ if(preg_match("/\/($MATCH_ENTRY_TOKEN)\/(\d+)$/",$urlPath,$matches)&&$isGet)
 	if($skip<0) badRequest("Fail to read skip");
 
 	// Build comments list
-	$list=redis()->lrange("f:$first_id:c",$skip,10);
+	$list=redis()->lrange("f:$first_id:c",$skip,$skip+10);
 	$comments=[];
 	foreach($list as $cid)
 	{
