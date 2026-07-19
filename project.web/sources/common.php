@@ -56,6 +56,12 @@ const POINTS_GIVEN=[
 	'update_after_week'=>30, // maxed out at 90 points
 ];
 
+// Ranking (Reddit-style "hot"): score = log10(points) + (ct - RANK_EPOCH) / RANK_WINDOW
+// The time term is a FIXED creation offset, so a score only changes when points
+// change and never needs decay recomputation. Higher = hotter (read via zrevrange).
+const RANK_EPOCH=1704067200; // 2024-01-01 UTC, the site "day zero"
+const RANK_WINDOW=250000;    // seconds worth one order-of-magnitude of points (~2.9 days)
+
 const APPLE_APP_STORE="https://apps.apple.com/us/app/retro-game-creator/id6759056723";
 
 const RATE_LIMIT=[

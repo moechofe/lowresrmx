@@ -197,6 +197,7 @@ if(preg_match('/\/publish$/',$urlPath)&&$isPost)
 		"comm",0,
 		"w",$where,
 		"ut",date(DATE_ATOM),
+		"ct",date(DATE_ATOM),
 	);
 
 	// Update the rank of the post
@@ -275,6 +276,7 @@ if(preg_match('/\/post$/',$urlPath)&&$isPost)
 		"comm",0,
 		"w",$where,
 		"ut",date(DATE_ATOM),
+		"ct",date(DATE_ATOM),
 	);
 
 	// Update the rank of the post

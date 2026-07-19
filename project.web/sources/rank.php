@@ -4,12 +4,17 @@ function updRank(string $first_id):int
 {
 	$members=hgetall(redis()->hgetall("r:$first_id:d"));
 	$where=$members['w'];
-	$ut=date_create($members['ut']);
-	// fallback from old version of the rank system
-	if(empty($ut)) $ut=date_create($members['ct']);
 
-	$diff=date_diff($ut,date_create());
-	$age=(int)$diff->days*24+(int)$diff->h;
+	// Time term: the FIXED creation time, so the score only changes when the
+	// points change (Reddit-style "hot"). Migrate legacy entries that only
+	// stored "ut" by pinning their creation time once.
+	$ct=$members['ct']??null;
+	if(empty($ct))
+	{
+		$ct=$members['ut']??date(DATE_ATOM);
+		redis()->hset("r:$first_id:d","ct",$ct);
+	}
+	$t=strtotime($ct)-RANK_EPOCH;
 
 	// Compute the points
 	$points=0
@@ -18,9 +23,9 @@ function updRank(string $first_id):int
 	+POINTS_GIVEN['comment']*$members['comm']
 	;
 
-	// Compute the rank
-	$rank=($points-1)/(pow($age+2,1.8));
-	if ($rank<0.0001) $rank=0;
+	// Compute the rank: log-magnitude of points plus a fixed time offset. This
+	// value is independent of "now", so it never needs decay recomputation.
+	$rank=log10(max($points,1))+$t/RANK_WINDOW;
 
 	// Update the score
 	redis()->hset("r:$first_id:d","pts",$points);

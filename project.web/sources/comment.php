@@ -38,8 +38,8 @@ if(preg_match("/\/($MATCH_ENTRY_TOKEN)\/comment$/",$urlPath,$matches)&&$isPost)
 		"author",$author,
 	);
 
-	// Update date
-	redis()->hset("r:$first_id:f",
+	// Update the display date only; rank time is fixed at creation (see updRank)
+	redis()->hset("f:$first_id:f",
 		"ut",date(DATE_ATOM),
 	);
 
