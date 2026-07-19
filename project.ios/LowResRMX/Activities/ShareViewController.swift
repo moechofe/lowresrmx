@@ -52,7 +52,7 @@ class ShareViewController: UIViewController, WKNavigationDelegate
 		activityView.sizeToFit()
 		navigationItem.rightBarButtonItem = UIBarButtonItem(customView: activityView)
 
-		let url = URL(string: "\(AppDelegate.baseURL)/share.html")!
+		let url = URL(string: "\(AppDelegate.baseURL)/share.html?r=app")!
 		let urlRequest = URLRequest(url: url)
 		webView.load(urlRequest)
 	}

@@ -305,6 +305,8 @@ const setupShareList=()=>{
 			});
 		});
 
+		const publish=
+
 		on(list,'ask_to_publish',(event)=>{
 			publish_dialog(event.detail.pid,event.detail.name,(pid)=>{
 				window.location.href=`./${encodeURIComponent(pid)}.html`;
@@ -316,6 +318,12 @@ const setupShareList=()=>{
 				window.location.href=`./${encodeURIComponent(pid)}.html`;
 			});
 		});
+
+		const search=new URLSearchParams(document.location.search);
+		if(search.get('uid')!=null && search.get('name')!=null)
+			publish_dialog(search.get('uid'),search.get('name'),(pid)=>{
+				window.location.href=`./${encodeURIComponent(pid)}.html`;
+			});
 	})
 	.catch((_)=>{});
 };
