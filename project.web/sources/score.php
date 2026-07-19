@@ -42,12 +42,3 @@ if(preg_match("/^\/($MATCH_ENTRY_TOKEN)\/vote$/",$urlPath,$matches)&&$isGet)
 	]);
 	exit;
 }
-
-// if(preg_match("/^\/updrank$/",$urlPath)&&$isGet&&@getallheaders()[HEADER_ADMIN_ACCESS]===ADMIN_ACCESS_SECRET)
-// {
-// 	require_once __DIR__.'/updrank.php';
-
-// 	header("Content-Type: application/json",true);
-// 	echo json_encode(intval($new_cursor));
-// 	exit;
-// }

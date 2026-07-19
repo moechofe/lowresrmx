@@ -39,7 +39,7 @@ if(preg_match("/\/($MATCH_ENTRY_TOKEN)\/comment$/",$urlPath,$matches)&&$isPost)
 	);
 
 	// Update date
-	redis()->hset("f:$first_id:f",
+	redis()->hset("r:$first_id:f",
 		"ut",date(DATE_ATOM),
 	);
 
