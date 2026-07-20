@@ -6,7 +6,7 @@
 1. Install for Ubuntu:
 
     ```bash
-    sudo apt install nginx-full php8.3-cli php8.3-dev build-essential php8.3-mbstring libsodium-dev libzstd-dev redis-server redis-tools
+    sudo apt install nginx-full php8.4-xml php8.4-cli php8.4-dev build-essential php8.4-mbstring libsodium-dev libzstd-dev redis-server redis-tools
     ```
 
 2. Build and install [HIREDIS](https://github.com/redis/hiredis) from source:

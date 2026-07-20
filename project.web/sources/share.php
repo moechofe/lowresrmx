@@ -55,7 +55,7 @@ if(preg_match('/^\/share$/',$urlPath)&&$isGet)
 	redis()->del("t:$uptoken");
 
 	header("X-Robots-Tag: noindex", true);
-	header("Location: /share.html?uid={rawurlencode($program_id)}&name={rawurlencode(name)}");
+	header("Location: /share.html");
 	exit;
 }
 

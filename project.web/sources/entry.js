@@ -124,7 +124,7 @@ const setupEntry=()=>{
 	on(open,'click',()=>{
 		const id=dataget(open,'id');
 		const name=dataget(open,'name');
-		if(id && name) window.open(`<?=APP_SCHEME?>\/\/?i=${encodeURIComponent(id)}&n=${encodeURIComponent(name)}`);
+		if(id && name) window.location.href=`<?=APP_SCHEME?>\/\/?i=${encodeURIComponent(id)}&n=${encodeURIComponent(name)}`;
 	});
 	const player=query('#player');
 	on(player,'click',()=>{
