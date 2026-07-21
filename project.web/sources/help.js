@@ -7,18 +7,18 @@
 	require_once __DIR__.'/dom.js';
 	require_once __DIR__.'/common.js';
 	require_once __DIR__.'/list.js';
+	require_once __DIR__.'/notification.js';
 ?>
 
 const post_dialog=setupPostDialog('help');
 
+/** @type {function():Promise<HTMLElement>} */
 const setupChatList=()=>{
 	get('latest?w=help').then((ans)=>{
 		if(!ans.ok) return Promise.reject("");
 		return ans.json();
 	}).then((list)=>{
 		return setupPostList(list,{isPost:true,isHelp:true});
-	}).then(/** @param {!Array<!ProgramItem>} list */(list)=>{
-		// console.log(list);
 	});
 };
 
@@ -30,8 +30,12 @@ const setupNewTopic=()=>{
 	});
 };
 
-setupSign();
-setupChatList();
+Promise.all([
+	setupSign().then(retrieveNotifMaybe),
+	setupChatList()
+]).then((args)=>{
+	if(args[1]) injectNotifMarker(args[1]);
+});
 setupNewTopic();
 
 });

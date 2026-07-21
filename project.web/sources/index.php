@@ -19,6 +19,7 @@ require_once __DIR__.'/list.php';
 require_once __DIR__.'/entry.php';
 require_once __DIR__.'/comment.php';
 require_once __DIR__.'/score.php';
+require_once __DIR__.'/notification.php';
 
 require_once __DIR__.'/image.php';
 

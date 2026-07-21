@@ -134,6 +134,7 @@ const setupProgramList=(prg_list,config)=>{return new Promise(async(res,rej)=>{
  * @event ask_to_delete {pid:string,name:string} When the user wants to delete a program.
  */
 const setupPostList=(prg_list,config)=>{return new Promise(async(res,rej)=>{
+	console.log("setupPostList");
 	const item_tpl=query('#post-item');
 	const list=query('.post-list');
 
@@ -169,6 +170,7 @@ const setupPostList=(prg_list,config)=>{return new Promise(async(res,rej)=>{
 	// List container
 	list.append.apply(list,items);
 
+	console.log("setupPostList",list);
 	res(list);
 })};
 

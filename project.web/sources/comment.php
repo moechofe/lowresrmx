@@ -25,7 +25,8 @@ if(preg_match("/\/($MATCH_ENTRY_TOKEN)\/comment$/",$urlPath,$matches)&&$isPost)
 	$status=redis()->hget("f:$first_id:f","status");
 	if($status==="banned") badRequest("Fail to validate entry");
 
-	$author=redis()->hget("u:$user_id","name");
+	$author=redis()->hget("u:$user_id","author");
+	if(empty($author)) $author=redis()->hget("u:$user_id","name");
 	$author=substr($author,0,MAX_AUTHOR_NAME);
 	$text=zstd_compress($text);
 
@@ -51,6 +52,13 @@ if(preg_match("/\/($MATCH_ENTRY_TOKEN)\/comment$/",$urlPath,$matches)&&$isPost)
 
 	// Give points to the user for the comment
 	redis()->hincrby("r:$first_id:d","comm",1);
+
+	// Record activity on the post
+	redis()->hset("r:$first_id:d","at",time());
+	redis()->zadd("u:$user_id:n",time(),$first_id);
+	redis()->zremrangebyrank("u:$user_id:n",0,-51);
+	redis()->expire("u:$user_id:n",NOTIF_TTL);
+	redis()->set("u:$user_id:t",time());
 
 	updRank($first_id);
 

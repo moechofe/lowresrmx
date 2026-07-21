@@ -23,6 +23,7 @@ const LOGIN_GOOGLE_TTL=60*5; // 5 minutes
 const LOGIN_DISCORD_TTL=60*5; // 5 minutes
 const LOGIN_GITHUB_TTL=60*5; // 5 minutes
 const SESSION_TTL=60*60*24*30; // 30 days
+const NOTIF_TTL=60*60*24*90; // 90 days
 
 defined('CONTENT_FOLDER') or define('CONTENT_FOLDER',__DIR__.'/../contents/');
 defined('REDIS_SCAN_CURSOR_FILE') or define('REDIS_SCAN_CURSOR_FILE',"./.updrank_cursor");
@@ -69,6 +70,7 @@ const RATE_LIMIT=[
 	'post'=>['max'=>10,'window'=>60*60],    // 10 posts per hour
 	'comment'=>['max'=>30,'window'=>60*60], // 30 comments per hour
 	'vote'=>['max'=>100,'window'=>60*60],   // 100 votes per hour
+	'notif'=>['max'=>120,'window'=>60],     // 120 notification checks per minute
 	'upload'=>['max'=>60,'window'=>60*60],  // 60 uploads per hour
 	'share'=>['max'=>20,'window'=>60*60],   // 20 shares per hour
 	'search'=>['max'=>100,'window'=>60],    // 100 searches per minute

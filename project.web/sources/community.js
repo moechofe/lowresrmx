@@ -7,20 +7,24 @@
 	require_once __DIR__.'/dom.js';
 	require_once __DIR__.'/common.js';
 	require_once __DIR__.'/list.js';
+	require_once __DIR__.'/notification.js';
 ?>
 
+/** @type {function():Promise<HTMLElement>} */
 const setupCommunityList=()=>{
-	get('ranked').then((ans)=>{
+	return get('ranked').then((ans)=>{
 		if(!ans.ok) return Promise.reject("");
 		return ans.json();
 	}).then((list)=>{
 		return setupProgramList(list,{isPost:true,isHome:true});
-	}).then(/** @param {!Array<!ProgramItem>} list */(list)=>{
-		// console.log(list);
 	});
 };
 
-setupSign();
-setupCommunityList();
+Promise.all([
+	setupSign().then(retrieveNotifMaybe),
+	setupCommunityList()
+]).then((args)=>{
+	if(args[1]) injectNotifMarker(args[1]);
+});
 
 });

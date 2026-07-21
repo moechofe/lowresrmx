@@ -119,10 +119,24 @@
 
     > Used to have a custom URL on the website must be unique. -->
 
-<!-- TODO: design
-- _(list)_ `"u:USER_ID:n"` user's notification `USER_CONTENT`
+#### Notification related
 
-    `USER_CONTENT`: `TYPE`":"`ID` -->
+> Notifications are computed on read (pull model): a post is "unseen" for a user
+> when its activity time `r:ENTRY_TOKEN_ID:d["at"]` is newer than the user's
+> watermark `"u:USER_ID:t"`. Nothing is stored per notification, so unseen state
+> is discarded automatically.
+
+- _(zset)_ `"u:USER_ID:n"` posts the user is involved in (authored or commented) **TTL**
+
+    - _(str)_ `[…]` `ENTRY_TOKEN_ID`
+
+    With score being the unix time of the last involvement.
+    Capped to the newest 50 members; TTL refreshed on each write.
+
+- _(str)_ `"u:USER_ID:t"` unix timestamp the notifications were last checked
+
+    Advanced to `now` whenever the user acts (publish, comment, upvote) or fetches
+    `GET /notif`, so a user is never notified of their own activity.
 
 <!-- TODO: design
 #### Image related
@@ -155,6 +169,7 @@
     - _(str)_ `["w"]` WHERE_ID of the forum
     - _(str)_ `["ct"]` ATOM timestamp for creation time
     - _(str)_ `["ut"]` ATOM timestamp for update time
+    - _(int)_ `["at"]` unix timestamp of last activity (comment or upvote), for notifications
 
 #### Admin related
 

@@ -198,7 +198,14 @@ if(preg_match('/\/publish$/',$urlPath)&&$isPost)
 		"w",$where,
 		"ut",date(DATE_ATOM),
 		"ct",date(DATE_ATOM),
+		"at",time(),
 	);
+
+	// Notification: author is involved in this post; mark own activity as seen
+	redis()->zadd("u:{$user_id}:n",time(),$first_id);
+	redis()->zremrangebyrank("u:{$user_id}:n",0,-51);
+	redis()->expire("u:{$user_id}:n",60*60*24*90);
+	redis()->set("u:{$user_id}:t",time());
 
 	// Update the rank of the post
 	updRank($first_id);
@@ -277,7 +284,14 @@ if(preg_match('/\/post$/',$urlPath)&&$isPost)
 		"w",$where,
 		"ut",date(DATE_ATOM),
 		"ct",date(DATE_ATOM),
+		"at",time(),
 	);
+
+	// Notification: author is involved in this post; mark own activity as seen
+	redis()->zadd("u:{$user_id}:n",time(),$first_id);
+	redis()->zremrangebyrank("u:{$user_id}:n",0,-51);
+	redis()->expire("u:{$user_id}:n",60*60*24*90);
+	redis()->set("u:{$user_id}:t",time());
 
 	// Update the rank of the post
 	updRank($first_id);
