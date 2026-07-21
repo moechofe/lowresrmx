@@ -8,7 +8,7 @@ PACKAGE_FILE="$ROOT/package.tar.xz"
 
 missing=0
 
-for cmd in readlink mkdir rm cp tar grep rg php node html-minifier-next google-closure-compiler; do
+for cmd in readlink mkdir rm cp tar grep rg php node html-minifier-next google-closure-compiler xargs; do
 	if ! command -v "$cmd" >/dev/null 2>&1; then
 		echo "error: required command not found: $cmd" >&2
 		missing=1
@@ -38,82 +38,103 @@ if [[ "$missing" -ne 0 ]]; then
 fi
 
 mkdir -p "$TEMP_DIR"
-rm -rf "$TEMP_DIR/*"
+rm -rf "${TEMP_DIR:?}"/*
+
+# File lists per pass. Declared once so both the parallel job dispatch and the
+# GENERATED verification list are built from the same source of truth.
+DYN_HTML=(entry.html player.html sign-in.html)
+STATIC_HTML=(list.html chat.html community.html documentation.html footer.html header.html help.html maintenance.html message.html privacy-policy.html setting.html share.html show.html terms-of-service.html about.html)
+CSS_FILES=(chat.css community.css documentation.css entry.css footer.css header.css help.css list.css setting.css share.css show.css sign-in.css player.css about.css)
+JS_FILES=(chat.js community.js entry.js help.js setting.js share.js show.js sign-in.js about.js)
+PHP_FILES=(admin.php comment.php common.php download.php entry.php favicon.ico index.php list.php logo-white.png logo-colored.png pico.min.css player.php rank.php redis.php robots.txt score.php setting.php share.php sign.php token.php updrank.php upload.php markdown.php webhook.php image.php notification.php)
+WASM_FILES=(player.wasm player.js)
 
 # Files produced by php/minifier/compiler passes below. Only these are scanned
 # for error markers at the end (copied assets like player.js legitimately
-# contain words such as "warning" and "undefined").
+# contain words such as "warning" and "undefined"). Built from the arrays above:
+# every generated file except message.html (which may be empty by design).
 GENERATED=()
-
-# # sitemap
-# echo "generating: sitemap.xml"
-# php "$ROOT/tool.dev/generate_sitemap_xml.php" \
-# |& grep -vi "is already loaded in unknown on line 0" \
-# | html-minifier-next \
-# --collapse-whitespace \
-# > "$TEMP_DIR/sitemap.xml"
-
-# dynamic HTML files
-for file in entry.html player.html sign-in.html; do
-	echo "minifying: $file"
-	html-minifier-next \
-	--collapse-whitespace \
-	--remove-comments \
-	--minify-js true \
-	--minify-css true \
-	--output="$TEMP_DIR/$file" \
-	"$SOURCE_DIR/$file"
-	GENERATED+=("$file")
-done
-
-# static HTML files
-for file in list.html chat.html community.html documentation.html footer.html header.html help.html maintenance.html message.html privacy-policy.html setting.html share.html show.html terms-of-service.html about.html; do
-	echo "minifying: $file"
-	php "$SOURCE_DIR/$file" \
-	|& grep -vi "is already loaded in unknown on line 0" \
-	| html-minifier-next \
-	--collapse-whitespace \
-	--remove-comments \
-	--minify-js true \
-	--minify-css true \
-	> "$TEMP_DIR/$file"
+GENERATED+=("${DYN_HTML[@]}")
+for file in "${STATIC_HTML[@]}"; do
 	[[ "$file" == "message.html" ]] || GENERATED+=("$file")
-done \
-
-# CSS files
-for file in chat.css community.css documentation.css entry.css footer.css header.css help.css list.css setting.css share.css show.css sign-in.css player.css about.css; do
-	echo "minifying: $file"
-	php "$SOURCE_DIR/$file" \
-	|& grep -v "is already loaded in Unknown on line 0" \
-	| NODE_PATH=$HOMEBREW_PREFIX/lib/node_modules \
-	node $DIR/minify_css.js \
-	> "$TEMP_DIR/$file"
-	GENERATED+=("$file")
 done
+GENERATED+=("${CSS_FILES[@]}")
+GENERATED+=("${JS_FILES[@]}")
 
-# JS files
-for file in chat.js community.js entry.js help.js setting.js share.js show.js sign-in.js about.js; do
-	echo "compiling: $file"
-	2>/dev/null \
-	php "$SOURCE_DIR/$file" \
-	|& grep -vi "is already loaded in unknown on line 0" \
-	| google-closure-compiler \
-	|& grep -vi "The compiler is waiting for input via stdin" \
-	> "$TEMP_DIR/$file"
-	GENERATED+=("$file")
-done
+# One job per file. Each pipeline is verbatim from the original serial version;
+# only the driver changed. run_job is exported and invoked once per file by the
+# xargs pool below, so pipelines run concurrently. Each writes its own output
+# file in $TEMP_DIR, so parallel stdout never collides (only the progress echoes
+# interleave, which is cosmetic).
+run_job() {
+	local type="$1" file="$2"
+	case "$type" in
+	dyn)
+		echo "minifying: $file"
+		html-minifier-next \
+		--collapse-whitespace \
+		--remove-comments \
+		--minify-js true \
+		--minify-css true \
+		--output="$TEMP_DIR/$file" \
+		"$SOURCE_DIR/$file"
+		;;
+	html)
+		echo "minifying: $file"
+		php "$SOURCE_DIR/$file" \
+		|& grep -vi "is already loaded in unknown on line 0" \
+		| html-minifier-next \
+		--collapse-whitespace \
+		--remove-comments \
+		--minify-js true \
+		--minify-css true \
+		> "$TEMP_DIR/$file"
+		;;
+	css)
+		echo "minifying: $file"
+		php "$SOURCE_DIR/$file" \
+		|& grep -v "is already loaded in Unknown on line 0" \
+		| NODE_PATH=$HOMEBREW_PREFIX/lib/node_modules \
+		node $DIR/minify_css.js \
+		> "$TEMP_DIR/$file"
+		;;
+	js)
+		echo "compiling: $file"
+		2>/dev/null \
+		php "$SOURCE_DIR/$file" \
+		|& grep -vi "is already loaded in unknown on line 0" \
+		| google-closure-compiler \
+		|& grep -vi "The compiler is waiting for input via stdin" \
+		> "$TEMP_DIR/$file"
+		;;
+	copy)
+		echo "copying: $file"
+		cp "$SOURCE_DIR/$file" "$TEMP_DIR/$file"
+		;;
+	esac
+}
+export -f run_job
+export SOURCE_DIR TEMP_DIR DIR HOMEBREW_PREFIX
 
-# PHP files
-for file in admin.php comment.php common.php download.php entry.php favicon.ico index.php list.php logo-white.png logo-colored.png pico.min.css player.php rank.php redis.php robots.txt score.php setting.php share.php sign.php token.php updrank.php upload.php markdown.php webhook.php image.php notification.php; do
-	echo "copying: $file"
-	cp "$SOURCE_DIR/$file" "$TEMP_DIR/$file"
-done
+# Detect core count portably (Linux + macOS).
+JOBS="$(getconf _NPROCESSORS_ONLN 2>/dev/null || echo 4)"
 
-# WASM/JS file
-for file in player.wasm player.js; do
-	echo "copying: $file"
-	cp "$SOURCE_DIR/$file" "$TEMP_DIR/$file"
-done
+# All four transform passes plus the copies are mutually independent, so they
+# share a single pool to keep every core busy. verify + tar below are the only
+# steps that must wait for the whole pool (natural barrier: xargs returns when
+# all jobs finish).
+{
+	for file in "${DYN_HTML[@]}"; do echo "dyn $file"; done
+	for file in "${STATIC_HTML[@]}"; do echo "html $file"; done
+	for file in "${CSS_FILES[@]}"; do echo "css $file"; done
+	for file in "${JS_FILES[@]}"; do echo "js $file"; done
+	for file in "${PHP_FILES[@]}"; do echo "copy $file"; done
+	for file in "${WASM_FILES[@]}"; do echo "copy $file"; done
+} | xargs -P "$JOBS" -L1 bash -c 'run_job "$@"' _
+xargs_status=$?
+if [[ "$xargs_status" -ne 0 ]]; then
+	echo "warning: at least one parallel job exited non-zero (status $xargs_status); the verify step below will fail the build if output is bad" >&2
+fi
 
 # Verify generated files: intercept error markers leaked by php / the
 # minifier / the closure compiler into the output before packaging.
