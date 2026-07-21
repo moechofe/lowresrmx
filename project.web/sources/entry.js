@@ -89,7 +89,8 @@ const addComments=(cmnt_list)=>{
 	return list;
 };
 
-const setupVote=()=>{
+const setupVote=(is_signed)=>{
+	if(!is_signed) return;
 	const vote=query('#vote');
 	const points=query('.points');
 	const upvoted=query('.upvoted');
@@ -117,6 +118,8 @@ const setupVote=()=>{
 		}
 		enable(vote);
 	});
+
+	enable(vote);
 };
 
 const setupEntry=()=>{
@@ -134,9 +137,8 @@ const setupEntry=()=>{
 };
 
 setupDate();
-setupSign();
+setupSign().then(setupVote);
 setupMobile();
-setupVote();
 setupError();
 setupCommentForm();
 setupEntry();
