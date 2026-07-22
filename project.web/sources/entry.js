@@ -9,6 +9,7 @@
 	require_once __DIR__.'/config.js';
 	require_once __DIR__.'/dom.js';
 	require_once __DIR__.'/common.js';
+	require_once __DIR__.'/notification.js';
 ?>
 
 /**
@@ -238,6 +239,7 @@ setupMobile();
 setupError();
 setupCommentForm();
 setupEntry();
+markNotifSeen(eid);
 
 // TODO: redo this
 const first_comment=await(await get(`/${eid}/${cid}`)).json();

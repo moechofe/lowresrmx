@@ -19,7 +19,7 @@ var ProgramItem;
 /**
  * @typedef {{
  * eid: string,
- * unseed: boolean,
+ * unseen: boolean,
  * title: string,
  * author: string,
  * comm: number,
@@ -66,6 +66,25 @@ const injectNotifMarker=(list)=>{
 		{
 			const article=find(list,'article[data-eid="'+notif[i].eid+'"]');
 			show(find(article,'.notif'));
+		}
+	}
+};
+
+const markNotifSeen=(eid)=>{
+	if(sessionStorage.getItem("notifs"))
+	{
+		let notif=[];
+		try{notif=JSON.parse(sessionStorage.getItem("notifs"));}
+		catch(e){notif=[];}
+		for(let i=0;i<notif.length;++i)
+		{
+			if(notif[i].eid==eid)
+			{
+				console.log(notif)
+				notif[i].unseen=false;
+				sessionStorage.setItem("notifs",JSON.stringify(notif));
+				return;
+			}
 		}
 	}
 };
