@@ -18,7 +18,6 @@ const setupSetting=(user)=>{
 
 	on(input,'change',()=>{
 		if(input.value.length<4) return;
-		console.log("here",input.value);
 		disable(input);
 		busy(label);
 		delay(200,_=>{

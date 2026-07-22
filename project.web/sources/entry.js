@@ -239,6 +239,7 @@ setupError();
 setupCommentForm();
 setupEntry();
 
+// TODO: redo this
 const first_comment=await(await get(`/${eid}/${cid}`)).json();
 addComments(first_comment);
 

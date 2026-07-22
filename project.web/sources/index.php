@@ -98,11 +98,13 @@ if(in_array($urlPath,[
   header("X-Content-Type-Options: nosniff");
 	$etag='"'.filesize(__DIR__.$urlPath).'-'.filemtime(__DIR__.$urlPath).'"';
 	header("ETag: ".$etag);
+	header("X-Content-Type-Options: nosniff");
 	if(isset($_SERVER['HTTP_IF_NONE_MATCH']) && $_SERVER['HTTP_IF_NONE_MATCH']===$etag)
 	{
 		header("Status: 304 Not Modified",true,304);
 		exit;
 	}
+	header("Content-Length: ".filesize(__DIR__.$urlPath));
 	readfile(__DIR__.$urlPath);
 	exit;
 }

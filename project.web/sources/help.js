@@ -14,7 +14,7 @@ const post_dialog=setupPostDialog('help');
 
 /** @type {function():Promise<HTMLElement>} */
 const setupChatList=()=>{
-	get('latest?w=help').then((ans)=>{
+	return get('latest?w=help').then((ans)=>{
 		if(!ans.ok) return Promise.reject("");
 		return ans.json();
 	}).then((list)=>{
