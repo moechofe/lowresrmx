@@ -12,7 +12,7 @@
 
 /** @type {function():Promise<HTMLElement>} */
 const setupCommunityList=()=>{
-	get('ranked?w=show').then((ans)=>{
+	return get('ranked?w=show').then((ans)=>{
 		if(!ans.ok) return Promise.reject("");
 		return ans.json();
 	}).then((list)=>{
@@ -24,6 +24,7 @@ Promise.all([
 	setupSign().then(retrieveNotifMaybe),
 	setupCommunityList()
 ]).then((args)=>{
+	console.log(args);
 	if(args[1]) injectNotifMarker(args[1]);
 });
 
