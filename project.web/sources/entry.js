@@ -82,6 +82,7 @@ const addComments=(cmnt_list)=>{
 		find(item,'.author > span').textContent=data.author;
 		humanDate(find(item,'.date'),data.ct);
 		find(item,'.text').innerHTML=data.text;
+		renderReactions(find(item,'.reactions'),`${eid}/${data.cid}`,data.reactions);
 		return item;
 	});
 
@@ -122,6 +123,98 @@ const setupVote=(is_signed)=>{
 	enable(vote);
 };
 
+/**
+ * Emoji reactions. Rebuilds a reaction bar from a list of {e,n,mine}. Assigned
+ * inside setupReactions (which captures is_signed); a no-op until then.
+ * @type {function(!HTMLElement,string,!Array<!Object>):void}
+ */
+let renderReactions=(_container,_base,_list)=>{};
+
+const setupReactions=(is_signed)=>{
+	const chip_tpl=query('#reaction-chip');
+	const dialog=query('#emoji-dialog');
+	/** @type {?HTMLElement} */
+	let picker=null;
+	/** @type {?string} */
+	let active_base=null;
+
+	// A target's bar is the .reactions whose data-base matches (post: eid, comment: eid/cid).
+	const findBase=(base)=>{
+		let found=null;
+		queryAll('.reactions').forEach((c)=>{ if(dataget(c,'base')===base) found=c; });
+		return found;
+	};
+
+	renderReactions=(container,base,list)=>{
+		clear(container);
+		dataset(container,'base',base);
+		(list||[]).forEach((r)=>{
+			const chip=instanciate(chip_tpl);
+			dataset(chip,'e',r.e);
+			find(chip,'.e').textContent=r.e;
+			find(chip,'.n').textContent=r.n;
+			addClassCond(chip,'mine',!!r.mine);
+			append(container,chip);
+		});
+		if(is_signed)
+		{
+			const add=create('button');
+			add.className='react-add';
+			attr(add,'aria-label','Add reaction');
+			add.textContent='+';
+			append(container,add);
+		}
+	};
+
+	const toggleReact=async(base,emoji)=>{
+		if(!base||!emoji) return;
+		const resp=await post(`${base}/react`,emoji,{[HEADER_TOKEN]:csrf});
+		if(resp.status===200)
+		{
+			const json=await resp.json();
+			const container=findBase(base);
+			if(container) renderReactions(container,base,json.reactions);
+		}
+	};
+
+	const openPicker=(base)=>{
+		active_base=base;
+		if(!picker)
+		{
+			picker=create('emoji-picker');
+			attr(picker,'data-source','/emoji-data.json');
+			on(picker,'emoji-click',(event)=>{
+				const unicode=event.detail&&event.detail.unicode;
+				dialogOff(dialog);
+				toggleReact(active_base,unicode);
+			});
+			append(find(dialog,'.picker-host'),picker);
+		}
+		dialogOn(dialog);
+	};
+
+	click(find(dialog,'.close'),()=>dialogOff(dialog));
+
+	// Signed-out users see the bars read-only (no + button, no toggling).
+	if(!is_signed) return;
+
+	on(query('article'),'click',(event)=>{
+		const chip=event.target.closest('.reaction');
+		if(chip)
+		{
+			const container=chip.closest('.reactions');
+			if(container) toggleReact(dataget(container,'base'),dataget(chip,'e'));
+			return;
+		}
+		const add=event.target.closest('.react-add');
+		if(add)
+		{
+			const container=add.closest('.reactions');
+			if(container) openPicker(dataget(container,'base'));
+		}
+	});
+};
+
 const setupEntry=()=>{
 	const open=query('#open');
 	on(open,'click',()=>{
@@ -137,16 +230,16 @@ const setupEntry=()=>{
 };
 
 setupDate();
-setupSign().then(setupVote);
+setupSign().then((is_signed)=>{
+	setupVote(is_signed);
+	setupReactions(is_signed);
+});
 setupMobile();
 setupError();
 setupCommentForm();
 setupEntry();
 
-// TODO: show a loading stuff
 const first_comment=await(await get(`/${eid}/${cid}`)).json();
 addComments(first_comment);
-
-// TODO: handle more comments
 
 });

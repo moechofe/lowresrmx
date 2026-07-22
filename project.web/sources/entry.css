@@ -31,6 +31,17 @@ article fieldset label { user-select:none; }
 #vote:not(:checked) + #set .up { display: none; }
 #vote:not(:checked) + #set .down { display: inline; }
 
+.reactions { display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; margin: 0.75rem 0; }
+.reactions .reaction { display: inline-flex; align-items: center; gap: 0.3rem; width: auto; margin: 0; padding: 0.1rem 0.6rem; line-height: 1.7; font-size: 1rem; border: 1px solid var(--pico-muted-border-color); background: var(--pico-card-background-color); color: var(--pico-color); cursor: pointer; }
+.reactions .reaction.mine { border-color: #ac8f73; background: #f7f2ed; }
+.reactions .reaction .n { font-weight: bold; color: var(--pico-secondary); }
+.reactions .react-add { width: auto; margin: 0; padding: 0.1rem 0.65rem; line-height: 1.7; font-size: 1rem; border: 1px solid var(--pico-muted-border-color); background: transparent; color: var(--pico-secondary); cursor: pointer; }
+.comment-item .reactions { margin: 0.5rem 0; }
+#emoji-dialog article { width: fit-content; max-width: 95vw; padding: 0; overflow: hidden; }
+#emoji-dialog header { padding: 0.75rem 1rem; margin: 0; }
+#emoji-dialog .picker-host { display: flex; }
+emoji-picker { --background: var(--pico-card-background-color); }
+
 .upv { display: inline-block; position: absolute; pointer-events: none; left: 30%; height: 2em; width: 2em; z-index: 100; opacity: 0; background-color: #3da; border: 0px solid #fff; }
 .upv b { display: block; position: absolute; left: 0; right: 0; top: -2px; height: 5px; background-color: #3da; }
 

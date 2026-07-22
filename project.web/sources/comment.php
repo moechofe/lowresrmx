@@ -4,6 +4,7 @@ require_once __DIR__.'/common.php';
 require_once __DIR__.'/token.php';
 require_once __DIR__.'/rank.php';
 require_once __DIR__.'/markdown.php';
+require_once __DIR__.'/reaction.php';
 
 // API to add a comment to a first entry post
 if(preg_match("/\/($MATCH_ENTRY_TOKEN)\/comment$/",$urlPath,$matches)&&$isPost)
@@ -77,6 +78,8 @@ if(preg_match("/\/($MATCH_ENTRY_TOKEN)\/(\d+)$/",$urlPath,$matches)&&$isGet)
 	$skip=intval($matches[2]);
 	if($skip<0) badRequest("Fail to read skip");
 
+	list($user_id,$csrf_token)=validateSessionAndGetUserId();
+
 	// Build comments list
 	$list=redis()->lrange("f:$first_id:c",$skip,$skip+10);
 	$comments=[];
@@ -86,9 +89,11 @@ if(preg_match("/\/($MATCH_ENTRY_TOKEN)\/(\d+)$/",$urlPath,$matches)&&$isGet)
 		if(empty($text)) continue;
 		if($status==="banned") continue;
 		$comments[]=[
+			"cid"=>$cid,
 			"text"=>markdown2html(zstd_uncompress($text)),
 			"ct"=>$ct,
 			"author"=>$author,
+			"reactions"=>readReactions("$first_id:$cid",$user_id),
 		];
 	}
 

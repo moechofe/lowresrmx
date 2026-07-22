@@ -53,7 +53,8 @@ const retrieveNotifMaybe=()=>{return new Promise((res,rej)=>{
 	}
 	else
 	{
-		notif=JSON.parse(sessionStorage.getItem("notifs"));
+		try{notif=JSON.parse(sessionStorage.getItem("notifs"));}
+		catch(e){notif=[];}
 		res();
 	}
 })};

@@ -35,6 +35,7 @@ const MAX_POST_TITLE=100;
 const MAX_POST_NAME=100;
 const MAX_POST_TEXT=15000;
 const MAX_QUERY=100;
+const MAX_REACTION_KINDS=20;
 const MAX_UPLOAD_PROGRAM=0x10000;
 const MAX_UPLOAD_THUMBNAIL=132710;
 
@@ -70,6 +71,7 @@ const RATE_LIMIT=[
 	'post'=>['max'=>10,'window'=>60*60],    // 10 posts per hour
 	'comment'=>['max'=>30,'window'=>60*60], // 30 comments per hour
 	'vote'=>['max'=>100,'window'=>60*60],   // 100 votes per hour
+	'react'=>['max'=>120,'window'=>60*60],  // 120 reactions per hour
 	'notif'=>['max'=>120,'window'=>60],     // 120 notification checks per minute
 	'upload'=>['max'=>60,'window'=>60*60],  // 60 uploads per hour
 	'share'=>['max'=>20,'window'=>60*60],   // 20 shares per hour
@@ -77,6 +79,8 @@ const RATE_LIMIT=[
 	'login'=>['max'=>5,'window'=>60*15],    // 5 login attempts per 15 minutes (per IP)
 	'setting'=>['max'=>40,'window'=>60*60], // 40 changes per hour
 ];
+
+const EMOJI_PICKER_ELEMENT_STYLE_SRC="'sha256-rg2BpwZ4T9EADaas/dlxn0KsISPDXXIabE9pnJ++3UQ='";
 
 require_once __DIR__.'/redis.php';
 
@@ -277,7 +281,7 @@ if(php_sapi_name()!=="cli")
 	header("X-Content-Type-Options: nosniff",true);
 	header("Referrer-Policy: no-referrer-when-downgrade",true);
 	header("Permissions-Policy: disable",true);
-	header("Content-Security-Policy: default-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self'; img-src 'self' https: data: blob:; connect-src 'self';",true);
+	header("Content-Security-Policy: default-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' ".EMOJI_PICKER_ELEMENT_STYLE_SRC."; style-src-attr 'unsafe-inline'; img-src 'self' https: data: blob:; connect-src 'self';",true);
 
 	if(!$isProd)
 	{

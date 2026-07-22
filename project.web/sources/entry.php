@@ -3,6 +3,7 @@
 require_once __DIR__.'/common.php';
 require_once __DIR__.'/token.php';
 require_once __DIR__.'/rank.php';
+require_once __DIR__.'/reaction.php';
 
 if(preg_match("/^\/($MATCH_ENTRY_TOKEN)\.html$/",$urlPath,$matches))
 {
@@ -16,8 +17,11 @@ if(preg_match("/^\/($MATCH_ENTRY_TOKEN)\.html$/",$urlPath,$matches))
 	$points=redis()->hget("r:$first_id:d","pts");
 
 	list($user_id,$csrf_token)=validateSessionAndGetUserId();
+
 	$upvoted=false;
 	if($user_id) $upvoted=redis()->sismember("r:$first_id:v",$user_id)==1?true:false;
+
+	$reactions=readReactions($first_id,$user_id?:"");
 
 	$eid=$first_id;
 	$pid=$program_id;

@@ -6,7 +6,7 @@
 1. Install for Ubuntu:
 
     ```bash
-    sudo apt install nginx-full php8.4-xml php8.4-cli php8.4-dev build-essential php8.4-mbstring libsodium-dev libzstd-dev redis-server redis-tools
+    sudo apt install nginx-full php8.4-xml php8.4-cli php8.4-dev build-essential php8.4-mbstring php8.4-intl libsodium-dev libzstd-dev redis-server redis-tools
     ```
 
 2. Build and install [HIREDIS](https://github.com/redis/hiredis) from source:
@@ -58,6 +58,7 @@
     extension=sodium.so
     extension=zstd.so
     extension=xml.so
+    extension=intl.so
     ```
 
 7. Check for loaded extensions:
@@ -68,6 +69,7 @@
     php -i | grep sodium
     php -i | grep zstd
     php -i | grep xml
+    php -i | grep intl
     ```
 
 Create and fill the `sources/private.php` file using the given `private.sample.php`

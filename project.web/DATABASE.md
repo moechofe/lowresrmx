@@ -171,6 +171,23 @@
     - _(str)_ `["ut"]` ATOM timestamp for update time
     - _(int)_ `["at"]` unix timestamp of last activity (comment or upvote), for notifications
 
+#### Reaction related
+
+> Emoji reactions are cosmetic: they never affect rank (`r:*`) or notifications.
+> A `TARGET` is a post (`ENTRY_TOKEN_ID`) or a comment (`ENTRY_TOKEN_ID:CID`).
+
+- _(set)_ `"x:TARGET"` index of emoji strings currently used on the target
+
+    - _(str)_ `[…]` `EMOJI`
+
+- _(set)_ `"x:TARGET:v:EMOJI"` users who reacted to TARGET with EMOJI
+
+    - _(str)_ `[…]` `USER_ID`
+
+    When the last user removes `EMOJI`, this set is emptied and `EMOJI` is
+    removed from `"x:TARGET"`, so no orphan keys accumulate. The number of
+    distinct emoji per target is capped at `MAX_REACTION_KINDS`.
+
 #### Admin related
 
 - _(list)_ `"adm:de"` list of users marked to delete everything

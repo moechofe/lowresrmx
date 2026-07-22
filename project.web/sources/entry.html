@@ -17,6 +17,7 @@
 <meta property="og:image:width" content="180" />
 <meta property="og:image:height" content="180" />
 <script src="entry.js"></script>
+<script type="module" src="emoji-picker-element.js"></script>
 </head>
 <body class="entry">
 <?php require_once __DIR__.'/header.html'; ?>
@@ -55,6 +56,12 @@
 			<div class="visual">
 				<img class="picture" itemprop="image" alt="<?=htmlspecialchars($title,ENT_QUOTES,'UTF-8')?>" src="./<?=rawurlencode($pid?$pid:$eid)?>.png"/>
 			</div>
+			<div class="reactions" data-base="<?=rawurlencode($eid)?>">
+	<?php foreach($reactions as $r): ?>
+				<button class="reaction<?=$r['mine']?' mine':''?>" data-e="<?=htmlspecialchars($r['e'],ENT_QUOTES,'UTF-8')?>"><span class="e"><?=htmlspecialchars($r['e'],ENT_QUOTES,'UTF-8')?></span> <span class="n"><?=intval($r['n'])?></span></button>
+	<?php endforeach; ?>
+				<button class="react-add is-signed" hidden aria-label="Add reaction">＋</button>
+			</div>
 			<nav>
 				<ul>
 					<li class="is-mobile" hidden><button class="secondary" id="open" data-id="<?=htmlspecialchars($pid?$pid:$eid,ENT_QUOTES,'UTF-8')?>" data-name="<?=htmlspecialchars($name,ENT_QUOTES,'UTF-8')?>">Open in App</button></li>
@@ -89,9 +96,22 @@ require_once __DIR__.'/footer.html';
 			<time class="date" itemprop="datePublished dateCreated"></time>
 		</div>
 		<div class="text" itemprop="text"></div>
+		<div class="reactions"></div>
 		<hr/>
 	</div>
 
 </template>
+<template id="reaction-chip">
+	<button class="reaction"><span class="e"></span> <span class="n"></span></button>
+</template>
+<dialog id="emoji-dialog">
+	<article>
+		<header>
+			<button aria-label="Close" rel="prev" class="close"></button>
+			Pick an emoji
+		</header>
+		<div class="picker-host"></div>
+	</article>
+</dialog>
 </body>
 </html>

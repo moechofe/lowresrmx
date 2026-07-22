@@ -19,6 +19,7 @@ require_once __DIR__.'/list.php';
 require_once __DIR__.'/entry.php';
 require_once __DIR__.'/comment.php';
 require_once __DIR__.'/score.php';
+require_once __DIR__.'/reaction.php';
 require_once __DIR__.'/notification.php';
 
 require_once __DIR__.'/image.php';
@@ -69,6 +70,8 @@ if(in_array($urlPath,[
 	'/player.wasm',
 	'/player.css',
 	'/player.js',
+	'/emoji-picker-element.js',
+	'/emoji-data.json',
 	'/favicon.ico',
 	'/logo-white.png',
 	'/logo-colored.png',
@@ -87,11 +90,19 @@ if(in_array($urlPath,[
 		'png'=>'image/png',
 		'css'=>'text/css',
 		'js'=>'application/javascript',
+		'json'=>'application/json',
 		'txt'=>'text/plain',
 		'xml'=>'application/xml',
 	][$info['extension']]);
 	header("Content-Length: ".filesize(__DIR__.$urlPath));
   header("X-Content-Type-Options: nosniff");
+	$etag='"'.filesize(__DIR__.$urlPath).'-'.filemtime(__DIR__.$urlPath).'"';
+	header("ETag: ".$etag);
+	if(isset($_SERVER['HTTP_IF_NONE_MATCH']) && $_SERVER['HTTP_IF_NONE_MATCH']===$etag)
+	{
+		header("Status: 304 Not Modified",true,304);
+		exit;
+	}
 	readfile(__DIR__.$urlPath);
 	exit;
 }
