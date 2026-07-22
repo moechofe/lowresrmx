@@ -40,8 +40,6 @@ fi
 mkdir -p "$TEMP_DIR"
 rm -rf "${TEMP_DIR:?}"/*
 
-# File lists per pass. Declared once so both the parallel job dispatch and the
-# GENERATED verification list are built from the same source of truth.
 DYN_HTML=(entry.html player.html sign-in.html)
 STATIC_HTML=(list.html chat.html community.html documentation.html footer.html header.html help.html maintenance.html message.html privacy-policy.html setting.html share.html show.html terms-of-service.html about.html)
 CSS_FILES=(chat.css community.css documentation.css entry.css footer.css header.css help.css list.css setting.css share.css show.css sign-in.css player.css about.css)
@@ -50,10 +48,6 @@ PHP_FILES=(admin.php comment.php common.php download.php entry.php favicon.ico i
 WASM_FILES=(player.wasm player.js)
 COPY_FILES=(emoji-picker-element.js emoji-data.json)
 
-# Files produced by php/minifier/compiler passes below. Only these are scanned
-# for error markers at the end (copied assets like player.js legitimately
-# contain words such as "warning" and "undefined"). Built from the arrays above:
-# every generated file except message.html (which may be empty by design).
 GENERATED=()
 GENERATED+=("${DYN_HTML[@]}")
 for file in "${STATIC_HTML[@]}"; do
@@ -62,11 +56,6 @@ done
 GENERATED+=("${CSS_FILES[@]}")
 GENERATED+=("${JS_FILES[@]}")
 
-# One job per file. Each pipeline is verbatim from the original serial version;
-# only the driver changed. run_job is exported and invoked once per file by the
-# xargs pool below, so pipelines run concurrently. Each writes its own output
-# file in $TEMP_DIR, so parallel stdout never collides (only the progress echoes
-# interleave, which is cosmetic).
 run_job() {
 	local type="$1" file="$2"
 	case "$type" in
@@ -120,10 +109,6 @@ export SOURCE_DIR TEMP_DIR DIR HOMEBREW_PREFIX
 # Detect core count portably (Linux + macOS).
 JOBS="$(getconf _NPROCESSORS_ONLN 2>/dev/null || echo 4)"
 
-# All four transform passes plus the copies are mutually independent, so they
-# share a single pool to keep every core busy. verify + tar below are the only
-# steps that must wait for the whole pool (natural barrier: xargs returns when
-# all jobs finish).
 {
 	for file in "${DYN_HTML[@]}"; do echo "dyn $file"; done
 	for file in "${STATIC_HTML[@]}"; do echo "html $file"; done
@@ -156,6 +141,7 @@ done
 [[ "$found_errors" -ne 0 ]] && exit 1
 
 # Create the package
+# TODO: can I use the previous list
 echo "packaging: $PACKAGE_FILE"
 [[ -f "$PACKAGE_FILE" ]] && rm "$PACKAGE_FILE"
 tar cfJ "$PACKAGE_FILE" --owner=0 --group=0 --no-same-owner --no-same-permissions --mode=0644 -C "$TEMP_DIR" \
@@ -190,4 +176,3 @@ notification.php \
 reaction.php emoji-picker-element.js emoji-data.json \
 robots.txt
 
-# sitemap.xml
