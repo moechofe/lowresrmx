@@ -3,6 +3,8 @@ TODO: add BG COPY example: cell cursor.x+23,cursor.y+3,16
 TODO: fix link in BG COPY to BG SOURCE
 TODO: mapped cycles counter
 TODO: explain that width is maxed a 216, height is not
+TODO: explain read only memory
+TODO: explain why lower case exists
 
 ## What is Retro Game Creator?
 
@@ -2848,6 +2850,17 @@ Example that print the last pressed ASCII key code:
 
 Write a 16bits `value` (-32768..32767) in memory at `address`.
 
+A written 16bits positive number may be read as negative one. Here's how to fix it:
+
+    POKEW $e000, 60000
+    PRINT PEEKW($e000)
+    PRINT PEEKW($e000) AND $ffff
+
+Will print:
+
+    -5536
+    60000
+
 #### `value =PEEKW(address)`
 
 Read and return a 16bits `value` (-32768..32767) from memory at `address`.
@@ -2856,6 +2869,17 @@ Example that print the width and height of the visible pixels:
 
     PRINT "width", PEEKW($FF78), SHOWN.W
     PRINT "height", PEEKW($FF7A), SHOWN.H
+
+A written 16bits positive number may be read as negative one. Here's how to fix it:
+
+    POKEW $e000, 60000
+    PRINT PEEKW($e000)
+    PRINT PEEKW($e000) AND $ffff
+
+Will print:
+
+    -5536
+    60000
 
 #### `POKEL address, value`
 
