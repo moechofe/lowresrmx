@@ -2774,11 +2774,29 @@ LOOp
 </code></pre>
 <h4 data-keyword="POKEW" data-title="POKEW" id="pokew-address-value" tabindex="-1"><code>POKEW address, value</code></h4>
 <p>Write a 16bits <code>value</code> (-32768..32767) in memory at <code>address</code>.</p>
+<p>A written 16bits positive number may be read as negative one. Here's how to fix it:</p>
+<pre><code>POKEW $e000, 60000
+PRINT PEEKW($e000)
+PRINT PEEKW($e000) AND $ffff
+</code></pre>
+<p>Will print:</p>
+<pre><code>-5536
+60000
+</code></pre>
 <h4 data-keyword="PEEKW" data-title="=PEEKW" id="value-peekw-address" tabindex="-1"><code>value =PEEKW(address)</code></h4>
 <p>Read and return a 16bits <code>value</code> (-32768..32767) from memory at <code>address</code>.</p>
 <p>Example that print the width and height of the visible pixels:</p>
 <pre><code>PRINT &quot;width&quot;, PEEKW($FF78), SHOWN.W
 PRINT &quot;height&quot;, PEEKW($FF7A), SHOWN.H
+</code></pre>
+<p>A written 16bits positive number may be read as negative one. Here's how to fix it:</p>
+<pre><code>POKEW $e000, 60000
+PRINT PEEKW($e000)
+PRINT PEEKW($e000) AND $ffff
+</code></pre>
+<p>Will print:</p>
+<pre><code>-5536
+60000
 </code></pre>
 <h4 data-keyword="POKEL" data-title="POKEL" id="pokel-address-value" tabindex="-1"><code>POKEL address, value</code></h4>
 <p>Write a 32bits <code>value</code> value (-16777216..16777216) in memory at <code>address</code>.</p>

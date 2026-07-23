@@ -1,39 +1,55 @@
 :root { color-scheme: light dark; }
+
+/* Dark mode for WKWebView on iOS < 17.5 */
+@media (prefers-color-scheme: dark) {
+	body { background-color: #171717; color: #eee; }
+	hr { border-top-color: #444; }
+	code { background-color: #444; }
+	pre { background-color: #333; }
+	table thead, table tr:not(:last-child) { border-bottom-color: #444; }
+	blockquote { background: #2a2320; }
+	blockquote::before { color: #945d34; }
+	blockquote code { background-color: #4a3a2e; }
+	h2::before, h3::before { background: #666; }
+	h4, h5 { background-color: #468; }
+	h4::before, h5::before { background-color: #2cf; }
+}
+
 html { font-size: 1.1em; }
 * { font-size: 1em; font-family: system-ui; }
-body { margin: 1.5em; overflow-x: hidden; background-color: light-dark(#fff, #171717); color: light-dark(#222, #eee); }
+body { margin: 1.5em; overflow-x: hidden; background-color: #fff; color: #222; }
 body>* { margin: 0.75em 0 ; }
 
 code { font-family: monospace; font-size: 1rem; }
 
-hr { border: none; border-top: 1px solid light-dark(#999, #444); overflow: visible; text-align: center; height: 1px; margin-top: 1.5em }
+hr { border: none; border-top: 1px solid #999; overflow: visible; text-align: center; height: 1px; margin-top: 1.5em }
 
 ul, ol { padding-left: 1.75em; }
 
-code { background-color: light-dark(#ddd, #444); padding: 0.1em 0.25em; border-radius: 0.2em; white-space: nowrap; }
-pre { background-color: light-dark(#e7e7e7, #333); border-radius: 0.2em; padding: 0.1em 0.25em; margin-left: -0.25em; overflow-x: auto; }
+code { background-color: #ddd; padding: 0.1em 0.25em; border-radius: 0.2em; white-space: nowrap; }
+pre { background-color: #e7e7e7; border-radius: 0.2em; padding: 0.1em 0.25em; margin-left: -0.25em; overflow-x: auto; }
 pre code { background-color: unset; padding: unset; border-radius: unset; white-space: unset; }
 li code, p code { white-space: unset; }
 
 table { border-collapse: collapse; }
-table thead, table tr:not(:last-child) { border-bottom: 1px solid light-dark(#999, #444); }
+table thead, table tr:not(:last-child) { border-bottom: 1px solid #999; }
 table th, table td { padding: 0.3em 0.6em; vertical-align: text-top; }
 table .right { text-align: right; }
 
-blockquote { font-style: italic; margin-left: 2em; position: relative; background: light-dark(#e7d6cf, #2a2320); border-radius: 0.2em; }
-blockquote::before { content: "“"; position: absolute; height: 100%; left: -0.6em; width: 2em; text-align: left; font-size: 5em; color: light-dark(#d9beb4, #945d34); }
+blockquote { font-style: italic; margin-left: 2em; position: relative; background: #e7d6cf; border-radius: 0.2em; }
+blockquote::before { content: "“"; position: absolute; height: 100%; left: -0.6em; width: 2em; text-align: left; font-size: 5em; color: #d9beb4; }
 blockquote>p { padding: 0.8em 1em; }
-blockquote code { background-color: light-dark(#d3ab9d, #4a3a2e); }
+blockquote code { background-color: #d3ab9d; }
 
 h1 { font-size: 1.6em; }
 h2 { font-size: 1.4em; margin: 2.5em 0 0.5em 0; }
-h2::before { content: " "; background: light-dark(#ccc,#666); width: calc(100% + 2.2em); height: 0.2em; display: block; margin-left: -1.1em; top: -0.5em; position: relative; }
+h2::before { content: " "; background: #ccc; width: calc(100% + 2.2em); height: 0.2em; display: block; margin-left: -1.1em; top: -0.5em; position: relative; }
 h3, h4, h5 { font-size: 1.2em; }
 h3, h5 { font-size: 1.2em; margin: 1.5em 0 0.5em 0; }
-h3::before { content: " "; background: light-dark(#ccc,#666); width: calc(100% + 2.6em); height: 0.1em; display: block; margin-left: -1.3em; top: -0.25em; position: relative; }
+h3::before { content: " "; background: #ccc; width: calc(100% + 2.6em); height: 0.1em; display: block; margin-left: -1.3em; top: -0.25em; position: relative; }
 
-h4, h5 { position: relative; background-color: light-dark(#ccc,#468); padding: 0.1em 0.25em; border-radius: 0.2em; margin: 1.5em 0em 0.5em -0.25em; }
-h4::before, h5::before { content: " "; background-color: light-dark(#22f,#2cf); height: 100%; width: 1.5em; display: block; float: left; position: absolute; left: -2em; border-radius: 0.2em; top: 0; }
+h4, h5 { position: relative; background-color: #ccc; padding: 0.1em 0.25em; border-radius: 0.2em; margin: 1.5em 0em 0.5em -0.25em; }
+h4::before, h5::before { content: " "; background-color: #22f; height: 100%; width: 1.5em; display: block; float: left; position: absolute; left: -2em; border-radius: 0.2em; top: 0; }
 h4>code, h5>code { font-size: 1.2em; background-color: unset; padding: unset; border-radius: unset; white-space: unset; }
 h4>br::before, h5>br::before { content: " test "; }
 
