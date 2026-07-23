@@ -52,8 +52,34 @@
 
 	self.searchBar.delegate = self; // In case not set in storyboard
 
+	[self injectColorSchemeSupport];
+
 	HelpContent *helpContent = AppController.shared.helpContent;
 	[self.webView loadHTMLString:helpContent.manualHtml baseURL:helpContent.url];
+}
+
+- (void)injectColorSchemeSupport
+{
+	NSString *css =
+		@":root { color-scheme: light dark; }"
+		@"@media (prefers-color-scheme: dark) {"
+		@"  html, body { background-color: #1c1c1e; color: #e5e5e7; }"
+		@"  a { color: #4da3ff; }"
+		@"}";
+
+	// Escape for embedding inside a JS single-quoted string.
+	css = [css stringByReplacingOccurrencesOfString:@"\\" withString:@"\\\\"];
+	css = [css stringByReplacingOccurrencesOfString:@"'" withString:@"\\'"];
+
+	NSString *js = [NSString stringWithFormat:
+		@"var style = document.createElement('style');"
+		@"style.textContent = '%@';"
+		@"document.head.appendChild(style);", css];
+
+	WKUserScript *script = [[WKUserScript alloc] initWithSource:js
+												 injectionTime:WKUserScriptInjectionTimeAtDocumentEnd
+											  forMainFrameOnly:YES];
+	[self.webView.configuration.userContentController addUserScript:script];
 }
 
 - (void)setChapter:(NSString *)chapter

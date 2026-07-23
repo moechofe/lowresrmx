@@ -64,7 +64,9 @@ const bundle = `
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Retro Game Creator - Documentation</title>
 <style>
+<!--
 ${css}
+-->
 </style>
 <body>
 ${html}
