@@ -1,4 +1,4 @@
-version$="0.196"
+version$="0.197"
 'offical graphics editor for Retro Game Creator (LowResRMX) for iOS
 'author: martin mauchauffee
 
@@ -1120,8 +1120,10 @@ cnvg=0
 'bedchanged= layers has been panned or layout has changed and canvas and must be redrawn
 'beddrawn= layers has been drawn
 'bedhasbru= brush was selected
+'badhaspaint= during paint, this will prevent to pan
 bedchanged=0
 bedhasbru=0
+badhaspaint=0
 
 'needed for ranged
 'redg= gesture
@@ -2958,9 +2960,15 @@ bed_pen_input:
   'if tapped then return
   energytool=1
   gosub bed_detectcell
-  'check for out of layer
-  if bed_ex<laybgl or bed_ex>laybgr or bed_ey<laybgt or bed_ey>laybgb then goto bed_handle_pan
+  if not touch then badhaspaint=0
   if not beddrawn then return
+  'check for out of layer
+  if bed_ex<laybgl or bed_ex>laybgr or bed_ey<laybgt or bed_ey>laybgb then
+    if badhaspaint then return
+    'FIXME: not working very well, it does that 1 frame over two
+    goto bed_handle_pan
+  end if
+
   'check for out of background data
   if bed_ex<0 or bed_ex>=bedw or bed_ey<0 or bed_ey>=bedh then return
   if justed then gosub bed_attr
@@ -2982,7 +2990,7 @@ bed_pen_input:
   'draw in canvas layer
   'trace bed_ex-laym(laye),bed_ey-layn(laye)
   cell bed_ex-laym(laye),bed_ey-layn(laye),lstchara
-
+  badhaspaint=1
   'gosub bed_drlayer
 
   first=0
@@ -3023,8 +3031,11 @@ bed_copy_input_1:
     bedhasbru=0
     viepala=pala
     system laye+1,0
+    trace"bedse",bed_sx,bed_sy,bed_ex,bed_ey
     gosub bed_redraw
+    trace"bedse",bed_sx,bed_sy,bed_ex,bed_ey
     gosub bed_rectangulize
+    trace"ltrb",l,t,r,b
     y=laye
     gosub bed_copy_brush
     'switch to paste tool
@@ -3039,6 +3050,7 @@ bed_paste_input:
   return
 
 bed_copy_brush:
+trace"=bed_copy_brush"
 'will reserve memory space and copy characters
 '(in) y layer (1,2,3) for user background and 0 for charalist
 '(in) l,t,r,b AAABB selection
@@ -3048,6 +3060,7 @@ bed_copy_brush:
   call usrfree(16)
   'reserve memory space in file 16
   w=r-l+1 :h=b-t+1 :s=w*h*2
+  trace"wh",w,h
   addr=0
   call usrlook(s,0,wramstart,wramend,addr,-1)
   if addr=0 then
@@ -3069,11 +3082,13 @@ bed_copy_brush:
   return
 
 bed_paste_brush:
+trace"=bed_paste_brush"
 'will paste brush copied to memory
   if usrsize(16)=0 then
     message "nothing was copied"
     return
   else
+    trace "laye",laye
     bg laye :bg source beda
     addr=usraddr(16)
     for y=bed_ey to bed_ey+usrdime(16,1)-1 :for x=bed_ex to bed_ex+usrdime(16,0)-1
@@ -3104,23 +3119,29 @@ bed_detectcell:
   'draw did not changes anything yes
   beddrawn=0
   if pressed and justed then
+    trace"pressed"
     'compute cell coords for where the draw operation begin relative to the loaded background
     bed_sx=x-layu(laye)+layx(laye) :bed_sy=y-layv(laye)+layy(laye)
     'ditto for where the draw operation ended
     bed_ex=bed_sx :bed_ey=bed_sy
+    'trace"bed se xy",bed_sx,bed_sy,bed_ex,bed_ey
     'used to detect changed
     lx=x :ly=y
     beddrawn=-1
   else if dragged then
+    'trace"dragged"
     if x<>lx or y<>ly then
       'compute cell coords for where the draw operation ended relative to the loaded background
       bed_ex=x-layu(laye)+layx(laye) :bed_ey=y-layv(laye)+layy(laye)
       'used to detect changed
       lx=x :ly=y
       beddrawn=-1
+      'trace"bed se xy",bed_sx,bed_sy,bed_ex,bed_ey
     end if
-  else
-    bed_ex=laybgl :bed_ey=laybgt
+  else if released then
+    'trace"released"
+    'bed_ex=laybgl :bed_ey=laybgt
+    'trace"bed se xy",bed_sx,bed_sy,bed_ex,bed_ey
   end if
   return
 
@@ -3265,6 +3286,7 @@ red_rect_draw:
   return
 
 red_copy_input:
+trace"=red_copy_input"
 'handle character pixels copy
   gosub red_rect_input
   if reds=3 then
