@@ -654,13 +654,22 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
 
 	func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool
 	{
-		let oldText = (textView.text as NSString).substring(with: range)
+		let nsText = textView.text as NSString
+
+		// specified range can be out of bounds
+		guard range.location != NSNotFound,
+			range.length <= nsText.length,
+			range.location <= nsText.length - range.length else
+		{
+			return true
+		}
+
+		let oldText = nsText.substring(with: range)
 
 		// check for indent
 		spacesToInsert = nil
 		if text == "\n"
 		{
-			let nsText = textView.text as NSString
 			let lineRange = nsText.lineRange(for: textView.selectedRange)
 			for i in 0 ..< lineRange.length
 			{
