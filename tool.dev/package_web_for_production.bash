@@ -44,7 +44,7 @@ DYN_HTML=(entry.html player.html sign-in.html)
 STATIC_HTML=(list.html chat.html community.html documentation.html footer.html header.html help.html maintenance.html message.html privacy-policy.html setting.html share.html show.html terms-of-service.html about.html)
 CSS_FILES=(chat.css community.css documentation.css entry.css footer.css header.css help.css list.css setting.css share.css show.css sign-in.css player.css about.css)
 JS_FILES=(chat.js community.js entry.js help.js setting.js share.js show.js sign-in.js about.js)
-PHP_FILES=(admin.php comment.php common.php download.php entry.php favicon.ico index.php list.php logo-white.png logo-colored.png pico.min.css player.php rank.php redis.php robots.txt score.php setting.php share.php sign.php token.php updrank.php upload.php markdown.php webhook.php image.php notification.php reaction.php)
+PHP_FILES=(admin.php comment.php common.php download.php entry.php favicon.ico index.php list.php logo-white.png logo-colored.png pico.min.css player.php rank.php redis.php robots.txt score.php setting.php share.php sign.php token.php updrank.php upload.php markdown.php image.php notification.php reaction.php discord.php)
 WASM_FILES=(player.wasm player.js)
 COPY_FILES=(emoji-picker-element.js emoji-data.json)
 
@@ -148,7 +148,7 @@ tar cfJ "$PACKAGE_FILE" --owner=0 --group=0 --no-same-owner --no-same-permission
 index.php \
 redis.php admin.php \
 common.php \
-markdown.php webhook.php \
+markdown.php \
 token.php sign.php sign-in.html \
 upload.php download.php \
 sign-in.css sign-in.js \
@@ -174,5 +174,6 @@ player.php player.css player.html player.js player.wasm \
 image.php \
 notification.php \
 reaction.php emoji-picker-element.js emoji-data.json \
+discord.php \
 robots.txt
 
