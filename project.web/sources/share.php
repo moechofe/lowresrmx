@@ -224,12 +224,12 @@ if(preg_match('/\/publish$/',$urlPath)&&$isPost)
 			'embeds' => [[
 				'title' => $name,
 				'type' => "rich",
-				'description' => "$title\n[Play it in your browser](".DISCORD_WEBSITE_URL."/$program_id.player)",
+				'description' => "$title\n[Play it in your browser](".DISCORD_WEBSITE_URL."/$first_id.player)",
 				'url' => DISCORD_WEBSITE_URL."/$first_id.html",
 				'timestamp' => date(DATE_ATOM),
 				'color' => hexdec("cea57c"),
 				'thumbnail' => [
-					"url"=> DISCORD_WEBSITE_URL."$program_id.png",
+					"url"=> DISCORD_WEBSITE_URL."/$program_id.png",
 					"width"=> 180,
 					"height"=> 180,
 					"content_type"=>"image/png"],
@@ -414,6 +414,12 @@ if(preg_match("/\/($MATCH_ENTRY_TOKEN)\/replace$/",$urlPath,$matches)&&$isPost)
 		"name",$name,
 	);
 
+	// Notification: author is involved in this post; mark own activity as seen
+	redis()->zadd("u:{$user_id}:n",time(),$first_id);
+	redis()->zremrangebyrank("u:{$user_id}:n",0,-51);
+	redis()->expire("u:{$user_id}:n",60*60*24*90);
+	redis()->set("u:{$user_id}:t",time());
+
 	// Update date for rank
 	redis()->hset("r:$first_id:d","ut",date(DATE_ATOM));
 
@@ -422,9 +428,6 @@ if(preg_match("/\/($MATCH_ENTRY_TOKEN)\/replace$/",$urlPath,$matches)&&$isPost)
 
 	// Update the rank of the post
 	updRank($first_id);
-
-	// TODO: should I give more point to update?
-	// Is the changement in the date is enough?
 
 	header("X-Robots-Tag: noindex", true);
 	exit;
