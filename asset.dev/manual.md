@@ -3242,12 +3242,12 @@ For each sound preset:
 
 ##### Envelope bits:
 
-|   bits | purpose         |
-| ------:| --------------- |
-|   0..3 | Attack duration |
-|   4..7 | Decay duration  |
-|  8..11 | Sustain volume  |
-| 12..15 | Decay volume    |
+|   bits | purpose          |
+| ------:| ---------------- |
+|   0..3 | Attack duration  |
+|   4..7 | Decay duration   |
+|  8..11 | Sustain duration |
+| 12..15 | Release duration |
 
 TODO: every attributes and settings
 
