@@ -80,7 +80,7 @@ const char *ErrorStrings[] = {"OK",
 "Automatic Pause Not Disabled",
 "Not Allowed Outside Of Interrupt",
 "Not enough storage space on the device",
-"Random using address not needed",
+"Random using address not seeded",
 
 "Out of error"};
 

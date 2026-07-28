@@ -450,6 +450,42 @@ struct TypedValue fnc_EASE(struct Core *core)
 	return value;
 }
 
+struct TypedValue validateRandomSeedAddr(struct Core *core, struct TypedValue value, int *addr)
+{
+	*addr = (int)value.v.floatValue;
+
+	// testing readind and writing the 16 bytes needed by the pcg seed
+	for(int i=0; i<sizeof(pcg32_random_t); ++i)
+	{
+		int test = machine_peek(core, *addr+i);
+		if(test < 0)
+			return val_makeError(ErrorIllegalMemoryAccess);
+		if(!machine_poke(core, *addr, test))
+			return val_makeError(ErrorIllegalMemoryAccess);
+	}
+
+	// pcg do not work when zero seeded
+	enum ErrorCode errorCode;
+	int32_t test = machine_peek_long(core, *addr, &errorCode);
+	if(test == 0) return val_makeError(ErrorRandAddressNotSeeded);
+
+	struct TypedValue result;
+	result.type = ValueTypeNull;
+	return result;
+}
+
+void storePersistentRandomSeed(struct Core *core, int addr)
+{
+	if(addr >= 0x0e000 && addr+sizeof(pcg32_random_t) < 0x0fb00)
+	{
+		if(!core->machineInternals->hasAccessedPersistent)
+		{
+			delegate_persistentRamWillAccess(core, core->machine->persistentRam, PERSISTENT_RAM_SIZE);
+			core->machineInternals->hasAccessedPersistent = true;
+		}
+	}
+}
+
 enum ErrorCode cmd_RANDOMIZE(struct Core *core)
 {
 	struct Interpreter *interpreter = core->interpreter;
@@ -460,6 +496,8 @@ enum ErrorCode cmd_RANDOMIZE(struct Core *core)
 	struct TypedValue yValue;
 	yValue.type = ValueTypeNull;
 
+	int addr;
+	bool custom_rng = false;
 	pcg32_random_t *rng = &interpreter->defaultRng;
 
 	// RANDOMIZE seed
@@ -480,8 +518,10 @@ enum ErrorCode cmd_RANDOMIZE(struct Core *core)
 
 		if(interpreter->pass == PassRun)
 		{
-			int addr = yValue.v.floatValue;
+			struct TypedValue valid = validateRandomSeedAddr(core, yValue, &addr);
+			if(valid.type == ValueTypeError && valid.v.errorCode != ErrorRandAddressNotSeeded) return valid.v.errorCode;
 			rng = (pcg32_random_t *)(((uint8_t *)core->machine) + addr);
+			custom_rng = true;
 		}
 	}
 
@@ -492,6 +532,8 @@ enum ErrorCode cmd_RANDOMIZE(struct Core *core)
 		else
 		{
 			pcg32_srandom_r(rng, (uint32_t)xValue.v.floatValue, (intptr_t)rng);
+
+			if(custom_rng) storePersistentRandomSeed(core, addr);
 		}
 	}
 
@@ -508,6 +550,8 @@ struct TypedValue fnc_RND(struct Core *core)
 	struct TypedValue xValue;
 	xValue.type = ValueTypeNull;
 	pcg32_random_t *rng = &interpreter->defaultRng;
+	bool custom_rng = false;
+	int addr;
 	if(interpreter->pc->type == TokenBracketOpen)
 	{
 		// RND(
@@ -530,17 +574,10 @@ struct TypedValue fnc_RND(struct Core *core)
 
 			if(interpreter->pass == PassRun)
 			{
-				int addr = yValue.v.floatValue;
-				// validate memory address
-				enum ErrorCode errorCode;
-				int32_t test = machine_peek_long(core, addr, &errorCode);
-				if(errorCode > 0)
-					return val_makeError(ErrorIllegalMemoryAccess);
-				if(!machine_poke_long(core, addr, test))
-					return val_makeError(ErrorIllegalMemoryAccess);
-				if(test == 0)
-					return val_makeError(ErrorRandAddressNotSeeded);
-				rng = (pcg32_random_t *)((uint8_t *)(core->machine) + addr);
+				struct TypedValue valid = validateRandomSeedAddr(core, yValue, &addr);
+				if(valid.type == ValueTypeError) return valid;
+				rng = (pcg32_random_t *)(((uint8_t *)core->machine) + addr);
+				custom_rng = true;
 			}
 		}
 
@@ -549,6 +586,20 @@ struct TypedValue fnc_RND(struct Core *core)
 		if(interpreter->pc->type != TokenBracketClose)
 			return val_makeError(ErrorSyntax);
 		++interpreter->pc;
+	}
+
+	// RND [addr]
+	if(interpreter->pc->type==TokenFloat || interpreter->pc->type==TokenIdentifier)
+	{
+		struct TypedValue yValue = itp_evaluateExpression(core, TypeClassNumeric);
+
+		if(interpreter->pass == PassRun)
+		{
+			struct TypedValue valid = validateRandomSeedAddr(core, yValue, &addr);
+			if(valid.type == ValueTypeError) return valid;
+			rng = (pcg32_random_t *)(((uint8_t *)core->machine) + addr);
+			custom_rng = true;
+		}
 	}
 
 	struct TypedValue value;
@@ -575,7 +626,6 @@ struct TypedValue fnc_RND(struct Core *core)
 		}
 		else
 		{
-
 			if(xValue.type == ValueTypeNull)
 			{
 				value.v.floatValue = (float)ldexp(pcg32_random_r(rng), -32);
@@ -584,6 +634,8 @@ struct TypedValue fnc_RND(struct Core *core)
 			{
 				value.v.floatValue = (float)pcg32_boundedrand_r(rng, (uint32_t)xValue.v.floatValue + 1);
 			}
+
+			if(custom_rng) storePersistentRandomSeed(core, addr);
 		}
 	}
 	return value;
