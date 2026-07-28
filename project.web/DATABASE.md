@@ -167,7 +167,7 @@
     - _(int)_ `["vote"]` Cached upvotes
     - _(int)_ `["comm"]` Counter of comment posted
     - _(str)_ `["w"]` WHERE_ID of the forum
-    - _(str)_ `["ct"]` ATOM timestamp for creation time
+    - _(str)_ `["ct"]` ATOM timestamp for creation and replace time
     - _(str)_ `["ut"]` ATOM timestamp for update time
     - _(int)_ `["at"]` unix timestamp of last activity (comment or upvote), for notifications
 

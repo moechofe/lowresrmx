@@ -423,6 +423,11 @@ if(preg_match("/\/($MATCH_ENTRY_TOKEN)\/replace$/",$urlPath,$matches)&&$isPost)
 	// Update date for rank
 	redis()->hset("r:$first_id:d","ut",date(DATE_ATOM));
 
+	// If the program has been replaced after a week, reset it's creation date, making the post 1st in the rank again.
+	$ct=redis()->hget("r:$first_id:d","ct");
+	if(empty($ct)||strtotime($ct)<time()-7*86400)
+		redis()->hset("r:$first_id:d","ct",date(DATE_ATOM));
+
 	// Mark the program as publish
 	redis()->hset("p:$program_id","first",$first_id);
 
