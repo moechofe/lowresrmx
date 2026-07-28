@@ -658,8 +658,9 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
 
 		// specified range can be out of bounds
 		guard range.location != NSNotFound,
-			range.length <= nsText.length,
-			range.location <= nsText.length - range.length else
+		      range.length <= nsText.length,
+		      range.location <= nsText.length - range.length
+		else
 		{
 			return true
 		}

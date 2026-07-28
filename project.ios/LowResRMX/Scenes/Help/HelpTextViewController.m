@@ -77,8 +77,8 @@
 		@"document.head.appendChild(style);", css];
 
 	WKUserScript *script = [[WKUserScript alloc] initWithSource:js
-												 injectionTime:WKUserScriptInjectionTimeAtDocumentEnd
-											  forMainFrameOnly:YES];
+		injectionTime:WKUserScriptInjectionTimeAtDocumentEnd
+		forMainFrameOnly:YES];
 	[self.webView.configuration.userContentController addUserScript:script];
 }
 
