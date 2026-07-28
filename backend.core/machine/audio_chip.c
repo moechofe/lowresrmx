@@ -23,43 +23,43 @@
 #include <string.h>
 
 const double envRates[16] = {256.0 / 0.002,
-256.0 / 0.03,
-256.0 / 0.06,
-256.0 / 0.09,
-256.0 / 0.14,
-256.0 / 0.21,
-256.0 / 0.31,
-256.0 / 0.47,
-256.0 / 0.70,
-256.0 / 1.0,
-256.0 / 1.6,
-256.0 / 2.4,
-256.0 / 3.5,
-256.0 / 5.0,
-256.0 / 8.0,
-256.0 / 12.0};
+			     256.0 / 0.03,
+			     256.0 / 0.06,
+			     256.0 / 0.09,
+			     256.0 / 0.14,
+			     256.0 / 0.21,
+			     256.0 / 0.31,
+			     256.0 / 0.47,
+			     256.0 / 0.70,
+			     256.0 / 1.0,
+			     256.0 / 1.6,
+			     256.0 / 2.4,
+			     256.0 / 3.5,
+			     256.0 / 5.0,
+			     256.0 / 8.0,
+			     256.0 / 12.0};
 
 const double lfoRates[16] = {0.12 * 256.0,
-0.16 * 256.0,
-0.23 * 256.0,
-0.32 * 256.0,
-0.44 * 256.0,
-0.62 * 256.0,
-0.87 * 256.0,
-1.2 * 256.0,
-1.7 * 256.0,
-2.4 * 256.0,
-3.3 * 256.0,
-4.7 * 256.0,
-6.6 * 256.0,
-9.2 * 256.0,
-12.9 * 256.0,
-18.0 * 256.0};
+			     0.16 * 256.0,
+			     0.23 * 256.0,
+			     0.32 * 256.0,
+			     0.44 * 256.0,
+			     0.62 * 256.0,
+			     0.87 * 256.0,
+			     1.2 * 256.0,
+			     1.7 * 256.0,
+			     2.4 * 256.0,
+			     3.3 * 256.0,
+			     4.7 * 256.0,
+			     6.6 * 256.0,
+			     9.2 * 256.0,
+			     12.9 * 256.0,
+			     18.0 * 256.0};
 
 const int lfoAmounts[16] = {0, 1, 2, 4, 6, 9, 12, 17, 24, 34, 48, 67, 93, 131, 183, 256};
 
 void audio_renderAudioBuffer(struct AudioRegisters *lifeRegisters, struct AudioRegisters *registers,
-struct AudioInternals *internals, int16_t *stereoOutput, int numSamples, int outputFrequency, int volume);
+	struct AudioInternals *internals, int16_t *stereoOutput, int numSamples, int outputFrequency, int volume);
 
 void audio_reset(struct Core *core)
 {
@@ -119,12 +119,12 @@ void audio_renderAudio(struct Core *core, int16_t *stereoOutput, int numSamples,
 		}
 		int readBufferIndex = internals->readBufferIndex;
 		audio_renderAudioBuffer(lifeRegisters,
-		&internals->buffers[readBufferIndex],
-		internals,
-		&stereoOutput[offset],
-		numSamplesPerUpdate,
-		outputFrequency,
-		volume);
+			&internals->buffers[readBufferIndex],
+			internals,
+			&stereoOutput[offset],
+			numSamplesPerUpdate,
+			outputFrequency,
+			volume);
 		if(internals->writeBufferIndex != -1 && internals->writeBufferIndex != readBufferIndex)
 		{
 			internals->readBufferIndex = (readBufferIndex + 1) % NUM_AUDIO_BUFFERS;
@@ -135,7 +135,7 @@ void audio_renderAudio(struct Core *core, int16_t *stereoOutput, int numSamples,
 }
 
 void audio_renderAudioBuffer(struct AudioRegisters *lifeRegisters, struct AudioRegisters *registers,
-struct AudioInternals *internals, int16_t *stereoOutput, int numSamples, int outputFrequency, int volume)
+	struct AudioInternals *internals, int16_t *stereoOutput, int numSamples, int outputFrequency, int volume)
 {
 	double overflow = 0xFFFFFF;
 
@@ -363,7 +363,7 @@ struct AudioInternals *internals, int16_t *stereoOutput, int numSamples, int out
 				lifeRegisters->voices[v].peak = volume;
 
 				int16_t voiceSample =
-				(((int32_t)(sample - 0x7FFF)) * volume) >> 10; // 8 bit for volume, 2 bit for global
+					(((int32_t)(sample - 0x7FFF)) * volume) >> 10; // 8 bit for volume, 2 bit for global
 				if(voice->status.mix & 0x01)
 				{
 					leftOutput += voiceSample;

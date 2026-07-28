@@ -116,7 +116,7 @@ enum ErrorCode cmd_DIM(struct Core *core)
 		{
 			enum ErrorCode errorCode = ErrorNone;
 			struct ArrayVariable *variable =
-			var_dimVariable(interpreter, &errorCode, tokenIdentifier->symbolIndex, numDimensions, dimensionSizes);
+				var_dimVariable(interpreter, &errorCode, tokenIdentifier->symbolIndex, numDimensions, dimensionSizes);
 			if(!variable)
 				return errorCode;
 			variable->type = (tokenIdentifier->type == TokenStringIdentifier) ? ValueTypeString : ValueTypeFloat;

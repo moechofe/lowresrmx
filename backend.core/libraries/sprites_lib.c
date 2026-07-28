@@ -25,7 +25,7 @@ bool sprlib_isSpriteOnScreen(struct Sprite *sprite)
 {
 	int size = (sprite->attr.size + 1) << 3;
 	return ((sprite->x / 16) < SCREEN_WIDTH + SPRITE_OFFSET_X && (sprite->y / 16) < SCREEN_HEIGHT + SPRITE_OFFSET_Y &&
-	(sprite->x / 16) + size > SPRITE_OFFSET_X && (sprite->y / 16) + size > SPRITE_OFFSET_Y);
+		(sprite->x / 16) + size > SPRITE_OFFSET_X && (sprite->y / 16) + size > SPRITE_OFFSET_Y);
 }
 
 bool sprlib_checkSingleCollision(struct SpritesLib *lib, struct Sprite *sprite, struct Sprite *otherSprite)
@@ -77,7 +77,7 @@ bool sprlib_checkSingleCollision(struct SpritesLib *lib, struct Sprite *sprite, 
 						{
 							// reverse bits
 							val =
-							(((val * 0x0802LU & 0x22110LU) | (val * 0x8020LU & 0x88440LU)) * 0x10101LU >> 16) & 0xFF;
+								(((val * 0x0802LU & 0x22110LU) | (val * 0x8020LU & 0x88440LU)) * 0x10101LU >> 16) & 0xFF;
 						}
 						source1 |= val << (24 - (i << 3));
 					}
@@ -93,7 +93,7 @@ bool sprlib_checkSingleCollision(struct SpritesLib *lib, struct Sprite *sprite, 
 						{
 							// reverse bits
 							val =
-							(((val * 0x0802LU & 0x22110LU) | (val * 0x8020LU & 0x88440LU)) * 0x10101LU >> 16) & 0xFF;
+								(((val * 0x0802LU & 0x22110LU) | (val * 0x8020LU & 0x88440LU)) * 0x10101LU >> 16) & 0xFF;
 						}
 
 						int shift = (24 - (i << 3) - diffX);

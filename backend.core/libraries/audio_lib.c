@@ -47,7 +47,7 @@ int audlib_getTrack(struct AudioLib *lib, int sourceAddress, int pattern, int vo
 struct TrackRow audlib_getTrackRow(struct AudioLib *lib, int sourceAddress, int track, int row);
 void audlib_playRow(struct AudioLib *lib, struct ComposerPlayer *player, int track, int voice);
 void audlib_command(
-struct AudioLib *lib, struct Voice *voice, struct ComposerPlayer *player, int command, int parameter);
+	struct AudioLib *lib, struct Voice *voice, struct ComposerPlayer *player, int command, int parameter);
 
 void audlib_play(struct AudioLib *lib, int voiceIndex, float pitch, int len, int sound)
 {
@@ -336,7 +336,7 @@ void audlib_playRow(struct AudioLib *lib, struct ComposerPlayer *player, int tra
 }
 
 void audlib_command(
-struct AudioLib *lib, struct Voice *voice, struct ComposerPlayer *player, int command, int parameter)
+	struct AudioLib *lib, struct Voice *voice, struct ComposerPlayer *player, int command, int parameter)
 {
 	if(command == 0 && parameter == 0)
 		return;

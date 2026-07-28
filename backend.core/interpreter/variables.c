@@ -29,7 +29,7 @@ struct SimpleVariable *var_getSimpleVariable(struct Interpreter *interpreter, in
 	{
 		variable = &interpreter->simpleVariables[i];
 		if(variable->symbolIndex == symbolIndex &&
-		(variable->subLevel == subLevel || variable->subLevel == SUB_LEVEL_GLOBAL))
+		   (variable->subLevel == subLevel || variable->subLevel == SUB_LEVEL_GLOBAL))
 		{
 			// variable found
 			return variable;
@@ -39,7 +39,7 @@ struct SimpleVariable *var_getSimpleVariable(struct Interpreter *interpreter, in
 }
 
 struct SimpleVariable *var_createSimpleVariable(struct Interpreter *interpreter, enum ErrorCode *errorCode,
-int symbolIndex, int subLevel, enum ValueType type, union Value *valueReference)
+	int symbolIndex, int subLevel, enum ValueType type, union Value *valueReference)
 {
 	if(interpreter->numSimpleVariables >= MAX_SIMPLE_VARIABLES)
 	{
@@ -102,7 +102,7 @@ struct ArrayVariable *var_getArrayVariable(struct Interpreter *interpreter, int 
 	{
 		variable = &interpreter->arrayVariables[i];
 		if(variable->symbolIndex == symbolIndex &&
-		(variable->subLevel == subLevel || variable->subLevel == SUB_LEVEL_GLOBAL))
+		   (variable->subLevel == subLevel || variable->subLevel == SUB_LEVEL_GLOBAL))
 		{
 			// variable found
 			return variable;
@@ -131,7 +131,7 @@ union Value *var_getArrayValue(struct Interpreter *interpreter, struct ArrayVari
 }
 
 struct ArrayVariable *var_dimVariable(
-struct Interpreter *interpreter, enum ErrorCode *errorCode, int symbolIndex, int numDimensions, int *dimensionSizes)
+	struct Interpreter *interpreter, enum ErrorCode *errorCode, int symbolIndex, int numDimensions, int *dimensionSizes)
 {
 	if(var_getArrayVariable(interpreter, symbolIndex, interpreter->subLevel))
 	{
@@ -175,7 +175,7 @@ struct Interpreter *interpreter, enum ErrorCode *errorCode, int symbolIndex, int
 }
 
 struct ArrayVariable *var_createArrayVariable(struct Interpreter *interpreter, enum ErrorCode *errorCode,
-int symbolIndex, int subLevel, struct ArrayVariable *arrayReference)
+	int symbolIndex, int subLevel, struct ArrayVariable *arrayReference)
 {
 	if(interpreter->numArrayVariables >= MAX_ARRAY_VARIABLES)
 	{

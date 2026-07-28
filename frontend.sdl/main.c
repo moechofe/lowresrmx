@@ -47,41 +47,44 @@ const int joyAxisThreshold = 16384;
 
 const int keyboardControls[2][2][8] = {
 // mapping 0
-{// up, down, left, right, button A, button B, alt. button A, alt. button B
-{SDL_SCANCODE_UP,
-SDL_SCANCODE_DOWN,
-SDL_SCANCODE_LEFT,
-SDL_SCANCODE_RIGHT,
-SDL_SCANCODE_Z,
-SDL_SCANCODE_X,
-SDL_SCANCODE_N,
-SDL_SCANCODE_M},
-{SDL_SCANCODE_E,
-SDL_SCANCODE_D,
-SDL_SCANCODE_S,
-SDL_SCANCODE_F,
-SDL_SCANCODE_TAB,
-SDL_SCANCODE_Q,
-SDL_SCANCODE_LSHIFT,
-SDL_SCANCODE_A}},
+	{// up, down, left, right, button A, button B, alt. button A, alt. button B
+		{SDL_SCANCODE_UP,
+		 SDL_SCANCODE_DOWN,
+		 SDL_SCANCODE_LEFT,
+		 SDL_SCANCODE_RIGHT,
+		 SDL_SCANCODE_Z,
+		 SDL_SCANCODE_X,
+		 SDL_SCANCODE_N,
+		 SDL_SCANCODE_M},
+		{SDL_SCANCODE_E,
+		 SDL_SCANCODE_D,
+		 SDL_SCANCODE_S,
+		 SDL_SCANCODE_F,
+		 SDL_SCANCODE_TAB,
+		 SDL_SCANCODE_Q,
+		 SDL_SCANCODE_LSHIFT,
+		 SDL_SCANCODE_A}
+	},
 // mapping 1
-{// up, down, left, right, button A, button B, alt. button A, alt. button B
-{SDL_SCANCODE_UP,
-SDL_SCANCODE_DOWN,
-SDL_SCANCODE_LEFT,
-SDL_SCANCODE_RIGHT,
-SDL_SCANCODE_J,
-SDL_SCANCODE_K,
-SDL_SCANCODE_I,
-SDL_SCANCODE_U},
-{SDL_SCANCODE_UP,
-SDL_SCANCODE_DOWN,
-SDL_SCANCODE_LEFT,
-SDL_SCANCODE_RIGHT,
-SDL_SCANCODE_H,
-SDL_SCANCODE_L,
-SDL_SCANCODE_O,
-SDL_SCANCODE_Y}}};
+	{// up, down, left, right, button A, button B, alt. button A, alt. button B
+		{SDL_SCANCODE_UP,
+		 SDL_SCANCODE_DOWN,
+		 SDL_SCANCODE_LEFT,
+		 SDL_SCANCODE_RIGHT,
+		 SDL_SCANCODE_J,
+		 SDL_SCANCODE_K,
+		 SDL_SCANCODE_I,
+		 SDL_SCANCODE_U},
+		{SDL_SCANCODE_UP,
+		 SDL_SCANCODE_DOWN,
+		 SDL_SCANCODE_LEFT,
+		 SDL_SCANCODE_RIGHT,
+		 SDL_SCANCODE_H,
+		 SDL_SCANCODE_L,
+		 SDL_SCANCODE_O,
+		 SDL_SCANCODE_Y}
+	}
+};
 
 void update(void *arg);
 void updateScreenRect(int winW, int winH);
@@ -183,10 +186,10 @@ int main(int argc, const char *argv[])
 		const char *windowTitle = "LowResRMX";
 
 		window = SDL_CreateWindow(
-		windowTitle, SCREEN_WIDTH * defaultWindowScale, SCREEN_HEIGHT * defaultWindowScale, windowFlags);
+			windowTitle, SCREEN_WIDTH * defaultWindowScale, SCREEN_HEIGHT * defaultWindowScale, windowFlags);
 		renderer = SDL_CreateRenderer(window, NULL);
 		texture =
-		SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, SCREEN_WIDTH, SCREEN_HEIGHT);
+			SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, SCREEN_WIDTH, SCREEN_HEIGHT);
 		SDL_SetTextureScaleMode(texture, SDL_SCALEMODE_PIXELART);
 
 #if defined(__ANDROID__)
@@ -199,12 +202,12 @@ int main(int argc, const char *argv[])
 #endif
 
 		SDL_AudioSpec desiredAudioSpec = {
-		.freq = 44100,
-		.format = SDL_AUDIO_S16LE,
-		.channels = NUM_CHANNELS,
+			.freq = 44100,
+			.format = SDL_AUDIO_S16LE,
+			.channels = NUM_CHANNELS,
 		};
 		audioStream =
-		SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &desiredAudioSpec, &audioCallback, runner.core);
+			SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &desiredAudioSpec, &audioCallback, runner.core);
 
 		// Used and android for haptic feedback and keyboard closed
 		initHaptic();

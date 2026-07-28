@@ -323,10 +323,10 @@ struct TypedValue fnc_screen0(struct Core *core)
 			value.v.floatValue = core->machine->videoRegisters.rasterLine;
 			break;
 
-			// case TokenDISPLAY:
-			//     // obsolete syntax!
-			//     value.v.floatValue = core->machine->videoRegisters.attr.value;
-			//     break;
+		// case TokenDISPLAY:
+		//     // obsolete syntax!
+		//     value.v.floatValue = core->machine->videoRegisters.attr.value;
+		//     break;
 
 		default:
 			assert(0);

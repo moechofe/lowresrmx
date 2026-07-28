@@ -71,12 +71,12 @@ void overlay_updateLayout(struct Core *core, struct CoreInput *input)
 		{
 			struct Plane *plane = txtlib_getBackground(lib, lib->windowBg);
 			txtlib_scroll(plane,
-			lib->windowX,
-			lib->windowY,
-			lib->windowX + lib->windowWidth - 1,
-			lib->windowY + lib->windowHeight - 1,
-			0,
-			-need_to_scroll_up);
+				lib->windowX,
+				lib->windowY,
+				lib->windowX + lib->windowWidth - 1,
+				lib->windowY + lib->windowHeight - 1,
+				0,
+				-need_to_scroll_up);
 
 			lib->cursorY -= need_to_scroll_up;
 		}
@@ -114,7 +114,7 @@ void overlay_message(struct Core *core, const char *message)
 {
 	struct TextLib *lib = &core->overlay->textLib;
 	txtlib_setCells(
-	lib, 0, lib->windowHeight - 1 + lib->windowY, lib->windowWidth - 1, lib->windowHeight - 1 + lib->windowY, 0);
+		lib, 0, lib->windowHeight - 1 + lib->windowY, lib->windowWidth - 1, lib->windowHeight - 1 + lib->windowY, 0);
 	txtlib_writeText(lib, message, lib->windowX, lib->windowHeight - 1 + lib->windowY);
 	core->overlay->messageTimer = 127;
 	machine_suspendEnergySaving(core, 127);
@@ -130,12 +130,12 @@ void overlay_draw(struct Core *core, bool ingame)
 		if(core->overlay->messageTimer < 27)
 		{
 			txtlib_scrollBackground(lib,
-			0,
-			lib->windowHeight - 1 + lib->windowY,
-			lib->windowWidth - 1,
-			lib->windowHeight - 1 + lib->windowY,
-			-1,
-			0);
+				0,
+				lib->windowHeight - 1 + lib->windowY,
+				lib->windowWidth - 1,
+				lib->windowHeight - 1 + lib->windowY,
+				-1,
+				0);
 			txtlib_setCell(lib, lib->windowWidth - 1 + lib->windowX, lib->windowHeight - 1 + lib->windowY, 0);
 		}
 	}

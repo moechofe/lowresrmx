@@ -173,12 +173,12 @@ enum ErrorCode cmd_BG_COPY(struct Core *core)
 	if(interpreter->pass == PassRun)
 	{
 		txtlib_copyBackground(&interpreter->textLib,
-		srcXValue.v.floatValue,
-		srcYValue.v.floatValue,
-		wValue.v.floatValue,
-		hValue.v.floatValue,
-		dstXValue.v.floatValue,
-		dstYValue.v.floatValue);
+			srcXValue.v.floatValue,
+			srcYValue.v.floatValue,
+			wValue.v.floatValue,
+			hValue.v.floatValue,
+			dstXValue.v.floatValue,
+			dstYValue.v.floatValue);
 	}
 
 	return itp_endOfCommand(interpreter);
@@ -250,12 +250,12 @@ enum ErrorCode cmd_BG_SCROLL(struct Core *core)
 	if(interpreter->pass == PassRun)
 	{
 		txtlib_scrollBackground(&interpreter->textLib,
-		x1Value.v.floatValue,
-		y1Value.v.floatValue,
-		x2Value.v.floatValue,
-		y2Value.v.floatValue,
-		dxValue.v.floatValue,
-		dyValue.v.floatValue);
+			x1Value.v.floatValue,
+			y1Value.v.floatValue,
+			x2Value.v.floatValue,
+			y2Value.v.floatValue,
+			dxValue.v.floatValue,
+			dyValue.v.floatValue);
 	}
 
 	return itp_endOfCommand(interpreter);
@@ -416,11 +416,11 @@ enum ErrorCode cmd_BG_FILL(struct Core *core)
 		if(interpreter->pass == PassRun)
 		{
 			txtlib_setCells(&interpreter->textLib,
-			floorf(x1Value.v.floatValue),
-			floorf(y1Value.v.floatValue),
-			floorf(x2Value.v.floatValue),
-			floorf(y2Value.v.floatValue),
-			cValue.v.floatValue);
+				floorf(x1Value.v.floatValue),
+				floorf(y1Value.v.floatValue),
+				floorf(x2Value.v.floatValue),
+				floorf(y2Value.v.floatValue),
+				cValue.v.floatValue);
 		}
 	}
 	else
@@ -430,11 +430,11 @@ enum ErrorCode cmd_BG_FILL(struct Core *core)
 		if(interpreter->pass == PassRun)
 		{
 			txtlib_setCells(&interpreter->textLib,
-			floorf(x1Value.v.floatValue),
-			floorf(y1Value.v.floatValue),
-			floorf(x2Value.v.floatValue),
-			floorf(y2Value.v.floatValue),
-			-1);
+				floorf(x1Value.v.floatValue),
+				floorf(y1Value.v.floatValue),
+				floorf(x2Value.v.floatValue),
+				floorf(y2Value.v.floatValue),
+				-1);
 		}
 	}
 
@@ -492,14 +492,14 @@ enum ErrorCode cmd_BG_TINT(struct Core *core)
 	if(interpreter->pass == PassRun)
 	{
 		txtlib_setCellsAttr(&interpreter->textLib,
-		floorf(x1Value.v.floatValue),
-		floorf(y1Value.v.floatValue),
-		floorf(x2Value.v.floatValue),
-		floorf(y2Value.v.floatValue),
-		attrs.pal,
-		attrs.flipX,
-		attrs.flipY,
-		attrs.prio);
+			floorf(x1Value.v.floatValue),
+			floorf(y1Value.v.floatValue),
+			floorf(x2Value.v.floatValue),
+			floorf(y2Value.v.floatValue),
+			attrs.pal,
+			attrs.flipX,
+			attrs.flipY,
+			attrs.prio);
 	}
 
 	return itp_endOfCommand(interpreter);
@@ -585,7 +585,7 @@ struct TypedValue fnc_CELL(struct Core *core)
 	if(interpreter->pass == PassRun)
 	{
 		struct Cell *cell =
-		txtlib_getCell(&interpreter->textLib, floorf(xValue.v.floatValue), floorf(yValue.v.floatValue));
+			txtlib_getCell(&interpreter->textLib, floorf(xValue.v.floatValue), floorf(yValue.v.floatValue));
 		if(type == TokenCELLA)
 		{
 			value.v.floatValue = cell->attr.value;
@@ -720,7 +720,7 @@ enum ErrorCode cmd_TINT(struct Core *core)
 	if(interpreter->pass == PassRun)
 	{
 		struct Cell *cell =
-		txtlib_getCell(&interpreter->textLib, floorf(xValue.v.floatValue), floorf(yValue.v.floatValue));
+			txtlib_getCell(&interpreter->textLib, floorf(xValue.v.floatValue), floorf(yValue.v.floatValue));
 		if(attrs.pal >= 0)
 			cell->attr.palette = attrs.pal;
 		if(attrs.flipX >= 0)

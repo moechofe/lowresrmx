@@ -197,7 +197,7 @@ void itp_runProgram(struct Core *core)
 		enum ErrorCode errorCode = ErrorNone;
 
 		while(errorCode == ErrorNone && interpreter->cycles < MAX_CYCLES_TOTAL_PER_FRAME &&
-		interpreter->state == StateEvaluate && !interpreter->exitEvaluation)
+		      interpreter->state == StateEvaluate && !interpreter->exitEvaluation)
 		{
 			errorCode = itp_evaluateCommand(core);
 		}
@@ -303,7 +303,7 @@ void itp_runInterrupt(struct Core *core, enum InterruptType type)
 					{
 						// pass by value
 						struct SimpleVariable *variable =
-						var_createSimpleVariable(interpreter, &errorCode, 1, 1, varType, NULL);
+							var_createSimpleVariable(interpreter, &errorCode, 1, 1, varType, NULL);
 						if(variable)
 						{
 							if(interpreter->pass == PassRun)
@@ -329,7 +329,7 @@ void itp_runInterrupt(struct Core *core, enum InterruptType type)
 					{
 						// pass by value
 						struct SimpleVariable *variable =
-						var_createSimpleVariable(interpreter, &errorCode, 1, 1, varType, NULL);
+							var_createSimpleVariable(interpreter, &errorCode, 1, 1, varType, NULL);
 						if(variable)
 						{
 							if(interpreter->pass == PassRun)
@@ -366,7 +366,7 @@ void itp_runInterrupt(struct Core *core, enum InterruptType type)
 					{
 						// pass by value
 						struct SimpleVariable *variable =
-						var_createSimpleVariable(interpreter, &errorCode, 1, 1, varType, NULL);
+							var_createSimpleVariable(interpreter, &errorCode, 1, 1, varType, NULL);
 						if(variable)
 						{
 							if(interpreter->pass == PassRun)
@@ -392,7 +392,7 @@ void itp_runInterrupt(struct Core *core, enum InterruptType type)
 					{
 						// pass by value
 						struct SimpleVariable *variable =
-						var_createSimpleVariable(interpreter, &errorCode, 1, 1, varType, NULL);
+							var_createSimpleVariable(interpreter, &errorCode, 1, 1, varType, NULL);
 						if(variable)
 						{
 							if(interpreter->pass == PassRun)
@@ -422,9 +422,9 @@ void itp_runInterrupt(struct Core *core, enum InterruptType type)
 			errorCode = lab_pushLabelStackItem(interpreter, LabelTypeONCALL, NULL);
 
 			while(errorCode == ErrorNone
-			// cycles can exceed interrupt limit (see interruptOverCycles), but there is still a hard limit for
-			// extreme cases
-			&& interpreter->cycles < MAX_CYCLES_TOTAL_PER_FRAME && !interpreter->exitEvaluation)
+			      // cycles can exceed interrupt limit (see interruptOverCycles), but there is still a hard limit for
+			      // extreme cases
+			      && interpreter->cycles < MAX_CYCLES_TOTAL_PER_FRAME && !interpreter->exitEvaluation)
 			{
 				errorCode = itp_evaluateCommand(core);
 			}
@@ -435,7 +435,7 @@ void itp_runInterrupt(struct Core *core, enum InterruptType type)
 			{
 				itp_endProgram(core);
 				delegate_interpreterDidFail(
-				core, err_makeCoreError(ErrorTooManyCPUCyclesInInterrupt, interpreter->pc->sourcePosition, -1));
+					core, err_makeCoreError(ErrorTooManyCPUCyclesInInterrupt, interpreter->pc->sourcePosition, -1));
 			}
 			else if(errorCode != ErrorNone)
 			{
@@ -619,7 +619,7 @@ union Value *itp_readVariable(struct Core *core, enum ValueType *type, enum Erro
 			if(interpreter->pass == PassRun)
 			{
 				if(numDimensions <= variable->numDimensions &&
-				(indexValue.v.floatValue < 0 || indexValue.v.floatValue >= variable->dimensionSizes[i]))
+				   (indexValue.v.floatValue < 0 || indexValue.v.floatValue >= variable->dimensionSizes[i]))
 				{
 					*errorCode = ErrorIndexOutOfBounds;
 					return NULL;
@@ -675,7 +675,7 @@ union Value *itp_readVariable(struct Core *core, enum ValueType *type, enum Erro
 					return NULL;
 				}
 				variable =
-				var_createSimpleVariable(interpreter, errorCode, symbolIndex, interpreter->subLevel, varType, NULL);
+					var_createSimpleVariable(interpreter, errorCode, symbolIndex, interpreter->subLevel, varType, NULL);
 				if(!variable)
 					return NULL;
 			}
@@ -752,7 +752,7 @@ struct TypedValue itp_evaluateNumericExpression(struct Core *core, int min, int 
 struct TypedValue itp_evaluateOptionalExpression(struct Core *core, enum TypeClass typeClass)
 {
 	if(core->interpreter->pc->type == TokenComma || core->interpreter->pc->type == TokenBracketClose ||
-	itp_isEndOfCommand(core->interpreter))
+	   itp_isEndOfCommand(core->interpreter))
 	{
 		struct TypedValue value;
 		value.type = ValueTypeNull;
@@ -764,7 +764,7 @@ struct TypedValue itp_evaluateOptionalExpression(struct Core *core, enum TypeCla
 struct TypedValue itp_evaluateOptionalNumericExpression(struct Core *core, int min, int max)
 {
 	if(core->interpreter->pc->type == TokenComma || core->interpreter->pc->type == TokenBracketClose ||
-	itp_isEndOfCommand(core->interpreter))
+	   itp_isEndOfCommand(core->interpreter))
 	{
 		struct TypedValue value;
 		value.type = ValueTypeNull;
@@ -781,19 +781,19 @@ bool itp_isTokenLevel(enum TokenType token, int level)
 		return token == TokenXOR || token == TokenOR;
 	case 1:
 		return token == TokenAND;
-		//        case 2:
-		//            return token == TokenNOT;
+	//        case 2:
+	//            return token == TokenNOT;
 	case 3:
 		return token == TokenEq || token == TokenUneq || token == TokenGr || token == TokenLe || token == TokenGrEq ||
-		token == TokenLeEq;
+		       token == TokenLeEq;
 	case 4:
 		return token == TokenPlus || token == TokenMinus;
 	case 5:
 		return token == TokenMOD;
 	case 6:
 		return token == TokenMul || token == TokenDiv || token == TokenDivInt;
-		//        case 7:
-		//            return token == TokenPlus || token == TokenMinus; // unary
+	//        case 7:
+	//            return token == TokenPlus || token == TokenMinus; // unary
 	case 8:
 		return token == TokenPow;
 	}
@@ -1002,7 +1002,7 @@ struct TypedValue itp_evaluateExpressionLevel(struct Core *core, int level)
 				if(interpreter->pass == PassRun)
 				{
 					newValue.v.floatValue =
-					(strcmp(value.v.stringValue->chars, rightValue.v.stringValue->chars) == 0) ? BAS_TRUE : BAS_FALSE;
+						(strcmp(value.v.stringValue->chars, rightValue.v.stringValue->chars) == 0) ? BAS_TRUE : BAS_FALSE;
 				}
 				break;
 			}
@@ -1011,7 +1011,7 @@ struct TypedValue itp_evaluateExpressionLevel(struct Core *core, int level)
 				if(interpreter->pass == PassRun)
 				{
 					newValue.v.floatValue =
-					(strcmp(value.v.stringValue->chars, rightValue.v.stringValue->chars) != 0) ? BAS_TRUE : BAS_FALSE;
+						(strcmp(value.v.stringValue->chars, rightValue.v.stringValue->chars) != 0) ? BAS_TRUE : BAS_FALSE;
 				}
 				break;
 			}
@@ -1020,7 +1020,7 @@ struct TypedValue itp_evaluateExpressionLevel(struct Core *core, int level)
 				if(interpreter->pass == PassRun)
 				{
 					newValue.v.floatValue =
-					(strcmp(value.v.stringValue->chars, rightValue.v.stringValue->chars) > 0) ? BAS_TRUE : BAS_FALSE;
+						(strcmp(value.v.stringValue->chars, rightValue.v.stringValue->chars) > 0) ? BAS_TRUE : BAS_FALSE;
 				}
 				break;
 			}
@@ -1029,7 +1029,7 @@ struct TypedValue itp_evaluateExpressionLevel(struct Core *core, int level)
 				if(interpreter->pass == PassRun)
 				{
 					newValue.v.floatValue =
-					(strcmp(value.v.stringValue->chars, rightValue.v.stringValue->chars) < 0) ? BAS_TRUE : BAS_FALSE;
+						(strcmp(value.v.stringValue->chars, rightValue.v.stringValue->chars) < 0) ? BAS_TRUE : BAS_FALSE;
 				}
 				break;
 			}
@@ -1038,7 +1038,7 @@ struct TypedValue itp_evaluateExpressionLevel(struct Core *core, int level)
 				if(interpreter->pass == PassRun)
 				{
 					newValue.v.floatValue =
-					(strcmp(value.v.stringValue->chars, rightValue.v.stringValue->chars) >= 0) ? BAS_TRUE : BAS_FALSE;
+						(strcmp(value.v.stringValue->chars, rightValue.v.stringValue->chars) >= 0) ? BAS_TRUE : BAS_FALSE;
 				}
 				break;
 			}
@@ -1047,7 +1047,7 @@ struct TypedValue itp_evaluateExpressionLevel(struct Core *core, int level)
 				if(interpreter->pass == PassRun)
 				{
 					newValue.v.floatValue =
-					(strcmp(value.v.stringValue->chars, rightValue.v.stringValue->chars) <= 0) ? BAS_TRUE : BAS_FALSE;
+						(strcmp(value.v.stringValue->chars, rightValue.v.stringValue->chars) <= 0) ? BAS_TRUE : BAS_FALSE;
 				}
 				break;
 			}
@@ -1336,14 +1336,14 @@ struct TypedValue itp_evaluateFunction(struct Core *core)
 	case TokenWINDOWH:
 		return fnc_WINDOW(core);
 
-		// case TokenUP:
-		// case TokenDOWN:
-		// case TokenLEFT:
-		// case TokenRIGHT:
-		//     return fnc_UP_DOWN_LEFT_RIGHT(core);
+	// case TokenUP:
+	// case TokenDOWN:
+	// case TokenLEFT:
+	// case TokenRIGHT:
+	//     return fnc_UP_DOWN_LEFT_RIGHT(core);
 
-		// case TokenBUTTON:
-		//     return fnc_BUTTON(core);
+	// case TokenBUTTON:
+	//     return fnc_BUTTON(core);
 
 	case TokenSPRITEX:
 	case TokenSPRITEY:
@@ -1649,8 +1649,8 @@ enum ErrorCode itp_evaluateCommand(struct Core *core)
 	case TokenSCROLL:
 		return cmd_SCROLL(core);
 
-		// case TokenDISPLAY:
-		//     return cmd_DISPLAY(core);
+	// case TokenDISPLAY:
+	//     return cmd_DISPLAY(core);
 
 	case TokenSPRITEA:
 		return cmd_SPRITE_A(core);
@@ -1678,14 +1678,14 @@ enum ErrorCode itp_evaluateCommand(struct Core *core)
 	case TokenFILES:
 		return cmd_FILES(core);
 
-		// case TokenGAMEPAD:
-		//     return cmd_GAMEPAD(core);
+	// case TokenGAMEPAD:
+	//     return cmd_GAMEPAD(core);
 
 	case TokenKEYBOARD:
 		return cmd_KEYBOARD(core);
 
-		// case TokenTOUCHSCREEN:
-		//     return cmd_TOUCHSCREEN(core);
+	// case TokenTOUCHSCREEN:
+	//     return cmd_TOUCHSCREEN(core);
 
 	case TokenTRACE:
 		return cmd_TRACE(core);
@@ -1715,8 +1715,8 @@ enum ErrorCode itp_evaluateCommand(struct Core *core)
 	case TokenSOUND:
 		switch(itp_getNextTokenType(interpreter))
 		{
-			//                case TokenCOPY:
-			//                    return cmd_SOUND_COPY(core);
+		//                case TokenCOPY:
+		//                    return cmd_SOUND_COPY(core);
 
 		case TokenSOURCE:
 			return cmd_SOUND_SOURCE(core);

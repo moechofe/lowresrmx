@@ -67,7 +67,7 @@ enum ErrorCode cmd_IF(struct Core *core, bool isAfterBlockElse)
 			if(interpreter->isSingleLineIf)
 				return ErrorExpectedCommand;
 			enum ErrorCode errorCode =
-			lab_pushLabelStackItem(interpreter, isAfterBlockElse ? LabelTypeELSEIF : LabelTypeIF, tokenIF);
+				lab_pushLabelStackItem(interpreter, isAfterBlockElse ? LabelTypeELSEIF : LabelTypeIF, tokenIF);
 			if(errorCode != ErrorNone)
 				return errorCode;
 
@@ -280,7 +280,7 @@ enum ErrorCode cmd_FOR(struct Core *core)
 
 		// limit check
 		if((stepValue.v.floatValue > 0 && varValue->floatValue > limitValue.v.floatValue) ||
-		(stepValue.v.floatValue < 0 && varValue->floatValue < limitValue.v.floatValue))
+		   (stepValue.v.floatValue < 0 && varValue->floatValue < limitValue.v.floatValue))
 		{
 			interpreter->pc = tokenFOR->jumpToken; // after NEXT's Eol
 		}
@@ -382,7 +382,7 @@ enum ErrorCode cmd_NEXT(struct Core *core)
 
 		// limit check
 		if((stepValue.v.floatValue > 0 && varValue->floatValue > limitValue.v.floatValue) ||
-		(stepValue.v.floatValue < 0 && varValue->floatValue < limitValue.v.floatValue))
+		   (stepValue.v.floatValue < 0 && varValue->floatValue < limitValue.v.floatValue))
 		{
 			interpreter->pc = storedPc; // after NEXT's Eol
 		}
@@ -573,7 +573,7 @@ enum ErrorCode cmd_ON(struct Core *core)
 
 	// ON RASTER/VBL/PARTICLE/EMITTER
 	if(interpreter->pc->type == TokenRASTER || interpreter->pc->type == TokenVBL ||
-	interpreter->pc->type == TokenPARTICLE || interpreter->pc->type == TokenEMITTER)
+	   interpreter->pc->type == TokenPARTICLE || interpreter->pc->type == TokenEMITTER)
 	{
 		enum TokenType type = interpreter->pc->type;
 		++interpreter->pc;
@@ -698,19 +698,19 @@ enum ErrorCode cmd_ON(struct Core *core)
 					// argument
 					struct Token *tokens = interpreter->pc;
 					if((interpreter->pc->type == TokenIdentifier || interpreter->pc->type == TokenStringIdentifier) &&
-					tokens[1].type == TokenBracketOpen && tokens[2].type == TokenBracketClose)
+					   tokens[1].type == TokenBracketOpen && tokens[2].type == TokenBracketClose)
 					{
 						// pass array by reference
 						if(interpreter->pass == PassRun)
 						{
 							struct ArrayVariable *variable =
-							var_getArrayVariable(interpreter, interpreter->pc->symbolIndex, interpreter->subLevel);
+								var_getArrayVariable(interpreter, interpreter->pc->symbolIndex, interpreter->subLevel);
 							if(!variable)
 								return ErrorArrayNotDimensionized;
 
 							enum ErrorCode errorCode = ErrorNone;
 							var_createArrayVariable(
-							interpreter, &errorCode, numArguments + 1, interpreter->subLevel + 1, variable);
+								interpreter, &errorCode, numArguments + 1, interpreter->subLevel + 1, variable);
 							if(errorCode != ErrorNone)
 								return errorCode;
 						}
@@ -731,11 +731,11 @@ enum ErrorCode cmd_ON(struct Core *core)
 								// pass by reference (simple variable or array element)
 								enum ErrorCode errorCode = ErrorNone;
 								var_createSimpleVariable(interpreter,
-								&errorCode,
-								numArguments + 1,
-								interpreter->subLevel + 1,
-								value.type,
-								interpreter->lastVariableValue);
+									&errorCode,
+									numArguments + 1,
+									interpreter->subLevel + 1,
+									value.type,
+									interpreter->lastVariableValue);
 								if(errorCode != ErrorNone)
 									return errorCode;
 							}
@@ -743,7 +743,7 @@ enum ErrorCode cmd_ON(struct Core *core)
 							{
 								// pass by value
 								struct SimpleVariable *variable = var_createSimpleVariable(
-								interpreter, &errorCode, numArguments + 1, interpreter->subLevel + 1, value.type, NULL);
+									interpreter, &errorCode, numArguments + 1, interpreter->subLevel + 1, value.type, NULL);
 								if(!variable)
 									return errorCode;
 
@@ -869,7 +869,7 @@ enum ErrorCode cmd_ON(struct Core *core)
 						{
 							// array
 							struct ArrayVariable *variable =
-							var_getArrayVariable(interpreter, parameterIndex + 1, interpreter->subLevel);
+								var_getArrayVariable(interpreter, parameterIndex + 1, interpreter->subLevel);
 							if(!variable || variable->type != varType)
 								return ErrorTypeMismatch;
 
@@ -885,7 +885,7 @@ enum ErrorCode cmd_ON(struct Core *core)
 						{
 							// simple variable
 							struct SimpleVariable *variable =
-							var_getSimpleVariable(interpreter, parameterIndex + 1, interpreter->subLevel);
+								var_getSimpleVariable(interpreter, parameterIndex + 1, interpreter->subLevel);
 							if(!variable || variable->type != varType)
 								return ErrorTypeMismatch;
 

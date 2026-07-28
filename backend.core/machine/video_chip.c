@@ -26,70 +26,70 @@
 
 // FAMICUBE
 uint32_t better_palette[] = {
-0xff000000,
-0xffe03c28,
-0xffffffff,
-0xffd7d7d7,
-0xffa8a8a8,
-0xff7b7b7b,
-0xff343434,
-0xff151515,
-0xff0d2030,
-0xff415d66,
-0xff71a6a1,
-0xffbdffca,
-0xff25e2cd,
-0xff0a98ac,
-0xff005280,
-0xff00604b,
-0xff20b562,
-0xff58d332,
-0xff139d08,
-0xff004e00,
-0xff172808,
-0xff376d03,
-0xff6ab417,
-0xff8cd612,
-0xffbeeb71,
-0xffeeffa9,
-0xffb6c121,
-0xff939717,
-0xffcc8f15,
-0xffffbb31,
-0xffffe737,
-0xfff68f37,
-0xffad4e1a,
-0xff231712,
-0xff5c3c0d,
-0xffae6c37,
-0xffc59782,
-0xffe2d7b5,
-0xff4f1507,
-0xff823c3d,
-0xffda655e,
-0xffe18289,
-0xfff5b784,
-0xffffe9c5,
-0xffff82ce,
-0xffcf3c71,
-0xff871646,
-0xffa328b3,
-0xffcc69e4,
-0xffd59cfc,
-0xfffec9ed,
-0xffe2c9ff,
-0xffa675fe,
-0xff6a31ca,
-0xff5a1991,
-0xff211640,
-0xff3d34a5,
-0xff6264dc,
-0xff9ba0ef,
-0xff98dcff,
-0xff5ba8ff,
-0xff0a89ff,
-0xff024aca,
-0xff00177d,
+	0xff000000,
+	0xffe03c28,
+	0xffffffff,
+	0xffd7d7d7,
+	0xffa8a8a8,
+	0xff7b7b7b,
+	0xff343434,
+	0xff151515,
+	0xff0d2030,
+	0xff415d66,
+	0xff71a6a1,
+	0xffbdffca,
+	0xff25e2cd,
+	0xff0a98ac,
+	0xff005280,
+	0xff00604b,
+	0xff20b562,
+	0xff58d332,
+	0xff139d08,
+	0xff004e00,
+	0xff172808,
+	0xff376d03,
+	0xff6ab417,
+	0xff8cd612,
+	0xffbeeb71,
+	0xffeeffa9,
+	0xffb6c121,
+	0xff939717,
+	0xffcc8f15,
+	0xffffbb31,
+	0xffffe737,
+	0xfff68f37,
+	0xffad4e1a,
+	0xff231712,
+	0xff5c3c0d,
+	0xffae6c37,
+	0xffc59782,
+	0xffe2d7b5,
+	0xff4f1507,
+	0xff823c3d,
+	0xffda655e,
+	0xffe18289,
+	0xfff5b784,
+	0xffffe9c5,
+	0xffff82ce,
+	0xffcf3c71,
+	0xff871646,
+	0xffa328b3,
+	0xffcc69e4,
+	0xffd59cfc,
+	0xfffec9ed,
+	0xffe2c9ff,
+	0xffa675fe,
+	0xff6a31ca,
+	0xff5a1991,
+	0xff211640,
+	0xff3d34a5,
+	0xff6264dc,
+	0xff9ba0ef,
+	0xff98dcff,
+	0xff5ba8ff,
+	0xff0a89ff,
+	0xff024aca,
+	0xff00177d,
 };
 
 int video_getCharacterPixel(struct Character *character, int x, int y)
@@ -100,7 +100,7 @@ int video_getCharacterPixel(struct Character *character, int x, int y)
 }
 
 void video_renderPlane(struct Character *characters, struct Plane *plane, int sizeMode, int y, int scrollX, int scrollY,
-int overlayFlag, uint8_t *scanlineBuffer, bool opaque, bool doubledX, bool doubledY)
+	int overlayFlag, uint8_t *scanlineBuffer, bool opaque, bool doubledX, bool doubledY)
 {
 	int divShift = sizeMode ? 4 : 3; // TODO: deleteme
 	int planeY = (y + scrollY) >> (doubledY ? 1 : 0);
@@ -179,7 +179,7 @@ int overlayFlag, uint8_t *scanlineBuffer, bool opaque, bool doubledX, bool doubl
 }
 
 void video_renderSprites(
-struct SpriteRegisters *reg, struct VideoRam *ram, int y, uint8_t *scanlineBuffer, uint8_t *scanlineSpriteBuffer)
+	struct SpriteRegisters *reg, struct VideoRam *ram, int y, uint8_t *scanlineBuffer, uint8_t *scanlineSpriteBuffer)
 {
 	for(int i = NUM_SPRITES - 1; i >= 0; i--)
 	{
@@ -334,64 +334,64 @@ void video_renderScreen(struct Core *core, uint32_t *outputBuffer, int pitch)
 				int scrollX = reg->scrollDX & (reg->attr.planeDDoubled ? 0x3ff : 0x1ff);
 				int scrollY = reg->scrollDY & (reg->attr.planeDDoubled ? 0x3ff : 0x1ff);
 				video_renderPlane(ram->characters,
-				&ram->planeD,
-				0,
-				y,
-				scrollX,
-				scrollY,
-				0,
-				scanlineBuffer,
-				mi->planeColor0IsOpaque[3],
-				reg->attr.planeDDoubled,
-				reg->attr.planeDDoubled);
+					&ram->planeD,
+					0,
+					y,
+					scrollX,
+					scrollY,
+					0,
+					scanlineBuffer,
+					mi->planeColor0IsOpaque[3],
+					reg->attr.planeDDoubled,
+					reg->attr.planeDDoubled);
 			}
 			if(reg->attr.planeCEnabled)
 			{
 				int scrollX = reg->scrollCX & (reg->attr.planeCDoubled ? 0x3ff : 0x1ff);
 				int scrollY = reg->scrollCY & (reg->attr.planeCDoubled ? 0x3ff : 0x1ff);
 				video_renderPlane(ram->characters,
-				&ram->planeC,
-				0,
-				y,
-				scrollX,
-				scrollY,
-				0,
-				scanlineBuffer,
-				mi->planeColor0IsOpaque[2],
-				reg->attr.planeCDoubled,
-				reg->attr.planeCDoubled);
+					&ram->planeC,
+					0,
+					y,
+					scrollX,
+					scrollY,
+					0,
+					scanlineBuffer,
+					mi->planeColor0IsOpaque[2],
+					reg->attr.planeCDoubled,
+					reg->attr.planeCDoubled);
 			}
 			if(reg->attr.planeBEnabled)
 			{
 				int scrollX = reg->scrollBX & (reg->attr.planeBDoubled ? 0x3ff : 0x1ff);
 				int scrollY = reg->scrollBY & (reg->attr.planeBDoubled ? 0x3ff : 0x1ff);
 				video_renderPlane(ram->characters,
-				&ram->planeB,
-				0,
-				y,
-				scrollX,
-				scrollY,
-				0,
-				scanlineBuffer,
-				mi->planeColor0IsOpaque[1],
-				reg->attr.planeBDoubled,
-				reg->attr.planeBDoubled);
+					&ram->planeB,
+					0,
+					y,
+					scrollX,
+					scrollY,
+					0,
+					scanlineBuffer,
+					mi->planeColor0IsOpaque[1],
+					reg->attr.planeBDoubled,
+					reg->attr.planeBDoubled);
 			}
 			if(reg->attr.planeAEnabled)
 			{
 				int scrollX = reg->scrollAX & (reg->attr.planeADoubled ? 0x3ff : 0x1ff);
 				int scrollY = reg->scrollAY & (reg->attr.planeADoubled ? 0x3ff : 0x1ff);
 				video_renderPlane(ram->characters,
-				&ram->planeA,
-				0,
-				y,
-				scrollX,
-				scrollY,
-				0,
-				scanlineBuffer,
-				mi->planeColor0IsOpaque[0],
-				reg->attr.planeADoubled,
-				reg->attr.planeADoubled);
+					&ram->planeA,
+					0,
+					y,
+					scrollX,
+					scrollY,
+					0,
+					scanlineBuffer,
+					mi->planeColor0IsOpaque[0],
+					reg->attr.planeADoubled,
+					reg->attr.planeADoubled);
 			}
 			if(reg->attr.spritesEnabled)
 			{
@@ -402,16 +402,16 @@ void video_renderScreen(struct Core *core, uint32_t *outputBuffer, int pitch)
 
 		// overlay
 		video_renderPlane((struct Character *)overlayCharacters,
-		&core->overlay->plane,
-		0,
-		y,
-		0,
-		0,
-		OVERLAY_FLAG,
-		scanlineBuffer,
-		0,
-		0,
-		0);
+			&core->overlay->plane,
+			0,
+			y,
+			0,
+			0,
+			OVERLAY_FLAG,
+			scanlineBuffer,
+			0,
+			0,
+			0);
 
 		if(core->interpreter->compat)
 		{
@@ -461,7 +461,7 @@ void video_renderScreen(struct Core *core, uint32_t *outputBuffer, int pitch)
 	if(core->interpreter->compat)
 	{ // This block is outside the main loop, so outputPixel is not valid here. It should use outputBuffer.
 		uint32_t *endPixel = (uint32_t *)((uint8_t *)outputBuffer +
-		sw * sh * sizeof(uint32_t)); // Assuming pitch is consistent for the whole buffer
+			sw * sh * sizeof(uint32_t));                           // Assuming pitch is consistent for the whole buffer
 		// while(outputPixel < endPixel)
 		{
 #if ABGR

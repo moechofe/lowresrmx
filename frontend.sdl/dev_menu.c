@@ -54,7 +54,7 @@ void dev_onButtonTap(struct DevMenu *devMenu);
 void dev_showToolsMenu(struct DevMenu *devMenu);
 void dev_showClearRamMenu(struct DevMenu *devMenu);
 void dev_showMenu(
-struct DevMenu *devMenu, const char *message, const char *buttons[], int numButtons, int numRemoveButtons);
+	struct DevMenu *devMenu, const char *message, const char *buttons[], int numButtons, int numRemoveButtons);
 void dev_clearPersistentRam(struct DevMenu *devMenu);
 void updateScreenRect(int winW, int winH);
 void updateSafeArea();
@@ -392,7 +392,7 @@ void dev_showClearRamMenu(struct DevMenu *devMenu)
 }
 
 void dev_showMenu(
-struct DevMenu *devMenu, const char *message, const char *buttons[], int numButtons, int numRemoveButtons)
+	struct DevMenu *devMenu, const char *message, const char *buttons[], int numButtons, int numRemoveButtons)
 {
 	struct TextLib *textLib = &devMenu->textLib;
 

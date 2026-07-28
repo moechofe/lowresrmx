@@ -72,7 +72,7 @@ void print_value(struct Core *core, enum ValueType type, union Value *value)
 }
 
 void set_value(struct Core *core, enum ValueType type, union Value *value, enum TokenType newType, float newFloat,
-struct RCString *newString)
+	struct RCString *newString)
 {
 	// NOTE: value and newValue are alreay tested before arriving here
 	if(newType == TokenFloat && type == ValueTypeFloat)
@@ -275,7 +275,7 @@ static void process_command_line(struct Core *core)
 				t = &toks.tokens[i++];
 				int indices[MAX_ARRAY_DIMENSIONS], dimensions = 0;
 				while(t->type != TokenBracketClose && t->type != TokenEol && t->type != TokenEq &&
-				dimensions < MAX_ARRAY_DIMENSIONS)
+				      dimensions < MAX_ARRAY_DIMENSIONS)
 				{
 					if(t->type == TokenFloat)
 					{
@@ -379,7 +379,7 @@ static void process_command_line(struct Core *core)
 			for(int i = 0; i < MAX_SYMBOLS && tokenizer->symbols[i].name[0] != 0; i++)
 			{
 				struct SimpleVariable *simple =
-				var_getSimpleVariable(core->interpreter, i, core->interpreter->subLevel);
+					var_getSimpleVariable(core->interpreter, i, core->interpreter->subLevel);
 				struct ArrayVariable *array = var_getArrayVariable(core->interpreter, i, core->interpreter->subLevel);
 				if(!simple && !array)
 					continue;
@@ -480,14 +480,14 @@ static void process_command_line(struct Core *core)
 				txtlib_printText(&core->overlay->textLib, "  ");
 
 				char *ptr = (char *)(&core->interpreter
-				->sourceCode[core->interpreter->labelStackItems[i].token->sourcePosition - 1]);
+					->sourceCode[core->interpreter->labelStackItems[i].token->sourcePosition - 1]);
 				while((*ptr >= 'a' && *ptr <= 'z') || (*ptr >= 'A' && *ptr <= 'Z') || (*ptr >= '0' && *ptr <= '9') ||
-				*ptr == '_')
+				      *ptr == '_')
 				{
 					ptr--;
 				}
 				size_t len =
-				&core->interpreter->sourceCode[core->interpreter->labelStackItems[i].token->sourcePosition - 1] - ptr;
+					&core->interpreter->sourceCode[core->interpreter->labelStackItems[i].token->sourcePosition - 1] - ptr;
 				if(len > 20)
 					len = 20;
 				buffer[len] = '\0';
@@ -577,7 +577,7 @@ static void process_command_line(struct Core *core)
 				return;
 			}
 			machine_trackMemory(
-			core, address, t->type == TokenPEEK ? true : false, t->type == TokenPOKE ? true : false);
+				core, address, t->type == TokenPEEK ? true : false, t->type == TokenPOKE ? true : false);
 		}
 
 		// execute next line of code
@@ -590,7 +590,7 @@ static void process_command_line(struct Core *core)
 			{
 				itp_endProgram(core);
 				delegate_interpreterDidFail(
-				core, err_makeCoreError(errorCode, core->interpreter->pc->sourcePosition, -1));
+					core, err_makeCoreError(errorCode, core->interpreter->pc->sourcePosition, -1));
 			}
 			else
 			{
@@ -682,8 +682,8 @@ void overlay_debugger(struct Core *core)
 			{
 				// move chars after the cursor one position to the left
 				memmove(overlay->commandLine + lib->cursorX - 1,
-				overlay->commandLine + lib->cursorX,
-				strlen(overlay->commandLine) - lib->cursorX + 1);
+					overlay->commandLine + lib->cursorX,
+					strlen(overlay->commandLine) - lib->cursorX + 1);
 				lib->cursorX--;
 				print_command_line(core);
 			}
@@ -694,8 +694,8 @@ void overlay_debugger(struct Core *core)
 			{
 				// move chars after the cursor one position to the left
 				memmove(overlay->commandLine + lib->cursorX,
-				overlay->commandLine + lib->cursorX + 1,
-				strlen(overlay->commandLine) - lib->cursorX);
+					overlay->commandLine + lib->cursorX + 1,
+					strlen(overlay->commandLine) - lib->cursorX);
 				print_command_line(core);
 			}
 		}

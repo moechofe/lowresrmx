@@ -254,7 +254,7 @@ void controlsDidChange(void *context, struct ControlsInfo controlsInfo)
 	struct Runner *runner = context;
 
 	if(controlsInfo.keyboardMode == KeyboardModeOn ||
-	(controlsInfo.keyboardMode == KeyboardModeOptional && !SDL_HasScreenKeyboardSupport()))
+	   (controlsInfo.keyboardMode == KeyboardModeOptional && !SDL_HasScreenKeyboardSupport()))
 	{
 		if(!SDL_TextInputActive(window))
 		{

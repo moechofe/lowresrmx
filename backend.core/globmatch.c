@@ -48,15 +48,15 @@
 #define SL_GLOBMATCH_FALSE 0
 
 /******************************************************************/ /**
-																	  * @brief Check if a string matches a globbing
-																	  *pattern.
-																	  *
-																	  * @param string  The string to check.
-																	  * @param pattern The globbing pattern to match.
-																	  *
-																	  * @returns 0 if string does not match pattern and
-																	  *non-zero otherwise.
-																	  **********************************************************************/
+ * @brief Check if a string matches a globbing
+ * pattern.
+ *
+ * @param string  The string to check.
+ * @param pattern The globbing pattern to match.
+ *
+ * @returns 0 if string does not match pattern and
+ * non-zero otherwise.
+ **********************************************************************/
 int sl_globmatch(char *string, char *pattern)
 {
 	int negate;

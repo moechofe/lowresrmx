@@ -383,7 +383,7 @@ struct TypedValue fnc_LEN(struct Core *core)
 		if(interpreter->pass == PassRun)
 		{
 			value.v.floatValue =
-			sqrtf(xValue.v.floatValue * xValue.v.floatValue + yValue.v.floatValue * yValue.v.floatValue);
+				sqrtf(xValue.v.floatValue * xValue.v.floatValue + yValue.v.floatValue * yValue.v.floatValue);
 		}
 	}
 

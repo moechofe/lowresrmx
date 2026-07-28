@@ -51,7 +51,7 @@ enum ErrorCode cmd_PARTICLE(struct Core *core)
 		if(core->interpreter->pass == PassPrepare && nValue.type != ValueTypeFloat)
 			return ErrorTypeMismatch;
 		else if(core->interpreter->pass == PassRun &&
-		((int)nValue.v.floatValue < 0 || (int)nValue.v.floatValue > NUM_SPRITES - 1))
+			((int)nValue.v.floatValue < 0 || (int)nValue.v.floatValue > NUM_SPRITES - 1))
 			return ErrorInvalidParameter;
 
 		++interpreter->pc;
@@ -100,7 +100,7 @@ enum ErrorCode cmd_EMITTER(struct Core *core)
 		if(core->interpreter->pass == PassPrepare && nValue.type != ValueTypeFloat)
 			return ErrorTypeMismatch;
 		else if(core->interpreter->pass == PassRun &&
-		((int)nValue.v.floatValue < 0 || (int)nValue.v.floatValue > EMITTER_MAX - 1))
+			((int)nValue.v.floatValue < 0 || (int)nValue.v.floatValue > EMITTER_MAX - 1))
 			return ErrorInvalidParameter;
 
 		// EMITTER <COUNT> AT
@@ -124,7 +124,7 @@ enum ErrorCode cmd_EMITTER(struct Core *core)
 		if(core->interpreter->pass == PassPrepare && nValue.type != ValueTypeFloat)
 			return ErrorTypeMismatch;
 		else if(core->interpreter->pass == PassRun &&
-		((int)nValue.v.floatValue < 0 || (int)nValue.v.floatValue > SPAWNER_MAX - 1))
+			((int)nValue.v.floatValue < 0 || (int)nValue.v.floatValue > SPAWNER_MAX - 1))
 			return ErrorInvalidParameter;
 
 		// EMITTER <SPAWNER> DATA
@@ -157,7 +157,7 @@ enum ErrorCode cmd_EMITTER(struct Core *core)
 		if(core->interpreter->pass == PassPrepare && nValue.type != ValueTypeFloat)
 			return ErrorTypeMismatch;
 		else if(core->interpreter->pass == PassRun &&
-		((int)nValue.v.floatValue < 0 || (int)nValue.v.floatValue > SPAWNER_MAX - 1))
+			((int)nValue.v.floatValue < 0 || (int)nValue.v.floatValue > SPAWNER_MAX - 1))
 			return ErrorInvalidParameter;
 
 		// EMITTER <SPAWNER> ON
@@ -187,7 +187,7 @@ enum ErrorCode cmd_EMITTER(struct Core *core)
 		if(core->interpreter->pass == PassPrepare && nValue.type != ValueTypeFloat)
 			return ErrorTypeMismatch;
 		else if(core->interpreter->pass == PassRun &&
-		((int)nValue.v.floatValue < 0 || (int)nValue.v.floatValue > SPAWNER_MAX - 1))
+			((int)nValue.v.floatValue < 0 || (int)nValue.v.floatValue > SPAWNER_MAX - 1))
 			return ErrorInvalidParameter;
 
 		// EMITTER <SPAWNER> OFF

@@ -11,7 +11,7 @@ extern "C"
 #define SL_GLOBMATCH_NEGATE '^' /* std char set negation char */
 #endif
 
-	int sl_globmatch(char *string, char *pattern);
+int sl_globmatch(char *string, char *pattern);
 
 #ifdef __cplusplus
 }

@@ -191,7 +191,7 @@ void prtclib_update(struct Core *core, struct ParticlesLib *lib)
 							sign = pcg32_boundedrand_r(&pcg, 2) * 2 - 1;
 							sprite_distance_x = (float)pcg32_boundedrand_r(&pcg, outer * 2) - outer;
 							sprite_distance_y =
-							((float)pcg32_boundedrand_r(&pcg, outer - inner) + inner) * sign * -shape;
+								((float)pcg32_boundedrand_r(&pcg, outer - inner) + inner) * sign * -shape;
 						}
 						else
 						{

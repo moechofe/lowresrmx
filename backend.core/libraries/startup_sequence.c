@@ -42,8 +42,8 @@ void runStartupSequence(struct Core *core)
 	if(strcmp(entries[0].comment, "FONT") == 0)
 	{
 		memcpy(&core->machine->videoRam.characters[FONT_CHAR_OFFSET],
-		&core->machine->cartridgeRom[entries[0].start],
-		entries[0].length);
+			&core->machine->cartridgeRom[entries[0].start],
+			entries[0].length);
 	}
 
 	// default palettes

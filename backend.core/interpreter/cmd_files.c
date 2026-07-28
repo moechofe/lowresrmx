@@ -74,7 +74,7 @@ enum ErrorCode cmd_LOAD(struct Core *core)
 	{
 		bool pokeFailed = false;
 		bool ready =
-		disk_loadFile(core, fileValue.v.floatValue, addressValue.v.floatValue, maxLength, offset, &pokeFailed);
+			disk_loadFile(core, fileValue.v.floatValue, addressValue.v.floatValue, maxLength, offset, &pokeFailed);
 		if(pokeFailed)
 			return ErrorIllegalMemoryAccess;
 

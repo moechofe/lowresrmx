@@ -79,7 +79,7 @@ bool core_shouldRender(struct Core *core);
 void core_orientationChanged(struct Core *core);
 
 void core_setInputGamepad(
-struct CoreInput *input, int player, bool up, bool down, bool left, bool right, bool buttonA, bool buttonB);
+	struct CoreInput *input, int player, bool up, bool down, bool left, bool right, bool buttonA, bool buttonB);
 
 void core_diskLoaded(struct Core *core);
 

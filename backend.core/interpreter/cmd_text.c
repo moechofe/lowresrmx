@@ -145,7 +145,7 @@ enum ErrorCode cmd_endINPUT(struct Core *core)
 		if(valueType == ValueTypeString)
 		{
 			struct RCString *rcstring =
-			rcstring_new(interpreter->textLib.inputBuffer, interpreter->textLib.inputLength);
+				rcstring_new(interpreter->textLib.inputBuffer, interpreter->textLib.inputLength);
 			if(!rcstring)
 				return ErrorOutOfMemory;
 
@@ -199,7 +199,7 @@ enum ErrorCode cmd_TEXT(struct Core *core)
 	{
 		struct TextLib *lib = &interpreter->textLib;
 		txtlib_writeText(
-		lib, stringValue.v.stringValue->chars, floorf(xValue.v.floatValue), floorf(yValue.v.floatValue));
+			lib, stringValue.v.stringValue->chars, floorf(xValue.v.floatValue), floorf(yValue.v.floatValue));
 	}
 
 	return itp_endOfCommand(interpreter);
@@ -252,7 +252,7 @@ enum ErrorCode cmd_NUMBER(struct Core *core)
 		int digits = digitsValue.v.floatValue;
 		struct TextLib *lib = &interpreter->textLib;
 		txtlib_writeNumber(
-		lib, numberValue.v.floatValue, digits, floorf(xValue.v.floatValue), floorf(yValue.v.floatValue));
+			lib, numberValue.v.floatValue, digits, floorf(xValue.v.floatValue), floorf(yValue.v.floatValue));
 	}
 
 	return itp_endOfCommand(interpreter);

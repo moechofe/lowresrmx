@@ -222,8 +222,8 @@ void settings_saveAs(struct Settings *settings, const char *filename)
 		fputs("\n\n", file);
 
 		fputs("# Start the application in zoom mode: 0 = pixel perfect, 1 = large, 2 = overscan, 3 = squeeze.\n# zoom "
-			  "0-3\n",
-		file);
+			"0-3\n",
+			file);
 		fprintf(file, "zoom %d\n\n", settings->file.zoom);
 
 		fputs("# Disable the Development Menu, Esc key quits LowRes NX.\n# disabledev yes/no\n", file);
