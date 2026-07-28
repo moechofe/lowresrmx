@@ -25,6 +25,7 @@ if(preg_match("/^\/($MATCH_ENTRY_TOKEN)\.html$/",$urlPath,$matches))
 
 	$eid=$first_id;
 	$pid=$program_id;
+	track('view:entry');
 	require_once __DIR__.'/entry.html';
 	exit;
 }

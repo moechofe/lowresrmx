@@ -188,6 +188,19 @@
     removed from `"x:TARGET"`, so no orphan keys accumulate. The number of
     distinct emoji per target is capped at `MAX_REACTION_KINDS`.
 
+#### Activity tracking related
+
+- _(int)_ `"stat:EVENT"` lifetime total for the event
+
+- _(int)_ `"stat:EVENT:YYYY-MM-DD"` per-day count for the event **TTL**
+
+    With `EVENT` being one of:
+
+    - Page views: `"view:community"`, `"view:show"`, `"view:chat"`, `"view:help"`, `"view:share"`, `"view:setting"`, `"view:about"`, `"view:entry"`, `"view:player"`
+    - Content: `"vote"`, `"comment"`, `"upload"`, `"publish"`, `"post"`, `"replace"`
+    - Engagement: `"react"`, `"search"`
+    - Account: `"signin:google"`, `"signin:discord"`, `"signin:github"`, `"signup"`, `"signout"`, `"delete"` (program), `"account_delete"`
+
 #### Admin related
 
 - _(list)_ `"adm:de"` list of users marked to delete everything

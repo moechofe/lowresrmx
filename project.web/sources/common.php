@@ -24,6 +24,7 @@ const LOGIN_DISCORD_TTL=60*5; // 5 minutes
 const LOGIN_GITHUB_TTL=60*5; // 5 minutes
 const SESSION_TTL=60*60*24*30; // 30 days
 const NOTIF_TTL=60*60*24*90; // 90 days
+const STAT_TTL=60*60*24*400; // ~13 months
 
 defined('CONTENT_FOLDER') or define('CONTENT_FOLDER',__DIR__.'/../contents/');
 defined('REDIS_SCAN_CURSOR_FILE') or define('REDIS_SCAN_CURSOR_FILE',"./.updrank_cursor");
@@ -138,6 +139,15 @@ function hgetall(array $data):array
 		$result[$k]=array_shift($data);
 	}
 	return $result;
+}
+
+// Bump an activity counter: a lifetime total plus a per-day bucket (see DATABASE.md).
+function track(string $event):void
+{
+	$day=date("Y-m-d");
+	redis()->incr("stat:$event");
+	redis()->incr("stat:$event:$day");
+	redis()->expire("stat:$event:$day",STAT_TTL);
 }
 
 function revokeSession(string $session_id):void

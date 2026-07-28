@@ -23,6 +23,7 @@ if(preg_match("/^\/($MATCH_ENTRY_TOKEN)\/vote$/",$urlPath,$matches)&&$isGet)
 		redis()->sadd("r:$first_id:v",$user_id);
 		$upvoted=true;
 		redis()->hincrby("r:$first_id:d","vote",1);
+		track('vote');
 
 		// Record activity on the post
 		redis()->hset("r:$first_id:d","at",time());

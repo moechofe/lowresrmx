@@ -57,6 +57,7 @@ if(preg_match('/^\/match$/',$urlPath)&&$isGet&&!empty($_GET['q']))
 	$query=preg_replace('/[^\pL\pN ]+/','',$query);
 	if(empty($query)) badRequest("Fail to read query");
 	$pattern='/'.preg_quote($query).'/i';
+	track('search');
 
 	$cursor=max(0,intval(value: @getallheaders()[HEADER_SCAN_CURSOR]));
 

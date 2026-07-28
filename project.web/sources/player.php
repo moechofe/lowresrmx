@@ -13,6 +13,7 @@ if(preg_match("/\/($MATCH_ENTRY_TOKEN)\.player$/",$urlPath,$matches)&&$isGet)
 	if($status==="banned") badRequest("Fail to validate entry");
 
 	header("X-Robots-Tag: noindex", true);
+	track('view:player');
 	require_once __DIR__.'/player.html';
 	exit;
 }

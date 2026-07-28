@@ -31,6 +31,7 @@ if(preg_match('/^\/upload$/',$urlPath)&&$isPost)
 
 	// will expire in 1 hour
 	redis()->expire("t:$uptoken",UPLOAD_TOKEN_TTL);
+	track('upload');
 
 	header("Content-Type: application/json",true);
 	header("X-Robots-Tag: noindex", true);

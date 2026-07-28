@@ -26,6 +26,7 @@ if(preg_match('/\/delete_everything$/',$urlPath)&&$isPost)
 	if(!checkRateLimit('setting',$user_id)) tooManyRequests("Fail to respect limit");
 
 	redis()->lpush("adm:de",$user_id);
+	track('account_delete');
 
 	foreach(redis()->lrange("u:$user_id:s",0,-1) as $session_id)
 		redis()->hset("s:$session_id","status","revoked");

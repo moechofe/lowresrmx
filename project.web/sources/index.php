@@ -49,6 +49,9 @@ if(in_array($urlPath,[
 	'/about.html',
 	'/about.js',
 	'/about.css',
+	'/privacy-policy.html',
+	'/terms-of-service.html',
+	'/documentation.html',
 	// '/sign-in.html', // in DEV only
 ]))
 {
@@ -57,6 +60,7 @@ if(in_array($urlPath,[
 		'css'=>'text/css',
 		'js'=>'application/javascript',
 	][$info['extension']]);
+	if($info['extension']==='html') track('view:'.$info['filename']);
 	if($isProd) readfile(__DIR__.$urlPath);
 	else require_once __DIR__.$urlPath;
 	exit;
@@ -75,9 +79,6 @@ if(in_array($urlPath,[
 	'/favicon.ico',
 	'/logo-white.png',
 	'/logo-colored.png',
-	'/privacy-policy.html',
-	'/terms-of-service.html',
-	'/documentation.html',
 	'/documentation.css',
 	'/robots.txt',
 	'/sitemap.xml',

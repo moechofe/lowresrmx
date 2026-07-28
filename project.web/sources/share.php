@@ -123,6 +123,7 @@ if(preg_match('/^\/delete$/',$urlPath)&&$isPost)
 
 	redis()->del("p:$program_id");
 	redis()->lrem("u:{$user_id}:p",1,$program_id);
+	track('delete');
 
 	header("X-Robots-Tag: noindex", true);
 	exit;
@@ -186,6 +187,7 @@ if(preg_match('/\/publish$/',$urlPath)&&$isPost)
 
 	// Register the post in the forum
 	redis()->zadd("w:$where",time(),$first_id);
+	track('publish');
 
 	// Add to the user first post list
 	redis()->lpush("u:{$user_id}:f",$first_id);
@@ -274,6 +276,7 @@ if(preg_match('/\/post$/',$urlPath)&&$isPost)
 
 	// Register the post in the forum
 	redis()->zadd("w:$where",time(),$first_id);
+	track('post');
 
 	// Add to the user first post list
 	redis()->lpush("u:{$user_id}:f",$first_id);
@@ -433,6 +436,7 @@ if(preg_match("/\/($MATCH_ENTRY_TOKEN)\/replace$/",$urlPath,$matches)&&$isPost)
 
 	// Update the rank of the post
 	updRank($first_id);
+	track('replace');
 
 	header("X-Robots-Tag: noindex", true);
 	exit;

@@ -50,6 +50,7 @@ if(preg_match("/\/($MATCH_ENTRY_TOKEN)\/comment$/",$urlPath,$matches)&&$isPost)
 
 	// Add the comment as child of the first post
 	redis()->rpush("f:$first_id:c",$cid);
+	track('comment');
 
 	// Give points to the user for the comment
 	redis()->hincrby("r:$first_id:d","comm",1);

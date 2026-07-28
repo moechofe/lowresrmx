@@ -58,10 +58,13 @@ if(preg_match('/^\/google$/',$urlPath)&&$isGet&&!empty($_GET['code'])&&!empty($_
 
 	redis()->rpush("u:$user_id:s",$session_id);
 
+	$isNewUser=!redis()->exists("u:$user_id");
 	redis()->hset("u:$user_id","name",@$profile_response['given_name']);
 	redis()->hset("u:$user_id","picture",@$profile_response['picture']);
 	redis()->hsetnx("u:$user_id","author",@$profile_response['given_name']);
 	redis()->hsetnx("u:$user_id","locale",@$profile_response['locale']?:'en');
+	track('signin:google');
+	if($isNewUser) track('signup');
 
 	$session_id=bin2hex($session_id);
 
@@ -169,11 +172,14 @@ if(preg_match('/^\/discord$/',$urlPath)&&$isGet&&!empty($_GET['code'])&&!empty($
 
 	redis()->rpush("u:$user_id:s",$session_id);
 
+	$isNewUser=!redis()->exists("u:$user_id");
 	redis()->hsetnx("u:$user_id","name",$profile_response['username']);
 	$picture="https://cdn.discordapp.com/avatars/{$profile_response['id']}/{$profile_response['avatar']}.png";
 	redis()->hset("u:$user_id","picture",$picture);
 	redis()->hsetnx("u:$user_id","author",$profile_response['username']);
 	redis()->hsetnx("u:$user_id","locale",$profile_response['locale']?:'en');
+	track('signin:discord');
+	if($isNewUser) track('signup');
 
 	$session_id=bin2hex($session_id);
 
@@ -290,10 +296,13 @@ elseif(preg_match('/^\/github$/',$urlPath)&&$isGet&&!empty($_GET['code'])&&!empt
 
 	redis()->rpush("u:$user_id:s",$session_id);
 
+	$isNewUser=!redis()->exists("u:$user_id");
 	redis()->hsetnx("u:$user_id","name",$profile_response['login']);
 	redis()->hset("u:$user_id","picture",@$profile_response['avatar_url']);
 	redis()->hsetnx("u:$user_id","author",$profile_response['login']);
 	// GitHub doesn't provide locale, so we can't set it.
+	track('signin:github');
+	if($isNewUser) track('signup');
 
 	$session_id=bin2hex($session_id);
 
@@ -385,6 +394,7 @@ elseif(preg_match('/^\/sign_out$/',$urlPath)&&$isPost)
 
 	$session_id=@hex2bin(@$_COOKIE[HEADER_SESSION_COOKIE]);
 	if($session_id) revokeSession($session_id);
+	track('signout');
 
 	setcookie(
 		HEADER_SESSION_COOKIE,"",

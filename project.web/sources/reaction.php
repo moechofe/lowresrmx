@@ -50,6 +50,7 @@ function toggleReaction(string $base,string $emoji,string $user_id):bool
 		if(!$known && intval(redis()->scard("x:$base"))>=MAX_REACTION_KINDS) return false;
 		redis()->sadd($key,$user_id);
 		redis()->sadd("x:$base",$emoji);
+		track('react');
 	}
 	return true;
 }
