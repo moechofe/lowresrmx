@@ -26,6 +26,6 @@ Promise.all([
 ]).then((args)=>{
 	console.log(args);
 	if(args[1]) injectNotifMarker(args[1]);
-});
+}).catch(_=>{});
 
 });

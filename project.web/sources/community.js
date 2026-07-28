@@ -25,6 +25,6 @@ Promise.all([
 	setupCommunityList()
 ]).then((args)=>{
 	if(args[1]) injectNotifMarker(args[1]);
-});
+}).catch(_=>{});
 
 });

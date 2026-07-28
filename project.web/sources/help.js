@@ -35,7 +35,7 @@ Promise.all([
 	setupChatList()
 ]).then((args)=>{
 	if(args[1]) injectNotifMarker(args[1]);
-});
+}).catch(_=>{});
 setupNewTopic();
 
 });

@@ -1,7 +1,3 @@
-// <?php
-// 	require_once __DIR__.'/config.js';
-// ?>
-
 /**
  * @typedef {{
  * pid: string,
@@ -32,7 +28,8 @@ var NotifItem;
 let notif=[];
 
 /** @type function():Promise */
-const retrieveNotifMaybe=()=>{return new Promise((res,rej)=>{
+const retrieveNotifMaybe=(is_signed)=>{return new Promise((res,rej)=>{
+	if(!is_signed) return rej();
 	const now=Math.floor(Date.now()/1000)
 	const nt=sessionStorage.getItem("notif_time") || now;
 	const to_old=(now-nt)>60*60*15;
