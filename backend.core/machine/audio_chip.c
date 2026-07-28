@@ -58,8 +58,7 @@ const double lfoRates[16] = {0.12 * 256.0,
 
 const int lfoAmounts[16] = {0, 1, 2, 4, 6, 9, 12, 17, 24, 34, 48, 67, 93, 131, 183, 256};
 
-void audio_renderAudioBuffer(struct AudioRegisters *lifeRegisters, struct AudioRegisters *registers,
-	struct AudioInternals *internals, int16_t *stereoOutput, int numSamples, int outputFrequency, int volume);
+void audio_renderAudioBuffer(struct AudioRegisters *lifeRegisters, struct AudioRegisters *registers, struct AudioInternals *internals, int16_t *stereoOutput, int numSamples, int outputFrequency, int volume);
 
 void audio_reset(struct Core *core)
 {
@@ -134,8 +133,7 @@ void audio_renderAudio(struct Core *core, int16_t *stereoOutput, int numSamples,
 	}
 }
 
-void audio_renderAudioBuffer(struct AudioRegisters *lifeRegisters, struct AudioRegisters *registers,
-	struct AudioInternals *internals, int16_t *stereoOutput, int numSamples, int outputFrequency, int volume)
+void audio_renderAudioBuffer(struct AudioRegisters *lifeRegisters, struct AudioRegisters *registers, struct AudioInternals *internals, int16_t *stereoOutput, int numSamples, int outputFrequency, int volume)
 {
 	double overflow = 0xFFFFFF;
 

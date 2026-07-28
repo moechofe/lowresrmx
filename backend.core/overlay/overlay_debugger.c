@@ -71,8 +71,7 @@ void print_value(struct Core *core, enum ValueType type, union Value *value)
 	}
 }
 
-void set_value(struct Core *core, enum ValueType type, union Value *value, enum TokenType newType, float newFloat,
-	struct RCString *newString)
+void set_value(struct Core *core, enum ValueType type, union Value *value, enum TokenType newType, float newFloat, struct RCString *newString)
 {
 	// NOTE: value and newValue are alreay tested before arriving here
 	if(newType == TokenFloat && type == ValueTypeFloat)

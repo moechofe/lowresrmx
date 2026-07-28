@@ -99,8 +99,7 @@ int video_getCharacterPixel(struct Character *character, int x, int y)
 	return b0 | (b1 << 1);
 }
 
-void video_renderPlane(struct Character *characters, struct Plane *plane, int sizeMode, int y, int scrollX, int scrollY,
-	int overlayFlag, uint8_t *scanlineBuffer, bool opaque, bool doubledX, bool doubledY)
+void video_renderPlane(struct Character *characters, struct Plane *plane, int sizeMode, int y, int scrollX, int scrollY, int overlayFlag, uint8_t *scanlineBuffer, bool opaque, bool doubledX, bool doubledY)
 {
 	int divShift = sizeMode ? 4 : 3; // TODO: deleteme
 	int planeY = (y + scrollY) >> (doubledY ? 1 : 0);
@@ -178,8 +177,7 @@ void video_renderPlane(struct Character *characters, struct Plane *plane, int si
 	}
 }
 
-void video_renderSprites(
-	struct SpriteRegisters *reg, struct VideoRam *ram, int y, uint8_t *scanlineBuffer, uint8_t *scanlineSpriteBuffer)
+void video_renderSprites(struct SpriteRegisters *reg, struct VideoRam *ram, int y, uint8_t *scanlineBuffer, uint8_t *scanlineSpriteBuffer)
 {
 	for(int i = NUM_SPRITES - 1; i >= 0; i--)
 	{

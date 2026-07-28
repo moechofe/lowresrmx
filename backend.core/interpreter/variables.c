@@ -38,8 +38,7 @@ struct SimpleVariable *var_getSimpleVariable(struct Interpreter *interpreter, in
 	return NULL;
 }
 
-struct SimpleVariable *var_createSimpleVariable(struct Interpreter *interpreter, enum ErrorCode *errorCode,
-	int symbolIndex, int subLevel, enum ValueType type, union Value *valueReference)
+struct SimpleVariable *var_createSimpleVariable(struct Interpreter *interpreter, enum ErrorCode *errorCode, int symbolIndex, int subLevel, enum ValueType type, union Value *valueReference)
 {
 	if(interpreter->numSimpleVariables >= MAX_SIMPLE_VARIABLES)
 	{
@@ -130,8 +129,7 @@ union Value *var_getArrayValue(struct Interpreter *interpreter, struct ArrayVari
 	return value;
 }
 
-struct ArrayVariable *var_dimVariable(
-	struct Interpreter *interpreter, enum ErrorCode *errorCode, int symbolIndex, int numDimensions, int *dimensionSizes)
+struct ArrayVariable *var_dimVariable(struct Interpreter *interpreter, enum ErrorCode *errorCode, int symbolIndex, int numDimensions, int *dimensionSizes)
 {
 	if(var_getArrayVariable(interpreter, symbolIndex, interpreter->subLevel))
 	{
@@ -174,8 +172,7 @@ struct ArrayVariable *var_dimVariable(
 	return variable;
 }
 
-struct ArrayVariable *var_createArrayVariable(struct Interpreter *interpreter, enum ErrorCode *errorCode,
-	int symbolIndex, int subLevel, struct ArrayVariable *arrayReference)
+struct ArrayVariable *var_createArrayVariable(struct Interpreter *interpreter, enum ErrorCode *errorCode, int symbolIndex, int subLevel, struct ArrayVariable *arrayReference)
 {
 	if(interpreter->numArrayVariables >= MAX_ARRAY_VARIABLES)
 	{

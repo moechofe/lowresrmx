@@ -465,8 +465,7 @@ void txtlib_setCells(struct TextLib *lib, int fromX, int fromY, int toX, int toY
 	lib->core->interpreter->cycles += (toX - fromX + 1) * (toY - fromY + 1) * 2;
 }
 
-void txtlib_setCellsAttr(
-	struct TextLib *lib, int fromX, int fromY, int toX, int toY, int pal, int flipX, int flipY, int prio)
+void txtlib_setCellsAttr(struct TextLib *lib, int fromX, int fromY, int toX, int toY, int pal, int flipX, int flipY, int prio)
 {
 	struct Plane *plane = txtlib_getBackground(lib, lib->bg);
 	for(int y = fromY; y <= toY; y++)
