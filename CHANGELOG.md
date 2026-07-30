@@ -1,10 +1,10 @@
-### 1.0_56
+### 1.0_57
 
 - Allow seed stored in PRAM to be saved when using:
 
         RANDOMIZE seed, address
         RND address
-        RND(max, adress)
+        RND(max, address)
 
 - Website now anonymously tracks website activity: page views per type and API calls.
 
