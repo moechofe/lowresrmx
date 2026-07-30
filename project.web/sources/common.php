@@ -86,6 +86,7 @@ const RATE_LIMIT=[
 ];
 
 const EMOJI_PICKER_ELEMENT_STYLE_SRC="'sha256-rg2BpwZ4T9EADaas/dlxn0KsISPDXXIabE9pnJ++3UQ='";
+const MEDIUM_ZOOM_STYLE_SRC="'sha256-rg2BpwZ4T9EADaas/dlxn0KsISPDXXIabE9pnJ++3UQ=' 'sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=' 'sha256-PjBkwE8xcYZAp+HsnzzOVNqa/Ra+/v1Fnx6f0PW6ic4='";
 
 require_once __DIR__.'/redis.php';
 
@@ -295,7 +296,7 @@ if(php_sapi_name()!=="cli")
 	header("X-Content-Type-Options: nosniff",true);
 	header("Referrer-Policy: no-referrer-when-downgrade",true);
 	header("Permissions-Policy: disable",true);
-	header("Content-Security-Policy: default-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' ".EMOJI_PICKER_ELEMENT_STYLE_SRC."; style-src-attr 'unsafe-inline'; img-src 'self' https: data: blob:; connect-src 'self';",true);
+	header("Content-Security-Policy: default-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' ".EMOJI_PICKER_ELEMENT_STYLE_SRC." ".MEDIUM_ZOOM_STYLE_SRC."; style-src-attr 'unsafe-inline'; img-src 'self' https: data: blob:; connect-src 'self';",true);
 
 	if(!$isProd)
 	{

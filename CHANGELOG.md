@@ -1,3 +1,7 @@
+### 1.0_58
+
+- Add an about page with zoomable screenshot.
+
 ### 1.0_57
 
 - Allow seed stored in PRAM to be saved when using:

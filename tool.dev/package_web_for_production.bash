@@ -46,7 +46,7 @@ CSS_FILES=(chat.css community.css documentation.css entry.css footer.css header.
 JS_FILES=(chat.js community.js entry.js help.js setting.js share.js show.js sign-in.js about.js)
 PHP_FILES=(admin.php comment.php common.php download.php entry.php favicon.ico index.php list.php logo-white.png logo-colored.png pico.min.css player.php rank.php redis.php robots.txt score.php setting.php share.php sign.php token.php updrank.php upload.php markdown.php image.php notification.php reaction.php discord.php)
 WASM_FILES=(player.wasm player.js)
-COPY_FILES=(emoji-picker-element.js emoji-data.json)
+COPY_FILES=(emoji-picker-element.js emoji-data.json 04.webp 05.webp 06.webp medium-zoom.min.js)
 
 GENERATED=()
 GENERATED+=("${DYN_HTML[@]}")
@@ -169,11 +169,13 @@ favicon.ico logo-white.png logo-colored.png \
 message.html privacy-policy.html terms-of-service.html \
 pico.min.css \
 about.html about.css about.js \
+04.webp 05.webp 06.webp \
 documentation.html documentation.css \
 player.php player.css player.html player.js player.wasm \
 image.php \
 notification.php \
 reaction.php emoji-picker-element.js emoji-data.json \
+medium-zoom.min.js \
 discord.php \
 robots.txt
 

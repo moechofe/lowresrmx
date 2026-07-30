@@ -11,6 +11,7 @@ require_once __DIR__.'/common.php';
 <link rel="stylesheet" href="about.css">
 <link rel="icon" href="favicon.ico" type="image/x-icon">
 <script src="about.js"></script>
+<script src="medium-zoom.min.js"></script>
 </head>
 <body class="about">
 <?php
@@ -25,6 +26,11 @@ require_once __DIR__.'/header.html';
 	<p>It includes a project manager, a code editor, and various tools to edit game assets: sprites, palettes, backgrounds, instruments, and music.</p>
 	<p>Retro Game Creator simulates a virtual retro game console directly inside your device, allowing users to create, play, and share their games.</p>
 	<p>It emulates old-school 8-bit/16-bit console hardware by replicating their limitations: a low number of colors, limited memory, and slow processing power.</p>
+	<div class="screenshot">
+		<figure><img data-zoomable src="04.webp" alt="Show a list of programs."></figure>
+		<figure><img data-zoomable src="05.webp" alt="A game program running."></figure>
+		<figure><img data-zoomable src="06.webp" alt="The source code of a program."></figure>
+	</div>
 </main>
 <?php
 require_once __DIR__.'/footer.html';

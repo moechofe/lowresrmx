@@ -82,6 +82,10 @@ if(in_array($urlPath,[
 	'/documentation.css',
 	'/robots.txt',
 	'/sitemap.xml',
+	'/04.webp',
+	'/05.webp',
+	'/06.webp',
+	'/medium-zoom.min.js',
 ]))
 {
 	header("Content-Type: ".[
@@ -89,6 +93,7 @@ if(in_array($urlPath,[
 		'wasm'=>'application/wasm',
 		'ico'=>'image/x-icon',
 		'png'=>'image/png',
+		'webp'=>'image/webp',
 		'css'=>'text/css',
 		'js'=>'application/javascript',
 		'json'=>'application/json',
