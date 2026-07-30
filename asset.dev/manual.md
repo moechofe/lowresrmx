@@ -1997,7 +1997,7 @@ Omitted parameters will keep their previous values.
     PRINT "hello!"
     TINT 5, 0 PAL 7
 
-#### `BG TINT y1, y1 TO x2, y2 [PAL palette] [FLIP horizontal, vertical] [PRIO priority]`
+#### `BG TINT x1, y1 TO x2, y2 [PAL palette] [FLIP horizontal, vertical] [PRIO priority]`
 
 Sets to the cells from the rectangle `x1, y1` to `x2, y2` (0..63), one or more attributes:
 
@@ -3661,7 +3661,7 @@ TODO: interrupts
 **`BG`**:
 - [`BG layer`](#bg-layer)
 - [`BG FILL x1, y1 TO x2, y2 CHAR character`](#bg-fill-x1-y1-to-x2-y2-char-character)
-- [`BG TINT y1, y1 TO x2, y2 [PAL palette] [FLIP horizontal, vertical] [PRIO priority]`](#bg-tint-y1-y1-to-x2-y2-pal-palette-flip-horizontal-vertical-prio-priority)
+- [`BG TINT x1, y1 TO x2, y2 [PAL palette] [FLIP horizontal, vertical] [PRIO priority]`](#bg-tint-x1-y1-to-x2-y2-pal-palette-flip-horizontal-vertical-prio-priority)
 - [`BG SCROLL x1, y1 to x2, y2 step x3, y3`](#bg-scroll-x1-y1-to-x2-y2-step-x3-y3)
 - [`BG SOURCE address [, width, height]`](#bg-source-address-width-height)
 - [`BG COPY x1, y1, width, height TO x2, y2`](#bg-copy-x1-y1-width-height-to-x2-y2)
@@ -3783,7 +3783,7 @@ TODO: interrupts
 - [`SPRITE sprite [PAL palette] [FLIP horizontal, vertical] [PRIO priority] [SIZE size]`](#sprite-sprite-pal-palette-flip-horizontal-vertical-prio-priority-size-size)
 - [`FLIP [horizontal], [vertical]`](#flip-horizontal-vertical)
 - [`TINT y, y [PAL palette] [FLIP horizontal, vertical] [PRIO priority]`](#tint-y-y-pal-palette-flip-horizontal-vertical-prio-priority)
-- [`BG TINT y1, y1 TO x2, y2 [PAL palette] [FLIP horizontal, vertical] [PRIO priority]`](#bg-tint-y1-y1-to-x2-y2-pal-palette-flip-horizontal-vertical-prio-priority)
+- [`BG TINT x1, y1 TO x2, y2 [PAL palette] [FLIP horizontal, vertical] [PRIO priority]`](#bg-tint-x1-y1-to-x2-y2-pal-palette-flip-horizontal-vertical-prio-priority)
 
 **`FLOOR`**:
 - [`floor =FLOOR(number)`<br>`floor =INT(number)`](#floor-floor-number-floor-int-number)
@@ -3939,7 +3939,7 @@ TODO: interrupts
 - [`SPRITE sprite [PAL palette] [FLIP horizontal, vertical] [PRIO priority] [SIZE size]`](#sprite-sprite-pal-palette-flip-horizontal-vertical-prio-priority-size-size)
 - [`PAL palette`](#pal-palette)
 - [`TINT y, y [PAL palette] [FLIP horizontal, vertical] [PRIO priority]`](#tint-y-y-pal-palette-flip-horizontal-vertical-prio-priority)
-- [`BG TINT y1, y1 TO x2, y2 [PAL palette] [FLIP horizontal, vertical] [PRIO priority]`](#bg-tint-y1-y1-to-x2-y2-pal-palette-flip-horizontal-vertical-prio-priority)
+- [`BG TINT x1, y1 TO x2, y2 [PAL palette] [FLIP horizontal, vertical] [PRIO priority]`](#bg-tint-x1-y1-to-x2-y2-pal-palette-flip-horizontal-vertical-prio-priority)
 
 **`PALETTE`**:
 - [`PALETTE palette, [c0], [c1], [c2], [c3]`](#palette-palette-c0-c1-c2-c3)
@@ -3982,7 +3982,7 @@ TODO: interrupts
 - [`SPRITE sprite [PAL palette] [FLIP horizontal, vertical] [PRIO priority] [SIZE size]`](#sprite-sprite-pal-palette-flip-horizontal-vertical-prio-priority-size-size)
 - [`PRIO priority`](#prio-priority)
 - [`TINT y, y [PAL palette] [FLIP horizontal, vertical] [PRIO priority]`](#tint-y-y-pal-palette-flip-horizontal-vertical-prio-priority)
-- [`BG TINT y1, y1 TO x2, y2 [PAL palette] [FLIP horizontal, vertical] [PRIO priority]`](#bg-tint-y1-y1-to-x2-y2-pal-palette-flip-horizontal-vertical-prio-priority)
+- [`BG TINT x1, y1 TO x2, y2 [PAL palette] [FLIP horizontal, vertical] [PRIO priority]`](#bg-tint-x1-y1-to-x2-y2-pal-palette-flip-horizontal-vertical-prio-priority)
 
 **`RANDOMIZE`**:
 - [`RANDOMIZE seed`](#randomize-seed)
@@ -4146,13 +4146,13 @@ TODO: interrupts
 
 **`TINT`**:
 - [`TINT y, y [PAL palette] [FLIP horizontal, vertical] [PRIO priority]`](#tint-y-y-pal-palette-flip-horizontal-vertical-prio-priority)
-- [`BG TINT y1, y1 TO x2, y2 [PAL palette] [FLIP horizontal, vertical] [PRIO priority]`](#bg-tint-y1-y1-to-x2-y2-pal-palette-flip-horizontal-vertical-prio-priority)
+- [`BG TINT x1, y1 TO x2, y2 [PAL palette] [FLIP horizontal, vertical] [PRIO priority]`](#bg-tint-x1-y1-to-x2-y2-pal-palette-flip-horizontal-vertical-prio-priority)
 
 **`TO`**:
 - [`FOR/TO/STEP/NEXT/EXIT`](#for-to-step-next-exit)
 - [`SPRITE OFF sprite1 TO sprite2`](#sprite-off-sprite1-to-sprite2)
 - [`BG FILL x1, y1 TO x2, y2 CHAR character`](#bg-fill-x1-y1-to-x2-y2-char-character)
-- [`BG TINT y1, y1 TO x2, y2 [PAL palette] [FLIP horizontal, vertical] [PRIO priority]`](#bg-tint-y1-y1-to-x2-y2-pal-palette-flip-horizontal-vertical-prio-priority)
+- [`BG TINT x1, y1 TO x2, y2 [PAL palette] [FLIP horizontal, vertical] [PRIO priority]`](#bg-tint-x1-y1-to-x2-y2-pal-palette-flip-horizontal-vertical-prio-priority)
 - [`BG COPY x1, y1, width, height TO x2, y2`](#bg-copy-x1-y1-width-height-to-x2-y2)
 - [`ADD variable, value`<br>`ADD variable, increment, min TO max`](#add-variable-valueadd-variable-increment-min-to-max)
 - [`COPY source, count TO destination`](#copy-source-count-to-destination)

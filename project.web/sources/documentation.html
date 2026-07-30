@@ -2009,7 +2009,7 @@ FFFFFFFFFFFFFFFF0000000000000000
 <pre><code>PRINT &quot;hello!&quot;
 TINT 5, 0 PAL 7
 </code></pre>
-<h4 data-keyword="BG,TINT,TO,PAL,FLIP,PRIO" data-title="BG TINT/TO/PAL/FLIP/PRIO" id="bg-tint-y1-y1-to-x2-y2-pal-palette-flip-horizontal-vertical-prio-priority" tabindex="-1"><code>BG TINT y1, y1 TO x2, y2 [PAL palette] [FLIP horizontal, vertical] [PRIO priority]</code></h4>
+<h4 data-keyword="BG,TINT,TO,PAL,FLIP,PRIO" data-title="BG TINT/TO/PAL/FLIP/PRIO" id="bg-tint-x1-y1-to-x2-y2-pal-palette-flip-horizontal-vertical-prio-priority" tabindex="-1"><code>BG TINT x1, y1 TO x2, y2 [PAL palette] [FLIP horizontal, vertical] [PRIO priority]</code></h4>
 <p>Sets to the cells from the rectangle <code>x1, y1</code> to <code>x2, y2</code> (0..63), one or more attributes:</p>
 <ul>
 <li><code>PAL palette</code> Change the <code>palette</code> (0..3),</li>
@@ -3358,11 +3358,11 @@ The 1st 8 bytes store the low bit for all the 8x8 pixels. The 2nd 8 bytes store 
 </tr>
 <tr>
 <td class="right">8..11</td>
-<td>Sustain volume</td>
+<td>Sustain duration</td>
 </tr>
 <tr>
 <td class="right">12..15</td>
-<td>Decay volume</td>
+<td>Release duration</td>
 </tr>
 </tbody>
 </table>
@@ -4617,7 +4617,7 @@ PRINT 0.000000239&lt;&gt;0
 <ul>
 <li><a href="#bg-layer"><code>BG layer</code></a></li>
 <li><a href="#bg-fill-x1-y1-to-x2-y2-char-character"><code>BG FILL x1, y1 TO x2, y2 CHAR character</code></a></li>
-<li><a href="#bg-tint-y1-y1-to-x2-y2-pal-palette-flip-horizontal-vertical-prio-priority"><code>BG TINT y1, y1 TO x2, y2 [PAL palette] [FLIP horizontal, vertical] [PRIO priority]</code></a></li>
+<li><a href="#bg-tint-x1-y1-to-x2-y2-pal-palette-flip-horizontal-vertical-prio-priority"><code>BG TINT x1, y1 TO x2, y2 [PAL palette] [FLIP horizontal, vertical] [PRIO priority]</code></a></li>
 <li><a href="#bg-scroll-x1-y1-to-x2-y2-step-x3-y3"><code>BG SCROLL x1, y1 to x2, y2 step x3, y3</code></a></li>
 <li><a href="#bg-source-address-width-height"><code>BG SOURCE address [, width, height]</code></a></li>
 <li><a href="#bg-copy-x1-y1-width-height-to-x2-y2"><code>BG COPY x1, y1, width, height TO x2, y2</code></a></li>
@@ -4772,7 +4772,7 @@ PRINT 0.000000239&lt;&gt;0
 <li><a href="#sprite-sprite-pal-palette-flip-horizontal-vertical-prio-priority-size-size"><code>SPRITE sprite [PAL palette] [FLIP horizontal, vertical] [PRIO priority] [SIZE size]</code></a></li>
 <li><a href="#flip-horizontal-vertical"><code>FLIP [horizontal], [vertical]</code></a></li>
 <li><a href="#tint-y-y-pal-palette-flip-horizontal-vertical-prio-priority"><code>TINT y, y [PAL palette] [FLIP horizontal, vertical] [PRIO priority]</code></a></li>
-<li><a href="#bg-tint-y1-y1-to-x2-y2-pal-palette-flip-horizontal-vertical-prio-priority"><code>BG TINT y1, y1 TO x2, y2 [PAL palette] [FLIP horizontal, vertical] [PRIO priority]</code></a></li>
+<li><a href="#bg-tint-x1-y1-to-x2-y2-pal-palette-flip-horizontal-vertical-prio-priority"><code>BG TINT x1, y1 TO x2, y2 [PAL palette] [FLIP horizontal, vertical] [PRIO priority]</code></a></li>
 </ul>
 <p><strong><code>FLOOR</code></strong>:</p>
 <ul>
@@ -4969,7 +4969,7 @@ PRINT 0.000000239&lt;&gt;0
 <li><a href="#sprite-sprite-pal-palette-flip-horizontal-vertical-prio-priority-size-size"><code>SPRITE sprite [PAL palette] [FLIP horizontal, vertical] [PRIO priority] [SIZE size]</code></a></li>
 <li><a href="#pal-palette"><code>PAL palette</code></a></li>
 <li><a href="#tint-y-y-pal-palette-flip-horizontal-vertical-prio-priority"><code>TINT y, y [PAL palette] [FLIP horizontal, vertical] [PRIO priority]</code></a></li>
-<li><a href="#bg-tint-y1-y1-to-x2-y2-pal-palette-flip-horizontal-vertical-prio-priority"><code>BG TINT y1, y1 TO x2, y2 [PAL palette] [FLIP horizontal, vertical] [PRIO priority]</code></a></li>
+<li><a href="#bg-tint-x1-y1-to-x2-y2-pal-palette-flip-horizontal-vertical-prio-priority"><code>BG TINT x1, y1 TO x2, y2 [PAL palette] [FLIP horizontal, vertical] [PRIO priority]</code></a></li>
 </ul>
 <p><strong><code>PALETTE</code></strong>:</p>
 <ul>
@@ -5025,7 +5025,7 @@ PRINT 0.000000239&lt;&gt;0
 <li><a href="#sprite-sprite-pal-palette-flip-horizontal-vertical-prio-priority-size-size"><code>SPRITE sprite [PAL palette] [FLIP horizontal, vertical] [PRIO priority] [SIZE size]</code></a></li>
 <li><a href="#prio-priority"><code>PRIO priority</code></a></li>
 <li><a href="#tint-y-y-pal-palette-flip-horizontal-vertical-prio-priority"><code>TINT y, y [PAL palette] [FLIP horizontal, vertical] [PRIO priority]</code></a></li>
-<li><a href="#bg-tint-y1-y1-to-x2-y2-pal-palette-flip-horizontal-vertical-prio-priority"><code>BG TINT y1, y1 TO x2, y2 [PAL palette] [FLIP horizontal, vertical] [PRIO priority]</code></a></li>
+<li><a href="#bg-tint-x1-y1-to-x2-y2-pal-palette-flip-horizontal-vertical-prio-priority"><code>BG TINT x1, y1 TO x2, y2 [PAL palette] [FLIP horizontal, vertical] [PRIO priority]</code></a></li>
 </ul>
 <p><strong><code>RANDOMIZE</code></strong>:</p>
 <ul>
@@ -5234,14 +5234,14 @@ PRINT 0.000000239&lt;&gt;0
 <p><strong><code>TINT</code></strong>:</p>
 <ul>
 <li><a href="#tint-y-y-pal-palette-flip-horizontal-vertical-prio-priority"><code>TINT y, y [PAL palette] [FLIP horizontal, vertical] [PRIO priority]</code></a></li>
-<li><a href="#bg-tint-y1-y1-to-x2-y2-pal-palette-flip-horizontal-vertical-prio-priority"><code>BG TINT y1, y1 TO x2, y2 [PAL palette] [FLIP horizontal, vertical] [PRIO priority]</code></a></li>
+<li><a href="#bg-tint-x1-y1-to-x2-y2-pal-palette-flip-horizontal-vertical-prio-priority"><code>BG TINT x1, y1 TO x2, y2 [PAL palette] [FLIP horizontal, vertical] [PRIO priority]</code></a></li>
 </ul>
 <p><strong><code>TO</code></strong>:</p>
 <ul>
 <li><a href="#for-to-step-next-exit"><code>FOR/TO/STEP/NEXT/EXIT</code></a></li>
 <li><a href="#sprite-off-sprite1-to-sprite2"><code>SPRITE OFF sprite1 TO sprite2</code></a></li>
 <li><a href="#bg-fill-x1-y1-to-x2-y2-char-character"><code>BG FILL x1, y1 TO x2, y2 CHAR character</code></a></li>
-<li><a href="#bg-tint-y1-y1-to-x2-y2-pal-palette-flip-horizontal-vertical-prio-priority"><code>BG TINT y1, y1 TO x2, y2 [PAL palette] [FLIP horizontal, vertical] [PRIO priority]</code></a></li>
+<li><a href="#bg-tint-x1-y1-to-x2-y2-pal-palette-flip-horizontal-vertical-prio-priority"><code>BG TINT x1, y1 TO x2, y2 [PAL palette] [FLIP horizontal, vertical] [PRIO priority]</code></a></li>
 <li><a href="#bg-copy-x1-y1-width-height-to-x2-y2"><code>BG COPY x1, y1, width, height TO x2, y2</code></a></li>
 <li><a href="#add-variable-valueadd-variable-increment-min-to-max"><code>ADD variable, value</code><br /><code>ADD variable, increment, min TO max</code></a></li>
 <li><a href="#copy-source-count-to-destination"><code>COPY source, count TO destination</code></a></li>
