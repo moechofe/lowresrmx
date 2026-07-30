@@ -65,7 +65,11 @@ const POINTS_GIVEN=[
 const RANK_EPOCH=1704067200; // 2024-01-01 UTC, the site "day zero"
 const RANK_WINDOW=250000;    // seconds worth one order-of-magnitude of points (~2.9 days)
 
-const APPLE_APP_STORE="https://apps.apple.com/us/app/retro-game-creator/id6759056723";
+// Production:
+// const APPLE_APP_STORE="https://apps.apple.com/us/app/retro-game-creator/id6759056723";
+
+// Public beta TestFlight
+const APPLE_APP_STORE="https://testflight.apple.com/join/1vdyycrU";
 
 const RATE_LIMIT=[
 	'publish'=>['max'=>5,'window'=>60*60],  // 5 publishes per hour

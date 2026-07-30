@@ -27,3 +27,5 @@
 - Replace `clang-format` with `uncrustify` for the `c` backend and frontend.
 
 - Fix typo for `BG TINT` in documentation.
+
+- Add a "beta" frieze on Apple Store link.
