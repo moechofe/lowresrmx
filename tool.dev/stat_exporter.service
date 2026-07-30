@@ -1,0 +1,9 @@
+[Unit]
+Description=Export LowResRMX Redis activity counters to node_exporter textfile
+After=redis-server.service
+
+[Service]
+Type=oneshot
+User=prometheus
+Group=prometheus
+ExecStart=/usr/local/bin/stat_exporter.sh
