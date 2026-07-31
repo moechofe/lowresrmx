@@ -1,6 +1,8 @@
 ### 1.0_58
 
-- Add an about page with zoomable screenshot.
+- Add zoomable screenshot to the about page.
+
+- Add table-of-content for the website documentation.
 
 ### 1.0_57
 

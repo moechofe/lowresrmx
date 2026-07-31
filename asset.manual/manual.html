@@ -8,6 +8,7 @@
 <style>
 <!--
 :root { color-scheme: light dark; }
+:target { scroll-margin-top: 2em; }
 
 /* Dark mode for WKWebView on iOS < 17.5 */
 @media (prefers-color-scheme: dark) {
@@ -28,6 +29,10 @@ html { font-size: 1.1em; }
 * { font-size: 1em; font-family: system-ui; }
 body { margin: 1.5em; overflow-x: hidden; background-color: #fff; color: #222; }
 body>* { margin: 0.75em 0 ; }
+/*
+body { display: flex; }
+
+aside { } */
 
 code { font-family: monospace; font-size: 1rem; }
 
@@ -3139,45 +3144,45 @@ This command will be removed at some point.</p>
 <h4 data-keyword="PAUSE" data-title="PAUSE" id="pause" tabindex="-1"><code>PAUSE</code></h4>
 <p>Halt the execution and bring the debugger console.</p>
 <p>Check the <a href="#debugger-instructions">debugger instructions</a> to learn what you can to do with it.</p>
-<h2 id="debugger-instructions" tabindex="-1">Debugger instructions</h2>
-<h5 id="dbg-pause" tabindex="-1">dbg: <code>PAUSE</code></h5>
+<h2 id="references" tabindex="-1">References</h2>
+<p>This annex provides technical information about how things work under the hood.</p>
+<h3 id="debugger-instructions" tabindex="-1">Debugger instructions</h3>
+<h4 data-keyword="PAUSE" data-title="PAUSE" id="dbg-pause" tabindex="-1">dbg: <code>PAUSE</code></h4>
 <p>Enter the debugger. It bring a console where user can enter debugger specific commands. The scope used in the debugger is the same as the one in the program where the <code>PAUSE</code> appear.</p>
-<h5 id="dbg-a-variable-name" tabindex="-1">dbg: a variable name</h5>
+<h4 id="dbg-a-variable-name" tabindex="-1">dbg: a variable name</h4>
 <p>By typing the name of a variable, the debugger will print it's value. The variable use the same syntax as inside a program: <code>$</code> for string, () for array.</p>
 <p>The variable MUST be accessible throughout the scope of where the <code>PAUSE</code> has been used to enter the debugger. Global variables are still available everywhere.</p>
-<h5 id="dbg-a-variable-name-new-value" tabindex="-1">dbg: a variable name <code>=</code> new value</h5>
+<h4 id="dbg-a-variable-name-new-value" tabindex="-1">dbg: a variable name <code>=</code> new value</h4>
 <p>Allow to change the value of a variable.</p>
 <p>Number literal use the same syntax as inside a program, it support integer, float, hexadecimal and binary.</p>
 <p>String literal use the same syntax as inside a program: surrounded by double quotes (&quot;).</p>
-<h5 id="dbg-an-address" tabindex="-1">dbg: an address</h5>
+<h4 id="dbg-an-address" tabindex="-1">dbg: an address</h4>
 <p>By typing a memory address, the debugger will print it's value as if it was read by <code>=PEEK()</code>.</p>
 <p>The address can be indicated using the hexadecimal or by any other valid numeric literal.</p>
-<h5 id="dbg-an-address-a-value" tabindex="-1">dbg: an address <code>=</code> a value</h5>
+<h4 id="dbg-an-address-a-value" tabindex="-1">dbg: an address <code>=</code> a value</h4>
 <p>Will try to modify the value store inside a memory address.</p>
 <pre><code>$FF00=3
 </code></pre>
-<h5 id="dbg-cls" tabindex="-1">dbg: <code>CLS</code></h5>
+<h4 data-keyword="CLS" data-title="CLS" id="dbg-cls" tabindex="-1">dbg: <code>CLS</code></h4>
 <p>Clear the debugger console.</p>
-<h5 id="dbg-wait" tabindex="-1">dbg: <code>WAIT</code></h5>
+<h4 data-keyword="WAIT" data-title="WAIT" id="dbg-wait" tabindex="-1">dbg: <code>WAIT</code></h4>
 <p>Resume execution until a <code>WAIT</code> command is found in the program, the scope may change.</p>
-<h5 id="dbg-dim-filter-pagination" tabindex="-1">dbg: <code>DIM [filter] [pagination]</code></h5>
+<h4 data-keyword="DIM" data-title="DIM" id="dbg-dim-filter-pagination" tabindex="-1">dbg: <code>DIM [filter] [pagination]</code></h4>
 <p>Print the list of accessible variable at the current scope.</p>
 <p>Allow to limit the output to the variables that matchs the <code>filter</code>.</p>
 <p>Allow to output more variables using the <code>pagination</code> with an index that start at 0 zero.</p>
-<h5 id="dbg-trace" tabindex="-1">dbg: <code>TRACE</code></h5>
+<h4 data-keyword="TRACE" data-title="TRACE" id="dbg-trace" tabindex="-1">dbg: <code>TRACE</code></h4>
 <p>Print the current call stack in reverse order: last line number followed by label <code>GOSUB</code>'ed and procedure <code>CALL</code>'ed.</p>
-<h5 id="dbg-track-peek-address-dbg-track-poke-address" tabindex="-1">dbg: <code>TRACK PEEK address</code><br /> dbg: <code>TRACK POKE address</code></h5>
+<h4 data-keyword="TRACK,PEEK,TRACK,POKE" data-title="TRACK PEEK/TRACK POKE" id="dbg-track-peek-address-dbg-track-poke-address" tabindex="-1">dbg: <code>TRACK PEEK address</code><br /> dbg: <code>TRACK POKE address</code></h4>
 <p>Enter the debugger when the program <code>=PEEK</code> or <code>POKE</code> the <code>address</code>.</p>
-<h5 id="dbg-next" tabindex="-1">dbg: <code>NEXT</code></h5>
+<h4 data-keyword="NEXT" data-title="NEXT" id="dbg-next" tabindex="-1">dbg: <code>NEXT</code></h4>
 <p>Execute next instruction in the program, and stop.</p>
-<h5 id="dbg-goto-ongoto-offgosub-ongosub-off" tabindex="-1">dbg: <code>GOTO ON</code><br /><code>GOTO OFF</code><br /><code>GOSUB ON</code><br /><code>GOSUB OFF</code></h5>
+<h4 data-keyword="GOTO,ON,GOTO,OFF,GOSUB,ON,GOSUB,OFF" data-title="GOTO ON/GOTO OFF/GOSUB ON/GOSUB OFF" id="dbg-goto-ongoto-offgosub-ongosub-off" tabindex="-1">dbg: <code>GOTO ON</code><br /><code>GOTO OFF</code><br /><code>GOSUB ON</code><br /><code>GOSUB OFF</code></h4>
 <p>Start or stop logging <code>GOTO</code>s and <code>GOSUB</code>s.</p>
-<h5 id="dbg-shown-w-width-heightshown-w" tabindex="-1">dbg: <code>SHOWN.W width height</code><br /><code>SHOWN.W</code></h5>
+<h4 data-keyword="SHOWN.W,SHOWN.W" data-title="SHOWN.W/SHOWN.W" id="dbg-shown-w-width-heightshown-w" tabindex="-1">dbg: <code>SHOWN.W width height</code><br /><code>SHOWN.W</code></h4>
 <p>Override or reset <code>width</code> and <code>height</code> of the device screen to simulate different ratios.</p>
-<h5 id="dbg-safe-l-left-top-right-bottomsafe-l" tabindex="-1">dbg: <code>SAFE.L left top right bottom</code><br /><code>SAFE.L</code></h5>
+<h4 data-keyword="SAFE.L,SAFE.L" data-title="SAFE.L/SAFE.L" id="dbg-safe-l-left-top-right-bottomsafe-l" tabindex="-1">dbg: <code>SAFE.L left top right bottom</code><br /><code>SAFE.L</code></h4>
 <p>Override or reset <code>left</code>, <code>top</code>, <code>right</code> and <code>bottom</code> of the safe area to simulate different device models.</p>
-<h2 id="references" tabindex="-1">References</h2>
-<p>This annex provides technical information about how things work under the hood.</p>
 <h3 id="64-colors" tabindex="-1">64 Colors</h3>
 <div class="famicube">
     <div>00</div><div>01</div><div>02</div><div>03</div><div>04</div><div>05</div><div>06</div><div>07</div>
@@ -3445,7 +3450,7 @@ The 1st 8 bytes store the low bit for all the 8x8 pixels. The 2nd 8 bytes store 
 </tr>
 </tbody>
 </table>
-<h5 id="attributes-bits" tabindex="-1">Attributes bits:</h5>
+<h4 id="attributes-bits" tabindex="-1">Attributes bits</h4>
 <table>
 <thead>
 <tr>
@@ -3468,7 +3473,7 @@ The 1st 8 bytes store the low bit for all the 8x8 pixels. The 2nd 8 bytes store 
 </tr>
 </tbody>
 </table>
-<h5 id="envelope-bits" tabindex="-1">Envelope bits:</h5>
+<h4 id="envelope-bits" tabindex="-1">Envelope bits</h4>
 <table>
 <thead>
 <tr>
@@ -4133,7 +4138,7 @@ The 1st 8 bytes store the low bit for all the 8x8 pixels. The 2nd 8 bytes store 
 </tr>
 </tbody>
 </table>
-<h5 id="character-registers" tabindex="-1">Character Registers</h5>
+<h4 id="character-registers" tabindex="-1">Character Registers</h4>
 <p>Each one of the 256 character occupies 16 bytes.</p>
 <table>
 <thead>
@@ -4176,7 +4181,7 @@ The 1st 8 bytes store the low bit for all the 8x8 pixels. The 2nd 8 bytes store 
 </tr>
 </tbody>
 </table>
-<h5 id="sprite-registers" tabindex="-1">Sprite Registers</h5>
+<h4 id="sprite-registers" tabindex="-1">Sprite Registers</h4>
 <p>There are 170 sprites, each occupies 6 bytes:</p>
 <table>
 <thead>
@@ -4253,7 +4258,7 @@ The 1st 8 bytes store the low bit for all the 8x8 pixels. The 2nd 8 bytes store 
 </table>
 <p>Both position on x and y axis use sub-pixels values. To advance by 1 pixel, the values SHOULD get increased by 16.<br />
 Also, they are both offseted by 32 pixels. To place a sprite in the 0x0 coordinates, the values SHOULD be 512x512.</p>
-<h5 id="character-attributes" tabindex="-1">Character attributes</h5>
+<h4 id="character-attributes" tabindex="-1">Character attributes</h4>
 <table>
 <thead>
 <tr>
@@ -4311,7 +4316,7 @@ Also, they are both offseted by 32 pixels. To place a sprite in the 0x0 coordina
 </tr>
 </tbody>
 </table>
-<h5 id="color-registers" tabindex="-1">Color registers</h5>
+<h4 id="color-registers" tabindex="-1">Color registers</h4>
 <p>There are 8 palettes with 4 colors each:</p>
 <table>
 <thead>
@@ -4361,7 +4366,7 @@ Also, they are both offseted by 32 pixels. To place a sprite in the 0x0 coordina
 </tr>
 </tbody>
 </table>
-<h5 id="video-registers" tabindex="-1">Video registers</h5>
+<h4 id="video-registers" tabindex="-1">Video registers</h4>
 <table>
 <thead>
 <tr>
@@ -4428,7 +4433,7 @@ Also, they are both offseted by 32 pixels. To place a sprite in the 0x0 coordina
 </tr>
 </tbody>
 </table>
-<h5 id="display-attributes" tabindex="-1">Display attributes</h5>
+<h4 id="display-attributes" tabindex="-1">Display attributes</h4>
 <table>
 <thead>
 <tr>
@@ -4459,7 +4464,7 @@ Also, they are both offseted by 32 pixels. To place a sprite in the 0x0 coordina
 </tr>
 </tbody>
 </table>
-<h5 id="todo-audio-registers" tabindex="-1">TODO: Audio registers</h5>
+<h4 id="todo-audio-registers" tabindex="-1">TODO: Audio registers</h4>
 <table>
 <thead>
 <tr>
@@ -4476,7 +4481,7 @@ Also, they are both offseted by 32 pixels. To place a sprite in the 0x0 coordina
 </tr>
 </tbody>
 </table>
-<h3 id="i-o-registers" tabindex="-1">I/O registers</h3>
+<h4 id="i-o-registers" tabindex="-1">I/O registers</h4>
 <table>
 <thead>
 <tr>
@@ -4566,7 +4571,7 @@ Also, they are both offseted by 32 pixels. To place a sprite in the 0x0 coordina
 <p>Last touch position X and Y are stored as float and Retro Game Creator do not have a way to peek float from memory, use <a href="#x-touch-xy-touch-y"><code>TOUCH.X</code></a> and <a href="#x-touch-xy-touch-y"><code>TOUCH.Y</code></a> functions instead.</p>
 <p>Pixels shown represent the number of fantasy pixels that is visible by the user according to their device screen ratio. Use the practical <a href="#width-shown-wheight-shown-h"><code>SHOWN.W</code></a> and <a href="#width-shown-wheight-shown-h"><code>SHOWN.H</code></a> functions.</p>
 <p>Pixels outside the safe zone represent the number of fantasy pixels that are visible but SHOULD be considered unsafe for touch input as they are outside the safe area. Use the easy memorable <a href="#left-safe-ltop-safe-tright-safe-rbottom-safe-b"><code>SAFE.L</code></a>, <a href="#left-safe-ltop-safe-tright-safe-rbottom-safe-b"><code>SAFE.T</code></a>, <a href="#left-safe-ltop-safe-tright-safe-rbottom-safe-b"><code>SAFE.R</code></a> and <a href="#left-safe-ltop-safe-tright-safe-rbottom-safe-b"><code>SAFE.B</code></a> functions.</p>
-<h5 id="other-i-o-status-bits" tabindex="-1">Other I/O status bits</h5>
+<h4 id="other-i-o-status-bits" tabindex="-1">Other I/O status bits</h4>
 <table>
 <thead>
 <tr>
@@ -4601,7 +4606,7 @@ Also, they are both offseted by 32 pixels. To place a sprite in the 0x0 coordina
 </tr>
 </tbody>
 </table>
-<h5 id="dma-registerss" tabindex="-1">DMA registerss</h5>
+<h4 id="dma-registerss" tabindex="-1">DMA registerss</h4>
 <table>
 <thead>
 <tr>

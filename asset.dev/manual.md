@@ -3045,19 +3045,23 @@ Halt the execution and bring the debugger console.
 
 Check the [debugger instructions](#debugger-instructions) to learn what you can to do with it.
 
-## Debugger instructions
+## References
 
-##### dbg: `PAUSE`
+This annex provides technical information about how things work under the hood.
+
+### Debugger instructions
+
+#### dbg: `PAUSE`
 
 Enter the debugger. It bring a console where user can enter debugger specific commands. The scope used in the debugger is the same as the one in the program where the `PAUSE` appear.
 
-##### dbg: a variable name
+#### dbg: a variable name
 
 By typing the name of a variable, the debugger will print it's value. The variable use the same syntax as inside a program: `$` for string, () for array.
 
 The variable MUST be accessible throughout the scope of where the `PAUSE` has been used to enter the debugger. Global variables are still available everywhere.
 
-##### dbg: a variable name `=` new value
+#### dbg: a variable name `=` new value
 
 Allow to change the value of a variable.
 
@@ -3065,27 +3069,27 @@ Number literal use the same syntax as inside a program, it support integer, floa
 
 String literal use the same syntax as inside a program: surrounded by double quotes (").
 
-##### dbg: an address
+#### dbg: an address
 
 By typing a memory address, the debugger will print it's value as if it was read by `=PEEK()`.
 
 The address can be indicated using the hexadecimal or by any other valid numeric literal.
 
-##### dbg: an address `=` a value
+#### dbg: an address `=` a value
 
 Will try to modify the value store inside a memory address.
 
     $FF00=3
 
-##### dbg: `CLS`
+#### dbg: `CLS`
 
 Clear the debugger console.
 
-##### dbg: `WAIT`
+#### dbg: `WAIT`
 
 Resume execution until a `WAIT` command is found in the program, the scope may change.
 
-##### dbg: `DIM [filter] [pagination]`
+#### dbg: `DIM [filter] [pagination]`
 
 Print the list of accessible variable at the current scope.
 
@@ -3093,33 +3097,29 @@ Allow to limit the output to the variables that matchs the `filter`.
 
 Allow to output more variables using the `pagination` with an index that start at 0 zero.
 
-##### dbg: `TRACE`
+#### dbg: `TRACE`
 
 Print the current call stack in reverse order: last line number followed by label `GOSUB`'ed and procedure `CALL`'ed.
 
-##### dbg: `TRACK PEEK address`<br> dbg: `TRACK POKE address`
+#### dbg: `TRACK PEEK address`<br> dbg: `TRACK POKE address`
 
 Enter the debugger when the program `=PEEK` or `POKE` the `address`.
 
-##### dbg: `NEXT`
+#### dbg: `NEXT`
 
 Execute next instruction in the program, and stop.
 
-##### dbg: `GOTO ON`<br>`GOTO OFF`<br>`GOSUB ON`<br>`GOSUB OFF`
+#### dbg: `GOTO ON`<br>`GOTO OFF`<br>`GOSUB ON`<br>`GOSUB OFF`
 
 Start or stop logging `GOTO`s and `GOSUB`s.
 
-##### dbg: `SHOWN.W width height`<br>`SHOWN.W`
+#### dbg: `SHOWN.W width height`<br>`SHOWN.W`
 
 Override or reset `width` and `height` of the device screen to simulate different ratios.
 
-##### dbg: `SAFE.L left top right bottom`<br>`SAFE.L`
+#### dbg: `SAFE.L left top right bottom`<br>`SAFE.L`
 
 Override or reset `left`, `top`, `right` and `bottom` of the safe area to simulate different device models.
-
-## References
-
-This annex provides technical information about how things work under the hood.
 
 ### 64 Colors
 
@@ -3232,7 +3232,7 @@ For each sound preset:
 |      +5 | 2    | LFO settings                   |
 |      +7 | 1    | Not used                       |
 
-##### Attributes bits:
+#### Attributes bits
 
 | bits | purpose                                                |
 | ----:| -------------------------------------------------------|
@@ -3240,7 +3240,7 @@ For each sound preset:
 | 4..5 | Wave<br>0 Sawtooth<br>1 Triangle<br>2 Pulse<br>3 Noise |
 |    6 | Timeout enabled                                        |
 
-##### Envelope bits:
+#### Envelope bits
 
 |   bits | purpose          |
 | ------:| ---------------- |
@@ -3398,7 +3398,7 @@ Each register is mapped to the memory and consist of an address and a number of 
 
 TODO: layer registers?
 
-##### Character Registers
+#### Character Registers
 
 Each one of the 256 character occupies 16 bytes.
 
@@ -3411,7 +3411,7 @@ Each one of the 256 character occupies 16 bytes.
 |   $8FE0 | 16 Bytes | 255th character |
 |   $8FF0 | 16 Bytes | 256th character |
 
-##### Sprite Registers
+#### Sprite Registers
 
 There are 170 sprites, each occupies 6 bytes:
 
@@ -3436,7 +3436,7 @@ For each sprite:
 Both position on x and y axis use sub-pixels values. To advance by 1 pixel, the values SHOULD get increased by 16.
 Also, they are both offseted by 32 pixels. To place a sprite in the 0x0 coordinates, the values SHOULD be 512x512.
 
-##### Character attributes
+#### Character attributes
 
 | bits | purpose         |
 | ----:| --------------- |
@@ -3455,7 +3455,7 @@ Sprite size:
 |    %10 | 24x24 pixels or 3x3 characters |
 |    %11 | 32x32 pixels or 4x4 characters |
 
-##### Color registers
+#### Color registers
 
 There are 8 palettes with 4 colors each:
 
@@ -3472,7 +3472,7 @@ For each palette:
 |     +2 | 1 Byte | 3rd color value |
 |     +3 | 1 Byte | 4th color value |
 
-##### Video registers
+#### Video registers
 
 | address | size     | purpose                     |
 | -------:| -------- | --------------------------- |
@@ -3488,7 +3488,7 @@ For each palette:
 |   $FF32 | 1 Byte   | Display attributes          |
 |   $FF33 | 12 Bytes | Not used                    |
 
-##### Display attributes
+#### Display attributes
 
 | bits | purpose                    |
 | ----:| -------------------------- |
@@ -3498,13 +3498,13 @@ For each palette:
 |    3 | Background layer 2 enabled |
 |    4 | Background layer 3 enabled |
 
-##### TODO: Audio registers
+#### TODO: Audio registers
 
 | address | size     | purpose         |
 | -------:| -------- | --------------- |
 |   $FF40 | 48 Bytes | Audio registers |
 
-### I/O registers
+#### I/O registers
 
 | address | size    | purpose                        |
 | -------:| ------- | ------------------------------ |
@@ -3530,9 +3530,7 @@ Pixels shown represent the number of fantasy pixels that is visible by the user 
 
 Pixels outside the safe zone represent the number of fantasy pixels that are visible but SHOULD be considered unsafe for touch input as they are outside the safe area. Use the easy memorable [`SAFE.L`](#left-safe-ltop-safe-tright-safe-rbottom-safe-b), [`SAFE.T`](#left-safe-ltop-safe-tright-safe-rbottom-safe-b), [`SAFE.R`](#left-safe-ltop-safe-tright-safe-rbottom-safe-b) and [`SAFE.B`](#left-safe-ltop-safe-tright-safe-rbottom-safe-b) functions.
 
-
-
-##### Other I/O status bits
+#### Other I/O status bits
 
 | bits | purpose                                  |
 | ----:| ---------------------------------------- |
@@ -3543,7 +3541,7 @@ Pixels outside the safe zone represent the number of fantasy pixels that are vis
 |    4 | Gesture long press detected              |
 |    5 | Gesture change detected                  |
 
-##### DMA registerss
+#### DMA registerss
 
 | address | size    | purpose                 |
 | -------:| ------- | ----------------------- |

@@ -52,6 +52,7 @@ if(in_array($urlPath,[
 	'/privacy-policy.html',
 	'/terms-of-service.html',
 	'/documentation.html',
+	'/documentation.js',
 	// '/sign-in.html', // in DEV only
 ]))
 {
@@ -80,6 +81,7 @@ if(in_array($urlPath,[
 	'/logo-white.png',
 	'/logo-colored.png',
 	'/documentation.css',
+	'/documentation-www.css',
 	'/robots.txt',
 	'/sitemap.xml',
 	'/04.webp',

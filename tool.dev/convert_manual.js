@@ -2,7 +2,7 @@ import fs from 'fs'
 
 import markdownit from 'markdown-it'
 import markdownItAnchor from 'markdown-it-anchor'
-const slugify = (s) => encodeURIComponent(String(s).toLowerCase().replace(/[\W-]+/g, '-').replace(/-+$/, ''))
+const slugify=s=>encodeURIComponent(String(s).toLowerCase().replace(/[\W-]+/g, '-').replace(/-+$/, ''));
 const mdit = markdownit({
 	html:true,
 	xhtmlOut:true,
@@ -39,6 +39,21 @@ let md = fs.readFileSync(path.join(rootDir, 'asset.dev', 'manual.md'), 'utf8').s
 
 md = md.filter(line => !line.trim().startsWith('TODO:')).join('\n')
 
+const tokens = mdit.parse(md, {});
+const toc = [];
+for (let i = 0; i < tokens.length; i++) {
+	if (tokens[i].type === 'heading_open') {
+		const level = parseInt(tokens[i].tag.slice(1));
+		const id = tokens[i].attrGet('id');
+		const text = tokens[i + 1].children
+			.filter(t => t.type === 'text' || t.type === 'code_inline' || t.type === 'html_inline')
+			.map(t => t.content)
+			.join('');
+		toc.push({ level, id, text });
+	}
+}
+const tocHtml = toc.map(h => `<li class="h${h.level}"><a href="#${h.id}">${h.text}</a></li>`).join('\n');
+
 const css = fs.readFileSync(path.join(rootDir, 'project.web', 'sources', 'documentation.css'), 'utf8')
 const html = add_keyword_to_h4(mdit.render(md).replace(/&lt;br&gt;/g, '<br />').replace(/ style="text-align:right"/g, ' class="right"').replace(/<br>/g,'<br />'));
 
@@ -49,10 +64,17 @@ const community = `<!DOCTYPE html>
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
 <title>Documentation — Retro Game Creator</title>
 <link rel="stylesheet" href="documentation.css">
+<link rel="stylesheet" href="documentation-www.css">
 <link rel="icon" href="favicon.ico" type="image/x-icon">
+<script src="documentation.js"></script>
 </head>
 <body>
+<aside><nav><ul>
+${tocHtml}
+</ul></nav></aside>
+<article>
 ${html}
+</articl>
 </body>
 </html>`
 

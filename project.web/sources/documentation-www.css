@@ -1,0 +1,81 @@
+:target { scroll-margin-top: 5em; }
+
+html {
+	height: 100%;
+}
+body {
+	margin: 0;
+	display: flex;
+	gap: 1em;
+	overflow: hidden;
+	height: 100%;
+}
+aside {
+	flex-shrink: 2;
+	margin: 0;
+	padding: 0;
+	height: 100%;
+	overflow-x: hidden;
+	overflow-y: scroll;
+	min-width: 15em;
+}
+aside nav ul { padding: 0; margin: 0.75em 0 0 0; }
+aside nav ul li { list-style: none; }
+article {
+	padding: 1em 1em 1em 0.5em;
+	flex-shrink: 3;
+	height: 100%;
+	overflow-x: hidden;
+	overflow-y: scroll;
+}
+
+aside li { padding: 0; line-height: 1em; }
+aside li a { display: block; padding: 0.5em; text-decoration: none; color: #000; }
+aside li.h2 { background-color: #d9beb4; }
+aside li.h3 { background-color: #ddd; }
+aside li.h4 { border-bottom: solid 0.0625em #ddd; }
+aside li.h4 a { font-family: monospace; }
+
+aside:not(.open) li.h3:has(+ li.h4) > a::before {
+	content: "𝄘";
+	background-color: #ccc;
+	border-radius: 0.25em;
+	padding: 0 0.5em;
+	margin-right: 0.25em;
+}
+
+@media (max-width:700px) {
+	body {
+		display: block;
+	}
+	aside:not(.open) {
+		position: fixed;
+		left: 1em;
+		top: 1em;
+		width: 4em;
+		min-width: 4em;
+		height: 4em;
+		overflow: hidden;
+		z-index: 1;
+	}
+	aside:not(.open) nav { display: none; }
+	aside:not(.open):first-child::before {
+		display: block;
+		margin: 0;
+		box-sizing: border-box;
+		background: white;
+		border: solid 1px #ccc;
+		border-radius: 0.5em;
+		content: "𝄘";
+		width: 2em;
+		height: 2em;
+		font-size: 2em;
+		line-height: 2em;
+		text-align: center;
+	}
+	article {
+		padding-top: 5em;
+		margin-right: 1em;
+  	margin-left: 1em;
+	}
+}

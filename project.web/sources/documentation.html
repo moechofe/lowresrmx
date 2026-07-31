@@ -5,9 +5,267 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
 <title>Documentation — Retro Game Creator</title>
 <link rel="stylesheet" href="documentation.css">
+<link rel="stylesheet" href="documentation-www.css">
 <link rel="icon" href="favicon.ico" type="image/x-icon">
+<script src="documentation.js"></script>
 </head>
 <body>
+<aside><nav><ul>
+<li class="h2"><a href="#what-is-retro-game-creator">What is Retro Game Creator?</a></li>
+<li class="h2"><a href="#differences">Differences</a></li>
+<li class="h2"><a href="#how-does-it-work">How does it work</a></li>
+<li class="h3"><a href="#screen">Screen</a></li>
+<li class="h3"><a href="#colors">Colors</a></li>
+<li class="h3"><a href="#characters">Characters</a></li>
+<li class="h3"><a href="#backgrounds">Backgrounds</a></li>
+<li class="h3"><a href="#sprites">Sprites</a></li>
+<li class="h3"><a href="#rendering">Rendering</a></li>
+<li class="h3"><a href="#cpu-cycles">CPU & cycles</a></li>
+<li class="h3"><a href="#cartridge">Cartridge</a></li>
+<li class="h3"><a href="#virtual-file-rom-entries">Virtual file & ROM entries</a></li>
+<li class="h3"><a href="#memory">Memory</a></li>
+<li class="h3"><a href="#persistent-memory">Persistent Memory</a></li>
+<li class="h3"><a href="#sound">Sound</a></li>
+<li class="h3"><a href="#overlay">Overlay</a></li>
+<li class="h3"><a href="#keyboard">Keyboard</a></li>
+<li class="h2"><a href="#program-language">Program Language</a></li>
+<li class="h3"><a href="#program">Program</a></li>
+<li class="h3"><a href="#instructions">Instructions</a></li>
+<li class="h3"><a href="#identifiers">Identifiers</a></li>
+<li class="h3"><a href="#variables-and-assignation">Variables and assignation</a></li>
+<li class="h3"><a href="#literals">Literals</a></li>
+<li class="h3"><a href="#arrays">Arrays</a></li>
+<li class="h3"><a href="#labels-jumps-and-embedded-data">Labels, jumps and embedded data</a></li>
+<li class="h3"><a href="#stack-sub-routine-and-return">Stack, sub-routine and return</a></li>
+<li class="h3"><a href="#procedures">Procedures</a></li>
+<li class="h3"><a href="#parameters-arguments-and-scopes">Parameters, arguments and scopes</a></li>
+<li class="h3"><a href="#passed-by-reference">Passed by reference</a></li>
+<li class="h3"><a href="#local-and-global-scope">Local and global scope</a></li>
+<li class="h3"><a href="#comments">Comments</a></li>
+<li class="h3"><a href="#grammar">Grammar</a></li>
+<li class="h3"><a href="#expressions">Expressions</a></li>
+<li class="h3"><a href="#operators">Operators</a></li>
+<li class="h3"><a href="#commands">Commands</a></li>
+<li class="h3"><a href="#functions">Functions</a></li>
+<li class="h3"><a href="#lvalue-and-rvalue">Lvalue and Rvalue</a></li>
+<li class="h3"><a href="#instructions-separator">Instructions separator</a></li>
+<li class="h3"><a href="#reserved-keywords">Reserved keywords</a></li>
+<li class="h2"><a href="#basic-instructions">BASIC instructions</a></li>
+<li class="h3"><a href="#control-flow">Control flow</a></li>
+<li class="h4"><a href="#end">END</a></li>
+<li class="h4"><a href="#if-then-else-if-else-end-ifif-then">IF/THEN/ELSE IF/ELSE/END IF<br>IF/THEN</a></li>
+<li class="h4"><a href="#do-loop-exit">DO/LOOP/EXIT</a></li>
+<li class="h4"><a href="#repeat-until-exit">REPEAT/UNTIL/EXIT</a></li>
+<li class="h4"><a href="#while-wend-exit">WHILE/WEND/EXIT</a></li>
+<li class="h4"><a href="#for-to-step-next-exit">FOR/TO/STEP/NEXT/EXIT</a></li>
+<li class="h4"><a href="#goto">GOTO</a></li>
+<li class="h4"><a href="#gosub-return">GOSUB/RETURN</a></li>
+<li class="h4"><a href="#on-gotoon-gosub">ON GOTO<br>ON GOSUB</a></li>
+<li class="h4"><a href="#sub-end-sub-exit-sub">SUB/END SUB/EXIT SUB</a></li>
+<li class="h4"><a href="#call">CALL</a></li>
+<li class="h4"><a href="#on-call">ON CALL</a></li>
+<li class="h3"><a href="#embedded-data">Embedded data</a></li>
+<li class="h4"><a href="#data-constant-constant">DATA constant [, constant...]</a></li>
+<li class="h4"><a href="#read-variable-variable">READ variable [, variable...]</a></li>
+<li class="h4"><a href="#restore-label">RESTORE [label]</a></li>
+<li class="h4"><a href="#skip-number">SKIP number</a></li>
+<li class="h4"><a href="#on-restore">ON RESTORE</a></li>
+<li class="h3"><a href="#variables-and-scopes">Variables and scopes</a></li>
+<li class="h4"><a href="#global">GLOBAL</a></li>
+<li class="h4"><a href="#dim">DIM</a></li>
+<li class="h4"><a href="#dim-global">DIM GLOBAL</a></li>
+<li class="h4"><a href="#-ubound">=UBOUND</a></li>
+<li class="h4"><a href="#swap-a-b">SWAP a, b</a></li>
+<li class="h2"><a href="#api-instructions">API instructions</a></li>
+<li class="h3"><a href="#sprite-api">Sprite API</a></li>
+<li class="h4"><a href="#sprite-sprite-x-y-character">SPRITE sprite, [x], [y], [character]</a></li>
+<li class="h4"><a href="#sprite-sprite-pal-palette-flip-horizontal-vertical-prio-priority-size-size">SPRITE sprite [PAL palette] [FLIP horizontal, vertical] [PRIO priority] [SIZE size]</a></li>
+<li class="h4"><a href="#x-sprite-x-sprite-y-sprite-y-sprite">x =SPRITE.X(sprite)<br>y =SPRITE.Y(sprite)</a></li>
+<li class="h4"><a href="#character-sprite-c-sprite">character =SPRITE.C(sprite)</a></li>
+<li class="h4"><a href="#sprite-a-sprite-attributes">SPRITE.A sprite, attributes</a></li>
+<li class="h4"><a href="#attributes-sprite-a-sprite">attributes =SPRITE.A(sprite)</a></li>
+<li class="h4"><a href="#sprite-off">SPRITE OFF</a></li>
+<li class="h4"><a href="#sprite-off-sprite">SPRITE OFF sprite</a></li>
+<li class="h4"><a href="#sprite-off-sprite1-to-sprite2">SPRITE OFF sprite1 TO sprite2</a></li>
+<li class="h4"><a href="#collides-sprite-hit-sprite">collides =SPRITE HIT(sprite)</a></li>
+<li class="h4"><a href="#collides-sprite-hit-sprite-sprite1">collides =SPRITE HIT(sprite, sprite1)</a></li>
+<li class="h4"><a href="#collides-sprite-hit-sprite-sprite1-to-sprite2">collides =SPRITE.HIT(sprite, sprite1 to sprite2)</a></li>
+<li class="h4"><a href="#sprite-hit">sprite =HIT</a></li>
+<li class="h3"><a href="#background-api">Background API</a></li>
+<li class="h4"><a href="#cls">CLS</a></li>
+<li class="h4"><a href="#cls-layer">CLS layer</a></li>
+<li class="h4"><a href="#scroll-layer-x-y">SCROLL layer, [x], [y]</a></li>
+<li class="h4"><a href="#x-scroll-x-layer-y-scroll-y-layer">x =SCROLL.X(layer)<br>y =SCROLL.Y(layer)</a></li>
+<li class="h4"><a href="#bg-layer">BG layer</a></li>
+<li class="h4"><a href="#pal-palette">PAL palette</a></li>
+<li class="h4"><a href="#flip-horizontal-vertical">FLIP [horizontal], [vertical]</a></li>
+<li class="h4"><a href="#prio-priority">PRIO priority</a></li>
+<li class="h4"><a href="#attr-attributes">ATTR attributes</a></li>
+<li class="h4"><a href="#cell-x-y-character">CELL x, y, [character]</a></li>
+<li class="h4"><a href="#character-cell-c-x-y">character =CELL.C(x, y)</a></li>
+<li class="h4"><a href="#attributes-cell-a-x-y">attributes =CELL.A(x, y)</a></li>
+<li class="h4"><a href="#bg-fill-x1-y1-to-x2-y2-char-character">BG FILL x1, y1 TO x2, y2 CHAR character</a></li>
+<li class="h4"><a href="#tint-y-y-pal-palette-flip-horizontal-vertical-prio-priority">TINT y, y [PAL palette] [FLIP horizontal, vertical] [PRIO priority]</a></li>
+<li class="h4"><a href="#bg-tint-x1-y1-to-x2-y2-pal-palette-flip-horizontal-vertical-prio-priority">BG TINT x1, y1 TO x2, y2 [PAL palette] [FLIP horizontal, vertical] [PRIO priority]</a></li>
+<li class="h4"><a href="#bg-scroll-x1-y1-to-x2-y2-step-x3-y3">BG SCROLL x1, y1 to x2, y2 step x3, y3</a></li>
+<li class="h4"><a href="#bg-source-address-width-height">BG SOURCE address [, width, height]</a></li>
+<li class="h4"><a href="#bg-copy-x1-y1-width-height-to-x2-y2">BG COPY x1, y1, width, height TO x2, y2</a></li>
+<li class="h4"><a href="#mcell-x-y-character">MCELL x, y, character</a></li>
+<li class="h4"><a href="#character-mcell-c-x-y">character =MCELL.C(x, y)</a></li>
+<li class="h4"><a href="#attributes-mcell-a-x-y">attributes =MCELL.A(x, y)</a></li>
+<li class="h4"><a href="#text-x-y-text">TEXT x, y, text$</a></li>
+<li class="h4"><a href="#number-x-y-number-count">NUMBER x, y, number, count</a></li>
+<li class="h4"><a href="#font-first">FONT first</a></li>
+<li class="h3"><a href="#text-api">Text API</a></li>
+<li class="h4"><a href="#window-x-y-width-height-layer">WINDOW x, y, width, height, layer</a></li>
+<li class="h4"><a href="#x-window-xy-window-ywidth-window-wheight-window-h">x =WINDOW.X<br>y =WINDOW.Y<br>width =WINDOW.W<br>height =WINDOW.H</a></li>
+<li class="h4"><a href="#clw">CLW</a></li>
+<li class="h4"><a href="#locate-x-y">LOCATE x, y</a></li>
+<li class="h4"><a href="#x-cursor-xy-cursor-y">x =CURSOR.X<br>y =CURSOR.Y</a></li>
+<li class="h4"><a href="#print-expression">PRINT expression...</a></li>
+<li class="h4"><a href="#print">PRINT</a></li>
+<li class="h3"><a href="#input-api">Input API</a></li>
+<li class="h4"><a href="#touched-touch">touched =TOUCH</a></li>
+<li class="h4"><a href="#touched-tap">touched =TAP</a></li>
+<li class="h4"><a href="#x-touch-xy-touch-y">x =TOUCH.X<br>y =TOUCH.Y</a></li>
+<li class="h4"><a href="#keyboard-onkeyboard-off">KEYBOARD ON<br>KEYBOARD OFF</a></li>
+<li class="h4"><a href="#height-keyboard">height =KEYBOARD</a></li>
+<li class="h4"><a href="#input-prompt-variableinput-prompt-variable">INPUT [prompt;] variable<br>INPUT [prompt;] variable$</a></li>
+<li class="h4"><a href="#pressed-inkey">pressed$ =INKEY$</a></li>
+<li class="h4"><a href="#frames-timer">frames =TIMER</a></li>
+<li class="h4"><a href="#wait-tap">WAIT TAP</a></li>
+<li class="h4"><a href="#x-touch-pxy-touch-py">x =TOUCH.PX<br>y =TOUCH.PY</a></li>
+<li class="h4"><a href="#tapped-touch-tapdraging-touch-draglong-touch-long">tapped =TOUCH.TAP<br>draging =TOUCH.DRAG<br>long =TOUCH.LONG</a></li>
+<li class="h4"><a href="#changed-touch-change">changed =TOUCH.CHANGE</a></li>
+<li class="h3"><a href="#display-api">Display API</a></li>
+<li class="h4"><a href="#palette-palette-c0-c1-c2-c3">PALETTE palette, [c0], [c1], [c2], [c3]</a></li>
+<li class="h4"><a href="#available-color-palette-color">available =COLOR(palette, color)</a></li>
+<li class="h4"><a href="#width-shown-wheight-shown-h">width =SHOWN.W<br>height =SHOWN.H</a></li>
+<li class="h4"><a href="#left-safe-ltop-safe-tright-safe-rbottom-safe-b">left =SAFE.L<br>top =SAFE.T<br>right =SAFE.R<br>bottom =SAFE.B</a></li>
+<li class="h4"><a href="#sprite-view-onsprite-view-off">SPRITE VIEW ON<br>SPRITE VIEW OFF</a></li>
+<li class="h4"><a href="#bg-view-onbg-view-off">BG VIEW ON<br>BG VIEW OFF</a></li>
+<li class="h4"><a href="#wait-vblwait-frame">WAIT VBL<br>WAIT frame</a></li>
+<li class="h4"><a href="#on-vbl-call-procedure">ON VBL CALL procedure</a></li>
+<li class="h4"><a href="#on-vbl-off">ON VBL OFF</a></li>
+<li class="h4"><a href="#on-raster-call-procedure">ON RASTER CALL procedure</a></li>
+<li class="h4"><a href="#line-raster">line =RASTER</a></li>
+<li class="h4"><a href="#on-raster-off">ON RASTER OFF</a></li>
+<li class="h3"><a href="#math-api">Math API</a></li>
+<li class="h4"><a href="#pi-pi">pi =PI</a></li>
+<li class="h4"><a href="#cosine-cos-number-sine-sin-number">cosine =COS(number)<br>sine =SIN(number)</a></li>
+<li class="h4"><a href="#arc-atan-x-y">arc =ATAN(x, y)</a></li>
+<li class="h4"><a href="#absolute-abs-number">absolute =ABS(number)</a></li>
+<li class="h4"><a href="#exponential-exp-number">exponential =EXP(number)</a></li>
+<li class="h4"><a href="#logarithm-log-number">logarithm =LOG(number)</a></li>
+<li class="h4"><a href="#square-sqr-number">square =SQR(number)</a></li>
+<li class="h4"><a href="#sign-sgn-number">sign =SGN(number)</a></li>
+<li class="h4"><a href="#floor-floor-number-floor-int-number">floor =FLOOR(number)<br>floor =INT(number)</a></li>
+<li class="h4"><a href="#ceil-ceil-number">ceil =CEIL(number)</a></li>
+<li class="h4"><a href="#inc-variabledec-variable">INC variable<br>DEC variable</a></li>
+<li class="h4"><a href="#add-variable-valueadd-variable-increment-min-to-max">ADD variable, value<br>ADD variable, increment, min TO max</a></li>
+<li class="h4"><a href="#minimal-min-a-b-maximal-max-a-b">minimal =MIN(a, b)<br>maximal =MAX(a, b)</a></li>
+<li class="h4"><a href="#clamped-clamp-value-min-max">clamped =CLAMP(value, min, max)</a></li>
+<li class="h4"><a href="#length-len-x-y">length =LEN(x, y)</a></li>
+<li class="h4"><a href="#interpolation-ease-function-mode-value">interpolation =EASE(function, mode, value)</a></li>
+<li class="h4"><a href="#random-rnd">random =RND</a></li>
+<li class="h4"><a href="#random-rnd-max">random =RND(max)</a></li>
+<li class="h4"><a href="#randomize-seed">RANDOMIZE seed</a></li>
+<li class="h4"><a href="#random-rnd-addressrandom-rnd-max-address-randomize-seed-address">random =RND address<br>random =RND(max, address)<br>RANDOMIZE seed [, address]</a></li>
+<li class="h3"><a href="#string-api">String API</a></li>
+<li class="h4"><a href="#length-len-text">length =LEN(text)</a></li>
+<li class="h4"><a href="#ascii7-asc-character">ascii7 =ASC(character)</a></li>
+<li class="h4"><a href="#character-chr-ascii7">character =CHR$(ascii7)</a></li>
+<li class="h4"><a href="#text-str-number">text =STR$(number)</a></li>
+<li class="h4"><a href="#number-val-text">number =VAL(text)</a></li>
+<li class="h4"><a href="#hexadecimal-hex-number-digits-binary-bin-number-digits">hexadecimal =HEX$(number, [digits])<br>binary =BIN$(number, [digits])</a></li>
+<li class="h4"><a href="#leading-left-text-length-trailing-right-text-length">leading$ =LEFT$(text, length)<br>trailing$ =RIGHT$(text, length)</a></li>
+<li class="h4"><a href="#left-text-length-replacement-right-text-length-replacement">LEFT$(text, length) =replacement$<br>RIGHT$(text, length) =replacement$</a></li>
+<li class="h4"><a href="#extract-mid-text-position-length">extract$ =MID(text, position, length)</a></li>
+<li class="h4"><a href="#mid-text-position-length-replacement">MID$(text, position, length) =replacement$</a></li>
+<li class="h4"><a href="#found-instr-text-occurrence-position">found =INSTR(text, occurrence [, position])</a></li>
+<li class="h3"><a href="#sound-api">Sound API</a></li>
+<li class="h4"><a href="#play-voice-pitch-length-sound-sound">PLAY voice, pitch [, length] [SOUND sound]</a></li>
+<li class="h4"><a href="#stopstop-voice">STOP<br>STOP [voice]</a></li>
+<li class="h4"><a href="#volume-voice-volume-mix">VOLUME voice, [volume], [mix]</a></li>
+<li class="h4"><a href="#sound-voice-wave-width-length">SOUND voice, [wave], [width], [length]</a></li>
+<li class="h4"><a href="#envelope-voice-attack-decay-sustain-release">ENVELOPE voice, [attack], [decay], [sustain], [release]</a></li>
+<li class="h4"><a href="#lfo-voice-rate-frequency-volume-width">LFO voice, [rate], [frequency], [volume], [width]</a></li>
+<li class="h4"><a href="#lfo-wave-voice-wave-invert-env-trigger">LFO WAVE voice, [wave], [invert], [env], [trigger]</a></li>
+<li class="h4"><a href="#sound-source-address">SOUND SOURCE [address]</a></li>
+<li class="h4"><a href="#music-pattern">MUSIC [pattern]</a></li>
+<li class="h4"><a href="#value-music-what">value =MUSIC(what)</a></li>
+<li class="h4"><a href="#track-track-voice">TRACK track, voice</a></li>
+<li class="h3"><a href="#memory-api">Memory API</a></li>
+<li class="h4"><a href="#poke-address-value">POKE address, value</a></li>
+<li class="h4"><a href="#value-peek-address">value =PEEK(address)</a></li>
+<li class="h4"><a href="#pokew-address-value">POKEW address, value</a></li>
+<li class="h4"><a href="#value-peekw-address">value =PEEKW(address)</a></li>
+<li class="h4"><a href="#pokel-address-value">POKEL address, value</a></li>
+<li class="h4"><a href="#value-peekl-address">value =PEEKL(address)</a></li>
+<li class="h4"><a href="#address-rom-file">address =ROM(file)</a></li>
+<li class="h4"><a href="#size-size-file">size =SIZE(file)</a></li>
+<li class="h4"><a href="#copy-source-count-to-destination">COPY source, count TO destination</a></li>
+<li class="h4"><a href="#fill-address-count-value">FILL address, count [, value]</a></li>
+<li class="h4"><a href="#rol-address-placesror-address-places">ROL address, places<br>ROR address, places</a></li>
+<li class="h4"><a href="#dma-copy-rom">DMA COPY [ROM]</a></li>
+<li class="h3"><a href="#file-api">File API</a></li>
+<li class="h4"><a href="#files">FILES</a></li>
+<li class="h4"><a href="#comment-file-file">comment$ =FILE$(file)</a></li>
+<li class="h4"><a href="#size-fsize-file">size =FSIZE(file)</a></li>
+<li class="h4"><a href="#load-file-address-limit-offset">LOAD file, address [, limit [, offset]]</a></li>
+<li class="h4"><a href="#save-file-comment-address-size">SAVE file, comment$, address, size</a></li>
+<li class="h3"><a href="#other-api">Other API</a></li>
+<li class="h4"><a href="#trace-expression-expression">TRACE expression [, expression...]</a></li>
+<li class="h4"><a href="#message-text">MESSAGE text</a></li>
+<li class="h4"><a href="#system-setting-value">SYSTEM setting, value</a></li>
+<li class="h4"><a href="#haptic-pattern">HAPTIC pattern</a></li>
+<li class="h4"><a href="#compat">COMPAT</a></li>
+<li class="h4"><a href="#pause">PAUSE</a></li>
+<li class="h2"><a href="#references">References</a></li>
+<li class="h3"><a href="#debugger-instructions">Debugger instructions</a></li>
+<li class="h4"><a href="#dbg-pause">dbg: PAUSE</a></li>
+<li class="h4"><a href="#dbg-a-variable-name">dbg: a variable name</a></li>
+<li class="h4"><a href="#dbg-a-variable-name-new-value">dbg: a variable name = new value</a></li>
+<li class="h4"><a href="#dbg-an-address">dbg: an address</a></li>
+<li class="h4"><a href="#dbg-an-address-a-value">dbg: an address = a value</a></li>
+<li class="h4"><a href="#dbg-cls">dbg: CLS</a></li>
+<li class="h4"><a href="#dbg-wait">dbg: WAIT</a></li>
+<li class="h4"><a href="#dbg-dim-filter-pagination">dbg: DIM [filter] [pagination]</a></li>
+<li class="h4"><a href="#dbg-trace">dbg: TRACE</a></li>
+<li class="h4"><a href="#dbg-track-peek-address-dbg-track-poke-address">dbg: TRACK PEEK address<br> dbg: TRACK POKE address</a></li>
+<li class="h4"><a href="#dbg-next">dbg: NEXT</a></li>
+<li class="h4"><a href="#dbg-goto-ongoto-offgosub-ongosub-off">dbg: GOTO ON<br>GOTO OFF<br>GOSUB ON<br>GOSUB OFF</a></li>
+<li class="h4"><a href="#dbg-shown-w-width-heightshown-w">dbg: SHOWN.W width height<br>SHOWN.W</a></li>
+<li class="h4"><a href="#dbg-safe-l-left-top-right-bottomsafe-l">dbg: SAFE.L left top right bottom<br>SAFE.L</a></li>
+<li class="h3"><a href="#64-colors">64 Colors</a></li>
+<li class="h3"><a href="#memory-mapping">Memory mapping</a></li>
+<li class="h3"><a href="#todo-color-data">TODO: Color data</a></li>
+<li class="h3"><a href="#background-data">Background data</a></li>
+<li class="h3"><a href="#cell-attributes">Cell attributes</a></li>
+<li class="h3"><a href="#character-data">Character data</a></li>
+<li class="h3"><a href="#background-source-format-data">Background source format data</a></li>
+<li class="h3"><a href="#sound-source-format-data">Sound source format data</a></li>
+<li class="h4"><a href="#attributes-bits">Attributes bits</a></li>
+<li class="h4"><a href="#envelope-bits">Envelope bits</a></li>
+<li class="h3"><a href="#pitch-values">Pitch values</a></li>
+<li class="h3"><a href="#ascii-table">ASCII table</a></li>
+<li class="h3"><a href="#registers">Registers</a></li>
+<li class="h4"><a href="#character-registers">Character Registers</a></li>
+<li class="h4"><a href="#sprite-registers">Sprite Registers</a></li>
+<li class="h4"><a href="#character-attributes">Character attributes</a></li>
+<li class="h4"><a href="#color-registers">Color registers</a></li>
+<li class="h4"><a href="#video-registers">Video registers</a></li>
+<li class="h4"><a href="#display-attributes">Display attributes</a></li>
+<li class="h4"><a href="#todo-audio-registers">TODO: Audio registers</a></li>
+<li class="h4"><a href="#i-o-registers">I/O registers</a></li>
+<li class="h4"><a href="#other-i-o-status-bits">Other I/O status bits</a></li>
+<li class="h4"><a href="#dma-registerss">DMA registerss</a></li>
+<li class="h3"><a href="#cycles">Cycles</a></li>
+<li class="h3"><a href="#number-limits">Number limits</a></li>
+<li class="h3"><a href="#language-limits">Language limits</a></li>
+<li class="h2"><a href="#index">Index</a></li>
+</ul></nav></aside>
+<article>
 <h2 id="what-is-retro-game-creator" tabindex="-1">What is Retro Game Creator?</h2>
 <p>Create games and play them on the go using an iPhone or iPad. Retro Game Creator is a virtual game console and game development environment that includes all the tools needed to start and finish a project.</p>
 <p>It includes a project manager, a code editor, and various tools to edit game assets: sprites, palettes, backgrounds, instruments, and music.</p>
@@ -3010,45 +3268,45 @@ This command will be removed at some point.</p>
 <h4 data-keyword="PAUSE" data-title="PAUSE" id="pause" tabindex="-1"><code>PAUSE</code></h4>
 <p>Halt the execution and bring the debugger console.</p>
 <p>Check the <a href="#debugger-instructions">debugger instructions</a> to learn what you can to do with it.</p>
-<h2 id="debugger-instructions" tabindex="-1">Debugger instructions</h2>
-<h5 id="dbg-pause" tabindex="-1">dbg: <code>PAUSE</code></h5>
+<h2 id="references" tabindex="-1">References</h2>
+<p>This annex provides technical information about how things work under the hood.</p>
+<h3 id="debugger-instructions" tabindex="-1">Debugger instructions</h3>
+<h4 data-keyword="PAUSE" data-title="PAUSE" id="dbg-pause" tabindex="-1">dbg: <code>PAUSE</code></h4>
 <p>Enter the debugger. It bring a console where user can enter debugger specific commands. The scope used in the debugger is the same as the one in the program where the <code>PAUSE</code> appear.</p>
-<h5 id="dbg-a-variable-name" tabindex="-1">dbg: a variable name</h5>
+<h4 id="dbg-a-variable-name" tabindex="-1">dbg: a variable name</h4>
 <p>By typing the name of a variable, the debugger will print it's value. The variable use the same syntax as inside a program: <code>$</code> for string, () for array.</p>
 <p>The variable MUST be accessible throughout the scope of where the <code>PAUSE</code> has been used to enter the debugger. Global variables are still available everywhere.</p>
-<h5 id="dbg-a-variable-name-new-value" tabindex="-1">dbg: a variable name <code>=</code> new value</h5>
+<h4 id="dbg-a-variable-name-new-value" tabindex="-1">dbg: a variable name <code>=</code> new value</h4>
 <p>Allow to change the value of a variable.</p>
 <p>Number literal use the same syntax as inside a program, it support integer, float, hexadecimal and binary.</p>
 <p>String literal use the same syntax as inside a program: surrounded by double quotes (&quot;).</p>
-<h5 id="dbg-an-address" tabindex="-1">dbg: an address</h5>
+<h4 id="dbg-an-address" tabindex="-1">dbg: an address</h4>
 <p>By typing a memory address, the debugger will print it's value as if it was read by <code>=PEEK()</code>.</p>
 <p>The address can be indicated using the hexadecimal or by any other valid numeric literal.</p>
-<h5 id="dbg-an-address-a-value" tabindex="-1">dbg: an address <code>=</code> a value</h5>
+<h4 id="dbg-an-address-a-value" tabindex="-1">dbg: an address <code>=</code> a value</h4>
 <p>Will try to modify the value store inside a memory address.</p>
 <pre><code>$FF00=3
 </code></pre>
-<h5 id="dbg-cls" tabindex="-1">dbg: <code>CLS</code></h5>
+<h4 data-keyword="CLS" data-title="CLS" id="dbg-cls" tabindex="-1">dbg: <code>CLS</code></h4>
 <p>Clear the debugger console.</p>
-<h5 id="dbg-wait" tabindex="-1">dbg: <code>WAIT</code></h5>
+<h4 data-keyword="WAIT" data-title="WAIT" id="dbg-wait" tabindex="-1">dbg: <code>WAIT</code></h4>
 <p>Resume execution until a <code>WAIT</code> command is found in the program, the scope may change.</p>
-<h5 id="dbg-dim-filter-pagination" tabindex="-1">dbg: <code>DIM [filter] [pagination]</code></h5>
+<h4 data-keyword="DIM" data-title="DIM" id="dbg-dim-filter-pagination" tabindex="-1">dbg: <code>DIM [filter] [pagination]</code></h4>
 <p>Print the list of accessible variable at the current scope.</p>
 <p>Allow to limit the output to the variables that matchs the <code>filter</code>.</p>
 <p>Allow to output more variables using the <code>pagination</code> with an index that start at 0 zero.</p>
-<h5 id="dbg-trace" tabindex="-1">dbg: <code>TRACE</code></h5>
+<h4 data-keyword="TRACE" data-title="TRACE" id="dbg-trace" tabindex="-1">dbg: <code>TRACE</code></h4>
 <p>Print the current call stack in reverse order: last line number followed by label <code>GOSUB</code>'ed and procedure <code>CALL</code>'ed.</p>
-<h5 id="dbg-track-peek-address-dbg-track-poke-address" tabindex="-1">dbg: <code>TRACK PEEK address</code><br /> dbg: <code>TRACK POKE address</code></h5>
+<h4 data-keyword="TRACK,PEEK,TRACK,POKE" data-title="TRACK PEEK/TRACK POKE" id="dbg-track-peek-address-dbg-track-poke-address" tabindex="-1">dbg: <code>TRACK PEEK address</code><br /> dbg: <code>TRACK POKE address</code></h4>
 <p>Enter the debugger when the program <code>=PEEK</code> or <code>POKE</code> the <code>address</code>.</p>
-<h5 id="dbg-next" tabindex="-1">dbg: <code>NEXT</code></h5>
+<h4 data-keyword="NEXT" data-title="NEXT" id="dbg-next" tabindex="-1">dbg: <code>NEXT</code></h4>
 <p>Execute next instruction in the program, and stop.</p>
-<h5 id="dbg-goto-ongoto-offgosub-ongosub-off" tabindex="-1">dbg: <code>GOTO ON</code><br /><code>GOTO OFF</code><br /><code>GOSUB ON</code><br /><code>GOSUB OFF</code></h5>
+<h4 data-keyword="GOTO,ON,GOTO,OFF,GOSUB,ON,GOSUB,OFF" data-title="GOTO ON/GOTO OFF/GOSUB ON/GOSUB OFF" id="dbg-goto-ongoto-offgosub-ongosub-off" tabindex="-1">dbg: <code>GOTO ON</code><br /><code>GOTO OFF</code><br /><code>GOSUB ON</code><br /><code>GOSUB OFF</code></h4>
 <p>Start or stop logging <code>GOTO</code>s and <code>GOSUB</code>s.</p>
-<h5 id="dbg-shown-w-width-heightshown-w" tabindex="-1">dbg: <code>SHOWN.W width height</code><br /><code>SHOWN.W</code></h5>
+<h4 data-keyword="SHOWN.W,SHOWN.W" data-title="SHOWN.W/SHOWN.W" id="dbg-shown-w-width-heightshown-w" tabindex="-1">dbg: <code>SHOWN.W width height</code><br /><code>SHOWN.W</code></h4>
 <p>Override or reset <code>width</code> and <code>height</code> of the device screen to simulate different ratios.</p>
-<h5 id="dbg-safe-l-left-top-right-bottomsafe-l" tabindex="-1">dbg: <code>SAFE.L left top right bottom</code><br /><code>SAFE.L</code></h5>
+<h4 data-keyword="SAFE.L,SAFE.L" data-title="SAFE.L/SAFE.L" id="dbg-safe-l-left-top-right-bottomsafe-l" tabindex="-1">dbg: <code>SAFE.L left top right bottom</code><br /><code>SAFE.L</code></h4>
 <p>Override or reset <code>left</code>, <code>top</code>, <code>right</code> and <code>bottom</code> of the safe area to simulate different device models.</p>
-<h2 id="references" tabindex="-1">References</h2>
-<p>This annex provides technical information about how things work under the hood.</p>
 <h3 id="64-colors" tabindex="-1">64 Colors</h3>
 <div class="famicube">
     <div>00</div><div>01</div><div>02</div><div>03</div><div>04</div><div>05</div><div>06</div><div>07</div>
@@ -3316,7 +3574,7 @@ The 1st 8 bytes store the low bit for all the 8x8 pixels. The 2nd 8 bytes store 
 </tr>
 </tbody>
 </table>
-<h5 id="attributes-bits" tabindex="-1">Attributes bits:</h5>
+<h4 id="attributes-bits" tabindex="-1">Attributes bits</h4>
 <table>
 <thead>
 <tr>
@@ -3339,7 +3597,7 @@ The 1st 8 bytes store the low bit for all the 8x8 pixels. The 2nd 8 bytes store 
 </tr>
 </tbody>
 </table>
-<h5 id="envelope-bits" tabindex="-1">Envelope bits:</h5>
+<h4 id="envelope-bits" tabindex="-1">Envelope bits</h4>
 <table>
 <thead>
 <tr>
@@ -4004,7 +4262,7 @@ The 1st 8 bytes store the low bit for all the 8x8 pixels. The 2nd 8 bytes store 
 </tr>
 </tbody>
 </table>
-<h5 id="character-registers" tabindex="-1">Character Registers</h5>
+<h4 id="character-registers" tabindex="-1">Character Registers</h4>
 <p>Each one of the 256 character occupies 16 bytes.</p>
 <table>
 <thead>
@@ -4047,7 +4305,7 @@ The 1st 8 bytes store the low bit for all the 8x8 pixels. The 2nd 8 bytes store 
 </tr>
 </tbody>
 </table>
-<h5 id="sprite-registers" tabindex="-1">Sprite Registers</h5>
+<h4 id="sprite-registers" tabindex="-1">Sprite Registers</h4>
 <p>There are 170 sprites, each occupies 6 bytes:</p>
 <table>
 <thead>
@@ -4124,7 +4382,7 @@ The 1st 8 bytes store the low bit for all the 8x8 pixels. The 2nd 8 bytes store 
 </table>
 <p>Both position on x and y axis use sub-pixels values. To advance by 1 pixel, the values SHOULD get increased by 16.<br />
 Also, they are both offseted by 32 pixels. To place a sprite in the 0x0 coordinates, the values SHOULD be 512x512.</p>
-<h5 id="character-attributes" tabindex="-1">Character attributes</h5>
+<h4 id="character-attributes" tabindex="-1">Character attributes</h4>
 <table>
 <thead>
 <tr>
@@ -4182,7 +4440,7 @@ Also, they are both offseted by 32 pixels. To place a sprite in the 0x0 coordina
 </tr>
 </tbody>
 </table>
-<h5 id="color-registers" tabindex="-1">Color registers</h5>
+<h4 id="color-registers" tabindex="-1">Color registers</h4>
 <p>There are 8 palettes with 4 colors each:</p>
 <table>
 <thead>
@@ -4232,7 +4490,7 @@ Also, they are both offseted by 32 pixels. To place a sprite in the 0x0 coordina
 </tr>
 </tbody>
 </table>
-<h5 id="video-registers" tabindex="-1">Video registers</h5>
+<h4 id="video-registers" tabindex="-1">Video registers</h4>
 <table>
 <thead>
 <tr>
@@ -4299,7 +4557,7 @@ Also, they are both offseted by 32 pixels. To place a sprite in the 0x0 coordina
 </tr>
 </tbody>
 </table>
-<h5 id="display-attributes" tabindex="-1">Display attributes</h5>
+<h4 id="display-attributes" tabindex="-1">Display attributes</h4>
 <table>
 <thead>
 <tr>
@@ -4330,7 +4588,7 @@ Also, they are both offseted by 32 pixels. To place a sprite in the 0x0 coordina
 </tr>
 </tbody>
 </table>
-<h5 id="todo-audio-registers" tabindex="-1">TODO: Audio registers</h5>
+<h4 id="todo-audio-registers" tabindex="-1">TODO: Audio registers</h4>
 <table>
 <thead>
 <tr>
@@ -4347,7 +4605,7 @@ Also, they are both offseted by 32 pixels. To place a sprite in the 0x0 coordina
 </tr>
 </tbody>
 </table>
-<h3 id="i-o-registers" tabindex="-1">I/O registers</h3>
+<h4 id="i-o-registers" tabindex="-1">I/O registers</h4>
 <table>
 <thead>
 <tr>
@@ -4437,7 +4695,7 @@ Also, they are both offseted by 32 pixels. To place a sprite in the 0x0 coordina
 <p>Last touch position X and Y are stored as float and Retro Game Creator do not have a way to peek float from memory, use <a href="#x-touch-xy-touch-y"><code>TOUCH.X</code></a> and <a href="#x-touch-xy-touch-y"><code>TOUCH.Y</code></a> functions instead.</p>
 <p>Pixels shown represent the number of fantasy pixels that is visible by the user according to their device screen ratio. Use the practical <a href="#width-shown-wheight-shown-h"><code>SHOWN.W</code></a> and <a href="#width-shown-wheight-shown-h"><code>SHOWN.H</code></a> functions.</p>
 <p>Pixels outside the safe zone represent the number of fantasy pixels that are visible but SHOULD be considered unsafe for touch input as they are outside the safe area. Use the easy memorable <a href="#left-safe-ltop-safe-tright-safe-rbottom-safe-b"><code>SAFE.L</code></a>, <a href="#left-safe-ltop-safe-tright-safe-rbottom-safe-b"><code>SAFE.T</code></a>, <a href="#left-safe-ltop-safe-tright-safe-rbottom-safe-b"><code>SAFE.R</code></a> and <a href="#left-safe-ltop-safe-tright-safe-rbottom-safe-b"><code>SAFE.B</code></a> functions.</p>
-<h5 id="other-i-o-status-bits" tabindex="-1">Other I/O status bits</h5>
+<h4 id="other-i-o-status-bits" tabindex="-1">Other I/O status bits</h4>
 <table>
 <thead>
 <tr>
@@ -4472,7 +4730,7 @@ Also, they are both offseted by 32 pixels. To place a sprite in the 0x0 coordina
 </tr>
 </tbody>
 </table>
-<h5 id="dma-registerss" tabindex="-1">DMA registerss</h5>
+<h4 id="dma-registerss" tabindex="-1">DMA registerss</h4>
 <table>
 <thead>
 <tr>
@@ -5345,5 +5603,6 @@ PRINT 0.000000239&lt;&gt;0
 <li><a href="#operators"><code>XOR</code></a></li>
 </ul>
 
+</articl>
 </body>
 </html>
