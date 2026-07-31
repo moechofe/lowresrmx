@@ -183,7 +183,8 @@ int main(int argc, const char *argv[])
 
 		Uint32 windowFlags = SDL_WINDOW_RESIZABLE;
 
-		const char *windowTitle = "LowResRMX";
+		// const char *windowTitle = "LowResRMX";
+		const char *windowTitle=NULL;
 
 		window = SDL_CreateWindow(
 			windowTitle, SCREEN_WIDTH * defaultWindowScale, SCREEN_HEIGHT * defaultWindowScale, windowFlags);

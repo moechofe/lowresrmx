@@ -13,9 +13,9 @@ Module.canvas = document.getElementById('canvas');
 Module.arguments = [`./${document.querySelector("body").dataset["pid"]}.rmx`];
 Module.print = console.log.bind(console);
 Module.printErr = console.warn.bind(console);
-Module.onAbort = function (what) {
-  var screen = document.querySelector('.screen');
-  if (screen) {
+Module.onAbort = function(what){
+  const screen=document.querySelector('.screen');
+  if(screen){
     screen.innerHTML =
       '<div class="unsupported">' +
       '<p class="unsupported-title">Can’t run this program</p>' +

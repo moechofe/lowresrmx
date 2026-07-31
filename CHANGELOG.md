@@ -4,6 +4,8 @@
 
 - Add table-of-content for the website documentation.
 
+- Prevent SDL to change the player title HTML tag.
+
 ### 1.0_57
 
 - Allow seed stored in PRAM to be saved when using:
