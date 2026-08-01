@@ -6,6 +6,8 @@
 
 - Prevent SDL to change the player title HTML tag.
 
+- Add 2 links to the program and the thumbnail.
+
 ### 1.0_57
 
 - Allow seed stored in PRAM to be saved when using:

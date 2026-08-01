@@ -22,6 +22,8 @@ article fieldset .limit { display: none; float: right; }
 article fieldset textarea { min-height: 5em; height: 10em; max-height: 50em; font-size: 1.2rem; }
 article fieldset label { user-select:none; }
 
+.source { float: right; }
+
 #set span { border-color: var(--pico-ins-color); font-weight: bold; margin-bottom: 1rem; padding: 0rem 0.5rem 0.2rem 0.5rem; border-radius: 0.5rem; border-style: solid; user-select:none; }
 #set .up { background-color: var(--pico-ins-color); color: var(--pico-primary-inverse); }
 #set .down { border-color: var(--pico-ins-color); }
