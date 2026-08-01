@@ -18,6 +18,8 @@ aside {
 	overflow-x: hidden;
 	overflow-y: scroll;
 	min-width: 15em;
+	box-sizing: border-box;
+	padding-bottom: 1em;
 }
 aside nav ul { padding: 0; margin: 0.75em 0 0 0; }
 aside nav ul li { list-style: none; }
@@ -65,12 +67,11 @@ aside:not(.open) li.h3:has(+ li.h4) > a::before {
 		box-sizing: border-box;
 		background: white;
 		border: solid 1px #ccc;
-		border-radius: 0.5em;
+		border-radius: 0.25em;
 		content: "𝄘";
-		width: 2em;
-		height: 2em;
+		width: 1.5em;
+		height: 1.5em;
 		font-size: 2em;
-		line-height: 2em;
 		text-align: center;
 	}
 	article {

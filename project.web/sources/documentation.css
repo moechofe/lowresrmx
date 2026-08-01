@@ -20,10 +20,6 @@ html { font-size: 1.1em; }
 * { font-size: 1em; font-family: system-ui; }
 body { margin: 1.5em; overflow-x: hidden; background-color: #fff; color: #222; }
 body>* { margin: 0.75em 0 ; }
-/*
-body { display: flex; }
-
-aside { } */
 
 code { font-family: monospace; font-size: 1rem; }
 
