@@ -8,6 +8,8 @@
 
 - Add 2 links to the program and the thumbnail.
 
+- Add markdown back quote parsing to allow monospace font and unparsed markdown.
+
 ### 1.0_57
 
 - Allow seed stored in PRAM to be saved when using:

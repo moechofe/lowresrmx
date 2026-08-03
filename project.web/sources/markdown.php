@@ -15,8 +15,9 @@
  * *** or ___ => strong + emphasis
  * [text](url) => link
  * ![alt](url) => image with figure caption
- * - ordered list
- * ``` code block
+ * ` => monospace
+ * TODO: ``` code block
+ * TODO: parse https link
  */
 
 function markdown2html(string $in):String
@@ -30,6 +31,7 @@ function markdown2html(string $in):String
 	$strong=false;
 	$link=false;
 	$img=false;
+	$code=false;
 	$newline=false;
 	// captured content for links and images
 	$captured="";
@@ -57,7 +59,7 @@ too_newline:
 		if($c=="\n")goto too_newline;
 		goto close;
 	}
-	else if(($c=="*"||$c=="_") && (!$link || ob_get_level()==2))
+	else if(($c=="*"||$c=="_") && (!$link || ob_get_level()==2) && !$code)
 	{
 		$count=1;
 count_stars:
@@ -78,7 +80,7 @@ count_stars:
 		}
 		goto retry;
 	}
-	else if($c=="!")
+	else if($c=="!" && !$code)
 	{
 		if(++$i>=$len)goto close;$c=mb_substr($in,$i,1);if($i>=$len)goto end;
 		if($c=="[")
@@ -89,7 +91,7 @@ count_stars:
 		echo "!";
 		goto retry;
 	}
-	else if($c=="[" && !$link)
+	else if($c=="[" && !$link && !$code)
 	{
 		if($newline && $curr!="")echo"<br>";$newline=false;
 		if($curr=="" && !$img){$curr="p";echo"<p>";}
@@ -99,18 +101,31 @@ count_stars:
 		$link=true;
 		goto next;
 	}
-	else if($c=="]" && $link)
+	else if($c=="]" && $link && !$code)
 	{
 too_closed:
 		if(++$i>=$len)goto close;$c=mb_substr($in,$i,1);if($i>=$len)goto end;
 		if($c=="("){$captured=ob_get_clean();goto next;}
 		else{echo"]";goto too_closed;}
 	}
-	else if($c==")" && $link)
+	else if($c==")" && $link && !$code)
 	{
 		if($img){echo "\"><figcaption>",$captured,"</figcaption></figure>";$img=false;$curr="";}
 		else echo "\">",$captured,"</a>";
 		$link=false;
+		goto next;
+	}
+	else if($c=='`' && !$code)
+	{
+		if($curr==""){$curr="p";echo"<p>";}
+		echo "<code>";
+		$code=true;
+		goto next;
+	}
+	else if($c=='`' && $code)
+	{
+		echo "</code>";
+		$code=false;
 		goto next;
 	}
 	else
@@ -138,6 +153,7 @@ too_closed:
 close:
 	if($link && ob_get_level()==2)$captured=ob_get_clean();
 	if($link){echo"\">$captured</a>";$link=false;}
+	if($code){echo"</code>";$code=false;}
 	if($em){echo"</em>";$em=false;}
 	if($strong){echo"</strong>";$strong=false;}
 	// TODO: img and link
@@ -202,5 +218,13 @@ function test($tested,$expected)
 // test("[ga](??)","<p><a href=\"?%3F\">ga</a></p>");
 // test("[ga](&&)","<p><a href=\"&amp;&amp;\">ga</a></p>");
 // test("[ga](==)","<p><a href=\"==\">ga</a></p>");
+// test("ga`bu`zo","<p>ga<code>bu</code>zo</p>");
+// test("`ga**bu**`zo","<p><code>ga**bu**</code>zo</p>");
+// test("ga`**bu**zo`","<p>ga<code>**bu**zo</code></p>");
+// test("ga`bu","<p>ga<code>bu</code></p>");
+// test("`ga[bu]zo`","<p><code>ga[bu]zo</code></p>");
+// test("`ga\nbu","<p><code>ga<br>bu</code></p>");
+// test("`ga\n\nbu","<p><code>ga</code></p><p>bu</p>");
+
 
 // echo "\n";
