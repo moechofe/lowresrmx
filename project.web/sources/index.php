@@ -1,7 +1,6 @@
 <?php // Main entry point for the community web app. All requests go through here.
 
 // order is important
-// TODO: should be required in every file that needs it
 require_once __DIR__.'/common.php';
 require_once __DIR__.'/token.php';
 
@@ -53,7 +52,6 @@ if(in_array($urlPath,[
 	'/terms-of-service.html',
 	'/documentation.html',
 	'/documentation.js',
-	// '/sign-in.html', // in DEV only
 ]))
 {
 	header("Content-Type: ".[

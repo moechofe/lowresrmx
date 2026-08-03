@@ -24,7 +24,6 @@ Promise.all([
 	setupSign().then(retrieveNotifMaybe),
 	setupCommunityList()
 ]).then((args)=>{
-	console.log(args);
 	if(args[1]) injectNotifMarker(args[1]);
 }).catch(_=>{});
 

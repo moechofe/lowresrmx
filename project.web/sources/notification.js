@@ -77,7 +77,6 @@ const markNotifSeen=(eid)=>{
 		{
 			if(notif[i].eid==eid)
 			{
-				console.log(notif)
 				notif[i].unseen=false;
 				sessionStorage.setItem("notifs",JSON.stringify(notif));
 				return;
