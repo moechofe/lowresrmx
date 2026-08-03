@@ -101,10 +101,15 @@ count_stars:
 	}
 	else if($c=="]" && $link)
 	{
-too_closed:
+		$captured=ob_get_clean();
 		if(++$i>=$len)goto close;$c=mb_substr($in,$i,1);if($i>=$len)goto end;
-		if($c=="("){$captured=ob_get_clean();goto next;}
-		else{echo"]";goto too_closed;}
+		if($c=="(")goto next;
+		else
+		{
+			echo "\">",$captured,"</a>";
+			$link=false;
+			goto retry;
+		}
 	}
 	else if($c==")" && $link)
 	{
@@ -147,6 +152,11 @@ close:
 	goto retry;
 
 end:
+	if($link && ob_get_level()==2)$captured=ob_get_clean();
+	if($link){echo"\">$captured</a>";$link=false;}
+	if($em){echo"</em>";$em=false;}
+	if($strong){echo"</strong>";$strong=false;}
+	if($curr){echo"</{$curr}>";$curr="";}
 	$dom=@Dom\HTMLDocument::createFromString(ob_get_clean());
 	return substr($dom->saveHtml($dom->body),strlen("<body>"),-strlen("</body>"));
 }
@@ -186,7 +196,7 @@ function test($tested,$expected)
 // test("zo[ga]","<p>zo<a href=\"\">ga</a></p>");
 // test("zo(ga)","<p>zo(ga)</p>");
 // test("[[ga](bu)","<p><a href=\"bu\">[ga</a></p>");
-// test("[ga]](bu)","<p><a href=\"bu\">ga]</a></p>");
+// test("[ga]](bu)","<p><a href=\"\">ga</a>](bu)</p>");
 // test("[ga]((bu)","<p><a href=\"%28bu\">ga</a></p>");
 // test("[ga](bu))","<p><a href=\"bu\">ga</a>)</p>");
 // test("[*ga*](bu)","<p><a href=\"bu\"><em>ga</em></a></p>");
@@ -202,5 +212,6 @@ function test($tested,$expected)
 // test("[ga](??)","<p><a href=\"?%3F\">ga</a></p>");
 // test("[ga](&&)","<p><a href=\"&amp;&amp;\">ga</a></p>");
 // test("[ga](==)","<p><a href=\"==\">ga</a></p>");
+// test("ga`[bu]`zo","<p>ga`<a href=\"\">bu</a>`zo</p>");
 
 // echo "\n";
