@@ -8,7 +8,9 @@
 
 - Add 2 links to the program and the thumbnail.
 
-- Add markdown back quote parsing to allow monospace font and unparsed markdown.
+- Add markdown backtick parsing to allow monospace font and unparsed markdown.
+
+- Add markdown triple backtick parsing to allow block of code.
 
 ### 1.0_57
 

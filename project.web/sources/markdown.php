@@ -33,6 +33,7 @@ function markdown2html(string $in):String
 	$img=false;
 	$code=false;
 	$newline=false;
+	$noparse=false;
 	// captured content for links and images
 	$captured="";
 
@@ -59,7 +60,7 @@ too_newline:
 		if($c=="\n")goto too_newline;
 		goto close;
 	}
-	else if(($c=="*"||$c=="_") && (!$link || ob_get_level()==2) && !$code)
+	else if(($c=="*"||$c=="_") && (!$link || ob_get_level()==2) && !$noparse)
 	{
 		$count=1;
 count_stars:
@@ -80,7 +81,7 @@ count_stars:
 		}
 		goto retry;
 	}
-	else if($c=="!" && !$code)
+	else if($c=="!" && !$noparse)
 	{
 		if(++$i>=$len)goto close;$c=mb_substr($in,$i,1);if($i>=$len)goto end;
 		if($c=="[")
@@ -91,7 +92,7 @@ count_stars:
 		echo "!";
 		goto retry;
 	}
-	else if($c=="[" && !$link && !$code)
+	else if($c=="[" && !$link && !$noparse)
 	{
 		if($newline && $curr!="")echo"<br>";$newline=false;
 		if($curr=="" && !$img){$curr="p";echo"<p>";}
@@ -101,14 +102,14 @@ count_stars:
 		$link=true;
 		goto next;
 	}
-	else if($c=="]" && $link && !$code)
+	else if($c=="]" && $link && !$noparse)
 	{
 too_closed:
 		if(++$i>=$len)goto close;$c=mb_substr($in,$i,1);if($i>=$len)goto end;
 		if($c=="("){$captured=ob_get_clean();goto next;}
 		else{echo"]";goto too_closed;}
 	}
-	else if($c==")" && $link && !$code)
+	else if($c==")" && $link && !$noparse)
 	{
 		if($img){echo "\"><figcaption>",$captured,"</figcaption></figure>";$img=false;$curr="";}
 		else echo "\">",$captured,"</a>";
@@ -117,15 +118,28 @@ too_closed:
 	}
 	else if($c=='`' && !$code)
 	{
+		$count=1;
+	count_back_quote:
+		if(++$i>=$len)goto close;$c=mb_substr($in,$i,1);if($i>=$len)goto end;
+		if($c=="`"){$count++;goto count_back_quote;}
+		if($count>=3)
+		{
+			if($curr=="pre"){echo"</$curr>";$curr="";$noparse=false;goto retry;}
+			if($curr!=""){echo"</$curr>";}
+			echo"<pre>";
+			$curr="pre";
+			$noparse=true;
+			goto retry;
+		}
 		if($curr==""){$curr="p";echo"<p>";}
-		echo "<code>";
-		$code=true;
-		goto next;
+		if(!$noparse){echo "<code>";$code=true;$noparse=true;goto retry;}
+		else{echo htmlspecialchars("`");goto retry;}
 	}
 	else if($c=='`' && $code)
 	{
 		echo "</code>";
 		$code=false;
+		$noparse=false;
 		goto next;
 	}
 	else
@@ -153,7 +167,7 @@ too_closed:
 close:
 	if($link && ob_get_level()==2)$captured=ob_get_clean();
 	if($link){echo"\">$captured</a>";$link=false;}
-	if($code){echo"</code>";$code=false;}
+	if($code){echo"</code>";$code=false;$noparse=false;}
 	if($em){echo"</em>";$em=false;}
 	if($strong){echo"</strong>";$strong=false;}
 	// TODO: img and link
@@ -163,6 +177,7 @@ close:
 	goto retry;
 
 end:
+	// return ob_get_clean();
 	$dom=@Dom\HTMLDocument::createFromString(ob_get_clean());
 	return substr($dom->saveHtml($dom->body),strlen("<body>"),-strlen("</body>"));
 }
@@ -225,6 +240,11 @@ function test($tested,$expected)
 // test("`ga[bu]zo`","<p><code>ga[bu]zo</code></p>");
 // test("`ga\nbu","<p><code>ga<br>bu</code></p>");
 // test("`ga\n\nbu","<p><code>ga</code></p><p>bu</p>");
+// test("```ga","<pre>ga</pre>");
+// test("ga```bu","<p>ga</p><pre>bu</pre>");
+// test("ga```bu```zo","<p>ga</p><pre>bu</pre><p>zo</p>");
+// test("```ga`bu","<pre>ga`bu</pre>");
+// test("`ga`bu```zo","<p><code>ga</code>bu</p><pre>zo</pre>");
 
 
 // echo "\n";
