@@ -8,6 +8,8 @@ article p { margin-top: 1rem; font-size: 1.2rem; }
 article .info { margin-bottom: 1rem; }
 article .info>* { display: inline-block; margin-right: 1rem;}
 
+article pre { font-size: 1em; padding: 0.25em 0.5em; }
+
 .points { color:var(--pico-primary); }
 .points::after { content:"pts"; }
 .author { color:var(--pico-secondary); font-weight: bold; }

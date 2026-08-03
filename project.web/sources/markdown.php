@@ -134,7 +134,8 @@ count_stars:
 			echo"<pre>";
 			$curr="pre";
 			$noparse=true;
-			goto retry;
+			if($c=="\n") goto next;
+			else goto retry;
 		}
 		if($curr==""){$curr="p";echo"<p>";}
 		if(!$noparse){echo "<code>";$code=true;$noparse=true;goto retry;}
