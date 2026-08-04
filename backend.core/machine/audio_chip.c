@@ -42,9 +42,7 @@ const double envRates[16] =
 	256.0 / 12.0
 };
 
-const double lfoRates[16] =
-{
-	0.12 * 256.0,
+static const double lfoRates[16] = { 0.12 * 256.0,
 	0.16 * 256.0,
 	0.23 * 256.0,
 	0.32 * 256.0,
@@ -62,7 +60,44 @@ const double lfoRates[16] =
 	18.0 * 256.0
 };
 
-const int lfoAmounts[16] = {0, 1, 2, 4, 6, 9, 12, 17, 24, 34, 48, 67, 93, 131, 183, 256};
+static const int lfoAmounts[16] = {
+	0,
+	1,
+	2,
+	4,
+	6,
+	9,
+	12,
+	17,
+	24,
+	34,
+	48,
+	67,
+	93,
+	131,
+	183,
+	256
+};
+
+// (255-i)/256
+static const int pulseWidths[16] = {
+	239,
+	237,
+	234,
+	231,
+	227,
+	223,
+	218,
+	213,
+	207,
+	199,
+	191,
+	181,
+	171,
+	158,
+	144,
+	127
+};
 
 void audio_renderAudioBuffer(struct AudioRegisters *lifeRegisters, struct AudioRegisters *registers, struct AudioInternals *internals, int16_t *stereoOutput, int numSamples, int outputFrequency, int volume);
 
@@ -179,7 +214,8 @@ void audio_renderAudioBuffer(struct AudioRegisters *lifeRegisters, struct AudioR
 					continue;
 
 				int volume = voice->status.volume << 4;
-				int pulseWidth = voice->attr.pulseWidth << 4;
+
+				int pulseWidth = pulseWidths[voice->attr.pulseWidth];
 
 				// --- LFO ---
 
@@ -262,12 +298,12 @@ void audio_renderAudioBuffer(struct AudioRegisters *lifeRegisters, struct AudioR
 					pulseWidth -= pwMod;
 				else
 					pulseWidth += pwMod;
-				if(pulseWidth < 0)
-					pulseWidth = 0;
-				if(pulseWidth > 254)
-					pulseWidth = 254;
+				if(pulseWidth < 16)
+					pulseWidth = 16;
+				if(pulseWidth > 239)
+					pulseWidth = 239;
 
-				//                if (i == 0 && v == 0) printf("pulseWidth %d\n", pulseWidth);
+				//  if (i == 0 && v == 0) printf("pulseWidth %d\n", pulseWidth);
 
 				// --- WAVEFORM GENERATOR ---
 

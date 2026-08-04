@@ -2721,14 +2721,14 @@ All parameters can be omitted to keep their current settings.
 
 Sets the sound's characteristics for the `voice`.
 
-`wave` control the waveform. With a waveform of Pulse, the `width` control the pulse width. A value of 8 means a square wave.
+`wave` control the waveform. With a waveform of Pulse, the `width` control the pulse width. A value of 15 is an exact square wave.
 
 `length` control the length of the sound. A length of 0 means that the sound will not stop until another sound is played on the same `voice`. This value can be overriden by the parameter `length` of the [`PLAY` command](#play-voice-pitch-length-sound-sound).
 
 | parameter | value and range                                |
 |----------:|------------------------------------------------|
 |    `wave` | 0 Sawtooth<br>1 Triangle<br>2 Pulse<br>3 Noise |
-|   `width` | 0 .. 15                                        |
+|   `width` | 0 Thinnest pulse .. 15 Square wave             |
 |  `length` | 0 Infinite<br>1 .. 255 (16.67ms .. 4.25s)      |
 
 Omitted parameters will keep their previous values.
@@ -3230,13 +3230,13 @@ For each sound preset:
 |      +2 | 2    | [Envelope](#envelope-bits)     |
 |      +4 | 1    | LFO attributes                 |
 |      +5 | 2    | LFO settings                   |
-|      +7 | 1    | Not used                       |
+|      +7 | 1    | Reserved (write 0)             |
 
 #### Attributes bits
 
 | bits | purpose                                                |
 | ----:| -------------------------------------------------------|
-| 0..3 | Pulse width                                            |
+| 0..3 | [Pulse width](#sound-voice-wave-width-length) (index into a duty table, not a linear value) |
 | 4..5 | Wave<br>0 Sawtooth<br>1 Triangle<br>2 Pulse<br>3 Noise |
 |    6 | Timeout enabled                                        |
 

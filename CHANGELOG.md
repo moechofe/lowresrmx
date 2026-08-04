@@ -14,6 +14,13 @@
 
 - Fix missing 4.1 dB in all generated sound.
 
+- Change how pulsewidth affect the square waveforme
+
+    Remove symetry.
+    Prevent 0% duty.
+    Prevent extreme values.
+    A pulse width of 15 is the new square wave.
+
 ### 1.0_57
 
 - Allow seed stored in PRAM to be saved when using:
