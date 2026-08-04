@@ -42,7 +42,8 @@ const double envRates[16] =
 	256.0 / 12.0
 };
 
-static const double lfoRates[16] = { 0.12 * 256.0,
+static const double lfoRates[16] = {
+	0.12 * 256.0,
 	0.16 * 256.0,
 	0.23 * 256.0,
 	0.32 * 256.0,
@@ -79,7 +80,6 @@ static const int lfoAmounts[16] = {
 	256
 };
 
-// (255-i)/256
 static const int pulseWidths[16] = {
 	239,
 	237,
@@ -97,6 +97,25 @@ static const int pulseWidths[16] = {
 	158,
 	144,
 	127
+};
+
+static const int triangleRises[16] = {
+	16,
+	22,
+	29,
+	39,
+	53,
+	71,
+	95,
+	128,
+	128,
+	161,
+	185,
+	203,
+	217,
+	227,
+	234,
+	240
 };
 
 void audio_renderAudioBuffer(struct AudioRegisters *lifeRegisters, struct AudioRegisters *registers, struct AudioInternals *internals, int16_t *stereoOutput, int numSamples, int outputFrequency, int volume);
@@ -214,8 +233,8 @@ void audio_renderAudioBuffer(struct AudioRegisters *lifeRegisters, struct AudioR
 					continue;
 
 				int volume = voice->status.volume << 4;
-
 				int pulseWidth = pulseWidths[voice->attr.pulseWidth];
+				int triangleRise = triangleRises[voice->attr.pulseWidth];
 
 				// --- LFO ---
 
@@ -295,13 +314,23 @@ void audio_renderAudioBuffer(struct AudioRegisters *lifeRegisters, struct AudioR
 
 				int pwMod = lfoSample * pwAmount >> 4;
 				if(voice->lfoAttr.invert)
+				{
 					pulseWidth -= pwMod;
+					triangleRise -= pwMod;
+				}
 				else
+				{
 					pulseWidth += pwMod;
+					triangleRise += pwMod;
+				}
 				if(pulseWidth < 16)
 					pulseWidth = 16;
 				if(pulseWidth > 239)
 					pulseWidth = 239;
+				if(triangleRise < 16)
+					triangleRise = 16;
+				if(triangleRise > 240)
+					triangleRise = 240;
 
 				//  if (i == 0 && v == 0) printf("pulseWidth %d\n", pulseWidth);
 
@@ -331,7 +360,13 @@ void audio_renderAudioBuffer(struct AudioRegisters *lifeRegisters, struct AudioR
 					break;
 				}
 				case WaveTypeTriangle: {
-					sample = ((accu16 & 0x8000) ? ~(accu16 << 1) : (accu16 << 1));
+					// up, down, up
+					uint32_t rise = (uint32_t)triangleRise << 8;
+					uint16_t phase = accu16 + (uint16_t)(rise >> 1);
+					uint32_t s = (phase < rise)
+						? (((uint32_t)phase << 16) / rise)
+						: (((uint32_t)(0x10000 - phase) << 16) / (0x10000 - rise));
+					sample = (s > 0xFFFF) ? 0xFFFF : (uint16_t)s;
 					break;
 				}
 				case WaveTypeNoise: {

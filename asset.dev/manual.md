@@ -2721,14 +2721,18 @@ All parameters can be omitted to keep their current settings.
 
 Sets the sound's characteristics for the `voice`.
 
-`wave` control the waveform. With a waveform of Pulse, the `width` control the pulse width. A value of 15 is an exact square wave.
+`wave` control the waveform. The `width` has an effect on the Pulse and the Triangle waveforms.
+
+With a waveform of Pulse, the `width` control the pulse width. A value of 15 is an exact square wave.
+
+With a waveform of Triangle, the `width` control where the peak is in the cycle. A value of 7 is an exact triangle wave.
 
 `length` control the length of the sound. A length of 0 means that the sound will not stop until another sound is played on the same `voice`. This value can be overriden by the parameter `length` of the [`PLAY` command](#play-voice-pitch-length-sound-sound).
 
 | parameter | value and range                                |
 |----------:|------------------------------------------------|
 |    `wave` | 0 Sawtooth<br>1 Triangle<br>2 Pulse<br>3 Noise |
-|   `width` | 0 Thinnest pulse .. 15 Square wave             |
+|   `width` | Pulse: 0 Thinnest pulse .. 15 Square wave<br>Triangle: 0 Falling ramp .. 7 Triangle .. 15 Rising ramp |
 |  `length` | 0 Infinite<br>1 .. 255 (16.67ms .. 4.25s)      |
 
 Omitted parameters will keep their previous values.
@@ -2754,7 +2758,7 @@ All parameters can be omitted to keep their current settings.
 
 Set the Low Frequency Oscillator (LFO) for the `voice`.
 
-Allow to change the `rate`, the `frequency`, the `volume` and the `width` for Pulse waveform.
+Allow to change the `rate`, the `frequency`, the `volume` and the `width`. The `width` modulates the pulse width of the Pulse waveform and the peak position of the Triangle waveform.
 
 |   parameter | range                    |
 |------------:|--------------------------|

@@ -2852,7 +2852,9 @@ PRINT six$
 <p>All parameters can be omitted to keep their current settings.</p>
 <h4 data-keyword="SOUND" data-title="SOUND" id="sound-voice-wave-width-length" tabindex="-1"><code>SOUND voice, [wave], [width], [length]</code></h4>
 <p>Sets the sound's characteristics for the <code>voice</code>.</p>
-<p><code>wave</code> control the waveform. With a waveform of Pulse, the <code>width</code> control the pulse width. A value of 8 means a square wave.</p>
+<p><code>wave</code> control the waveform. The <code>width</code> has an effect on the Pulse and the Triangle waveforms.</p>
+<p>With a waveform of Pulse, the <code>width</code> control the pulse width. A value of 15 is an exact square wave.</p>
+<p>With a waveform of Triangle, the <code>width</code> control where the peak is in the cycle. A value of 7 is an exact triangle wave.</p>
 <p><code>length</code> control the length of the sound. A length of 0 means that the sound will not stop until another sound is played on the same <code>voice</code>. This value can be overriden by the parameter <code>length</code> of the <a href="#play-voice-pitch-length-sound-sound"><code>PLAY</code> command</a>.</p>
 <table>
 <thead>
@@ -2868,7 +2870,7 @@ PRINT six$
 </tr>
 <tr>
 <td class="right"><code>width</code></td>
-<td>0 .. 15</td>
+<td>Pulse: 0 Thinnest pulse .. 15 Square wave<br />Triangle: 0 Falling ramp .. 7 Triangle .. 15 Rising ramp</td>
 </tr>
 <tr>
 <td class="right"><code>length</code></td>
@@ -2910,7 +2912,7 @@ PRINT six$
 <p>All parameters can be omitted to keep their current settings.</p>
 <h4 data-keyword="LFO" data-title="LFO" id="lfo-voice-rate-frequency-volume-width" tabindex="-1"><code>LFO voice, [rate], [frequency], [volume], [width]</code></h4>
 <p>Set the Low Frequency Oscillator (LFO) for the <code>voice</code>.</p>
-<p>Allow to change the <code>rate</code>, the <code>frequency</code>, the <code>volume</code> and the <code>width</code> for Pulse waveform.</p>
+<p>Allow to change the <code>rate</code>, the <code>frequency</code>, the <code>volume</code> and the <code>width</code>. The <code>width</code> modulates the pulse width of the Pulse waveform and the peak position of the Triangle waveform.</p>
 <table>
 <thead>
 <tr>
@@ -3570,7 +3572,7 @@ The 1st 8 bytes store the low bit for all the 8x8 pixels. The 2nd 8 bytes store 
 <tr>
 <td class="right">+7</td>
 <td>1</td>
-<td>Not used</td>
+<td>Reserved (write 0)</td>
 </tr>
 </tbody>
 </table>
@@ -3585,7 +3587,7 @@ The 1st 8 bytes store the low bit for all the 8x8 pixels. The 2nd 8 bytes store 
 <tbody>
 <tr>
 <td class="right">0..3</td>
-<td>Pulse width</td>
+<td><a href="#sound-voice-wave-width-length">Pulse width</a> (index into a duty table, not a linear value)</td>
 </tr>
 <tr>
 <td class="right">4..5</td>

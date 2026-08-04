@@ -21,6 +21,11 @@
     Prevent extreme values.
     A pulse width of 15 is the new square wave.
 
+- Use the pulse width to shape the triangle waveform
+
+    A width of 7 is an exact triangle wave.
+    The LFO width amount now modulates the triangle too.
+
 ### 1.0_57
 
 - Allow seed stored in PRAM to be saved when using:
