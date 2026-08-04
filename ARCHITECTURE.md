@@ -13,11 +13,11 @@
 
 - 📂 `backend.core`
 
-    The backend engine containing the intepreter.
+    The backend engine containing the interpreter.
 
 - 📂 `export.android`
 
-    Android Studio template project for user's program.
+    Android Studio template project for exported user's program.
 
 - 📂 `frontend.sdl`
 
@@ -33,7 +33,7 @@
 
 - 📂 `project.flutter`
 
-    Flutter project for for Android app.
+    Flutter project for the Android app.
 
 - 📂 `project.ios`
 

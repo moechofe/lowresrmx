@@ -12,6 +12,8 @@
 
 - Add markdown triple backtick parsing to allow block of code.
 
+- Fix missing 4.1 dB in all generated sound.
+
 ### 1.0_57
 
 - Allow seed stored in PRAM to be saved when using:
