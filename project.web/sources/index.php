@@ -52,6 +52,10 @@ if(in_array($urlPath,[
 	'/terms-of-service.html',
 	'/documentation.html',
 	'/documentation.js',
+	// '/sign-in.html', // in DEV only
+	'/publish.html',
+	'/publish.css',
+	'/publish.js',
 ]))
 {
 	header("Content-Type: ".[
