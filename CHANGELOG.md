@@ -14,7 +14,7 @@
 
 - Fix missing 4.1 dB in all generated sound.
 
-- Change how pulsewidth affect the square waveforme
+- Change how pulse width affect the square waveforme
 
     Remove symetry.
     Prevent 0% duty.
@@ -25,6 +25,10 @@
 
     A width of 7 is an exact triangle wave.
     The LFO width amount now modulates the triangle too.
+
+- GFX: Remove flashing selected color border.
+
+- GFX: Re enable energy saving mode.
 
 ### 1.0_57
 
