@@ -1,34 +1,36 @@
 ### 1.0_58
 
-- Add zoomable screenshot to the about page.
+- Add a zoomable screenshot to the About page.
 
-- Add table-of-content for the website documentation.
+- Add a table of contents for the website documentation.
 
-- Prevent SDL to change the player title HTML tag.
+- Prevent SDL from changing the player title HTML tag.
 
-- Add 2 links to the program and the thumbnail.
+- Add two links to the program and the thumbnail.
 
-- Add markdown backtick parsing to allow monospace font and unparsed markdown.
+- Add Markdown backtick parsing to allow monospace font and unparsed Markdown.
 
-- Add markdown triple backtick parsing to allow block of code.
+- Add Markdown triple backtick parsing to allow code blocks.
 
-- Fix missing 4.1 dB in all generated sound.
+- Cache variables (and arrays) with tokens to reduce lookup impact on CPU.
 
-- Change how pulse width affect the square waveforme
+- Fix missing 4.1 dB in all generated sounds.
 
-    Remove symetry.
+- Change how pulse width affects the square waveform:
+
+    Remove symmetry.
     Prevent 0% duty.
     Prevent extreme values.
     A pulse width of 15 is the new square wave.
 
-- Use the pulse width to shape the triangle waveform
+- Use pulse width to shape the triangle waveform:
 
     A width of 7 is an exact triangle wave.
-    The LFO width amount now modulates the triangle too.
+    The LFO width amount now modulates the triangle as well.
 
 - GFX: Remove flashing selected color border.
 
-- GFX: Re enable energy saving mode.
+- GFX: Re-enable energy saving mode.
 
 ### 1.0_57
 
