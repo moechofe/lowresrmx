@@ -112,6 +112,10 @@ struct Interpreter
 
 	struct ArrayVariable arrayVariables[MAX_ARRAY_VARIABLES];
 	int numArrayVariables;
+
+	// Used to track when a new variable is allowed to shadowing an older one with the same name
+	uint16_t varShadowEpoch;
+
 	struct RCString *nullString;
 
 	struct Token *firstData;

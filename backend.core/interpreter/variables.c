@@ -22,6 +22,20 @@
 #include <stdlib.h>
 #include <string.h>
 
+void var_invalidateLookupCaches(struct Interpreter *interpreter)
+{
+	// A new variable may shadow what an identifier token resolved to earlier
+	if(++interpreter->varShadowEpoch == 0)
+	{
+		interpreter->varShadowEpoch = 1;
+		struct Tokenizer *tokenizer = &interpreter->tokenizer;
+		for(int i = 0; i < tokenizer->numTokens; i++)
+		{
+			tokenizer->tokens[i].varCacheSlot = -1;
+		}
+	}
+}
+
 struct SimpleVariable *var_getSimpleVariable(struct Interpreter *interpreter, int symbolIndex, int subLevel)
 {
 	struct SimpleVariable *variable = NULL;
@@ -52,6 +66,7 @@ struct SimpleVariable *var_createSimpleVariable(struct Interpreter *interpreter,
 	}
 	struct SimpleVariable *variable = &interpreter->simpleVariables[interpreter->numSimpleVariables];
 	interpreter->numSimpleVariables++;
+	var_invalidateLookupCaches(interpreter);
 	memset(variable, 0, sizeof(struct SimpleVariable));
 	variable->symbolIndex = symbolIndex;
 	variable->subLevel = subLevel;
@@ -148,6 +163,7 @@ struct ArrayVariable *var_dimVariable(struct Interpreter *interpreter, enum Erro
 	}
 	struct ArrayVariable *variable = &interpreter->arrayVariables[interpreter->numArrayVariables];
 	interpreter->numArrayVariables++;
+	var_invalidateLookupCaches(interpreter);
 	memset(variable, 0, sizeof(struct ArrayVariable));
 	variable->symbolIndex = symbolIndex;
 	variable->subLevel = interpreter->subLevel;
@@ -186,6 +202,7 @@ struct ArrayVariable *var_createArrayVariable(struct Interpreter *interpreter, e
 	}
 	struct ArrayVariable *variable = &interpreter->arrayVariables[interpreter->numArrayVariables];
 	interpreter->numArrayVariables++;
+	var_invalidateLookupCaches(interpreter);
 	memset(variable, 0, sizeof(struct ArrayVariable));
 	variable->symbolIndex = symbolIndex;
 	variable->subLevel = subLevel;

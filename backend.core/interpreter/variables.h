@@ -28,6 +28,9 @@
 
 #define SUB_LEVEL_GLOBAL -1
 
+// Use interpreter->arrayVariables or interpreter->simpleVariables according to this bit
+#define VAR_CACHE_ARRAY_BIT 0b1000000000
+
 struct Core;
 struct Interpreter;
 
@@ -51,6 +54,8 @@ struct ArrayVariable
 	int numValues;
 	union Value *values;
 };
+
+void var_invalidateLookupCaches(struct Interpreter *interpreter);
 
 struct SimpleVariable *var_getSimpleVariable(struct Interpreter *interpreter, int symbolIndex, int subLevel);
 struct SimpleVariable *var_createSimpleVariable(struct Interpreter *interpreter, enum ErrorCode *errorCode, int symbolIndex, int subLevel, enum ValueType type, union Value *valueReference);

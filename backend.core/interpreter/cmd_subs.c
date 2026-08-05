@@ -400,7 +400,11 @@ enum ErrorCode cmd_GLOBAL(struct Core *core)
 			struct SimpleVariable *variable = var_getSimpleVariable(interpreter, symbolIndex, 0);
 			if(variable)
 			{
-				variable->subLevel = SUB_LEVEL_GLOBAL;
+				if(variable->subLevel != SUB_LEVEL_GLOBAL)
+				{
+					variable->subLevel = SUB_LEVEL_GLOBAL;
+					var_invalidateLookupCaches(interpreter);
+				}
 			}
 			else
 			{

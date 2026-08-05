@@ -123,6 +123,7 @@ enum ErrorCode cmd_DIM(struct Core *core)
 			if(isGlobal)
 			{
 				variable->subLevel = SUB_LEVEL_GLOBAL;
+				var_invalidateLookupCaches(interpreter);
 			}
 			interpreter->cycles += variable->numValues;
 		}

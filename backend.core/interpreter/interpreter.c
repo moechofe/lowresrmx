@@ -155,6 +155,14 @@ struct CoreError itp_compileProgram(struct Core *core, const char *sourceCode)
 	interpreter->seed = 0;
 	interpreter->simulatedKeyboardOn = false;
 
+	// variable lookup inline cache (see itp_readVariable); epoch 0 means "no token can match"
+	interpreter->varShadowEpoch = 1;
+	for(int i = 0; i < interpreter->tokenizer.numTokens; i++)
+	{
+		interpreter->tokenizer.tokens[i].varCacheSlot = -1;
+		interpreter->tokenizer.tokens[i].varCacheEpoch = 0;
+	}
+
 	memset(&interpreter->textLib, 0, sizeof(struct TextLib));
 	memset(&interpreter->spritesLib, 0, sizeof(struct SpritesLib));
 	memset(&interpreter->audioLib, 0, sizeof(struct AudioLib));
@@ -564,6 +572,54 @@ enum ValueType itp_getIdentifierTokenValueType(struct Token *token)
 	return ValueTypeNull;
 }
 
+// Cache the variable slot
+static struct SimpleVariable *itp_lookupSimpleVariable(struct Interpreter *interpreter, struct Token *tokenIdentifier, int symbolIndex)
+{
+	int cached = tokenIdentifier->varCacheSlot;
+	// varShadowEpoch guarantees the hit is also the *newest* legal match. Only a newly created variable can shadow an older one
+	if(cached >= 0 && !(cached & VAR_CACHE_ARRAY_BIT) && tokenIdentifier->varCacheEpoch == interpreter->varShadowEpoch && cached < interpreter->numSimpleVariables)
+	{
+		struct SimpleVariable *variable = &interpreter->simpleVariables[cached];
+		if(variable->symbolIndex == symbolIndex && (variable->subLevel == interpreter->subLevel || variable->subLevel == SUB_LEVEL_GLOBAL))
+		{
+			return variable;
+		}
+	}
+
+	struct SimpleVariable *variable = var_getSimpleVariable(interpreter, symbolIndex, interpreter->subLevel);
+	if(variable)
+	{
+		tokenIdentifier->varCacheSlot = (int16_t)(variable - interpreter->simpleVariables);
+		tokenIdentifier->varCacheEpoch = interpreter->varShadowEpoch;
+	}
+	return variable;
+}
+
+static struct ArrayVariable *itp_lookupArrayVariable( struct Interpreter *interpreter, struct Token *tokenIdentifier, int symbolIndex)
+{
+	int cached = tokenIdentifier->varCacheSlot;
+	if(cached >= 0 && (cached & VAR_CACHE_ARRAY_BIT) && tokenIdentifier->varCacheEpoch == interpreter->varShadowEpoch)
+	{
+		int slot = cached & ~VAR_CACHE_ARRAY_BIT;
+		if(slot < interpreter->numArrayVariables)
+		{
+			struct ArrayVariable *variable = &interpreter->arrayVariables[slot];
+			if(variable->symbolIndex == symbolIndex && (variable->subLevel == interpreter->subLevel || variable->subLevel == SUB_LEVEL_GLOBAL))
+			{
+				return variable;
+			}
+		}
+	}
+
+	struct ArrayVariable *variable = var_getArrayVariable(interpreter, symbolIndex, interpreter->subLevel);
+	if(variable)
+	{
+		tokenIdentifier->varCacheSlot = (int16_t)((variable - interpreter->arrayVariables) | VAR_CACHE_ARRAY_BIT);
+		tokenIdentifier->varCacheEpoch = interpreter->varShadowEpoch;
+	}
+	return variable;
+}
+
 union Value *itp_readVariable(struct Core *core, enum ValueType *type, enum ErrorCode *errorCode, bool forWriting)
 {
 	struct Interpreter *interpreter = core->interpreter;
@@ -594,7 +650,7 @@ union Value *itp_readVariable(struct Core *core, enum ValueType *type, enum Erro
 		struct ArrayVariable *variable = NULL;
 		if(interpreter->pass == PassRun)
 		{
-			variable = var_getArrayVariable(interpreter, symbolIndex, interpreter->subLevel);
+			variable = itp_lookupArrayVariable(interpreter, tokenIdentifier, symbolIndex);
 			if(!variable)
 			{
 				*errorCode = ErrorArrayNotDimensionized;
@@ -660,7 +716,7 @@ union Value *itp_readVariable(struct Core *core, enum ValueType *type, enum Erro
 		// simple variable
 		if(interpreter->pass == PassRun)
 		{
-			struct SimpleVariable *variable = var_getSimpleVariable(interpreter, symbolIndex, interpreter->subLevel);
+			struct SimpleVariable *variable = itp_lookupSimpleVariable(interpreter, tokenIdentifier, symbolIndex);
 			if(!variable)
 			{
 				// check if variable name is already used for array
@@ -678,6 +734,10 @@ union Value *itp_readVariable(struct Core *core, enum ValueType *type, enum Erro
 					var_createSimpleVariable(interpreter, errorCode, symbolIndex, interpreter->subLevel, varType, NULL);
 				if(!variable)
 					return NULL;
+
+				// creating also update the epoch, so cache it under the new one
+				tokenIdentifier->varCacheSlot = (int16_t)(variable - interpreter->simpleVariables);
+				tokenIdentifier->varCacheEpoch = interpreter->varShadowEpoch;
 			}
 			if(variable->isReference)
 			{

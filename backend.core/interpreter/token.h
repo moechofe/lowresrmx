@@ -21,6 +21,7 @@
 #define token_h
 
 #include "rcstring.h"
+#include <stdint.h>
 #include <stdio.h>
 
 enum TokenType
@@ -261,6 +262,11 @@ enum TokenType
 struct Token
 {
 	enum TokenType type;
+
+	// Variable lookup inline cache, used by identifier.
+	int16_t varCacheSlot;
+	uint16_t varCacheEpoch;
+
 	union {
 		float floatValue;
 		struct RCString *stringValue;
