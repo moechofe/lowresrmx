@@ -478,17 +478,10 @@ static void process_command_line(struct Core *core)
 			{
 				txtlib_printText(&core->overlay->textLib, "  ");
 
-				char *ptr = (char *)(&core->interpreter
-					->sourceCode[core->interpreter->labelStackItems[i].token->sourcePosition - 1]);
-				while((*ptr >= 'a' && *ptr <= 'z') || (*ptr >= 'A' && *ptr <= 'Z') || (*ptr >= '0' && *ptr <= '9') ||
-				      *ptr == '_')
-				{
-					ptr--;
-				}
-				size_t len =
-					&core->interpreter->sourceCode[core->interpreter->labelStackItems[i].token->sourcePosition - 1] - ptr;
-				if(len > 20)
-					len = 20;
+				char *ptr = (char *)(&core->interpreter->sourceCode[core->interpreter->labelStackItems[i].token->sourcePosition - 1]);
+				while((*ptr >= 'a' && *ptr <= 'z') || (*ptr >= 'A' && *ptr <= 'Z') || (*ptr >= '0' && *ptr <= '9') || *ptr == '_') ptr--;
+				size_t len = &core->interpreter->sourceCode[core->interpreter->labelStackItems[i].token->sourcePosition - 1] - ptr;
+				if(len > 20) len = 20;
 				buffer[len] = '\0';
 				memcpy(&buffer, ptr + 1, len);
 				txtlib_printText(&core->overlay->textLib, buffer);

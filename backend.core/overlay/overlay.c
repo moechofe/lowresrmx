@@ -170,6 +170,17 @@ void overlay_draw(struct Core *core, bool ingame)
 			{
 				txtlib_writeText(lib, "MAX", lib->windowWidth - 3 + lib->windowX, 1 + lib->windowY);
 			}
+
+			txtlib_writeText(lib, "   ", lib->windowWidth - 3 + lib->windowX, 2 + lib->windowY);
+
+			txtlib_writeText(lib, "VAR", lib->windowWidth - 3 + lib->windowX, 3 + lib->windowY);
+			txtlib_writeNumber(lib, core->interpreter->numSimpleVariables, 3, lib->windowWidth - 3 + lib->windowX, 4 + lib->windowY);
+
+			txtlib_writeText(lib, "   ", lib->windowWidth - 3 + lib->windowX, 5 + lib->windowY);
+
+			txtlib_writeText(lib, "ARR", lib->windowWidth - 3 + lib->windowX, 6 + lib->windowY);
+			txtlib_writeNumber(lib, core->interpreter->numArrayVariables, 3, lib->windowWidth - 3 + lib->windowX, 7 + lib->windowY);
+
 		}
 
 		if(core->interpreter->state == StatePaused && core->interpreter->debug)
