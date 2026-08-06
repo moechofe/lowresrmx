@@ -9,10 +9,6 @@
     - The LFO invert flag chooses the side of the sweep.
     - All noise is 5.2 dB quieter, to make every width equally loud.
 
-- Fix the noise generator clocking too slowly above pitch 90.
-
-- Fix the phase accumulator wrapping at $FFFFFF instead of $1000000.
-
 - Replace the sawtooth waveform by a sine waveform:
 
 - Reuse the pulse width to add intervals to the sine waveform:
