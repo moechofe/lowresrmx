@@ -13,6 +13,16 @@
 
 - Fix the phase accumulator wrapping at $FFFFFF instead of $1000000.
 
+- Replace the sawtooth waveform by a sine waveform:
+
+- Reuse the pulse width to add intervals to the sine waveform:
+
+    - A width of 7 is the bare sine.
+    - Lower values add one or two partials under the played note.
+    - Higher values add one or two partials over the played note.
+    - The LFO width amount now steps through the intervals.
+    - The LFO invert flag chooses the direction of the steps.
+
 ### 1.0_58
 
 - Add a zoomable screenshot to the About page.

@@ -28,6 +28,13 @@
 #define NUM_AUDIO_BUFFERS 6
 #define AUDIO_FILTER_BUFFER_SIZE 3
 
+// sauce: Claude Opus 5
+// entries of the sine lookup table, plus one duplicate of [0] so the linear
+// interpolation of the last step needs no wrap test
+#define SINE_TABLE_SIZE 256
+// extra sine partials the width nibble can stack onto the played note
+#define NUM_SINE_PARTIALS 2
+
 // audio output channels for stereo
 #define NUM_CHANNELS 2
 
@@ -35,7 +42,7 @@ struct Core;
 
 enum WaveType
 {
-	WaveTypeSawtooth,
+	WaveTypeSine,
 	WaveTypeTriangle,
 	WaveTypePulse,
 	WaveTypeNoise
@@ -128,6 +135,9 @@ struct AudioRegisters
 struct VoiceInternals
 {
 	double accumulator;
+	// sauce: Claude Opus 5
+	// phases of the extra sine partials, only advanced by the sine waveform
+	double partialAccumulator[NUM_SINE_PARTIALS];
 	uint16_t noiseRandom;
 	double envCounter;
 	enum EnvState envState;
@@ -151,6 +161,8 @@ struct AudioInternals
 	int writeBufferIndex;
 	bool audioEnabled;
 	int32_t filterBuffer[NUM_CHANNELS][AUDIO_FILTER_BUFFER_SIZE];
+	// sauce: Claude Opus 5
+	int16_t sineTable[SINE_TABLE_SIZE + 1];
 };
 
 void audio_reset(struct Core *core);

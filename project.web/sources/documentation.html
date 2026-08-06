@@ -187,9 +187,9 @@
 <li class="h4"><a href="#play-voice-pitch-length-sound-sound">PLAY voice, pitch [, length] [SOUND sound]</a></li>
 <li class="h4"><a href="#stopstop-voice">STOP<br>STOP [voice]</a></li>
 <li class="h4"><a href="#volume-voice-volume-mix">VOLUME voice, [volume], [mix]</a></li>
-<li class="h4"><a href="#sound-voice-wave-width-length">SOUND voice, [wave], [width], [length]</a></li>
+<li class="h4"><a href="#sound-voice-wave-alter-length">SOUND voice, [wave], [alter], [length]</a></li>
 <li class="h4"><a href="#envelope-voice-attack-decay-sustain-release">ENVELOPE voice, [attack], [decay], [sustain], [release]</a></li>
-<li class="h4"><a href="#lfo-voice-rate-frequency-volume-width">LFO voice, [rate], [frequency], [volume], [width]</a></li>
+<li class="h4"><a href="#lfo-voice-rate-frequency-volume-alter">LFO voice, [rate], [frequency], [volume], [alter]</a></li>
 <li class="h4"><a href="#lfo-wave-voice-wave-invert-env-trigger">LFO WAVE voice, [wave], [invert], [env], [trigger]</a></li>
 <li class="h4"><a href="#sound-source-address">SOUND SOURCE [address]</a></li>
 <li class="h4"><a href="#music-pattern">MUSIC [pattern]</a></li>
@@ -2850,11 +2850,13 @@ PRINT six$
 </tbody>
 </table>
 <p>All parameters can be omitted to keep their current settings.</p>
-<h4 data-keyword="SOUND" data-title="SOUND" id="sound-voice-wave-width-length" tabindex="-1"><code>SOUND voice, [wave], [width], [length]</code></h4>
+<h4 data-keyword="SOUND" data-title="SOUND" id="sound-voice-wave-alter-length" tabindex="-1"><code>SOUND voice, [wave], [alter], [length]</code></h4>
 <p>Sets the sound's characteristics for the <code>voice</code>.</p>
-<p><code>wave</code> control the waveform. The <code>width</code> has an effect on the Pulse and the Triangle waveforms.</p>
-<p>With a waveform of Pulse, the <code>width</code> control the pulse width. A value of 15 is an exact square wave.</p>
-<p>With a waveform of Triangle, the <code>width</code> control where the peak is in the cycle. A value of 7 is an exact triangle wave.</p>
+<p><code>wave</code> control the waveform. The <code>alter</code> has an effect on every waveform in different ways.</p>
+<p>For Sine, <code>alter</code> add one or two more sine partials at a musical interval of the played note, so a single voice can play a chord. A value of 7 is the bare sine, below it the added partials are under the note and above it they are over the note.</p>
+<p>For Pulse, <code>alter</code> control the pulse width. A value of 15 is an exact square wave.</p>
+<p>For Triangle, <code>alter</code> control where the peak is in the cycle. A value of 7 is an exact triangle wave. 0 or 15 is almost a sawtooth.</p>
+<p>For Noise, <code>alter</code> control the colour of the noise. A value of 7 is the unfiltered noise, below it applies a lowpass filter, above it applies a highpass filter. Each step is one octave of cutoff frequency.</p>
 <p><code>length</code> control the length of the sound. A length of 0 means that the sound will not stop until another sound is played on the same <code>voice</code>. This value can be overriden by the parameter <code>length</code> of the <a href="#play-voice-pitch-length-sound-sound"><code>PLAY</code> command</a>.</p>
 <table>
 <thead>
@@ -2866,11 +2868,11 @@ PRINT six$
 <tbody>
 <tr>
 <td class="right"><code>wave</code></td>
-<td>0 Sawtooth<br />1 Triangle<br />2 Pulse<br />3 Noise</td>
+<td>0 Sine<br />1 Triangle<br />2 Pulse<br />3 Noise</td>
 </tr>
 <tr>
-<td class="right"><code>width</code></td>
-<td>Pulse: 0 Thinnest pulse .. 15 Square wave<br />Triangle: 0 Falling ramp .. 7 Triangle .. 15 Rising ramp</td>
+<td class="right"><code>alter</code></td>
+<td>Sine: 0 Augmented below .. 7 Bare sine .. 15 Fifth and octave<br />Pulse: 0 Thinnest pulse .. 15 Square wave<br />Triangle: 0 Falling ramp .. 7 Triangle .. 15 Rising ramp<br />Noise: 0 Lowpass 125Hz .. 7 Unfiltered .. 15 Highpass 10kHz</td>
 </tr>
 <tr>
 <td class="right"><code>length</code></td>
@@ -2879,6 +2881,81 @@ PRINT six$
 </tbody>
 </table>
 <p>Omitted parameters will keep their previous values.</p>
+<p>For Sine waveform:</p>
+<table>
+<thead>
+<tr>
+<th class="right"><code>alter</code></th>
+<th>added partials</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="right">0</td>
+<td>Major third and minor sixth below (augmented)</td>
+</tr>
+<tr>
+<td class="right">1</td>
+<td>Minor third and augmented fourth below (diminished)</td>
+</tr>
+<tr>
+<td class="right">2</td>
+<td>Major sixth below</td>
+</tr>
+<tr>
+<td class="right">3</td>
+<td>Fifth below</td>
+</tr>
+<tr>
+<td class="right">4</td>
+<td>Fourth below</td>
+</tr>
+<tr>
+<td class="right">5</td>
+<td>Major third below</td>
+</tr>
+<tr>
+<td class="right">6</td>
+<td>Minor third below</td>
+</tr>
+<tr>
+<td class="right">7</td>
+<td>None, bare sine</td>
+</tr>
+<tr>
+<td class="right">8</td>
+<td>Minor third</td>
+</tr>
+<tr>
+<td class="right">9</td>
+<td>Major third</td>
+</tr>
+<tr>
+<td class="right">10</td>
+<td>Fourth</td>
+</tr>
+<tr>
+<td class="right">11</td>
+<td>Fifth</td>
+</tr>
+<tr>
+<td class="right">12</td>
+<td>Major sixth</td>
+</tr>
+<tr>
+<td class="right">13</td>
+<td>Minor third and augmented fourth (diminished)</td>
+</tr>
+<tr>
+<td class="right">14</td>
+<td>Major third and fifth (major)</td>
+</tr>
+<tr>
+<td class="right">15</td>
+<td>Fifth and octave</td>
+</tr>
+</tbody>
+</table>
 <h4 data-keyword="ENVELOPE" data-title="ENVELOPE" id="envelope-voice-attack-decay-sustain-release" tabindex="-1"><code>ENVELOPE voice, [attack], [decay], [sustain], [release]</code></h4>
 <p>Set the volume envelope for the <code>voice</code>.</p>
 <p>Allow to change the <code>attack</code>, <code>decay</code> and <code>release</code> duration.</p>
@@ -2910,9 +2987,9 @@ PRINT six$
 </tbody>
 </table>
 <p>All parameters can be omitted to keep their current settings.</p>
-<h4 data-keyword="LFO" data-title="LFO" id="lfo-voice-rate-frequency-volume-width" tabindex="-1"><code>LFO voice, [rate], [frequency], [volume], [width]</code></h4>
+<h4 data-keyword="LFO" data-title="LFO" id="lfo-voice-rate-frequency-volume-alter" tabindex="-1"><code>LFO voice, [rate], [frequency], [volume], [alter]</code></h4>
 <p>Set the Low Frequency Oscillator (LFO) for the <code>voice</code>.</p>
-<p>Allow to change the <code>rate</code>, the <code>frequency</code>, the <code>volume</code> and the <code>width</code>. The <code>width</code> modulates the pulse width of the Pulse waveform and the peak position of the Triangle waveform.</p>
+<p>Allow to change the <code>rate</code>, the <code>frequency</code>, the <code>volume</code> and the <code>alter</code>. The <code>alter</code> modulates the interval of the Sine waveform, the pulse width of the Pulse waveform, the peak position of the Triangle waveform and the filter of the Noise waveform.</p>
 <table>
 <thead>
 <tr>
@@ -2934,7 +3011,7 @@ PRINT six$
 <td>0 .. 15</td>
 </tr>
 <tr>
-<td class="right"><code>width</code></td>
+<td class="right"><code>alter</code></td>
 <td>0 .. 15</td>
 </tr>
 </tbody>
@@ -3587,11 +3664,11 @@ The 1st 8 bytes store the low bit for all the 8x8 pixels. The 2nd 8 bytes store 
 <tbody>
 <tr>
 <td class="right">0..3</td>
-<td><a href="#sound-voice-wave-width-length">Pulse width</a> (index into a duty table, not a linear value)</td>
+<td><a href="#sound-voice-wave-alter-length">Alter</a> (index into a table, not a linear value: sine interval, pulse duty, triangle peak or noise filter depending on the wave)</td>
 </tr>
 <tr>
 <td class="right">4..5</td>
-<td>Wave<br />0 Sawtooth<br />1 Triangle<br />2 Pulse<br />3 Noise</td>
+<td>Wave<br />0 Sine<br />1 Triangle<br />2 Pulse<br />3 Noise</td>
 </tr>
 <tr>
 <td class="right">6</td>
@@ -5121,7 +5198,7 @@ PRINT 0.000000239&lt;&gt;0
 </ul>
 <p><strong><code>LFO</code></strong>:</p>
 <ul>
-<li><a href="#lfo-voice-rate-frequency-volume-width"><code>LFO voice, [rate], [frequency], [volume], [width]</code></a></li>
+<li><a href="#lfo-voice-rate-frequency-volume-alter"><code>LFO voice, [rate], [frequency], [volume], [alter]</code></a></li>
 <li><a href="#lfo-wave-voice-wave-invert-env-trigger"><code>LFO WAVE voice, [wave], [invert], [env], [trigger]</code></a></li>
 </ul>
 <p><strong><code>LFO.A</code></strong>:</p>
@@ -5401,7 +5478,7 @@ PRINT 0.000000239&lt;&gt;0
 <p><strong><code>SOUND</code></strong>:</p>
 <ul>
 <li><a href="#play-voice-pitch-length-sound-sound"><code>PLAY voice, pitch [, length] [SOUND sound]</code></a></li>
-<li><a href="#sound-voice-wave-width-length"><code>SOUND voice, [wave], [width], [length]</code></a></li>
+<li><a href="#sound-voice-wave-alter-length"><code>SOUND voice, [wave], [alter], [length]</code></a></li>
 <li><a href="#sound-source-address"><code>SOUND SOURCE [address]</code></a></li>
 </ul>
 <p><strong><code>SOURCE</code></strong>:</p>

@@ -119,6 +119,79 @@ static const int triangleRises[16] = {
 };
 
 // sauce: Claude Opus 5
+// Extra sine partials in semitones, indexed by the same pulse width nibble.
+// 7 is the bare sine, below it the stack sits under the played note and above
+// it over the note, so the shared LFO invert bit picks the side as it does for
+// the noise tilt.
+struct SineStack
+{
+	int8_t count;
+	int8_t semitone[NUM_SINE_PARTIALS];
+};
+
+// sauce: Claude Opus 5
+static const struct SineStack sineStacks[16] = {
+	{2, {-4, -8}}, //  0  augmented, downward
+	{2, {-3, -6}}, //  1  diminished, downward
+	{1, {-9, 0}},  //  2  major sixth below
+	{1, {-7, 0}},  //  3  fifth below
+	{1, {-5, 0}},  //  4  fourth below
+	{1, {-4, 0}},  //  5  major third below
+	{1, {-3, 0}},  //  6  minor third below
+	{0, {0, 0}},   //  7  bare sine
+	{1, {3, 0}},   //  8  minor third
+	{1, {4, 0}},   //  9  major third
+	{1, {5, 0}},   // 10  fourth
+	{1, {7, 0}},   // 11  fifth
+	{1, {9, 0}},   // 12  major sixth
+	{2, {3, 6}},   // 13  diminished
+	{2, {4, 7}},   // 14  major triad
+	{2, {7, 12}}   // 15  fifth + octave
+};
+
+// sauce: Claude Opus 5
+// Q8 weights of a stack, root first, indexed by the number of added partials.
+// Every row sums to 256, so even the worst case of all partials peaking in
+// phase lands exactly on full scale and the four voice headroom budget is
+// unchanged. The root keeps the largest share, so the played note stays the
+// fundamental instead of turning into one member of a chord.
+static const int sineWeights[NUM_SINE_PARTIALS + 1][NUM_SINE_PARTIALS + 1] = {
+	{256, 0, 0},   // bare
+	{154, 102, 0}, // dyad   0.60 / 0.40
+	{128, 77, 51}  // triad  0.50 / 0.30 / 0.20
+};
+
+// sauce: Claude Opus 5
+// 2^(n/12), indexed by semitone + 12
+static const double semitoneRatios[25] = {
+	0.5000000000000000, // -12
+	0.5297315471619477,
+	0.5612310241546865,
+	0.5946035575013605,
+	0.6299605249474366,
+	0.6674199270850172,
+	0.7071067811865476,
+	0.7491535384383408,
+	0.7937005259840998,
+	0.8408964152537145,
+	0.8908987181403393,
+	0.9438743126816935,
+	1.0000000000000000, // 0
+	1.0594630943592953,
+	1.1224620483093730,
+	1.1892071150027210,
+	1.2599210498948732,
+	1.3348398541700344,
+	1.4142135623730951,
+	1.4983070768766815,
+	1.5874010519681994,
+	1.6817928305074290,
+	1.7817974362806785,
+	1.8877486253633868,
+	2.0000000000000000 // 12
+};
+
+// sauce: Claude Opus 5
 // Spectral tilt of the noise waveform, indexed by the same pulse width nibble.
 // 128 is flat, below is a lowpass, above a highpass, at 16 units per octave.
 static const int noiseTilts[16] = {
@@ -204,11 +277,29 @@ static void audio_updateNoiseTilt(struct VoiceInternals *voiceIn, int tilt, int 
 	voiceIn->noiseTiltFreq = freq;
 }
 
+// sauce: Claude Opus 5
+// The table holds one cycle in 256 steps, the low 8 bits of the phase
+// interpolate between two of them, which keeps the distortion below -60 dB
+// without a libm call in the sample loop.
+static inline int32_t audio_sine(const int16_t *table, uint16_t phase)
+{
+	int i = phase >> 8;
+	int frac = phase & 0xFF;
+	return table[i] + (((int32_t)(table[i + 1] - table[i]) * frac) >> 8);
+}
+
 void audio_renderAudioBuffer(struct AudioRegisters *lifeRegisters, struct AudioRegisters *registers, struct AudioInternals *internals, int16_t *stereoOutput, int numSamples, int outputFrequency, int volume);
 
 void audio_reset(struct Core *core)
 {
 	struct AudioInternals *internals = &core->machineInternals->audioInternals;
+
+	// sauce: Claude Opus 5
+	for(int i = 0; i < SINE_TABLE_SIZE; i++)
+	{
+		internals->sineTable[i] = (int16_t)lrintf(32767.0f * sinf(6.2831853f * (float)i / (float)SINE_TABLE_SIZE));
+	}
+	internals->sineTable[SINE_TABLE_SIZE] = internals->sineTable[0];
 
 	for(int i = 0; i < NUM_VOICES; i++)
 	{
@@ -216,6 +307,10 @@ void audio_reset(struct Core *core)
 		voiceIn->noiseRandom = 0xABCD;
 		voiceIn->lfoRandom = 0xABCD;
 		// sauce: Claude Opus 5
+		for(int p = 0; p < NUM_SINE_PARTIALS; p++)
+		{
+			voiceIn->partialAccumulator[p] = 0.0;
+		}
 		voiceIn->noiseTiltState = 0.0f;
 		// 0 is never a legal tilt, so this forces a recompute before first use
 		voiceIn->noiseTiltIndex = 0;
@@ -441,12 +536,29 @@ void audio_renderAudioBuffer(struct AudioRegisters *lifeRegisters, struct AudioR
 						noiseTilt = NOISE_TILT_MAX;
 				}
 
+				// sauce: Claude Opus 5
+				// the sine reads the width nibble as an interval, which is
+				// discrete, so the width LFO steps the index instead of gliding
+				// through it. The rounding lets an amount of 15 reach both ends.
+				int sineInterval = 0;
+				if(waveType == WaveTypeSine)
+				{
+					int step = (pwMod + 8) >> 4;
+					sineInterval = voice->lfoAttr.invert ? (voice->attr.pulseWidth - step)
+														 : (voice->attr.pulseWidth + step);
+					if(sineInterval < 0)
+						sineInterval = 0;
+					if(sineInterval > 15)
+						sineInterval = 15;
+				}
+
 				//  if (i == 0 && v == 0) printf("pulseWidth %d\n", pulseWidth);
 
 				// --- WAVEFORM GENERATOR ---
 
 				uint16_t accu16Last = ((uint32_t)voiceIn->accumulator >> 4) & 0xFFFF;
-				double accumulator = voiceIn->accumulator + (double)freq * 65536.0 / (double)outputFrequency;
+				double phaseInc = (double)freq * 65536.0 / (double)outputFrequency;
+				double accumulator = voiceIn->accumulator + phaseInc;
 				if(accumulator >= overflow)
 				{
 					// avoid overflow and loss of precision
@@ -459,8 +571,28 @@ void audio_renderAudioBuffer(struct AudioRegisters *lifeRegisters, struct AudioR
 
 				switch(waveType)
 				{
-				case WaveTypeSawtooth: {
-					sample = accu16;
+				case WaveTypeSine: {
+					// sauce: Claude Opus 5
+					// the played note plus up to two partials at fixed musical
+					// intervals, the phases free running so a stack that is
+					// already ringing keeps its beat pattern
+					const struct SineStack *stack = &sineStacks[sineInterval];
+					const int *weight = sineWeights[stack->count];
+					int32_t mix = audio_sine(internals->sineTable, accu16) * weight[0];
+
+					for(int p = 0; p < stack->count; p++)
+					{
+						double partial = voiceIn->partialAccumulator[p]
+							+ phaseInc * semitoneRatios[stack->semitone[p] + 12];
+						if(partial >= overflow)
+						{
+							partial -= overflow;
+						}
+						voiceIn->partialAccumulator[p] = partial;
+						uint16_t partialAccu16 = ((uint32_t)partial >> 4) & 0xFFFF;
+						mix += audio_sine(internals->sineTable, partialAccu16) * weight[p + 1];
+					}
+					sample = (uint16_t)((mix >> 8) + 0x7FFF);
 					break;
 				}
 				case WaveTypePulse: {

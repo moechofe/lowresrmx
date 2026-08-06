@@ -1,4 +1,11 @@
 
+TODO: add BG COPY example: cell cursor.x+23,cursor.y+3,16
+TODO: fix link in BG COPY to BG SOURCE
+TODO: mapped cycles counter
+TODO: explain that width is maxed a 216, height is not
+TODO: explain read only memory
+TODO: explain why lower case exists
+
 ## What is Retro Game Creator?
 
 Create games and play them on the go using an iPhone or iPad. Retro Game Creator is a virtual game console and game development environment that includes all the tools needed to start and finish a project.
@@ -79,9 +86,11 @@ The original LowRes NX, despite being an excellent development environment, lack
 
 - New [`HAPTIC` command to trigger haptic feedback](#haptic-pattern) on the device.
 
+- New advanced gesture functions `=TOUCH.PX`, `=TOUCH.PY`, `=TOUCH.TAP`, `=TOUCH.DRAG`, `=TOUCH.LONG`, `=TOUCH.CHANGE` to improve user's experience.
+
 **Control flow:**
 
-- New program control flow: [`ON GOTO`](#on-gotoon-gosub), [`ON GOSUB`](#on-gotoon-gosub) and [`ON RESTORE`](#on-restore).
+- New program control flow: [`ON GOTO`](#on-gotoon-gosub), [`ON GOSUB`](#on-gotoon-gosub) and [`ON RESTORE`](#on-restore), [`ON CALL`](#on-call).
 
 **Data:**
 
@@ -441,7 +450,7 @@ The virtual files data are encoded in hexadecimal and SHOULD respect a specific 
 
 > Manually editing the virtual files data is NOT RECOMMENDED as it can lead to unexpected behavior. Instead, use the provided tools and APIs to manipulate the virtual files.
 
-### Virtual file
+### Virtual file & ROM entries
 
 There are 16 virtual files identified by a number `id` and can contain a `comment$`.
 
@@ -452,13 +461,19 @@ There are 16 virtual files identified by a number `id` and can contain a `commen
 - `comment$` is a string **without double quotes** of 32 characters max.
 - `data` is a list of hexadecimal literals.
 
-When the program is started, the content of the files is loaded and [mapped to the memory](#memory-mapping).
+When the program is started, the content of the files is loaded and [mapped to memory](#memory-mapping). It is called a ROM entry. Each entry get a different memory address.
 
-The memory address for the files starts at $10000, and the best way to know this address is to use the `=ROM` function.
+The first entry gets the address $10000, and the best way to know this address is to use the [`=ROM`](#address-rom-file) function.
+
+Some ROM entries have a specific purpose to provide convenience to the user:
+
+- #0 When empty, allow to use the default font
+- #1 Default entry for palettes
+- #2 Default entry for characters
+- #3 Default entry for background data.
+- #15 Default entry for sounds and music.
 
 Check the [file API](#file-api).
-
-TODO: default file and usage, check if already exists in the manual
 
 ### Memory
 
@@ -529,6 +544,8 @@ Instructions tell the fantasy hardware to do something.
 2. An identifier can also be a built-in function name provided by Retro Game Creator as part of the [API](#api-instructions).
 
 Valid characters for identifiers are: ASCII letters, digits and the underscore (_). However, they cannot start with a digit and they cannot have more than 21 characters.
+
+Identifiers are case-insensitive; `K` is the same as `k`.
 
 **Important:** Not all identifiers are valid because some of them are reserved by the language itself. Check the [list of reserved keywords](#reserved-keywords) and learn them to avoid common mistakes.
 
@@ -1261,6 +1278,14 @@ The important thing is not the number of `RETURN` statements in the code but the
 
 Users can print the current stack using the [debugger `TRACE` command](#dbg-trace).
 
+---
+
+    GOSUB ...
+    ...
+    RETURN label
+
+This form will go to the `label` and empty [the stack](#stack-sub-routine-and-return) at the same time.
+
 #### `ON GOTO`<br>`ON GOSUB`
 
     ON value GOTO label0[, label1...]
@@ -1270,8 +1295,8 @@ Jump to one of the listed `label` according to a `value`.
 `ON GOSUB` Will store the current program location on top of the stack before jumping, allowing to [`RETURN`](#gosubreturn) to this location later.
 
 Will read the `value` and jump to:
-- the first label if `value` equal 0,
-- the second label if `value` equal 1,
+- the `label0` if `value` equal 0,
+- the `label1` if `value` equal 1,
 - ...
 
 Real example:
@@ -1405,6 +1430,17 @@ Some example of proceduce calls:
     CALL array_pop(list(),index)
     CALL complex_math(vec(i)(j),vec(k)(l),result)
 
+#### `ON CALL`
+
+    ON value CALL [(parameters)] procedure0[, procedure1...]
+
+Call one of the listed `procedure` according to a `value`.
+
+Will read the `value` and call:
+- the `procedure0` if `value` equal 0,
+- the `procedure1` if `value` equal 1,
+- ...
+
 ### Embedded data
 
 Retro Game Creator provides two ways to store data or assets inside a program.
@@ -1435,6 +1471,8 @@ A list of `constant` values (numbers or strings) that can be accessed using the 
 #### `READ variable [, variable...]`
 
 Read a list of values inside `variable` that was declared using [`DATA`](#data-constant-constant).
+
+TODO: auto next
 
 #### `RESTORE [label]`
 
@@ -1478,6 +1516,8 @@ Arrays of numbers or strings MUST be declared before reading or writing them.
     FOR i=0 TO 1
       PRINT names$(i);":", scores(i)
     NEXT i
+
+TODO: multidimensional example
 
 #### `DIM GLOBAL`
 
@@ -1535,7 +1575,7 @@ Omitted parameters will keep their previous values.
 Sets one or more attributes for the `sprite`:
 
 - `PAL palette` Change the `palette` (0..7),
-- `FLIP horizontal, vertical` Flip the sprite on `horizontal` and `vertical` axis,
+- `FLIP horizontal, vertical` Flip the sprite on `horizontal` and `vertical` axis (0..1),
 - `PRIO priority` change the `priority` (0..1),
 - `SIZE s` Change the size, a.k.a.: the number of characters width and height.
 
@@ -1763,6 +1803,10 @@ Set the scroll offset on `x` and `y` axis of the `layer` in pixels.
 
 Omitted parameters will keep their previous values.
 
+Scroll offset is a positive value that internally wraps around 512. This corresponds to the maximum number of pixels a bg layer can hold.
+
+A scroll value of 512 is visually equivalent to a value of 0.
+
 #### `x =SCROLL.X(layer)`<br>`y =SCROLL.Y(layer)`
 
 Return the scroll offset on `x` and `y` axis of the `layer` in pixels.
@@ -1953,7 +1997,7 @@ Omitted parameters will keep their previous values.
     PRINT "hello!"
     TINT 5, 0 PAL 7
 
-#### `BG TINT y1, y1 TO x2, y2 [PAL palette] [FLIP horizontal, vertical] [PRIO priority]`
+#### `BG TINT x1, y1 TO x2, y2 [PAL palette] [FLIP horizontal, vertical] [PRIO priority]`
 
 Sets to the cells from the rectangle `x1, y1` to `x2, y2` (0..63), one or more attributes:
 
@@ -1991,10 +2035,10 @@ Example that generate background using random numbers:
     NEXT c
     NEXT r
 
-    bG SOURCE $9000, 64, 64
+    BG SOURCE $9000, 64, 64
     BG COPY 0, 0, 64, 64 TO 0, 0
 
-    Do
+    DO
     x=0
     ADD x, SIN(TIMER/600)*COS(TIMER/6000)*200
     ADD x, SIN(TIMER/500)*50
@@ -2090,7 +2134,13 @@ Sets the current window at `x, y` with `width, height` and on `layer` where text
     WINDOW 4, 8, SHOWN.W\8-8, 20, 0
     PRINT "Oh my god! There's a tremendous amount of work to do. Can I do a little bit of it today."
 
-By default, the window is sets inside the safe area delimited by the safe functions.
+> By default, the window is sets inside the safe area.
+
+#### `x =WINDOW.X`<br>`y =WINDOW.Y`<br>`width =WINDOW.W`<br>`height =WINDOW.H`
+
+Return the window `x, y` with `width, height` parameters.
+
+> By default, the window is sets inside the safe area.
 
 #### `CLW`
 
@@ -2182,7 +2232,7 @@ Example of a flappy letter going down by gravity and up when tapping on the scre
 
 #### `x =TOUCH.X`<br>`y =TOUCH.Y`
 
-Returns the last pixel position `x, y` touched. It returns a floating-point number, with a 1/16 pixel precisions.
+Returns the last pixel position `x`, `y` touched. It returns a floating-point number, with a 1/16 pixel precisions.
 
     DO
       CLS
@@ -2240,6 +2290,34 @@ Will stop execution of the program until a touch is made.
 While waiting for a tap, interrupt sub-routines for VBL/RASTER/PARTICLE/EMITTER are still executed.
 
 TODO: link to interrupts
+
+#### `x =TOUCH.PX`<br>`y =TOUCH.PY`
+
+Returns the pixel position `x`, `y` when the device screen has been pressed. It returns a floating-point number, with a 1/16 pixel precisions.
+
+This can be used to detect distance travelled during drag.
+
+    do
+      cls 0
+      locate 0,0
+      print len(touch.x-touch.px,touch.y-touch.py)
+      wait vbl
+    loop
+
+#### `tapped =TOUCH.TAP`<br>`draging =TOUCH.DRAG`<br>`long =TOUCH.LONG`
+
+Advanced gesture detection that returns when user has `tapped` the screen, or is currently `draging` his finger or has `long` pressed the screen without moving.
+
+#### `changed =TOUCH.CHANGE`
+
+Returns if something has `changed` during gesture detection.
+
+| true | false | detect | equivalent |
+|------|
+| TOUCH.DRAG<br>TOUCH.CHANGE
+
+
+TODO: continue
 
 ### Display API
 
@@ -2643,17 +2721,48 @@ All parameters can be omitted to keep their current settings.
 
 Sets the sound's characteristics for the `voice`.
 
-`wave` control the waveform. With a waveform of Pulse, the `width` control the pulse width. A value of 8 means a square wave.
+`wave` control the waveform. The `width` has an effect on every waveform.
+
+With a waveform of Sine, the `width` add one or two more sine partials at a musical interval of the played note, so a single voice can play a chord. A value of 7 is the bare sine, below it the added partials are under the note and above it they are over the note. There is no Sawtooth waveform anymore, a Triangle with a `width` of 0 or 15 is a falling or a rising ramp and sounds the same.
+
+With a waveform of Pulse, the `width` control the pulse width. A value of 15 is an exact square wave.
+
+With a waveform of Triangle, the `width` control where the peak is in the cycle. A value of 7 is an exact triangle wave.
+
+With a waveform of Noise, the `width` control the colour of the noise. A value of 7 is the unfiltered noise, below it applies a lowpass filter that gets darker as the value goes down, above it applies a highpass filter that gets thinner as the value goes up. Each step is one octave of cutoff frequency.
 
 `length` control the length of the sound. A length of 0 means that the sound will not stop until another sound is played on the same `voice`. This value can be overriden by the parameter `length` of the [`PLAY` command](#play-voice-pitch-length-sound-sound).
 
 | parameter | value and range                                |
 |----------:|------------------------------------------------|
-|    `wave` | 0 Sawtooth<br>1 Triangle<br>2 Pulse<br>3 Noise |
-|   `width` | 0 .. 15                                        |
+|    `wave` | 0 Sine<br>1 Triangle<br>2 Pulse<br>3 Noise |
+|   `width` | Sine: 0 Augmented below .. 7 Bare sine .. 15 Fifth and octave<br>Pulse: 0 Thinnest pulse .. 15 Square wave<br>Triangle: 0 Falling ramp .. 7 Triangle .. 15 Rising ramp<br>Noise: 0 Lowpass 125Hz .. 7 Unfiltered .. 15 Highpass 10kHz |
 |  `length` | 0 Infinite<br>1 .. 255 (16.67ms .. 4.25s)      |
 
 Omitted parameters will keep their previous values.
+
+The intervals added by the `width` on the Sine waveform:
+
+| `width` | added partials                                       |
+|--------:|------------------------------------------------------|
+|       0 | Major third and minor sixth below (augmented)        |
+|       1 | Minor third and augmented fourth below (diminished)  |
+|       2 | Major sixth below                                    |
+|       3 | Fifth below                                          |
+|       4 | Fourth below                                         |
+|       5 | Major third below                                    |
+|       6 | Minor third below                                    |
+|       7 | None, bare sine                                      |
+|       8 | Minor third                                          |
+|       9 | Major third                                          |
+|      10 | Fourth                                               |
+|      11 | Fifth                                                |
+|      12 | Major sixth                                          |
+|      13 | Minor third and augmented fourth (diminished)        |
+|      14 | Major third and fifth (major)                        |
+|      15 | Fifth and octave                                     |
+
+A voice playing two or three partials is quieter than a bare sine, by 2.8dB for two and 4.2dB for three, so that a chord never uses more output level than a single note.
 
 #### `ENVELOPE voice, [attack], [decay], [sustain], [release]`
 
@@ -2676,7 +2785,11 @@ All parameters can be omitted to keep their current settings.
 
 Set the Low Frequency Oscillator (LFO) for the `voice`.
 
-Allow to change the `rate`, the `frequency`, the `volume` and the `width` for Pulse waveform.
+Allow to change the `rate`, the `frequency`, the `volume` and the `width`. The `width` modulates the interval of the Sine waveform, the pulse width of the Pulse waveform, the peak position of the Triangle waveform and the filter of the Noise waveform.
+
+On the Sine waveform the intervals are separate values instead of a continuous range, so the modulation steps from one interval to the next, one interval per unit of `width` amount. A square LFO wave gives a trill, a sawtooth LFO wave an arpeggio, and `invert` in the [`LFO WAVE` command](#lfo-wave-voice-wave-invert-env-trigger) chooses whether the intervals go up or down.
+
+On the Noise waveform the modulation is a filter sweep, one octave per unit of `width` amount. Starting from a `width` of 7 in the [`SOUND` command](#sound-voice-wave-width-length), `invert` in the [`LFO WAVE` command](#lfo-wave-voice-wave-invert-env-trigger) chooses the side of the sweep: off sweeps up into the highpass, on sweeps down into the lowpass.
 
 |   parameter | range                    |
 |------------:|--------------------------|
@@ -2772,6 +2885,17 @@ Example that print the last pressed ASCII key code:
 
 Write a 16bits `value` (-32768..32767) in memory at `address`.
 
+A written 16bits positive number may be read as negative one. Here's how to fix it:
+
+    POKEW $e000, 60000
+    PRINT PEEKW($e000)
+    PRINT PEEKW($e000) AND $ffff
+
+Will print:
+
+    -5536
+    60000
+
 #### `value =PEEKW(address)`
 
 Read and return a 16bits `value` (-32768..32767) from memory at `address`.
@@ -2780,6 +2904,17 @@ Example that print the width and height of the visible pixels:
 
     PRINT "width", PEEKW($FF78), SHOWN.W
     PRINT "height", PEEKW($FF7A), SHOWN.H
+
+A written 16bits positive number may be read as negative one. Here's how to fix it:
+
+    POKEW $e000, 60000
+    PRINT PEEKW($e000)
+    PRINT PEEKW($e000) AND $ffff
+
+Will print:
+
+    -5536
+    60000
 
 #### `POKEL address, value`
 
@@ -2945,19 +3080,23 @@ Halt the execution and bring the debugger console.
 
 Check the [debugger instructions](#debugger-instructions) to learn what you can to do with it.
 
-## Debugger instructions
+## References
 
-##### dbg: `PAUSE`
+This annex provides technical information about how things work under the hood.
+
+### Debugger instructions
+
+#### dbg: `PAUSE`
 
 Enter the debugger. It bring a console where user can enter debugger specific commands. The scope used in the debugger is the same as the one in the program where the `PAUSE` appear.
 
-##### dbg: a variable name
+#### dbg: a variable name
 
 By typing the name of a variable, the debugger will print it's value. The variable use the same syntax as inside a program: `$` for string, () for array.
 
 The variable MUST be accessible throughout the scope of where the `PAUSE` has been used to enter the debugger. Global variables are still available everywhere.
 
-##### dbg: a variable name `=` new value
+#### dbg: a variable name `=` new value
 
 Allow to change the value of a variable.
 
@@ -2965,27 +3104,27 @@ Number literal use the same syntax as inside a program, it support integer, floa
 
 String literal use the same syntax as inside a program: surrounded by double quotes (").
 
-##### dbg: an address
+#### dbg: an address
 
 By typing a memory address, the debugger will print it's value as if it was read by `=PEEK()`.
 
 The address can be indicated using the hexadecimal or by any other valid numeric literal.
 
-##### dbg: an address `=` a value
+#### dbg: an address `=` a value
 
 Will try to modify the value store inside a memory address.
 
     $FF00=3
 
-##### dbg: `CLS`
+#### dbg: `CLS`
 
 Clear the debugger console.
 
-##### dbg: `WAIT`
+#### dbg: `WAIT`
 
 Resume execution until a `WAIT` command is found in the program, the scope may change.
 
-##### dbg: `DIM [filter] [pagination]`
+#### dbg: `DIM [filter] [pagination]`
 
 Print the list of accessible variable at the current scope.
 
@@ -2993,21 +3132,29 @@ Allow to limit the output to the variables that matchs the `filter`.
 
 Allow to output more variables using the `pagination` with an index that start at 0 zero.
 
-##### dbg: `TRACE`
+#### dbg: `TRACE`
 
 Print the current call stack in reverse order: last line number followed by label `GOSUB`'ed and procedure `CALL`'ed.
 
-##### dbg: `TRACK PEEK address`<br> dbg: `TRACK POKE address`
+#### dbg: `TRACK PEEK address`<br> dbg: `TRACK POKE address`
 
 Enter the debugger when the program `=PEEK` or `POKE` the `address`.
 
-##### dbg: `NEXT`
+#### dbg: `NEXT`
 
 Execute next instruction in the program, and stop.
 
-## References
+#### dbg: `GOTO ON`<br>`GOTO OFF`<br>`GOSUB ON`<br>`GOSUB OFF`
 
-This annex provides technical information about how things work under the hood.
+Start or stop logging `GOTO`s and `GOSUB`s.
+
+#### dbg: `SHOWN.W width height`<br>`SHOWN.W`
+
+Override or reset `width` and `height` of the device screen to simulate different ratios.
+
+#### dbg: `SAFE.L left top right bottom`<br>`SAFE.L`
+
+Override or reset `left`, `top`, `right` and `bottom` of the safe area to simulate different device models.
 
 ### 64 Colors
 
@@ -3024,24 +3171,26 @@ This annex provides technical information about how things work under the hood.
 
 ### Memory mapping
 
+When a program is started, the [virtual files](#virtual-file) are mapped at address $10000. User can access it using [`=ROM`](#address-rom-file), [`PEEK`](#value-peek-address), [`MCELL.C`](#character-mcell-c-x-y)…
+
 TODO: writable
 
 | address | size        | purpose            |
 | -------:| ----------- | ------------------ |
-|  $00000 | 8 Kibibyte  | Layer 0 data       |
-|  $02000 | 8 Kibibyte  | Layer 1 data       |
-|  $04000 | 8 Kibibyte  | Layer 2 data       |
-|  $06000 | 8 Kibibyte  | Layer 3 data       |
-|  $08000 | 4 Kibibyte  | Character data     |
-|  $09000 | 20 Kibibyte | Working RAM        |
-|  $0E000 | 6 Kibibyte  | Persistent RAM     |
-|  $0FB00 | 1020 Bytes  | Sprite registers   |
-|  $0FF00 | 32 Bytes    | Color registers    |
-|  $0FF20 | 10 Bytes    | Video registers    |
-|  $0FF40 | 48 Bytes    | Audio registers    |
-|  $0FF70 | 28 Bytes    | I/O registers      |
-|  $0FFA0 | 6 Bytes     | DMA registers      |
-|  $0FFA6 | 10 Bytes    | Internal registers |
+|   $0000 | 8 Kibibyte  | Layer 0 data       |
+|   $2000 | 8 Kibibyte  | Layer 1 data       |
+|   $4000 | 8 Kibibyte  | Layer 2 data       |
+|   $6000 | 8 Kibibyte  | Layer 3 data       |
+|   $8000 | 4 Kibibyte  | Character data     |
+|   $9000 | 20 Kibibyte | Working RAM        |
+|   $E000 | 6 Kibibyte  | Persistent RAM     |
+|   $FB00 | 1020 Bytes  | Sprite registers   |
+|   $FF00 | 32 Bytes    | Color registers    |
+|   $FF20 | 10 Bytes    | Video registers    |
+|   $FF40 | 48 Bytes    | Audio registers    |
+|   $FF70 | 28 Bytes    | I/O registers      |
+|   $FFA0 | 6 Bytes     | DMA registers      |
+|   $FFA6 | 10 Bytes    | Internal registers |
 |  $10000 | 64 Kibibyte | Cartridge ROM      |
 
 TODO: Add particle/emitter registers
@@ -3059,7 +3208,7 @@ For each cell:
 | address | purpose                   |
 | -------:| ------------------------- |
 |      +0 | character number (0..255) |
-|      +2 | cell attributes           |
+|      +1 | cell attributes           |
 
 ### Cell attributes
 
@@ -3116,24 +3265,24 @@ For each sound preset:
 |      +2 | 2    | [Envelope](#envelope-bits)     |
 |      +4 | 1    | LFO attributes                 |
 |      +5 | 2    | LFO settings                   |
-|      +7 | 1    | Not used                       |
+|      +7 | 1    | Reserved (write 0)             |
 
-##### Attributes bits:
+#### Attributes bits
 
 | bits | purpose                                                |
 | ----:| -------------------------------------------------------|
-| 0..3 | Pulse width                                            |
-| 4..5 | Wave<br>0 Sawtooth<br>1 Triangle<br>2 Pulse<br>3 Noise |
+| 0..3 | [Width](#sound-voice-wave-width-length) (index into a table, not a linear value: sine interval, pulse duty, triangle peak or noise filter depending on the wave) |
+| 4..5 | Wave<br>0 Sine<br>1 Triangle<br>2 Pulse<br>3 Noise |
 |    6 | Timeout enabled                                        |
 
-##### Envelope bits:
+#### Envelope bits
 
-|   bits | purpose         |
-| ------:| --------------- |
-|   0..3 | Attack duration |
-|   4..7 | Decay duration  |
-|  8..11 | Sustain volume  |
-| 12..15 | Decay volume    |
+|   bits | purpose          |
+| ------:| ---------------- |
+|   0..3 | Attack duration  |
+|   4..7 | Decay duration   |
+|  8..11 | Sustain duration |
+| 12..15 | Release duration |
 
 TODO: every attributes and settings
 
@@ -3284,7 +3433,7 @@ Each register is mapped to the memory and consist of an address and a number of 
 
 TODO: layer registers?
 
-##### Character Registers
+#### Character Registers
 
 Each one of the 256 character occupies 16 bytes.
 
@@ -3297,7 +3446,7 @@ Each one of the 256 character occupies 16 bytes.
 |   $8FE0 | 16 Bytes | 255th character |
 |   $8FF0 | 16 Bytes | 256th character |
 
-##### Sprite Registers
+#### Sprite Registers
 
 There are 170 sprites, each occupies 6 bytes:
 
@@ -3322,7 +3471,7 @@ For each sprite:
 Both position on x and y axis use sub-pixels values. To advance by 1 pixel, the values SHOULD get increased by 16.
 Also, they are both offseted by 32 pixels. To place a sprite in the 0x0 coordinates, the values SHOULD be 512x512.
 
-##### Character attributes
+#### Character attributes
 
 | bits | purpose         |
 | ----:| --------------- |
@@ -3341,7 +3490,7 @@ Sprite size:
 |    %10 | 24x24 pixels or 3x3 characters |
 |    %11 | 32x32 pixels or 4x4 characters |
 
-##### Color registers
+#### Color registers
 
 There are 8 palettes with 4 colors each:
 
@@ -3358,7 +3507,7 @@ For each palette:
 |     +2 | 1 Byte | 3rd color value |
 |     +3 | 1 Byte | 4th color value |
 
-##### Video registers
+#### Video registers
 
 | address | size     | purpose                     |
 | -------:| -------- | --------------------------- |
@@ -3374,7 +3523,7 @@ For each palette:
 |   $FF32 | 1 Byte   | Display attributes          |
 |   $FF33 | 12 Bytes | Not used                    |
 
-##### Display attributes
+#### Display attributes
 
 | bits | purpose                    |
 | ----:| -------------------------- |
@@ -3384,42 +3533,50 @@ For each palette:
 |    3 | Background layer 2 enabled |
 |    4 | Background layer 3 enabled |
 
-##### TODO: Audio registers
+#### TODO: Audio registers
 
 | address | size     | purpose         |
 | -------:| -------- | --------------- |
 |   $FF40 | 48 Bytes | Audio registers |
 
-### I/O registers
+#### I/O registers
 
 | address | size    | purpose                        |
 | -------:| ------- | ------------------------------ |
 |   $FF70 | 4 Bytes | Last touch position X          |
 |   $FF74 | 4 Bytes | Last touch position Y          |
 |   $FF78 | 2 Bytes | Pixels shown in width          |
-|   $FF7a | 2 Bytes | Pixels shown in height         |
-|   $FF7c | 2 Bytes | Pixels outside the safe zone   |
-|   $FF7e | 2 Bytes | Pixels outside the safe zone   |
+|   $FF7A | 2 Bytes | Pixels shown in height         |
+|   $FF7C | 2 Bytes | Pixels outside the safe zone   |
+|   $FF7E | 2 Bytes | Pixels outside the safe zone   |
 |   $FF80 | 2 Bytes | Pixels outside the safe zone   |
 |   $FF82 | 2 Bytes | Pixels outside the safe zone   |
 |   $FF84 | 1 Byte  | ASCII code of last pressed key |
 |   $FF85 | 1 Byte  | Other I/O status bits          |
+|   $FF86 | 1 Byte  | Haptic pattern                 |
+|   $FF87 | 1 Byte  |                                |
+|   $FF88 | 2 Bytes | Device visual keyboard height  |
+|   $FF8C | 4 Bytes | Gesture pressed position X     |
+|   $FF90 | 4 Bytes | Gesture pressed position Y     |
 
-Last touch position X and Y are stored as float and currently Retro Game Creator do not have a way to peek float from memory, use [`TOUCH.X`](#x-touch-xy-touch-y) and [`TOUCH.Y`](#x-touch-xy-touch-y) functions instead.
+Last touch position X and Y are stored as float and Retro Game Creator do not have a way to peek float from memory, use [`TOUCH.X`](#x-touch-xy-touch-y) and [`TOUCH.Y`](#x-touch-xy-touch-y) functions instead.
 
 Pixels shown represent the number of fantasy pixels that is visible by the user according to their device screen ratio. Use the practical [`SHOWN.W`](#width-shown-wheight-shown-h) and [`SHOWN.H`](#width-shown-wheight-shown-h) functions.
 
 Pixels outside the safe zone represent the number of fantasy pixels that are visible but SHOULD be considered unsafe for touch input as they are outside the safe area. Use the easy memorable [`SAFE.L`](#left-safe-ltop-safe-tright-safe-rbottom-safe-b), [`SAFE.T`](#left-safe-ltop-safe-tright-safe-rbottom-safe-b), [`SAFE.R`](#left-safe-ltop-safe-tright-safe-rbottom-safe-b) and [`SAFE.B`](#left-safe-ltop-safe-tright-safe-rbottom-safe-b) functions.
 
-##### Other I/O status bits
+#### Other I/O status bits
 
-| bits | purpose                                   |
-| ----:| ----------------------------------------- |
-|    0 | Pause currently active                    |
-|    1 | Fantasy screen currently touched          |
-|    2 | Device virtual keyboard currently visible |
+| bits | purpose                                  |
+| ----:| ---------------------------------------- |
+|    0 | Fantasy screen currently touched         |
+|    1 | Device visual keyboard currently visible |
+|    2 | Gesture tap detected                     |
+|    3 | Gesture drag detected                    |
+|    4 | Gesture long press detected              |
+|    5 | Gesture change detected                  |
 
-##### DMA registers
+#### DMA registerss
 
 | address | size    | purpose                 |
 | -------:| ------- | ----------------------- |
@@ -3537,7 +3694,7 @@ TODO: interrupts
 **`BG`**:
 - [`BG layer`](#bg-layer)
 - [`BG FILL x1, y1 TO x2, y2 CHAR character`](#bg-fill-x1-y1-to-x2-y2-char-character)
-- [`BG TINT y1, y1 TO x2, y2 [PAL palette] [FLIP horizontal, vertical] [PRIO priority]`](#bg-tint-y1-y1-to-x2-y2-pal-palette-flip-horizontal-vertical-prio-priority)
+- [`BG TINT x1, y1 TO x2, y2 [PAL palette] [FLIP horizontal, vertical] [PRIO priority]`](#bg-tint-x1-y1-to-x2-y2-pal-palette-flip-horizontal-vertical-prio-priority)
 - [`BG SCROLL x1, y1 to x2, y2 step x3, y3`](#bg-scroll-x1-y1-to-x2-y2-step-x3-y3)
 - [`BG SOURCE address [, width, height]`](#bg-source-address-width-height)
 - [`BG COPY x1, y1, width, height TO x2, y2`](#bg-copy-x1-y1-width-height-to-x2-y2)
@@ -3548,6 +3705,7 @@ TODO: interrupts
 
 **`CALL`**:
 - [`CALL`](#call)
+- [`ON CALL`](#on-call)
 - [`ON VBL CALL procedure`](#on-vbl-call-procedure)
 - [`ON RASTER CALL procedure`](#on-raster-call-procedure)
 
@@ -3658,7 +3816,7 @@ TODO: interrupts
 - [`SPRITE sprite [PAL palette] [FLIP horizontal, vertical] [PRIO priority] [SIZE size]`](#sprite-sprite-pal-palette-flip-horizontal-vertical-prio-priority-size-size)
 - [`FLIP [horizontal], [vertical]`](#flip-horizontal-vertical)
 - [`TINT y, y [PAL palette] [FLIP horizontal, vertical] [PRIO priority]`](#tint-y-y-pal-palette-flip-horizontal-vertical-prio-priority)
-- [`BG TINT y1, y1 TO x2, y2 [PAL palette] [FLIP horizontal, vertical] [PRIO priority]`](#bg-tint-y1-y1-to-x2-y2-pal-palette-flip-horizontal-vertical-prio-priority)
+- [`BG TINT x1, y1 TO x2, y2 [PAL palette] [FLIP horizontal, vertical] [PRIO priority]`](#bg-tint-x1-y1-to-x2-y2-pal-palette-flip-horizontal-vertical-prio-priority)
 
 **`FLOOR`**:
 - [`floor =FLOOR(number)`<br>`floor =INT(number)`](#floor-floor-number-floor-int-number)
@@ -3796,6 +3954,7 @@ TODO: interrupts
 - [`ON RASTER OFF`](#on-raster-off)
 
 **`ON`**:
+- [`ON CALL`](#on-call)
 - [`ON GOTO`<br>`ON GOSUB`](#on-gotoon-gosub)
 - [`ON RESTORE`](#on-restore)
 - [`KEYBOARD ON`<br>`KEYBOARD OFF`](#keyboard-onkeyboard-off)
@@ -3813,7 +3972,7 @@ TODO: interrupts
 - [`SPRITE sprite [PAL palette] [FLIP horizontal, vertical] [PRIO priority] [SIZE size]`](#sprite-sprite-pal-palette-flip-horizontal-vertical-prio-priority-size-size)
 - [`PAL palette`](#pal-palette)
 - [`TINT y, y [PAL palette] [FLIP horizontal, vertical] [PRIO priority]`](#tint-y-y-pal-palette-flip-horizontal-vertical-prio-priority)
-- [`BG TINT y1, y1 TO x2, y2 [PAL palette] [FLIP horizontal, vertical] [PRIO priority]`](#bg-tint-y1-y1-to-x2-y2-pal-palette-flip-horizontal-vertical-prio-priority)
+- [`BG TINT x1, y1 TO x2, y2 [PAL palette] [FLIP horizontal, vertical] [PRIO priority]`](#bg-tint-x1-y1-to-x2-y2-pal-palette-flip-horizontal-vertical-prio-priority)
 
 **`PALETTE`**:
 - [`PALETTE palette, [c0], [c1], [c2], [c3]`](#palette-palette-c0-c1-c2-c3)
@@ -3856,7 +4015,7 @@ TODO: interrupts
 - [`SPRITE sprite [PAL palette] [FLIP horizontal, vertical] [PRIO priority] [SIZE size]`](#sprite-sprite-pal-palette-flip-horizontal-vertical-prio-priority-size-size)
 - [`PRIO priority`](#prio-priority)
 - [`TINT y, y [PAL palette] [FLIP horizontal, vertical] [PRIO priority]`](#tint-y-y-pal-palette-flip-horizontal-vertical-prio-priority)
-- [`BG TINT y1, y1 TO x2, y2 [PAL palette] [FLIP horizontal, vertical] [PRIO priority]`](#bg-tint-y1-y1-to-x2-y2-pal-palette-flip-horizontal-vertical-prio-priority)
+- [`BG TINT x1, y1 TO x2, y2 [PAL palette] [FLIP horizontal, vertical] [PRIO priority]`](#bg-tint-x1-y1-to-x2-y2-pal-palette-flip-horizontal-vertical-prio-priority)
 
 **`RANDOMIZE`**:
 - [`RANDOMIZE seed`](#randomize-seed)
@@ -4020,13 +4179,13 @@ TODO: interrupts
 
 **`TINT`**:
 - [`TINT y, y [PAL palette] [FLIP horizontal, vertical] [PRIO priority]`](#tint-y-y-pal-palette-flip-horizontal-vertical-prio-priority)
-- [`BG TINT y1, y1 TO x2, y2 [PAL palette] [FLIP horizontal, vertical] [PRIO priority]`](#bg-tint-y1-y1-to-x2-y2-pal-palette-flip-horizontal-vertical-prio-priority)
+- [`BG TINT x1, y1 TO x2, y2 [PAL palette] [FLIP horizontal, vertical] [PRIO priority]`](#bg-tint-x1-y1-to-x2-y2-pal-palette-flip-horizontal-vertical-prio-priority)
 
 **`TO`**:
 - [`FOR/TO/STEP/NEXT/EXIT`](#for-to-step-next-exit)
 - [`SPRITE OFF sprite1 TO sprite2`](#sprite-off-sprite1-to-sprite2)
 - [`BG FILL x1, y1 TO x2, y2 CHAR character`](#bg-fill-x1-y1-to-x2-y2-char-character)
-- [`BG TINT y1, y1 TO x2, y2 [PAL palette] [FLIP horizontal, vertical] [PRIO priority]`](#bg-tint-y1-y1-to-x2-y2-pal-palette-flip-horizontal-vertical-prio-priority)
+- [`BG TINT x1, y1 TO x2, y2 [PAL palette] [FLIP horizontal, vertical] [PRIO priority]`](#bg-tint-x1-y1-to-x2-y2-pal-palette-flip-horizontal-vertical-prio-priority)
 - [`BG COPY x1, y1, width, height TO x2, y2`](#bg-copy-x1-y1-width-height-to-x2-y2)
 - [`ADD variable, value`<br>`ADD variable, increment, min TO max`](#add-variable-valueadd-variable-increment-min-to-max)
 - [`COPY source, count TO destination`](#copy-source-count-to-destination)
@@ -4034,6 +4193,24 @@ TODO: interrupts
 **`TOUCH`**:
 - [`touched =TOUCH`](#touched-touch)
 - [`x =TOUCH.X`<br>`y =TOUCH.Y`](#x-touch-xy-touch-y)
+
+**`changed =TOUCH.CHANGE`**:
+- [`changed =TOUCH.CHANGE`](#changed-touch-change)
+
+**`tapped =TOUCH.DRAG`**:
+- [`tapped =TOUCH.TAP`<br>`draging =TOUCH.DRAG`<br>`long =TOUCH.LONG`](#tapped-touch-tapdraging-touch-draglong-touch-long)
+
+**`tapped =TOUCH.LONG`**:
+- [`tapped =TOUCH.TAP`<br>`draging =TOUCH.DRAG`<br>`long =TOUCH.LONG`](#tapped-touch-tapdraging-touch-draglong-touch-long)
+
+**`tapped =TOUCH.TAP`**:
+- [`tapped =TOUCH.TAP`<br>`draging =TOUCH.DRAG`<br>`long =TOUCH.LONG`](#tapped-touch-tapdraging-touch-draglong-touch-long)
+
+**`TOUCH.PX`**:
+- [`x =TOUCH.PX`<br>`y =TOUCH.PY`](#x-touch-pyx-touch-py)
+
+**`TOUCH.PY`**:
+- [`x =TOUCH.PX`<br>`y =TOUCH.PY`](#x-touch-pyx-touch-py)
 
 **`TOUCH.X`**:
 - [`x =TOUCH.X`<br>`y =TOUCH.Y`](#x-touch-xy-touch-y)
@@ -4083,6 +4260,7 @@ TODO: interrupts
 
 **`WINDOW`**:
 - [`WINDOW x, y, width, height, layer`](#window-x-y-width-height-layer)
+- [`x =WINDOW.X`<br>`y =WINDOW.Y`<br>`width =WINDOW.W`<br>`height =WINDOW.H`](#x-window-xy-window-ywidth-window-wheight-window-h)
 
 **`XOR`**:
 - [`XOR`](#operators)
