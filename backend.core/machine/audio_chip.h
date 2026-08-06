@@ -135,6 +135,12 @@ struct VoiceInternals
 	bool lfoHold;
 	uint16_t lfoRandom;
 	double timeoutCounter;
+	// sauce: Claude Opus 5
+	float noiseTiltState;
+	float noiseTiltK;
+	float noiseTiltGain;
+	int noiseTiltIndex;
+	int noiseTiltFreq;
 };
 
 struct AudioInternals

@@ -2721,18 +2721,20 @@ All parameters can be omitted to keep their current settings.
 
 Sets the sound's characteristics for the `voice`.
 
-`wave` control the waveform. The `width` has an effect on the Pulse and the Triangle waveforms.
+`wave` control the waveform. The `width` has an effect on every waveform but the Sawtooth.
 
 With a waveform of Pulse, the `width` control the pulse width. A value of 15 is an exact square wave.
 
 With a waveform of Triangle, the `width` control where the peak is in the cycle. A value of 7 is an exact triangle wave.
+
+With a waveform of Noise, the `width` control the colour of the noise. A value of 7 is the unfiltered noise, below it applies a lowpass filter that gets darker as the value goes down, above it applies a highpass filter that gets thinner as the value goes up. Each step is one octave of cutoff frequency.
 
 `length` control the length of the sound. A length of 0 means that the sound will not stop until another sound is played on the same `voice`. This value can be overriden by the parameter `length` of the [`PLAY` command](#play-voice-pitch-length-sound-sound).
 
 | parameter | value and range                                |
 |----------:|------------------------------------------------|
 |    `wave` | 0 Sawtooth<br>1 Triangle<br>2 Pulse<br>3 Noise |
-|   `width` | Pulse: 0 Thinnest pulse .. 15 Square wave<br>Triangle: 0 Falling ramp .. 7 Triangle .. 15 Rising ramp |
+|   `width` | Pulse: 0 Thinnest pulse .. 15 Square wave<br>Triangle: 0 Falling ramp .. 7 Triangle .. 15 Rising ramp<br>Noise: 0 Lowpass 125Hz .. 7 Unfiltered .. 15 Highpass 10kHz |
 |  `length` | 0 Infinite<br>1 .. 255 (16.67ms .. 4.25s)      |
 
 Omitted parameters will keep their previous values.
@@ -2758,7 +2760,9 @@ All parameters can be omitted to keep their current settings.
 
 Set the Low Frequency Oscillator (LFO) for the `voice`.
 
-Allow to change the `rate`, the `frequency`, the `volume` and the `width`. The `width` modulates the pulse width of the Pulse waveform and the peak position of the Triangle waveform.
+Allow to change the `rate`, the `frequency`, the `volume` and the `width`. The `width` modulates the pulse width of the Pulse waveform, the peak position of the Triangle waveform and the filter of the Noise waveform.
+
+On the Noise waveform the modulation is a filter sweep, one octave per unit of `width` amount. Starting from a `width` of 7 in the [`SOUND` command](#sound-voice-wave-width-length), `invert` in the [`LFO WAVE` command](#lfo-wave-voice-wave-invert-env-trigger) chooses the side of the sweep: off sweeps up into the highpass, on sweeps down into the lowpass.
 
 |   parameter | range                    |
 |------------:|--------------------------|
@@ -3240,7 +3244,7 @@ For each sound preset:
 
 | bits | purpose                                                |
 | ----:| -------------------------------------------------------|
-| 0..3 | [Pulse width](#sound-voice-wave-width-length) (index into a duty table, not a linear value) |
+| 0..3 | [Width](#sound-voice-wave-width-length) (index into a table, not a linear value: pulse duty, triangle peak or noise filter depending on the wave) |
 | 4..5 | Wave<br>0 Sawtooth<br>1 Triangle<br>2 Pulse<br>3 Noise |
 |    6 | Timeout enabled                                        |
 

@@ -118,6 +118,92 @@ static const int triangleRises[16] = {
 	240
 };
 
+// sauce: Claude Opus 5
+// Spectral tilt of the noise waveform, indexed by the same pulse width nibble.
+// 128 is flat, below is a lowpass, above a highpass, at 16 units per octave.
+static const int noiseTilts[16] = {
+	16,
+	32,
+	48,
+	64,
+	80,
+	96,
+	112,
+	128,
+	142,
+	156,
+	170,
+	184,
+	198,
+	212,
+	226,
+	240
+};
+
+// sauce: Claude Opus 5
+#define NOISE_TILT_NEUTRAL 128
+#define NOISE_TILT_MIN 16
+#define NOISE_TILT_MAX 240
+#define NOISE_TILT_LP_REF 16000.0f // lowpass corner in Hz at the neutral tilt
+#define NOISE_TILT_HP_REF 80.0f    // highpass corner in Hz at the neutral tilt
+#define NOISE_TILT_OCTAVE 16.0f    // tilt units per octave of corner frequency
+#define NOISE_TILT_HP_CLOCK 0.25f  // highpass corner stays below this * LFSR clock
+#define NOISE_TILT_TARGET 0.55f    // output RMS relative to the raw LFSR RMS
+#define NOISE_TILT_MAX_GAIN 3.0f   // ceiling on the makeup gain
+
+// sauce: Claude Opus 5
+// The raw LFSR output is uniform (crest factor sqrt(3)) but anything filtered out
+// of it is gaussian (crest factor ~3.15), so at a common peak ceiling the filtered
+// signal can only carry 0.55 of the RMS. NOISE_TILT_TARGET applies to the neutral
+// tilt as well, which costs 5.2 dB but keeps every width equally loud, so the LFO
+// can sweep across the centre without a step.
+static void audio_updateNoiseTilt(struct VoiceInternals *voiceIn, int tilt, int freq, int outputFrequency)
+{
+	float fs = (float)outputFrequency;
+	float rho = (float)freq / fs;
+	float fc = (tilt < NOISE_TILT_NEUTRAL ? NOISE_TILT_LP_REF : NOISE_TILT_HP_REF)
+		* exp2f((float)(tilt - NOISE_TILT_NEUTRAL) / NOISE_TILT_OCTAVE);
+
+	if(tilt > NOISE_TILT_NEUTRAL)
+	{
+		// a highpass reaching far past the LFSR clock leaves a train of decaying
+		// spikes whose crest factor no makeup gain can be normalised against
+		if(fc > 0.25f * fs)
+			fc = 0.25f * fs;
+		if(fc > NOISE_TILT_HP_CLOCK * (float)freq)
+			fc = NOISE_TILT_HP_CLOCK * (float)freq;
+	}
+
+	float k = 1.0f - expf(-6.2831853f * fc / fs);
+	if(k > 1.0f)
+		k = 1.0f;
+	if(k < 1.0e-6f)
+		k = 1.0e-6f;
+
+	// The LFSR output is an AR(1) process with a = 0.5 at its own clock rate, but
+	// it is sample-and-held at the output rate, so the correlation the filter
+	// actually sees depends on the note being played. Assuming a flat 0.5 here
+	// overestimates the makeup gain by up to 15 dB at low pitch.
+	float a = (rho < 1.0f) ? (1.0f - 0.5f * rho) : exp2f(-rho);
+	float p = 1.0f - k;
+	float ompa = (1.0f - a) + k * a; // 1 - p*a, grouped to avoid cancellation in float
+	float den = (2.0f - k) * ompa;
+	float v = (tilt < NOISE_TILT_NEUTRAL)
+		? k * (2.0f - ompa) / den    // Var(lowpass) / Var(in)
+		: 2.0f * (1.0f - a) * p * p / den; // Var(highpass) / Var(in)
+	if(v < 1.0e-9f)
+		v = 1.0e-9f;
+
+	float gain = NOISE_TILT_TARGET / sqrtf(v);
+	if(gain > NOISE_TILT_MAX_GAIN)
+		gain = NOISE_TILT_MAX_GAIN;
+
+	voiceIn->noiseTiltK = k;
+	voiceIn->noiseTiltGain = gain;
+	voiceIn->noiseTiltIndex = tilt;
+	voiceIn->noiseTiltFreq = freq;
+}
+
 void audio_renderAudioBuffer(struct AudioRegisters *lifeRegisters, struct AudioRegisters *registers, struct AudioInternals *internals, int16_t *stereoOutput, int numSamples, int outputFrequency, int volume);
 
 void audio_reset(struct Core *core)
@@ -129,6 +215,11 @@ void audio_reset(struct Core *core)
 		struct VoiceInternals *voiceIn = &internals->voices[i];
 		voiceIn->noiseRandom = 0xABCD;
 		voiceIn->lfoRandom = 0xABCD;
+		// sauce: Claude Opus 5
+		voiceIn->noiseTiltState = 0.0f;
+		// 0 is never a legal tilt, so this forces a recompute before first use
+		voiceIn->noiseTiltIndex = 0;
+		voiceIn->noiseTiltFreq = 0;
 	}
 	internals->writeBufferIndex = -1;
 }
@@ -195,7 +286,7 @@ void audio_renderAudio(struct Core *core, int16_t *stereoOutput, int numSamples,
 
 void audio_renderAudioBuffer(struct AudioRegisters *lifeRegisters, struct AudioRegisters *registers, struct AudioInternals *internals, int16_t *stereoOutput, int numSamples, int outputFrequency, int volume)
 {
-	double overflow = 0xFFFFFF;
+	double overflow = 0x1000000;
 
 	for(int v = 0; v < NUM_VOICES; v++)
 	{
@@ -235,6 +326,7 @@ void audio_renderAudioBuffer(struct AudioRegisters *lifeRegisters, struct AudioR
 				int volume = voice->status.volume << 4;
 				int pulseWidth = pulseWidths[voice->attr.pulseWidth];
 				int triangleRise = triangleRises[voice->attr.pulseWidth];
+				enum WaveType waveType = voice->attr.wave;
 
 				// --- LFO ---
 
@@ -332,6 +424,23 @@ void audio_renderAudioBuffer(struct AudioRegisters *lifeRegisters, struct AudioR
 				if(triangleRise > 240)
 					triangleRise = 240;
 
+				// sauce: Claude Opus 5
+				// the noise tilt shares the width nibble and the same modulation,
+				// so an LFO sweeps it at the full 256 step resolution
+				int noiseTilt = NOISE_TILT_NEUTRAL;
+				if(waveType == WaveTypeNoise)
+				{
+					noiseTilt = noiseTilts[voice->attr.pulseWidth];
+					if(voice->lfoAttr.invert)
+						noiseTilt -= pwMod;
+					else
+						noiseTilt += pwMod;
+					if(noiseTilt < NOISE_TILT_MIN)
+						noiseTilt = NOISE_TILT_MIN;
+					if(noiseTilt > NOISE_TILT_MAX)
+						noiseTilt = NOISE_TILT_MAX;
+				}
+
 				//  if (i == 0 && v == 0) printf("pulseWidth %d\n", pulseWidth);
 
 				// --- WAVEFORM GENERATOR ---
@@ -348,7 +457,6 @@ void audio_renderAudioBuffer(struct AudioRegisters *lifeRegisters, struct AudioR
 
 				uint16_t sample = 0x7FFF; // silence
 
-				enum WaveType waveType = voice->attr.wave;
 				switch(waveType)
 				{
 				case WaveTypeSawtooth: {
@@ -370,13 +478,45 @@ void audio_renderAudioBuffer(struct AudioRegisters *lifeRegisters, struct AudioR
 					break;
 				}
 				case WaveTypeNoise: {
-					if((accu16 & 0x1000) != (accu16Last & 0x1000))
+					// sauce: Claude Opus 5
+					// bit 12 of accu16 toggles 16 times per cycle, so the LFSR clock
+					// rate in Hz equals the raw frequency register. Count the
+					// crossings instead of detecting one, or the clock saturates at
+					// one step per output sample above freq == outputFrequency.
+					int steps = (((uint32_t)accu16 >> 12) - ((uint32_t)accu16Last >> 12)) & 0x0F;
+					while(steps--)
 					{
 						uint16_t r = voiceIn->noiseRandom;
 						uint16_t bit = ((r >> 0) ^ (r >> 2) ^ (r >> 3) ^ (r >> 5)) & 1;
 						voiceIn->noiseRandom = (r >> 1) | (bit << 15);
 					}
-					sample = voiceIn->noiseRandom & 0xFFFF;
+
+					// sauce: Claude Opus 5
+					float x = (float)((int32_t)voiceIn->noiseRandom - 0x7FFF);
+					if(noiseTilt == NOISE_TILT_NEUTRAL)
+					{
+						// flat: no filter, only the trim that keeps the widths level
+						sample = (uint16_t)((int32_t)(x * NOISE_TILT_TARGET) + 0x7FFF);
+					}
+					else
+					{
+						if(noiseTilt != voiceIn->noiseTiltIndex || freq != voiceIn->noiseTiltFreq)
+						{
+							audio_updateNoiseTilt(voiceIn, noiseTilt, freq, outputFrequency);
+						}
+
+						float y = voiceIn->noiseTiltState + voiceIn->noiseTiltK * (x - voiceIn->noiseTiltState);
+						voiceIn->noiseTiltState = y;
+
+						float o = voiceIn->noiseTiltGain * ((noiseTilt < NOISE_TILT_NEUTRAL) ? y : (x - y));
+						// clamp before the cast, both to keep the 4 voice sum inside
+						// int16 and to keep the rounding below unbiased
+						if(o > 32768.0f)
+							o = 32768.0f;
+						else if(o < -32767.0f)
+							o = -32767.0f;
+						sample = (uint16_t)(((int32_t)(o + 32768.5f) - 32768) + 0x7FFF);
+					}
 					break;
 				}
 				}

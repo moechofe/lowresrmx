@@ -1,3 +1,18 @@
+### 1.0_59
+
+- Reuse the pulse width to filter the noise waveform:
+
+    - A width of 7 is the unfiltered.
+    - Lower values apply a lowpass.
+    - Higher values apply a highpass.
+    - The LFO width amount now sweeps the noise filter.
+    - The LFO invert flag chooses the side of the sweep.
+    - All noise is 5.2 dB quieter, to make every width equally loud.
+
+- Fix the noise generator clocking too slowly above pitch 90.
+
+- Fix the phase accumulator wrapping at $FFFFFF instead of $1000000.
+
 ### 1.0_58
 
 - Add a zoomable screenshot to the About page.
@@ -18,15 +33,15 @@
 
 - Change how pulse width affects the square waveform:
 
-    Remove symmetry.
-    Prevent 0% duty.
-    Prevent extreme values.
-    A pulse width of 15 is the new square wave.
+    - Remove symmetry.
+    - Prevent 0% duty.
+    - Prevent extreme values.
+    - A pulse width of 15 is the new square wave.
 
 - Use pulse width to shape the triangle waveform:
 
-    A width of 7 is an exact triangle wave.
-    The LFO width amount now modulates the triangle as well.
+    - A width of 7 is an exact triangle wave.
+    - The LFO width amount now modulates the triangle as well.
 
 - GFX: Remove flashing selected color border.
 
