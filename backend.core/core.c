@@ -204,12 +204,11 @@ void core_handleInput(struct Core *core, struct CoreInput *input)
 			float y = input->touchY;
 			if(core->interpreter->compat)
 			{
-				int sw = ioRegisters->shown.width != 0 ? ioRegisters->shown.width : SCREEN_WIDTH;
-				int sh = ioRegisters->shown.height != 0 ? ioRegisters->shown.height : SCREEN_HEIGHT;
-				x -= (int)((sw - 160) / 2.0);
-				y -= (int)((sh - 128) / 2.0);
-				// if (x < 0) x = 0; else if (x >= 160) x = 160 - 1;
-				// if (y < 0) y = 0; else if (y >= 128) y = 128 - 1;
+				// same offsets the video chip uses to place the compatibility area
+				int offX, offY;
+				video_getCompatOffset(core, &offX, &offY);
+				x -= offX;
+				y -= offY;
 			}
 			ioRegisters->touchX = x;
 			ioRegisters->touchY = y;

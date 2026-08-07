@@ -1,5 +1,9 @@
 ### 1.0_59
 
+- Fix rendering with COMPAT mode.
+
+    LowRes NX modified editor are back.
+
 - Reuse the pulse width to filter the noise waveform:
 
     - A width of 7 is the unfiltered.

@@ -29,6 +29,8 @@
 #define ICON_HEIGHT 180 // 22.5
 #define SCREEN_WIDTH 216 // 27x8
 #define SCREEN_HEIGHT 384 // 48x8
+#define COMPAT_WIDTH 160 // original LowRes NX screen
+#define COMPAT_HEIGHT 128
 #define NUM_CHARACTERS 256
 #define NUM_PALETTES 8
 #define PLANE_COLUMNS 64
@@ -184,5 +186,10 @@ struct VideoRegisters
 // ===========================================
 
 void video_renderScreen(struct Core *core, uint32_t *outputBuffer, int pitch);
+
+// Offset of the COMPAT_WIDTHxCOMPAT_HEIGHT area inside the visible screen.
+// Negative when the visible screen is smaller than the compatibility area,
+// in which case it is center cropped.
+void video_getCompatOffset(struct Core *core, int *offX, int *offY);
 
 #endif /* video_chip_h */

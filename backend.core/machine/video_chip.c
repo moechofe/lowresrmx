@@ -24,6 +24,14 @@
 
 #define OVERLAY_FLAG (1 << 6)
 
+// original lowresnx background color
+#if ABGR
+// AABBGGRR
+#define COMPAT_BACKGROUND 0xff4c6001
+#else
+#define COMPAT_BACKGROUND 0xff01604c
+#endif
+
 // FAMICUBE
 uint32_t better_palette[] = {
 	0xff000000,
@@ -262,6 +270,29 @@ void video_renderSprites(struct SpriteRegisters *reg, struct VideoRam *ram, int 
 	}
 }
 
+// Visible screen size, with the same fallback as core_handleInput
+static void video_getShownSize(struct Core *core, int *sw, int *sh)
+{
+	struct IORegisters *io = &core->machine->ioRegisters;
+
+	*sw = io->shown.width != 0 ? io->shown.width : SCREEN_WIDTH;
+	*sh = io->shown.height != 0 ? io->shown.height : SCREEN_HEIGHT;
+
+	if(*sw > SCREEN_WIDTH) *sw = SCREEN_WIDTH;
+	if(*sh > SCREEN_HEIGHT) *sh = SCREEN_HEIGHT;
+}
+
+void video_getCompatOffset(struct Core *core, int *offX, int *offY)
+{
+	int sw, sh;
+	video_getShownSize(core, &sw, &sh);
+
+	// truncated toward zero, so a negative offset crops the same amount
+	// a positive one would pad
+	*offX = (sw - COMPAT_WIDTH) / 2;
+	*offY = (sh - COMPAT_HEIGHT) / 2;
+}
+
 void video_renderScreen(struct Core *core, uint32_t *outputBuffer, int pitch)
 {
 	uint8_t scanlineBuffer[SCREEN_WIDTH];
@@ -271,57 +302,69 @@ void video_renderScreen(struct Core *core, uint32_t *outputBuffer, int pitch)
 	struct VideoRegisters *reg = &core->machine->videoRegisters;
 	struct SpriteRegisters *sreg = &core->machine->spriteRegisters;
 	struct ColorRegisters *creg = &core->machine->colorRegisters;
-	struct IORegisters *io = &core->machine->ioRegisters;
 	struct MachineInternals *mi = core->machineInternals;
 
-	int sw = io->shown.width;
-	int sh = io->shown.height;
+	// the output buffer is always SCREEN_WIDTHxSCREEN_HEIGHT, only its top left
+	// shown.widthxshown.height corner is visible on the device
+	const int bufWidth = pitch / (int)sizeof(uint32_t);
 
-	int width = SCREEN_WIDTH;
-	int height = SCREEN_HEIGHT;
-	int skip_before = 0;
-	int skip_after = 0;
-	int overflow_x = 0;
+	int lineCount = SCREEN_HEIGHT; // scanlines to render, visible or not
+	int srcX = 0, srcY = 0; // first scanline column and first scanline to copy
+	int dstX = 0, dstY = 0; // where they land in the output buffer
+	int copyW = SCREEN_WIDTH;
+	int copyH = SCREEN_HEIGHT;
+
 	if(core->interpreter->compat)
 	{
-		if(sw < 160)
+		int sw, sh;
+		video_getShownSize(core, &sw, &sh);
+		if(sw > bufWidth)
+			sw = bufWidth;
+
+		lineCount = COMPAT_HEIGHT;
+
+		int offX, offY;
+		video_getCompatOffset(core, &offX, &offY);
+
+		// center the compatibility area, or center crop it when the visible
+		// screen is too small for it
+		if(offX >= 0)
 		{
-			overflow_x = 160 - sw;
-			sw = 160;
-		}
-		if(sh < 128)
-			sh = 128;
-
-		width = 160;
-		height = 128;
-		skip_before = (sw - width) / 2;
-		skip_after = sw - width - skip_before;
-
-		// draw original lowresnx background color at top
-		int count = (sh - height) / 2 * sw;
-#if ABGR
-		// AABBGGRR
-		while(count-- > 0)
-			*outputBuffer++ = 0xff4c6001;
-#else
-		while(count-- > 0)
-			*outputBuffer++ = 0xff01604c;
-#endif
-	}
-
-	for(int y = 0; y < height; y++)
-	{
-		uint32_t *outputPixel = (uint32_t *)((uint8_t *)outputBuffer + y * pitch);
-
-		reg->rasterLine = y;
-		if(core->interpreter->compat && y >= 0 && y < 120)
-		{
-			itp_runInterrupt(core, InterruptTypeRaster);
+			dstX = offX;
+			copyW = COMPAT_WIDTH;
 		}
 		else
 		{
-			itp_runInterrupt(core, InterruptTypeRaster);
+			srcX = -offX;
+			copyW = sw;
 		}
+		if(offY >= 0)
+		{
+			dstY = offY;
+			copyH = COMPAT_HEIGHT;
+		}
+		else
+		{
+			srcY = -offY;
+			copyH = sh;
+		}
+
+		// fill the visible screen with the original lowresnx background color
+		for(int y = 0; y < sh; y++)
+		{
+			uint32_t *outputPixel = (uint32_t *)((uint8_t *)outputBuffer + y * pitch);
+			for(int x = 0; x < sw; x++)
+				*outputPixel++ = COMPAT_BACKGROUND;
+		}
+	}
+
+	if(copyW > bufWidth - dstX)
+		copyW = bufWidth - dstX;
+
+	for(int y = 0; y < lineCount; y++)
+	{
+		reg->rasterLine = y;
+		itp_runInterrupt(core, InterruptTypeRaster);
 		memset(scanlineBuffer, 0, sizeof(scanlineBuffer));
 
 		bool skip = (core->interpreter->interruptOverCycles > 0);
@@ -411,21 +454,17 @@ void video_renderScreen(struct Core *core, uint32_t *outputBuffer, int pitch)
 			0,
 			0);
 
-		if(core->interpreter->compat)
-		{
-#if ABGR
-			for(int i = 0; i < skip_before; ++i)
-				*outputPixel++ = 0xff4c6001;
-#else
-			for(int i = 0; i < skip_before; ++i)
-				*outputPixel++ = 0xff01604c;
-#endif
-		}
+		// scanline outside of the visible screen, it still had to be rendered
+		// for the raster interrupt
+		if(y < srcY || y >= srcY + copyH)
+			continue;
 
-		for(int x = 0; x < width; x++)
+		uint32_t *outputPixel = (uint32_t *)((uint8_t *)outputBuffer + (dstY + y - srcY) * pitch) + dstX;
+
+		for(int x = 0; x < copyW; x++)
 		{
-			int colorIndex = scanlineBuffer[x] & 0x1F;
-			int color = (scanlineBuffer[x] & OVERLAY_FLAG)
+			int colorIndex = scanlineBuffer[srcX + x] & 0x1F;
+			int color = (scanlineBuffer[srcX + x] & OVERLAY_FLAG)
 			? overlayColors[colorIndex]
 			: skip
 			? 0
@@ -442,31 +481,6 @@ void video_renderScreen(struct Core *core, uint32_t *outputBuffer, int pitch)
 #endif
 			*outputPixel = c;
 			++outputPixel;
-		}
-
-		if(core->interpreter->compat)
-		{
-#if ABGR
-			for(int i = 0; i < skip_after; ++i)
-				*outputPixel++ = 0xff4c6001;
-#else
-			for(int i = 0; i < skip_after; ++i)
-				*outputPixel++ = 0xff01604c;
-#endif
-		}
-	}
-
-	if(core->interpreter->compat)
-	{ // This block is outside the main loop, so outputPixel is not valid here. It should use outputBuffer.
-		uint32_t *endPixel = (uint32_t *)((uint8_t *)outputBuffer +
-			sw * sh * sizeof(uint32_t));                           // Assuming pitch is consistent for the whole buffer
-		// while(outputPixel < endPixel)
-		{
-#if ABGR
-			// *outputPixel++ = 0xff4c6001;
-#else
-			// *outputPixel++ = 0xff01604c;
-#endif
 		}
 	}
 }
