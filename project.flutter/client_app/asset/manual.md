@@ -2717,33 +2717,33 @@ Sets the `volume` and `mix` of `voice`.
 
 All parameters can be omitted to keep their current settings.
 
-#### `SOUND voice, [wave], [width], [length]`
+#### `SOUND voice, [wave], [alter], [length]`
 
 Sets the sound's characteristics for the `voice`.
 
-`wave` control the waveform. The `width` has an effect on every waveform.
+`wave` control the waveform. The `alter` has an effect on every waveform in different ways.
 
-With a waveform of Sine, the `width` add one or two more sine partials at a musical interval of the played note, so a single voice can play a chord. A value of 7 is the bare sine, below it the added partials are under the note and above it they are over the note. There is no Sawtooth waveform anymore, a Triangle with a `width` of 0 or 15 is a falling or a rising ramp and sounds the same.
+For Sine, `alter` add one or two more sine partials at a musical interval of the played note, so a single voice can play a chord. A value of 7 is the bare sine, below it the added partials are under the note and above it they are over the note.
 
-With a waveform of Pulse, the `width` control the pulse width. A value of 15 is an exact square wave.
+For Pulse, `alter` control the pulse width. A value of 15 is an exact square wave.
 
-With a waveform of Triangle, the `width` control where the peak is in the cycle. A value of 7 is an exact triangle wave.
+For Triangle, `alter` control where the peak is in the cycle. A value of 7 is an exact triangle wave. 0 or 15 is almost a sawtooth.
 
-With a waveform of Noise, the `width` control the colour of the noise. A value of 7 is the unfiltered noise, below it applies a lowpass filter that gets darker as the value goes down, above it applies a highpass filter that gets thinner as the value goes up. Each step is one octave of cutoff frequency.
+For Noise, `alter` control the colour of the noise. A value of 7 is the unfiltered noise, below it applies a lowpass filter, above it applies a highpass filter. Each step is one octave of cutoff frequency.
 
 `length` control the length of the sound. A length of 0 means that the sound will not stop until another sound is played on the same `voice`. This value can be overriden by the parameter `length` of the [`PLAY` command](#play-voice-pitch-length-sound-sound).
 
 | parameter | value and range                                |
 |----------:|------------------------------------------------|
 |    `wave` | 0 Sine<br>1 Triangle<br>2 Pulse<br>3 Noise |
-|   `width` | Sine: 0 Augmented below .. 7 Bare sine .. 15 Fifth and octave<br>Pulse: 0 Thinnest pulse .. 15 Square wave<br>Triangle: 0 Falling ramp .. 7 Triangle .. 15 Rising ramp<br>Noise: 0 Lowpass 125Hz .. 7 Unfiltered .. 15 Highpass 10kHz |
+|   `alter` | Sine: 0 Augmented below .. 7 Bare sine .. 15 Fifth and octave<br>Pulse: 0 Thinnest pulse .. 15 Square wave<br>Triangle: 0 Falling ramp .. 7 Triangle .. 15 Rising ramp<br>Noise: 0 Lowpass 125Hz .. 7 Unfiltered .. 15 Highpass 10kHz |
 |  `length` | 0 Infinite<br>1 .. 255 (16.67ms .. 4.25s)      |
 
 Omitted parameters will keep their previous values.
 
-The intervals added by the `width` on the Sine waveform:
+For Sine waveform:
 
-| `width` | added partials                                       |
+| `alter` | added partials                                       |
 |--------:|------------------------------------------------------|
 |       0 | Major third and minor sixth below (augmented)        |
 |       1 | Minor third and augmented fourth below (diminished)  |
@@ -2762,8 +2762,6 @@ The intervals added by the `width` on the Sine waveform:
 |      14 | Major third and fifth (major)                        |
 |      15 | Fifth and octave                                     |
 
-A voice playing two or three partials is quieter than a bare sine, by 2.8dB for two and 4.2dB for three, so that a chord never uses more output level than a single note.
-
 #### `ENVELOPE voice, [attack], [decay], [sustain], [release]`
 
 Set the volume envelope for the `voice`.
@@ -2781,22 +2779,18 @@ Allow to change the `attack`, `decay` and `release` duration.
 
 All parameters can be omitted to keep their current settings.
 
-#### `LFO voice, [rate], [frequency], [volume], [width]`
+#### `LFO voice, [rate], [frequency], [volume], [alter]`
 
 Set the Low Frequency Oscillator (LFO) for the `voice`.
 
-Allow to change the `rate`, the `frequency`, the `volume` and the `width`. The `width` modulates the interval of the Sine waveform, the pulse width of the Pulse waveform, the peak position of the Triangle waveform and the filter of the Noise waveform.
-
-On the Sine waveform the intervals are separate values instead of a continuous range, so the modulation steps from one interval to the next, one interval per unit of `width` amount. A square LFO wave gives a trill, a sawtooth LFO wave an arpeggio, and `invert` in the [`LFO WAVE` command](#lfo-wave-voice-wave-invert-env-trigger) chooses whether the intervals go up or down.
-
-On the Noise waveform the modulation is a filter sweep, one octave per unit of `width` amount. Starting from a `width` of 7 in the [`SOUND` command](#sound-voice-wave-width-length), `invert` in the [`LFO WAVE` command](#lfo-wave-voice-wave-invert-env-trigger) chooses the side of the sweep: off sweeps up into the highpass, on sweeps down into the lowpass.
+Allow to change the `rate`, the `frequency`, the `volume` and the `alter`. The `alter` modulates the interval of the Sine waveform, the pulse width of the Pulse waveform, the peak position of the Triangle waveform and the filter of the Noise waveform.
 
 |   parameter | range                    |
 |------------:|--------------------------|
 |      `rate` | 0 .. 15 (0.12Hz .. 18Hz) |
 | `frequency` | 0 .. 15                  |
 |    `volume` | 0 .. 15                  |
-|     `width` | 0 .. 15                  |
+|     `alter` | 0 .. 15                  |
 
 All parameters can be omitted to keep their current settings.
 
@@ -3271,7 +3265,7 @@ For each sound preset:
 
 | bits | purpose                                                |
 | ----:| -------------------------------------------------------|
-| 0..3 | [Width](#sound-voice-wave-width-length) (index into a table, not a linear value: sine interval, pulse duty, triangle peak or noise filter depending on the wave) |
+| 0..3 | [Alter](#sound-voice-wave-alter-length) (index into a table, not a linear value: sine interval, pulse duty, triangle peak or noise filter depending on the wave) |
 | 4..5 | Wave<br>0 Sine<br>1 Triangle<br>2 Pulse<br>3 Noise |
 |    6 | Timeout enabled                                        |
 
@@ -3885,7 +3879,7 @@ TODO: interrupts
 - [`length =LEN(text)`](#length-len-text)
 
 **`LFO`**:
-- [`LFO voice, [rate], [frequency], [volume], [width]`](#lfo-voice-rate-frequency-volume-width)
+- [`LFO voice, [rate], [frequency], [volume], [alter]`](#lfo-voice-rate-frequency-volume-alter)
 - [`LFO WAVE voice, [wave], [invert], [env], [trigger]`](#lfo-wave-voice-wave-invert-env-trigger)
 
 **`LFO.A`**:
@@ -4105,7 +4099,7 @@ TODO: interrupts
 
 **`SOUND`**:
 - [`PLAY voice, pitch [, length] [SOUND sound]`](#play-voice-pitch-length-sound-sound)
-- [`SOUND voice, [wave], [width], [length]`](#sound-voice-wave-width-length)
+- [`SOUND voice, [wave], [alter], [length]`](#sound-voice-wave-alter-length)
 - [`SOUND SOURCE [address]`](#sound-source-address)
 
 **`SOURCE`**:

@@ -58,43 +58,43 @@ class _MySettingsPageState extends State<MySettingsPage> {
                     settingHeader.copyWith(color: Theme.of(context).hintColor),
                 textAlign: TextAlign.left),
           ),
-					Card(
-						child: Consumer<SyncManager>(
-							builder: (context, sync, child) {
-								final photoUrl = sync.currentUser?.photoUrl;
-								return Column(children: [
-									ListTile(
-										leading: sync.isLoggedIn
-											? CircleAvatar(
-													backgroundImage: photoUrl != null ? NetworkImage(photoUrl) : null,
-													radius: 12,
-													child: photoUrl == null ? const Icon(Icons.person) : null,
-												)
-											: const Icon(Icons.account_circle),
-										title: Text(sync.isLoggedIn
-											? (sync.currentUser?.displayName ?? sync.currentUser?.email ?? "Connected")
-											: "Not connected"),
-										subtitle: sync.isLoggedIn && !sync.isAuthorized
-											? const Text("Permission required", style: TextStyle(color: Colors.red))
-											: null,
-										trailing: TextButton(
-											onPressed: () => sync.isLoggedIn ? sync.logout() : sync.login(),
-											child: Text(sync.isLoggedIn ? "Sign Out" : "Sign In"),
-										),
-									),
-									if (sync.isLoggedIn && !sync.isAuthorized)
-										Padding(
-											padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-											child: ElevatedButton(
-												onPressed: () => log("request"),
-												// onPressed: () => sync._requestAuthorization(),
-												child: const Text("Grant Drive Permission"),
-											),
-										),
-								]);
-							},
-						)
-					)
+					// Card(
+					// 	child: Consumer<SyncManager>(
+					// 		builder: (context, sync, child) {
+					// 			final photoUrl = sync.currentUser?.photoUrl;
+					// 			return Column(children: [
+					// 				ListTile(
+					// 					leading: sync.isLoggedIn
+					// 						? CircleAvatar(
+					// 								backgroundImage: photoUrl != null ? NetworkImage(photoUrl) : null,
+					// 								radius: 12,
+					// 								child: photoUrl == null ? const Icon(Icons.person) : null,
+					// 							)
+					// 						: const Icon(Icons.account_circle),
+					// 					title: Text(sync.isLoggedIn
+					// 						? (sync.currentUser?.displayName ?? sync.currentUser?.email ?? "Connected")
+					// 						: "Not connected"),
+					// 					subtitle: sync.isLoggedIn && !sync.isAuthorized
+					// 						? const Text("Permission required", style: TextStyle(color: Colors.red))
+					// 						: null,
+					// 					trailing: TextButton(
+					// 						onPressed: () => sync.isLoggedIn ? sync.logout() : sync.login(),
+					// 						child: Text(sync.isLoggedIn ? "Sign Out" : "Sign In"),
+					// 					),
+					// 				),
+					// 				if (sync.isLoggedIn && !sync.isAuthorized)
+					// 					Padding(
+					// 						padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+					// 						child: ElevatedButton(
+					// 							onPressed: () => log("request"),
+					// 							// onPressed: () => sync._requestAuthorization(),
+					// 							child: const Text("Grant Drive Permission"),
+					// 						),
+					// 					),
+					// 			]);
+					// 		},
+					// 	)
+					// )
         ],
       )),
     );

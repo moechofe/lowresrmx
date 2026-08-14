@@ -259,6 +259,13 @@ void core_traceError(struct Core *core, struct CoreError error)
 	struct TextLib *lib = &core->overlay->textLib;
 	txtlib_printText(lib, err_getString(error.code));
 	txtlib_printText(lib, "\n");
+	if(error.code == ErrorVariableNotInitialized && error.symbolIndex >= 0)
+	{
+		char symbolName[SYMBOL_NAME_SIZE];
+		sprintf(symbolName, "%s", core->interpreter->tokenizer.symbols[error.symbolIndex].name);
+		txtlib_printText(lib, symbolName);
+		txtlib_printText(lib, "\n");
+	}
 	if(error.sourcePosition >= 0 && core->interpreter->sourceCode)
 	{
 		int number = lineNumber(core->interpreter->sourceCode, error.sourcePosition);
@@ -272,6 +279,22 @@ void core_traceError(struct Core *core, struct CoreError error)
 			txtlib_printText(lib, line);
 			txtlib_printText(lib, "\n");
 			free((void *)line);
+		}
+
+		txtlib_printText(lib, "trace:\n");
+		char buffer[20];
+		for(int i = 0; i < core->interpreter->numLabelStackItems; ++i)
+		{
+			txtlib_printText(&core->overlay->textLib, "  ");
+
+			char *ptr = (char *)(&core->interpreter->sourceCode[core->interpreter->labelStackItems[i].token->sourcePosition - 1]);
+			while((*ptr >= 'a' && *ptr <= 'z') || (*ptr >= 'A' && *ptr <= 'Z') || (*ptr >= '0' && *ptr <= '9') || *ptr == '_') ptr--;
+			size_t len = &core->interpreter->sourceCode[core->interpreter->labelStackItems[i].token->sourcePosition - 1] - ptr;
+			if(len > 20) len = 20;
+			buffer[len] = '\0';
+			memcpy(&buffer, ptr + 1, len);
+			txtlib_printText(&core->overlay->textLib, buffer);
+			txtlib_printText(lib, "\n");
 		}
 	}
 }
@@ -329,12 +352,11 @@ void core_handleInput(struct Core *core, struct CoreInput *input)
 			float y = input->touchY;
 			if(core->interpreter->compat)
 			{
-				int sw = ioRegisters->shown.width != 0 ? ioRegisters->shown.width : SCREEN_WIDTH;
-				int sh = ioRegisters->shown.height != 0 ? ioRegisters->shown.height : SCREEN_HEIGHT;
-				x -= (int)((sw - 160) / 2.0);
-				y -= (int)((sh - 128) / 2.0);
-				// if (x < 0) x = 0; else if (x >= 160) x = 160 - 1;
-				// if (y < 0) y = 0; else if (y >= 128) y = 128 - 1;
+				// same offsets the video chip uses to place the compatibility area
+				int offX, offY;
+				video_getCompatOffset(core, &offX, &offY);
+				x -= offX;
+				y -= offY;
 			}
 			ioRegisters->touchX = x;
 			ioRegisters->touchY = y;
@@ -353,8 +375,9 @@ void core_handleInput(struct Core *core, struct CoreInput *input)
 	{
 		if(!core->machineInternals->hasDrag)
 		{
-			core->machineInternals->hasDrag =
-			sqrtf(powf(input->touchX - ioRegisters->pressedX, 2) + powf(input->touchY - ioRegisters->pressedY, 2)) >= 8;
+			float dx = input->touchX - ioRegisters->pressedX;
+			float dy = input->touchY - ioRegisters->pressedY;
+			core->machineInternals->hasDrag = sqrtf(powf(dx, 2) + powf(dy, 2)) >= 11.f;
 			if(core->machineInternals->hasDrag)
 			{
 				core->machineInternals->longEnabled = false;
@@ -378,9 +401,9 @@ void core_handleInput(struct Core *core, struct CoreInput *input)
 			ioRegisters->status.touchChange = 1;
 		}
 		else if(!core->machineInternals->gestureLonged
-				// && core->machineInternals->gesturePressedTimer > 0
-				&& !core->machineInternals->hasDrag && core->machineInternals->longEnabled &&
-				core->interpreter->timer - core->machineInternals->gesturePressedTimer > 32)
+		        // && core->machineInternals->gesturePressedTimer > 0
+			&& !core->machineInternals->hasDrag && core->machineInternals->longEnabled &&
+			core->interpreter->timer - core->machineInternals->gesturePressedTimer > 32)
 		{
 			// just longed
 			core->machineInternals->gestureLonged = true;
@@ -389,8 +412,8 @@ void core_handleInput(struct Core *core, struct CoreInput *input)
 			ioRegisters->status.touchChange = 1;
 		}
 		else if(!core->machineInternals->gestureDragged && core->machineInternals->gesturePressedTimer > 0 &&
-				(core->interpreter->timer - core->machineInternals->gesturePressedTimer > 12 ||
-				 core->machineInternals->hasDrag))
+			(core->interpreter->timer - core->machineInternals->gesturePressedTimer > 12 ||
+			 core->machineInternals->hasDrag))
 		{
 			// just dragged
 			core->machineInternals->gestureDragged = true;
@@ -523,8 +546,7 @@ bool core_shouldRender(struct Core *core)
 {
 	enum State state = core->interpreter->state;
 	bool shouldRender = (!core->machineInternals->isEnergySaving && state != StateEnd && state != StateNoProgram) ||
-						core->machineInternals->energySavingTimer > 0 ||
-						core->machineInternals->energySavingTimer % 20 == 0;
+		core->machineInternals->energySavingTimer > 0 || core->machineInternals->energySavingTimer % 20 == 0;
 
 	core->machineInternals->energySavingTimer--;
 	return shouldRender;
@@ -682,14 +704,6 @@ struct CoreError stats_update(struct Stats *stats, const char *sourceCode)
 
 	struct CoreError error = err_noCoreError();
 
-	// const char *upperCaseSourceCode = uppercaseString(sourceCode);
-	// if (!upperCaseSourceCode)
-	// {
-	//     error = err_makeCoreError(ErrorOutOfMemory, -1);
-	//     goto cleanup;
-	// }
-
-	// error = tok_tokenizeUppercaseProgram(stats->tokenizer, upperCaseSourceCode);
 	error = tok_tokenizeUppercaseProgram(stats->tokenizer, sourceCode);
 	if(error.code != ErrorNone)
 	{
@@ -786,14 +800,6 @@ struct CoreError data_import(struct DataManager *manager, const char *input, boo
 	assert(manager);
 	assert(input);
 
-	// const char *uppercaseInput = uppercaseString(input);
-	// if (!uppercaseInput) return err_makeCoreError(ErrorOutOfMemory, -1);
-
-	// struct CoreError error = data_uppercaseImport(manager, uppercaseInput, keepSourceCode);
-	// free((void *)uppercaseInput);
-
-	// return error;
-
 	return data_uppercaseImport(manager, input, keepSourceCode);
 }
 
@@ -851,15 +857,15 @@ struct CoreError data_uppercaseImport(struct DataManager *manager, const char *i
 				}
 			}
 			if(*character != ':')
-				return err_makeCoreError(ErrorUnexpectedCharacter, (int)(character - input));
+				return err_makeCoreError(ErrorUnexpectedCharacter, (int)(character - input), -1);
 			character++;
 
 			if(entryIndex >= MAX_ENTRIES)
-				return err_makeCoreError(ErrorIndexOutOfBounds, (int)(character - input));
+				return err_makeCoreError(ErrorIndexOutOfBounds, (int)(character - input), -1);
 
 			struct DataEntry *entry = &manager->entries[entryIndex];
 			if(entry->length > 0)
-				return err_makeCoreError(ErrorIndexAlreadyDefined, (int)(character - input));
+				return err_makeCoreError(ErrorIndexAlreadyDefined, (int)(character - input), -1);
 
 			// file comment
 			const char *comment = character;
@@ -891,7 +897,7 @@ struct CoreError data_uppercaseImport(struct DataManager *manager, const char *i
 					{
 						value |= digit;
 						if(currentDataByte >= endDataByte)
-							return err_makeCoreError(ErrorRomIsFull, (int)(character - input));
+							return err_makeCoreError(ErrorRomIsFull, (int)(character - input), -1);
 						*currentDataByte = value;
 						++currentDataByte;
 					}
@@ -899,12 +905,12 @@ struct CoreError data_uppercaseImport(struct DataManager *manager, const char *i
 				}
 				else if(*character != ' ' && *character != '\t' && *character != '\n' && *character != '\r')
 				{
-					return err_makeCoreError(ErrorUnexpectedCharacter, (int)(character - input));
+					return err_makeCoreError(ErrorUnexpectedCharacter, (int)(character - input), -1);
 				}
 				character++;
 			}
 			if(!shift)
-				return err_makeCoreError(ErrorSyntax, (int)(character - input)); // incomplete hex value
+				return err_makeCoreError(ErrorSyntax, (int)(character - input), -1); // incomplete hex value
 
 			int start = (int)(startByte - manager->data);
 			int length = (int)(currentDataByte - startByte);
@@ -922,7 +928,7 @@ struct CoreError data_uppercaseImport(struct DataManager *manager, const char *i
 		}
 		else
 		{
-			return err_makeCoreError(ErrorUnexpectedCharacter, (int)(character - input));
+			return err_makeCoreError(ErrorUnexpectedCharacter, (int)(character - input), -1);
 		}
 	}
 	return err_noCoreError();
@@ -1001,9 +1007,9 @@ int data_calcOutputSize(struct DataManager *manager)
 		if(entry->length > 0)
 		{
 			size += (i >= 10 ? 4 : 3) + strlen(entry->comment) + 1; // #10:comment\n
-			size += entry->length * 2;								// 2x hex letters
-			size += entry->length / 16 + 1;							// new line every 16 values
-			size += 1;												// new line
+			size += entry->length * 2; // 2x hex letters
+			size += entry->length / 16 + 1; // new line every 16 values
+			size += 1; // new line
 		}
 	}
 	if(manager->diskSourceCode)
@@ -1134,15 +1140,15 @@ void data_setEntry(struct DataManager *manager, int index, const char *comment, 
 #define SL_GLOBMATCH_FALSE 0
 
 /******************************************************************/ /**
-																	  * @brief Check if a string matches a globbing
-																	  *pattern.
-																	  *
-																	  * @param string  The string to check.
-																	  * @param pattern The globbing pattern to match.
-																	  *
-																	  * @returns 0 if string does not match pattern and
-																	  *non-zero otherwise.
-																	  **********************************************************************/
+ * @brief Check if a string matches a globbing
+ * pattern.
+ *
+ * @param string  The string to check.
+ * @param pattern The globbing pattern to match.
+ *
+ * @returns 0 if string does not match pattern and
+ * non-zero otherwise.
+ **********************************************************************/
 int sl_globmatch(char *string, char *pattern)
 {
 	int negate;
@@ -2117,12 +2123,12 @@ enum ErrorCode cmd_BG_COPY(struct Core *core)
 	if(interpreter->pass == PassRun)
 	{
 		txtlib_copyBackground(&interpreter->textLib,
-		srcXValue.v.floatValue,
-		srcYValue.v.floatValue,
-		wValue.v.floatValue,
-		hValue.v.floatValue,
-		dstXValue.v.floatValue,
-		dstYValue.v.floatValue);
+			srcXValue.v.floatValue,
+			srcYValue.v.floatValue,
+			wValue.v.floatValue,
+			hValue.v.floatValue,
+			dstXValue.v.floatValue,
+			dstYValue.v.floatValue);
 	}
 
 	return itp_endOfCommand(interpreter);
@@ -2194,12 +2200,12 @@ enum ErrorCode cmd_BG_SCROLL(struct Core *core)
 	if(interpreter->pass == PassRun)
 	{
 		txtlib_scrollBackground(&interpreter->textLib,
-		x1Value.v.floatValue,
-		y1Value.v.floatValue,
-		x2Value.v.floatValue,
-		y2Value.v.floatValue,
-		dxValue.v.floatValue,
-		dyValue.v.floatValue);
+			x1Value.v.floatValue,
+			y1Value.v.floatValue,
+			x2Value.v.floatValue,
+			y2Value.v.floatValue,
+			dxValue.v.floatValue,
+			dyValue.v.floatValue);
 	}
 
 	return itp_endOfCommand(interpreter);
@@ -2360,11 +2366,11 @@ enum ErrorCode cmd_BG_FILL(struct Core *core)
 		if(interpreter->pass == PassRun)
 		{
 			txtlib_setCells(&interpreter->textLib,
-			floorf(x1Value.v.floatValue),
-			floorf(y1Value.v.floatValue),
-			floorf(x2Value.v.floatValue),
-			floorf(y2Value.v.floatValue),
-			cValue.v.floatValue);
+				floorf(x1Value.v.floatValue),
+				floorf(y1Value.v.floatValue),
+				floorf(x2Value.v.floatValue),
+				floorf(y2Value.v.floatValue),
+				cValue.v.floatValue);
 		}
 	}
 	else
@@ -2374,11 +2380,11 @@ enum ErrorCode cmd_BG_FILL(struct Core *core)
 		if(interpreter->pass == PassRun)
 		{
 			txtlib_setCells(&interpreter->textLib,
-			floorf(x1Value.v.floatValue),
-			floorf(y1Value.v.floatValue),
-			floorf(x2Value.v.floatValue),
-			floorf(y2Value.v.floatValue),
-			-1);
+				floorf(x1Value.v.floatValue),
+				floorf(y1Value.v.floatValue),
+				floorf(x2Value.v.floatValue),
+				floorf(y2Value.v.floatValue),
+				-1);
 		}
 	}
 
@@ -2436,14 +2442,14 @@ enum ErrorCode cmd_BG_TINT(struct Core *core)
 	if(interpreter->pass == PassRun)
 	{
 		txtlib_setCellsAttr(&interpreter->textLib,
-		floorf(x1Value.v.floatValue),
-		floorf(y1Value.v.floatValue),
-		floorf(x2Value.v.floatValue),
-		floorf(y2Value.v.floatValue),
-		attrs.pal,
-		attrs.flipX,
-		attrs.flipY,
-		attrs.prio);
+			floorf(x1Value.v.floatValue),
+			floorf(y1Value.v.floatValue),
+			floorf(x2Value.v.floatValue),
+			floorf(y2Value.v.floatValue),
+			attrs.pal,
+			attrs.flipX,
+			attrs.flipY,
+			attrs.prio);
 	}
 
 	return itp_endOfCommand(interpreter);
@@ -2529,7 +2535,7 @@ struct TypedValue fnc_CELL(struct Core *core)
 	if(interpreter->pass == PassRun)
 	{
 		struct Cell *cell =
-		txtlib_getCell(&interpreter->textLib, floorf(xValue.v.floatValue), floorf(yValue.v.floatValue));
+			txtlib_getCell(&interpreter->textLib, floorf(xValue.v.floatValue), floorf(yValue.v.floatValue));
 		if(type == TokenCELLA)
 		{
 			value.v.floatValue = cell->attr.value;
@@ -2664,7 +2670,7 @@ enum ErrorCode cmd_TINT(struct Core *core)
 	if(interpreter->pass == PassRun)
 	{
 		struct Cell *cell =
-		txtlib_getCell(&interpreter->textLib, floorf(xValue.v.floatValue), floorf(yValue.v.floatValue));
+			txtlib_getCell(&interpreter->textLib, floorf(xValue.v.floatValue), floorf(yValue.v.floatValue));
 		if(attrs.pal >= 0)
 			cell->attr.palette = attrs.pal;
 		if(attrs.flipX >= 0)
@@ -2743,7 +2749,7 @@ enum ErrorCode cmd_IF(struct Core *core, bool isAfterBlockElse)
 			if(interpreter->isSingleLineIf)
 				return ErrorExpectedCommand;
 			enum ErrorCode errorCode =
-			lab_pushLabelStackItem(interpreter, isAfterBlockElse ? LabelTypeELSEIF : LabelTypeIF, tokenIF);
+				lab_pushLabelStackItem(interpreter, isAfterBlockElse ? LabelTypeELSEIF : LabelTypeIF, tokenIF);
 			if(errorCode != ErrorNone)
 				return errorCode;
 
@@ -3247,7 +3253,7 @@ enum ErrorCode cmd_ON(struct Core *core)
 	// ON
 	++interpreter->pc;
 
-	// RASTER/VBL/PARTICLE/EMITTER
+	// ON RASTER/VBL/PARTICLE/EMITTER
 	if(interpreter->pc->type == TokenRASTER || interpreter->pc->type == TokenVBL ||
 	   interpreter->pc->type == TokenPARTICLE || interpreter->pc->type == TokenEMITTER)
 	{
@@ -3256,7 +3262,7 @@ enum ErrorCode cmd_ON(struct Core *core)
 
 		if(interpreter->pc->type == TokenOFF)
 		{
-			// OFF
+			// ON RASTER/VBL/PARTICLE/EMITTER OFF
 			++interpreter->pc;
 
 			if(interpreter->pass == PassRun)
@@ -3279,14 +3285,14 @@ enum ErrorCode cmd_ON(struct Core *core)
 				}
 			}
 		}
+
+		// ON RASTER/VBL/PARTICLE/EMITTER CALL
 		else if(interpreter->pc->type == TokenCALL)
 		{
-			// CALL
-			// if (interpreter->pc->type != TokenCALL) return ErrorSyntax;
 			struct Token *tokenCALL = interpreter->pc;
 			++interpreter->pc;
 
-			// Identifier
+			// ON RASTER/VBL/PARTICLE/EMITTER CALL identifier
 			if(interpreter->pc->type != TokenIdentifier)
 				return ErrorExpectedSubprogramName;
 			struct Token *tokenIdentifier = interpreter->pc;
@@ -3320,9 +3326,12 @@ enum ErrorCode cmd_ON(struct Core *core)
 			}
 		}
 	}
+
+	// ON n
 	else
 	{
-		// n value
+		int numArguments = 0;
+
 		struct TypedValue nValue = itp_evaluateNumericExpression(core, 0, 255);
 		if(nValue.type == ValueTypeError)
 			return nValue.v.errorCode;
@@ -3331,43 +3340,134 @@ enum ErrorCode cmd_ON(struct Core *core)
 		struct Token *tokenGOTO = NULL;
 		struct Token *tokenGOSUB = NULL;
 		struct Token *tokenRESTORE = NULL;
+		struct Token *tokenCALL = NULL;
 
+		// ON n GOTO
 		if(interpreter->pc->type == TokenGOTO)
 		{
 			tokenGOTO = interpreter->pc;
 			++interpreter->pc;
 		}
+
+		// ON n GOSUB
 		else if(interpreter->pc->type == TokenGOSUB)
 		{
 			tokenGOSUB = interpreter->pc;
 			++interpreter->pc;
 		}
+
+		// ON n RESTORE
 		else if(interpreter->pc->type == TokenRESTORE)
 		{
 			tokenRESTORE = interpreter->pc;
 			++interpreter->pc;
 		}
+
+		// ON n CALL
+		else if(interpreter->pc->type == TokenCALL)
+		{
+			tokenCALL = interpreter->pc;
+			++interpreter->pc;
+
+			// ON n CALL (
+			if(interpreter->pc->type == TokenBracketOpen)
+			{
+				do
+				{
+					// ( or ,
+					++interpreter->pc;
+
+					// argument
+					struct Token *tokens = interpreter->pc;
+					if((interpreter->pc->type == TokenIdentifier || interpreter->pc->type == TokenStringIdentifier) &&
+					   tokens[1].type == TokenBracketOpen && tokens[2].type == TokenBracketClose)
+					{
+						// pass array by reference
+						if(interpreter->pass == PassRun)
+						{
+							struct ArrayVariable *variable =
+								var_getArrayVariable(interpreter, interpreter->pc->symbolIndex, interpreter->subLevel);
+							if(!variable)
+								return ErrorArrayNotDimensionized;
+
+							enum ErrorCode errorCode = ErrorNone;
+							var_createArrayVariable(
+								interpreter, &errorCode, numArguments + 1, interpreter->subLevel + 1, variable);
+							if(errorCode != ErrorNone)
+								return errorCode;
+						}
+						interpreter->pc += 3;
+					}
+					else
+					{
+						// expression
+						struct TypedValue value = itp_evaluateExpression(core, TypeClassAny);
+						if(value.type == ValueTypeError)
+							return value.v.errorCode;
+
+						if(interpreter->pass == PassRun)
+						{
+							enum ErrorCode errorCode = ErrorNone;
+							if(interpreter->lastVariableValue)
+							{
+								// pass by reference (simple variable or array element)
+								enum ErrorCode errorCode = ErrorNone;
+								var_createSimpleVariable(interpreter,
+									&errorCode,
+									numArguments + 1,
+									interpreter->subLevel + 1,
+									value.type,
+									interpreter->lastVariableValue);
+								if(errorCode != ErrorNone)
+									return errorCode;
+							}
+							else
+							{
+								// pass by value
+								struct SimpleVariable *variable = var_createSimpleVariable(
+									interpreter, &errorCode, numArguments + 1, interpreter->subLevel + 1, value.type, NULL);
+								if(!variable)
+									return errorCode;
+
+								variable->v = value.v;
+							}
+						}
+					}
+					++numArguments;
+				} while(interpreter->pc->type == TokenComma);
+
+				// ON n CALL ( ... )
+				if(interpreter->pc->type != TokenBracketClose)
+					return ErrorSyntax;
+				++interpreter->pc;
+			}
+		}
+
 		else
 		{
 			return ErrorSyntax;
 		}
 
+		// skip non wanted identifier
 		if(interpreter->pass == PassRun)
 			while(n > 0)
 			{
 				++interpreter->pc;
 				if(interpreter->pc->type != TokenComma)
-					return ErrorExpectedLabel;
+					return TokenCALL ? ErrorExpectedSubprogramName : ErrorExpectedLabel;
 				++interpreter->pc;
 				--n;
 			}
 
-		// Identifier
+		// ON n GOTO/GOSUB/RESTORE/CALL identifier
 		if(interpreter->pc->type != TokenIdentifier)
-			return ErrorExpectedLabel;
+		{
+			return TokenCALL ? ErrorExpectedSubprogramName : ErrorExpectedLabel;
+		}
 		struct Token *tokenIdentifier = interpreter->pc;
 		++interpreter->pc;
 
+		// ON n GOTO/GOSUB/RESTORE/CALL identifier, identifier
 		while(interpreter->pc->type == TokenComma)
 		{
 			++interpreter->pc;
@@ -3380,7 +3480,7 @@ enum ErrorCode cmd_ON(struct Core *core)
 		{
 			struct JumpLabelItem *item = tok_getJumpLabel(&interpreter->tokenizer, tokenIdentifier->symbolIndex);
 			if(!item)
-				return ErrorUndefinedLabel;
+				return ErrorUndefinedSubprogram;
 			tokenGOTO->jumpToken = item->token;
 			if(interpreter->pass == PassRun)
 			{
@@ -3411,6 +3511,87 @@ enum ErrorCode cmd_ON(struct Core *core)
 			if(interpreter->pass == PassRun)
 			{
 				dat_restoreData(interpreter, tokenRESTORE->jumpToken);
+			}
+		}
+		else if(tokenCALL)
+		{
+			struct SubItem *item = tok_getSub(&interpreter->tokenizer, tokenIdentifier->symbolIndex);
+			if(!item)
+				return ErrorUndefinedSubprogram;
+			tokenCALL->jumpToken = item->token;
+			if(interpreter->pass == PassRun)
+			{
+				enum ErrorCode errorCode = lab_pushLabelStackItem(interpreter, LabelTypeCALL, interpreter->pc);
+				if(errorCode != ErrorNone)
+					return errorCode;
+
+				interpreter->pc = tokenCALL->jumpToken; // after sub name
+				interpreter->subLevel++;
+
+				// parameters
+				if(interpreter->pc->type == TokenBracketOpen)
+				{
+					int parameterIndex = 0;
+					do
+					{
+						if(parameterIndex >= numArguments)
+							return ErrorArgumentCountMismatch;
+
+						// bracket or comma
+						++interpreter->pc;
+
+						// parameter
+						struct Token *tokenIdentifier = interpreter->pc;
+						if(tokenIdentifier->type != TokenIdentifier && tokenIdentifier->type != TokenStringIdentifier)
+							return ErrorSyntax;
+						enum ValueType varType = itp_getIdentifierTokenValueType(tokenIdentifier);
+
+						struct Token *nextToken = interpreter->pc + 1;
+						if(nextToken->type == TokenBracketOpen)
+						{
+							// array
+							struct ArrayVariable *variable =
+								var_getArrayVariable(interpreter, parameterIndex + 1, interpreter->subLevel);
+							if(!variable || variable->type != varType)
+								return ErrorTypeMismatch;
+
+							variable->symbolIndex = tokenIdentifier->symbolIndex;
+
+							interpreter->pc += 2;
+
+							if(interpreter->pc->type != TokenBracketClose)
+								return ErrorSyntax;
+							++interpreter->pc;
+						}
+						else
+						{
+							// simple variable
+							struct SimpleVariable *variable =
+								var_getSimpleVariable(interpreter, parameterIndex + 1, interpreter->subLevel);
+							if(!variable || variable->type != varType)
+								return ErrorTypeMismatch;
+
+							variable->symbolIndex = tokenIdentifier->symbolIndex;
+
+							++interpreter->pc;
+						}
+
+						++parameterIndex;
+					} while(interpreter->pc->type == TokenComma);
+
+					if(parameterIndex < numArguments)
+						return ErrorArgumentCountMismatch;
+
+					if(interpreter->pc->type != TokenBracketClose)
+						return ErrorSyntax;
+					++interpreter->pc;
+				}
+				else if(numArguments > 0)
+				{
+					return ErrorArgumentCountMismatch;
+				}
+
+				return ErrorNone;
 			}
 		}
 		else
@@ -3988,7 +4169,7 @@ enum ErrorCode cmd_LOAD(struct Core *core)
 	{
 		bool pokeFailed = false;
 		bool ready =
-		disk_loadFile(core, fileValue.v.floatValue, addressValue.v.floatValue, maxLength, offset, &pokeFailed);
+			disk_loadFile(core, fileValue.v.floatValue, addressValue.v.floatValue, maxLength, offset, &pokeFailed);
 		if(pokeFailed)
 			return ErrorIllegalMemoryAccess;
 
@@ -4276,7 +4457,7 @@ struct TypedValue fnc_TAP(struct Core *core)
 	if(interpreter->pass == PassRun)
 	{
 		value.v.floatValue =
-		(core->machine->ioRegisters.status.touch && !core->interpreter->lastFrameIOStatus.touch) ? BAS_TRUE : BAS_FALSE;
+			(core->machine->ioRegisters.status.touch && !core->interpreter->lastFrameIOStatus.touch) ? BAS_TRUE : BAS_FALSE;
 	}
 	return value;
 }
@@ -4325,7 +4506,7 @@ struct TypedValue fnc_SHOWN(struct Core *core)
 	{
 		if(type == TokenSHOWNW)
 		{
-			value.v.floatValue = fake_shown ? fake_width: core->machine->ioRegisters.shown.width;
+			value.v.floatValue = fake_shown ? fake_width : core->machine->ioRegisters.shown.width;
 		}
 		else if(type == TokenSHOWNH)
 		{
@@ -4864,10 +5045,10 @@ struct TypedValue fnc_EASE(struct Core *core)
 	else if(e == 8 && io < 0)
 		v = x == 0 ? 0 : x == 1 ? 1 : -pow(2, 10 * x - 10) * sinf((x * 10 - 10.75) * c4);
 	else if(e == 8 && io == 0)
-		v = x == 0		? 0
-			: x == 1	? 1
-			  : x < 0.5 ? -(pow(2, 20 * x - 10) * sinf((20 * x - 11.125) * c5)) / 2
-						: (pow(2, -20 * x + 10) * sinf((20 * x - 11.125) * c5)) / 2 + 1;
+		v = x == 0 ? 0
+		: x == 1   ? 1
+		: x < 0.5  ? -(pow(2, 20 * x - 10) * sinf((20 * x - 11.125) * c5)) / 2
+				   : (pow(2, -20 * x + 10) * sinf((20 * x - 11.125) * c5)) / 2 + 1;
 	else if(e == 8 && io > 0)
 		v = x == 0 ? 0 : x == 1 ? 1 : pow(2, -10 * x) * sinf((x * 10 - 0.75) * c4) + 1;
 
@@ -4889,6 +5070,43 @@ struct TypedValue fnc_EASE(struct Core *core)
 	return value;
 }
 
+struct TypedValue validateRandomSeedAddr(struct Core *core, struct TypedValue value, int *addr)
+{
+	*addr = (int)value.v.floatValue;
+
+	// testing readind and writing the 16 bytes needed by the pcg seed
+	for(int i = 0; i < sizeof(pcg32_random_t); ++i)
+	{
+		int test = machine_peek(core, *addr + i);
+		if(test < 0)
+			return val_makeError(ErrorIllegalMemoryAccess);
+		if(!machine_poke(core, *addr, test))
+			return val_makeError(ErrorIllegalMemoryAccess);
+	}
+
+	// pcg do not work when zero seeded
+	enum ErrorCode errorCode;
+	int32_t test = machine_peek_long(core, *addr, &errorCode);
+	if(test == 0)
+		return val_makeError(ErrorRandAddressNotSeeded);
+
+	struct TypedValue result;
+	result.type = ValueTypeNull;
+	return result;
+}
+
+void storePersistentRandomSeed(struct Core *core, int addr)
+{
+	if(addr >= 0x0e000 && addr + sizeof(pcg32_random_t) < 0x0fb00)
+	{
+		if(!core->machineInternals->hasAccessedPersistent)
+		{
+			delegate_persistentRamWillAccess(core, core->machine->persistentRam, PERSISTENT_RAM_SIZE);
+			core->machineInternals->hasAccessedPersistent = true;
+		}
+	}
+}
+
 enum ErrorCode cmd_RANDOMIZE(struct Core *core)
 {
 	struct Interpreter *interpreter = core->interpreter;
@@ -4899,6 +5117,8 @@ enum ErrorCode cmd_RANDOMIZE(struct Core *core)
 	struct TypedValue yValue;
 	yValue.type = ValueTypeNull;
 
+	int addr;
+	bool custom_rng = false;
 	pcg32_random_t *rng = &interpreter->defaultRng;
 
 	// RANDOMIZE seed
@@ -4919,8 +5139,11 @@ enum ErrorCode cmd_RANDOMIZE(struct Core *core)
 
 		if(interpreter->pass == PassRun)
 		{
-			int addr = yValue.v.floatValue;
+			struct TypedValue valid = validateRandomSeedAddr(core, yValue, &addr);
+			if(valid.type == ValueTypeError && valid.v.errorCode != ErrorRandAddressNotSeeded)
+				return valid.v.errorCode;
 			rng = (pcg32_random_t *)(((uint8_t *)core->machine) + addr);
+			custom_rng = true;
 		}
 	}
 
@@ -4931,6 +5154,9 @@ enum ErrorCode cmd_RANDOMIZE(struct Core *core)
 		else
 		{
 			pcg32_srandom_r(rng, (uint32_t)xValue.v.floatValue, (intptr_t)rng);
+
+			if(custom_rng)
+				storePersistentRandomSeed(core, addr);
 		}
 	}
 
@@ -4947,6 +5173,8 @@ struct TypedValue fnc_RND(struct Core *core)
 	struct TypedValue xValue;
 	xValue.type = ValueTypeNull;
 	pcg32_random_t *rng = &interpreter->defaultRng;
+	bool custom_rng = false;
+	int addr;
 	if(interpreter->pc->type == TokenBracketOpen)
 	{
 		// RND(
@@ -4969,17 +5197,11 @@ struct TypedValue fnc_RND(struct Core *core)
 
 			if(interpreter->pass == PassRun)
 			{
-				int addr = yValue.v.floatValue;
-				// validate memory address
-				enum ErrorCode errorCode;
-				int32_t test = machine_peek_long(core, addr, &errorCode);
-				if(errorCode > 0)
-					return val_makeError(ErrorIllegalMemoryAccess);
-				if(!machine_poke_long(core, addr, test))
-					return val_makeError(ErrorIllegalMemoryAccess);
-				if(test == 0)
-					return val_makeError(ErrorRandAddressNotSeeded);
-				rng = (pcg32_random_t *)((uint8_t *)(core->machine) + addr);
+				struct TypedValue valid = validateRandomSeedAddr(core, yValue, &addr);
+				if(valid.type == ValueTypeError)
+					return valid;
+				rng = (pcg32_random_t *)(((uint8_t *)core->machine) + addr);
+				custom_rng = true;
 			}
 		}
 
@@ -4988,6 +5210,21 @@ struct TypedValue fnc_RND(struct Core *core)
 		if(interpreter->pc->type != TokenBracketClose)
 			return val_makeError(ErrorSyntax);
 		++interpreter->pc;
+	}
+
+	// RND [addr]
+	if(interpreter->pc->type == TokenFloat || interpreter->pc->type == TokenIdentifier)
+	{
+		struct TypedValue yValue = itp_evaluateExpression(core, TypeClassNumeric);
+
+		if(interpreter->pass == PassRun)
+		{
+			struct TypedValue valid = validateRandomSeedAddr(core, yValue, &addr);
+			if(valid.type == ValueTypeError)
+				return valid;
+			rng = (pcg32_random_t *)(((uint8_t *)core->machine) + addr);
+			custom_rng = true;
+		}
 	}
 
 	struct TypedValue value;
@@ -5014,7 +5251,6 @@ struct TypedValue fnc_RND(struct Core *core)
 		}
 		else
 		{
-
 			if(xValue.type == ValueTypeNull)
 			{
 				value.v.floatValue = (float)ldexp(pcg32_random_r(rng), -32);
@@ -5023,6 +5259,9 @@ struct TypedValue fnc_RND(struct Core *core)
 			{
 				value.v.floatValue = (float)pcg32_boundedrand_r(rng, (uint32_t)xValue.v.floatValue + 1);
 			}
+
+			if(custom_rng)
+				storePersistentRandomSeed(core, addr);
 		}
 	}
 	return value;
@@ -5585,7 +5824,7 @@ enum ErrorCode cmd_PARTICLE(struct Core *core)
 		if(core->interpreter->pass == PassPrepare && nValue.type != ValueTypeFloat)
 			return ErrorTypeMismatch;
 		else if(core->interpreter->pass == PassRun &&
-				((int)nValue.v.floatValue < 0 || (int)nValue.v.floatValue > NUM_SPRITES - 1))
+			((int)nValue.v.floatValue < 0 || (int)nValue.v.floatValue > NUM_SPRITES - 1))
 			return ErrorInvalidParameter;
 
 		++interpreter->pc;
@@ -5634,7 +5873,7 @@ enum ErrorCode cmd_EMITTER(struct Core *core)
 		if(core->interpreter->pass == PassPrepare && nValue.type != ValueTypeFloat)
 			return ErrorTypeMismatch;
 		else if(core->interpreter->pass == PassRun &&
-				((int)nValue.v.floatValue < 0 || (int)nValue.v.floatValue > EMITTER_MAX - 1))
+			((int)nValue.v.floatValue < 0 || (int)nValue.v.floatValue > EMITTER_MAX - 1))
 			return ErrorInvalidParameter;
 
 		// EMITTER <COUNT> AT
@@ -5658,7 +5897,7 @@ enum ErrorCode cmd_EMITTER(struct Core *core)
 		if(core->interpreter->pass == PassPrepare && nValue.type != ValueTypeFloat)
 			return ErrorTypeMismatch;
 		else if(core->interpreter->pass == PassRun &&
-				((int)nValue.v.floatValue < 0 || (int)nValue.v.floatValue > SPAWNER_MAX - 1))
+			((int)nValue.v.floatValue < 0 || (int)nValue.v.floatValue > SPAWNER_MAX - 1))
 			return ErrorInvalidParameter;
 
 		// EMITTER <SPAWNER> DATA
@@ -5691,7 +5930,7 @@ enum ErrorCode cmd_EMITTER(struct Core *core)
 		if(core->interpreter->pass == PassPrepare && nValue.type != ValueTypeFloat)
 			return ErrorTypeMismatch;
 		else if(core->interpreter->pass == PassRun &&
-				((int)nValue.v.floatValue < 0 || (int)nValue.v.floatValue > SPAWNER_MAX - 1))
+			((int)nValue.v.floatValue < 0 || (int)nValue.v.floatValue > SPAWNER_MAX - 1))
 			return ErrorInvalidParameter;
 
 		// EMITTER <SPAWNER> ON
@@ -5721,7 +5960,7 @@ enum ErrorCode cmd_EMITTER(struct Core *core)
 		if(core->interpreter->pass == PassPrepare && nValue.type != ValueTypeFloat)
 			return ErrorTypeMismatch;
 		else if(core->interpreter->pass == PassRun &&
-				((int)nValue.v.floatValue < 0 || (int)nValue.v.floatValue > SPAWNER_MAX - 1))
+			((int)nValue.v.floatValue < 0 || (int)nValue.v.floatValue > SPAWNER_MAX - 1))
 			return ErrorInvalidParameter;
 
 		// EMITTER <SPAWNER> OFF
@@ -6056,10 +6295,10 @@ struct TypedValue fnc_screen0(struct Core *core)
 			value.v.floatValue = core->machine->videoRegisters.rasterLine;
 			break;
 
-			// case TokenDISPLAY:
-			//     // obsolete syntax!
-			//     value.v.floatValue = core->machine->videoRegisters.attr.value;
-			//     break;
+		// case TokenDISPLAY:
+		//     // obsolete syntax!
+		//     value.v.floatValue = core->machine->videoRegisters.attr.value;
+		//     break;
 
 		default:
 			assert(0);
@@ -6875,7 +7114,7 @@ struct TypedValue fnc_LEN(struct Core *core)
 		if(interpreter->pass == PassRun)
 		{
 			value.v.floatValue =
-			sqrtf(xValue.v.floatValue * xValue.v.floatValue + yValue.v.floatValue * yValue.v.floatValue);
+				sqrtf(xValue.v.floatValue * xValue.v.floatValue + yValue.v.floatValue * yValue.v.floatValue);
 		}
 	}
 
@@ -7314,13 +7553,13 @@ enum ErrorCode cmd_CALL(struct Core *core)
 				if(interpreter->pass == PassRun)
 				{
 					struct ArrayVariable *variable =
-					var_getArrayVariable(interpreter, interpreter->pc->symbolIndex, interpreter->subLevel);
+						var_getArrayVariable(interpreter, interpreter->pc->symbolIndex, interpreter->subLevel);
 					if(!variable)
 						return ErrorArrayNotDimensionized;
 
 					enum ErrorCode errorCode = ErrorNone;
 					var_createArrayVariable(
-					interpreter, &errorCode, numArguments + 1, interpreter->subLevel + 1, variable);
+						interpreter, &errorCode, numArguments + 1, interpreter->subLevel + 1, variable);
 					if(errorCode != ErrorNone)
 						return errorCode;
 				}
@@ -7341,11 +7580,11 @@ enum ErrorCode cmd_CALL(struct Core *core)
 						// pass by reference (simple variable or array element)
 						enum ErrorCode errorCode = ErrorNone;
 						var_createSimpleVariable(interpreter,
-						&errorCode,
-						numArguments + 1,
-						interpreter->subLevel + 1,
-						value.type,
-						interpreter->lastVariableValue);
+							&errorCode,
+							numArguments + 1,
+							interpreter->subLevel + 1,
+							value.type,
+							interpreter->lastVariableValue);
 						if(errorCode != ErrorNone)
 							return errorCode;
 					}
@@ -7353,7 +7592,7 @@ enum ErrorCode cmd_CALL(struct Core *core)
 					{
 						// pass by value
 						struct SimpleVariable *variable = var_createSimpleVariable(
-						interpreter, &errorCode, numArguments + 1, interpreter->subLevel + 1, value.type, NULL);
+							interpreter, &errorCode, numArguments + 1, interpreter->subLevel + 1, value.type, NULL);
 						if(!variable)
 							return errorCode;
 
@@ -7401,7 +7640,7 @@ enum ErrorCode cmd_CALL(struct Core *core)
 				{
 					// array
 					struct ArrayVariable *variable =
-					var_getArrayVariable(interpreter, parameterIndex + 1, interpreter->subLevel);
+						var_getArrayVariable(interpreter, parameterIndex + 1, interpreter->subLevel);
 					if(!variable || variable->type != varType)
 						return ErrorTypeMismatch;
 
@@ -7417,7 +7656,7 @@ enum ErrorCode cmd_CALL(struct Core *core)
 				{
 					// simple variable
 					struct SimpleVariable *variable =
-					var_getSimpleVariable(interpreter, parameterIndex + 1, interpreter->subLevel);
+						var_getSimpleVariable(interpreter, parameterIndex + 1, interpreter->subLevel);
 					if(!variable || variable->type != varType)
 						return ErrorTypeMismatch;
 
@@ -7573,62 +7812,62 @@ enum ErrorCode cmd_END_SUB(struct Core *core)
 }
 
 /*
-enum ErrorCode cmd_SHARED(struct Core *core)
-{
-	struct Interpreter *interpreter = core->interpreter;
-	if (interpreter->pass == PassPrepare && interpreter->subLevel == 0) return ErrorSharedOutsideOfASubprogram;
+   enum ErrorCode cmd_SHARED(struct Core *core)
+   {
+        struct Interpreter *interpreter = core->interpreter;
+        if (interpreter->pass == PassPrepare && interpreter->subLevel == 0) return ErrorSharedOutsideOfASubprogram;
 
-	do
-	{
-		// SHARED or comma
-		++interpreter->pc;
+        do
+        {
+                // SHARED or comma
+ ++interpreter->pc;
 
-		// identifier
-		struct Token *tokenIdentifier = interpreter->pc;
-		if (tokenIdentifier->type != TokenIdentifier && tokenIdentifier->type != TokenStringIdentifier) return
-ErrorExpectedVariableIdentifier;
-		++interpreter->pc;
+                // identifier
+                struct Token *tokenIdentifier = interpreter->pc;
+                if (tokenIdentifier->type != TokenIdentifier && tokenIdentifier->type != TokenStringIdentifier) return
+   ErrorExpectedVariableIdentifier;
+ ++interpreter->pc;
 
-		enum ValueType varType = itp_getIdentifierTokenValueType(tokenIdentifier);
-		int symbolIndex = tokenIdentifier->symbolIndex;
+                enum ValueType varType = itp_getIdentifierTokenValueType(tokenIdentifier);
+                int symbolIndex = tokenIdentifier->symbolIndex;
 
-		if (interpreter->pc->type == TokenBracketOpen)
-		{
-			// array
-			++interpreter->pc;
+                if (interpreter->pc->type == TokenBracketOpen)
+                {
+                        // array
+ ++interpreter->pc;
 
-			if (interpreter->pc->type != TokenBracketClose) return ErrorSyntax;
-			++interpreter->pc;
+                        if (interpreter->pc->type != TokenBracketClose) return ErrorSyntax;
+ ++interpreter->pc;
 
-			if (interpreter->pass == PassRun)
-			{
-				struct ArrayVariable *globalVariable = var_getArrayVariable(interpreter, symbolIndex, 0);
-				if (!globalVariable) return ErrorArrayNotDimensionized;
+                        if (interpreter->pass == PassRun)
+                        {
+                                struct ArrayVariable *globalVariable = var_getArrayVariable(interpreter, symbolIndex, 0);
+                                if (!globalVariable) return ErrorArrayNotDimensionized;
 
-				enum ErrorCode errorCode = ErrorNone;
-				var_createArrayVariable(interpreter, &errorCode, symbolIndex, interpreter->subLevel, globalVariable);
-				if (errorCode != ErrorNone) return errorCode;
-			}
-		}
-		else
-		{
-			// simple variable
-			if (interpreter->pass == PassRun)
-			{
-				struct SimpleVariable *globalVariable = var_getSimpleVariable(interpreter, symbolIndex, 0);
-				if (!globalVariable) return ErrorVariableNotInitialized;
+                                enum ErrorCode errorCode = ErrorNone;
+                                var_createArrayVariable(interpreter, &errorCode, symbolIndex, interpreter->subLevel, globalVariable);
+                                if (errorCode != ErrorNone) return errorCode;
+                        }
+                }
+                else
+                {
+                        // simple variable
+                        if (interpreter->pass == PassRun)
+                        {
+                                struct SimpleVariable *globalVariable = var_getSimpleVariable(interpreter, symbolIndex, 0);
+                                if (!globalVariable) return ErrorVariableNotInitialized;
 
-				enum ErrorCode errorCode = ErrorNone;
-				var_createSimpleVariable(interpreter, &errorCode, symbolIndex, interpreter->subLevel, varType,
-&globalVariable->v); if (errorCode != ErrorNone) return errorCode;
-			}
-		}
-	}
-	while (interpreter->pc->type == TokenComma);
+                                enum ErrorCode errorCode = ErrorNone;
+                                var_createSimpleVariable(interpreter, &errorCode, symbolIndex, interpreter->subLevel, varType,
+   &globalVariable->v); if (errorCode != ErrorNone) return errorCode;
+                        }
+                }
+        }
+        while (interpreter->pc->type == TokenComma);
 
-	return itp_endOfCommand(interpreter);
-}
-*/
+        return itp_endOfCommand(interpreter);
+   }
+ */
 
 enum ErrorCode cmd_GLOBAL(struct Core *core)
 {
@@ -7654,14 +7893,18 @@ enum ErrorCode cmd_GLOBAL(struct Core *core)
 			struct SimpleVariable *variable = var_getSimpleVariable(interpreter, symbolIndex, 0);
 			if(variable)
 			{
-				variable->subLevel = SUB_LEVEL_GLOBAL;
+				if(variable->subLevel != SUB_LEVEL_GLOBAL)
+				{
+					variable->subLevel = SUB_LEVEL_GLOBAL;
+					var_invalidateLookupCaches(interpreter);
+				}
 			}
 			else
 			{
 				enum ValueType varType = itp_getIdentifierTokenValueType(tokenIdentifier);
 				enum ErrorCode errorCode = ErrorNone;
 				variable =
-				var_createSimpleVariable(interpreter, &errorCode, symbolIndex, SUB_LEVEL_GLOBAL, varType, NULL);
+					var_createSimpleVariable(interpreter, &errorCode, symbolIndex, SUB_LEVEL_GLOBAL, varType, NULL);
 				if(!variable)
 					return errorCode;
 			}
@@ -7861,7 +8104,7 @@ enum ErrorCode cmd_endINPUT(struct Core *core)
 		if(valueType == ValueTypeString)
 		{
 			struct RCString *rcstring =
-			rcstring_new(interpreter->textLib.inputBuffer, interpreter->textLib.inputLength);
+				rcstring_new(interpreter->textLib.inputBuffer, interpreter->textLib.inputLength);
 			if(!rcstring)
 				return ErrorOutOfMemory;
 
@@ -7915,7 +8158,7 @@ enum ErrorCode cmd_TEXT(struct Core *core)
 	{
 		struct TextLib *lib = &interpreter->textLib;
 		txtlib_writeText(
-		lib, stringValue.v.stringValue->chars, floorf(xValue.v.floatValue), floorf(yValue.v.floatValue));
+			lib, stringValue.v.stringValue->chars, floorf(xValue.v.floatValue), floorf(yValue.v.floatValue));
 	}
 
 	return itp_endOfCommand(interpreter);
@@ -7968,7 +8211,7 @@ enum ErrorCode cmd_NUMBER(struct Core *core)
 		int digits = digitsValue.v.floatValue;
 		struct TextLib *lib = &interpreter->textLib;
 		txtlib_writeNumber(
-		lib, numberValue.v.floatValue, digits, floorf(xValue.v.floatValue), floorf(yValue.v.floatValue));
+			lib, numberValue.v.floatValue, digits, floorf(xValue.v.floatValue), floorf(yValue.v.floatValue));
 	}
 
 	return itp_endOfCommand(interpreter);
@@ -8408,13 +8651,14 @@ enum ErrorCode cmd_DIM(struct Core *core)
 		{
 			enum ErrorCode errorCode = ErrorNone;
 			struct ArrayVariable *variable =
-			var_dimVariable(interpreter, &errorCode, tokenIdentifier->symbolIndex, numDimensions, dimensionSizes);
+				var_dimVariable(interpreter, &errorCode, tokenIdentifier->symbolIndex, numDimensions, dimensionSizes);
 			if(!variable)
 				return errorCode;
 			variable->type = (tokenIdentifier->type == TokenStringIdentifier) ? ValueTypeString : ValueTypeFloat;
 			if(isGlobal)
 			{
 				variable->subLevel = SUB_LEVEL_GLOBAL;
+				var_invalidateLookupCaches(interpreter);
 			}
 			interpreter->cycles += variable->numValues;
 		}
@@ -8691,77 +8935,77 @@ struct RCString *dat_readString(struct Token *jumpToken, int skip)
 
 const char *ErrorStrings[] = {"OK",
 
-"Could Not Open Program",
-"Too Many Tokens",
-"ROM Is Full",
-"Index Already Defined",
-"Unterminated String",
-"Unexpected Character",
-"Reserved Keyword",
-"Syntax Error",
-"Symbol Name Too Long",
-"Too Many Symbols",
-"Type Mismatch",
-"Out Of Memory",
-"ELSE Without IF",
-"END IF Without IF",
-"Expected Command",
-"NEXT Without FOR",
-"LOOP Without DO",
-"UNTIL Without REPEAT",
-"WEND Without WHILE",
-"Label Already Defined",
-"Too Many Labels",
-"ErrorExpectedLabel",
-"Undefined Label",
-"Array Not Dimensionized",
-"Array Already Dimensionized",
-"Variable Already Used",
-"Index Out Of Bounds",
-"Wrong Number Of Dimensions",
-"Invalid Parameter",
-"RETURN Without GOSUB",
-"Stack Overflow",
-"Out Of Data",
-"Illegal Memory Access",
-"Too Many CPU Cycles In Interrupt",
-"Not Allowed In Interrupt",
-"IF Without END IF",
-"FOR Without NEXT",
-"DO Without LOOP",
-"REPEAT Without UNTIL",
-"WHILE Without WEND",
-"EXIT Not Inside Loop",
-"Directory Not Loaded",
-"Division By Zero",
-"Variable Not Initialized",
-"Array Variable Without Index",
-"END SUB Without SUB",
-"SUB Without END SUB",
-"SUB Cannot Be Nested",
-"Undefined Subprogram",
-"Expected Subprogram Name",
-"Argument Count Mismatch",
-"SUB Already Defined",
-"Too Many Subprograms",
-"SHARED Outside Of A Subprogram",
-"GLOBAL Inside Of A Subprogram",
-"EXIT SUB Outside Of A Subprogram",
-"Automatic Pause Not Disabled",
-"Not Allowed Outside Of Interrupt",
-"Not enough storage space on the device",
-"Random using address not needed",
+			      "Could Not Open Program",
+			      "Too Many Tokens",
+			      "ROM Is Full",
+			      "Index Already Defined",
+			      "Unterminated String",
+			      "Unexpected Character",
+			      "Reserved Keyword",
+			      "Syntax Error",
+			      "Symbol Name Too Long",
+			      "Too Many Symbols",
+			      "Type Mismatch",
+			      "Out Of Memory",
+			      "ELSE Without IF",
+			      "END IF Without IF",
+			      "Expected Command",
+			      "NEXT Without FOR",
+			      "LOOP Without DO",
+			      "UNTIL Without REPEAT",
+			      "WEND Without WHILE",
+			      "Label Already Defined",
+			      "Too Many Labels",
+			      "ErrorExpectedLabel",
+			      "Undefined Label",
+			      "Array Not Dimensionized",
+			      "Array Already Dimensionized",
+			      "Variable Already Used",
+			      "Index Out Of Bounds",
+			      "Wrong Number Of Dimensions",
+			      "Invalid Parameter",
+			      "RETURN Without GOSUB",
+			      "Stack Overflow",
+			      "Out Of Data",
+			      "Illegal Memory Access",
+			      "Too Many CPU Cycles In Interrupt",
+			      "Not Allowed In Interrupt",
+			      "IF Without END IF",
+			      "FOR Without NEXT",
+			      "DO Without LOOP",
+			      "REPEAT Without UNTIL",
+			      "WHILE Without WEND",
+			      "EXIT Not Inside Loop",
+			      "Directory Not Loaded",
+			      "Division By Zero",
+			      "Variable Not Initialized",
+			      "Array Variable Without Index",
+			      "END SUB Without SUB",
+			      "SUB Without END SUB",
+			      "SUB Cannot Be Nested",
+			      "Undefined Subprogram",
+			      "Expected Subprogram Name",
+			      "Argument Count Mismatch",
+			      "SUB Already Defined",
+			      "Too Many Subprograms",
+			      "SHARED Outside Of A Subprogram",
+			      "GLOBAL Inside Of A Subprogram",
+			      "EXIT SUB Outside Of A Subprogram",
+			      "Automatic Pause Not Disabled",
+			      "Not Allowed Outside Of Interrupt",
+			      "Not enough storage space on the device",
+			      "Random using address not seeded",
 
-"Out of error"};
+			      "Out of error"};
 
 const char *err_getString(enum ErrorCode errorCode)
 {
 	return ErrorStrings[errorCode];
 }
 
-struct CoreError err_makeCoreError(enum ErrorCode code, int sourcePosition)
+struct CoreError err_makeCoreError(enum ErrorCode code, int sourcePosition, int symbolIndex)
 {
-	struct CoreError error = {code, sourcePosition};
+	struct CoreError error = {code, sourcePosition, symbolIndex};
 	return error;
 }
 
@@ -8838,7 +9082,7 @@ struct CoreError itp_compileProgram(struct Core *core, const char *sourceCode)
 	if(buffer)
 		memcpy(buffer, sourceCode, len + 1);
 	else
-		return err_makeCoreError(ErrorOutOfMemory, -1);
+		return err_makeCoreError(ErrorOutOfMemory, -1, -1);
 	interpreter->sourceCode = buffer;
 
 	struct CoreError error = tok_tokenizeUppercaseProgram(&interpreter->tokenizer, interpreter->sourceCode);
@@ -8876,7 +9120,7 @@ struct CoreError itp_compileProgram(struct Core *core, const char *sourceCode)
 	} while(errorCode == ErrorNone && interpreter->pc->type != TokenUndefined);
 
 	if(errorCode != ErrorNone)
-		return err_makeCoreError(errorCode, interpreter->pc->sourcePosition);
+		return err_makeCoreError(errorCode, interpreter->pc->sourcePosition, -1);
 
 	if(interpreter->numLabelStackItems > 0)
 	{
@@ -8884,7 +9128,7 @@ struct CoreError itp_compileProgram(struct Core *core, const char *sourceCode)
 		errorCode = itp_labelStackError(item);
 		if(errorCode != ErrorNone)
 		{
-			return err_makeCoreError(errorCode, item->token->sourcePosition);
+			return err_makeCoreError(errorCode, item->token->sourcePosition, -1);
 		}
 	}
 
@@ -8906,6 +9150,14 @@ struct CoreError itp_compileProgram(struct Core *core, const char *sourceCode)
 	interpreter->lastFrameIOStatus.value = 0;
 	interpreter->seed = 0;
 	interpreter->simulatedKeyboardOn = false;
+
+	// variable lookup inline cache (see itp_readVariable); epoch 0 means "no token can match"
+	interpreter->varShadowEpoch = 1;
+	for(int i = 0; i < interpreter->tokenizer.numTokens; i++)
+	{
+		interpreter->tokenizer.tokens[i].varCacheSlot = -1;
+		interpreter->tokenizer.tokens[i].varCacheEpoch = 0;
+	}
 
 	memset(&interpreter->textLib, 0, sizeof(struct TextLib));
 	memset(&interpreter->spritesLib, 0, sizeof(struct SpritesLib));
@@ -8949,7 +9201,7 @@ void itp_runProgram(struct Core *core)
 		enum ErrorCode errorCode = ErrorNone;
 
 		while(errorCode == ErrorNone && interpreter->cycles < MAX_CYCLES_TOTAL_PER_FRAME &&
-			  interpreter->state == StateEvaluate && !interpreter->exitEvaluation)
+		      interpreter->state == StateEvaluate && !interpreter->exitEvaluation)
 		{
 			errorCode = itp_evaluateCommand(core);
 		}
@@ -8962,8 +9214,12 @@ void itp_runProgram(struct Core *core)
 		interpreter->mode = ModeNone;
 		if(errorCode != ErrorNone)
 		{
+			int symbolIndex = -1;
+			if(interpreter->pc->sourcePosition > 0)
+				symbolIndex = (interpreter->pc - 1)->symbolIndex;
+			struct CoreError err = err_makeCoreError(errorCode, interpreter->pc->sourcePosition, symbolIndex);
 			itp_endProgram(core);
-			delegate_interpreterDidFail(core, err_makeCoreError(errorCode, interpreter->pc->sourcePosition));
+			delegate_interpreterDidFail(core, err);
 		}
 		break;
 	}
@@ -9051,7 +9307,7 @@ void itp_runInterrupt(struct Core *core, enum InterruptType type)
 					{
 						// pass by value
 						struct SimpleVariable *variable =
-						var_createSimpleVariable(interpreter, &errorCode, 1, 1, varType, NULL);
+							var_createSimpleVariable(interpreter, &errorCode, 1, 1, varType, NULL);
 						if(variable)
 						{
 							if(interpreter->pass == PassRun)
@@ -9077,7 +9333,7 @@ void itp_runInterrupt(struct Core *core, enum InterruptType type)
 					{
 						// pass by value
 						struct SimpleVariable *variable =
-						var_createSimpleVariable(interpreter, &errorCode, 1, 1, varType, NULL);
+							var_createSimpleVariable(interpreter, &errorCode, 1, 1, varType, NULL);
 						if(variable)
 						{
 							if(interpreter->pass == PassRun)
@@ -9114,7 +9370,7 @@ void itp_runInterrupt(struct Core *core, enum InterruptType type)
 					{
 						// pass by value
 						struct SimpleVariable *variable =
-						var_createSimpleVariable(interpreter, &errorCode, 1, 1, varType, NULL);
+							var_createSimpleVariable(interpreter, &errorCode, 1, 1, varType, NULL);
 						if(variable)
 						{
 							if(interpreter->pass == PassRun)
@@ -9140,7 +9396,7 @@ void itp_runInterrupt(struct Core *core, enum InterruptType type)
 					{
 						// pass by value
 						struct SimpleVariable *variable =
-						var_createSimpleVariable(interpreter, &errorCode, 1, 1, varType, NULL);
+							var_createSimpleVariable(interpreter, &errorCode, 1, 1, varType, NULL);
 						if(variable)
 						{
 							if(interpreter->pass == PassRun)
@@ -9164,15 +9420,15 @@ void itp_runInterrupt(struct Core *core, enum InterruptType type)
 			if(errorCode != ErrorNone)
 			{
 				itp_endProgram(core);
-				delegate_interpreterDidFail(core, err_makeCoreError(errorCode, interpreter->pc->sourcePosition));
+				delegate_interpreterDidFail(core, err_makeCoreError(errorCode, interpreter->pc->sourcePosition, -1));
 			}
 
 			errorCode = lab_pushLabelStackItem(interpreter, LabelTypeONCALL, NULL);
 
 			while(errorCode == ErrorNone
-				  // cycles can exceed interrupt limit (see interruptOverCycles), but there is still a hard limit for
-				  // extreme cases
-				  && interpreter->cycles < MAX_CYCLES_TOTAL_PER_FRAME && !interpreter->exitEvaluation)
+			      // cycles can exceed interrupt limit (see interruptOverCycles), but there is still a hard limit for
+			      // extreme cases
+			      && interpreter->cycles < MAX_CYCLES_TOTAL_PER_FRAME && !interpreter->exitEvaluation)
 			{
 				errorCode = itp_evaluateCommand(core);
 			}
@@ -9183,12 +9439,12 @@ void itp_runInterrupt(struct Core *core, enum InterruptType type)
 			{
 				itp_endProgram(core);
 				delegate_interpreterDidFail(
-				core, err_makeCoreError(ErrorTooManyCPUCyclesInInterrupt, interpreter->pc->sourcePosition));
+					core, err_makeCoreError(ErrorTooManyCPUCyclesInInterrupt, interpreter->pc->sourcePosition, -1));
 			}
 			else if(errorCode != ErrorNone)
 			{
 				itp_endProgram(core);
-				delegate_interpreterDidFail(core, err_makeCoreError(errorCode, interpreter->pc->sourcePosition));
+				delegate_interpreterDidFail(core, err_makeCoreError(errorCode, interpreter->pc->sourcePosition, -1));
 			}
 			else
 			{
@@ -9312,6 +9568,54 @@ enum ValueType itp_getIdentifierTokenValueType(struct Token *token)
 	return ValueTypeNull;
 }
 
+// Cache the variable slot
+static struct SimpleVariable *itp_lookupSimpleVariable(struct Interpreter *interpreter, struct Token *tokenIdentifier, int symbolIndex)
+{
+	int cached = tokenIdentifier->varCacheSlot;
+	// varShadowEpoch guarantees the hit is also the *newest* legal match. Only a newly created variable can shadow an older one
+	if(cached >= 0 && !(cached & VAR_CACHE_ARRAY_BIT) && tokenIdentifier->varCacheEpoch == interpreter->varShadowEpoch && cached < interpreter->numSimpleVariables)
+	{
+		struct SimpleVariable *variable = &interpreter->simpleVariables[cached];
+		if(variable->symbolIndex == symbolIndex && (variable->subLevel == interpreter->subLevel || variable->subLevel == SUB_LEVEL_GLOBAL))
+		{
+			return variable;
+		}
+	}
+
+	struct SimpleVariable *variable = var_getSimpleVariable(interpreter, symbolIndex, interpreter->subLevel);
+	if(variable)
+	{
+		tokenIdentifier->varCacheSlot = (int16_t)(variable - interpreter->simpleVariables);
+		tokenIdentifier->varCacheEpoch = interpreter->varShadowEpoch;
+	}
+	return variable;
+}
+
+static struct ArrayVariable *itp_lookupArrayVariable( struct Interpreter *interpreter, struct Token *tokenIdentifier, int symbolIndex)
+{
+	int cached = tokenIdentifier->varCacheSlot;
+	if(cached >= 0 && (cached & VAR_CACHE_ARRAY_BIT) && tokenIdentifier->varCacheEpoch == interpreter->varShadowEpoch)
+	{
+		int slot = cached & ~VAR_CACHE_ARRAY_BIT;
+		if(slot < interpreter->numArrayVariables)
+		{
+			struct ArrayVariable *variable = &interpreter->arrayVariables[slot];
+			if(variable->symbolIndex == symbolIndex && (variable->subLevel == interpreter->subLevel || variable->subLevel == SUB_LEVEL_GLOBAL))
+			{
+				return variable;
+			}
+		}
+	}
+
+	struct ArrayVariable *variable = var_getArrayVariable(interpreter, symbolIndex, interpreter->subLevel);
+	if(variable)
+	{
+		tokenIdentifier->varCacheSlot = (int16_t)((variable - interpreter->arrayVariables) | VAR_CACHE_ARRAY_BIT);
+		tokenIdentifier->varCacheEpoch = interpreter->varShadowEpoch;
+	}
+	return variable;
+}
+
 union Value *itp_readVariable(struct Core *core, enum ValueType *type, enum ErrorCode *errorCode, bool forWriting)
 {
 	struct Interpreter *interpreter = core->interpreter;
@@ -9342,7 +9646,7 @@ union Value *itp_readVariable(struct Core *core, enum ValueType *type, enum Erro
 		struct ArrayVariable *variable = NULL;
 		if(interpreter->pass == PassRun)
 		{
-			variable = var_getArrayVariable(interpreter, symbolIndex, interpreter->subLevel);
+			variable = itp_lookupArrayVariable(interpreter, tokenIdentifier, symbolIndex);
 			if(!variable)
 			{
 				*errorCode = ErrorArrayNotDimensionized;
@@ -9408,7 +9712,7 @@ union Value *itp_readVariable(struct Core *core, enum ValueType *type, enum Erro
 		// simple variable
 		if(interpreter->pass == PassRun)
 		{
-			struct SimpleVariable *variable = var_getSimpleVariable(interpreter, symbolIndex, interpreter->subLevel);
+			struct SimpleVariable *variable = itp_lookupSimpleVariable(interpreter, tokenIdentifier, symbolIndex);
 			if(!variable)
 			{
 				// check if variable name is already used for array
@@ -9423,9 +9727,13 @@ union Value *itp_readVariable(struct Core *core, enum ValueType *type, enum Erro
 					return NULL;
 				}
 				variable =
-				var_createSimpleVariable(interpreter, errorCode, symbolIndex, interpreter->subLevel, varType, NULL);
+					var_createSimpleVariable(interpreter, errorCode, symbolIndex, interpreter->subLevel, varType, NULL);
 				if(!variable)
 					return NULL;
+
+				// creating also update the epoch, so cache it under the new one
+				tokenIdentifier->varCacheSlot = (int16_t)(variable - interpreter->simpleVariables);
+				tokenIdentifier->varCacheEpoch = interpreter->varShadowEpoch;
 			}
 			if(variable->isReference)
 			{
@@ -9529,19 +9837,19 @@ bool itp_isTokenLevel(enum TokenType token, int level)
 		return token == TokenXOR || token == TokenOR;
 	case 1:
 		return token == TokenAND;
-		//        case 2:
-		//            return token == TokenNOT;
+	//        case 2:
+	//            return token == TokenNOT;
 	case 3:
 		return token == TokenEq || token == TokenUneq || token == TokenGr || token == TokenLe || token == TokenGrEq ||
-			   token == TokenLeEq;
+		       token == TokenLeEq;
 	case 4:
 		return token == TokenPlus || token == TokenMinus;
 	case 5:
 		return token == TokenMOD;
 	case 6:
 		return token == TokenMul || token == TokenDiv || token == TokenDivInt;
-		//        case 7:
-		//            return token == TokenPlus || token == TokenMinus; // unary
+	//        case 7:
+	//            return token == TokenPlus || token == TokenMinus; // unary
 	case 8:
 		return token == TokenPow;
 	}
@@ -9750,7 +10058,7 @@ struct TypedValue itp_evaluateExpressionLevel(struct Core *core, int level)
 				if(interpreter->pass == PassRun)
 				{
 					newValue.v.floatValue =
-					(strcmp(value.v.stringValue->chars, rightValue.v.stringValue->chars) == 0) ? BAS_TRUE : BAS_FALSE;
+						(strcmp(value.v.stringValue->chars, rightValue.v.stringValue->chars) == 0) ? BAS_TRUE : BAS_FALSE;
 				}
 				break;
 			}
@@ -9759,7 +10067,7 @@ struct TypedValue itp_evaluateExpressionLevel(struct Core *core, int level)
 				if(interpreter->pass == PassRun)
 				{
 					newValue.v.floatValue =
-					(strcmp(value.v.stringValue->chars, rightValue.v.stringValue->chars) != 0) ? BAS_TRUE : BAS_FALSE;
+						(strcmp(value.v.stringValue->chars, rightValue.v.stringValue->chars) != 0) ? BAS_TRUE : BAS_FALSE;
 				}
 				break;
 			}
@@ -9768,7 +10076,7 @@ struct TypedValue itp_evaluateExpressionLevel(struct Core *core, int level)
 				if(interpreter->pass == PassRun)
 				{
 					newValue.v.floatValue =
-					(strcmp(value.v.stringValue->chars, rightValue.v.stringValue->chars) > 0) ? BAS_TRUE : BAS_FALSE;
+						(strcmp(value.v.stringValue->chars, rightValue.v.stringValue->chars) > 0) ? BAS_TRUE : BAS_FALSE;
 				}
 				break;
 			}
@@ -9777,7 +10085,7 @@ struct TypedValue itp_evaluateExpressionLevel(struct Core *core, int level)
 				if(interpreter->pass == PassRun)
 				{
 					newValue.v.floatValue =
-					(strcmp(value.v.stringValue->chars, rightValue.v.stringValue->chars) < 0) ? BAS_TRUE : BAS_FALSE;
+						(strcmp(value.v.stringValue->chars, rightValue.v.stringValue->chars) < 0) ? BAS_TRUE : BAS_FALSE;
 				}
 				break;
 			}
@@ -9786,7 +10094,7 @@ struct TypedValue itp_evaluateExpressionLevel(struct Core *core, int level)
 				if(interpreter->pass == PassRun)
 				{
 					newValue.v.floatValue =
-					(strcmp(value.v.stringValue->chars, rightValue.v.stringValue->chars) >= 0) ? BAS_TRUE : BAS_FALSE;
+						(strcmp(value.v.stringValue->chars, rightValue.v.stringValue->chars) >= 0) ? BAS_TRUE : BAS_FALSE;
 				}
 				break;
 			}
@@ -9795,7 +10103,7 @@ struct TypedValue itp_evaluateExpressionLevel(struct Core *core, int level)
 				if(interpreter->pass == PassRun)
 				{
 					newValue.v.floatValue =
-					(strcmp(value.v.stringValue->chars, rightValue.v.stringValue->chars) <= 0) ? BAS_TRUE : BAS_FALSE;
+						(strcmp(value.v.stringValue->chars, rightValue.v.stringValue->chars) <= 0) ? BAS_TRUE : BAS_FALSE;
 				}
 				break;
 			}
@@ -10084,14 +10392,14 @@ struct TypedValue itp_evaluateFunction(struct Core *core)
 	case TokenWINDOWH:
 		return fnc_WINDOW(core);
 
-		// case TokenUP:
-		// case TokenDOWN:
-		// case TokenLEFT:
-		// case TokenRIGHT:
-		//     return fnc_UP_DOWN_LEFT_RIGHT(core);
+	// case TokenUP:
+	// case TokenDOWN:
+	// case TokenLEFT:
+	// case TokenRIGHT:
+	//     return fnc_UP_DOWN_LEFT_RIGHT(core);
 
-		// case TokenBUTTON:
-		//     return fnc_BUTTON(core);
+	// case TokenBUTTON:
+	//     return fnc_BUTTON(core);
 
 	case TokenSPRITEX:
 	case TokenSPRITEY:
@@ -10397,8 +10705,8 @@ enum ErrorCode itp_evaluateCommand(struct Core *core)
 	case TokenSCROLL:
 		return cmd_SCROLL(core);
 
-		// case TokenDISPLAY:
-		//     return cmd_DISPLAY(core);
+	// case TokenDISPLAY:
+	//     return cmd_DISPLAY(core);
 
 	case TokenSPRITEA:
 		return cmd_SPRITE_A(core);
@@ -10426,14 +10734,14 @@ enum ErrorCode itp_evaluateCommand(struct Core *core)
 	case TokenFILES:
 		return cmd_FILES(core);
 
-		// case TokenGAMEPAD:
-		//     return cmd_GAMEPAD(core);
+	// case TokenGAMEPAD:
+	//     return cmd_GAMEPAD(core);
 
 	case TokenKEYBOARD:
 		return cmd_KEYBOARD(core);
 
-		// case TokenTOUCHSCREEN:
-		//     return cmd_TOUCHSCREEN(core);
+	// case TokenTOUCHSCREEN:
+	//     return cmd_TOUCHSCREEN(core);
 
 	case TokenTRACE:
 		return cmd_TRACE(core);
@@ -10463,8 +10771,8 @@ enum ErrorCode itp_evaluateCommand(struct Core *core)
 	case TokenSOUND:
 		switch(itp_getNextTokenType(interpreter))
 		{
-			//                case TokenCOPY:
-			//                    return cmd_SOUND_COPY(core);
+		//                case TokenCOPY:
+		//                    return cmd_SOUND_COPY(core);
 
 		case TokenSOURCE:
 			return cmd_SOUND_SOURCE(core);
@@ -11210,220 +11518,221 @@ void stringConvertCopy(char *dest, const char *source, size_t length)
 // 3. This notice may not be removed or altered from any source distribution.
 
 
-const char *TokenStrings[] = {NULL,
+const char *TokenStrings[] = {
+	NULL,
 
-NULL,
-NULL,
-NULL,
-NULL,
-NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
 
 // Signs
-":",
-",",
-";",
-"'",
-NULL,
+	":",
+	",",
+	";",
+	"'",
+	NULL,
 
 // Operators
-"=",
-">=",
-"<=",
-"<>",
-">",
-"<",
-"(",
-")",
-"+",
-"-",
-"*",
-"/",
-"\\",
-"^",
-"AND",
-"NOT",
-"OR",
-"XOR",
-"MOD",
+	"=",
+	">=",
+	"<=",
+	"<>",
+	">",
+	"<",
+	"(",
+	")",
+	"+",
+	"-",
+	"*",
+	"/",
+	"\\",
+	"^",
+	"AND",
+	"NOT",
+	"OR",
+	"XOR",
+	"MOD",
 
 // Commands/Functions
-"ABS",
-"ADD",
-"ASC",
-"ATAN",
-"ATTR",
-"BG",
-"BIN$",
+	"ABS",
+	"ADD",
+	"ASC",
+	"ATAN",
+	"ATTR",
+	"BG",
+	"BIN$",
 // "BUTTON",
-"CALL",
-"CELL.A",
-"CELL.C",
-"CELL",
-"CHAR",
-"CHR$",
-"CLS",
-"CLW",
-"COLOR",
-"COPY",
-"COS",
-"CURSOR.X",
-"CURSOR.Y",
-"DATA",
-"DEC",
-"DIM",
+	"CALL",
+	"CELL.A",
+	"CELL.C",
+	"CELL",
+	"CHAR",
+	"CHR$",
+	"CLS",
+	"CLW",
+	"COLOR",
+	"COPY",
+	"COS",
+	"CURSOR.X",
+	"CURSOR.Y",
+	"DATA",
+	"DEC",
+	"DIM",
 // "DISPLAY",
 //"DOWN",
-"DO",
-"ELSE",
-"END",
-"ENVELOPE",
-"EXIT",
-"EXP",
-"FILE$",
-"FILES",
-"FILL",
-"FLIP",
-"FONT",
-"FOR",
-"FSIZE",
+	"DO",
+	"ELSE",
+	"END",
+	"ENVELOPE",
+	"EXIT",
+	"EXP",
+	"FILE$",
+	"FILES",
+	"FILL",
+	"FLIP",
+	"FONT",
+	"FOR",
+	"FSIZE",
 //"GAMEPAD",
-"GLOBAL",
-"GOSUB",
-"GOTO",
-"HEX$",
-"HIT",
-"IF",
-"INC",
-"INKEY$",
-"INPUT",
-"INSTR",
-"INT",
-"KEYBOARD",
-"LEFT$",
+	"GLOBAL",
+	"GOSUB",
+	"GOTO",
+	"HEX$",
+	"HIT",
+	"IF",
+	"INC",
+	"INKEY$",
+	"INPUT",
+	"INSTR",
+	"INT",
+	"KEYBOARD",
+	"LEFT$",
 //"LEFT",
-"LEN",
-"LET",
-"LFO.A",
-"LFO",
-"LOAD",
-"LOCATE",
-"LOG",
-"LOOP",
-"MAX",
-"MCELL.A",
-"MCELL.C",
-"MCELL",
-"MID$",
-"MIN",
-"CLAMP",
-"MUSIC",
-"NEXT",
-"NUMBER",
-"OFF",
-"ON",
-"PALETTE",
-"PAL",
-"PAUSE",
-"PEEKL",
-"PEEKW",
-"PEEK",
-"PI",
-"PLAY",
-"POKEL",
-"POKEW",
-"POKE",
-"PRINT",
-"PRIO",
-"RANDOMIZE",
-"RASTER",
-"READ",
-"SKIP",
-"REPEAT",
-"RESTORE",
-"RETURN",
-"RIGHT$",
+	"LEN",
+	"LET",
+	"LFO.A",
+	"LFO",
+	"LOAD",
+	"LOCATE",
+	"LOG",
+	"LOOP",
+	"MAX",
+	"MCELL.A",
+	"MCELL.C",
+	"MCELL",
+	"MID$",
+	"MIN",
+	"CLAMP",
+	"MUSIC",
+	"NEXT",
+	"NUMBER",
+	"OFF",
+	"ON",
+	"PALETTE",
+	"PAL",
+	"PAUSE",
+	"PEEKL",
+	"PEEKW",
+	"PEEK",
+	"PI",
+	"PLAY",
+	"POKEL",
+	"POKEW",
+	"POKE",
+	"PRINT",
+	"PRIO",
+	"RANDOMIZE",
+	"RASTER",
+	"READ",
+	"SKIP",
+	"REPEAT",
+	"RESTORE",
+	"RETURN",
+	"RIGHT$",
 //"RIGHT",
-"RND",
-"ROL",
-"ROM",
-"ROR",
-"SAVE",
-"SCROLL.X",
-"SCROLL.Y",
-"SCROLL",
-"SGN",
-"SIN",
-"SIZE",
-"SOUND",
-"SOURCE",
-"SPRITE.A",
-"SPRITE.C",
-"SPRITE.X",
-"SPRITE.Y",
-"SPRITE",
-"SQR",
-"STEP",
-"STOP",
-"STR$",
-"SUB",
-"SWAP",
-"SYSTEM",
-"TAN",
-"TAP",
-"TEXT",
-"THEN",
-"TIMER",
-"TINT",
+	"RND",
+	"ROL",
+	"ROM",
+	"ROR",
+	"SAVE",
+	"SCROLL.X",
+	"SCROLL.Y",
+	"SCROLL",
+	"SGN",
+	"SIN",
+	"SIZE",
+	"SOUND",
+	"SOURCE",
+	"SPRITE.A",
+	"SPRITE.C",
+	"SPRITE.X",
+	"SPRITE.Y",
+	"SPRITE",
+	"SQR",
+	"STEP",
+	"STOP",
+	"STR$",
+	"SUB",
+	"SWAP",
+	"SYSTEM",
+	"TAN",
+	"TAP",
+	"TEXT",
+	"THEN",
+	"TIMER",
+	"TINT",
 //"TOUCHSCREEN",
-"TOUCH.PX",
-"TOUCH.PY",
-"TOUCH.TAP",
-"TOUCH.DRAG",
-"TOUCH.LONG",
-"TOUCH.CHANGE",
-"TOUCH.X",
-"TOUCH.Y",
-"TOUCH",
-"TO",
-"TRACE",
-"TRACK",
-"UBOUND",
-"UNTIL",
+	"TOUCH.PX",
+	"TOUCH.PY",
+	"TOUCH.TAP",
+	"TOUCH.DRAG",
+	"TOUCH.LONG",
+	"TOUCH.CHANGE",
+	"TOUCH.X",
+	"TOUCH.Y",
+	"TOUCH",
+	"TO",
+	"TRACE",
+	"TRACK",
+	"UBOUND",
+	"UNTIL",
 //"UP",
-"VAL",
-"VBL",
-"VIEW",
-"VOLUME",
-"WAIT",
-"WAVE",
-"WEND",
-"WHILE",
-"WINDOW.X",
-"WINDOW.Y",
-"WINDOW.W",
-"WINDOW.H",
-"WINDOW",
+	"VAL",
+	"VBL",
+	"VIEW",
+	"VOLUME",
+	"WAIT",
+	"WAVE",
+	"WEND",
+	"WHILE",
+	"WINDOW.X",
+	"WINDOW.Y",
+	"WINDOW.W",
+	"WINDOW.H",
+	"WINDOW",
 
-"SHOWN.W",
-"SHOWN.H",
-"SAFE.L",
-"SAFE.T",
-"SAFE.R",
-"SAFE.B",
+	"SHOWN.W",
+	"SHOWN.H",
+	"SAFE.L",
+	"SAFE.T",
+	"SAFE.R",
+	"SAFE.B",
 
-"PARTICLE",
-"EMITTER",
-"AT",
-"COMPAT",
-"EASE",
-"MESSAGE",
-"DMA",
-"CEIL",
-"FLOOR",
-"HAPTIC",
+	"PARTICLE",
+	"EMITTER",
+	"AT",
+	"COMPAT",
+	"EASE",
+	"MESSAGE",
+	"DMA",
+	"CEIL",
+	"FLOOR",
+	"HAPTIC",
 
 // Reserved Keywords
-NULL,
+	NULL,
 // "ANIM",
 // "CLOSE",
 // "DECLARE",
@@ -11440,7 +11749,8 @@ NULL,
 // "VOICE",
 // "WRITE",
 
-NULL};
+	NULL
+};
 // Copyright 2016-2024 Timo Kloss
 // Copyright 2021-2026 Martin Mauchauffée
 
@@ -11479,7 +11789,7 @@ struct CoreError tok_tokenizeUppercaseProgram(struct Tokenizer *tokenizer, const
 		int tokenSourcePosition = (int)(character - sourceCode);
 		if(tokenizer->numTokens >= MAX_TOKENS - 1)
 		{
-			return err_makeCoreError(ErrorTooManyTokens, tokenSourcePosition);
+			return err_makeCoreError(ErrorTooManyTokens, tokenSourcePosition, -1);
 		}
 		struct Token *token = &tokenizer->tokens[tokenizer->numTokens];
 		token->sourcePosition = tokenSourcePosition;
@@ -11534,18 +11844,18 @@ struct CoreError tok_tokenizeUppercaseProgram(struct Tokenizer *tokenizer, const
 			{
 				if(*character == '\n')
 				{
-					return err_makeCoreError(ErrorUnterminatedString, (int)(character - sourceCode));
+					return err_makeCoreError(ErrorUnterminatedString, (int)(character - sourceCode), -1);
 				}
 				else if(*character < 0)
 				{
-					return err_makeCoreError(ErrorUnexpectedCharacter, (int)(character - sourceCode));
+					return err_makeCoreError(ErrorUnexpectedCharacter, (int)(character - sourceCode), -1);
 				}
 				character++;
 			}
 			int len = (int)(character - firstCharacter);
 			struct RCString *string = rcstring_new(firstCharacter, len);
 			if(!string)
-				return err_makeCoreError(ErrorOutOfMemory, tokenSourcePosition);
+				return err_makeCoreError(ErrorOutOfMemory, tokenSourcePosition, -1);
 			token->type = TokenString;
 			token->stringValue = string;
 			tokenizer->numTokens++;
@@ -11692,7 +12002,7 @@ struct CoreError tok_tokenizeUppercaseProgram(struct Tokenizer *tokenizer, const
 				{
 					if(*character < 0)
 					{
-						return err_makeCoreError(ErrorUnexpectedCharacter, (int)(character - sourceCode));
+						return err_makeCoreError(ErrorUnexpectedCharacter, (int)(character - sourceCode), -1);
 					}
 					if(*character == '\n')
 					{
@@ -11704,7 +12014,7 @@ struct CoreError tok_tokenizeUppercaseProgram(struct Tokenizer *tokenizer, const
 			}
 			else if(foundKeywordToken > Token_reserved)
 			{
-				return err_makeCoreError(ErrorReservedKeyword, tokenSourcePosition);
+				return err_makeCoreError(ErrorReservedKeyword, tokenSourcePosition, -1);
 			}
 			token->type = foundKeywordToken;
 			tokenizer->numTokens++;
@@ -11734,12 +12044,12 @@ struct CoreError tok_tokenizeUppercaseProgram(struct Tokenizer *tokenizer, const
 			}
 			if(tokenizer->numSymbols >= MAX_SYMBOLS)
 			{
-				return err_makeCoreError(ErrorTooManySymbols, tokenSourcePosition);
+				return err_makeCoreError(ErrorTooManySymbols, tokenSourcePosition, -1);
 			}
 			int len = (int)(character - firstCharacter);
 			if(len >= SYMBOL_NAME_SIZE)
 			{
-				return err_makeCoreError(ErrorSymbolNameTooLong, tokenSourcePosition);
+				return err_makeCoreError(ErrorSymbolNameTooLong, tokenSourcePosition, -1);
 			}
 			char symbolName[SYMBOL_NAME_SIZE];
 			for(size_t i = 0; i < len; i++)
@@ -11774,7 +12084,7 @@ struct CoreError tok_tokenizeUppercaseProgram(struct Tokenizer *tokenizer, const
 				character++;
 				enum ErrorCode errorCode = tok_setJumpLabel(tokenizer, symbolIndex, token + 1);
 				if(errorCode != ErrorNone)
-					return err_makeCoreError(errorCode, tokenSourcePosition);
+					return err_makeCoreError(errorCode, tokenSourcePosition, -1);
 
 				token->symbolIndex = symbolIndex;
 				tokenizer->numTokens++;
@@ -11782,7 +12092,7 @@ struct CoreError tok_tokenizeUppercaseProgram(struct Tokenizer *tokenizer, const
 				int tokenSourcePosition = (int)(character - sourceCode);
 				if(tokenizer->numTokens >= MAX_TOKENS - 1)
 				{
-					return err_makeCoreError(ErrorTooManyTokens, tokenSourcePosition);
+					return err_makeCoreError(ErrorTooManyTokens, tokenSourcePosition, -1);
 				}
 				token = &tokenizer->tokens[tokenizer->numTokens];
 				token->sourcePosition = tokenSourcePosition;
@@ -11797,7 +12107,7 @@ struct CoreError tok_tokenizeUppercaseProgram(struct Tokenizer *tokenizer, const
 				{
 					enum ErrorCode errorCode = tok_setSub(tokenizer, symbolIndex, token + 1);
 					if(errorCode != ErrorNone)
-						return err_makeCoreError(errorCode, tokenSourcePosition);
+						return err_makeCoreError(errorCode, tokenSourcePosition, -1);
 				}
 			}
 			token->symbolIndex = symbolIndex;
@@ -11806,7 +12116,7 @@ struct CoreError tok_tokenizeUppercaseProgram(struct Tokenizer *tokenizer, const
 		}
 
 		// Unexpected character
-		return err_makeCoreError(ErrorUnexpectedCharacter, tokenSourcePosition);
+		return err_makeCoreError(ErrorUnexpectedCharacter, tokenSourcePosition, -1);
 	}
 
 	// add EOL to the end
@@ -11940,6 +12250,20 @@ struct TypedValue val_makeError(enum ErrorCode errorCode)
 #include <stdlib.h>
 #include <string.h>
 
+void var_invalidateLookupCaches(struct Interpreter *interpreter)
+{
+	// A new variable may shadow what an identifier token resolved to earlier
+	if(++interpreter->varShadowEpoch == 0)
+	{
+		interpreter->varShadowEpoch = 1;
+		struct Tokenizer *tokenizer = &interpreter->tokenizer;
+		for(int i = 0; i < tokenizer->numTokens; i++)
+		{
+			tokenizer->tokens[i].varCacheSlot = -1;
+		}
+	}
+}
+
 struct SimpleVariable *var_getSimpleVariable(struct Interpreter *interpreter, int symbolIndex, int subLevel)
 {
 	struct SimpleVariable *variable = NULL;
@@ -11956,8 +12280,7 @@ struct SimpleVariable *var_getSimpleVariable(struct Interpreter *interpreter, in
 	return NULL;
 }
 
-struct SimpleVariable *var_createSimpleVariable(struct Interpreter *interpreter, enum ErrorCode *errorCode,
-int symbolIndex, int subLevel, enum ValueType type, union Value *valueReference)
+struct SimpleVariable *var_createSimpleVariable(struct Interpreter *interpreter, enum ErrorCode *errorCode, int symbolIndex, int subLevel, enum ValueType type, union Value *valueReference)
 {
 	if(interpreter->numSimpleVariables >= MAX_SIMPLE_VARIABLES)
 	{
@@ -11971,6 +12294,7 @@ int symbolIndex, int subLevel, enum ValueType type, union Value *valueReference)
 	}
 	struct SimpleVariable *variable = &interpreter->simpleVariables[interpreter->numSimpleVariables];
 	interpreter->numSimpleVariables++;
+	var_invalidateLookupCaches(interpreter);
 	memset(variable, 0, sizeof(struct SimpleVariable));
 	variable->symbolIndex = symbolIndex;
 	variable->subLevel = subLevel;
@@ -12048,8 +12372,7 @@ union Value *var_getArrayValue(struct Interpreter *interpreter, struct ArrayVari
 	return value;
 }
 
-struct ArrayVariable *var_dimVariable(
-struct Interpreter *interpreter, enum ErrorCode *errorCode, int symbolIndex, int numDimensions, int *dimensionSizes)
+struct ArrayVariable *var_dimVariable(struct Interpreter *interpreter, enum ErrorCode *errorCode, int symbolIndex, int numDimensions, int *dimensionSizes)
 {
 	if(var_getArrayVariable(interpreter, symbolIndex, interpreter->subLevel))
 	{
@@ -12068,6 +12391,7 @@ struct Interpreter *interpreter, enum ErrorCode *errorCode, int symbolIndex, int
 	}
 	struct ArrayVariable *variable = &interpreter->arrayVariables[interpreter->numArrayVariables];
 	interpreter->numArrayVariables++;
+	var_invalidateLookupCaches(interpreter);
 	memset(variable, 0, sizeof(struct ArrayVariable));
 	variable->symbolIndex = symbolIndex;
 	variable->subLevel = interpreter->subLevel;
@@ -12092,8 +12416,7 @@ struct Interpreter *interpreter, enum ErrorCode *errorCode, int symbolIndex, int
 	return variable;
 }
 
-struct ArrayVariable *var_createArrayVariable(struct Interpreter *interpreter, enum ErrorCode *errorCode,
-int symbolIndex, int subLevel, struct ArrayVariable *arrayReference)
+struct ArrayVariable *var_createArrayVariable(struct Interpreter *interpreter, enum ErrorCode *errorCode, int symbolIndex, int subLevel, struct ArrayVariable *arrayReference)
 {
 	if(interpreter->numArrayVariables >= MAX_ARRAY_VARIABLES)
 	{
@@ -12107,6 +12430,7 @@ int symbolIndex, int subLevel, struct ArrayVariable *arrayReference)
 	}
 	struct ArrayVariable *variable = &interpreter->arrayVariables[interpreter->numArrayVariables];
 	interpreter->numArrayVariables++;
+	var_invalidateLookupCaches(interpreter);
 	memset(variable, 0, sizeof(struct ArrayVariable));
 	variable->symbolIndex = symbolIndex;
 	variable->subLevel = subLevel;
@@ -12204,8 +12528,7 @@ int audlib_getLoop(struct AudioLib *lib, int sourceAddress, int pattern, int par
 int audlib_getTrack(struct AudioLib *lib, int sourceAddress, int pattern, int voice);
 struct TrackRow audlib_getTrackRow(struct AudioLib *lib, int sourceAddress, int track, int row);
 void audlib_playRow(struct AudioLib *lib, struct ComposerPlayer *player, int track, int voice);
-void audlib_command(
-struct AudioLib *lib, struct Voice *voice, struct ComposerPlayer *player, int command, int parameter);
+void audlib_command(struct AudioLib *lib, struct Voice *voice, struct ComposerPlayer *player, int command, int parameter);
 
 void audlib_play(struct AudioLib *lib, int voiceIndex, float pitch, int len, int sound)
 {
@@ -12493,8 +12816,7 @@ void audlib_playRow(struct AudioLib *lib, struct ComposerPlayer *player, int tra
 	}
 }
 
-void audlib_command(
-struct AudioLib *lib, struct Voice *voice, struct ComposerPlayer *player, int command, int parameter)
+void audlib_command(struct AudioLib *lib, struct Voice *voice, struct ComposerPlayer *player, int command, int parameter)
 {
 	if(command == 0 && parameter == 0)
 		return;
@@ -12571,70 +12893,70 @@ struct AudioLib *lib, struct Voice *voice, struct ComposerPlayer *player, int co
 
 
 uint8_t DefaultCharacters[][16] = {
-{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
-{0x00, 0x18, 0x14, 0x04, 0x04, 0x0C, 0x10, 0x0C, 0x00, 0x00, 0x0C, 0x1C, 0x1C, 0x0C, 0x08, 0x0C},
-{0x00, 0x48, 0x12, 0x12, 0x12, 0x00, 0x00, 0x00, 0x00, 0x24, 0x7E, 0x36, 0x12, 0x00, 0x00, 0x00},
-{0x00, 0x24, 0x60, 0x1B, 0x12, 0x40, 0x1B, 0x12, 0x00, 0x00, 0x1E, 0x3F, 0x36, 0x3E, 0x3F, 0x12},
-{0x00, 0x08, 0x30, 0x27, 0x10, 0x21, 0x17, 0x04, 0x00, 0x00, 0x0E, 0x1F, 0x1E, 0x1F, 0x1F, 0x04},
-{0x00, 0x40, 0x11, 0x32, 0x04, 0x0C, 0x11, 0x23, 0x00, 0x22, 0x75, 0x3A, 0x14, 0x2A, 0x57, 0x23},
-{0x00, 0x10, 0x2A, 0x02, 0x10, 0x13, 0x00, 0x1D, 0x00, 0x0C, 0x1E, 0x3A, 0x7E, 0x77, 0x3A, 0x1D},
-{0x00, 0x10, 0x04, 0x0C, 0x18, 0x00, 0x00, 0x00, 0x00, 0x08, 0x1C, 0x3C, 0x18, 0x00, 0x00, 0x00},
-{0x00, 0x08, 0x16, 0x0C, 0x08, 0x00, 0x00, 0x06, 0x00, 0x04, 0x0E, 0x3C, 0x38, 0x18, 0x0C, 0x06},
-{0x00, 0x30, 0x00, 0x00, 0x02, 0x06, 0x0C, 0x18, 0x00, 0x00, 0x18, 0x0C, 0x0E, 0x1E, 0x3C, 0x18},
-{0x00, 0x00, 0x20, 0x12, 0x40, 0x27, 0x08, 0x12, 0x00, 0x00, 0x04, 0x0A, 0x3E, 0x3F, 0x2C, 0x12},
-{0x00, 0x00, 0x18, 0x14, 0x40, 0x27, 0x04, 0x0C, 0x00, 0x00, 0x00, 0x0C, 0x3E, 0x3F, 0x1C, 0x0C},
-{0x00, 0x00, 0x00, 0x00, 0x10, 0x04, 0x0C, 0x18, 0x00, 0x00, 0x00, 0x00, 0x08, 0x1C, 0x3C, 0x18},
-{0x00, 0x00, 0x00, 0x00, 0x60, 0x3F, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x1E, 0x3F, 0x00, 0x00},
-{0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0x04, 0x0C, 0x00, 0x00, 0x00, 0x00, 0x00, 0x08, 0x1C, 0x0C},
-{0x00, 0x04, 0x0B, 0x06, 0x0C, 0x18, 0x30, 0x20, 0x00, 0x02, 0x07, 0x1E, 0x3C, 0x78, 0x70, 0x20},
-{0x00, 0x20, 0x58, 0x11, 0x01, 0x19, 0x03, 0x1E, 0x00, 0x1C, 0x3E, 0x7F, 0x77, 0x7F, 0x3F, 0x1E},
-{0x00, 0x10, 0x24, 0x04, 0x04, 0x04, 0x40, 0x3F, 0x00, 0x08, 0x1C, 0x1C, 0x1C, 0x1C, 0x3E, 0x3F},
-{0x00, 0x20, 0x58, 0x33, 0x06, 0x0C, 0x00, 0x3F, 0x00, 0x1C, 0x3E, 0x3F, 0x1E, 0x3C, 0x7E, 0x3F},
-{0x00, 0x20, 0x58, 0x33, 0x00, 0x41, 0x03, 0x1E, 0x00, 0x1C, 0x3E, 0x3F, 0x06, 0x27, 0x3F, 0x1E},
-{0x00, 0x66, 0x55, 0x01, 0x39, 0x01, 0x01, 0x03, 0x00, 0x00, 0x33, 0x7F, 0x3F, 0x07, 0x07, 0x03},
-{0x00, 0x60, 0x5F, 0x00, 0x38, 0x01, 0x43, 0x3E, 0x00, 0x1E, 0x3F, 0x7C, 0x3E, 0x07, 0x3F, 0x3E},
-{0x00, 0x10, 0x2E, 0x00, 0x18, 0x11, 0x03, 0x1E, 0x00, 0x0C, 0x1E, 0x7C, 0x7E, 0x77, 0x3F, 0x1E},
-{0x00, 0x60, 0x39, 0x03, 0x06, 0x0C, 0x08, 0x18, 0x00, 0x1E, 0x3F, 0x0F, 0x1E, 0x3C, 0x38, 0x18},
-{0x00, 0x20, 0x58, 0x03, 0x18, 0x11, 0x03, 0x1E, 0x00, 0x1C, 0x3E, 0x3F, 0x7E, 0x77, 0x3F, 0x1E},
-{0x00, 0x20, 0x58, 0x01, 0x19, 0x41, 0x03, 0x1E, 0x00, 0x1C, 0x3E, 0x3F, 0x1F, 0x27, 0x3F, 0x1E},
-{0x00, 0x00, 0x00, 0x10, 0x0C, 0x10, 0x0C, 0x00, 0x00, 0x00, 0x00, 0x08, 0x0C, 0x08, 0x0C, 0x00},
-{0x00, 0x00, 0x00, 0x10, 0x0C, 0x10, 0x0C, 0x18, 0x00, 0x00, 0x00, 0x08, 0x0C, 0x08, 0x3C, 0x18},
-{0x00, 0x00, 0x08, 0x16, 0x0C, 0x00, 0x00, 0x06, 0x00, 0x00, 0x04, 0x0E, 0x3C, 0x18, 0x0C, 0x06},
-{0x00, 0x00, 0x00, 0x60, 0x3F, 0x40, 0x3F, 0x00, 0x00, 0x00, 0x00, 0x1E, 0x3F, 0x3E, 0x3F, 0x00},
-{0x00, 0x00, 0x30, 0x00, 0x00, 0x06, 0x0C, 0x18, 0x00, 0x00, 0x00, 0x18, 0x0C, 0x1E, 0x3C, 0x18},
-{0x00, 0x20, 0x58, 0x33, 0x06, 0x0C, 0x10, 0x0C, 0x00, 0x1C, 0x3E, 0x3F, 0x1E, 0x0C, 0x08, 0x0C},
-{0x00, 0x20, 0x58, 0x19, 0x11, 0x17, 0x00, 0x1E, 0x00, 0x1C, 0x3E, 0x77, 0x7F, 0x77, 0x3C, 0x1E},
-{0x00, 0x10, 0x20, 0x18, 0x01, 0x19, 0x11, 0x33, 0x00, 0x08, 0x1C, 0x7E, 0x7F, 0x7F, 0x77, 0x33},
-{0x00, 0x60, 0x58, 0x03, 0x18, 0x11, 0x03, 0x3E, 0x00, 0x1C, 0x3E, 0x7F, 0x7E, 0x77, 0x7F, 0x3E},
-{0x00, 0x20, 0x58, 0x13, 0x10, 0x10, 0x03, 0x1E, 0x00, 0x1C, 0x3E, 0x73, 0x70, 0x76, 0x3F, 0x1E},
-{0x00, 0x60, 0x50, 0x10, 0x11, 0x13, 0x06, 0x3C, 0x00, 0x18, 0x3C, 0x76, 0x77, 0x7F, 0x7E, 0x3C},
-{0x00, 0x60, 0x5F, 0x00, 0x1C, 0x10, 0x00, 0x3F, 0x00, 0x1E, 0x3F, 0x78, 0x7C, 0x70, 0x7E, 0x3F},
-{0x00, 0x60, 0x5F, 0x00, 0x1C, 0x10, 0x10, 0x30, 0x00, 0x1E, 0x3F, 0x78, 0x7C, 0x70, 0x70, 0x30},
-{0x00, 0x20, 0x5E, 0x1C, 0x11, 0x11, 0x03, 0x1E, 0x00, 0x1C, 0x3E, 0x72, 0x77, 0x77, 0x3F, 0x1E},
-{0x00, 0x66, 0x55, 0x01, 0x19, 0x11, 0x11, 0x33, 0x00, 0x00, 0x33, 0x7F, 0x7F, 0x77, 0x77, 0x33},
-{0x00, 0x30, 0x06, 0x04, 0x04, 0x04, 0x00, 0x1E, 0x00, 0x0C, 0x1E, 0x1C, 0x1C, 0x1C, 0x3C, 0x1E},
-{0x00, 0x1C, 0x09, 0x01, 0x01, 0x41, 0x03, 0x1E, 0x00, 0x02, 0x0F, 0x07, 0x07, 0x27, 0x3F, 0x1E},
-{0x00, 0x64, 0x5B, 0x06, 0x04, 0x10, 0x10, 0x33, 0x00, 0x02, 0x37, 0x7E, 0x7C, 0x7C, 0x76, 0x33},
-{0x00, 0x60, 0x50, 0x10, 0x10, 0x10, 0x00, 0x3F, 0x00, 0x00, 0x30, 0x70, 0x70, 0x70, 0x7E, 0x3F},
-{0x00, 0x42, 0x45, 0x09, 0x01, 0x19, 0x11, 0x33, 0x00, 0x00, 0x23, 0x77, 0x7F, 0x7F, 0x77, 0x33},
-{0x00, 0x66, 0x45, 0x01, 0x11, 0x11, 0x11, 0x33, 0x00, 0x00, 0x33, 0x7F, 0x7F, 0x77, 0x77, 0x33},
-{0x00, 0x20, 0x58, 0x11, 0x11, 0x11, 0x03, 0x1E, 0x00, 0x1C, 0x3E, 0x77, 0x77, 0x77, 0x3F, 0x1E},
-{0x00, 0x60, 0x58, 0x03, 0x1E, 0x10, 0x10, 0x30, 0x00, 0x1C, 0x3E, 0x7F, 0x7E, 0x70, 0x70, 0x30},
-{0x00, 0x20, 0x58, 0x11, 0x11, 0x11, 0x00, 0x1F, 0x00, 0x1C, 0x3E, 0x77, 0x7B, 0x7D, 0x3E, 0x1F},
-{0x00, 0x60, 0x58, 0x03, 0x06, 0x10, 0x10, 0x33, 0x00, 0x1C, 0x3E, 0x7F, 0x7E, 0x7C, 0x76, 0x33},
-{0x00, 0x20, 0x5F, 0x00, 0x18, 0x01, 0x03, 0x3E, 0x00, 0x1E, 0x3F, 0x3C, 0x1E, 0x07, 0x7F, 0x3E},
-{0x00, 0x70, 0x27, 0x04, 0x04, 0x04, 0x04, 0x0C, 0x00, 0x0E, 0x3F, 0x1C, 0x1C, 0x1C, 0x1C, 0x0C},
-{0x00, 0x66, 0x55, 0x11, 0x11, 0x11, 0x03, 0x1E, 0x00, 0x00, 0x33, 0x77, 0x77, 0x77, 0x3F, 0x1E},
-{0x00, 0x66, 0x55, 0x11, 0x11, 0x03, 0x06, 0x0C, 0x00, 0x00, 0x33, 0x77, 0x77, 0x3F, 0x1E, 0x0C},
-{0x00, 0x66, 0x55, 0x15, 0x01, 0x19, 0x31, 0x21, 0x00, 0x00, 0x33, 0x6B, 0x7F, 0x7F, 0x73, 0x21},
-{0x00, 0x64, 0x0B, 0x06, 0x00, 0x18, 0x11, 0x33, 0x00, 0x02, 0x37, 0x1E, 0x3C, 0x7E, 0x77, 0x33},
-{0x00, 0x66, 0x55, 0x0B, 0x06, 0x04, 0x04, 0x0C, 0x00, 0x00, 0x33, 0x37, 0x1E, 0x1C, 0x1C, 0x0C},
-{0x00, 0x60, 0x33, 0x06, 0x0C, 0x58, 0x00, 0x3F, 0x00, 0x1E, 0x3F, 0x1E, 0x3C, 0x38, 0x7E, 0x3F},
-{0x00, 0x30, 0x2E, 0x08, 0x08, 0x08, 0x00, 0x1E, 0x00, 0x0C, 0x1E, 0x38, 0x38, 0x38, 0x3C, 0x1E},
-{0x00, 0x60, 0x00, 0x00, 0x00, 0x00, 0x01, 0x01, 0x00, 0x00, 0x30, 0x18, 0x0C, 0x06, 0x03, 0x01},
-{0x00, 0x38, 0x12, 0x02, 0x02, 0x02, 0x02, 0x1E, 0x00, 0x04, 0x1E, 0x0E, 0x0E, 0x0E, 0x3E, 0x1E},
-{0x00, 0x10, 0x20, 0x18, 0x33, 0x00, 0x00, 0x00, 0x00, 0x08, 0x1C, 0x7E, 0x33, 0x00, 0x00, 0x00},
-{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x60, 0x3F, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x1E, 0x3F},
+	{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
+	{0x00, 0x18, 0x14, 0x04, 0x04, 0x0C, 0x10, 0x0C, 0x00, 0x00, 0x0C, 0x1C, 0x1C, 0x0C, 0x08, 0x0C},
+	{0x00, 0x48, 0x12, 0x12, 0x12, 0x00, 0x00, 0x00, 0x00, 0x24, 0x7E, 0x36, 0x12, 0x00, 0x00, 0x00},
+	{0x00, 0x24, 0x60, 0x1B, 0x12, 0x40, 0x1B, 0x12, 0x00, 0x00, 0x1E, 0x3F, 0x36, 0x3E, 0x3F, 0x12},
+	{0x00, 0x08, 0x30, 0x27, 0x10, 0x21, 0x17, 0x04, 0x00, 0x00, 0x0E, 0x1F, 0x1E, 0x1F, 0x1F, 0x04},
+	{0x00, 0x40, 0x11, 0x32, 0x04, 0x0C, 0x11, 0x23, 0x00, 0x22, 0x75, 0x3A, 0x14, 0x2A, 0x57, 0x23},
+	{0x00, 0x10, 0x2A, 0x02, 0x10, 0x13, 0x00, 0x1D, 0x00, 0x0C, 0x1E, 0x3A, 0x7E, 0x77, 0x3A, 0x1D},
+	{0x00, 0x10, 0x04, 0x0C, 0x18, 0x00, 0x00, 0x00, 0x00, 0x08, 0x1C, 0x3C, 0x18, 0x00, 0x00, 0x00},
+	{0x00, 0x08, 0x16, 0x0C, 0x08, 0x00, 0x00, 0x06, 0x00, 0x04, 0x0E, 0x3C, 0x38, 0x18, 0x0C, 0x06},
+	{0x00, 0x30, 0x00, 0x00, 0x02, 0x06, 0x0C, 0x18, 0x00, 0x00, 0x18, 0x0C, 0x0E, 0x1E, 0x3C, 0x18},
+	{0x00, 0x00, 0x20, 0x12, 0x40, 0x27, 0x08, 0x12, 0x00, 0x00, 0x04, 0x0A, 0x3E, 0x3F, 0x2C, 0x12},
+	{0x00, 0x00, 0x18, 0x14, 0x40, 0x27, 0x04, 0x0C, 0x00, 0x00, 0x00, 0x0C, 0x3E, 0x3F, 0x1C, 0x0C},
+	{0x00, 0x00, 0x00, 0x00, 0x10, 0x04, 0x0C, 0x18, 0x00, 0x00, 0x00, 0x00, 0x08, 0x1C, 0x3C, 0x18},
+	{0x00, 0x00, 0x00, 0x00, 0x60, 0x3F, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x1E, 0x3F, 0x00, 0x00},
+	{0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0x04, 0x0C, 0x00, 0x00, 0x00, 0x00, 0x00, 0x08, 0x1C, 0x0C},
+	{0x00, 0x04, 0x0B, 0x06, 0x0C, 0x18, 0x30, 0x20, 0x00, 0x02, 0x07, 0x1E, 0x3C, 0x78, 0x70, 0x20},
+	{0x00, 0x20, 0x58, 0x11, 0x01, 0x19, 0x03, 0x1E, 0x00, 0x1C, 0x3E, 0x7F, 0x77, 0x7F, 0x3F, 0x1E},
+	{0x00, 0x10, 0x24, 0x04, 0x04, 0x04, 0x40, 0x3F, 0x00, 0x08, 0x1C, 0x1C, 0x1C, 0x1C, 0x3E, 0x3F},
+	{0x00, 0x20, 0x58, 0x33, 0x06, 0x0C, 0x00, 0x3F, 0x00, 0x1C, 0x3E, 0x3F, 0x1E, 0x3C, 0x7E, 0x3F},
+	{0x00, 0x20, 0x58, 0x33, 0x00, 0x41, 0x03, 0x1E, 0x00, 0x1C, 0x3E, 0x3F, 0x06, 0x27, 0x3F, 0x1E},
+	{0x00, 0x66, 0x55, 0x01, 0x39, 0x01, 0x01, 0x03, 0x00, 0x00, 0x33, 0x7F, 0x3F, 0x07, 0x07, 0x03},
+	{0x00, 0x60, 0x5F, 0x00, 0x38, 0x01, 0x43, 0x3E, 0x00, 0x1E, 0x3F, 0x7C, 0x3E, 0x07, 0x3F, 0x3E},
+	{0x00, 0x10, 0x2E, 0x00, 0x18, 0x11, 0x03, 0x1E, 0x00, 0x0C, 0x1E, 0x7C, 0x7E, 0x77, 0x3F, 0x1E},
+	{0x00, 0x60, 0x39, 0x03, 0x06, 0x0C, 0x08, 0x18, 0x00, 0x1E, 0x3F, 0x0F, 0x1E, 0x3C, 0x38, 0x18},
+	{0x00, 0x20, 0x58, 0x03, 0x18, 0x11, 0x03, 0x1E, 0x00, 0x1C, 0x3E, 0x3F, 0x7E, 0x77, 0x3F, 0x1E},
+	{0x00, 0x20, 0x58, 0x01, 0x19, 0x41, 0x03, 0x1E, 0x00, 0x1C, 0x3E, 0x3F, 0x1F, 0x27, 0x3F, 0x1E},
+	{0x00, 0x00, 0x00, 0x10, 0x0C, 0x10, 0x0C, 0x00, 0x00, 0x00, 0x00, 0x08, 0x0C, 0x08, 0x0C, 0x00},
+	{0x00, 0x00, 0x00, 0x10, 0x0C, 0x10, 0x0C, 0x18, 0x00, 0x00, 0x00, 0x08, 0x0C, 0x08, 0x3C, 0x18},
+	{0x00, 0x00, 0x08, 0x16, 0x0C, 0x00, 0x00, 0x06, 0x00, 0x00, 0x04, 0x0E, 0x3C, 0x18, 0x0C, 0x06},
+	{0x00, 0x00, 0x00, 0x60, 0x3F, 0x40, 0x3F, 0x00, 0x00, 0x00, 0x00, 0x1E, 0x3F, 0x3E, 0x3F, 0x00},
+	{0x00, 0x00, 0x30, 0x00, 0x00, 0x06, 0x0C, 0x18, 0x00, 0x00, 0x00, 0x18, 0x0C, 0x1E, 0x3C, 0x18},
+	{0x00, 0x20, 0x58, 0x33, 0x06, 0x0C, 0x10, 0x0C, 0x00, 0x1C, 0x3E, 0x3F, 0x1E, 0x0C, 0x08, 0x0C},
+	{0x00, 0x20, 0x58, 0x19, 0x11, 0x17, 0x00, 0x1E, 0x00, 0x1C, 0x3E, 0x77, 0x7F, 0x77, 0x3C, 0x1E},
+	{0x00, 0x10, 0x20, 0x18, 0x01, 0x19, 0x11, 0x33, 0x00, 0x08, 0x1C, 0x7E, 0x7F, 0x7F, 0x77, 0x33},
+	{0x00, 0x60, 0x58, 0x03, 0x18, 0x11, 0x03, 0x3E, 0x00, 0x1C, 0x3E, 0x7F, 0x7E, 0x77, 0x7F, 0x3E},
+	{0x00, 0x20, 0x58, 0x13, 0x10, 0x10, 0x03, 0x1E, 0x00, 0x1C, 0x3E, 0x73, 0x70, 0x76, 0x3F, 0x1E},
+	{0x00, 0x60, 0x50, 0x10, 0x11, 0x13, 0x06, 0x3C, 0x00, 0x18, 0x3C, 0x76, 0x77, 0x7F, 0x7E, 0x3C},
+	{0x00, 0x60, 0x5F, 0x00, 0x1C, 0x10, 0x00, 0x3F, 0x00, 0x1E, 0x3F, 0x78, 0x7C, 0x70, 0x7E, 0x3F},
+	{0x00, 0x60, 0x5F, 0x00, 0x1C, 0x10, 0x10, 0x30, 0x00, 0x1E, 0x3F, 0x78, 0x7C, 0x70, 0x70, 0x30},
+	{0x00, 0x20, 0x5E, 0x1C, 0x11, 0x11, 0x03, 0x1E, 0x00, 0x1C, 0x3E, 0x72, 0x77, 0x77, 0x3F, 0x1E},
+	{0x00, 0x66, 0x55, 0x01, 0x19, 0x11, 0x11, 0x33, 0x00, 0x00, 0x33, 0x7F, 0x7F, 0x77, 0x77, 0x33},
+	{0x00, 0x30, 0x06, 0x04, 0x04, 0x04, 0x00, 0x1E, 0x00, 0x0C, 0x1E, 0x1C, 0x1C, 0x1C, 0x3C, 0x1E},
+	{0x00, 0x1C, 0x09, 0x01, 0x01, 0x41, 0x03, 0x1E, 0x00, 0x02, 0x0F, 0x07, 0x07, 0x27, 0x3F, 0x1E},
+	{0x00, 0x64, 0x5B, 0x06, 0x04, 0x10, 0x10, 0x33, 0x00, 0x02, 0x37, 0x7E, 0x7C, 0x7C, 0x76, 0x33},
+	{0x00, 0x60, 0x50, 0x10, 0x10, 0x10, 0x00, 0x3F, 0x00, 0x00, 0x30, 0x70, 0x70, 0x70, 0x7E, 0x3F},
+	{0x00, 0x42, 0x45, 0x09, 0x01, 0x19, 0x11, 0x33, 0x00, 0x00, 0x23, 0x77, 0x7F, 0x7F, 0x77, 0x33},
+	{0x00, 0x66, 0x45, 0x01, 0x11, 0x11, 0x11, 0x33, 0x00, 0x00, 0x33, 0x7F, 0x7F, 0x77, 0x77, 0x33},
+	{0x00, 0x20, 0x58, 0x11, 0x11, 0x11, 0x03, 0x1E, 0x00, 0x1C, 0x3E, 0x77, 0x77, 0x77, 0x3F, 0x1E},
+	{0x00, 0x60, 0x58, 0x03, 0x1E, 0x10, 0x10, 0x30, 0x00, 0x1C, 0x3E, 0x7F, 0x7E, 0x70, 0x70, 0x30},
+	{0x00, 0x20, 0x58, 0x11, 0x11, 0x11, 0x00, 0x1F, 0x00, 0x1C, 0x3E, 0x77, 0x7B, 0x7D, 0x3E, 0x1F},
+	{0x00, 0x60, 0x58, 0x03, 0x06, 0x10, 0x10, 0x33, 0x00, 0x1C, 0x3E, 0x7F, 0x7E, 0x7C, 0x76, 0x33},
+	{0x00, 0x20, 0x5F, 0x00, 0x18, 0x01, 0x03, 0x3E, 0x00, 0x1E, 0x3F, 0x3C, 0x1E, 0x07, 0x7F, 0x3E},
+	{0x00, 0x70, 0x27, 0x04, 0x04, 0x04, 0x04, 0x0C, 0x00, 0x0E, 0x3F, 0x1C, 0x1C, 0x1C, 0x1C, 0x0C},
+	{0x00, 0x66, 0x55, 0x11, 0x11, 0x11, 0x03, 0x1E, 0x00, 0x00, 0x33, 0x77, 0x77, 0x77, 0x3F, 0x1E},
+	{0x00, 0x66, 0x55, 0x11, 0x11, 0x03, 0x06, 0x0C, 0x00, 0x00, 0x33, 0x77, 0x77, 0x3F, 0x1E, 0x0C},
+	{0x00, 0x66, 0x55, 0x15, 0x01, 0x19, 0x31, 0x21, 0x00, 0x00, 0x33, 0x6B, 0x7F, 0x7F, 0x73, 0x21},
+	{0x00, 0x64, 0x0B, 0x06, 0x00, 0x18, 0x11, 0x33, 0x00, 0x02, 0x37, 0x1E, 0x3C, 0x7E, 0x77, 0x33},
+	{0x00, 0x66, 0x55, 0x0B, 0x06, 0x04, 0x04, 0x0C, 0x00, 0x00, 0x33, 0x37, 0x1E, 0x1C, 0x1C, 0x0C},
+	{0x00, 0x60, 0x33, 0x06, 0x0C, 0x58, 0x00, 0x3F, 0x00, 0x1E, 0x3F, 0x1E, 0x3C, 0x38, 0x7E, 0x3F},
+	{0x00, 0x30, 0x2E, 0x08, 0x08, 0x08, 0x00, 0x1E, 0x00, 0x0C, 0x1E, 0x38, 0x38, 0x38, 0x3C, 0x1E},
+	{0x00, 0x60, 0x00, 0x00, 0x00, 0x00, 0x01, 0x01, 0x00, 0x00, 0x30, 0x18, 0x0C, 0x06, 0x03, 0x01},
+	{0x00, 0x38, 0x12, 0x02, 0x02, 0x02, 0x02, 0x1E, 0x00, 0x04, 0x1E, 0x0E, 0x0E, 0x0E, 0x3E, 0x1E},
+	{0x00, 0x10, 0x20, 0x18, 0x33, 0x00, 0x00, 0x00, 0x00, 0x08, 0x1C, 0x7E, 0x33, 0x00, 0x00, 0x00},
+	{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x60, 0x3F, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x1E, 0x3F},
 };
 // Copyright 2016-2024 Timo Kloss
 // Copyright 2021-2026 Martin Mauchauffée
@@ -12825,7 +13147,7 @@ void prtclib_update(struct Core *core, struct ParticlesLib *lib)
 							sign = pcg32_boundedrand_r(&pcg, 2) * 2 - 1;
 							sprite_distance_x = (float)pcg32_boundedrand_r(&pcg, outer * 2) - outer;
 							sprite_distance_y =
-							((float)pcg32_boundedrand_r(&pcg, outer - inner) + inner) * sign * -shape;
+								((float)pcg32_boundedrand_r(&pcg, outer - inner) + inner) * sign * -shape;
 						}
 						else
 						{
@@ -12959,7 +13281,7 @@ bool sprlib_isSpriteOnScreen(struct Sprite *sprite)
 {
 	int size = (sprite->attr.size + 1) << 3;
 	return ((sprite->x / 16) < SCREEN_WIDTH + SPRITE_OFFSET_X && (sprite->y / 16) < SCREEN_HEIGHT + SPRITE_OFFSET_Y &&
-			(sprite->x / 16) + size > SPRITE_OFFSET_X && (sprite->y / 16) + size > SPRITE_OFFSET_Y);
+		(sprite->x / 16) + size > SPRITE_OFFSET_X && (sprite->y / 16) + size > SPRITE_OFFSET_Y);
 }
 
 bool sprlib_checkSingleCollision(struct SpritesLib *lib, struct Sprite *sprite, struct Sprite *otherSprite)
@@ -13011,7 +13333,7 @@ bool sprlib_checkSingleCollision(struct SpritesLib *lib, struct Sprite *sprite, 
 						{
 							// reverse bits
 							val =
-							(((val * 0x0802LU & 0x22110LU) | (val * 0x8020LU & 0x88440LU)) * 0x10101LU >> 16) & 0xFF;
+								(((val * 0x0802LU & 0x22110LU) | (val * 0x8020LU & 0x88440LU)) * 0x10101LU >> 16) & 0xFF;
 						}
 						source1 |= val << (24 - (i << 3));
 					}
@@ -13027,7 +13349,7 @@ bool sprlib_checkSingleCollision(struct SpritesLib *lib, struct Sprite *sprite, 
 						{
 							// reverse bits
 							val =
-							(((val * 0x0802LU & 0x22110LU) | (val * 0x8020LU & 0x88440LU)) * 0x10101LU >> 16) & 0xFF;
+								(((val * 0x0802LU & 0x22110LU) | (val * 0x8020LU & 0x88440LU)) * 0x10101LU >> 16) & 0xFF;
 						}
 
 						int shift = (24 - (i << 3) - diffX);
@@ -13114,8 +13436,8 @@ void runStartupSequence(struct Core *core)
 	if(strcmp(entries[0].comment, "FONT") == 0)
 	{
 		memcpy(&core->machine->videoRam.characters[FONT_CHAR_OFFSET],
-		&core->machine->cartridgeRom[entries[0].start],
-		entries[0].length);
+			&core->machine->cartridgeRom[entries[0].start],
+			entries[0].length);
 	}
 
 	// default palettes
@@ -13180,7 +13502,7 @@ void runStartupSequence(struct Core *core)
 	for(int i = 0; i < NUM_VOICES; i++)
 	{
 		struct Voice *voice = &core->machine->audioRegisters.voices[i];
-		voice->attr.pulseWidth = 8;
+		voice->attr.pulseWidth = 7;
 		voice->status.volume = 15;
 		voice->status.mix = 3;
 		voice->envS = 15;
@@ -13307,12 +13629,12 @@ void txtlib_scrollWindowIfNeeded(struct TextLib *lib)
 	{
 		// scroll
 		txtlib_scroll(plane,
-		lib->windowX,
-		lib->windowY,
-		lib->windowX + lib->windowWidth - 1,
-		lib->windowY + lib->windowHeight - 1,
-		0,
-		-1);
+			lib->windowX,
+			lib->windowY,
+			lib->windowX + lib->windowWidth - 1,
+			lib->windowY + lib->windowHeight - 1,
+			0,
+			-1);
 
 		// clear bottom line
 		int py = lib->windowY + lib->windowHeight - 1;
@@ -13368,10 +13690,10 @@ count_word_len:
 				printableLetter -= 32;
 			}
 			txtlib_setCellAt(plane,
-			lib->cursorX + lib->windowX,
-			lib->cursorY + lib->windowY,
-			lib->fontCharOffset + (printableLetter - 32),
-			lib->charAttr);
+				lib->cursorX + lib->windowX,
+				lib->cursorY + lib->windowY,
+				lib->fontCharOffset + (printableLetter - 32),
+				lib->charAttr);
 			if(lib->windowBg != OVERLAY_BG)
 			{
 				lib->core->interpreter->cycles += 2;
@@ -13406,7 +13728,7 @@ bool txtlib_deleteBackward(struct TextLib *lib)
 
 	// clear cursor
 	txtlib_setCellAt(
-	plane, lib->cursorX + lib->windowX, lib->cursorY + lib->windowY, lib->fontCharOffset, lib->charAttr);
+		plane, lib->cursorX + lib->windowX, lib->cursorY + lib->windowY, lib->fontCharOffset, lib->charAttr);
 
 	// move back cursor
 	if(lib->cursorX > 0)
@@ -13425,7 +13747,7 @@ bool txtlib_deleteBackward(struct TextLib *lib)
 
 	// clear cell
 	txtlib_setCellAt(
-	plane, lib->cursorX + lib->windowX, lib->cursorY + lib->windowY, lib->fontCharOffset, lib->charAttr);
+		plane, lib->cursorX + lib->windowX, lib->cursorY + lib->windowY, lib->fontCharOffset, lib->charAttr);
 
 	lib->core->interpreter->cycles += 4;
 	return true;
@@ -13521,7 +13843,7 @@ bool txtlib_inputUpdate(struct TextLib *lib)
 		{
 			// clear cursor
 			txtlib_setCellAt(
-			plane, lib->cursorX + lib->windowX, lib->cursorY + lib->windowY, lib->fontCharOffset, lib->charAttr);
+				plane, lib->cursorX + lib->windowX, lib->cursorY + lib->windowY, lib->fontCharOffset, lib->charAttr);
 			txtlib_printText(lib, "\n");
 			done = true;
 		}
@@ -13543,10 +13865,10 @@ bool txtlib_inputUpdate(struct TextLib *lib)
 	if(!done)
 	{
 		txtlib_setCellAt(plane,
-		lib->cursorX + lib->windowX,
-		lib->cursorY + lib->windowY,
-		lib->fontCharOffset + (lib->blink++ < 30 ? 63 : 0),
-		lib->charAttr);
+			lib->cursorX + lib->windowX,
+			lib->cursorY + lib->windowY,
+			lib->fontCharOffset + (lib->blink++ < 30 ? 63 : 0),
+			lib->charAttr);
 		if(lib->blink == 60)
 		{
 			lib->blink = 0;
@@ -13654,8 +13976,7 @@ void txtlib_setCells(struct TextLib *lib, int fromX, int fromY, int toX, int toY
 	lib->core->interpreter->cycles += (toX - fromX + 1) * (toY - fromY + 1) * 2;
 }
 
-void txtlib_setCellsAttr(
-struct TextLib *lib, int fromX, int fromY, int toX, int toY, int pal, int flipX, int flipY, int prio)
+void txtlib_setCellsAttr(struct TextLib *lib, int fromX, int fromY, int toX, int toY, int pal, int flipX, int flipY, int prio)
 {
 	struct Plane *plane = txtlib_getBackground(lib, lib->bg);
 	for(int y = fromY; y <= toY; y++)
@@ -13809,12 +14130,12 @@ static void stdout_callback(log_Event *ev)
 	buf[strftime(buf, sizeof(buf), "%H:%M:%S", ev->time)] = '\0';
 #ifdef LOG_USE_COLOR
 	fprintf(ev->udata,
-	"%s %s%-3s\x1b[0m \x1b[90m%s:%d:\x1b[0m ",
-	buf,
-	level_colors[ev->level],
-	level_strings[ev->level],
-	ev->file,
-	ev->line);
+		"%s %s%-3s\x1b[0m \x1b[90m%s:%d:\x1b[0m ",
+		buf,
+		level_colors[ev->level],
+		level_strings[ev->level],
+		ev->file,
+		ev->line);
 #else
 	fprintf(ev->udata, "%s %-5s %s:%d: ", buf, level_strings[ev->level], ev->file, ev->line);
 #endif
@@ -13901,10 +14222,10 @@ static void init_event(log_Event *ev, void *udata)
 void log_log(int level, const char *file, int line, const char *fmt, ...)
 {
 	log_Event ev = {
-	.fmt = fmt,
-	.file = file,
-	.line = line,
-	.level = level,
+		.fmt = fmt,
+		.file = file,
+		.line = line,
+		.level = level,
 	};
 
 	lock();
@@ -13953,54 +14274,299 @@ void log_log(int level, const char *file, int line, const char *fmt, ...)
 #include <math.h>
 #include <string.h>
 
-const double envRates[16] = {256.0 / 0.002,
-256.0 / 0.03,
-256.0 / 0.06,
-256.0 / 0.09,
-256.0 / 0.14,
-256.0 / 0.21,
-256.0 / 0.31,
-256.0 / 0.47,
-256.0 / 0.70,
-256.0 / 1.0,
-256.0 / 1.6,
-256.0 / 2.4,
-256.0 / 3.5,
-256.0 / 5.0,
-256.0 / 8.0,
-256.0 / 12.0};
+const double envRates[16] =
+{
+	256.0 / 0.002,
+	256.0 / 0.03,
+	256.0 / 0.06,
+	256.0 / 0.09,
+	256.0 / 0.14,
+	256.0 / 0.21,
+	256.0 / 0.31,
+	256.0 / 0.47,
+	256.0 / 0.70,
+	256.0 / 1.0,
+	256.0 / 1.6,
+	256.0 / 2.4,
+	256.0 / 3.5,
+	256.0 / 5.0,
+	256.0 / 8.0,
+	256.0 / 12.0
+};
 
-const double lfoRates[16] = {0.12 * 256.0,
-0.16 * 256.0,
-0.23 * 256.0,
-0.32 * 256.0,
-0.44 * 256.0,
-0.62 * 256.0,
-0.87 * 256.0,
-1.2 * 256.0,
-1.7 * 256.0,
-2.4 * 256.0,
-3.3 * 256.0,
-4.7 * 256.0,
-6.6 * 256.0,
-9.2 * 256.0,
-12.9 * 256.0,
-18.0 * 256.0};
+static const double lfoRates[16] = {
+	0.12 * 256.0,
+	0.16 * 256.0,
+	0.23 * 256.0,
+	0.32 * 256.0,
+	0.44 * 256.0,
+	0.62 * 256.0,
+	0.87 * 256.0,
+	1.2 * 256.0,
+	1.7 * 256.0,
+	2.4 * 256.0,
+	3.3 * 256.0,
+	4.7 * 256.0,
+	6.6 * 256.0,
+	9.2 * 256.0,
+	12.9 * 256.0,
+	18.0 * 256.0
+};
 
-const int lfoAmounts[16] = {0, 1, 2, 4, 6, 9, 12, 17, 24, 34, 48, 67, 93, 131, 183, 256};
+static const int lfoAmounts[16] = {
+	0,
+	1,
+	2,
+	4,
+	6,
+	9,
+	12,
+	17,
+	24,
+	34,
+	48,
+	67,
+	93,
+	131,
+	183,
+	256
+};
 
-void audio_renderAudioBuffer(struct AudioRegisters *lifeRegisters, struct AudioRegisters *registers,
-struct AudioInternals *internals, int16_t *stereoOutput, int numSamples, int outputFrequency, int volume);
+static const int pulseWidths[16] = {
+	239,
+	237,
+	234,
+	231,
+	227,
+	223,
+	218,
+	213,
+	207,
+	199,
+	191,
+	181,
+	171,
+	158,
+	144,
+	127
+};
+
+static const int triangleRises[16] = {
+	16,
+	22,
+	29,
+	39,
+	53,
+	71,
+	95,
+	128,
+	128,
+	161,
+	185,
+	203,
+	217,
+	227,
+	234,
+	240
+};
+
+// sauce: Claude Opus 5
+// Extra sine partials in semitones, indexed by the same pulse width nibble.
+// 7 is the bare sine, below it the stack sits under the played note and above
+// it over the note, so the shared LFO invert bit picks the side as it does for
+// the noise tilt.
+struct SineStack
+{
+	int8_t count;
+	int8_t semitone[NUM_SINE_PARTIALS];
+};
+
+// sauce: Claude Opus 5
+static const struct SineStack sineStacks[16] = {
+	{2, {-4, -8}}, //  0  augmented, downward
+	{2, {-3, -6}}, //  1  diminished, downward
+	{1, {-9, 0}},  //  2  major sixth below
+	{1, {-7, 0}},  //  3  fifth below
+	{1, {-5, 0}},  //  4  fourth below
+	{1, {-4, 0}},  //  5  major third below
+	{1, {-3, 0}},  //  6  minor third below
+	{0, {0, 0}},   //  7  bare sine
+	{1, {3, 0}},   //  8  minor third
+	{1, {4, 0}},   //  9  major third
+	{1, {5, 0}},   // 10  fourth
+	{1, {7, 0}},   // 11  fifth
+	{1, {9, 0}},   // 12  major sixth
+	{2, {3, 6}},   // 13  diminished
+	{2, {4, 7}},   // 14  major triad
+	{2, {7, 12}}   // 15  fifth + octave
+};
+
+// sauce: Claude Opus 5
+// Q8 weights of a stack, root first, indexed by the number of added partials.
+// Every row sums to 256, so even the worst case of all partials peaking in
+// phase lands exactly on full scale and the four voice headroom budget is
+// unchanged. The root keeps the largest share, so the played note stays the
+// fundamental instead of turning into one member of a chord.
+static const int sineWeights[NUM_SINE_PARTIALS + 1][NUM_SINE_PARTIALS + 1] = {
+	{256, 0, 0},   // bare
+	{154, 102, 0}, // dyad   0.60 / 0.40
+	{128, 77, 51}  // triad  0.50 / 0.30 / 0.20
+};
+
+// sauce: Claude Opus 5
+// 2^(n/12), indexed by semitone + 12
+static const double semitoneRatios[25] = {
+	0.5000000000000000, // -12
+	0.5297315471619477,
+	0.5612310241546865,
+	0.5946035575013605,
+	0.6299605249474366,
+	0.6674199270850172,
+	0.7071067811865476,
+	0.7491535384383408,
+	0.7937005259840998,
+	0.8408964152537145,
+	0.8908987181403393,
+	0.9438743126816935,
+	1.0000000000000000, // 0
+	1.0594630943592953,
+	1.1224620483093730,
+	1.1892071150027210,
+	1.2599210498948732,
+	1.3348398541700344,
+	1.4142135623730951,
+	1.4983070768766815,
+	1.5874010519681994,
+	1.6817928305074290,
+	1.7817974362806785,
+	1.8877486253633868,
+	2.0000000000000000 // 12
+};
+
+// sauce: Claude Opus 5
+// Spectral tilt of the noise waveform, indexed by the same pulse width nibble.
+// 128 is flat, below is a lowpass, above a highpass, at 16 units per octave.
+static const int noiseTilts[16] = {
+	16,
+	32,
+	48,
+	64,
+	80,
+	96,
+	112,
+	128,
+	142,
+	156,
+	170,
+	184,
+	198,
+	212,
+	226,
+	240
+};
+
+// sauce: Claude Opus 5
+#define NOISE_TILT_NEUTRAL 128
+#define NOISE_TILT_MIN 16
+#define NOISE_TILT_MAX 240
+#define NOISE_TILT_LP_REF 16000.0f // lowpass corner in Hz at the neutral tilt
+#define NOISE_TILT_HP_REF 80.0f    // highpass corner in Hz at the neutral tilt
+#define NOISE_TILT_OCTAVE 16.0f    // tilt units per octave of corner frequency
+#define NOISE_TILT_HP_CLOCK 0.25f  // highpass corner stays below this * LFSR clock
+#define NOISE_TILT_TARGET 0.55f    // output RMS relative to the raw LFSR RMS
+#define NOISE_TILT_MAX_GAIN 3.0f   // ceiling on the makeup gain
+
+// sauce: Claude Opus 5
+// The raw LFSR output is uniform (crest factor sqrt(3)) but anything filtered out
+// of it is gaussian (crest factor ~3.15), so at a common peak ceiling the filtered
+// signal can only carry 0.55 of the RMS. NOISE_TILT_TARGET applies to the neutral
+// tilt as well, which costs 5.2 dB but keeps every width equally loud, so the LFO
+// can sweep across the centre without a step.
+static void audio_updateNoiseTilt(struct VoiceInternals *voiceIn, int tilt, int freq, int outputFrequency)
+{
+	float fs = (float)outputFrequency;
+	float rho = (float)freq / fs;
+	float fc = (tilt < NOISE_TILT_NEUTRAL ? NOISE_TILT_LP_REF : NOISE_TILT_HP_REF)
+		* exp2f((float)(tilt - NOISE_TILT_NEUTRAL) / NOISE_TILT_OCTAVE);
+
+	if(tilt > NOISE_TILT_NEUTRAL)
+	{
+		// a highpass reaching far past the LFSR clock leaves a train of decaying
+		// spikes whose crest factor no makeup gain can be normalised against
+		if(fc > 0.25f * fs)
+			fc = 0.25f * fs;
+		if(fc > NOISE_TILT_HP_CLOCK * (float)freq)
+			fc = NOISE_TILT_HP_CLOCK * (float)freq;
+	}
+
+	float k = 1.0f - expf(-6.2831853f * fc / fs);
+	if(k > 1.0f)
+		k = 1.0f;
+	if(k < 1.0e-6f)
+		k = 1.0e-6f;
+
+	// The LFSR output is an AR(1) process with a = 0.5 at its own clock rate, but
+	// it is sample-and-held at the output rate, so the correlation the filter
+	// actually sees depends on the note being played. Assuming a flat 0.5 here
+	// overestimates the makeup gain by up to 15 dB at low pitch.
+	float a = (rho < 1.0f) ? (1.0f - 0.5f * rho) : exp2f(-rho);
+	float p = 1.0f - k;
+	float ompa = (1.0f - a) + k * a; // 1 - p*a, grouped to avoid cancellation in float
+	float den = (2.0f - k) * ompa;
+	float v = (tilt < NOISE_TILT_NEUTRAL)
+		? k * (2.0f - ompa) / den    // Var(lowpass) / Var(in)
+		: 2.0f * (1.0f - a) * p * p / den; // Var(highpass) / Var(in)
+	if(v < 1.0e-9f)
+		v = 1.0e-9f;
+
+	float gain = NOISE_TILT_TARGET / sqrtf(v);
+	if(gain > NOISE_TILT_MAX_GAIN)
+		gain = NOISE_TILT_MAX_GAIN;
+
+	voiceIn->noiseTiltK = k;
+	voiceIn->noiseTiltGain = gain;
+	voiceIn->noiseTiltIndex = tilt;
+	voiceIn->noiseTiltFreq = freq;
+}
+
+// sauce: Claude Opus 5
+// The table holds one cycle in 256 steps, the low 8 bits of the phase
+// interpolate between two of them, which keeps the distortion below -60 dB
+// without a libm call in the sample loop.
+static inline int32_t audio_sine(const int16_t *table, uint16_t phase)
+{
+	int i = phase >> 8;
+	int frac = phase & 0xFF;
+	return table[i] + (((int32_t)(table[i + 1] - table[i]) * frac) >> 8);
+}
+
+void audio_renderAudioBuffer(struct AudioRegisters *lifeRegisters, struct AudioRegisters *registers, struct AudioInternals *internals, int16_t *stereoOutput, int numSamples, int outputFrequency, int volume);
 
 void audio_reset(struct Core *core)
 {
 	struct AudioInternals *internals = &core->machineInternals->audioInternals;
+
+	// sauce: Claude Opus 5
+	for(int i = 0; i < SINE_TABLE_SIZE; i++)
+	{
+		internals->sineTable[i] = (int16_t)lrintf(32767.0f * sinf(6.2831853f * (float)i / (float)SINE_TABLE_SIZE));
+	}
+	internals->sineTable[SINE_TABLE_SIZE] = internals->sineTable[0];
 
 	for(int i = 0; i < NUM_VOICES; i++)
 	{
 		struct VoiceInternals *voiceIn = &internals->voices[i];
 		voiceIn->noiseRandom = 0xABCD;
 		voiceIn->lfoRandom = 0xABCD;
+		// sauce: Claude Opus 5
+		for(int p = 0; p < NUM_SINE_PARTIALS; p++)
+		{
+			voiceIn->partialAccumulator[p] = 0.0;
+		}
+		voiceIn->noiseTiltState = 0.0f;
+		// 0 is never a legal tilt, so this forces a recompute before first use
+		voiceIn->noiseTiltIndex = 0;
+		voiceIn->noiseTiltFreq = 0;
 	}
 	internals->writeBufferIndex = -1;
 }
@@ -14050,12 +14616,12 @@ void audio_renderAudio(struct Core *core, int16_t *stereoOutput, int numSamples,
 		}
 		int readBufferIndex = internals->readBufferIndex;
 		audio_renderAudioBuffer(lifeRegisters,
-		&internals->buffers[readBufferIndex],
-		internals,
-		&stereoOutput[offset],
-		numSamplesPerUpdate,
-		outputFrequency,
-		volume);
+			&internals->buffers[readBufferIndex],
+			internals,
+			&stereoOutput[offset],
+			numSamplesPerUpdate,
+			outputFrequency,
+			volume);
 		if(internals->writeBufferIndex != -1 && internals->writeBufferIndex != readBufferIndex)
 		{
 			internals->readBufferIndex = (readBufferIndex + 1) % NUM_AUDIO_BUFFERS;
@@ -14065,10 +14631,9 @@ void audio_renderAudio(struct Core *core, int16_t *stereoOutput, int numSamples,
 	}
 }
 
-void audio_renderAudioBuffer(struct AudioRegisters *lifeRegisters, struct AudioRegisters *registers,
-struct AudioInternals *internals, int16_t *stereoOutput, int numSamples, int outputFrequency, int volume)
+void audio_renderAudioBuffer(struct AudioRegisters *lifeRegisters, struct AudioRegisters *registers, struct AudioInternals *internals, int16_t *stereoOutput, int numSamples, int outputFrequency, int volume)
 {
-	double overflow = 0xFFFFFF;
+	double overflow = 0x1000000;
 
 	for(int v = 0; v < NUM_VOICES; v++)
 	{
@@ -14106,7 +14671,9 @@ struct AudioInternals *internals, int16_t *stereoOutput, int numSamples, int out
 					continue;
 
 				int volume = voice->status.volume << 4;
-				int pulseWidth = voice->attr.pulseWidth << 4;
+				int pulseWidth = pulseWidths[voice->attr.pulseWidth];
+				int triangleRise = triangleRises[voice->attr.pulseWidth];
+				enum WaveType waveType = voice->attr.wave;
 
 				// --- LFO ---
 
@@ -14186,20 +14753,64 @@ struct AudioInternals *internals, int16_t *stereoOutput, int numSamples, int out
 
 				int pwMod = lfoSample * pwAmount >> 4;
 				if(voice->lfoAttr.invert)
+				{
 					pulseWidth -= pwMod;
+					triangleRise -= pwMod;
+				}
 				else
+				{
 					pulseWidth += pwMod;
-				if(pulseWidth < 0)
-					pulseWidth = 0;
-				if(pulseWidth > 254)
-					pulseWidth = 254;
+					triangleRise += pwMod;
+				}
+				if(pulseWidth < 16)
+					pulseWidth = 16;
+				if(pulseWidth > 239)
+					pulseWidth = 239;
+				if(triangleRise < 16)
+					triangleRise = 16;
+				if(triangleRise > 240)
+					triangleRise = 240;
 
-				//                if (i == 0 && v == 0) printf("pulseWidth %d\n", pulseWidth);
+				// sauce: Claude Opus 5
+				// the noise tilt shares the width nibble and the same modulation,
+				// so an LFO sweeps it at the full 256 step resolution
+				int noiseTilt = NOISE_TILT_NEUTRAL;
+				if(waveType == WaveTypeNoise)
+				{
+					noiseTilt = noiseTilts[voice->attr.pulseWidth];
+					if(voice->lfoAttr.invert)
+						noiseTilt -= pwMod;
+					else
+						noiseTilt += pwMod;
+					if(noiseTilt < NOISE_TILT_MIN)
+						noiseTilt = NOISE_TILT_MIN;
+					if(noiseTilt > NOISE_TILT_MAX)
+						noiseTilt = NOISE_TILT_MAX;
+				}
+
+				// sauce: Claude Opus 5
+				// the sine reads the width nibble as an interval, which is
+				// discrete, so the width LFO steps the index instead of gliding
+				// through it. The rounding lets an amount of 15 reach both ends.
+				int sineInterval = 0;
+				if(waveType == WaveTypeSine)
+				{
+					int step = (pwMod + 8) >> 4;
+					sineInterval = voice->lfoAttr.invert ? (voice->attr.pulseWidth - step)
+														 : (voice->attr.pulseWidth + step);
+					if(sineInterval < 0)
+						sineInterval = 0;
+					if(sineInterval > 15)
+						sineInterval = 15;
+				}
+
+				//  if (i == 0 && v == 0) printf("pulseWidth %d\n", pulseWidth);
 
 				// --- WAVEFORM GENERATOR ---
 
 				uint16_t accu16Last = ((uint32_t)voiceIn->accumulator >> 4) & 0xFFFF;
-				double accumulator = voiceIn->accumulator + (double)freq * 65536.0 / (double)outputFrequency;
+				double phaseInc = (double)freq * 65536.0 / (double)outputFrequency;
+				double accumulator = voiceIn->accumulator + phaseInc;
 				if(accumulator >= overflow)
 				{
 					// avoid overflow and loss of precision
@@ -14210,11 +14821,30 @@ struct AudioInternals *internals, int16_t *stereoOutput, int numSamples, int out
 
 				uint16_t sample = 0x7FFF; // silence
 
-				enum WaveType waveType = voice->attr.wave;
 				switch(waveType)
 				{
-				case WaveTypeSawtooth: {
-					sample = accu16;
+				case WaveTypeSine: {
+					// sauce: Claude Opus 5
+					// the played note plus up to two partials at fixed musical
+					// intervals, the phases free running so a stack that is
+					// already ringing keeps its beat pattern
+					const struct SineStack *stack = &sineStacks[sineInterval];
+					const int *weight = sineWeights[stack->count];
+					int32_t mix = audio_sine(internals->sineTable, accu16) * weight[0];
+
+					for(int p = 0; p < stack->count; p++)
+					{
+						double partial = voiceIn->partialAccumulator[p]
+							+ phaseInc * semitoneRatios[stack->semitone[p] + 12];
+						if(partial >= overflow)
+						{
+							partial -= overflow;
+						}
+						voiceIn->partialAccumulator[p] = partial;
+						uint16_t partialAccu16 = ((uint32_t)partial >> 4) & 0xFFFF;
+						mix += audio_sine(internals->sineTable, partialAccu16) * weight[p + 1];
+					}
+					sample = (uint16_t)((mix >> 8) + 0x7FFF);
 					break;
 				}
 				case WaveTypePulse: {
@@ -14222,17 +14852,55 @@ struct AudioInternals *internals, int16_t *stereoOutput, int numSamples, int out
 					break;
 				}
 				case WaveTypeTriangle: {
-					sample = ((accu16 & 0x8000) ? ~(accu16 << 1) : (accu16 << 1));
+					// up, down, up
+					uint32_t rise = (uint32_t)triangleRise << 8;
+					uint16_t phase = accu16 + (uint16_t)(rise >> 1);
+					uint32_t s = (phase < rise)
+						? (((uint32_t)phase << 16) / rise)
+						: (((uint32_t)(0x10000 - phase) << 16) / (0x10000 - rise));
+					sample = (s > 0xFFFF) ? 0xFFFF : (uint16_t)s;
 					break;
 				}
 				case WaveTypeNoise: {
-					if((accu16 & 0x1000) != (accu16Last & 0x1000))
+					// sauce: Claude Opus 5
+					// bit 12 of accu16 toggles 16 times per cycle, so the LFSR clock
+					// rate in Hz equals the raw frequency register. Count the
+					// crossings instead of detecting one, or the clock saturates at
+					// one step per output sample above freq == outputFrequency.
+					int steps = (((uint32_t)accu16 >> 12) - ((uint32_t)accu16Last >> 12)) & 0x0F;
+					while(steps--)
 					{
 						uint16_t r = voiceIn->noiseRandom;
 						uint16_t bit = ((r >> 0) ^ (r >> 2) ^ (r >> 3) ^ (r >> 5)) & 1;
 						voiceIn->noiseRandom = (r >> 1) | (bit << 15);
 					}
-					sample = voiceIn->noiseRandom & 0xFFFF;
+
+					// sauce: Claude Opus 5
+					float x = (float)((int32_t)voiceIn->noiseRandom - 0x7FFF);
+					if(noiseTilt == NOISE_TILT_NEUTRAL)
+					{
+						// flat: no filter, only the trim that keeps the widths level
+						sample = (uint16_t)((int32_t)(x * NOISE_TILT_TARGET) + 0x7FFF);
+					}
+					else
+					{
+						if(noiseTilt != voiceIn->noiseTiltIndex || freq != voiceIn->noiseTiltFreq)
+						{
+							audio_updateNoiseTilt(voiceIn, noiseTilt, freq, outputFrequency);
+						}
+
+						float y = voiceIn->noiseTiltState + voiceIn->noiseTiltK * (x - voiceIn->noiseTiltState);
+						voiceIn->noiseTiltState = y;
+
+						float o = voiceIn->noiseTiltGain * ((noiseTilt < NOISE_TILT_NEUTRAL) ? y : (x - y));
+						// clamp before the cast, both to keep the 4 voice sum inside
+						// int16 and to keep the rounding below unbiased
+						if(o > 32768.0f)
+							o = 32768.0f;
+						else if(o < -32767.0f)
+							o = -32767.0f;
+						sample = (uint16_t)(((int32_t)(o + 32768.5f) - 32768) + 0x7FFF);
+					}
 					break;
 				}
 				}
@@ -14294,7 +14962,7 @@ struct AudioInternals *internals, int16_t *stereoOutput, int numSamples, int out
 				lifeRegisters->voices[v].peak = volume;
 
 				int16_t voiceSample =
-				(((int32_t)(sample - 0x7FFF)) * volume) >> 10; // 8 bit for volume, 2 bit for global
+					(((int32_t)(sample - 0x7FFF)) * volume) >> 10; // 8 bit for volume, 2 bit for global
 				if(voice->status.mix & 0x01)
 				{
 					leftOutput += voiceSample;
@@ -14318,8 +14986,8 @@ struct AudioInternals *internals, int16_t *stereoOutput, int numSamples, int out
 			filterBufferL[0] = leftOutput;
 			filterBufferR[0] = rightOutput;
 
-			leftOutput = ((filterBufferL[0] >> 4) + (filterBufferL[1] >> 1) + (filterBufferL[2] >> 4));
-			rightOutput = ((filterBufferR[0] >> 4) + (filterBufferR[1] >> 1) + (filterBufferR[2] >> 4));
+			leftOutput = ((filterBufferL[0] >> 2) + (filterBufferL[1] >> 1) + (filterBufferL[2] >> 2));
+			rightOutput = ((filterBufferR[0] >> 2) + (filterBufferR[1] >> 1) + (filterBufferR[2] >> 2));
 		}
 
 		stereoOutput[i++] = leftOutput >> volume;
@@ -14386,14 +15054,14 @@ void machine_reset(struct Core *core, bool resetPersistent)
 
 int machine_peek(struct Core *core, int address)
 {
-	if((address < 0)		 // outside mapped memory
-	   || (address > VM_MAX) // outside mapped memory
+	if((address < 0) // outside mapped memory
+	   || (address > VM_MAX)      // outside mapped memory
 	   // || (address >= 0x0f800 && address < 0x0fb00) // nothing 1
-	   || (address >= 0x0fefc && address < 0x0ff00) // nothing 2
-	   || (address >= 0x0ff34 && address < 0x0ff40) // nothing 3
-	   || (address >= 0x0ff94 && address < 0x0ffa0) // nothing 4
-	   || (address >= 0x0ffb0 && address < 0x10000) // nothing 5
-	)
+	   || (address >= 0x0fefc && address < 0x0ff00)      // nothing 2
+	   || (address >= 0x0ff34 && address < 0x0ff40)      // nothing 3
+	   || (address >= 0x0ff94 && address < 0x0ffa0)      // nothing 4
+	   || (address >= 0x0ffb0 && address < 0x10000)      // nothing 5
+	   )
 	{
 		return -1;
 	}
@@ -14462,15 +15130,15 @@ int32_t machine_peek_long(struct Core *core, int address, enum ErrorCode *errorC
 
 bool machine_poke(struct Core *core, int address, int value)
 {
-	if((address < 0)		   // outside mapped memory
-	   || (address >= 0x10000) // ROM
+	if((address < 0) // outside mapped memory
+	   || (address >= 0x10000)      // ROM
 	   // || (address >= 0x0f800 && address < 0x0fb00) // nothing 1
-	   || (address >= 0x0fefc && address < 0x0ff00) // nothing 2
-	   || (address >= 0x0ff34 && address < 0x0ff40) // nothing 3
-	   || (address >= 0x0ff88 && address < 0x0ffa0) // nothing 4
-	   || (address >= 0x0ffb0 && address < 0x10000) // nothing 5
-	   || (address >= 0x0ffa6 && address < 0x0ffb0) // manually mapped
-	)
+	   || (address >= 0x0fefc && address < 0x0ff00)      // nothing 2
+	   || (address >= 0x0ff34 && address < 0x0ff40)      // nothing 3
+	   || (address >= 0x0ff88 && address < 0x0ffa0)      // nothing 4
+	   || (address >= 0x0ffb0 && address < 0x10000)      // nothing 5
+	   || (address >= 0x0ffa6 && address < 0x0ffb0)      // manually mapped
+	   )
 	{
 		return false;
 	}
@@ -14611,72 +15279,80 @@ void machine_checkForTrakedMemoryAccess(struct Core *core, uint16_t address, boo
 
 #define OVERLAY_FLAG (1 << 6)
 
+// original lowresnx background color
+#if ABGR
+// AABBGGRR
+#define COMPAT_BACKGROUND 0xff4c6001
+#else
+#define COMPAT_BACKGROUND 0xff01604c
+#endif
+
 // FAMICUBE
 uint32_t better_palette[] = {
-0xff000000,
-0xffe03c28,
-0xffffffff,
-0xffd7d7d7,
-0xffa8a8a8,
-0xff7b7b7b,
-0xff343434,
-0xff151515,
-0xff0d2030,
-0xff415d66,
-0xff71a6a1,
-0xffbdffca,
-0xff25e2cd,
-0xff0a98ac,
-0xff005280,
-0xff00604b,
-0xff20b562,
-0xff58d332,
-0xff139d08,
-0xff004e00,
-0xff172808,
-0xff376d03,
-0xff6ab417,
-0xff8cd612,
-0xffbeeb71,
-0xffeeffa9,
-0xffb6c121,
-0xff939717,
-0xffcc8f15,
-0xffffbb31,
-0xffffe737,
-0xfff68f37,
-0xffad4e1a,
-0xff231712,
-0xff5c3c0d,
-0xffae6c37,
-0xffc59782,
-0xffe2d7b5,
-0xff4f1507,
-0xff823c3d,
-0xffda655e,
-0xffe18289,
-0xfff5b784,
-0xffffe9c5,
-0xffff82ce,
-0xffcf3c71,
-0xff871646,
-0xffa328b3,
-0xffcc69e4,
-0xffd59cfc,
-0xfffec9ed,
-0xffe2c9ff,
-0xffa675fe,
-0xff6a31ca,
-0xff5a1991,
-0xff211640,
-0xff3d34a5,
-0xff6264dc,
-0xff9ba0ef,
-0xff98dcff,
-0xff5ba8ff,
-0xff0a89ff,
-0xff024aca,
-0xff00177d,
+	0xff000000,
+	0xffe03c28,
+	0xffffffff,
+	0xffd7d7d7,
+	0xffa8a8a8,
+	0xff7b7b7b,
+	0xff343434,
+	0xff151515,
+	0xff0d2030,
+	0xff415d66,
+	0xff71a6a1,
+	0xffbdffca,
+	0xff25e2cd,
+	0xff0a98ac,
+	0xff005280,
+	0xff00604b,
+	0xff20b562,
+	0xff58d332,
+	0xff139d08,
+	0xff004e00,
+	0xff172808,
+	0xff376d03,
+	0xff6ab417,
+	0xff8cd612,
+	0xffbeeb71,
+	0xffeeffa9,
+	0xffb6c121,
+	0xff939717,
+	0xffcc8f15,
+	0xffffbb31,
+	0xffffe737,
+	0xfff68f37,
+	0xffad4e1a,
+	0xff231712,
+	0xff5c3c0d,
+	0xffae6c37,
+	0xffc59782,
+	0xffe2d7b5,
+	0xff4f1507,
+	0xff823c3d,
+	0xffda655e,
+	0xffe18289,
+	0xfff5b784,
+	0xffffe9c5,
+	0xffff82ce,
+	0xffcf3c71,
+	0xff871646,
+	0xffa328b3,
+	0xffcc69e4,
+	0xffd59cfc,
+	0xfffec9ed,
+	0xffe2c9ff,
+	0xffa675fe,
+	0xff6a31ca,
+	0xff5a1991,
+	0xff211640,
+	0xff3d34a5,
+	0xff6264dc,
+	0xff9ba0ef,
+	0xff98dcff,
+	0xff5ba8ff,
+	0xff0a89ff,
+	0xff024aca,
+	0xff00177d,
 };
 
 int video_getCharacterPixel(struct Character *character, int x, int y)
@@ -14686,8 +15362,7 @@ int video_getCharacterPixel(struct Character *character, int x, int y)
 	return b0 | (b1 << 1);
 }
 
-void video_renderPlane(struct Character *characters, struct Plane *plane, int sizeMode, int y, int scrollX, int scrollY,
-int overlayFlag, uint8_t *scanlineBuffer, bool opaque, bool doubledX, bool doubledY)
+void video_renderPlane(struct Character *characters, struct Plane *plane, int sizeMode, int y, int scrollX, int scrollY, int overlayFlag, uint8_t *scanlineBuffer, bool opaque, bool doubledX, bool doubledY)
 {
 	int divShift = sizeMode ? 4 : 3; // TODO: deleteme
 	int planeY = (y + scrollY) >> (doubledY ? 1 : 0);
@@ -14765,8 +15440,7 @@ int overlayFlag, uint8_t *scanlineBuffer, bool opaque, bool doubledX, bool doubl
 	}
 }
 
-void video_renderSprites(
-struct SpriteRegisters *reg, struct VideoRam *ram, int y, uint8_t *scanlineBuffer, uint8_t *scanlineSpriteBuffer)
+void video_renderSprites(struct SpriteRegisters *reg, struct VideoRam *ram, int y, uint8_t *scanlineBuffer, uint8_t *scanlineSpriteBuffer)
 {
 	for(int i = NUM_SPRITES - 1; i >= 0; i--)
 	{
@@ -14851,6 +15525,29 @@ struct SpriteRegisters *reg, struct VideoRam *ram, int y, uint8_t *scanlineBuffe
 	}
 }
 
+// Visible screen size, with the same fallback as core_handleInput
+static void video_getShownSize(struct Core *core, int *sw, int *sh)
+{
+	struct IORegisters *io = &core->machine->ioRegisters;
+
+	*sw = io->shown.width != 0 ? io->shown.width : SCREEN_WIDTH;
+	*sh = io->shown.height != 0 ? io->shown.height : SCREEN_HEIGHT;
+
+	if(*sw > SCREEN_WIDTH) *sw = SCREEN_WIDTH;
+	if(*sh > SCREEN_HEIGHT) *sh = SCREEN_HEIGHT;
+}
+
+void video_getCompatOffset(struct Core *core, int *offX, int *offY)
+{
+	int sw, sh;
+	video_getShownSize(core, &sw, &sh);
+
+	// truncated toward zero, so a negative offset crops the same amount
+	// a positive one would pad
+	*offX = (sw - COMPAT_WIDTH) / 2;
+	*offY = (sh - COMPAT_HEIGHT) / 2;
+}
+
 void video_renderScreen(struct Core *core, uint32_t *outputBuffer, int pitch)
 {
 	uint8_t scanlineBuffer[SCREEN_WIDTH];
@@ -14860,57 +15557,69 @@ void video_renderScreen(struct Core *core, uint32_t *outputBuffer, int pitch)
 	struct VideoRegisters *reg = &core->machine->videoRegisters;
 	struct SpriteRegisters *sreg = &core->machine->spriteRegisters;
 	struct ColorRegisters *creg = &core->machine->colorRegisters;
-	struct IORegisters *io = &core->machine->ioRegisters;
 	struct MachineInternals *mi = core->machineInternals;
 
-	int sw = io->shown.width;
-	int sh = io->shown.height;
+	// the output buffer is always SCREEN_WIDTHxSCREEN_HEIGHT, only its top left
+	// shown.widthxshown.height corner is visible on the device
+	const int bufWidth = pitch / (int)sizeof(uint32_t);
 
-	int width = SCREEN_WIDTH;
-	int height = SCREEN_HEIGHT;
-	int skip_before = 0;
-	int skip_after = 0;
-	int overflow_x = 0;
+	int lineCount = SCREEN_HEIGHT; // scanlines to render, visible or not
+	int srcX = 0, srcY = 0; // first scanline column and first scanline to copy
+	int dstX = 0, dstY = 0; // where they land in the output buffer
+	int copyW = SCREEN_WIDTH;
+	int copyH = SCREEN_HEIGHT;
+
 	if(core->interpreter->compat)
 	{
-		if(sw < 160)
+		int sw, sh;
+		video_getShownSize(core, &sw, &sh);
+		if(sw > bufWidth)
+			sw = bufWidth;
+
+		lineCount = COMPAT_HEIGHT;
+
+		int offX, offY;
+		video_getCompatOffset(core, &offX, &offY);
+
+		// center the compatibility area, or center crop it when the visible
+		// screen is too small for it
+		if(offX >= 0)
 		{
-			overflow_x = 160 - sw;
-			sw = 160;
-		}
-		if(sh < 128)
-			sh = 128;
-
-		width = 160;
-		height = 128;
-		skip_before = (sw - width) / 2;
-		skip_after = sw - width - skip_before;
-
-		// draw original lowresnx background color at top
-		int count = (sh - height) / 2 * sw;
-#if ABGR
-		// AABBGGRR
-		while(count-- > 0)
-			*outputBuffer++ = 0xff4c6001;
-#else
-		while(count-- > 0)
-			*outputBuffer++ = 0xff01604c;
-#endif
-	}
-
-	for(int y = 0; y < height; y++)
-	{
-		uint32_t *outputPixel = (uint32_t*)((uint8_t*)outputBuffer + y * pitch);
-
-		reg->rasterLine = y;
-		if(core->interpreter->compat && y >= 0 && y < 120)
-		{
-			itp_runInterrupt(core, InterruptTypeRaster);
+			dstX = offX;
+			copyW = COMPAT_WIDTH;
 		}
 		else
 		{
-			itp_runInterrupt(core, InterruptTypeRaster);
+			srcX = -offX;
+			copyW = sw;
 		}
+		if(offY >= 0)
+		{
+			dstY = offY;
+			copyH = COMPAT_HEIGHT;
+		}
+		else
+		{
+			srcY = -offY;
+			copyH = sh;
+		}
+
+		// fill the visible screen with the original lowresnx background color
+		for(int y = 0; y < sh; y++)
+		{
+			uint32_t *outputPixel = (uint32_t *)((uint8_t *)outputBuffer + y * pitch);
+			for(int x = 0; x < sw; x++)
+				*outputPixel++ = COMPAT_BACKGROUND;
+		}
+	}
+
+	if(copyW > bufWidth - dstX)
+		copyW = bufWidth - dstX;
+
+	for(int y = 0; y < lineCount; y++)
+	{
+		reg->rasterLine = y;
+		itp_runInterrupt(core, InterruptTypeRaster);
 		memset(scanlineBuffer, 0, sizeof(scanlineBuffer));
 
 		bool skip = (core->interpreter->interruptOverCycles > 0);
@@ -14921,64 +15630,64 @@ void video_renderScreen(struct Core *core, uint32_t *outputBuffer, int pitch)
 				int scrollX = reg->scrollDX & (reg->attr.planeDDoubled ? 0x3ff : 0x1ff);
 				int scrollY = reg->scrollDY & (reg->attr.planeDDoubled ? 0x3ff : 0x1ff);
 				video_renderPlane(ram->characters,
-				&ram->planeD,
-				0,
-				y,
-				scrollX,
-				scrollY,
-				0,
-				scanlineBuffer,
-				mi->planeColor0IsOpaque[3],
-				reg->attr.planeDDoubled,
-				reg->attr.planeDDoubled);
+					&ram->planeD,
+					0,
+					y,
+					scrollX,
+					scrollY,
+					0,
+					scanlineBuffer,
+					mi->planeColor0IsOpaque[3],
+					reg->attr.planeDDoubled,
+					reg->attr.planeDDoubled);
 			}
 			if(reg->attr.planeCEnabled)
 			{
 				int scrollX = reg->scrollCX & (reg->attr.planeCDoubled ? 0x3ff : 0x1ff);
 				int scrollY = reg->scrollCY & (reg->attr.planeCDoubled ? 0x3ff : 0x1ff);
 				video_renderPlane(ram->characters,
-				&ram->planeC,
-				0,
-				y,
-				scrollX,
-				scrollY,
-				0,
-				scanlineBuffer,
-				mi->planeColor0IsOpaque[2],
-				reg->attr.planeCDoubled,
-				reg->attr.planeCDoubled);
+					&ram->planeC,
+					0,
+					y,
+					scrollX,
+					scrollY,
+					0,
+					scanlineBuffer,
+					mi->planeColor0IsOpaque[2],
+					reg->attr.planeCDoubled,
+					reg->attr.planeCDoubled);
 			}
 			if(reg->attr.planeBEnabled)
 			{
 				int scrollX = reg->scrollBX & (reg->attr.planeBDoubled ? 0x3ff : 0x1ff);
 				int scrollY = reg->scrollBY & (reg->attr.planeBDoubled ? 0x3ff : 0x1ff);
 				video_renderPlane(ram->characters,
-				&ram->planeB,
-				0,
-				y,
-				scrollX,
-				scrollY,
-				0,
-				scanlineBuffer,
-				mi->planeColor0IsOpaque[1],
-				reg->attr.planeBDoubled,
-				reg->attr.planeBDoubled);
+					&ram->planeB,
+					0,
+					y,
+					scrollX,
+					scrollY,
+					0,
+					scanlineBuffer,
+					mi->planeColor0IsOpaque[1],
+					reg->attr.planeBDoubled,
+					reg->attr.planeBDoubled);
 			}
 			if(reg->attr.planeAEnabled)
 			{
 				int scrollX = reg->scrollAX & (reg->attr.planeADoubled ? 0x3ff : 0x1ff);
 				int scrollY = reg->scrollAY & (reg->attr.planeADoubled ? 0x3ff : 0x1ff);
 				video_renderPlane(ram->characters,
-				&ram->planeA,
-				0,
-				y,
-				scrollX,
-				scrollY,
-				0,
-				scanlineBuffer,
-				mi->planeColor0IsOpaque[0],
-				reg->attr.planeADoubled,
-				reg->attr.planeADoubled);
+					&ram->planeA,
+					0,
+					y,
+					scrollX,
+					scrollY,
+					0,
+					scanlineBuffer,
+					mi->planeColor0IsOpaque[0],
+					reg->attr.planeADoubled,
+					reg->attr.planeADoubled);
 			}
 			if(reg->attr.spritesEnabled)
 			{
@@ -14989,34 +15698,32 @@ void video_renderScreen(struct Core *core, uint32_t *outputBuffer, int pitch)
 
 		// overlay
 		video_renderPlane((struct Character *)overlayCharacters,
-		&core->overlay->plane,
-		0,
-		y,
-		0,
-		0,
-		OVERLAY_FLAG,
-		scanlineBuffer,
-		0,
-		0,
-		0);
+			&core->overlay->plane,
+			0,
+			y,
+			0,
+			0,
+			OVERLAY_FLAG,
+			scanlineBuffer,
+			0,
+			0,
+			0);
 
-		if(core->interpreter->compat)
-		{
-#if ABGR
-			for(int i = 0; i < skip_before; ++i)
-				*outputPixel++ = 0xff4c6001;
-#else
-			for(int i = 0; i < skip_before; ++i)
-				*outputPixel++ = 0xff01604c;
-#endif
-		}
+		// scanline outside of the visible screen, it still had to be rendered
+		// for the raster interrupt
+		if(y < srcY || y >= srcY + copyH)
+			continue;
 
-		for(int x = 0; x < width; x++)
+		uint32_t *outputPixel = (uint32_t *)((uint8_t *)outputBuffer + (dstY + y - srcY) * pitch) + dstX;
+
+		for(int x = 0; x < copyW; x++)
 		{
-			int colorIndex = scanlineBuffer[x] & 0x1F;
-			int color = (scanlineBuffer[x] & OVERLAY_FLAG) ? overlayColors[colorIndex]
-						: skip							   ? 0
-														   : creg->colors[colorIndex];
+			int colorIndex = scanlineBuffer[srcX + x] & 0x1F;
+			int color = (scanlineBuffer[srcX + x] & OVERLAY_FLAG)
+			? overlayColors[colorIndex]
+			: skip
+			? 0
+			: creg->colors[colorIndex];
 
 			uint32_t c = better_palette[color & 63];
 
@@ -15029,30 +15736,6 @@ void video_renderScreen(struct Core *core, uint32_t *outputBuffer, int pitch)
 #endif
 			*outputPixel = c;
 			++outputPixel;
-		}
-
-		if(core->interpreter->compat)
-		{
-#if ABGR
-			for(int i = 0; i < skip_after; ++i)
-				*outputPixel++ = 0xff4c6001;
-#else
-			for(int i = 0; i < skip_after; ++i)
-				*outputPixel++ = 0xff01604c;
-#endif
-		}
-	}
-
-	if(core->interpreter->compat)
-	{ // This block is outside the main loop, so outputPixel is not valid here. It should use outputBuffer.
-		uint32_t *endPixel = (uint32_t*)((uint8_t*)outputBuffer + sw * sh * sizeof(uint32_t)); // Assuming pitch is consistent for the whole buffer
-		// while(outputPixel < endPixel)
-		{
-#if ABGR
-			// *outputPixel++ = 0xff4c6001;
-#else
-			// *outputPixel++ = 0xff01604c;
-#endif
 		}
 	}
 }
@@ -15122,12 +15805,12 @@ void overlay_updateLayout(struct Core *core, struct CoreInput *input)
 		{
 			struct Plane *plane = txtlib_getBackground(lib, lib->windowBg);
 			txtlib_scroll(plane,
-			lib->windowX,
-			lib->windowY,
-			lib->windowX + lib->windowWidth - 1,
-			lib->windowY + lib->windowHeight - 1,
-			0,
-			-need_to_scroll_up);
+				lib->windowX,
+				lib->windowY,
+				lib->windowX + lib->windowWidth - 1,
+				lib->windowY + lib->windowHeight - 1,
+				0,
+				-need_to_scroll_up);
 
 			lib->cursorY -= need_to_scroll_up;
 		}
@@ -15165,7 +15848,7 @@ void overlay_message(struct Core *core, const char *message)
 {
 	struct TextLib *lib = &core->overlay->textLib;
 	txtlib_setCells(
-	lib, 0, lib->windowHeight - 1 + lib->windowY, lib->windowWidth - 1, lib->windowHeight - 1 + lib->windowY, 0);
+		lib, 0, lib->windowHeight - 1 + lib->windowY, lib->windowWidth - 1, lib->windowHeight - 1 + lib->windowY, 0);
 	txtlib_writeText(lib, message, lib->windowX, lib->windowHeight - 1 + lib->windowY);
 	core->overlay->messageTimer = 127;
 	machine_suspendEnergySaving(core, 127);
@@ -15181,12 +15864,12 @@ void overlay_draw(struct Core *core, bool ingame)
 		if(core->overlay->messageTimer < 27)
 		{
 			txtlib_scrollBackground(lib,
-			0,
-			lib->windowHeight - 1 + lib->windowY,
-			lib->windowWidth - 1,
-			lib->windowHeight - 1 + lib->windowY,
-			-1,
-			0);
+				0,
+				lib->windowHeight - 1 + lib->windowY,
+				lib->windowWidth - 1,
+				lib->windowHeight - 1 + lib->windowY,
+				-1,
+				0);
 			txtlib_setCell(lib, lib->windowWidth - 1 + lib->windowX, lib->windowHeight - 1 + lib->windowY, 0);
 		}
 	}
@@ -15221,6 +15904,17 @@ void overlay_draw(struct Core *core, bool ingame)
 			{
 				txtlib_writeText(lib, "MAX", lib->windowWidth - 3 + lib->windowX, 1 + lib->windowY);
 			}
+
+			txtlib_writeText(lib, "   ", lib->windowWidth - 3 + lib->windowX, 2 + lib->windowY);
+
+			txtlib_writeText(lib, "VAR", lib->windowWidth - 3 + lib->windowX, 3 + lib->windowY);
+			txtlib_writeNumber(lib, core->interpreter->numSimpleVariables, 3, lib->windowWidth - 3 + lib->windowX, 4 + lib->windowY);
+
+			txtlib_writeText(lib, "   ", lib->windowWidth - 3 + lib->windowX, 5 + lib->windowY);
+
+			txtlib_writeText(lib, "ARR", lib->windowWidth - 3 + lib->windowX, 6 + lib->windowY);
+			txtlib_writeNumber(lib, core->interpreter->numArrayVariables, 3, lib->windowWidth - 3 + lib->windowX, 7 + lib->windowY);
+
 		}
 
 		if(core->interpreter->state == StatePaused && core->interpreter->debug)
@@ -15269,1041 +15963,1042 @@ void overlay_clear(struct Core *core)
 
 uint8_t overlayColors[] = {
 // gamepads
-0,
-2,
-3,
-4,
+	0,
+	2,
+	3,
+	4,
 // paused text
-0,
-2,
-0,
-0};
+	0,
+	2,
+	0,
+	0
+};
 
 uint8_t overlayCharacters[] = {
-0x00,
-0x00,
-0x00,
-0x00,
-0x00,
-0x00,
-0x00,
-0x00,
-0x00,
-0x00,
-0x00,
-0x00,
-0x00,
-0x00,
-0x00,
-0x00,
-0x3C,
-0x3C,
-0x3C,
-0x3C,
-0x3C,
-0x3C,
-0x3C,
-0x3C,
-0x3C,
-0x24,
-0x24,
-0x24,
-0x24,
-0x3C,
-0x24,
-0x3C,
-0xFE,
-0xFE,
-0xFE,
-0xFE,
-0x7E,
-0x00,
-0x00,
-0x00,
-0xFE,
-0x92,
-0x92,
-0xDA,
-0x7E,
-0x00,
-0x00,
-0x00,
-0x7E,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0x7E,
-0x7E,
-0xDB,
-0x81,
-0xDB,
-0xDB,
-0x81,
-0xDB,
-0x7E,
-0x1C,
-0x7F,
-0x7F,
-0x7F,
-0x7F,
-0x7F,
-0x7F,
-0x1C,
-0x1C,
-0x77,
-0x41,
-0x47,
-0x71,
-0x41,
-0x77,
-0x1C,
-0xF7,
-0xFF,
-0xFF,
-0xFE,
-0x7F,
-0xFF,
-0xFF,
-0xEF,
-0xF7,
-0x9D,
-0x9B,
-0xF6,
-0x6F,
-0xD9,
-0xB9,
-0xEF,
-0x3E,
-0x7E,
-0x7E,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0x7F,
-0x3E,
-0x62,
-0x4A,
-0xC7,
-0x91,
-0x9B,
-0xC5,
-0x7F,
-0x3C,
-0x3C,
-0x7C,
-0x7C,
-0x78,
-0x00,
-0x00,
-0x00,
-0x3C,
-0x24,
-0x64,
-0x4C,
-0x78,
-0x00,
-0x00,
-0x00,
-0x1E,
-0x3E,
-0x7E,
-0x7C,
-0x7C,
-0x7E,
-0x3E,
-0x1E,
-0x1E,
-0x32,
-0x66,
-0x4C,
-0x4C,
-0x66,
-0x32,
-0x1E,
-0x78,
-0x7C,
-0x7E,
-0x3E,
-0x3E,
-0x7E,
-0x7C,
-0x78,
-0x78,
-0x4C,
-0x66,
-0x32,
-0x32,
-0x66,
-0x4C,
-0x78,
-0x00,
-0x7E,
-0x7E,
-0xFF,
-0xFF,
-0xFF,
-0x7E,
-0x7E,
-0x00,
-0x7E,
-0x5A,
-0xE7,
-0x81,
-0xE7,
-0x5A,
-0x7E,
-0x00,
-0x3C,
-0x3C,
-0xFF,
-0xFF,
-0xFF,
-0x3C,
-0x3C,
-0x00,
-0x3C,
-0x24,
-0xE7,
-0x81,
-0xE7,
-0x24,
-0x3C,
-0x00,
-0x00,
-0x00,
-0x3C,
-0x3C,
-0x7C,
-0x7C,
-0x78,
-0x00,
-0x00,
-0x00,
-0x3C,
-0x24,
-0x64,
-0x4C,
-0x78,
-0x00,
-0x00,
-0x00,
-0xFF,
-0xFF,
-0xFF,
-0x00,
-0x00,
-0x00,
-0x00,
-0x00,
-0xFF,
-0x81,
-0xFF,
-0x00,
-0x00,
-0x00,
-0x00,
-0x00,
-0x00,
-0x3C,
-0x3C,
-0x3C,
-0x3C,
-0x00,
-0x00,
-0x00,
-0x00,
-0x3C,
-0x24,
-0x24,
-0x3C,
-0x0F,
-0x1F,
-0x3F,
-0x7E,
-0xFC,
-0xF8,
-0xF0,
-0xE0,
-0x0F,
-0x19,
-0x33,
-0x66,
-0xCC,
-0x98,
-0xB0,
-0xE0,
-0x7E,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0x7E,
-0x7E,
-0xC3,
-0x99,
-0x91,
-0x89,
-0x99,
-0xC3,
-0x7E,
-0x3C,
-0x7C,
-0x7C,
-0x7C,
-0x3C,
-0xFF,
-0xFF,
-0xFF,
-0x3C,
-0x64,
-0x44,
-0x64,
-0x24,
-0xE7,
-0x81,
-0xFF,
-0x7E,
-0xFF,
-0xFF,
-0xFF,
-0x7E,
-0xFF,
-0xFF,
-0xFF,
-0x7E,
-0xC3,
-0x99,
-0xF3,
-0x66,
-0xCF,
-0x81,
-0xFF,
-0x7E,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0x7E,
-0x7E,
-0xC3,
-0x99,
-0xF3,
-0xF9,
-0x99,
-0xC3,
-0x7E,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0x0F,
-0x0F,
-0x0F,
-0xFF,
-0x99,
-0x99,
-0x81,
-0xF9,
-0x09,
-0x09,
-0x0F,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0xFE,
-0xFF,
-0x81,
-0x9F,
-0x83,
-0xF9,
-0xF9,
-0x83,
-0xFE,
-0x3E,
-0x7E,
-0xFE,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0x7E,
-0x3E,
-0x62,
-0xCE,
-0x83,
-0x99,
-0x99,
-0xC3,
-0x7E,
-0xFF,
-0xFF,
-0xFF,
-0x3F,
-0x7E,
-0x7C,
-0x78,
-0x78,
-0xFF,
-0x81,
-0xF9,
-0x33,
-0x66,
-0x4C,
-0x48,
-0x78,
-0x7E,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0x7E,
-0x7E,
-0xC3,
-0x99,
-0xC3,
-0x99,
-0x99,
-0xC3,
-0x7E,
-0x7E,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0x7E,
-0x7E,
-0xC3,
-0x99,
-0xC1,
-0xF9,
-0x99,
-0xC3,
-0x7E,
-0x00,
-0x00,
-0x3C,
-0x3C,
-0x3C,
-0x3C,
-0x3C,
-0x00,
-0x00,
-0x00,
-0x3C,
-0x24,
-0x3C,
-0x24,
-0x3C,
-0x00,
-0x00,
-0x00,
-0x3C,
-0x3C,
-0x3C,
-0x7C,
-0x7C,
-0x78,
-0x00,
-0x00,
-0x3C,
-0x24,
-0x3C,
-0x64,
-0x4C,
-0x78,
-0x00,
-0x1E,
-0x3E,
-0x7E,
-0x7C,
-0x7E,
-0x3E,
-0x1E,
-0x00,
-0x1E,
-0x32,
-0x66,
-0x4C,
-0x66,
-0x32,
-0x1E,
-0x00,
-0x00,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0x00,
-0x00,
-0x00,
-0xFF,
-0x81,
-0xFF,
-0x81,
-0xFF,
-0x00,
-0x00,
-0x78,
-0x7C,
-0x7E,
-0x3E,
-0x7E,
-0x7C,
-0x78,
-0x00,
-0x78,
-0x4C,
-0x66,
-0x32,
-0x66,
-0x4C,
-0x78,
-0x7E,
-0xFF,
-0xFF,
-0xFF,
-0x3E,
-0x3C,
-0x3C,
-0x3C,
-0x7E,
-0xC3,
-0x99,
-0xF3,
-0x26,
-0x3C,
-0x24,
-0x3C,
-0x7E,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0xFE,
-0x7E,
-0x7E,
-0xC3,
-0x99,
-0x91,
-0x91,
-0x9F,
-0xC2,
-0x7E,
-0x3C,
-0x7E,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0x3C,
-0x66,
-0xC3,
-0x99,
-0x81,
-0x99,
-0x99,
-0xFF,
-0xFE,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0xFE,
-0xFE,
-0x83,
-0x99,
-0x83,
-0x99,
-0x99,
-0x83,
-0xFE,
-0x7E,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0x7E,
-0x7E,
-0xC3,
-0x99,
-0x9F,
-0x9F,
-0x99,
-0xC3,
-0x7E,
-0xFC,
-0xFE,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0xFE,
-0xFC,
-0xFC,
-0x86,
-0x93,
-0x99,
-0x99,
-0x93,
-0x86,
-0xFC,
-0xFF,
-0xFF,
-0xFF,
-0xFC,
-0xFC,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0x81,
-0x9F,
-0x84,
-0x9C,
-0x9F,
-0x81,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0xFC,
-0xFC,
-0xF0,
-0xF0,
-0xF0,
-0xFF,
-0x81,
-0x9F,
-0x84,
-0x9C,
-0x90,
-0x90,
-0xF0,
-0x7E,
-0xFE,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0x7E,
-0x7E,
-0xC2,
-0x9F,
-0x91,
-0x99,
-0x99,
-0xC3,
-0x7E,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0x99,
-0x99,
-0x81,
-0x99,
-0x99,
-0x99,
-0xFF,
-0x7E,
-0x7E,
-0x7E,
-0x3C,
-0x3C,
-0x7E,
-0x7E,
-0x7E,
-0x7E,
-0x42,
-0x66,
-0x24,
-0x24,
-0x66,
-0x42,
-0x7E,
-0x3F,
-0x3F,
-0x3F,
-0x0F,
-0xFF,
-0xFF,
-0xFF,
-0x7E,
-0x3F,
-0x21,
-0x39,
-0x09,
-0xF9,
-0x99,
-0xC3,
-0x7E,
-0xFF,
-0xFF,
-0xFF,
-0xFE,
-0xFE,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0x99,
-0x93,
-0x86,
-0x86,
-0x93,
-0x99,
-0xFF,
-0xF0,
-0xF0,
-0xF0,
-0xF0,
-0xF0,
-0xFF,
-0xFF,
-0xFF,
-0xF0,
-0x90,
-0x90,
-0x90,
-0x90,
-0x9F,
-0x81,
-0xFF,
-0xE7,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0xE7,
-0xBD,
-0x99,
-0x81,
-0x81,
-0x99,
-0x99,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0x99,
-0x89,
-0x81,
-0x91,
-0x99,
-0x99,
-0xFF,
-0x7E,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0x7E,
-0x7E,
-0xC3,
-0x99,
-0x99,
-0x99,
-0x99,
-0xC3,
-0x7E,
-0xFE,
-0xFF,
-0xFF,
-0xFF,
-0xFE,
-0xF0,
-0xF0,
-0xF0,
-0xFE,
-0x83,
-0x99,
-0x83,
-0x9E,
-0x90,
-0x90,
-0xF0,
-0x7E,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0x7F,
-0x7E,
-0xC3,
-0x99,
-0x99,
-0x95,
-0x93,
-0xC1,
-0x7F,
-0xFE,
-0xFF,
-0xFF,
-0xFF,
-0xFE,
-0xFF,
-0xFF,
-0xFF,
-0xFE,
-0x83,
-0x99,
-0x83,
-0x86,
-0x93,
-0x99,
-0xFF,
-0x7F,
-0xFF,
-0xFF,
-0xFF,
-0x7F,
-0xFF,
-0xFF,
-0xFE,
-0x7F,
-0xC1,
-0x9F,
-0xC3,
-0x79,
-0xF9,
-0x83,
-0xFE,
-0xFF,
-0xFF,
-0xFF,
-0x3C,
-0x3C,
-0x3C,
-0x3C,
-0x3C,
-0xFF,
-0x81,
-0xE7,
-0x24,
-0x24,
-0x24,
-0x24,
-0x3C,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0x7E,
-0xFF,
-0x99,
-0x99,
-0x99,
-0x99,
-0x99,
-0xC3,
-0x7E,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0x7E,
-0x3C,
-0xFF,
-0x99,
-0x99,
-0x99,
-0x99,
-0xC3,
-0x66,
-0x3C,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0xE7,
-0xFF,
-0x99,
-0x99,
-0x81,
-0x81,
-0x99,
-0xBD,
-0xE7,
-0xFF,
-0xFF,
-0xFF,
-0x7E,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0x99,
-0xC3,
-0x66,
-0xC3,
-0x99,
-0x99,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0x7E,
-0x3C,
-0x3C,
-0x3C,
-0xFF,
-0x99,
-0x99,
-0xC3,
-0x66,
-0x24,
-0x24,
-0x3C,
-0xFF,
-0xFF,
-0xFF,
-0x7E,
-0xFC,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0x81,
-0xF3,
-0x66,
-0xCC,
-0x9F,
-0x81,
-0xFF,
-0x7E,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0x7E,
-0x7E,
-0xC3,
-0x99,
-0xA5,
-0xBD,
-0xA5,
-0xC3,
-0x7E,
-0x7E,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0x7E,
-0x7E,
-0xC3,
-0xA1,
-0xB9,
-0xA5,
-0xB9,
-0xC3,
-0x7E,
-0x3C,
-0x7E,
-0xFF,
-0xFF,
-0xFF,
-0xFF,
-0x7E,
-0x3C,
-0x3C,
-0x66,
-0xE7,
-0x81,
-0x81,
-0xE7,
-0x66,
-0x3C,
-0x3C,
-0x7E,
-0xFF,
-0xFF,
-0xFF,
-0x00,
-0x00,
-0x00,
-0x3C,
-0x66,
-0xC3,
-0x99,
-0xFF,
-0x00,
-0x00,
-0x00,
-0x00,
-0x00,
-0x00,
-0x00,
-0x00,
-0xFF,
-0xFF,
-0xFF,
-0x00,
-0x00,
-0x00,
-0x00,
-0x00,
-0xFF,
-0x81,
-0xFF,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0x3C,
+	0x3C,
+	0x3C,
+	0x3C,
+	0x3C,
+	0x3C,
+	0x3C,
+	0x3C,
+	0x3C,
+	0x24,
+	0x24,
+	0x24,
+	0x24,
+	0x3C,
+	0x24,
+	0x3C,
+	0xFE,
+	0xFE,
+	0xFE,
+	0xFE,
+	0x7E,
+	0x00,
+	0x00,
+	0x00,
+	0xFE,
+	0x92,
+	0x92,
+	0xDA,
+	0x7E,
+	0x00,
+	0x00,
+	0x00,
+	0x7E,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0x7E,
+	0x7E,
+	0xDB,
+	0x81,
+	0xDB,
+	0xDB,
+	0x81,
+	0xDB,
+	0x7E,
+	0x1C,
+	0x7F,
+	0x7F,
+	0x7F,
+	0x7F,
+	0x7F,
+	0x7F,
+	0x1C,
+	0x1C,
+	0x77,
+	0x41,
+	0x47,
+	0x71,
+	0x41,
+	0x77,
+	0x1C,
+	0xF7,
+	0xFF,
+	0xFF,
+	0xFE,
+	0x7F,
+	0xFF,
+	0xFF,
+	0xEF,
+	0xF7,
+	0x9D,
+	0x9B,
+	0xF6,
+	0x6F,
+	0xD9,
+	0xB9,
+	0xEF,
+	0x3E,
+	0x7E,
+	0x7E,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0x7F,
+	0x3E,
+	0x62,
+	0x4A,
+	0xC7,
+	0x91,
+	0x9B,
+	0xC5,
+	0x7F,
+	0x3C,
+	0x3C,
+	0x7C,
+	0x7C,
+	0x78,
+	0x00,
+	0x00,
+	0x00,
+	0x3C,
+	0x24,
+	0x64,
+	0x4C,
+	0x78,
+	0x00,
+	0x00,
+	0x00,
+	0x1E,
+	0x3E,
+	0x7E,
+	0x7C,
+	0x7C,
+	0x7E,
+	0x3E,
+	0x1E,
+	0x1E,
+	0x32,
+	0x66,
+	0x4C,
+	0x4C,
+	0x66,
+	0x32,
+	0x1E,
+	0x78,
+	0x7C,
+	0x7E,
+	0x3E,
+	0x3E,
+	0x7E,
+	0x7C,
+	0x78,
+	0x78,
+	0x4C,
+	0x66,
+	0x32,
+	0x32,
+	0x66,
+	0x4C,
+	0x78,
+	0x00,
+	0x7E,
+	0x7E,
+	0xFF,
+	0xFF,
+	0xFF,
+	0x7E,
+	0x7E,
+	0x00,
+	0x7E,
+	0x5A,
+	0xE7,
+	0x81,
+	0xE7,
+	0x5A,
+	0x7E,
+	0x00,
+	0x3C,
+	0x3C,
+	0xFF,
+	0xFF,
+	0xFF,
+	0x3C,
+	0x3C,
+	0x00,
+	0x3C,
+	0x24,
+	0xE7,
+	0x81,
+	0xE7,
+	0x24,
+	0x3C,
+	0x00,
+	0x00,
+	0x00,
+	0x3C,
+	0x3C,
+	0x7C,
+	0x7C,
+	0x78,
+	0x00,
+	0x00,
+	0x00,
+	0x3C,
+	0x24,
+	0x64,
+	0x4C,
+	0x78,
+	0x00,
+	0x00,
+	0x00,
+	0xFF,
+	0xFF,
+	0xFF,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0xFF,
+	0x81,
+	0xFF,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0x3C,
+	0x3C,
+	0x3C,
+	0x3C,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0x3C,
+	0x24,
+	0x24,
+	0x3C,
+	0x0F,
+	0x1F,
+	0x3F,
+	0x7E,
+	0xFC,
+	0xF8,
+	0xF0,
+	0xE0,
+	0x0F,
+	0x19,
+	0x33,
+	0x66,
+	0xCC,
+	0x98,
+	0xB0,
+	0xE0,
+	0x7E,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0x7E,
+	0x7E,
+	0xC3,
+	0x99,
+	0x91,
+	0x89,
+	0x99,
+	0xC3,
+	0x7E,
+	0x3C,
+	0x7C,
+	0x7C,
+	0x7C,
+	0x3C,
+	0xFF,
+	0xFF,
+	0xFF,
+	0x3C,
+	0x64,
+	0x44,
+	0x64,
+	0x24,
+	0xE7,
+	0x81,
+	0xFF,
+	0x7E,
+	0xFF,
+	0xFF,
+	0xFF,
+	0x7E,
+	0xFF,
+	0xFF,
+	0xFF,
+	0x7E,
+	0xC3,
+	0x99,
+	0xF3,
+	0x66,
+	0xCF,
+	0x81,
+	0xFF,
+	0x7E,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0x7E,
+	0x7E,
+	0xC3,
+	0x99,
+	0xF3,
+	0xF9,
+	0x99,
+	0xC3,
+	0x7E,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0x0F,
+	0x0F,
+	0x0F,
+	0xFF,
+	0x99,
+	0x99,
+	0x81,
+	0xF9,
+	0x09,
+	0x09,
+	0x0F,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFE,
+	0xFF,
+	0x81,
+	0x9F,
+	0x83,
+	0xF9,
+	0xF9,
+	0x83,
+	0xFE,
+	0x3E,
+	0x7E,
+	0xFE,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0x7E,
+	0x3E,
+	0x62,
+	0xCE,
+	0x83,
+	0x99,
+	0x99,
+	0xC3,
+	0x7E,
+	0xFF,
+	0xFF,
+	0xFF,
+	0x3F,
+	0x7E,
+	0x7C,
+	0x78,
+	0x78,
+	0xFF,
+	0x81,
+	0xF9,
+	0x33,
+	0x66,
+	0x4C,
+	0x48,
+	0x78,
+	0x7E,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0x7E,
+	0x7E,
+	0xC3,
+	0x99,
+	0xC3,
+	0x99,
+	0x99,
+	0xC3,
+	0x7E,
+	0x7E,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0x7E,
+	0x7E,
+	0xC3,
+	0x99,
+	0xC1,
+	0xF9,
+	0x99,
+	0xC3,
+	0x7E,
+	0x00,
+	0x00,
+	0x3C,
+	0x3C,
+	0x3C,
+	0x3C,
+	0x3C,
+	0x00,
+	0x00,
+	0x00,
+	0x3C,
+	0x24,
+	0x3C,
+	0x24,
+	0x3C,
+	0x00,
+	0x00,
+	0x00,
+	0x3C,
+	0x3C,
+	0x3C,
+	0x7C,
+	0x7C,
+	0x78,
+	0x00,
+	0x00,
+	0x3C,
+	0x24,
+	0x3C,
+	0x64,
+	0x4C,
+	0x78,
+	0x00,
+	0x1E,
+	0x3E,
+	0x7E,
+	0x7C,
+	0x7E,
+	0x3E,
+	0x1E,
+	0x00,
+	0x1E,
+	0x32,
+	0x66,
+	0x4C,
+	0x66,
+	0x32,
+	0x1E,
+	0x00,
+	0x00,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0x00,
+	0x00,
+	0x00,
+	0xFF,
+	0x81,
+	0xFF,
+	0x81,
+	0xFF,
+	0x00,
+	0x00,
+	0x78,
+	0x7C,
+	0x7E,
+	0x3E,
+	0x7E,
+	0x7C,
+	0x78,
+	0x00,
+	0x78,
+	0x4C,
+	0x66,
+	0x32,
+	0x66,
+	0x4C,
+	0x78,
+	0x7E,
+	0xFF,
+	0xFF,
+	0xFF,
+	0x3E,
+	0x3C,
+	0x3C,
+	0x3C,
+	0x7E,
+	0xC3,
+	0x99,
+	0xF3,
+	0x26,
+	0x3C,
+	0x24,
+	0x3C,
+	0x7E,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFE,
+	0x7E,
+	0x7E,
+	0xC3,
+	0x99,
+	0x91,
+	0x91,
+	0x9F,
+	0xC2,
+	0x7E,
+	0x3C,
+	0x7E,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0x3C,
+	0x66,
+	0xC3,
+	0x99,
+	0x81,
+	0x99,
+	0x99,
+	0xFF,
+	0xFE,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFE,
+	0xFE,
+	0x83,
+	0x99,
+	0x83,
+	0x99,
+	0x99,
+	0x83,
+	0xFE,
+	0x7E,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0x7E,
+	0x7E,
+	0xC3,
+	0x99,
+	0x9F,
+	0x9F,
+	0x99,
+	0xC3,
+	0x7E,
+	0xFC,
+	0xFE,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFE,
+	0xFC,
+	0xFC,
+	0x86,
+	0x93,
+	0x99,
+	0x99,
+	0x93,
+	0x86,
+	0xFC,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFC,
+	0xFC,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0x81,
+	0x9F,
+	0x84,
+	0x9C,
+	0x9F,
+	0x81,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFC,
+	0xFC,
+	0xF0,
+	0xF0,
+	0xF0,
+	0xFF,
+	0x81,
+	0x9F,
+	0x84,
+	0x9C,
+	0x90,
+	0x90,
+	0xF0,
+	0x7E,
+	0xFE,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0x7E,
+	0x7E,
+	0xC2,
+	0x9F,
+	0x91,
+	0x99,
+	0x99,
+	0xC3,
+	0x7E,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0x99,
+	0x99,
+	0x81,
+	0x99,
+	0x99,
+	0x99,
+	0xFF,
+	0x7E,
+	0x7E,
+	0x7E,
+	0x3C,
+	0x3C,
+	0x7E,
+	0x7E,
+	0x7E,
+	0x7E,
+	0x42,
+	0x66,
+	0x24,
+	0x24,
+	0x66,
+	0x42,
+	0x7E,
+	0x3F,
+	0x3F,
+	0x3F,
+	0x0F,
+	0xFF,
+	0xFF,
+	0xFF,
+	0x7E,
+	0x3F,
+	0x21,
+	0x39,
+	0x09,
+	0xF9,
+	0x99,
+	0xC3,
+	0x7E,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFE,
+	0xFE,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0x99,
+	0x93,
+	0x86,
+	0x86,
+	0x93,
+	0x99,
+	0xFF,
+	0xF0,
+	0xF0,
+	0xF0,
+	0xF0,
+	0xF0,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xF0,
+	0x90,
+	0x90,
+	0x90,
+	0x90,
+	0x9F,
+	0x81,
+	0xFF,
+	0xE7,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xE7,
+	0xBD,
+	0x99,
+	0x81,
+	0x81,
+	0x99,
+	0x99,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0x99,
+	0x89,
+	0x81,
+	0x91,
+	0x99,
+	0x99,
+	0xFF,
+	0x7E,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0x7E,
+	0x7E,
+	0xC3,
+	0x99,
+	0x99,
+	0x99,
+	0x99,
+	0xC3,
+	0x7E,
+	0xFE,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFE,
+	0xF0,
+	0xF0,
+	0xF0,
+	0xFE,
+	0x83,
+	0x99,
+	0x83,
+	0x9E,
+	0x90,
+	0x90,
+	0xF0,
+	0x7E,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0x7F,
+	0x7E,
+	0xC3,
+	0x99,
+	0x99,
+	0x95,
+	0x93,
+	0xC1,
+	0x7F,
+	0xFE,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFE,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFE,
+	0x83,
+	0x99,
+	0x83,
+	0x86,
+	0x93,
+	0x99,
+	0xFF,
+	0x7F,
+	0xFF,
+	0xFF,
+	0xFF,
+	0x7F,
+	0xFF,
+	0xFF,
+	0xFE,
+	0x7F,
+	0xC1,
+	0x9F,
+	0xC3,
+	0x79,
+	0xF9,
+	0x83,
+	0xFE,
+	0xFF,
+	0xFF,
+	0xFF,
+	0x3C,
+	0x3C,
+	0x3C,
+	0x3C,
+	0x3C,
+	0xFF,
+	0x81,
+	0xE7,
+	0x24,
+	0x24,
+	0x24,
+	0x24,
+	0x3C,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0x7E,
+	0xFF,
+	0x99,
+	0x99,
+	0x99,
+	0x99,
+	0x99,
+	0xC3,
+	0x7E,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0x7E,
+	0x3C,
+	0xFF,
+	0x99,
+	0x99,
+	0x99,
+	0x99,
+	0xC3,
+	0x66,
+	0x3C,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xE7,
+	0xFF,
+	0x99,
+	0x99,
+	0x81,
+	0x81,
+	0x99,
+	0xBD,
+	0xE7,
+	0xFF,
+	0xFF,
+	0xFF,
+	0x7E,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0x99,
+	0xC3,
+	0x66,
+	0xC3,
+	0x99,
+	0x99,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0x7E,
+	0x3C,
+	0x3C,
+	0x3C,
+	0xFF,
+	0x99,
+	0x99,
+	0xC3,
+	0x66,
+	0x24,
+	0x24,
+	0x3C,
+	0xFF,
+	0xFF,
+	0xFF,
+	0x7E,
+	0xFC,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0x81,
+	0xF3,
+	0x66,
+	0xCC,
+	0x9F,
+	0x81,
+	0xFF,
+	0x7E,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0x7E,
+	0x7E,
+	0xC3,
+	0x99,
+	0xA5,
+	0xBD,
+	0xA5,
+	0xC3,
+	0x7E,
+	0x7E,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0x7E,
+	0x7E,
+	0xC3,
+	0xA1,
+	0xB9,
+	0xA5,
+	0xB9,
+	0xC3,
+	0x7E,
+	0x3C,
+	0x7E,
+	0xFF,
+	0xFF,
+	0xFF,
+	0xFF,
+	0x7E,
+	0x3C,
+	0x3C,
+	0x66,
+	0xE7,
+	0x81,
+	0x81,
+	0xE7,
+	0x66,
+	0x3C,
+	0x3C,
+	0x7E,
+	0xFF,
+	0xFF,
+	0xFF,
+	0x00,
+	0x00,
+	0x00,
+	0x3C,
+	0x66,
+	0xC3,
+	0x99,
+	0xFF,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0xFF,
+	0xFF,
+	0xFF,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0xFF,
+	0x81,
+	0xFF,
 };
 // Copyright 2016-2024 Timo Kloss
 // Copyright 2021-2026 Martin Mauchauffée
@@ -16324,9 +17019,9 @@ uint8_t overlayCharacters[] = {
 //    misrepresented as being the original software.
 // 3. This notice may not be removed or altered from any source distribution.
 
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdbool.h>
 
 bool fake_shown = false, fake_safe = false;
 int fake_width = 180, fake_height = 180, fake_left = 7, fake_right = 7, fake_top = 21, fake_bottom = 13;
@@ -16363,8 +17058,7 @@ void print_value(struct Core *core, enum ValueType type, union Value *value)
 	}
 }
 
-void set_value(struct Core *core, enum ValueType type, union Value *value, enum TokenType newType, float newFloat,
-struct RCString *newString)
+void set_value(struct Core *core, enum ValueType type, union Value *value, enum TokenType newType, float newFloat, struct RCString *newString)
 {
 	// NOTE: value and newValue are alreay tested before arriving here
 	if(newType == TokenFloat && type == ValueTypeFloat)
@@ -16567,7 +17261,7 @@ static void process_command_line(struct Core *core)
 				t = &toks.tokens[i++];
 				int indices[MAX_ARRAY_DIMENSIONS], dimensions = 0;
 				while(t->type != TokenBracketClose && t->type != TokenEol && t->type != TokenEq &&
-					  dimensions < MAX_ARRAY_DIMENSIONS)
+				      dimensions < MAX_ARRAY_DIMENSIONS)
 				{
 					if(t->type == TokenFloat)
 					{
@@ -16671,7 +17365,7 @@ static void process_command_line(struct Core *core)
 			for(int i = 0; i < MAX_SYMBOLS && tokenizer->symbols[i].name[0] != 0; i++)
 			{
 				struct SimpleVariable *simple =
-				var_getSimpleVariable(core->interpreter, i, core->interpreter->subLevel);
+					var_getSimpleVariable(core->interpreter, i, core->interpreter->subLevel);
 				struct ArrayVariable *array = var_getArrayVariable(core->interpreter, i, core->interpreter->subLevel);
 				if(!simple && !array)
 					continue;
@@ -16771,17 +17465,10 @@ static void process_command_line(struct Core *core)
 			{
 				txtlib_printText(&core->overlay->textLib, "  ");
 
-				char *ptr = (char *)(&core->interpreter
-									  ->sourceCode[core->interpreter->labelStackItems[i].token->sourcePosition - 1]);
-				while((*ptr >= 'a' && *ptr <= 'z') || (*ptr >= 'A' && *ptr <= 'Z') || (*ptr >= '0' && *ptr <= '9') ||
-					  *ptr == '_')
-				{
-					ptr--;
-				}
-				size_t len =
-				&core->interpreter->sourceCode[core->interpreter->labelStackItems[i].token->sourcePosition - 1] - ptr;
-				if(len > 20)
-					len = 20;
+				char *ptr = (char *)(&core->interpreter->sourceCode[core->interpreter->labelStackItems[i].token->sourcePosition - 1]);
+				while((*ptr >= 'a' && *ptr <= 'z') || (*ptr >= 'A' && *ptr <= 'Z') || (*ptr >= '0' && *ptr <= '9') || *ptr == '_') ptr--;
+				size_t len = &core->interpreter->sourceCode[core->interpreter->labelStackItems[i].token->sourcePosition - 1] - ptr;
+				if(len > 20) len = 20;
 				buffer[len] = '\0';
 				memcpy(&buffer, ptr + 1, len);
 				txtlib_printText(&core->overlay->textLib, buffer);
@@ -16869,7 +17556,7 @@ static void process_command_line(struct Core *core)
 				return;
 			}
 			machine_trackMemory(
-			core, address, t->type == TokenPEEK ? true : false, t->type == TokenPOKE ? true : false);
+				core, address, t->type == TokenPEEK ? true : false, t->type == TokenPOKE ? true : false);
 		}
 
 		// execute next line of code
@@ -16881,7 +17568,8 @@ static void process_command_line(struct Core *core)
 			if(errorCode != ErrorNone)
 			{
 				itp_endProgram(core);
-				delegate_interpreterDidFail(core, err_makeCoreError(errorCode, core->interpreter->pc->sourcePosition));
+				delegate_interpreterDidFail(
+					core, err_makeCoreError(errorCode, core->interpreter->pc->sourcePosition, -1));
 			}
 			else
 			{
@@ -16973,8 +17661,8 @@ void overlay_debugger(struct Core *core)
 			{
 				// move chars after the cursor one position to the left
 				memmove(overlay->commandLine + lib->cursorX - 1,
-				overlay->commandLine + lib->cursorX,
-				strlen(overlay->commandLine) - lib->cursorX + 1);
+					overlay->commandLine + lib->cursorX,
+					strlen(overlay->commandLine) - lib->cursorX + 1);
 				lib->cursorX--;
 				print_command_line(core);
 			}
@@ -16985,8 +17673,8 @@ void overlay_debugger(struct Core *core)
 			{
 				// move chars after the cursor one position to the left
 				memmove(overlay->commandLine + lib->cursorX,
-				overlay->commandLine + lib->cursorX + 1,
-				strlen(overlay->commandLine) - lib->cursorX);
+					overlay->commandLine + lib->cursorX + 1,
+					strlen(overlay->commandLine) - lib->cursorX);
 				print_command_line(core);
 			}
 		}

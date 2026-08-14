@@ -51,7 +51,7 @@ class MyAppState extends State<MyApp> {
     log("MyApp.build() Not good if called multiple times.");
     return MultiProvider(
         providers: [
-          ChangeNotifierProvider<SyncManager>(create: (_) => SyncManager()),
+          // ChangeNotifierProvider<SyncManager>(create: (_) => SyncManager()),
           ChangeNotifierProvider<MyLibrary>(create: (_) => MyLibrary()),
           Provider<ComPort>(create: (_) => comPort),
           ChangeNotifierProvider<MyEditorPreference>(

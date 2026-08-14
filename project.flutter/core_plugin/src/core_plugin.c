@@ -41,7 +41,7 @@ void diskDriveIsFull(void *context,struct DataManager *diskDataManager)
 {
 	Runner *runner=(Runner*)context;
 	if(!runner->core) return;
-	runner->runningError=err_makeCoreError(ErrorUserDeviceDiskFull,-1);
+	runner->runningError=err_makeCoreError(ErrorUserDeviceDiskFull,-1, -1);
 }
 
 void controlsDidChange(void *context,struct ControlsInfo controlsInfo)
@@ -100,7 +100,7 @@ FFI_PLUGIN_EXPORT void runnerDeinit(Runner *runner)
 
 FFI_PLUGIN_EXPORT struct CoreError runnerCompileProgram(Runner *runner,const char *code)
 {
-	if(!runner->core) return err_makeCoreError(ErrorCouldNotOpenProgram,-1);
+	if(!runner->core) return err_makeCoreError(ErrorCouldNotOpenProgram,-1,-1);
 	return core_compileProgram(runner->core,code,false);
 }
 
@@ -114,7 +114,7 @@ FFI_PLUGIN_EXPORT const char* runnerGetError(Runner *runner,enum ErrorCode code)
 FFI_PLUGIN_EXPORT void runnerStart(Runner *runner,int scondsSincePowerOn,const char *originalDataDisk,size_t originalDataDiskSize)
 {
 	if(!runner->core) return;
-	runner->runningError=err_makeCoreError(ErrorNone,-1);
+	runner->runningError=err_makeCoreError(ErrorNone,-1,-1);
 	core_willRunProgram(runner->core,scondsSincePowerOn);
 	// originalDataDisk memory is managed by the caller.
 	// runner->dataDisk memory is managed by the callee.
@@ -133,7 +133,7 @@ FFI_PLUGIN_EXPORT void runnerStart(Runner *runner,int scondsSincePowerOn,const c
 
 FFI_PLUGIN_EXPORT struct CoreError runnerUpdate(Runner *runner,Input *input)
 {
-	if(!runner->core) return err_makeCoreError(ErrorNone,-1);
+	if(!runner->core) return err_makeCoreError(ErrorNone,-1,-1);
 	core_update(runner->core,input);
 	return runner->runningError;
 }
@@ -231,7 +231,7 @@ FFI_PLUGIN_EXPORT void runnerRenderToTexture(Runner* runner, int64_t textureId)
     if (ANativeWindow_lock(window, &buffer, NULL) == 0) {
         if (buffer.bits != NULL) {
             if (buffer.stride == SCREEN_WIDTH) {
-                video_renderScreen(runner->core, (uint32_t *)buffer.bits);
+                video_renderScreen(runner->core, (uint32_t *)buffer.bits, SCREEN_WIDTH*4);
             } else {
                 // If stride is different, we need to render row by row or adjust video_renderScreen.
                 // For now, let's just log it.
@@ -240,7 +240,7 @@ FFI_PLUGIN_EXPORT void runnerRenderToTexture(Runner* runner, int64_t textureId)
                 // Temporary: allocate a temporary buffer and copy if stride doesn't match
                 uint32_t *temp = malloc(SCREEN_WIDTH * SCREEN_HEIGHT * 4);
                 if (temp) {
-                    video_renderScreen(runner->core, temp);
+                    video_renderScreen(runner->core, temp, SCREEN_WIDTH * 4);
                     for (int y = 0; y < SCREEN_HEIGHT; y++) {
                         memcpy((uint32_t *)buffer.bits + y * buffer.stride, temp + y * SCREEN_WIDTH, SCREEN_WIDTH * 4);
                     }
@@ -254,10 +254,10 @@ FFI_PLUGIN_EXPORT void runnerRenderToTexture(Runner* runner, int64_t textureId)
     }
 #elif __APPLE__
     // On iOS, nativeHandle is the base address of the CVPixelBuffer
-    video_renderScreen(runner->core, (uint32_t *)nativeHandle);
+    video_renderScreen(runner->core, (uint32_t *)nativeHandle, SCREEN_WIDTH * 4);
 #else
     // Placeholder for other platforms
-    video_renderScreen(runner->core, (uint32_t *)nativeHandle);
+    video_renderScreen(runner->core, (uint32_t *)nativeHandle, SCREEN_WIDTH * 4);
 #endif
 }
 
@@ -265,7 +265,7 @@ FFI_PLUGIN_EXPORT void runnerRender(Runner *runner,void *pixels)
 {
 	if(!runner->core) return;
 	if(!pixels) return;
-	video_renderScreen(runner->core,pixels);
+	video_renderScreen(runner->core,pixels,SCREEN_WIDTH*4);
 }
 
 FFI_PLUGIN_EXPORT void runnerTrace(Runner *runner,bool enabled)

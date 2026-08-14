@@ -94,10 +94,11 @@ struct CoreError
 {
 	enum ErrorCode code;
 	int sourcePosition;
+	int symbolIndex;
 };
 
 const char *err_getString(enum ErrorCode errorCode);
-struct CoreError err_makeCoreError(enum ErrorCode code, int sourcePosition);
+struct CoreError err_makeCoreError(enum ErrorCode code, int sourcePosition, int symbolIndex);
 struct CoreError err_noCoreError(void);
 
 #endif /* error_h */
@@ -319,6 +320,13 @@ bool disk_loadFile(struct Core *core, int index, int address, int maxLength, int
 #define NUM_AUDIO_BUFFERS 6
 #define AUDIO_FILTER_BUFFER_SIZE 3
 
+// sauce: Claude Opus 5
+// entries of the sine lookup table, plus one duplicate of [0] so the linear
+// interpolation of the last step needs no wrap test
+#define SINE_TABLE_SIZE 256
+// extra sine partials the width nibble can stack onto the played note
+#define NUM_SINE_PARTIALS 2
+
 // audio output channels for stereo
 #define NUM_CHANNELS 2
 
@@ -326,7 +334,7 @@ struct Core;
 
 enum WaveType
 {
-	WaveTypeSawtooth,
+	WaveTypeSine,
 	WaveTypeTriangle,
 	WaveTypePulse,
 	WaveTypeNoise
@@ -419,6 +427,9 @@ struct AudioRegisters
 struct VoiceInternals
 {
 	double accumulator;
+	// sauce: Claude Opus 5
+	// phases of the extra sine partials, only advanced by the sine waveform
+	double partialAccumulator[NUM_SINE_PARTIALS];
 	uint16_t noiseRandom;
 	double envCounter;
 	enum EnvState envState;
@@ -426,6 +437,12 @@ struct VoiceInternals
 	bool lfoHold;
 	uint16_t lfoRandom;
 	double timeoutCounter;
+	// sauce: Claude Opus 5
+	float noiseTiltState;
+	float noiseTiltK;
+	float noiseTiltGain;
+	int noiseTiltIndex;
+	int noiseTiltFreq;
 };
 
 struct AudioInternals
@@ -436,6 +453,8 @@ struct AudioInternals
 	int writeBufferIndex;
 	bool audioEnabled;
 	int32_t filterBuffer[NUM_CHANNELS][AUDIO_FILTER_BUFFER_SIZE];
+	// sauce: Claude Opus 5
+	int16_t sineTable[SINE_TABLE_SIZE + 1];
 };
 
 void audio_reset(struct Core *core);
@@ -613,10 +632,10 @@ struct RCString *dat_readString(struct Token *jumpToken, int skip);
 // XXX: #define MAX_CYCLES_PER_VBL 1140
 // XXX: #define MAX_CYCLES_PER_RASTER 51
 #define MAX_CYCLES_TOTAL_PER_FRAME 52668 // 17556*317
-#define MAX_CYCLES_PER_VBL 3420			 // 1140*3 ??
-#define MAX_CYCLES_PER_RASTER 204		 // 51*4 OK
-#define MAX_CYCLES_PER_PARTICLE 51		 // ??
-#define MAX_CYCLES_PER_EMITTER 102		 // ??
+#define MAX_CYCLES_PER_VBL 3420 // 1140*3 ??
+#define MAX_CYCLES_PER_RASTER 204 // 51*4 OK
+#define MAX_CYCLES_PER_PARTICLE 51 // ??
+#define MAX_CYCLES_PER_EMITTER 102 // ??
 #define TIMER_WRAP_VALUE 5184000
 
 #endif /* interpreter_config_h */
@@ -767,6 +786,7 @@ struct LabelStackItem *lab_searchLabelStackItem(struct Interpreter *interpreter,
 #ifndef token_h
 #define token_h
 
+#include <stdint.h>
 #include <stdio.h>
 
 enum TokenType
@@ -1007,6 +1027,11 @@ enum TokenType
 struct Token
 {
 	enum TokenType type;
+
+	// Variable lookup inline cache, used by identifier.
+	int16_t varCacheSlot;
+	uint16_t varCacheEpoch;
+
 	union {
 		float floatValue;
 		struct RCString *stringValue;
@@ -1109,10 +1134,12 @@ enum ErrorCode tok_setSub(struct Tokenizer *tokenizer, int symbolIndex, struct T
 
 #define UNIVERSAL_WIDTH 177
 #define UNIVERSAL_HEIGHT 288
-#define ICON_WIDTH 180	  // 22.5
-#define ICON_HEIGHT 180	  // 22.5
-#define SCREEN_WIDTH 216  // 27x8
+#define ICON_WIDTH 180 // 22.5
+#define ICON_HEIGHT 180 // 22.5
+#define SCREEN_WIDTH 216 // 27x8
 #define SCREEN_HEIGHT 384 // 48x8
+#define COMPAT_WIDTH 160 // original LowRes NX screen
+#define COMPAT_HEIGHT 128
 #define NUM_CHARACTERS 256
 #define NUM_PALETTES 8
 #define PLANE_COLUMNS 64
@@ -1193,10 +1220,10 @@ struct Plane
 // 36Kibi
 struct VideoRam
 {
-	struct Plane planeA;						 // 8Kibi
-	struct Plane planeB;						 // 8Kibi
-	struct Plane planeC;						 // 8Kibi
-	struct Plane planeD;						 // 8Kibi
+	struct Plane planeA; // 8Kibi
+	struct Plane planeB; // 8Kibi
+	struct Plane planeC; // 8Kibi
+	struct Plane planeD; // 8Kibi
 	struct Character characters[NUM_CHARACTERS]; // 4Kibi
 };
 
@@ -1268,6 +1295,11 @@ struct VideoRegisters
 // ===========================================
 
 void video_renderScreen(struct Core *core, uint32_t *outputBuffer, int pitch);
+
+// Offset of the COMPAT_WIDTHxCOMPAT_HEIGHT area inside the visible screen.
+// Negative when the visible screen is smaller than the compatibility area,
+// in which case it is center cropped.
+void video_getCompatOffset(struct Core *core, int *offX, int *offY);
 
 #endif /* video_chip_h */
 // Copyright 2016-2024 Timo Kloss
@@ -1406,42 +1438,39 @@ extern "C"
 {
 #endif
 
-	struct pcg_state_setseq_64
-	{					// Internals are *Private*.
-		uint64_t state; // RNG state.  All values are possible.
-		uint64_t inc;	// Controls which RNG sequence (stream) is
-						// selected. Must *always* be odd.
-	};
-	typedef struct pcg_state_setseq_64 pcg32_random_t;
+struct pcg_state_setseq_64
+{         // Internals are *Private*.
+	uint64_t state;         // RNG state.  All values are possible.
+	uint64_t inc;         // Controls which RNG sequence (stream) is
+	// selected. Must *always* be odd.
+};
+typedef struct pcg_state_setseq_64 pcg32_random_t;
 
-	// If you *must* statically initialize it, here's one.
+// If you *must* statically initialize it, here's one.
 
-#define PCG32_INITIALIZER                                                                                              \
-	{                                                                                                                  \
-		0x853c49e6748fea9bULL, 0xda3e39cb94b95bdbULL                                                                   \
-	}
+#define PCG32_INITIALIZER {0x853c49e6748fea9bULL, 0xda3e39cb94b95bdbULL}
 
-	// pcg32_srandom(initstate, initseq)
-	// pcg32_srandom_r(rng, initstate, initseq):
-	//     Seed the rng.  Specified in two parts, state initializer and a
-	//     sequence selection constant (a.k.a. stream id)
+// pcg32_srandom(initstate, initseq)
+// pcg32_srandom_r(rng, initstate, initseq):
+//     Seed the rng.  Specified in two parts, state initializer and a
+//     sequence selection constant (a.k.a. stream id)
 
-	void pcg32_srandom(uint64_t initstate, uint64_t initseq);
-	void pcg32_srandom_r(pcg32_random_t *rng, uint64_t initstate, uint64_t initseq);
+void pcg32_srandom(uint64_t initstate, uint64_t initseq);
+void pcg32_srandom_r(pcg32_random_t *rng, uint64_t initstate, uint64_t initseq);
 
-	// pcg32_random()
-	// pcg32_random_r(rng)
-	//     Generate a uniformly distributed 32-bit random number
+// pcg32_random()
+// pcg32_random_r(rng)
+//     Generate a uniformly distributed 32-bit random number
 
-	uint32_t pcg32_random(void);
-	uint32_t pcg32_random_r(pcg32_random_t *rng);
+uint32_t pcg32_random(void);
+uint32_t pcg32_random_r(pcg32_random_t *rng);
 
-	// pcg32_boundedrand(bound):
-	// pcg32_boundedrand_r(rng, bound):
-	//     Generate a uniformly distributed number, r, where 0 <= r < bound
+// pcg32_boundedrand(bound):
+// pcg32_boundedrand_r(rng, bound):
+//     Generate a uniformly distributed number, r, where 0 <= r < bound
 
-	uint32_t pcg32_boundedrand(uint32_t bound);
-	uint32_t pcg32_boundedrand_r(pcg32_random_t *rng, uint32_t bound);
+uint32_t pcg32_boundedrand(uint32_t bound);
+uint32_t pcg32_boundedrand_r(pcg32_random_t *rng, uint32_t bound);
 
 #if __cplusplus
 }
@@ -1556,8 +1585,7 @@ void txtlib_clearBackground(struct TextLib *lib, int bg);
 struct Cell *txtlib_getCell(struct TextLib *lib, int x, int y);
 void txtlib_setCell(struct TextLib *lib, int x, int y, int character);
 void txtlib_setCells(struct TextLib *lib, int fromX, int fromY, int toX, int toY, int character);
-void txtlib_setCellsAttr(
-struct TextLib *lib, int fromX, int fromY, int toX, int toY, int pal, int flipX, int flipY, int prio);
+void txtlib_setCellsAttr(struct TextLib *lib, int fromX, int fromY, int toX, int toY, int pal, int flipX, int flipY, int prio);
 void txtlib_scrollBackground(struct TextLib *lib, int fromX, int fromY, int toX, int toY, int deltaX, int deltaY);
 void txtlib_copyBackground(struct TextLib *lib, int srcX, int srcY, int width, int height, int dstX, int dstY);
 int txtlib_getSourceCell(struct TextLib *lib, int x, int y, bool getAttrs);
@@ -1652,6 +1680,9 @@ struct TypedValue val_makeError(enum ErrorCode errorCode);
 
 #define SUB_LEVEL_GLOBAL -1
 
+// Use interpreter->arrayVariables or interpreter->simpleVariables according to this bit
+#define VAR_CACHE_ARRAY_BIT 0b1000000000
+
 struct Core;
 struct Interpreter;
 
@@ -1676,17 +1707,16 @@ struct ArrayVariable
 	union Value *values;
 };
 
+void var_invalidateLookupCaches(struct Interpreter *interpreter);
+
 struct SimpleVariable *var_getSimpleVariable(struct Interpreter *interpreter, int symbolIndex, int subLevel);
-struct SimpleVariable *var_createSimpleVariable(struct Interpreter *interpreter, enum ErrorCode *errorCode,
-int symbolIndex, int subLevel, enum ValueType type, union Value *valueReference);
+struct SimpleVariable *var_createSimpleVariable(struct Interpreter *interpreter, enum ErrorCode *errorCode, int symbolIndex, int subLevel, enum ValueType type, union Value *valueReference);
 void var_freeSimpleVariables(struct Interpreter *interpreter, int minSubLevel);
 
 struct ArrayVariable *var_getArrayVariable(struct Interpreter *interpreter, int symbolIndex, int subLevel);
 union Value *var_getArrayValue(struct Interpreter *interpreter, struct ArrayVariable *variable, int *indices);
-struct ArrayVariable *var_dimVariable(
-struct Interpreter *interpreter, enum ErrorCode *errorCode, int symbolIndex, int numDimensions, int *dimensionSizes);
-struct ArrayVariable *var_createArrayVariable(struct Interpreter *interpreter, enum ErrorCode *errorCode,
-int symbolIndex, int subLevel, struct ArrayVariable *arrayReference);
+struct ArrayVariable *var_dimVariable(struct Interpreter *interpreter, enum ErrorCode *errorCode, int symbolIndex, int numDimensions, int *dimensionSizes);
+struct ArrayVariable *var_createArrayVariable(struct Interpreter *interpreter, enum ErrorCode *errorCode, int symbolIndex, int subLevel, struct ArrayVariable *arrayReference);
 void var_freeArrayVariables(struct Interpreter *interpreter, int minSubLevel);
 
 #endif /* variables_h */
@@ -1786,8 +1816,13 @@ struct Interpreter
 
 	struct SimpleVariable simpleVariables[MAX_SIMPLE_VARIABLES];
 	int numSimpleVariables;
+
 	struct ArrayVariable arrayVariables[MAX_ARRAY_VARIABLES];
 	int numArrayVariables;
+
+	// Used to track when a new variable is allowed to shadowing an older one with the same name
+	uint16_t varShadowEpoch;
+
 	struct RCString *nullString;
 
 	struct Token *firstData;
@@ -1906,25 +1941,25 @@ struct Machine
 	uint8_t nothing1[0x0FB00 - 0x0F800]; // 768 Bytes
 
 	// 0x0FB00..0x0FF00
-	struct SpriteRegisters spriteRegisters;					  // 1020 Bytes
+	struct SpriteRegisters spriteRegisters; // 1020 Bytes
 	uint8_t nothing2[0x400 - sizeof(struct SpriteRegisters)]; // 4 bytes
 
 	// 0x0FF00
 	struct ColorRegisters colorRegisters; // 32 Bytes
 
 	// 0x0FF20..0x0FF40
-	struct VideoRegisters videoRegisters;					// 20 Bytes
+	struct VideoRegisters videoRegisters; // 20 Bytes
 	uint8_t nothing3[0x20 - sizeof(struct VideoRegisters)]; // 12 Bytes
 
 	// 0x0FF40..0x0FF70
 	struct AudioRegisters audioRegisters;
 
 	// 0x0FF70..0x0FFA0
-	struct IORegisters ioRegisters;						 // 36 Bytes
+	struct IORegisters ioRegisters; // 36 Bytes
 	uint8_t nothing4[0x30 - sizeof(struct IORegisters)]; // 12 Bytes
 
 	// 0x0FFA0..0x0FFB0
-	struct DmaRegisters dmaRegisters;							 // 6 Bytes
+	struct DmaRegisters dmaRegisters; // 6 Bytes
 	uint8_t manually_mapped[0x10 - sizeof(struct DmaRegisters)]; // 10 Bytes
 
 	// 0x0FFB0.0x10000
@@ -2114,8 +2149,7 @@ void core_setKeyboardHeight(struct Core *core, int height);
 bool core_shouldRender(struct Core *core);
 void core_orientationChanged(struct Core *core);
 
-void core_setInputGamepad(
-struct CoreInput *input, int player, bool up, bool down, bool left, bool right, bool buttonA, bool buttonB);
+void core_setInputGamepad(struct CoreInput *input, int player, bool up, bool down, bool left, bool right, bool buttonA, bool buttonB);
 
 void core_diskLoaded(struct Core *core);
 
@@ -2503,7 +2537,7 @@ extern "C"
 #define SL_GLOBMATCH_NEGATE '^' /* std char set negation char */
 #endif
 
-	int sl_globmatch(char *string, char *pattern);
+int sl_globmatch(char *string, char *pattern);
 
 #ifdef __cplusplus
 }

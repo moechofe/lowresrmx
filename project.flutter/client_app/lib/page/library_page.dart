@@ -186,20 +186,20 @@ class _MyLibraryPageState extends State<MyLibraryPage> {
     }
     return Scaffold(
         appBar: AppBar(title: const Text("Programs"), actions: [
-          Consumer<SyncManager>(
-            builder: (context, sync, child) {
-              if (!sync.isLoggedIn) return const SizedBox.shrink();
-              return Icon(
-                sync.isAuthorized
-                    ? Icons.cloud_done_rounded
-                    : Icons.cloud_off_rounded,
-                size: 20,
-                color: sync.isAuthorized
-                    ? null
-                    : Theme.of(context).colorScheme.error,
-              );
-            },
-          ),
+          // Consumer<SyncManager>(
+          //   builder: (context, sync, child) {
+          //     if (!sync.isLoggedIn) return const SizedBox.shrink();
+          //     return Icon(
+          //       sync.isAuthorized
+          //           ? Icons.cloud_done_rounded
+          //           : Icons.cloud_off_rounded,
+          //       size: 20,
+          //       color: sync.isAuthorized
+          //           ? null
+          //           : Theme.of(context).colorScheme.error,
+          //     );
+          //   },
+          // ),
           buildMorePopupMenu(context),
           const SizedBox(width: 8.0),
         ]),
