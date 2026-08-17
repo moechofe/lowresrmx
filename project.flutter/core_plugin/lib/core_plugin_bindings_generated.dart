@@ -193,9 +193,9 @@ class CorePluginBindings {
   }
 
   late final _runnerRegisterNativeTexturePtr = _lookup<
-      ffi.NativeFunction<
-          ffi.Void Function(ffi.Int64,
-              ffi.Pointer<ffi.Void>)>>('runnerRegisterNativeTexture');
+          ffi
+          .NativeFunction<ffi.Void Function(ffi.Int64, ffi.Pointer<ffi.Void>)>>(
+      'runnerRegisterNativeTexture');
   late final _runnerRegisterNativeTexture = _runnerRegisterNativeTexturePtr
       .asFunction<void Function(int, ffi.Pointer<ffi.Void>)>();
 
@@ -224,7 +224,8 @@ class CorePluginBindings {
   }
 
   late final _runnerRenderToTexturePtr = _lookup<
-          ffi.NativeFunction<ffi.Void Function(ffi.Pointer<Runner>, ffi.Int64)>>(
+          ffi
+          .NativeFunction<ffi.Void Function(ffi.Pointer<Runner>, ffi.Int64)>>(
       'runnerRenderToTexture');
   late final _runnerRenderToTexture = _runnerRenderToTexturePtr
       .asFunction<void Function(ffi.Pointer<Runner>, int)>();
@@ -416,7 +417,7 @@ final class CoreDelegate extends ffi.Struct {
           ffi.Void Function(ffi.Pointer<ffi.Void> context,
               ffi.Pointer<DataManager> diskDataManager)>> diskDriveIsFull;
 
-  /// Called when keyboard or gamepad settings changed
+  /// Called when keyboard settings changed
   external ffi.Pointer<
           ffi.NativeFunction<
               ffi.Void Function(
@@ -446,6 +447,9 @@ final class CoreError extends ffi.Struct {
 
   @ffi.Int()
   external int sourcePosition;
+
+  @ffi.Int()
+  external int symbolIndex;
 }
 
 abstract class ErrorCode {
@@ -509,7 +513,8 @@ abstract class ErrorCode {
   static const int ErrorAutomaticPauseNotDisabled = 57;
   static const int ErrorNotAllowedOutsideOfInterrupt = 58;
   static const int ErrorUserDeviceDiskFull = 59;
-  static const int ErrorMax = 60;
+  static const int ErrorRandAddressNotSeeded = 60;
+  static const int ErrorMax = 61;
 }
 
 final class ControlsInfo extends ffi.Struct {
@@ -524,6 +529,9 @@ final class ControlsInfo extends ffi.Struct {
 
   @ffi.Bool()
   external bool isInputState;
+
+  @ffi.Bool()
+  external bool isCompatMode;
 }
 
 abstract class KeyboardMode {
@@ -584,4 +592,10 @@ final class CoreInput extends ffi.Struct {
 
   @ffi.Bool()
   external bool out_hasUsedInput;
+
+  @ffi.Int()
+  external int keyboardChange;
+
+  @ffi.Int()
+  external int keyboardHeight;
 }

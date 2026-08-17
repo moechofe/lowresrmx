@@ -1,3 +1,11 @@
+### 1.0_60
+
+- GFX: Collection of fixes with the control.
+- GFX: Loading different BG was crashing.
+- GFX: Fix energy save during files listing.
+- Fix error reporting with `ON n GOTO/GOSUB/RESTORE`.
+- Fix inverted RGB component on android.
+
 ### 1.0_59
 
 - Fix rendering with COMPAT mode.

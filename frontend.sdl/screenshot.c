@@ -44,11 +44,23 @@ bool writeImage(const char *filename, int width, int height, uint32_t *pixels, i
 				for(int x = 0; x < width; x++)
 				{
 					uint32_t pixel = pixels[y * width + x];
+					// stbi_write_png with comp=3 wants R,G,B. The engine's word layout
+					// depends on ABGR (see machine/video_chip.h): 0xAARRGGBB when 0,
+					// 0xAABBGGRR when 1.
+#if ABGR
+					uint8_t r = (pixel) & 0xFF;
+					uint8_t g = (pixel >> 8) & 0xFF;
+					uint8_t b = (pixel >> 16) & 0xFF;
+#else
+					uint8_t r = (pixel >> 16) & 0xFF;
+					uint8_t g = (pixel >> 8) & 0xFF;
+					uint8_t b = (pixel) & 0xFF;
+#endif
 					for(int xs = 0; xs < scale; xs++)
 					{
-						data[i++] = (pixel) & 0xFF;
-						data[i++] = (pixel >> 8) & 0xFF;
-						data[i++] = (pixel >> 16) & 0xFF;
+						data[i++] = r;
+						data[i++] = g;
+						data[i++] = b;
 					}
 				}
 			}

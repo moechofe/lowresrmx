@@ -7,8 +7,7 @@ To generate `core_plugin_bindings_generated.dart`.
 
 I didn't manage to use the source from `backend.core` and make the debugger working, so I decide to merge the whole code into two files. To generate `core.h` and `core.c` from `backend.core`:
 
-    cd tool.dev
-    bash merge_backcore_for_flutter.bash
+    bash tool.dev/merge_for_flutter_client.bash
 
 This will generate the files: `core.c` and `core.h` in `project.cmake/core_plugin/src`
 

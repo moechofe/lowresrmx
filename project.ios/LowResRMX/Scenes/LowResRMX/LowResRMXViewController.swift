@@ -775,21 +775,15 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
 		if let userInfo = notification.userInfo,
 		   let keyboardRectangle = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect
 		{
-			if let coreWrapper
-			{
-				keyboardWasShown = true
-				keyboardNewHeight = Int(Int32(ceil(keyboardRectangle.height / screenScale)))
-			}
+			keyboardWasShown = true
+			keyboardNewHeight = Int(Int32(ceil(keyboardRectangle.height / screenScale)))
 		}
 	}
 
 	@objc func keyboardDidHide(_: NSNotification)
 	{
-		if let coreWrapper
-		{
-			keyboardWasHidden = true
-			keyboardNewHeight = 0
-		}
+		keyboardWasHidden = true
+		keyboardNewHeight = 0
 	}
 
 	@objc func keyboardWillHide(_: NSNotification)

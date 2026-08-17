@@ -44,7 +44,11 @@ struct Settings
 	char toolNames[MAX_TOOLS][TOOL_NAME_SIZE];
 };
 
+#if defined(__ANDROID__)
+void settings_init(struct Settings *settings, char *filenameOut, int argc, char *argv[]);
+#else
 void settings_init(struct Settings *settings, char *filenameOut, int argc, const char *argv[]);
+#endif
 void settings_save(struct Settings *settings);
 bool settings_addTool(struct Settings *settings, const char *filename);
 void settings_removeTool(struct Settings *settings, int index);

@@ -3454,7 +3454,7 @@ enum ErrorCode cmd_ON(struct Core *core)
 			{
 				++interpreter->pc;
 				if(interpreter->pc->type != TokenComma)
-					return TokenCALL ? ErrorExpectedSubprogramName : ErrorExpectedLabel;
+					return tokenCALL ? ErrorExpectedSubprogramName : ErrorExpectedLabel;
 				++interpreter->pc;
 				--n;
 			}
@@ -3462,7 +3462,7 @@ enum ErrorCode cmd_ON(struct Core *core)
 		// ON n GOTO/GOSUB/RESTORE/CALL identifier
 		if(interpreter->pc->type != TokenIdentifier)
 		{
-			return TokenCALL ? ErrorExpectedSubprogramName : ErrorExpectedLabel;
+			return tokenCALL ? ErrorExpectedSubprogramName : ErrorExpectedLabel;
 		}
 		struct Token *tokenIdentifier = interpreter->pc;
 		++interpreter->pc;
@@ -5117,7 +5117,7 @@ enum ErrorCode cmd_RANDOMIZE(struct Core *core)
 	struct TypedValue yValue;
 	yValue.type = ValueTypeNull;
 
-	int addr;
+	int addr=0;
 	bool custom_rng = false;
 	pcg32_random_t *rng = &interpreter->defaultRng;
 
@@ -17764,7 +17764,6 @@ void log_gosub(struct Core *core, int symbolIndex)
 void log_return(struct Core *core, bool clear)
 {
 	struct TextLib *lib = &core->overlay->textLib;
-	struct Tokenizer *tokenizer = &core->interpreter->tokenizer;
 	txtlib_printText(lib, "return");
 	if(clear)
 		txtlib_printText(lib, "and clear stack");

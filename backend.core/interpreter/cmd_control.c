@@ -772,7 +772,7 @@ enum ErrorCode cmd_ON(struct Core *core)
 			{
 				++interpreter->pc;
 				if(interpreter->pc->type != TokenComma)
-					return TokenCALL ? ErrorExpectedSubprogramName : ErrorExpectedLabel;
+					return tokenCALL ? ErrorExpectedSubprogramName : ErrorExpectedLabel;
 				++interpreter->pc;
 				--n;
 			}
@@ -780,7 +780,7 @@ enum ErrorCode cmd_ON(struct Core *core)
 		// ON n GOTO/GOSUB/RESTORE/CALL identifier
 		if(interpreter->pc->type != TokenIdentifier)
 		{
-			return TokenCALL ? ErrorExpectedSubprogramName : ErrorExpectedLabel;
+			return tokenCALL ? ErrorExpectedSubprogramName : ErrorExpectedLabel;
 		}
 		struct Token *tokenIdentifier = interpreter->pc;
 		++interpreter->pc;

@@ -497,7 +497,7 @@ enum ErrorCode cmd_RANDOMIZE(struct Core *core)
 	struct TypedValue yValue;
 	yValue.type = ValueTypeNull;
 
-	int addr;
+	int addr=0;
 	bool custom_rng = false;
 	pcg32_random_t *rng = &interpreter->defaultRng;
 

@@ -777,7 +777,6 @@ void log_gosub(struct Core *core, int symbolIndex)
 void log_return(struct Core *core, bool clear)
 {
 	struct TextLib *lib = &core->overlay->textLib;
-	struct Tokenizer *tokenizer = &core->interpreter->tokenizer;
 	txtlib_printText(lib, "return");
 	if(clear)
 		txtlib_printText(lib, "and clear stack");

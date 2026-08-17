@@ -23,6 +23,9 @@ A new Flutter FFI plugin project.
   s.platform = :ios, '12.0'
 
   # Flutter.framework does not contain a i386 slice.
-  s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386' }
+  # ABGR=0 makes the engine emit B,G,R,A, matching the kCVPixelFormatType_32BGRA pixel buffer
+  # created in Classes/CorePlugin.swift. Do not remove: without it the engine falls back to the
+  # TARGET_OS_IPHONE default of ABGR=1 and red/blue come out swapped.
+  s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386', 'GCC_PREPROCESSOR_DEFINITIONS' => '$(inherited) ABGR=0' }
   s.swift_version = '5.0'
 end

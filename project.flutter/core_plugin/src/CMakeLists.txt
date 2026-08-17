@@ -17,6 +17,12 @@ set_target_properties(core_plugin PROPERTIES
 
 target_compile_definitions(core_plugin PUBLIC DART_SHARED_LIB)
 
+# Pixel byte order the engine must emit. core_plugin.c forces the ANativeWindow to
+# WINDOW_FORMAT_RGBA_8888, and the Dart fallback decodes as rgba8888, so every target built
+# through CMake wants R,G,B,A. iOS is built from the podspec instead and sets ABGR=0 there,
+# because its CVPixelBuffer is kCVPixelFormatType_32BGRA.
+target_compile_definitions(core_plugin PUBLIC ABGR=1)
+
 if (ANDROID)
   target_link_libraries(core_plugin android log)
 endif()

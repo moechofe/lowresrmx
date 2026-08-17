@@ -1151,16 +1151,22 @@ enum ErrorCode tok_setSub(struct Tokenizer *tokenizer, int symbolIndex, struct T
 #define COLS_MASK (PLANE_COLUMNS - 1)
 #define ROWS_MASK (PLANE_ROWS - 1)
 
+// Byte order of the 32-bit pixels written by video_renderScreen():
+//   ABGR 0 -> bytes B,G,R,A  (SDL_PIXELFORMAT_ARGB8888, kCVPixelFormatType_32BGRA, PixelFormat.bgra8888)
+//   ABGR 1 -> bytes R,G,B,A  (CGImage noneSkipLast, WINDOW_FORMAT_RGBA_8888, PixelFormat.rgba8888)
+// This is a property of the surface the frontend renders into, not of the OS, so it should be
+// defined by the build system. The fallback below only serves the frontends that compile
+// backend.core directly and never set it: project.ios and project.cmake.
+#ifndef ABGR
 #if __APPLE__
 #include <TargetConditionals.h>
 #if TARGET_OS_IPHONE
 #define ABGR 1
 #endif
 #endif
-#if __ANDROID__
-#define ABGR 0
 #endif
-#if __linux__
+#ifndef ABGR
+#define ABGR 0
 #endif
 
 struct Core;
@@ -2096,7 +2102,7 @@ void overlay_draw(struct Core *core, bool ingame);
 #ifndef core_h
 #define core_h
 
-#define CORE_VERSION "2.0"
+// #define CORE_VERSION "2.0"
 
 #include <stdbool.h>
 #include <stdio.h>

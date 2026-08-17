@@ -194,6 +194,12 @@ class Runtime extends ChangeNotifier {
   static int screenHeight = 384;
   static int bytePerPixel = 4;
   static int bufferSize = screenWidth * screenHeight * bytePerPixel;
+
+  /// Byte order the engine emits, mirroring the ABGR define in the plugin build:
+  /// core_plugin/src/CMakeLists.txt sets ABGR=1 (R,G,B,A) for Android and desktop,
+  /// core_plugin/ios/core_plugin.podspec sets ABGR=0 (B,G,R,A) for iOS.
+  static final bool pixelsAreRgba = !Platform.isIOS;
+
   Uint8List? bytesList;
   ui.Image? image;
   String? dataDiskToSave;
@@ -539,8 +545,14 @@ class ComPort {
         prevRuntimeElapsed = runtimeStopwatch.elapsedMicroseconds;
         var stopwatch = Stopwatch()..start();
         // Decode the image and call the callback
-        ui.decodeImageFromPixels(message, Runtime.screenWidth,
-            Runtime.screenHeight, ui.PixelFormat.rgba8888, onImage!);
+        ui.decodeImageFromPixels(
+            message,
+            Runtime.screenWidth,
+            Runtime.screenHeight,
+            Runtime.pixelsAreRgba
+                ? ui.PixelFormat.rgba8888
+                : ui.PixelFormat.bgra8888,
+            onImage!);
         decodeTime.add(
             stopwatch.elapsed.inMicroseconds / Duration.microsecondsPerSecond);
       } else if (message is ThumbnailMsg) {
@@ -551,6 +563,9 @@ class ComPort {
                 height: Runtime.screenHeight,
                 bytes: message.pixels.buffer,
                 numChannels: 4,
+                order: Runtime.pixelsAreRgba
+                    ? img.ChannelOrder.rgba
+                    : img.ChannelOrder.bgra,
                 rowStride: Runtime.screenWidth * Runtime.bytePerPixel),
             x: 0,
             y: 0,

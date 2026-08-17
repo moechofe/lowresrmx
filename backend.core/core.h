@@ -20,7 +20,7 @@
 #ifndef core_h
 #define core_h
 
-#define CORE_VERSION "2.0"
+// #define CORE_VERSION "2.0"
 
 #include "core_delegate.h"
 #include "disk_drive.h"

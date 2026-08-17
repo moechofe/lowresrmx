@@ -1,4 +1,4 @@
-version$="0.202"
+version$="0.203"
 'offical graphics editor for Retro Game Creator (LowResRMX) for iOS
 'author: martin mauchauffee
 
@@ -25,6 +25,7 @@ version$="0.202"
 'todo: remove `backed:` `chared:` ..., `neweditor=`
 'todo: remove goto/gosub ***_redraw from tbl_***, use ***changed instead
 'todo: remove editor= send message using ...ed variable
+'todo: Do I need 'fedmode= and 'editor=
 
 files
 
@@ -2392,6 +2393,7 @@ fed_redraw:
   bg source rom(7)
   pal 1 :font 67
   t$="" :t=0
+  system 0,0
   for f=0 to 15
     y=4*f
     bg copy 0,0,w-2,4 to 32,y
@@ -2788,11 +2790,8 @@ bed_copy_input_1:
     bedhasbru=0
     viepala=pala
     system laye+1,0
-    trace"bedse",bed_sx,bed_sy,bed_ex,bed_ey
     gosub bed_redraw
-    trace"bedse",bed_sx,bed_sy,bed_ex,bed_ey
     gosub bed_rectangulize
-    trace"ltrb",l,t,r,b
     y=laye
     gosub bed_copy_brush
     'switch to paste tool
@@ -2816,7 +2815,6 @@ bed_copy_brush:
   call usrfree(16)
   'reserve memory space in file 16
   w=r-l+1 :h=b-t+1 :s=w*h*2
-  'trace"wh",w,h
   addr=0
   call usrlook(s,0,wramstart,wramend,addr,-1)
   if addr=0 then
@@ -3782,7 +3780,6 @@ tlb_0_draw: 'wid=7
     if bedtool>0 then bedoldt=bedtool
     tlb=1 :tlbchanged=-1
   end if
-  trace"bedtool",bedtool,bedoldt
   goto tlb_0_repaint
 
 tlb_0_undo: 'wid=8
@@ -4029,8 +4026,10 @@ tlb_2_load: 'wid=2
     call stplayer(3,bedlife)
     call uselayer(3)
     call updlayer(laye)
-    ' call ungesture
-    cnvchanged=-1
+    'make sure to recompute the center
+    bedx=0 :bedy=0
+    'required for tlb_2_back
+    gosub bed_redraw
     if err=0 then goto tlb_2_back
   else if fedmode=1 then
     call usrloadpal(fedlife,pallife,pallife,err)
