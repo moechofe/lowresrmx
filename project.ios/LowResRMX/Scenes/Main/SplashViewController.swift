@@ -151,14 +151,9 @@ class SplashViewController: UIViewController
 	private func createDisplayLink() -> CADisplayLink
 	{
 		let displayLink = CADisplayLink(target: self, selector: #selector(update))
-		if #available(iOS 10.0, *)
-		{
-			displayLink.preferredFramesPerSecond = 60
-		}
-		else
-		{
-			displayLink.frameInterval = 1
-		}
+		// see LowResRMXViewController: core_update() clocks the audio ring too, so the rate is
+		// pinned rather than merely preferred
+		displayLink.preferredFrameRateRange = CAFrameRateRange(minimum: 60, maximum: 60, preferred: 60)
 		return displayLink
 	}
 

@@ -256,14 +256,11 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
 		self.recognizer = recognizer
 
 		let displayLink = CADisplayLink(target: self, selector: #selector(update))
-		if #available(iOS 10.0, *)
-		{
-			displayLink.preferredFramesPerSecond = 60
-		}
-		else
-		{
-			displayLink.frameInterval = 1
-		}
+		// core_update() is the clock for video *and* audio: it ends with audio_bufferRegisters(),
+		// which pushes one register snapshot into a 6-slot ring that the audio thread drains at
+		// exactly 1/60 s per slot. Pinning min == max == 60 keeps ProMotion from calling us at
+		// 120 Hz (double tempo) and keeps a thermal downshift to 30 Hz from halving it.
+		displayLink.preferredFrameRateRange = CAFrameRateRange(minimum: 60, maximum: 60, preferred: 60)
 		self.displayLink = displayLink
 
 		NotificationCenter.default.addObserver(
@@ -457,7 +454,7 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
 			assertionFailure()
 			return
 		}
-		if let cgImage = nxView.layer.contents as! CGImage?
+		if let cgImage = nxView.snapshot()
 		{
 			let cropRect = CGRect(
 				x: 0, // (uiImage.size.width-216)/2,
@@ -476,7 +473,7 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
 
 	@objc func shareScreenshot()
 	{
-		if let cgImage = nxView.layer.contents as! CGImage?
+		if let cgImage = nxView.snapshot()
 		{
 			let uiImage = UIImage(cgImage: cgImage)
 

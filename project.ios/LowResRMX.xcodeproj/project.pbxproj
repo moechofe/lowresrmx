@@ -1454,6 +1454,10 @@
 				CODE_SIGN_ENTITLEMENTS = LowResRMX/LowResRMX.entitlements;
 				CURRENT_PROJECT_VERSION = 61;
 				DEVELOPMENT_TEAM = YWZ55H4QT9;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"ABGR=0",
+				);
 				INFOPLIST_FILE = "$(SRCROOT)/LowResRMX/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "Game Creator";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
@@ -1478,6 +1482,10 @@
 				CODE_SIGN_ENTITLEMENTS = LowResRMX/LowResRMX.entitlements;
 				CURRENT_PROJECT_VERSION = 61;
 				DEVELOPMENT_TEAM = YWZ55H4QT9;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"ABGR=0",
+				);
 				INFOPLIST_FILE = "$(SRCROOT)/LowResRMX/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "Game Creator";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";

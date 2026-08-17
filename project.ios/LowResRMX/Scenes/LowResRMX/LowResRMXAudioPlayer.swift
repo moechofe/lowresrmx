@@ -21,11 +21,30 @@ import AudioToolbox
 import AVFoundation
 import UIKit
 
+/// Immutable state handed to the AudioQueue render callback.
+///
+/// It exists so the callback never has to reach for `AVAudioSession.sharedInstance().sampleRate`:
+/// that is an ObjC property access which can take a lock and cross to the media server, and the
+/// callback runs on a realtime thread where neither is acceptable.
+final class AudioRenderContext
+{
+	let coreWrapper: CoreWrapper
+	let sampleRate: Int32
+
+	init(coreWrapper: CoreWrapper, sampleRate: Int32)
+	{
+		self.coreWrapper = coreWrapper
+		self.sampleRate = sampleRate
+	}
+}
+
 class LowResRMXAudioPlayer: NSObject
 {
 	var coreWrapper: CoreWrapper
 	private var isActive = false
 	private var queue: AudioQueueRef?
+	/// Held for as long as the queue lives, because the callback holds it unretained.
+	private var context: AudioRenderContext?
 
 	init(coreWrapper: CoreWrapper)
 	{
@@ -50,8 +69,14 @@ class LowResRMXAudioPlayer: NSObject
 				print("AVAudioSession", error.localizedDescription)
 			}
 
+			// read once, after the session is active, and reuse for both the stream format
+			// and every render call
+			let sampleRate = session.sampleRate
+			let context = AudioRenderContext(coreWrapper: coreWrapper, sampleRate: Int32(sampleRate))
+			self.context = context
+
 			var dataFormat = AudioStreamBasicDescription()
-			dataFormat.mSampleRate = session.sampleRate
+			dataFormat.mSampleRate = sampleRate
 			dataFormat.mFormatID = kAudioFormatLinearPCM
 			dataFormat.mFormatFlags = kLinearPCMFormatFlagIsSignedInteger | kLinearPCMFormatFlagIsPacked
 			dataFormat.mBytesPerPacket = 4
@@ -61,8 +86,8 @@ class LowResRMXAudioPlayer: NSObject
 			dataFormat.mBitsPerChannel = 16
 			dataFormat.mReserved = 0
 
-			let unmanagedCoreWrapper = Unmanaged.passUnretained(coreWrapper).toOpaque()
-			AudioQueueNewOutput(&dataFormat, audioQueueCallback, unmanagedCoreWrapper, nil, CFRunLoopMode.commonModes.rawValue, 0, &queue)
+			let unmanagedContext = Unmanaged.passUnretained(context).toOpaque()
+			AudioQueueNewOutput(&dataFormat, audioQueueCallback, unmanagedContext, nil, CFRunLoopMode.commonModes.rawValue, 0, &queue)
 
 			guard let queue
 			else
@@ -77,7 +102,7 @@ class LowResRMXAudioPlayer: NSObject
 				if let buffer
 				{
 					let capacity = buffer.pointee.mAudioDataBytesCapacity
-					audio_renderAudio(&coreWrapper.core, buffer.pointee.mAudioData.assumingMemoryBound(to: Int16.self), Int32(buffer.pointee.mAudioDataBytesCapacity / 2), Int32(AVAudioSession.sharedInstance().sampleRate), 0)
+					audio_renderAudio(&coreWrapper.core, buffer.pointee.mAudioData.assumingMemoryBound(to: Int16.self), Int32(capacity / 2), context.sampleRate, 0)
 					buffer.pointee.mAudioDataByteSize = capacity
 					AudioQueueEnqueueBuffer(queue, buffer, 0, nil)
 				}
@@ -95,10 +120,13 @@ class LowResRMXAudioPlayer: NSObject
 
 			if let queue
 			{
+				// both synchronous, so no callback can still be in flight afterwards and the
+				// context is safe to drop
 				AudioQueueStop(queue, true)
 				AudioQueueDispose(queue, true)
 			}
 			queue = nil
+			context = nil
 
 			try? AVAudioSession.sharedInstance().setActive(false)
 		}
@@ -109,8 +137,8 @@ func audioQueueCallback(_ userData: UnsafeMutableRawPointer?, _ audioQueue: Audi
 {
 	if let userData
 	{
-		let coreWrapper = Unmanaged<CoreWrapper>.fromOpaque(userData).takeUnretainedValue()
-		audio_renderAudio(&coreWrapper.core, buffer.pointee.mAudioData.assumingMemoryBound(to: Int16.self), Int32(buffer.pointee.mAudioDataBytesCapacity / 2), Int32(AVAudioSession.sharedInstance().sampleRate), 0)
+		let context = Unmanaged<AudioRenderContext>.fromOpaque(userData).takeUnretainedValue()
+		audio_renderAudio(&context.coreWrapper.core, buffer.pointee.mAudioData.assumingMemoryBound(to: Int16.self), Int32(buffer.pointee.mAudioDataBytesCapacity / 2), context.sampleRate, 0)
 	}
 	AudioQueueEnqueueBuffer(audioQueue, buffer, 0, nil)
 }
