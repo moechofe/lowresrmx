@@ -197,6 +197,7 @@
 		5B6334F62F3F3ECF00E8198A /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B6334F52F3F3ECF00E8198A /* SceneDelegate.swift */; };
 		5B7D1D7A2D43F1D200B871FA /* Clibsodium in Frameworks */ = {isa = PBXBuildFile; productRef = 5B7D1D792D43F1D200B871FA /* Clibsodium */; };
 		5B7D1D7C2D43F1D200B871FA /* Sodium in Frameworks */ = {isa = PBXBuildFile; productRef = 5B7D1D7B2D43F1D200B871FA /* Sodium */; };
+		5BC0DE0100000000000000C1 /* core_syntax.c in Sources */ = {isa = PBXBuildFile; fileRef = 5BC0DE0100000000000000F1 /* core_syntax.c */; };
 		5BEC340A2F88DE3C005985F8 /* CommunityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BEC34092F88DE3C005985F8 /* CommunityView.swift */; };
 		5BF536CE2D848C1F00548D6A /* overlay_debugger.c in Sources */ = {isa = PBXBuildFile; fileRef = 5BF536CD2D848C1F00548D6A /* overlay_debugger.c */; };
 		5BF536CF2D848C1F00548D6A /* overlay_debugger.c in Sources */ = {isa = PBXBuildFile; fileRef = 5BF536CD2D848C1F00548D6A /* overlay_debugger.c */; };
@@ -401,6 +402,8 @@
 		5B572CB22DE710BA00196C83 /* globmatch.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = globmatch.c; sourceTree = "<group>"; };
 		5B6334F52F3F3ECF00E8198A /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		5BBE96AF2F3DC826004D9DF3 /* config.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = config.h; sourceTree = "<group>"; };
+		5BC0DE0100000000000000F1 /* core_syntax.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = core_syntax.c; sourceTree = "<group>"; };
+		5BC0DE0100000000000000F2 /* core_syntax.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = core_syntax.h; sourceTree = "<group>"; };
 		5BE6C6562F2CFC3C00A5EEA7 /* overlay_debugger.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = overlay_debugger.h; sourceTree = "<group>"; };
 		5BEC34092F88DE3C005985F8 /* CommunityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommunityView.swift; sourceTree = "<group>"; };
 		5BF536CD2D848C1F00548D6A /* overlay_debugger.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = overlay_debugger.c; sourceTree = "<group>"; };
@@ -529,6 +532,8 @@
 				5B34ECDD2AC5835600220A80 /* overlay */,
 				5B34ECE42AC5835600220A80 /* core_delegate.c */,
 				5B34ECE52AC5835600220A80 /* core_stats.h */,
+				5BC0DE0100000000000000F1 /* core_syntax.c */,
+				5BC0DE0100000000000000F2 /* core_syntax.h */,
 			);
 			name = backend.core;
 			path = ../backend.core;
@@ -1250,6 +1255,7 @@
 				5B34ED842AC5835700220A80 /* video_chip.c in Sources */,
 				9294F2E21FC4BA1100A90487 /* CoreWrapper.swift in Sources */,
 				920E1B4E1F7816FA00664382 /* EditorTextView.m in Sources */,
+				5BC0DE0100000000000000C1 /* core_syntax.c in Sources */,
 				5B34ED8E2AC5835700220A80 /* pcg_basic.c in Sources */,
 				92A001CF243780DD007AE953 /* ActionButton.swift in Sources */,
 				5B34ED182AC5835600220A80 /* labels.c in Sources */,
@@ -1269,7 +1275,7 @@
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 61;
+				CURRENT_PROJECT_VERSION = 62;
 				DEVELOPMENT_ASSET_PATHS = "Widgets/Preview\\ Assets.xcassets";
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				INFOPLIST_FILE = Widgets/Info.plist;
@@ -1302,7 +1308,7 @@
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 61;
+				CURRENT_PROJECT_VERSION = 62;
 				DEVELOPMENT_ASSET_PATHS = "Widgets/Preview\\ Assets.xcassets";
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				INFOPLIST_FILE = Widgets/Info.plist;
@@ -1452,7 +1458,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = "";
 				CODE_SIGN_ENTITLEMENTS = LowResRMX/LowResRMX.entitlements;
-				CURRENT_PROJECT_VERSION = 61;
+				CURRENT_PROJECT_VERSION = 62;
 				DEVELOPMENT_TEAM = YWZ55H4QT9;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
@@ -1480,7 +1486,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = "";
 				CODE_SIGN_ENTITLEMENTS = LowResRMX/LowResRMX.entitlements;
-				CURRENT_PROJECT_VERSION = 61;
+				CURRENT_PROJECT_VERSION = 62;
 				DEVELOPMENT_TEAM = YWZ55H4QT9;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",

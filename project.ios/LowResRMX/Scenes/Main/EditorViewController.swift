@@ -72,7 +72,7 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
 		sourceCodeTextView.editorDelegate = self
 
 		sourceCodeTextView.text = document.sourceCode ?? ""
-		sourceCodeTextView?.applyColoration(AppController.shared.editorSyntaxHighlightingMode.rawValue, in: NSMakeRange(0, sourceCodeTextView.text.count))
+		sourceCodeTextView?.applyColoration(AppController.shared.editorSyntaxHighlightingMode.rawValue)
 
 		// Apply font size setting
 		applyFontSize()
@@ -645,7 +645,7 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
 	func projectDocumentContentDidUpdate(_ projectDocument: ProjectDocument)
 	{
 		sourceCodeTextView.text = projectDocument.sourceCode ?? ""
-		sourceCodeTextView?.applyColoration(AppController.shared.editorSyntaxHighlightingMode.rawValue, in: NSMakeRange(0, sourceCodeTextView.text.count))
+		sourceCodeTextView?.applyColoration(AppController.shared.editorSyntaxHighlightingMode.rawValue)
 		indexSideBar.update()
 		updateStats()
 	}
@@ -712,7 +712,7 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
 		fullHighlightTimer = Timer.scheduledTimer(withTimeInterval: 0.3, repeats: false)
 		{ [weak self] _ in
 			guard let self else { return }
-			sourceCodeTextView.applyColoration(AppController.shared.editorSyntaxHighlightingMode.rawValue, in: NSMakeRange(0, sourceCodeTextView.text.count))
+			sourceCodeTextView.applyColoration(AppController.shared.editorSyntaxHighlightingMode.rawValue)
 		}
 
 		// side bar
@@ -721,7 +721,6 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
 			// immediate update
 			shouldUpdateSideBar = false
 			indexSideBar.update()
-			sourceCodeTextView?.applyColoration(AppController.shared.editorSyntaxHighlightingMode.rawValue, in: NSMakeRange(0, sourceCodeTextView.text.count))
 		}
 		else
 		{
@@ -844,7 +843,7 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
 			// replace
 			let changedSourceText = sourceText.replacingCharacters(in: selectedRange, with: replaceText)
 			sourceCodeTextView.text = changedSourceText
-			(sourceCodeTextView)?.applyColoration(AppController.shared.editorSyntaxHighlightingMode.rawValue, in: NSMakeRange(selectedRange.location, replaceText.count))
+			(sourceCodeTextView)?.applyColoration(AppController.shared.editorSyntaxHighlightingMode.rawValue, in: NSMakeRange(selectedRange.location, (replaceText as NSString).length))
 			sourceCodeTextView.selectedRange = NSMakeRange(selectedRange.location + replaceText.count, 0)
 			sourceCodeTextView.scrollSelectedRangeToVisible()
 		}

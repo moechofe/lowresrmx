@@ -18,8 +18,57 @@
 // 3. This notice may not be removed or altered from any source distribution.
 
 #import "EditorTextView.h"
+#import "core_syntax.h"
+
+static dispatch_queue_t syntaxQueue(void) {
+	static dispatch_queue_t queue;
+	static dispatch_once_t once;
+	dispatch_once(&once, ^{
+		queue = dispatch_queue_create("it.ro.ret.ios.LowResRMX.syntax", DISPATCH_QUEUE_SERIAL);
+	});
+	return queue;
+}
+
+static NSArray<UIColor *> *syntaxColors(void) {
+	static NSArray<UIColor *> *colors;
+	static dispatch_once_t once;
+	dispatch_once(&once, ^{
+		UIColor *fallback = [UIColor labelColor];
+		colors = @[
+			[UIColor colorNamed:@"syntax_keywoard"] ?: fallback, // SyntaxKeyword
+			[UIColor colorNamed:@"syntax_number"] ?: fallback,   // SyntaxNumber
+			[UIColor colorNamed:@"syntax_string"] ?: fallback,   // SyntaxString
+			[UIColor colorNamed:@"syntax_comment"] ?: fallback,  // SyntaxComment
+			[UIColor colorNamed:@"syntax_label"] ?: fallback,    // SyntaxLabel
+			[UIColor colorNamed:@"syntax_subs"] ?: fallback      // SyntaxSub
+		];
+	});
+	return colors;
+}
+
+typedef struct {
+	const char *bytes;
+	NSUInteger byteCursor;
+	NSUInteger utf16Cursor;
+	BOOL isAscii; // then the mapping is the identity and the walk is skipped
+} Utf8ToUtf16Cursor;
+
+static NSUInteger utf16OffsetForByteOffset(Utf8ToUtf16Cursor *cursor, NSUInteger byteOffset) {
+	if (cursor->isAscii) {
+		return byteOffset;
+	}
+	while (cursor->byteCursor < byteOffset) {
+		unsigned char lead = (unsigned char)cursor->bytes[cursor->byteCursor];
+		NSUInteger byteLength = (lead < 0x80) ? 1 : (lead < 0xE0) ? 2 : (lead < 0xF0) ? 3 : 4;
+		cursor->byteCursor += byteLength;
+		// Only astral characters need a surrogate pair.
+		cursor->utf16Cursor += (byteLength == 4) ? 2 : 1;
+	}
+	return cursor->utf16Cursor;
+}
 
 @interface EditorTextView ()
++ (NSArray *)syntaxUpdatesForText:(NSString *)text inRange:(NSRange)range;
 @end
 
 @implementation EditorTextView
@@ -33,6 +82,10 @@
 	self.spellCheckingType = UITextSpellCheckingTypeNo;
 
 	[self initKeyboardToolbar];
+
+	// Resolve the syntax colours here so the one-time UIColor lookup happens on
+	// the main thread; every later read comes from the cache on syntaxQueue().
+	syntaxColors();
 
 	if (@available(iOS 9.0, *)) {
 		self.inputAssistantItem.leadingBarButtonGroups = @[];
@@ -90,8 +143,8 @@
 	}
 
 	UIFont *font = self.font ?: [UIFont monospacedSystemFontOfSize:14 weight:UIFontWeightRegular];
-	dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-		NSArray *updates = [self computeSyntaxHighlightingUpdatesForText:text range:expandedRange];
+	dispatch_async(syntaxQueue(), ^{
+		NSArray *updates = [EditorTextView syntaxUpdatesForText:text inRange:expandedRange];
 		dispatch_async(dispatch_get_main_queue(), ^{
 			// Only apply if this is the latest request
 			if (currentToken == syntaxHighlightingToken) {
@@ -299,227 +352,41 @@
 	}
 }
 
-- (NSArray *)computeSyntaxHighlightingUpdatesForText:(NSString *)text range:(NSRange)range {
-	NSMutableArray *updates = [NSMutableArray array];
+// Must run on syntaxQueue(): the struct Syntax below is shared and reused.
++ (NSArray *)syntaxUpdatesForText:(NSString *)text inRange:(NSRange)range {
+	static struct Syntax syntax;
+	static dispatch_once_t once;
+	dispatch_once(&once, ^{
+		syntax_init(&syntax);
+	});
 
-	NSArray *keywords = @[
-		@"ABS", @"ADD", @"AND", @"ASC", @"AT", @"ATAN", @"ATTR", @"BG", @"BIN", @"CALL", @"CEIL", @"CELL", @"CELL\\.A", @"CELL\\.C", @"CHAR", @"CHR", @"CLAMP", @"CLS", @"CLW", @"COLOR", @"COMPAT", @"COPY", @"COS", @"CURSOR\\.X", @"CURSOR\\.Y", @"DATA", @"DEC", @"DIM", @"DMA", @"DO", @"EASE", @"ELSE", @"EMITTER", @"END", @"ENVELOPE", @"EXIT", @"EXP", @"FILE", @"FILES", @"FILL", @"FLIP", @"FLOOR", @"FONT", @"FOR", @"FSIZE", @"GLOBAL", @"GOSUB", @"GOTO", @"HAPTIC", @"HEX", @"HIT", @"IF", @"INC", @"INKEY", @"INPUT", @"INSTR", @"INT", @"KEYBOARD", @"LEFT", @"LEN", @"LET", @"LFO", @"LFO\\.A", @"LOAD", @"LOCATE", @"LOG", @"LOOP", @"MAX", @"MCELL", @"MCELL\\.A", @"MCELL\\.C", @"MESSAGE", @"MID", @"MIN", @"MOD", @"MUSIC", @"NEXT", @"NOT", @"NUMBER", @"OFF", @"ON", @"OR", @"PAL", @"PALETTE", @"PARTICLE", @"PAUSE", @"PEEK", @"PEEKL", @"PEEKW", @"PI", @"PLAY", @"POKE", @"POKEL", @"POKEW", @"PRINT", @"PRIO", @"RANDOMIZE", @"RASTER", @"READ", @"REPEAT", @"RESTORE", @"RETURN", @"RIGHT", @"RND", @"ROL", @"ROM", @"ROR", @"SAFE\\.B", @"SAFE\\.L", @"SAFE\\.R", @"SAFE\\.T", @"SAVE", @"SCROLL", @"SCROLL\\.X", @"SCROLL\\.Y", @"SGN", @"SHOWN\\.H", @"SHOWN\\.W", @"SIN", @"SIZE", @"SKIP", @"SOUND", @"SOURCE", @"SPRITE", @"SPRITE\\.A", @"SPRITE\\.C", @"SPRITE\\.X", @"SPRITE\\.Y", @"SQR", @"STEP", @"STOP", @"STR", @"SUB", @"SWAP", @"SYSTEM", @"TAN", @"TAP", @"TEXT", @"THEN", @"TIMER", @"TINT", @"TO", @"TOUCH", @"TOUCH\\.X", @"TOUCH\\.Y", @"TOUCH\\.TAP", @"TOUCH\\.DRAG", @"TOUCH\\.LONG", @"TOUCH\\.CHANGE", @"TOUCH\\.PX", @"TOUCH\\.PY", @"TRACE", @"TRACK", @"UBOUND", @"UNTIL", @"VAL", @"VBL", @"VIEW", @"VOLUME", @"WAIT", @"WAVE", @"WEND", @"WHILE", @"WINDOW", @"WINDOW\\.X", @"WINDOW\\.Y", @"WINDOW\\.W", @"WINDOW\\.H", @"XOR", ];
-
-	UIColor *keywordColor = [UIColor colorNamed:@"syntax_keywoard"];
-	UIColor *numberColor = [UIColor colorNamed:@"syntax_number"];
-	UIColor *stringColor = [UIColor colorNamed:@"syntax_string"];
-	UIColor *commentColor = [UIColor colorNamed:@"syntax_comment"];
-	UIColor *labelColor = [UIColor colorNamed:@"syntax_label"];
-	UIColor *subsColor = [UIColor colorNamed:@"syntax_subs"];
-
-	// End of code, start of DATA block
-	NSRegularExpression *endOfCodeRegex = [NSRegularExpression regularExpressionWithPattern:@"^#[0-9]+:" options:NSRegularExpressionAnchorsMatchLines error:nil];
-	NSArray<NSTextCheckingResult *> *endOfCodeMatches = [endOfCodeRegex matchesInString:text options:0 range:range];
-
-	// After a certain point, we are in the DATA block and should not apply syntax
-	// highlighting. Find the earliest match in the range.
-	if (endOfCodeMatches.count > 0) {
-		NSRange dataStartRange = endOfCodeMatches[0].range;
-		if (NSLocationInRange(dataStartRange.location, range)) {
-			range.length = dataStartRange.location - range.location;
-		} else {
-			// No DATA block in range, do nothing
-		}
+	const char *sourceCode = [text UTF8String];
+	if (!sourceCode) {
+		return @[];
 	}
 
-	// Strings
-	NSRegularExpression *stringRegex = [NSRegularExpression regularExpressionWithPattern:@"\"[^\"]*\"" options:0 error:nil];
-	NSArray<NSTextCheckingResult *> *stringMatches = [stringRegex matchesInString:text options:0 range:range];
-	for (NSTextCheckingResult *match in stringMatches) {
-		[updates addObject:@{ @"range" : [NSValue valueWithRange:match.range], @"color" : stringColor}];
-	}
+	syntax_update(&syntax, sourceCode);
 
-	// Comments (' ...)
-	NSRegularExpression *remRegex = [NSRegularExpression regularExpressionWithPattern:@"(^\\s*|\\s+:\\s*)'.*" options:(NSRegularExpressionCaseInsensitive|NSRegularExpressionAnchorsMatchLines) error:nil];
-	NSArray<NSTextCheckingResult *> *remMatches = [remRegex matchesInString:text options:0 range:range];
-	for (NSTextCheckingResult *match in remMatches) {
-		[updates addObject:@{ @"range" : [NSValue valueWithRange:match.range], @"color" : commentColor }];
-	}
+	NSArray<UIColor *> *colors = syntaxColors();
+	NSMutableArray *updates = [NSMutableArray arrayWithCapacity:syntax.numSpans];
 
-	// Numbers (not inside strings)
-	NSRegularExpression *numberRegex = [NSRegularExpression regularExpressionWithPattern:@"\\b[0-9]+(\\.[0-9]+)?\\b" options:0 error:nil];
-	NSArray<NSTextCheckingResult *> *numberMatches = [numberRegex matchesInString:text options:0 range:range];
-	for (NSTextCheckingResult *match in numberMatches) {
-		BOOL inString = NO;
-		for (NSTextCheckingResult *stringMatch in stringMatches) {
-			if (NSIntersectionRange(match.range, stringMatch.range).length > 0) {
-				inString = YES;
-				break;
-			}
-		}
-		BOOL inComment = NO;
-		for (NSTextCheckingResult *remMatch in remMatches) {
-			if (NSIntersectionRange(match.range, remMatch.range).length > 0) {
-				inComment = YES;
-				break;
-			}
-		}
-		if (!inString && !inComment) {
-			[updates addObject:@{ @"range" : [NSValue valueWithRange:match.range], @"color" : numberColor }];
-		}
-	}
+	size_t byteLength = strlen(sourceCode);
+	Utf8ToUtf16Cursor cursor = { sourceCode, 0, 0, (byteLength == text.length) };
 
-	// Keywords (not inside strings or comments)
-	for (NSString *keyword in keywords) {
-		NSString *pattern = [NSString stringWithFormat:@"\\b%@\\b", keyword];
-		NSRegularExpression *keywordRegex = [NSRegularExpression regularExpressionWithPattern:pattern options:NSRegularExpressionCaseInsensitive error:nil];
-		NSArray<NSTextCheckingResult *> *keywordMatches = [keywordRegex matchesInString:text options:0 range:range];
-		for (NSTextCheckingResult *match in keywordMatches) {
-			BOOL inStringOrComment = NO;
-			for (NSTextCheckingResult *stringMatch in stringMatches) {
-				if (NSIntersectionRange(match.range, stringMatch.range).length > 0) {
-					inStringOrComment = YES;
-					break;
-				}
-			}
-			for (NSTextCheckingResult *remMatch in remMatches) {
-				if (NSIntersectionRange(match.range, remMatch.range).length > 0) {
-					inStringOrComment = YES;
-					break;
-				}
-			}
-			if (!inStringOrComment) {
-				[updates addObject:@{ @"range" : [NSValue valueWithRange:match.range],
-						      @"color" : keywordColor}];
-			}
-		}
-	}
-
-	// Labels: find lines like 'label:' at the start of a line
-	NSRegularExpression *labelRegex = [NSRegularExpression regularExpressionWithPattern:@"^([A-Za-z_][A-Za-z0-9_]*)\\s*:" options:NSRegularExpressionAnchorsMatchLines error:nil];
-	NSMutableSet<NSString *> *labelSet = [NSMutableSet set];
-	// Scan all labels to ensure GOTO targets are correct, even if outside range
-	NSArray<NSTextCheckingResult *> *labelMatches = [labelRegex matchesInString:text options:0 range:NSMakeRange(0, text.length)];
-
-	for (NSTextCheckingResult *match in labelMatches) {
-		if (match.numberOfRanges > 1) {
-			NSRange idRange = [match rangeAtIndex:1];
-			if (NSIntersectionRange(idRange, range).length > 0) {
-				[updates addObject:@{ @"range" : [NSValue valueWithRange:idRange], @"color" : labelColor }];
-			}
-			NSString *labelName = [text substringWithRange:idRange];
-			[labelSet addObject:labelName.uppercaseString];
-		}
-	}
-
-	// Colorize GOTO/GOSUB/RESTORE targets
-	NSRegularExpression *gotoRegex = [NSRegularExpression regularExpressionWithPattern: @"\\b(GOTO|GOSUB|RESTORE)\\s+([A-Za-z_][A-Za-z0-9_]*)\\b" options:NSRegularExpressionCaseInsensitive error:nil];
-	NSArray<NSTextCheckingResult *> *gotoMatches = [gotoRegex matchesInString:text options:0 range:range];
-
-	for (NSTextCheckingResult *match in gotoMatches) {
-		BOOL inString = NO;
-		for (NSTextCheckingResult *stringMatch in stringMatches) {
-			if (NSIntersectionRange(match.range, stringMatch.range).length > 0) {
-				inString = YES;
-				break;
-			}
-		}
-		BOOL inComment = NO;
-		for (NSTextCheckingResult *remMatch in remMatches) {
-			if (NSIntersectionRange(match.range, remMatch.range).length > 0) {
-				inComment = YES;
-				break;
-			}
-		}
-		if (inString || inComment)
+	for (int i = 0; i < syntax.numSpans; i++) {
+		struct SyntaxSpan span = syntax.spans[i];
+		// Both offsets must be converted even when the span is discarded below, so the cursor stays in step with the span order.
+		NSUInteger start = utf16OffsetForByteOffset(&cursor, span.start);
+		NSUInteger end = utf16OffsetForByteOffset(&cursor, span.start + span.length);
+		if (end <= start || end > text.length) {
 			continue;
-		if (match.numberOfRanges > 2) {
-			NSRange labelRange = [match rangeAtIndex:2];
-			NSString *target = [text substringWithRange:labelRange];
-			if ([labelSet containsObject:target.uppercaseString]) {
-				[updates addObject:@{ @"range" : [NSValue valueWithRange:labelRange], @"color" : labelColor }];
-			}
 		}
-	}
-
-	// Colorize ON var GOTO/GOSUB/RESTORE label1, label2, ...
-	NSRegularExpression *onGotoGosubRegex = [NSRegularExpression regularExpressionWithPattern:@"\\bON\\s+[A-Za-z_][A-Za-z0-9_\\(\\)]*\\s+(GOTO|GOSUB|RESTORE)\\s+([A-Za-z_][A-Za-z0-9_]*(?:\\s*,\\s*[A-Za-z_][A-Za-z0-9_]*)*)" options:NSRegularExpressionCaseInsensitive error:nil];
-	NSArray<NSTextCheckingResult *> *onGotoGosubMatches = [onGotoGosubRegex matchesInString:text options:0 range:range];
-	for (NSTextCheckingResult *match in onGotoGosubMatches) {
-		BOOL inString = NO;
-		for (NSTextCheckingResult *stringMatch in stringMatches) {
-			if (NSIntersectionRange(match.range, stringMatch.range).length > 0) {
-				inString = YES;
-				break;
-			}
-		}
-		BOOL inComment = NO;
-		for (NSTextCheckingResult *remMatch in remMatches) {
-			if (NSIntersectionRange(match.range, remMatch.range).length > 0) {
-				inComment = YES;
-				break;
-			}
-		}
-		if (inString || inComment)
+		NSRange spanRange = NSMakeRange(start, end - start);
+		if (NSIntersectionRange(spanRange, range).length == 0) {
 			continue;
-		if (match.numberOfRanges > 2) {
-			NSRange labelsRange = [match rangeAtIndex:2];
-			NSString *labelsString = [text substringWithRange:labelsRange];
-			NSArray *labels = [labelsString componentsSeparatedByString:@","];
-			// Scan within labelsString, map to full text using labelsRange.location
-			NSUInteger localPos = 0;
-			for (NSString *label in labels) {
-				NSString *trimmedLabel = [label stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
-				// Find the range of trimmedLabel in labelsString starting from localPos
-				NSRange searchRange = NSMakeRange(localPos, labelsString.length - localPos);
-				NSRange foundRange = [labelsString rangeOfString:trimmedLabel options:0 range:searchRange];
-				if (foundRange.location != NSNotFound) {
-					NSRange labelRange = NSMakeRange(labelsRange.location + foundRange.location, trimmedLabel.length);
-					if ([labelSet containsObject:trimmedLabel.uppercaseString]) {
-						[updates addObject:@{ @"range" : [NSValue valueWithRange:labelRange], @"color" : labelColor }];
-					}
-					localPos = foundRange.location + foundRange.length;
-				}
-				// Move past comma and whitespace
-				while (localPos < labelsString.length && ([[NSCharacterSet whitespaceCharacterSet] characterIsMember:[labelsString characterAtIndex:localPos]] || [labelsString characterAtIndex:localPos] == ',')) {
-					localPos++;
-				}
-			}
 		}
-	}
-
-	// Subs: find lines like 'SUB name'
-	NSRegularExpression *subRegex = [NSRegularExpression regularExpressionWithPattern:@"^\\s*SUB\\s+([A-Za-z_][A-Za-z0-9_]*)" options:(NSRegularExpressionCaseInsensitive|NSRegularExpressionAnchorsMatchLines) error:nil];
-	NSArray<NSTextCheckingResult *> *subMatches = [subRegex matchesInString:text options:0 range:NSMakeRange(0, text.length)];
-	for (NSTextCheckingResult *match in subMatches) {
-		if (match.numberOfRanges > 1) {
-			NSRange idRange = [match rangeAtIndex:1];
-			if (NSIntersectionRange(idRange, range).length > 0) {
-				[updates addObject:@{ @"range" : [NSValue valueWithRange:idRange], @"color" : subsColor }];
-			}
-		}
-	}
-
-	// Cololize CALL targets that match a SUB
-	NSRegularExpression *callRegex = [NSRegularExpression regularExpressionWithPattern:@"\\bCALL\\s+([A-Za-z_][A-Za-z0-9_]*)" options:NSRegularExpressionCaseInsensitive error:nil];
-	NSArray<NSTextCheckingResult *> *callMatches = [callRegex matchesInString:text options:0 range:range];
-	for (NSTextCheckingResult *match in callMatches) {
-		if (match.numberOfRanges > 1) {
-			NSRange idRange = [match rangeAtIndex:1];
-			if (NSIntersectionRange(idRange, range).length > 0) {
-				NSString *target = [text substringWithRange:idRange];
-				// Check if there's a SUB with this name
-				BOOL hasSub = NO;
-				for (NSTextCheckingResult *subMatch in subMatches) {
-					if (subMatch.numberOfRanges > 1) {
-						NSRange subIdRange = [subMatch rangeAtIndex:1];
-						NSString *subName = [text substringWithRange:subIdRange];
-						if ([subName caseInsensitiveCompare:target] == NSOrderedSame) {
-							hasSub = YES;
-							break;
-						}
-					}
-				}
-				if (hasSub) {
-					[updates addObject:@{ @"range" : [NSValue valueWithRange:idRange], @"color" : subsColor }];
-				}
-			}
-		}
+		[updates addObject:@{ @"range":[NSValue valueWithRange:spanRange],
+				      @"color" : colors[(NSUInteger)span.kind] }];
 	}
 
 	return updates;
