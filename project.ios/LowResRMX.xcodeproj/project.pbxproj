@@ -249,6 +249,7 @@
 		92A7E148223B8EBC00ED2487 /* ShareActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A7E147223B8EBC00ED2487 /* ShareActivity.swift */; };
 		92A7E14E223BCD0F00ED2487 /* URLRequest+Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A7E14D223BCD0F00ED2487 /* URLRequest+Utils.swift */; };
 		92BB14C1244B0FC700611F01 /* CoreStatsWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92BB14C0244B0FC700611F01 /* CoreStatsWrapper.swift */; };
+		5BC0DE0200000000000000C2 /* SyntaxWrapper.m in Sources */ = {isa = PBXBuildFile; fileRef = 5BC0DE0200000000000000F3 /* SyntaxWrapper.m */; };
 		92D1EFDB25278145007CC96B /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92D1EFDA25278145007CC96B /* APIClient.swift */; };
 		92D1EFDF2527AE9B007CC96B /* ProgramModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92D1EFDE2527AE9B007CC96B /* ProgramModel.swift */; };
 		92DA4C99202CECE000129302 /* Dpad.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92DA4C98202CECE000129302 /* Dpad.swift */; };
@@ -476,6 +477,8 @@
 		92A7E147223B8EBC00ED2487 /* ShareActivity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareActivity.swift; sourceTree = "<group>"; };
 		92A7E14D223BCD0F00ED2487 /* URLRequest+Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "URLRequest+Utils.swift"; sourceTree = "<group>"; };
 		92BB14C0244B0FC700611F01 /* CoreStatsWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreStatsWrapper.swift; sourceTree = "<group>"; };
+		5BC0DE0200000000000000F3 /* SyntaxWrapper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SyntaxWrapper.m; sourceTree = "<group>"; };
+		5BC0DE0200000000000000F4 /* SyntaxWrapper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SyntaxWrapper.h; sourceTree = "<group>"; };
 		92D1EFDA25278145007CC96B /* APIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIClient.swift; sourceTree = "<group>"; };
 		92D1EFDE2527AE9B007CC96B /* ProgramModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgramModel.swift; sourceTree = "<group>"; };
 		92DA4C98202CECE000129302 /* Dpad.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dpad.swift; sourceTree = "<group>"; };
@@ -860,6 +863,8 @@
 				5BBE96AF2F3DC826004D9DF3 /* config.h */,
 				9294F2E11FC4BA1100A90487 /* CoreWrapper.swift */,
 				92BB14C0244B0FC700611F01 /* CoreStatsWrapper.swift */,
+				5BC0DE0200000000000000F4 /* SyntaxWrapper.h */,
+				5BC0DE0200000000000000F3 /* SyntaxWrapper.m */,
 			);
 			path = Wrappers;
 			sourceTree = "<group>";
@@ -1229,6 +1234,7 @@
 				926EB1DC1F757FAD0048A6CF /* UIViewController+LowResCoder.m in Sources */,
 				920E1B561F7816FA00664382 /* TextLabel.m in Sources */,
 				92BB14C1244B0FC700611F01 /* CoreStatsWrapper.swift in Sources */,
+				5BC0DE0200000000000000C2 /* SyntaxWrapper.m in Sources */,
 				92DA4C99202CECE000129302 /* Dpad.swift in Sources */,
 				923AFD7F1F77ED52002F6A5B /* HelpSplitViewController.m in Sources */,
 				9227DC1E1FC8BB0700BC89FD /* ProjectManager.swift in Sources */,

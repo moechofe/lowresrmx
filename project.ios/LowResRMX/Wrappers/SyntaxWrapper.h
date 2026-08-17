@@ -17,16 +17,38 @@
 //    misrepresented as being the original software.
 // 3. This notice may not be removed or altered from any source distribution.
 
-#include "core.h"
-#include "core_stats.h"
+#import <Foundation/Foundation.h>
 
-#import "HelpSplitViewController.h"
-#import "HelpContent.h"
-#import "NSString+Utils.h"
-#import "UITextView+Utils.h"
-#import "UIViewController+LowResCoder.h"
-#import "EditorTextView.h"
-#import "SyntaxWrapper.h"
-#import "SearchToolbar.h"
-#import "BlockerView.h"
-#import "GORLabel.h"
+#import "core_syntax.h"
+
+NS_ASSUME_NONNULL_BEGIN
+
+typedef struct
+{
+	NSRange range;
+	enum SyntaxKind kind;
+	bool isDeclaration;
+} SourceSpan;
+
+@interface SourceSpans : NSObject
+
+@property (readonly) NSUInteger count;
+
+- (SourceSpan)spanAtIndex:(NSUInteger) index NS_SWIFT_NAME(span(at:));
+
+@end
+
+@interface SyntaxWrapper : NSObject
+
+@property (class, readonly) SyntaxWrapper *shared;
+
+// Analyses off the caller's thread and delivers the result on the main queue.
+- (void)spansForText:(NSString *)text completion:(void (^)(SourceSpans *spans)) completion
+	NS_SWIFT_NAME(spans(for:completion:));
+
+// Analyses and blocks until the result is ready. Safe to call from the main thread
+- (SourceSpans *)synchronousSpansForText:(NSString *) text NS_SWIFT_NAME(synchronousSpans(for:));
+
+@end
+
+NS_ASSUME_NONNULL_END

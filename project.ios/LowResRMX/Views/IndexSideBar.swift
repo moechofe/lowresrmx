@@ -106,75 +106,119 @@ class IndexSideBar: UIControl
 			return
 		}
 
-		let regex: NSRegularExpression
+		let labelMode = AppController.shared.editorLabelIndexMode
+		let procedureMode = AppController.shared.editorProcedureIndexMode
+		let markerMode = AppController.shared.editorManualMarkerIndexMode
 
-		let labelPart = switch AppController.shared.editorLabelIndexMode
+		if labelMode == .noLabels, procedureMode == .noProcedures, markerMode == .noMarkers
 		{
-		case .allLabels:
-			"([^'#\\s]\\S+):"
-		case .labelsWithoutUnderscore:
-			"([^'#\\s][^\\s:_]+):"
-		default:
-			""
-		}
-
-		let prodecurePart = switch AppController.shared.editorProcedureIndexMode
-		{
-		case .allProcedures:
-			"SUB\\s+([^\\s\\(]+)"
-		default:
-			""
-		}
-
-		let markerPart = switch AppController.shared.editorManualMarkerIndexMode
-		{
-		case .manualMarkers:
-			"'''(\\S+)"
-		default:
-			""
-		}
-
-		if labelPart.isEmpty, prodecurePart.isEmpty, markerPart.isEmpty
-		{
-			self.numLines = 0
+			numLines = 0
 			self.markers = []
 			shouldUpdateOnTouch = false
 			updateBarPositions()
 			return
 		}
 
-		regex = try! NSRegularExpression(pattern: "\\A\\s*(?:" + [labelPart, prodecurePart, markerPart].filter { !$0.isEmpty }.joined(separator: "|") + ")", options: .caseInsensitive)
+		let nsText = text as NSString
 
-		var markers = [IndexMarker]()
-		var numLines = 0
-
-		text.enumerateSubstrings(in: text.startIndex ..< text.endIndex, options: .byLines)
-		{ string, _, enclosingRange, _ in
-			if let string
-			{
-				// print("\(numLines): \(string)")
-				if let match = regex.firstMatch(in: string, options: [], range: NSRange(location: 0, length: string.utf16.count))
-				{
-					var capturedLabel: String?
-					for i in 1 ..< match.numberOfRanges
-					{
-						if let range = Range(match.range(at: i), in: string), !range.isEmpty
-						{
-							capturedLabel = String(string[range])
-							break
-						}
-					}
-					let range = NSRange(enclosingRange, in: text)
-					markers.append(IndexMarker(label: capturedLabel ?? string.trimmingCharacters(in: .whitespacesAndNewlines), line: numLines, range: range))
-				}
-			}
-			numLines += 1
+		// Line pass. Separate from the span pass on purpose: the tokenizer stops
+		// at the first "#", but the bar positions divide by the line count of the
+		// *whole* document, ROM entries included.
+		var lineRanges = [NSRange]()
+		nsText.enumerateSubstrings(
+			in: NSRange(location: 0, length: nsText.length),
+			options: [.byLines, .substringNotRequired]
+		)
+		{ _, _, enclosingRange, _ in
+			lineRanges.append(enclosingRange)
 		}
 
-		self.numLines = numLines
+		guard !lineRanges.isEmpty
+		else
+		{
+			numLines = 0
+			self.markers = []
+			shouldUpdateOnTouch = false
+			updateBarPositions()
+			return
+		}
+
+		let spans = SyntaxWrapper.shared.synchronousSpans(for: text)
+
+		var markers = [IndexMarker]()
+		var line = 0
+
+		for i in 0 ..< spans.count
+		{
+			let span = spans.span(at: i)
+
+			guard let label = markerLabel(
+				for: span, in: nsText,
+				labelMode: labelMode, procedureMode: procedureMode, markerMode: markerMode
+			)
+			else
+			{
+				continue
+			}
+
+			// Spans and lines are both in ascending order, so this walks forward
+			// rather than searching.
+			while line < lineRanges.count - 1, NSMaxRange(lineRanges[line]) <= span.range.location
+			{
+				line += 1
+			}
+
+			markers.append(IndexMarker(label: label, line: line, range: lineRanges[line]))
+		}
+
+		numLines = lineRanges.count
 		self.markers = markers
 		shouldUpdateOnTouch = false
 		updateBarPositions()
+	}
+
+	/// The text to show for a span, or nil if it does not belong in the index.
+	private func markerLabel(
+		for span: SourceSpan, in nsText: NSString,
+		labelMode: LabelIndexMode, procedureMode: ProcedureIndexMode, markerMode: MarkerIndexMode
+	) -> String?
+	{
+		// `enum SyntaxKind` is a plain C enum, so Swift imports it as a struct
+		// rather than a Swift enum — compared with ==, not matched with `case`.
+		if span.kind == SyntaxLabel
+		{
+			// References (GOTO/GOSUB/RESTORE targets) are not declarations.
+			guard span.isDeclaration else { return nil }
+			let name = nsText.substring(with: span.range)
+			switch labelMode
+			{
+			case .allLabels:
+				return name
+			case .labelsWithoutUnderscore:
+				return name.contains("_") ? nil : name
+			default:
+				return nil
+			}
+		}
+
+		if span.kind == SyntaxSub
+		{
+			// CALL targets are not declarations.
+			guard span.isDeclaration, procedureMode == .allProcedures else { return nil }
+			return nsText.substring(with: span.range)
+		}
+
+		if span.kind == SyntaxComment
+		{
+			// Manual marker: '''NAME, labelled with the first word after the apostrophes ("'''TLB_0 backed first" indexes as "TLB_0").
+			guard markerMode == .manualMarkers else { return nil }
+			let comment = nsText.substring(with: span.range)
+			guard comment.hasPrefix("'''") else { return nil }
+			let name = comment.dropFirst(3).prefix { !$0.isWhitespace }
+			return name.isEmpty ? nil : String(name)
+		}
+
+		return nil
 	}
 
 	override func beginTracking(_ touch: UITouch, with _: UIEvent?) -> Bool

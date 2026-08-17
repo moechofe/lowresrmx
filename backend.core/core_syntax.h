@@ -22,6 +22,7 @@
 
 #include "error.h"
 #include "tokenizer.h"
+#include <stdbool.h>
 #include <stdio.h>
 
 enum SyntaxKind
@@ -39,6 +40,7 @@ struct SyntaxSpan
 	int start;
 	int length;
 	enum SyntaxKind kind;
+	bool isDeclaration;
 };
 
 struct Syntax

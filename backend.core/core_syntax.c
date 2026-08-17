@@ -108,7 +108,7 @@ static int scanCommentLength(const char *sourceCode, int start)
 	return i - start;
 }
 
-static bool addSpan(struct Syntax *syntax, int start, int length, enum SyntaxKind kind)
+static bool addSpan(struct Syntax *syntax, int start, int length, enum SyntaxKind kind, bool isDeclaration)
 {
 	if(length <= 0)
 	{
@@ -129,6 +129,7 @@ static bool addSpan(struct Syntax *syntax, int start, int length, enum SyntaxKin
 	span->start = start;
 	span->length = length;
 	span->kind = kind;
+	span->isDeclaration = isDeclaration;
 	return true;
 }
 
@@ -179,23 +180,23 @@ struct CoreError syntax_update(struct Syntax *syntax, const char *sourceCode)
 		switch(type)
 		{
 		case TokenString:
-			addSpan(syntax, start, scanStringLength(sourceCode, start), SyntaxString);
+			addSpan(syntax, start, scanStringLength(sourceCode, start), SyntaxString, false);
 			labelList = LabelListNone;
 			break;
 
 		case TokenFloat:
-			addSpan(syntax, start, scanNumberLength(sourceCode, start), SyntaxNumber);
+			addSpan(syntax, start, scanNumberLength(sourceCode, start), SyntaxNumber, false);
 			labelList = LabelListNone;
 			break;
 
 		case TokenApostrophe:
-			addSpan(syntax, start, scanCommentLength(sourceCode, start), SyntaxComment);
+			addSpan(syntax, start, scanCommentLength(sourceCode, start), SyntaxComment, false);
 			labelList = LabelListNone;
 			break;
 
 		case TokenLabel:
 			// The tokenizer consumed the ':' too, but colour the identifier only.
-			addSpan(syntax, start, scanIdentifierLength(sourceCode, start), SyntaxLabel);
+			addSpan(syntax, start, scanIdentifierLength(sourceCode, start), SyntaxLabel, true);
 			labelList = LabelListNone;
 			break;
 
@@ -215,7 +216,7 @@ struct CoreError syntax_update(struct Syntax *syntax, const char *sourceCode)
 			if(labelList == LabelListExpectLabel && type == TokenIdentifier
 			   && tok_getJumpLabel(tokenizer, token->symbolIndex))
 			{
-				addSpan(syntax, start, length, SyntaxLabel);
+				addSpan(syntax, start, length, SyntaxLabel, false);
 				labelList = LabelListExpectComma;
 			}
 			else
@@ -223,7 +224,7 @@ struct CoreError syntax_update(struct Syntax *syntax, const char *sourceCode)
 				if(previousType == TokenSUB
 				   || (previousType == TokenCALL && tok_getSub(tokenizer, token->symbolIndex)))
 				{
-					addSpan(syntax, start, length, SyntaxSub);
+					addSpan(syntax, start, length, SyntaxSub, previousType == TokenSUB);
 				}
 				labelList = LabelListNone;
 			}
@@ -236,7 +237,7 @@ struct CoreError syntax_update(struct Syntax *syntax, const char *sourceCode)
 			const char *keyword = TokenStrings[type];
 			if(keyword && strchr(CharSetAlphaNum, keyword[0]))
 			{
-				addSpan(syntax, start, (int)strlen(keyword), SyntaxKeyword);
+				addSpan(syntax, start, (int)strlen(keyword), SyntaxKeyword, false);
 			}
 			labelList = (type == TokenGOTO || type == TokenGOSUB || type == TokenRESTORE)
 				? LabelListExpectLabel

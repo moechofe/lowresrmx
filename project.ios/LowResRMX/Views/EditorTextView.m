@@ -18,16 +18,8 @@
 // 3. This notice may not be removed or altered from any source distribution.
 
 #import "EditorTextView.h"
-#import "core_syntax.h"
+#import "SyntaxWrapper.h"
 
-static dispatch_queue_t syntaxQueue(void) {
-	static dispatch_queue_t queue;
-	static dispatch_once_t once;
-	dispatch_once(&once, ^{
-		queue = dispatch_queue_create("it.ro.ret.ios.LowResRMX.syntax", DISPATCH_QUEUE_SERIAL);
-	});
-	return queue;
-}
 
 static NSArray<UIColor *> *syntaxColors(void) {
 	static NSArray<UIColor *> *colors;
@@ -46,29 +38,7 @@ static NSArray<UIColor *> *syntaxColors(void) {
 	return colors;
 }
 
-typedef struct {
-	const char *bytes;
-	NSUInteger byteCursor;
-	NSUInteger utf16Cursor;
-	BOOL isAscii; // then the mapping is the identity and the walk is skipped
-} Utf8ToUtf16Cursor;
-
-static NSUInteger utf16OffsetForByteOffset(Utf8ToUtf16Cursor *cursor, NSUInteger byteOffset) {
-	if (cursor->isAscii) {
-		return byteOffset;
-	}
-	while (cursor->byteCursor < byteOffset) {
-		unsigned char lead = (unsigned char)cursor->bytes[cursor->byteCursor];
-		NSUInteger byteLength = (lead < 0x80) ? 1 : (lead < 0xE0) ? 2 : (lead < 0xF0) ? 3 : 4;
-		cursor->byteCursor += byteLength;
-		// Only astral characters need a surrogate pair.
-		cursor->utf16Cursor += (byteLength == 4) ? 2 : 1;
-	}
-	return cursor->utf16Cursor;
-}
-
 @interface EditorTextView ()
-+ (NSArray *)syntaxUpdatesForText:(NSString *)text inRange:(NSRange)range;
 @end
 
 @implementation EditorTextView
@@ -83,8 +53,7 @@ static NSUInteger utf16OffsetForByteOffset(Utf8ToUtf16Cursor *cursor, NSUInteger
 
 	[self initKeyboardToolbar];
 
-	// Resolve the syntax colours here so the one-time UIColor lookup happens on
-	// the main thread; every later read comes from the cache on syntaxQueue().
+	// Resolve the syntax colours here so the one-time UIColor lookup happens on the main thread; every later read comes from the cache.
 	syntaxColors();
 
 	if (@available(iOS 9.0, *)) {
@@ -143,15 +112,25 @@ static NSUInteger utf16OffsetForByteOffset(Utf8ToUtf16Cursor *cursor, NSUInteger
 	}
 
 	UIFont *font = self.font ?: [UIFont monospacedSystemFontOfSize:14 weight:UIFontWeightRegular];
-	dispatch_async(syntaxQueue(), ^{
-		NSArray *updates = [EditorTextView syntaxUpdatesForText:text inRange:expandedRange];
-		dispatch_async(dispatch_get_main_queue(), ^{
-			// Only apply if this is the latest request
-			if (currentToken == syntaxHighlightingToken) {
-				[self applyUpdates:updates toStorage:self.textStorage range:expandedRange font:font token:currentToken latestTokenPtr:&syntaxHighlightingToken];
-			}
-		});
-	});
+
+
+	[SyntaxWrapper.shared spansForText:text completion:^(SourceSpans *spans) {
+		// Already on the main queue.
+		 if (currentToken != syntaxHighlightingToken) {
+			 return;
+		 }
+		 NSArray<UIColor *> *colors = syntaxColors();
+		 NSMutableArray *updates = [NSMutableArray array];
+		 for (NSUInteger i = 0; i < spans.count; i++) {
+			 SourceSpan span = [spans spanAtIndex:i];
+			 if (NSIntersectionRange(span.range, expandedRange).length == 0) {
+				 continue;
+			 }
+			 [updates addObject:@{ @"range" : [NSValue valueWithRange:span.range],
+					       @"color" : colors[(NSUInteger)span.kind] }];
+		 }
+		 [self applyUpdates:updates toStorage:self.textStorage range:expandedRange font:font token:currentToken latestTokenPtr:&syntaxHighlightingToken];
+	 }];
 }
 
 - (void)initKeyboardToolbar {
@@ -350,46 +329,6 @@ static NSUInteger utf16OffsetForByteOffset(Utf8ToUtf16Cursor *cursor, NSUInteger
 	if (!self.delegate || [self.delegate textView:self shouldChangeTextInRange:self.selectedRange replacementText:text]) {
 		[self insertText:text];
 	}
-}
-
-// Must run on syntaxQueue(): the struct Syntax below is shared and reused.
-+ (NSArray *)syntaxUpdatesForText:(NSString *)text inRange:(NSRange)range {
-	static struct Syntax syntax;
-	static dispatch_once_t once;
-	dispatch_once(&once, ^{
-		syntax_init(&syntax);
-	});
-
-	const char *sourceCode = [text UTF8String];
-	if (!sourceCode) {
-		return @[];
-	}
-
-	syntax_update(&syntax, sourceCode);
-
-	NSArray<UIColor *> *colors = syntaxColors();
-	NSMutableArray *updates = [NSMutableArray arrayWithCapacity:syntax.numSpans];
-
-	size_t byteLength = strlen(sourceCode);
-	Utf8ToUtf16Cursor cursor = { sourceCode, 0, 0, (byteLength == text.length) };
-
-	for (int i = 0; i < syntax.numSpans; i++) {
-		struct SyntaxSpan span = syntax.spans[i];
-		// Both offsets must be converted even when the span is discarded below, so the cursor stays in step with the span order.
-		NSUInteger start = utf16OffsetForByteOffset(&cursor, span.start);
-		NSUInteger end = utf16OffsetForByteOffset(&cursor, span.start + span.length);
-		if (end <= start || end > text.length) {
-			continue;
-		}
-		NSRange spanRange = NSMakeRange(start, end - start);
-		if (NSIntersectionRange(spanRange, range).length == 0) {
-			continue;
-		}
-		[updates addObject:@{ @"range":[NSValue valueWithRange:spanRange],
-				      @"color" : colors[(NSUInteger)span.kind] }];
-	}
-
-	return updates;
 }
 
 // Apply updates, aborting if token is outdated
