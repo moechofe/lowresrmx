@@ -321,6 +321,8 @@ class Runtime extends ChangeNotifier {
   }
 
   List<OutlineEntry> getOutline() {
+		// TODO: repair
+		return [];
     int count = runnerGetSymbolCount(runner);
     List<OutlineEntry> list = [];
     for (int i = 0; i < count; ++i) {

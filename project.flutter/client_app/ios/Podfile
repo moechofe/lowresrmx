@@ -31,6 +31,12 @@ target 'Runner' do
   use_frameworks!
 
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
+
+  # share_handler_ios depends on share_handler_ios_models, which is not published
+  # on CocoaPods trunk — it ships as a local podspec inside the plugin package and
+  # must be declared by path. See https://pub.dev/packages/share_handler
+  pod 'share_handler_ios_models', :path => '.symlinks/plugins/share_handler_ios/ios/Models'
+
   target 'RunnerTests' do
     inherit! :search_paths
   end
