@@ -1,4 +1,11 @@
-### 1.0_60
+### 1.0_64
+
+- Reduce CPU usage during video rendering.
+- Reduce CPU usage during syntax coloring.
+- Reduce CPU usage during sidebar indexing.
+- GFX: Recycling unused variables.
+
+### 1.0_60, 1.0_61
 
 - GFX: Collection of fixes with the control.
 - GFX: Loading different BG was crashing.

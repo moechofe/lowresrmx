@@ -1,4 +1,4 @@
-version$="0.203"
+version$="0.204"
 'offical graphics editor for Retro Game Creator (LowResRMX) for iOS
 'author: martin mauchauffee
 
@@ -13,7 +13,6 @@ version$="0.203"
 'todo: most of the time, I can remove `if tapped then`
 'todo: variable `first` is not well-named
 'todo: lstchara is used instead of care in backed
-'todo: check if tedchanged is usefull
 'todo: add one width space to tlb_7 between color block 0 and 1,2,3. It should require to add space to the kolor editor too.
 'todo: remove `gosub tlb_redraw`
 'todo: test copy brush from wide bg source, more than 64.
@@ -59,8 +58,7 @@ wramend=$e000
 'cole= current user color, the index in the palette
 'laye= current edited layer
 'care= current edited character
-'kole= current choosen color, from the 64 available
-global pale,cole,laye,care,kole
+global pale,cole,laye,care
 laye=-1
 cole=1
 
@@ -114,8 +112,6 @@ global cnv,tlb,flt
 'bedscale= similar to bedzoom but store the zoom factor (1 or 2)
 'bedhoriz,bedverti= horizontal and vertical flip
 'bedx,bedy= global layers position, used to pan the canvas, in float pixel coords
-'bedatt= current selected attribute to draw
-'bedsetm= bit mask for draw operation
 global bedlife
 
 'temp:
@@ -123,8 +119,6 @@ bedzoom=-1 :bedscale=2
 bedhoriz=0 :bedverti=0 :bedprio=0
 bedx=0 :bedy=0
 bedtool=0 :bedoldt=1
-bedatt=0
-bedsetm=%111111
 
 'about character editor or chared or ced
 'cedlife= current edited file
@@ -171,13 +165,9 @@ for i=0 to 3 :layfile(i)=-1 :next i
 
 'about chara list
 'lstchara= currently selected chara num in the chara list
-'lstsize= size of the cursor in number of selected cells
-'lstscroll= the horizontal scroll value
 'lstx,lsty= scroll position of the charalist
 'kolx,koly= scroll position of the kolorlist
-global lstchara,lstsize,lstscroll,lstx,lsty,kolx,koly
-lstsize=1
-lstscroll=0
+global lstchara,lstx,lsty,kolx,koly
 
 'about kolor list
 'kolcolor= current selected color in the kolor list
@@ -424,8 +414,8 @@ global shownw,shownh,resized,cnvchanged,fltchanged,tlbchanged
 'canvasr is used to signal that the bottom
 ' global canvasr
 
-'used to indiquate if a tall toolbar can fit
-global tall,short,wide
+'used to indiquate if a short or wide toolbar can fit
+global short,wide
 
 sub checkresize
 'check if layout has changed, orientation changed, screed splitted
@@ -437,10 +427,9 @@ sub checkresize
     tlbchanged=-1
     shownw=shown.w : shownh=shown.h-safe.b-keyboard
     'compute ratio and size of ui element
-    tall=0 : short=0 : wide=0
+    short=0 : wide=0
     r=shownw/shownh
     if r>0.7 then short=1
-    if r<0.5 then tall=1
     if r>0.9 then wide=-1
     ' short=1
   else
@@ -519,13 +508,6 @@ end sub
 'usrchanged(f)= something has changed
 dim global usraddr(17),usrsize(ubound(usraddr,1)),usrname$(ubound(usraddr,1)),usrtype(ubound(usraddr,1)),usrdime(ubound(usraddr,1),1),usrchanged(ubound(usraddr,1))
 
-'to report loading and saving error
-'TODO: not used, remove?
-global usrerr :usrerr=0
-'=0 ok
-'=1 not a background data format compatible
-'=2 file already loaded, can't save on it
-
 sub usrcheck
 'check for memory overlapping
   for i=0 to ubound(usraddr,1)
@@ -587,9 +569,7 @@ sub usrload(f,t,a,minz)
   usrdime(f,0)=0 :usrdime(f,1)=0
   usrchanged(f)=0
   load f,a
-  usrerr=0
   if t=3 then
-    if peekw(a)<>0 then usrerr=1
     usrdime(f,0)=peek(a+2)
     usrdime(f,1)=peek(a+3)
   end if
@@ -862,15 +842,8 @@ end sub
 'the character list is displayed above the bottom bar, it consume 32x4 cells (or 32x2) in the bg#0.
 
 'fltshow= show or hide the charalist
-'lstcurr= current raster of where the charalist start
-'lstrow= number of rows of user's characters drawn in the chara list
-'lstdouble= is the charalist is displayed at double size
-'         =1 when not double
-'         =2 when doubled
 'lstchanged= something has changed
-'lstoldscr= old value for lstscroll, used during dragging operation
-'lstui= chara num used for the ui chara during raster of chara list
-global fltshow,lstcurr,lstrow,lstdouble,lstchanged,lstoldscr,lstui,lstoldx,lstoldy
+global fltshow,lstchanged
 
 'sprite used for the chara list cursor
 sprite 159 pal 4 prio 1 flip 0,0
@@ -896,10 +869,8 @@ txt_kolcolor: data " color: "
 for i=0 to 63 : poke $9004+i,i : next i
 
 'kolraster= current color for the kolor list raster
-'kolcol= current lowresrmx color (0..63)
 'kolchanged= something has changed
-global kolraster,kolcol,kolchanged
-kolcol=0
+global kolraster,kolchanged
 
 '======================= chared:
 
@@ -945,17 +916,9 @@ end sub
 'can drag horizontally to show hidden widgets
 'can fold vertically to give more space
 
-'botstart,botend= raster position of where the bottom bar start
-'botcurr= current raster position of where the bottom bar start
-'botdrag= drag position of the bottom bar of x axis
-'botw= width in pixels of the bottom bar
 'wid= interacted widget index
-'botfold= fold offset for the bottom bar (and charalist)
-'botfini= temporary initial botfold value during fold gesture
-global botstart,botend,botcurr,botdrag,botw,wid,botfold,botfini
+global wid
 
-botact=0
-'botfold=0
 wid=-1
 
 sub repaintwidget(b,p0,p1,test)
@@ -1072,18 +1035,11 @@ bgundoidx=-1
 
 '========================= main:
 
-'tedchanged= a new editor has been requested by the toolbar
-'=0 no change
-'>0 go back to editor
-'<0 change for file selector
-tedchanged=0
-
 'usedfreed= a used file has been freed, background, characters, palette.
 usedfreed=0
 
 'needed for the file selector
 'oldtlb= old value for tlb
-'oldflt= old value for flt
 'oldcnv= old value for cnv
 
 'enable or disable low energy mode
@@ -1156,9 +1112,7 @@ global viepala
 
 'needed by the canvas of the character editor
 'cedx,cedy= canvas position, used to pan the canvas, in float pixel coords
-'cedcenter= ask to center
 cedx=0 :cedy=0
-cedcenter=1
 
 'needed for loading operation
 err=0
@@ -1172,9 +1126,6 @@ err=0
 'background dimension edit
 tlb_6_x=0 :tlb_6_v=0
 tlb_6_w=20 :tlb_6_h=30
-
-botdrag=0
-firselected=0
 
 
 'system 0,1
@@ -1302,7 +1253,6 @@ switch_backed:
 switch_chared:
   editor=2
   oldtlb=tlb
-  oldflt=flt
   oldcnv=cnv
 
   cnv=2 :cnvchanged=-1
@@ -1319,7 +1269,7 @@ switch_chared:
 
 switch_filed:
   'to go back
-  oldtlb=tlb :oldflt=flt :oldcnv=cnv
+  oldtlb=tlb :oldcnv=cnv
   cnv=1 :cnvchanged=-1
   tlb=4 :tlbchanged=-1
   fltshow=0
@@ -2416,7 +2366,6 @@ fed_update:
 fed_input:
 'handle input on the canvas for file selection
   if pressed then firprevs=fedscroll
-  if released then firg=0
   if tapped then
     f=touch.y+fedscroll
     if f>=0 then
@@ -2484,7 +2433,6 @@ ced_limit:
   return
 
 ced_center:
-  cedcenter=0
   s=8*cedscale
   curr=tlbcurr-4
   if fltshow then curr=fltcurr-4
@@ -3468,7 +3416,6 @@ flt_1_update:
 
 'make sure the camera position allow to see the world and some of the out-of-bound characters around it.
 inf_position:
-  infnl=0
   'in x axis
   if infpw+infml+infmr>infw then
     'world is bigger than the view
