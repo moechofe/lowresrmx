@@ -18181,7 +18181,7 @@ struct DevShortcut
 
 // Keep in sync with the dev menu shortcut block in main.c update().
 static const struct DevShortcut devShortcuts[] = {
-	{"ESC", "RESUME"},
+	{"ESC", "RUN"},
 	{"R", "RELOAD"},
 	{"D", NULL},
 	{"E", "EJECT"},
@@ -18710,6 +18710,14 @@ void dev_show(struct DevMenu *devMenu, bool reload)
 	itp_endProgram(core);
 	machine_reset(core, true);
 	overlay_reset(core);
+
+	// The menu owns the whole screen. A COMPAT program leaves interpreter->compat set,
+	// which crops rendering to a centred 160x128 box (video_renderScreen) and offsets
+	// every touch coordinate by the same amount (core_handleInput) -- so the page would
+	// be clipped to 20x16 cells and mis-hit-tested. Clear it before handling input;
+	// leaving the menu recompiles and reruns the program, which sets it again.
+	core->interpreter->compat = false;
+	delegate_controlsDidChange(core);
 
 	core_handleInput(core, &coreInput);
 	overlay_updateLayout(core, &coreInput);
