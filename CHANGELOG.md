@@ -1,3 +1,15 @@
+### 1.0_65
+
+- Redo the desktop Development Menu.
+
+    - Support window resize.
+    - Scroll it by dragging with the mouse or with the wheel.
+    - Editor programs are a plain list, up to 16 of them instead of 4.
+
+- Fix crash with 'SKIP'
+- GFX: fix overloading file loading
+- GFX: fix floating bar drag when bottom bar is folded
+
 ### 1.0_64
 
 - Reduce CPU usage during video rendering.
