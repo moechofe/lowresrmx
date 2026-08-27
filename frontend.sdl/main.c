@@ -89,6 +89,7 @@ const int keyboardControls[2][2][8] = {
 void update(void *arg);
 void updateScreenRect(int winW, int winH);
 void updateSafeArea();
+void screenPosition(float windowX, float windowY, float *screenX, float *screenY);
 void setTouchPosition(int windowX, int windowY);
 void toggleZoom(void);
 void changeVolume(int delta);
@@ -495,7 +496,10 @@ void update(void *arg)
 			if(hasPostfix(event.drop.data, ".rmx") || hasPostfix(event.drop.data, ".RMX"))
 			{
 #if DEV_MENU
-				bool handled = (mainState == MainStateDevMenu && dev_handleDropFile(&devMenu, event.drop.data));
+				float dropX, dropY;
+				screenPosition(event.drop.x, event.drop.y, &dropX, &dropY);
+				bool handled =
+					(mainState == MainStateDevMenu && dev_handleDropFile(&devMenu, event.drop.data, dropY));
 				if(!handled)
 				{
 					selectProgram(event.drop.data);
@@ -625,15 +629,60 @@ void update(void *arg)
 					quit = true;
 				}
 #if DEV_MENU
+				else if(mainState == MainStateDevMenu)
+				{
+					// [ESC] is the only way out of the dev menu
+					runMainProgram();
+				}
 				else if(hasProgram())
 				{
-					if(mainState != MainStateDevMenu)
-					{
-						showDevMenu();
-					}
+					showDevMenu();
 				}
 #endif
 			}
+#if DEV_MENU
+			// Bare-key dev menu shortcuts: no program is consuming input while the
+			// menu is up. Keep in sync with devShortcuts[] in dev_menu.c.
+			else if(mainState == MainStateDevMenu)
+			{
+				if(keycode == SDLK_R)
+				{
+					if(hasProgram())
+					{
+						runMainProgram();
+						overlay_message(runner.core, "RELOADED");
+					}
+				}
+				else if(keycode == SDLK_D)
+				{
+					core_setDebug(runner.core, !core_getDebug(runner.core));
+					dev_relayout(&devMenu);
+					forceRender = true;
+				}
+				else if(keycode == SDLK_E)
+				{
+					rebootNX(&coreInput);
+				}
+				else if(keycode == SDLK_S)
+				{
+					screenshotRequestedWithScale = (event.key.mod & SDL_KMOD_SHIFT) ? 1 : 4;
+					forceRender = true;
+				}
+				else if(keycode == SDLK_Z)
+				{
+					toggleZoom();
+					forceRender = true;
+				}
+				else if(keycode == SDLK_PLUS || keycode == SDLK_EQUALS || scancode == SDL_SCANCODE_KP_PLUS)
+				{
+					changeVolume(-1);
+				}
+				else if(keycode == SDLK_MINUS || scancode == SDL_SCANCODE_KP_MINUS)
+				{
+					changeVolume(+1);
+				}
+			}
+#endif
 			else if(settings.session.mapping == 1 && !core_isKeyboardEnabled(runner.core))
 			{
 				if(keycode == SDLK_SPACE)
@@ -683,6 +732,43 @@ void update(void *arg)
 
 		case SDL_EVENT_MOUSE_MOTION: {
 			setTouchPosition(event.motion.x, event.motion.y);
+			break;
+		}
+
+		case SDL_EVENT_DROP_POSITION: {
+#if DEV_MENU
+			if(mainState == MainStateDevMenu)
+			{
+				// show which half of the page the file would land in
+				float dropX, dropY;
+				screenPosition(event.drop.x, event.drop.y, &dropX, &dropY);
+				dev_handleDropPosition(&devMenu, dropY);
+				forceRender = true;
+			}
+#endif
+			break;
+		}
+
+		case SDL_EVENT_DROP_COMPLETE: {
+#if DEV_MENU
+			if(mainState == MainStateDevMenu)
+			{
+				dev_handleDropEnd(&devMenu);
+				forceRender = true;
+			}
+#endif
+			break;
+		}
+
+		case SDL_EVENT_MOUSE_WHEEL: {
+#if DEV_MENU
+			if(mainState == MainStateDevMenu)
+			{
+				// three cells per notch, negated so the content follows the wheel
+				dev_scroll(&devMenu, (int)(-event.wheel.y * 24.0f));
+				forceRender = true;
+			}
+#endif
 			break;
 		}
 
@@ -916,10 +1002,15 @@ void updateScreenRect(int winW, int winH)
 // 	numJoysticks = 0;
 // }
 
+void screenPosition(float windowX, float windowY, float *screenX, float *screenY)
+{
+	*screenX = (windowX - screenRect.x) * SCREEN_WIDTH / screenRect.w;
+	*screenY = (windowY - screenRect.y) * SCREEN_HEIGHT / screenRect.h;
+}
+
 void setTouchPosition(int windowX, int windowY)
 {
-	coreInput.touchX = (float)(windowX - screenRect.x) * SCREEN_WIDTH / screenRect.w;
-	coreInput.touchY = (float)(windowY - screenRect.y) * SCREEN_HEIGHT / screenRect.h;
+	screenPosition((float)windowX, (float)windowY, &coreInput.touchX, &coreInput.touchY);
 }
 
 void toggleZoom()

@@ -26,99 +26,581 @@
 #include "dev_menu_data.h"
 #include "libraries/text_lib.h"
 #include "main.h"
-#include "sdl_include.h"
 #include "string_utils.h"
-#include "system_paths.h"
 #include "utils.h"
+#include <math.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 
-#define MENU_SIZE 5
+// pixels of vertical movement before a press turns into a scroll
+#define DEV_DRAG_THRESHOLD 4.0f
 
-// extern SDL_Window *window;
+// widest "[KEY] LABEL" in devShortcuts, plus one space
+#define DEV_SHORTCUT_WIDTH 15
+
 extern struct CoreInput coreInput;
 
-struct DevButton
+struct DevShortcut
 {
-	int cx;
-	int cy;
+	const char *key;
+	const char *label; // NULL for the debug toggle, whose label carries its state
 };
 
-struct DevButton devButtons[] = {{1, 4}, {3, 4}, {5, 4}, {7, 4}, {9, 4}, {17, 4}};
+// Keep in sync with the dev menu shortcut block in main.c update().
+static const struct DevShortcut devShortcuts[] = {
+	{"ESC", "RESUME"},
+	{"R", "RELOAD"},
+	{"D", NULL},
+	{"E", "EJECT"},
+	{"S", "SCREENSHOT"},
+	{"Z", "ZOOM"},
+	{"+/-", "VOLUME"},
+};
 
-void dev_showInfo(struct DevMenu *devMenu);
-void dev_showError(struct DevMenu *devMenu, struct CoreError error);
-void dev_updateButtons(struct DevMenu *devMenu);
-void dev_onButtonTap(struct DevMenu *devMenu);
-void dev_showToolsMenu(struct DevMenu *devMenu);
-void dev_showClearRamMenu(struct DevMenu *devMenu);
-void dev_showMenu(struct DevMenu *devMenu, const char *message, const char *buttons[], int numButtons, int numRemoveButtons);
-void dev_clearPersistentRam(struct DevMenu *devMenu);
-void updateScreenRect(int winW, int winH);
-void updateSafeArea();
+static void dev_draw(struct DevMenu *devMenu);
+static void dev_setScroll(struct DevMenu *devMenu, int scrollY);
+static void dev_clearPersistentRam(void);
+
 void dev_init(struct DevMenu *devMenu, struct Runner *runner, struct Settings *settings)
 {
 	memset(devMenu, 0, sizeof(struct DevMenu));
 	devMenu->runner = runner;
 	devMenu->settings = settings;
+	devMenu->pressedItem = -1;
+}
+
+// ================ Drawing helpers ================
+
+// txtlib wraps coordinates around the 64x64 plane instead of clipping, so every
+// string has to be truncated to the space it is given.
+static void dev_write(struct DevMenu *devMenu, const char *text, int x, int y, int maxX)
+{
+	char buffer[PLANE_COLUMNS + 1];
+	int max = maxX - x + 1;
+
+	if(max <= 0)
+	{
+		return;
+	}
+	if(max > PLANE_COLUMNS)
+	{
+		max = PLANE_COLUMNS;
+	}
+	strncpy(buffer, text, max);
+	buffer[max] = 0;
+	txtlib_writeText(&devMenu->textLib, buffer, x, y);
+}
+
+// paints a whole row in the current palette, so a differently-papered palette
+// reads as a band instead of colouring only the glyph cells
+static void dev_fillRow(struct DevMenu *devMenu, int y, int fromX, int toX)
+{
+	txtlib_setCells(&devMenu->textLib, fromX, y, toX, y, DEV_FONT_OFFSET);
+}
+
+static void dev_writeRight(struct DevMenu *devMenu, const char *text, int minX, int y, int rightX)
+{
+	int x = rightX - (int)strlen(text) + 1;
+
+	if(x < minX)
+	{
+		x = minX;
+	}
+	dev_write(devMenu, text, x, y, rightX);
+}
+
+// word wraps text into x..maxX, returns the number of rows used (at least one).
+// bandFromX > bandToX skips the row banding, see dev_fillRow.
+static int dev_writeWrapped(struct DevMenu *devMenu, const char *text, int x, int y, int maxX, int bandFromX, int bandToX)
+{
+	int width = maxX - x + 1;
+	int rows = 0;
+
+	if(width <= 0)
+	{
+		return 0;
+	}
+	while(*text)
+	{
+		int take = 0, lastSpace = -1;
+		while(text[take] && take < width)
+		{
+			if(text[take] == ' ')
+			{
+				lastSpace = take;
+			}
+			take++;
+		}
+		if(text[take] && lastSpace > 0)
+		{
+			take = lastSpace;
+		}
+		{
+			char buffer[PLANE_COLUMNS + 1];
+			if(bandFromX <= bandToX)
+			{
+				dev_fillRow(devMenu, y + rows, bandFromX, bandToX);
+			}
+			strncpy(buffer, text, take);
+			buffer[take] = 0;
+			txtlib_writeText(&devMenu->textLib, buffer, x, y + rows);
+		}
+		rows++;
+		text += take;
+		while(*text == ' ')
+		{
+			text++;
+		}
+	}
+	return rows > 0 ? rows : 1;
+}
+
+static void dev_addItem(struct DevMenu *devMenu, enum DevItemType type, int index, int fromX, int toX, int row, int height, int palette)
+{
+	struct DevItem *item;
+
+	if(devMenu->numItems >= (int)(sizeof(devMenu->items) / sizeof(devMenu->items[0])))
+	{
+		return;
+	}
+	item = &devMenu->items[devMenu->numItems++];
+	item->type = type;
+	item->index = index;
+	item->fromX = fromX;
+	item->toX = toX;
+	item->row = row;
+	item->height = height;
+	item->palette = palette;
+}
+
+// Three lines of source around sourcePosition, the offending one marked with ">".
+// Same idea as print_code in backend.core/overlay/overlay_debugger.c, but anchored
+// on a compile error instead of the interpreter's program counter.
+static int dev_drawCodeExtract(struct DevMenu *devMenu, int sourcePosition, int x, int y, int maxX)
+{
+	const char *source = devMenu->runner->core->interpreter->sourceCode;
+	int positions[3];
+	int pos, i;
+
+	if(!source)
+	{
+		return y;
+	}
+
+	pos = sourcePosition;
+	if(pos > 0 && (source[pos] == 0 || source[pos] == '\n'))
+	{
+		pos--;
+	}
+	while(pos > 0 && source[pos - 1] != '\n')
+	{
+		pos--;
+	}
+
+	// the line before, the offending line, the line after
+	positions[1] = pos;
+	positions[0] = -1;
+	positions[2] = -1;
+	if(pos > 0)
+	{
+		int prev = pos - 1;
+		while(prev > 0 && source[prev - 1] != '\n')
+		{
+			prev--;
+		}
+		positions[0] = prev;
+	}
+	{
+		int next = pos;
+		while(source[next] != 0 && source[next] != '\n')
+		{
+			next++;
+		}
+		if(source[next] == '\n' && source[next + 1] != 0)
+		{
+			positions[2] = next + 1;
+		}
+	}
+
+	for(i = 0; i < 3; i++)
+	{
+		const char *line;
+
+		if(positions[i] < 0)
+		{
+			continue;
+		}
+		line = lineString(source, positions[i]);
+		if(!line)
+		{
+			continue;
+		}
+		{
+			char buffer[PLANE_COLUMNS + 1];
+			devMenu->textLib.charAttr.palette = (i == 1) ? DEV_PAL_WARNING : DEV_PAL_BODY;
+			if(i == 1)
+			{
+				dev_fillRow(devMenu, y, x, maxX);
+			}
+			snprintf(buffer,
+				sizeof(buffer),
+				"%c%4d %s",
+				(i == 1) ? '>' : ' ',
+				lineNumber(source, positions[i]),
+				line);
+			dev_write(devMenu, buffer, x, y, maxX);
+		}
+		free((void *)line);
+		y++;
+	}
+	return y;
+}
+
+// ================ Layout ================
+
+static void dev_draw(struct DevMenu *devMenu)
+{
+	struct Core *core = devMenu->runner->core;
+	struct TextLib *textLib = &devMenu->textLib;
+	struct IORegisters *io = &core->machine->ioRegisters;
+	char info[PLANE_COLUMNS + 1];
+	int shownWidth = io->shown.width ? io->shown.width : SCREEN_WIDTH;
+	int x0 = (io->safe.left + 7) / 8;
+	int y0 = (io->safe.top + 7) / 8;
+	int x1 = shownWidth / 8 - (io->safe.right + 7) / 8 - 1;
+	int row, i, perLine;
+
+	if(x1 > PLANE_COLUMNS - 1)
+	{
+		x1 = PLANE_COLUMNS - 1;
+	}
+	if(x1 < x0 + 7)
+	{
+		// never lay out narrower than 8 cells, rather let it clip
+		x1 = x0 + 7;
+	}
+
+	devMenu->numItems = 0;
+	devMenu->lastShownWidth = io->shown.width;
+	devMenu->lastShownHeight = io->shown.height;
+	devMenu->lastSafeLeft = io->safe.left;
+	devMenu->lastSafeTop = io->safe.top;
+	devMenu->lastSafeRight = io->safe.right;
+	devMenu->lastSafeBottom = io->safe.bottom;
+
+	// paper over the whole plane height, so scrolling past the content still
+	// shows the page and not the transparent border colour
+	txtlib_clearBackground(textLib, 0);
+	textLib->charAttr.palette = DEV_PAL_BODY;
+	txtlib_setCells(textLib, x0, y0, x1, PLANE_ROWS - 1, DEV_FONT_OFFSET);
+
+	row = y0;
+
+	// ---- compile error ----
+	if(devMenu->lastError.code != ErrorNone)
+	{
+		textLib->charAttr.palette = DEV_PAL_ERROR;
+		row += dev_writeWrapped(devMenu, err_getString(devMenu->lastError.code), x0, row, x1, x0, x1);
+		if(devMenu->lastError.sourcePosition >= 0)
+		{
+			row = dev_drawCodeExtract(devMenu, devMenu->lastError.sourcePosition, x0, row, x1);
+		}
+		row++;
+	}
+
+	// ---- program info ----
+	devMenu->titleRow = row;
+	if(devMenu->dropZone == DevDropZoneMainProgram)
+	{
+		textLib->charAttr.palette = DEV_PAL_WARNING;
+		dev_fillRow(devMenu, row, x0, x1);
+		dev_write(devMenu, "DROP TO RUN IT", x0, row, x1);
+	}
+	else
+	{
+		textLib->charAttr.palette = DEV_PAL_TITLE;
+		dev_fillRow(devMenu, row, x0, x1);
+		displayName(getMainProgramFilename(), info, sizeof(info));
+		dev_write(devMenu, info, x0, row, x1);
+	}
+	row++;
+
+	textLib->charAttr.palette = DEV_PAL_LABEL;
+	dev_write(devMenu, "TOKENS", x0, row, x1);
+	textLib->charAttr.palette = DEV_PAL_BODY;
+	snprintf(info, sizeof(info), "%d/%d", core->interpreter->tokenizer.numTokens, MAX_TOKENS);
+	dev_writeRight(devMenu, info, x0, row, x1);
+	row++;
+
+	textLib->charAttr.palette = DEV_PAL_LABEL;
+	dev_write(devMenu, "ROM", x0, row, x1);
+	textLib->charAttr.palette = DEV_PAL_BODY;
+	snprintf(info, sizeof(info), "%d/%d", data_currentSize(&core->interpreter->romDataManager), DATA_SIZE);
+	dev_writeRight(devMenu, info, x0, row, x1);
+	row++;
+
+	if(devMenu->lastError.code == ErrorNone)
+	{
+		textLib->charAttr.palette = DEV_PAL_OK;
+		dev_write(devMenu, "READY TO RUN", x0, row, x1);
+		row++;
+	}
+	row++;
+
+	// ---- shortcuts ----
+	textLib->charAttr.palette = DEV_PAL_LABEL;
+	dev_write(devMenu, "SHORTCUTS", x0, row, x1);
+	row++;
+
+	textLib->charAttr.palette = DEV_PAL_BODY;
+	perLine = (x1 - x0 + 1) / DEV_SHORTCUT_WIDTH;
+	if(perLine < 1)
+	{
+		perLine = 1;
+	}
+	for(i = 0; i < (int)(sizeof(devShortcuts) / sizeof(devShortcuts[0])); i++)
+	{
+		int column = i % perLine;
+
+		if(devShortcuts[i].label)
+		{
+			snprintf(info, sizeof(info), "[%s] %s", devShortcuts[i].key, devShortcuts[i].label);
+		}
+		else
+		{
+			snprintf(info, sizeof(info), "[%s] DEBUG %s", devShortcuts[i].key, core->interpreter->debug ? "ON" : "OFF");
+		}
+		dev_write(devMenu, info, x0 + column * DEV_SHORTCUT_WIDTH, row, x1);
+		if(column == perLine - 1 || i == (int)(sizeof(devShortcuts) / sizeof(devShortcuts[0])) - 1)
+		{
+			row++;
+		}
+	}
+	row++;
+
+	// ---- editor programs ----
+	// this heading is also where the editors drop zone starts, see dev_dropZoneAt
+	devMenu->editorsRow = row;
+	if(devMenu->dropZone == DevDropZoneEditors)
+	{
+		textLib->charAttr.palette = DEV_PAL_WARNING;
+		dev_fillRow(devMenu, row, x0, x1);
+		dev_write(devMenu, "DROP TO ADD IT", x0, row, x1);
+	}
+	else
+	{
+		textLib->charAttr.palette = DEV_PAL_LABEL;
+		dev_fillRow(devMenu, row, x0, x1);
+		dev_write(devMenu, "EDITOR PROGRAMS", x0, row, x1);
+	}
+	row++;
+
+	for(i = 0; i < devMenu->settings->numTools; i++)
+	{
+		int removeX = x1 - 2;
+
+		textLib->charAttr.palette = DEV_PAL_BUTTON;
+		dev_fillRow(devMenu, row, x0, removeX - 1);
+		dev_write(devMenu, devMenu->settings->toolNames[i], x0 + 1, row, removeX - 2);
+		textLib->charAttr.palette = DEV_PAL_ERROR;
+		dev_fillRow(devMenu, row, removeX, x1);
+		dev_write(devMenu, "[X]", removeX, row, x1);
+		dev_addItem(devMenu, DevItemTool, i, x0, removeX - 1, row, 1, DEV_PAL_BUTTON);
+		dev_addItem(devMenu, DevItemToolRemove, i, removeX, x1, row, 1, DEV_PAL_ERROR);
+		row++;
+	}
+	textLib->charAttr.palette = DEV_PAL_LABEL;
+	if(devMenu->settings->numTools == 0)
+	{
+		dev_write(devMenu, "NONE", x0 + 1, row, x1);
+		row++;
+	}
+	if(devMenu->settings->numTools < MAX_TOOLS)
+	{
+		row += dev_writeWrapped(devMenu, "DROP A PROGRAM ANYWHERE BELOW TO ADD IT", x0 + 1, row, x1, -1, -1);
+	}
+	row++;
+
+	// ---- persistent ram ----
+	{
+		int palette = devMenu->clearRamArmed ? DEV_PAL_WARNING : DEV_PAL_BUTTON;
+		int rows;
+
+		textLib->charAttr.palette = palette;
+		rows = dev_writeWrapped(devMenu,
+			devMenu->clearRamArmed ? "CLICK AGAIN TO CONFIRM" : "CLEAR PERSISTENT RAM",
+			x0 + 1,
+			row,
+			x1,
+			x0,
+			x1);
+		dev_addItem(devMenu, DevItemClearRam, -1, x0, x1, row, rows, palette);
+		row += rows;
+	}
+
+	textLib->charAttr.palette = DEV_PAL_LABEL;
+	row += dev_writeWrapped(devMenu, "MAY DELETE GAME STATE OR HIGH SCORES OF THIS PROGRAM", x0 + 2, row, x1, -1, -1);
+	row++;
+
+	devMenu->contentHeight = row;
+	textLib->charAttr.palette = DEV_PAL_BODY;
+}
+
+// ================ Scrolling ================
+
+static void dev_setScroll(struct DevMenu *devMenu, int scrollY)
+{
+	struct Core *core = devMenu->runner->core;
+	struct IORegisters *io = &core->machine->ioRegisters;
+	int shownHeight = io->shown.height ? io->shown.height : SCREEN_HEIGHT;
+	int max = (devMenu->contentHeight + (io->safe.bottom + 7) / 8) * 8 - shownHeight;
+
+	if(max < 0)
+	{
+		max = 0;
+	}
+	if(scrollY > max)
+	{
+		scrollY = max;
+	}
+	if(scrollY < 0)
+	{
+		scrollY = 0;
+	}
+	devMenu->scrollY = scrollY;
+	core->machine->videoRegisters.scrollAY = (uint16_t)scrollY;
+	machine_suspendEnergySaving(core, 2);
+}
+
+void dev_scroll(struct DevMenu *devMenu, int deltaPixels)
+{
+	dev_setScroll(devMenu, devMenu->scrollY + deltaPixels);
+}
+
+void dev_relayout(struct DevMenu *devMenu)
+{
+	dev_draw(devMenu);
+	dev_setScroll(devMenu, devMenu->scrollY);
+}
+
+// ================ Interaction ================
+
+static int dev_hitTest(struct DevMenu *devMenu, float touchX, float touchY)
+{
+	int cx, cy, i;
+
+	if(touchX < 0 || touchY < 0)
+	{
+		return -1;
+	}
+	cx = (int)touchX / 8;
+	cy = ((int)touchY + devMenu->scrollY) / 8;
+	for(i = 0; i < devMenu->numItems; i++)
+	{
+		struct DevItem *item = &devMenu->items[i];
+
+		if(cx >= item->fromX && cx <= item->toX && cy >= item->row && cy < item->row + item->height)
+		{
+			return i;
+		}
+	}
+	return -1;
+}
+
+static void dev_highlightItem(struct DevMenu *devMenu, int index, bool pressed)
+{
+	struct DevItem *item = &devMenu->items[index];
+
+	txtlib_setCellsAttr(&devMenu->textLib,
+		item->fromX,
+		item->row,
+		item->toX,
+		item->row + item->height - 1,
+		pressed ? DEV_PAL_TITLE : item->palette,
+		-1,
+		-1,
+		-1);
+}
+
+// returns false when the menu is gone and devMenu must not be touched again
+static bool dev_activate(struct DevMenu *devMenu, int index)
+{
+	struct DevItem *item = &devMenu->items[index];
+
+	if(item->type != DevItemClearRam && devMenu->clearRamArmed)
+	{
+		devMenu->clearRamArmed = false;
+	}
+
+	switch(item->type)
+	{
+	case DevItemTool:
+		runToolProgram(devMenu->settings->tools[item->index]);
+		return false;
+
+	case DevItemToolRemove:
+		settings_removeTool(devMenu->settings, item->index);
+		settings_save(devMenu->settings);
+		dev_relayout(devMenu);
+		return true;
+
+	case DevItemClearRam:
+		if(devMenu->clearRamArmed)
+		{
+			devMenu->clearRamArmed = false;
+			dev_clearPersistentRam();
+			dev_relayout(devMenu);
+			overlay_message(devMenu->runner->core, "PERSISTENT RAM CLEARED");
+		}
+		else
+		{
+			devMenu->clearRamArmed = true;
+			dev_relayout(devMenu);
+		}
+		return true;
+	}
+	return true;
 }
 
 void dev_show(struct DevMenu *devMenu, bool reload)
 {
+	struct Core *core = devMenu->runner->core;
+	struct TextLib *textLib = &devMenu->textLib;
+
 	if(reload)
 	{
 		devMenu->lastError = runner_loadProgram(devMenu->runner, getMainProgramFilename());
 	}
 
-	devMenu->currentMenu = DevModeMenuMain;
-	devMenu->currentButton = -1;
-	devMenu->lastTouch = false;
-
-	struct Core *core = devMenu->runner->core;
-
-	struct TextLib *textLib = &devMenu->textLib;
 	textLib->core = core;
 
 	itp_endProgram(core);
 	machine_reset(core, true);
 	overlay_reset(core);
 
-	core_handleInput(devMenu->runner->core, &coreInput);
+	core_handleInput(core, &coreInput);
+	overlay_updateLayout(core, &coreInput);
 
 	core->machineInternals->isEnergySaving = true;
 
 	txtlib_clearScreen(textLib);
-	textLib->fontCharOffset = 192;
-	textLib->windowY = 7;
-	textLib->windowHeight = 9;
+	textLib->bg = 0;
+	textLib->windowBg = 0;
+	textLib->fontCharOffset = DEV_FONT_OFFSET;
 
 	memcpy(&core->machine->colorRegisters, dev_colors, sizeof(dev_colors));
-	memcpy(&core->machine->videoRam.characters, dev_characters, sizeof(dev_characters));
-	memcpy(&core->machine->cartridgeRom, dev_bg, sizeof(dev_bg));
+	memcpy(&core->machine->videoRam.characters[DEV_FONT_OFFSET], dev_font, sizeof(dev_font));
 
-	textLib->sourceAddress = 4;
-	textLib->sourceWidth = core->machine->cartridgeRom[2];
+	devMenu->scrollY = 0;
+	devMenu->pressedItem = -1;
+	devMenu->lastTouch = false;
+	devMenu->dragging = false;
+	devMenu->clearRamArmed = false;
+	devMenu->dropZone = DevDropZoneNone;
+	devMenu->dropTarget = DevDropZoneNone;
 
-	txtlib_copyBackground(textLib, 0, 0, 20, 16, 0, 0);
-	dev_updateButtons(devMenu);
-
-	textLib->charAttr.palette = 1;
-	txtlib_writeText(textLib, "DEVELOPMENT MENU", 2, 0);
-
-	textLib->charAttr.palette = 0;
-	char progName[19];
-	displayName(getMainProgramFilename(), progName, 19);
-	txtlib_writeText(textLib, progName, 1, 2);
-
-	if(devMenu->lastError.code != ErrorNone)
-	{
-		dev_showError(devMenu, devMenu->lastError);
-	}
-	else
-	{
-		dev_showInfo(devMenu);
-	}
+	dev_relayout(devMenu);
 
 	setMouseEnabled(true);
 }
@@ -126,302 +608,162 @@ void dev_show(struct DevMenu *devMenu, bool reload)
 void dev_update(struct DevMenu *devMenu, struct CoreInput *input)
 {
 	struct Core *core = devMenu->runner->core;
-	struct TextLib *textLib = &devMenu->textLib;
+	struct IORegisters *io = &core->machine->ioRegisters;
+	bool touch;
+	float touchX, touchY;
 
 	core_handleInput(core, input);
+	overlay_updateLayout(core, input);
 
-	bool touch = core->machine->ioRegisters.status.touch;
-	int cx = core->machine->ioRegisters.touchX / 8;
-	int cy = core->machine->ioRegisters.touchY / 8;
-
-	if(devMenu->currentMenu == DevModeMenuMain)
+	// the window was resized or the safe area moved, reflow the page
+	if(io->shown.width != devMenu->lastShownWidth || io->shown.height != devMenu->lastShownHeight ||
+	   io->safe.left != devMenu->lastSafeLeft || io->safe.top != devMenu->lastSafeTop ||
+	   io->safe.right != devMenu->lastSafeRight || io->safe.bottom != devMenu->lastSafeBottom)
 	{
-		if(devMenu->currentButton >= 0)
-		{
-			int bcx = devButtons[devMenu->currentButton].cx;
-			int bcy = devButtons[devMenu->currentButton].cy;
-			bool isInside = (cx >= bcx && cy >= bcy && cx <= bcx + 1 && cy <= bcy + 1);
-			if(!touch || !isInside)
-			{
-				txtlib_setCellsAttr(textLib, bcx, bcy, bcx + 1, bcy + 1, 0, -1, -1, -1);
+		devMenu->pressedItem = -1;
+		dev_relayout(devMenu);
+	}
 
-				if(isInside)
-				{
-					dev_onButtonTap(devMenu);
-				}
-				devMenu->currentButton = -1;
-			}
-		}
-		else if(touch && !devMenu->lastTouch)
+	touch = io->status.touch;
+	touchX = io->touchX;
+	touchY = io->touchY;
+
+	if(touch && !devMenu->lastTouch)
+	{
+		// just pressed
+		devMenu->dragStartTouchY = touchY;
+		devMenu->dragStartScrollY = devMenu->scrollY;
+		devMenu->dragging = false;
+		devMenu->pressedItem = dev_hitTest(devMenu, touchX, touchY);
+		if(devMenu->pressedItem >= 0)
 		{
-			for(int i = 0; i < 6; i++)
-			{
-				int bcx = devButtons[i].cx;
-				int bcy = devButtons[i].cy;
-				if(cx >= bcx && cy >= bcy && cx <= bcx + 1 && cy <= bcy + 1)
-				{
-					txtlib_setCellsAttr(textLib, bcx, bcy, bcx + 1, bcy + 1, 1, -1, -1, -1);
-					devMenu->currentButton = i;
-				}
-			}
+			dev_highlightItem(devMenu, devMenu->pressedItem, true);
 		}
 	}
-	else
+	else if(touch)
 	{
-		if(devMenu->currentButton >= 0)
+		// held: past the threshold this is a scroll, not a press
+		if(!devMenu->dragging && fabsf(touchY - devMenu->dragStartTouchY) > DEV_DRAG_THRESHOLD)
 		{
-			int bcy = 1 + devMenu->currentButton * 3;
-			bool isInside = (cy >= bcy && cy <= bcy + 2);
-			if(!touch || !isInside)
+			devMenu->dragging = true;
+			if(devMenu->pressedItem >= 0)
 			{
-				txtlib_setCellsAttr(textLib, 0, bcy, 19, bcy + 2, 0, -1, -1, -1);
-
-				if(isInside)
-				{
-					dev_onButtonTap(devMenu);
-				}
-				devMenu->currentButton = -1;
+				dev_highlightItem(devMenu, devMenu->pressedItem, false);
+				devMenu->pressedItem = -1;
+			}
+			if(devMenu->clearRamArmed)
+			{
+				devMenu->clearRamArmed = false;
+				dev_relayout(devMenu);
 			}
 		}
-		else if(touch && !devMenu->lastTouch)
+		if(devMenu->dragging)
 		{
-			int button = (cy - 1) / 3;
-			if(button >= 0 && button < devMenu->currentMenuSize)
-			{
-				int bcy = 1 + button * 3;
-				txtlib_setCellsAttr(textLib, 0, bcy, 19, bcy + 2, 1, -1, -1, -1);
-				devMenu->currentButton = button;
-			}
+			dev_setScroll(devMenu, devMenu->dragStartScrollY - (int)(touchY - devMenu->dragStartTouchY));
 		}
 	}
-	devMenu->lastTouch = core->machine->ioRegisters.status.touch;
+	else if(devMenu->lastTouch)
+	{
+		// just released
+		int pressed = devMenu->pressedItem;
+
+		devMenu->pressedItem = -1;
+		devMenu->lastTouch = false;
+		if(pressed >= 0)
+		{
+			dev_highlightItem(devMenu, pressed, false);
+			if(!devMenu->dragging && dev_hitTest(devMenu, touchX, touchY) == pressed)
+			{
+				devMenu->dragging = false;
+				if(!dev_activate(devMenu, pressed))
+				{
+					return;
+				}
+			}
+		}
+		devMenu->dragging = false;
+	}
+	devMenu->lastTouch = touch;
 
 	overlay_draw(core, false);
 }
 
-bool dev_handleDropFile(struct DevMenu *devMenu, const char *filename)
+// The page is split in two, not into a small target and a big fallback: the
+// editors zone is everything from the EDITOR PROGRAMS heading to the bottom.
+static enum DevDropZone dev_dropZoneAt(struct DevMenu *devMenu, float screenY)
 {
-	if(devMenu->currentMenu == DevModeMenuTools)
+	if(screenY < 0)
 	{
-		if(settings_addTool(devMenu->settings, filename))
-		{
-			settings_save(devMenu->settings);
-			dev_showToolsMenu(devMenu);
-		}
-		else
-		{
-			overlay_message(devMenu->runner->core, "NO EMPTY SPACE");
-		}
-		return true;
+		// no position from the platform, fall back to replacing the main program
+		return DevDropZoneMainProgram;
 	}
-	return false;
-}
-
-void dev_showInfo(struct DevMenu *devMenu)
-{
-	struct Core *core = devMenu->runner->core;
-	struct TextLib *textLib = &devMenu->textLib;
-
-	char info[21];
-
-	textLib->charAttr.palette = 5;
-	txtlib_writeText(textLib, "TOKENS:", 0, 7);
-	txtlib_writeText(textLib, "ROM:", 0, 8);
-
-	textLib->charAttr.palette = 0;
-	sprintf(info, "%d/%d", core->interpreter->tokenizer.numTokens, MAX_TOKENS);
-	txtlib_writeText(textLib, info, 20 - (int)strlen(info), 7);
-	sprintf(info, "%d/%d", data_currentSize(&core->interpreter->romDataManager), DATA_SIZE);
-	txtlib_writeText(textLib, info, 20 - (int)strlen(info), 8);
-
-	textLib->charAttr.palette = 4;
-	txtlib_writeText(textLib, "READY TO RUN", 4, 14);
-}
-
-void dev_showError(struct DevMenu *devMenu, struct CoreError error)
-{
-	struct Core *core = devMenu->runner->core;
-	struct TextLib *textLib = &devMenu->textLib;
-
-	textLib->charAttr.palette = 0;
-
-	txtlib_clearWindow(textLib);
-
-	textLib->charAttr.palette = 2;
-	txtlib_printText(textLib, err_getString(error.code));
-	txtlib_printText(textLib, "\n");
-	if(error.sourcePosition >= 0 && core->interpreter->sourceCode)
+	if(((int)screenY + devMenu->scrollY) / 8 >= devMenu->editorsRow)
 	{
-		textLib->charAttr.palette = 0;
-		int number = lineNumber(core->interpreter->sourceCode, error.sourcePosition);
-		char lineNumberText[30];
-		sprintf(lineNumberText, "IN LINE %d:\n", number);
-		txtlib_printText(textLib, lineNumberText);
+		return DevDropZoneEditors;
+	}
+	return DevDropZoneMainProgram;
+}
 
-		const char *line = lineString(core->interpreter->sourceCode, error.sourcePosition);
-		if(line)
-		{
-			textLib->charAttr.palette = 5;
-			txtlib_printText(textLib, "\n");
-			txtlib_printText(textLib, line);
-			free((void *)line);
-		}
+void dev_handleDropPosition(struct DevMenu *devMenu, float screenY)
+{
+	enum DevDropZone zone = dev_dropZoneAt(devMenu, screenY);
+
+	devMenu->dropTarget = zone;
+	if(zone != devMenu->dropZone)
+	{
+		devMenu->dropZone = zone;
+		dev_relayout(devMenu);
 	}
 }
 
-void dev_updateButtons(struct DevMenu *devMenu)
+void dev_handleDropEnd(struct DevMenu *devMenu)
 {
-	struct Plane *bg = &devMenu->runner->core->machine->videoRam.planeA;
-	if(devMenu->runner->core->interpreter->debug)
+	if(devMenu->dropZone != DevDropZoneNone)
 	{
-		bg->cells[5][7].character = 30;
-		bg->cells[5][8].character = 31;
+		devMenu->dropZone = DevDropZoneNone;
+		dev_relayout(devMenu);
+	}
+}
+
+bool dev_handleDropFile(struct DevMenu *devMenu, const char *filename, float screenY)
+{
+	// Prefer the zone the page already highlighted from SDL_EVENT_DROP_POSITION: that
+	// is what the user aimed at, and it is the only source that is reliable on every
+	// backend. SDL_EVENT_DROP_FILE carries the last reported position too, but only as
+	// a copy that some backends never fill in -- use it just as a fallback.
+	enum DevDropZone zone = devMenu->dropTarget;
+
+	if(zone == DevDropZoneNone)
+	{
+		// no hover position was ever reported, all we have is the file event's copy
+		zone = dev_dropZoneAt(devMenu, screenY);
+	}
+	devMenu->dropZone = DevDropZoneNone;
+	devMenu->dropTarget = DevDropZoneNone;
+	if(zone != DevDropZoneEditors)
+	{
+		// let main.c load it as the main program instead
+		dev_relayout(devMenu);
+		return false;
+	}
+
+	if(settings_addTool(devMenu->settings, filename))
+	{
+		settings_save(devMenu->settings);
+		dev_relayout(devMenu);
 	}
 	else
 	{
-		bg->cells[5][7].character = 46;
-		bg->cells[5][8].character = 47;
+		dev_relayout(devMenu);
+		overlay_message(devMenu->runner->core, "TOO MANY PROGRAMS");
 	}
+	return true;
 }
 
-void dev_onButtonTap(struct DevMenu *devMenu)
-{
-	int button = devMenu->currentButton;
-
-	if(devMenu->currentMenu == DevModeMenuMain)
-	{
-		if(button == 0)
-		{
-			// Run
-			runMainProgram();
-		}
-		else if(button == 1)
-		{
-			// Check
-			dev_show(devMenu, true);
-		}
-		else if(button == 2)
-		{
-			dev_showToolsMenu(devMenu);
-		}
-		else if(button == 3)
-		{
-			// Debug On/Off
-			devMenu->runner->core->interpreter->debug = !devMenu->runner->core->interpreter->debug;
-			dev_updateButtons(devMenu);
-		}
-		else if(button == 4)
-		{
-			dev_showClearRamMenu(devMenu);
-		}
-		else if(button == 5)
-		{
-			// Eject
-			// TODO: Can't do that anymore, as I need coreInput
-			// rebootNX();
-		}
-	}
-	else if(devMenu->currentMenu == DevModeMenuTools)
-	{
-		if(devMenu->currentButton < devMenu->settings->numTools)
-		{
-			int cx = devMenu->runner->core->machine->ioRegisters.touchX / 8;
-			if(cx >= 18)
-			{
-				settings_removeTool(devMenu->settings, devMenu->currentButton);
-				settings_save(devMenu->settings);
-				dev_showToolsMenu(devMenu);
-			}
-			else
-			{
-				runToolProgram(devMenu->settings->tools[devMenu->currentButton]);
-			}
-		}
-		else
-		{
-			dev_show(devMenu, false);
-		}
-	}
-	else if(devMenu->currentMenu == DevModeMenuClearRam)
-	{
-		if(devMenu->currentButton == 0)
-		{
-			dev_clearPersistentRam(devMenu);
-		}
-		dev_show(devMenu, false);
-	}
-}
-
-void dev_showToolsMenu(struct DevMenu *devMenu)
-{
-	struct TextLib *textLib = &devMenu->textLib;
-
-	devMenu->currentMenu = DevModeMenuTools;
-	const char *menu[MENU_SIZE];
-	int count = 0;
-	for(int i = 0; i < devMenu->settings->numTools; i++)
-	{
-		menu[count++] = devMenu->settings->toolNames[i];
-	}
-	menu[count++] = "CANCEL";
-	dev_showMenu(devMenu, "EDIT ROM WITH TOOL", menu, count, count - 1);
-	if(count < MENU_SIZE)
-	{
-		textLib->charAttr.palette = 5;
-		txtlib_writeText(textLib, "DRAG & DROP PROGRAM", 0, 14);
-		txtlib_writeText(textLib, "TO ADD AS TOOL", 3, 15);
-	}
-}
-
-void dev_showClearRamMenu(struct DevMenu *devMenu)
-{
-	struct TextLib *textLib = &devMenu->textLib;
-
-	devMenu->currentMenu = DevModeMenuClearRam;
-	const char *menu[MENU_SIZE];
-	menu[0] = "CLEAR";
-	menu[1] = "CANCEL";
-	dev_showMenu(devMenu, "CLEAR PERSIST. RAM?", menu, 2, 0);
-
-	textLib->charAttr.palette = 5;
-	txtlib_writeText(textLib, "MAY DELETE DATA LIKE", 0, 12);
-	txtlib_writeText(textLib, "GAME STATE OR", 3, 13);
-	txtlib_writeText(textLib, "HIGH SCORES", 4, 14);
-	txtlib_writeText(textLib, "OF THIS PROGRAM", 2, 15);
-}
-
-void dev_showMenu(struct DevMenu *devMenu, const char *message, const char *buttons[], int numButtons, int numRemoveButtons)
-{
-	struct TextLib *textLib = &devMenu->textLib;
-
-	textLib->charAttr.palette = 0;
-	txtlib_setCells(textLib, 0, 0, 19, 15, 1);
-
-	textLib->charAttr.palette = 1;
-	txtlib_setCells(textLib, 0, 0, 19, 0, 192);
-	txtlib_writeText(textLib, message, (int)(20 - strlen(message)) / 2, 0);
-
-	textLib->charAttr.palette = 0;
-	for(int i = 0; i < numButtons; i++)
-	{
-		int y = 1 + i * 3;
-		txtlib_setCells(textLib, 0, y, 19, y, 3);
-		txtlib_setCells(textLib, 0, y + 2, 19, y + 2, 5);
-		int tx = (int)(20 - strlen(buttons[i])) / 2;
-		if(tx < 0)
-			tx = 0;
-		txtlib_writeText(textLib, buttons[i], tx, y + 1);
-		if(i < numRemoveButtons)
-		{
-			txtlib_setCell(textLib, 19, y, 20);
-		}
-	}
-	devMenu->currentMenuSize = numButtons;
-}
-
-void dev_clearPersistentRam(struct DevMenu *devMenu)
+static void dev_clearPersistentRam(void)
 {
 	char ramFilename[FILENAME_MAX];
+
 	getRamFilename(ramFilename);
 	remove(ramFilename);
 }

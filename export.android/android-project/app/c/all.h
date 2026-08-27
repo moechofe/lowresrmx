@@ -2715,7 +2715,7 @@ bool screenshot_save(uint32_t *pixels, int scale);
 #include <stdbool.h>
 #include <stdio.h>
 
-#define MAX_TOOLS 4
+#define MAX_TOOLS 16
 #define TOOL_NAME_SIZE 21
 
 struct Parameters

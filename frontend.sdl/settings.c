@@ -32,7 +32,6 @@ bool settings_filename(char *destination);
 void settings_setParameter(struct Parameters *parameters, const char *key, const char *value);
 void settings_saveAs(struct Settings *settings, const char *filename);
 
-
 #if defined(__ANDROID__)
 void settings_init(struct Settings *settings, char *filenameOut, int argc, char *argv[])
 #else
@@ -244,7 +243,7 @@ void settings_saveAs(struct Settings *settings, const char *filename)
 		fputs(settings->file.disabledelay ? optionYes : optionNo, file);
 		fputs("\n\n", file);
 
-		fputs("# Add tools for the Edit ROM menu (max 4).\n# tool My Tool.rmx\n", file);
+		fprintf(file, "# Add editor programs for the Development Menu (max %d).\n# tool My Tool.rmx\n", MAX_TOOLS);
 		for(int i = 0; i < settings->numTools; i++)
 		{
 			fputs("tool ", file);
@@ -272,7 +271,7 @@ bool settings_addTool(struct Settings *settings, const char *filename)
 
 void settings_removeTool(struct Settings *settings, int index)
 {
-	if(index < settings->numTools)
+	if(index >= 0 && index < settings->numTools)
 	{
 		for(int i = index; i < MAX_TOOLS - 1; i++)
 		{
