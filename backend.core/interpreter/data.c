@@ -22,6 +22,9 @@
 
 void dat_nextData(struct Interpreter *interpreter)
 {
+	if(!interpreter->currentDataValueToken)
+		return; // out of data
+
 	interpreter->currentDataValueToken++;
 	if(interpreter->currentDataValueToken->type == TokenComma)
 	{

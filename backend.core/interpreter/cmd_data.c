@@ -139,9 +139,12 @@ enum ErrorCode cmd_SKIP(struct Core *core)
 
 	if(interpreter->pass == PassRun)
 	{
-		// TODO: must check if there is enough data
 		while(skip-- > 0)
+		{
+			if(!interpreter->currentDataValueToken)
+				return ErrorOutOfData;
 			dat_nextData(interpreter);
+		}
 	}
 
 	return itp_endOfCommand(interpreter);
