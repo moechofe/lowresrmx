@@ -1,4 +1,4 @@
-version$="0.204"
+version$="0.205"
 'offical graphics editor for Retro Game Creator (LowResRMX) for iOS
 'author: martin mauchauffee
 
@@ -25,6 +25,7 @@ version$="0.204"
 'todo: remove goto/gosub ***_redraw from tbl_***, use ***changed instead
 'todo: remove editor= send message using ...ed variable
 'todo: Do I need 'fedmode= and 'editor=
+'todo: I should be able to remove cached variable laybgl,... from uselayer, it should save some variables
 
 files
 
@@ -516,7 +517,8 @@ sub usrcheck
       h=l+usrsize(i)-1
       for j=0 to ubound(usraddr,1)
         if i<>j and usrsize(j)>0 then
-          if l>=usraddr(j) and h<usraddr(j)+usrsize(j) then
+          'true interval overlap: containment alone misses two blocks that merely straddle
+          if l<=usraddr(j)+usrsize(j)-1 and h>=usraddr(j) then
             trace "memory overlapping"
             trace i,j
             do
@@ -529,31 +531,46 @@ sub usrcheck
   next i
 end sub
 
-sub usrlook(space,start,low,hig,addr,ignore)
+sub usrlook(space,low,hig,addr,ignore)
 'look for enough space in bytes in memory to load a file
-'will look at each already loaded files, and search for available space above and below them recursively
+'first fit: walk the gaps between the loaded files, in address order, and return the first
+'gap wide enough. file numbers are not in address order, so the gaps must be walked by address.
 '(in) space in byte
-'(in) start the file number where to start looking, must be 0
-'(in) low,hig to low and high address boundary where to look
-'(out) the address, 0 if not enough space
-'(in) ignore this file, will be replaced
+'(in) low,hig to low and high address boundary where to look, hig is excluded
+'(out) addr the address, 0 if not enough space
+'(in) ignore this file, will be replaced, so its space counts as free
   'when this function exit: an addr greater than zero mean there is enough space to load the file.
   addr=0
-  'trace"usrlook",start,low,hig
-  'trace"vars",peekw($ffaa)
-  'not enough space
-  if space>hig-low then exit sub
-  for i=start to ubound(usraddr,1)
-    if usrsize(i)>0 and i<>ignore then
-      'look below this file
-      call usrlook(space,i+1,low,usraddr(i),addr,ignore)
-      if addr then exit sub
-      call usrlook(space,i+1,usraddr(i)+usrsize(i),hig,addr,ignore)
+  if space<=0 then exit sub
+  c=low
+  'each pass steps over at least one file, so all the files need at most one pass each
+  for p=0 to ubound(usraddr,1)+1
+    'the lowest addressed file ending above the cursor.
+    'na holds its address: `and`/`or` do not short circuit, so usraddr(n) must
+    'never be written while n can still be -1.
+    n=-1 :na=0
+    for i=0 to ubound(usraddr,1)
+      if usrsize(i)>0 and i<>ignore and usraddr(i)+usrsize(i)>c then
+        if n<0 then
+          n=i :na=usraddr(i)
+        else if usraddr(i)<na then
+          n=i :na=usraddr(i)
+        end if
+      end if
+    next i
+    'the gap in front of it, never wider than the boundary
+    e=hig
+    if n>=0 and na<e then e=na
+    'space found
+    if e-c>=space then
+      addr=c
       exit sub
     end if
-  next i
-  'space found
-  addr=low
+    'no file left, or the next one is out of the boundary: no gap left to look at
+    if n<0 then exit sub
+    if na>=hig then exit sub
+    c=na+usrsize(n)
+  next p
 end sub
 
 sub usrload(f,t,a,minz)
@@ -590,11 +607,12 @@ sub usrtype(f,t,t$)
   t$="chara?" :t=2
 end sub
 
-sub usrlife(o,n)
+sub usrlife(o,n,err)
 'may change the loaded file o by a new one n
 'used when user want (for instance) to load a file and save the data to another file
 '(inout) o old loaded file number
 '(in) n new file number
+'(out) err 2= the new file is already loaded, nothing moved
   err=0
   if o=n then exit sub
   'what to do if the file is already loaded?
@@ -623,18 +641,20 @@ end sub
 sub usrsavechr(f)
 'helper to save character file
 '(in) f file number
-  usrsize(f)=max(usrsize(f),4096)
-  for a=usraddr(f)+usrsize(f)-16 to usraddr(f) step -16
+'trim the saved length only: the character editor always writes the whole 4096 bytes
+'(cara+char*16, and the $ffa0 dma source at cara+$800), so shrinking usrsize would hand
+'the tail of a live character file out to the next allocation.
+  z=usrsize(f)
+  for a=usraddr(f)+z-16 to usraddr(f) step -16
     'end/right trim empty character
     if peekl(a)=0 and peekl(a+4)=0 and peekl(a+8)=0 and peekl(a+12)=0 then
-      add usrsize(f),-16
+      add z,-16
     else
-      save f,usrname$(f),usraddr(f),usrsize(f)
+      save f,usrname$(f),usraddr(f),z
       exit sub
     end if
   next a
-  save f,usrname$(f),usraddr(f),usrsize(f)
-  call usrcheck
+  save f,usrname$(f),usraddr(f),z
 end sub
 
 sub usrsave(f)
@@ -657,21 +677,34 @@ sub usrfree(f)
   call usrcheck
 end sub
 
-sub usrloadimpl(new,old,dst,addr,minz)
+sub usrloadimpl(new,old,dst,addr,minz,err)
 'implementation of file loading
 '(in) new file number of the file to load
 '(in) old file number to free before load
 '(out) dst destination variable that will contains the loaded file number at success
 '(out) addr address where the file has been loaded
 '(in) minz minimal size required
-  'unload previous loaded file
-  if old>=0 then call usrfree(old)
+'(out) err 3= not enough memory, the previous loaded file is kept
+'(out) err 4= the file is already loaded, nothing was touched
+  err=0
   addr=0
-  call usrlook(max(minz,fsize(new)),0,wramstart,wramend,addr,-1)
+  'a file cannot be loaded twice: its record holds one address, so reloading it under
+  'another role would repoint the record and leave the other role cached pointer
+  '(beda, cara or pala) dangling on a block that is now free to be handed out again
+  if new<>old and usrsize(new)>0 then
+    err=4
+    exit sub
+  end if
+  'look for the space first, counting the previous loaded file space as free,
+  'so a failure leaves the previous loaded file untouched
+  call usrlook(max(minz,fsize(new)),wramstart,wramend,addr,old)
   if addr=0 then
+    err=3
     message "not enough memory"
     exit sub
   end if
+  'unload previous loaded file
+  if old>=0 then call usrfree(old)
   t=0 : t$=""
   call usrtype(new,t,t$)
   call usrload(new,t,addr,minz)
@@ -683,16 +716,24 @@ sub usrloadimpl(new,old,dst,addr,minz)
   call usrcheck
 end sub
 
-sub usrnewbg(w,h,new,dst)
+sub usrnewbg(w,h,new,dst,err)
 'create a new file in memory
 '(in) w,h width and height of the new file
 '(in) new file number
-'(in) old file number to free before load
 '(out) dst destination variable that will contains the create file
-  call usrfree(new)
+'(out) err 3= not enough memory, nothing was created
+  err=0
   addr=0
   zise=w*h*2+4
-  call usrlook(zise,0,wramstart,wramend,addr,-1)
+  'look for the space first, counting this file own space as free,
+  'so a failure leaves the previously loaded file untouched
+  call usrlook(zise,wramstart,wramend,addr,new)
+  if addr=0 then
+    err=3
+    message "not enough memory"
+    exit sub
+  end if
+  call usrfree(new)
   usraddr(new)=addr
   usrsize(new)=zise
   usrname$(new)="BACKGROUND"
@@ -712,7 +753,7 @@ sub usrloadbg(new,old,dst,err)
 '(in) new file number of the file to load
 '(in) old file number to free before load
 '(out) dst destination variable that will contains the loaded file number at success
-'(out) err 1= empty file, 2= not a background
+'(out) err 1= empty file, 2= not a background, 3= not enough memory, 4= already loaded
   err=0
   if fsize(new)=0 then
     err=1
@@ -726,12 +767,12 @@ sub usrloadbg(new,old,dst,err)
   'todo: check for changes not saved
   'temp: do something else when layers are working
   addr=0
-  call usrloadimpl(new,old,dst,addr,4)
+  call usrloadimpl(new,old,dst,addr,4,err)
 end sub
 
 sub usrdefaultbg
   addr=0
-  call usrlook(132,0,wramstart,wramend,addr,-1)
+  call usrlook(132,wramstart,wramend,addr,-1)
   'because it's the start of the program, we can be sure there is enough memory
   usraddr(3)=addr
   usrsize(3)=132
@@ -749,7 +790,7 @@ sub usrloadpal(new,old,dst,err)
 '(in) new file number of the file to load
 '(in) old file number to free before load
 '(out) dst destination variable that will contains the loaded file number at success
-'(out) err =1 empty file, =2 not a palette
+'(out) err =1 empty file, =2 not a palette, =3 not enough memory, =4 already loaded
   err=0
   if fsize(new)=0 then
     err=1
@@ -761,7 +802,7 @@ sub usrloadpal(new,old,dst,err)
   '   exit sub
   ' end if
   addr=0
-  call usrloadimpl(new,old,dst,addr,32)
+  call usrloadimpl(new,old,dst,addr,32,err)
   if addr then
     pala=addr
     call usepalettes(dst)
@@ -774,7 +815,7 @@ end sub
 
 sub usrdefaultpal
   addr=0
-  call usrlook(32,0,wramstart,wramend,addr,-1)
+  call usrlook(32,wramstart,wramend,addr,-1)
   'because it's the start of the program, we can be sure there is enough memory
   usraddr(1)=addr
   usrsize(1)=32
@@ -797,7 +838,7 @@ sub usrloadchr(new,old,dst,err)
 '(in) new file number of the file to load
 '(in) old file number to free before load
 '(out) dst destination variable that will contains the loaded file number at success
-'(out) err =1 empty file
+'(out) err =1 empty file, =3 not enough memory, =4 already loaded
   err=0
   if fsize(new)=0 then
     err=1
@@ -810,29 +851,36 @@ sub usrloadchr(new,old,dst,err)
   '   exit sub
   ' end if
   addr=0
-  call usrloadimpl(new,old,dst,addr,4096)
+  call usrloadimpl(new,old,dst,addr,4096,err)
   if addr then
     cara=addr
   end if
 end sub
 
-sub usrdefaultchr(example)
+sub usrdefaultchr(f,example)
+'create an empty (or example) character file in memory
+'(in) f file number, the record is overwritten so it must not be freed first
+'(in) example -1 to fill it with the ROM example characters
   addr=0
-  call usrlook(4096,0,wramstart,wramend,addr,-1)
-  'because it's the start of the program, we can be sure there is enough memory
-  usraddr(2)=addr
-  usrsize(2)=4096
-  usrname$(2)="DEFAULT CHARACTERS"
-  usrtype(2)=1
-  usrdime(2,0)=0 :usrdime(2,1)=0
-  usrchanged(2)=0
+  'counting this file own space as free, so a reset always fits back in its own place
+  call usrlook(4096,wramstart,wramend,addr,f)
+  if addr=0 then
+    message "not enough memory"
+    exit sub
+  end if
+  usraddr(f)=addr
+  usrsize(f)=4096
+  usrname$(f)="DEFAULT CHARACTERS"
+  usrtype(f)=2
+  usrdime(f,0)=0 :usrdime(f,1)=0
+  usrchanged(f)=0
   if example then
     copy rom(12),9*16 to addr
   else
     fill addr,$1000
   end if
   cara=addr
-  call usecharacter(2)
+  call usecharacter(f)
   call usrcheck
 end sub
 
@@ -1141,7 +1189,7 @@ end if
 cedlife=-1
 call usrloadchr(2,-1,cedlife,err)
 if cedlife=-1 then
-  call usrdefaultchr(-1)
+  call usrdefaultchr(2,-1)
 end if
 
 'load user's background from file 3 or load default background
@@ -2704,8 +2752,58 @@ bed_pen_input:
   usrchanged(bedlife)=-1
   return
 
+bed_rect_input:
+'handle layer draw using filled rectangle
+  gosub bed_detectcell
 
+  on bedhasbru gosub bed_rect_input_0, bed_rect_input_1
 
+  if beddrawn then
+    trace"rect"
+    'draw cells
+    bg laye :bg source beda :attr bedattr
+    'bg tint laybgl,laybgt to laybgr,laybgb pal 0
+    bg copy laybgl,laybgt,layw(laye),layh(laye) to laybgl,laybgt
+    gosub bed_rectangulize
+    bg fill l,t to r,b char lstchara
+  end if
+
+  ' if bedhaspaint<0 then goto bed_handle_pan
+  ' if not touch then bedhaspaint=0
+  ' if not beddrawn then return
+  ' 'check for out of layer
+  ' if bed_ex<laybgl or bed_ex>laybgr or bed_ey<laybgt or bed_ey>laybgb then
+  '   if bedhaspaint>0 then return
+  '   bedhaspaint=-1
+  '   goto bed_handle_pan
+  ' end if
+
+  ' 'check for out of background data
+  ' if bed_ex<0 or bed_ex>=bedw or bed_ey<0 or bed_ey>=bedh then return
+
+  ' if justed then gosub bed_attr
+
+  ' gosub bed_rectangulize
+
+  return
+
+bed_rect_input_0:
+  if not beddrawn then return
+  'check for out of layer
+  if bed_ex<laybgl or bed_ex>laybgr or bed_ey<laybgt or bed_ey>laybgb then return
+  if pressed and justed then trace "here"
+  if tap then
+    bedhasbru=1
+    gosub bed_attr
+    gosub bed_rectangulize
+
+  end if
+  return
+bed_rect_input_1:
+  if not touch then
+    bedhasbru=0
+  end if
+  return
 
 
 bed_copy_input:
@@ -2727,7 +2825,8 @@ bed_copy_input_0:
   if not beddrawn then return
   'check for out of layer
   if bed_ex<laybgl or bed_ex>laybgr or bed_ey<laybgt or bed_ey>laybgb then return
-  if pressed and justed then
+  'if pressed and justed then
+  if tap then
     viepala=rom(10)
     system laye+1,1
     bedhasbru=1
@@ -2764,7 +2863,7 @@ bed_copy_brush:
   'reserve memory space in file 16
   w=r-l+1 :h=b-t+1 :s=w*h*2
   addr=0
-  call usrlook(s,0,wramstart,wramend,addr,-1)
+  call usrlook(s,wramstart,wramend,addr,-1)
   if addr=0 then
     message "not enough memory"
     return
@@ -2772,6 +2871,7 @@ bed_copy_brush:
   'trace "addr",addr
   usraddr(16)=addr :usrsize(16)=s
   usrdime(16,0)=w :usrdime(16,1)=h
+  call usrcheck
   'copy select chara to brush
   'bg source laye,64,64
   'bg source beda
@@ -3029,13 +3129,14 @@ red_copy_brush:
   call usrfree(17)
   w=r-l+1 :h=b-t+1 :s=w*h*16
   addr=0
-  call usrlook(s,0,wramstart,wramend,addr,-1)
+  call usrlook(s,wramstart,wramend,addr,-1)
   if addr=0 then
     message "not enough memory"
     return
   end if
   usraddr(17)=addr :usrsize(17)=s
   usrdime(17,0)=w :usrdime(17,1)=h
+  call usrcheck
   'bg source 3,64,64
   for y=t to b :for x=l to r
     'copy pixels
@@ -3839,8 +3940,8 @@ tlb_1_draw: 'wid=2
 
 tlb_1_rect: 'wid=3
 'select rectangle drawing tool
-  message "not finished"
-  return
+  'message "not finished"
+  'return
   bedtool=2 :bedoldt=2
   goto tlb_1_repaint
 
@@ -3943,20 +4044,37 @@ tlb_2_back: 'wid=0
 
 tlb_2_save: 'wid=1
 'save currently edited user's data to file
+  err=0
   if fedmode=0 then
-    call usrlife(bedlife,fedlife)
+    call usrlife(bedlife,fedlife,err)
+    if err<>0 then
+      message "file #"+hex$(fedlife)+" already loaded"
+      return
+    end if
+    'the record moved to another file number, layfile must follow it or the next
+    'uselayer would cache beda=0 from the emptied record. only the file number
+    'changed, so do not use stplayer here: it would reset the scroll.
+    layfile(3)=bedlife
     call usrsave(bedlife)
     message "file #"+hex$(bedlife)+" saved"
     goto tlb_2_back
   else if fedmode=1 then
-    call usrlife(pallife,fedlife)
+    call usrlife(pallife,fedlife,err)
+    if err<>0 then
+      message "file #"+hex$(fedlife)+" already loaded"
+      return
+    end if
     call usrsave(pallife)
     message "file #"+hex$(pallife)+" saved"
     goto tlb_2_back
   else if fedmode=2 then
-    call usrlife(cedlife,fedlife)
+    call usrlife(cedlife,fedlife,err)
+    if err<>0 then
+      message "file #"+hex$(fedlife)+" already loaded"
+      return
+    end if
     call usrsavechr(cedlife)
-    message "file #"+hex$(pallife)+" saved"
+    message "file #"+hex$(cedlife)+" saved"
     goto tlb_2_back
   else
     message "not implemented"
@@ -3967,9 +4085,14 @@ tlb_2_load: 'wid=2
 'load currently edited user's data from file
   if fedmode=0 then
     call usrloadbg(fedlife,bedlife,bedlife,err)
-    if err=0 then message "file #"+hex$(bedlife)+" loaded"
     if err=1 then message "empty file"
     if err=2 then message "not a background"
+    if err=4 then message "file #"+hex$(fedlife)+" already loaded"
+    'err=3 already showed "not enough memory" and kept the previous loaded file.
+    'on any error nothing moved, so the layer must NOT be repointed: bedlife could be
+    'a freed file, and uselayer would then cache beda=0, aiming the editor at the characters.
+    if err<>0 then return
+    message "file #"+hex$(bedlife)+" loaded"
     call stplayer(3,bedlife)
     call uselayer(3)
     call updlayer(laye)
@@ -3977,17 +4100,19 @@ tlb_2_load: 'wid=2
     bedx=0 :bedy=0
     'required for tlb_2_back
     gosub bed_redraw
-    if err=0 then goto tlb_2_back
+    goto tlb_2_back
   else if fedmode=1 then
     call usrloadpal(fedlife,pallife,pallife,err)
     if err=0 then message "file #"+hex$(pallife)+" loaded"
     if err=1 then message "empty file"
+    if err=4 then message "file #"+hex$(fedlife)+" already loaded"
     ' call ungesture
     if err=0 then goto tlb_2_back
   else if fedmode=2 then
     call usrloadchr(fedlife,cedlife,cedlife,err)
     if err=0 then message "file #"+hex$(cedlife)+" loaded"
     if err=1 then message "empty file"
+    if err=4 then message "file #"+hex$(fedlife)+" already loaded"
     ' call ungesture
     cnvchanged=-1
     if err=0 then goto tlb_2_back
@@ -4066,8 +4191,9 @@ tlb_2_new:
     tlb=6
     goto tlb_redraw
   else if fedmode=2 then
-    call usrfree(cedlife)
-    call usrdefaultchr(0)
+    'reset the file being edited, not file 2: usrdefaultchr overwrites the record
+    'in place, so it must NOT be freed first
+    call usrdefaultchr(cedlife,0)
     cnvchanged=-1
     goto tlb_2_back
   else
@@ -4351,12 +4477,13 @@ tlb_6_size:
   bg 0 :bg source rom(3) :attr %100001
   bg copy 0,53,29,3 to 0,4
   pal 3
+  'tlb_6_new reads addr back, so clear it before any early return
+  addr=0
   s=tlb_6_w*tlb_6_h*2+4
   if s>$ffff then return
   text 12,5,hex$(s,4)
   if s<=0 then return
-  addr=0
-  call usrlook(s,0,wramstart,wramend,addr,fedlife)
+  call usrlook(s,wramstart,wramend,addr,fedlife)
   if addr>0 then
     text 18,5,hex$(addr,4)
     text 23,5,hex$(addr+s,4)
@@ -4400,7 +4527,10 @@ tlb_6_new:
   'todo: check for changes not saved
   if addr<=0 then return
   if fedmode=0 then
-    call usrnewbg(tlb_6_w,tlb_6_h,fedlife,bedlife)
+    err=0
+    call usrnewbg(tlb_6_w,tlb_6_h,fedlife,bedlife,err)
+    'nothing was created, the previous background is still the one loaded
+    if err<>0 then return
     call stplayer(3,bedlife)
     call uselayer(3)
     call updlayer(laye)
