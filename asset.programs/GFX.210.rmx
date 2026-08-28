@@ -1,4 +1,4 @@
-version$="0.205"
+version$="0.210"
 'offical graphics editor for Retro Game Creator (LowResRMX) for iOS
 'author: martin mauchauffee
 
@@ -1274,6 +1274,7 @@ switch:
 
 switch_backed:
   editor=1
+  viepala=pala
   cnv=0 :cnvchanged=-1
   tlb=0 :tlbchanged=-1
   flt=0 :fltchanged=-1
@@ -1326,6 +1327,7 @@ switch_filed:
 
 switch_ranged:
   editor=3
+  viepala=pcla
   cnv=3 :cnvchanged=-1
   tlb=8 :tlbchanged=-1
   fltshow=0
@@ -3022,11 +3024,7 @@ red_pan_input:
     pressedx=touch.x
     pressedy=touch.y
     'limit pan
-    l=-20 :r=256-shownw+20
-    t=-20-safe.t :b=256-curr+20
-    redx=clamp(redx,l,r)
-    redy=clamp(redy,t,b)
-    scroll 3,redx,redy
+    gosub red_limit
   end if
   return
 
@@ -3047,10 +3045,11 @@ red_rect_input:
   on redg goto red_rect_input_0, red_rect_input_1
 red_rect_input_0:
   if pressed and justed then
+    gosub red_detectcell
+    if x<0 or x>15 or y<0 or y>15 then return
     redg=1
     'enable selection view
     viepala=rom(10)
-    gosub red_detectcell
     redx1=x :redx2=x
     redy1=y :redy2=y
     reds=1
@@ -3074,7 +3073,7 @@ red_rect_draw:
   bg 3
   bg tint 0,0 to 15,63 pal 0
   l=0 :r=0 :t=0 :b=0
-  call rectangulize(l,t,r,b,redx1,redx2,redy1,redy2,0,15,0,63)
+  call rectangulize(l,t,r,b,redx1,redx2,redy1,redy2,0,15,0,15)
   bg tint l,t to r,b pal 1
   return
 
@@ -3085,7 +3084,7 @@ red_copy_input:
     bg tint 0,0 to 15,63 pal 0
     gosub red_copy_brush
     message str$(w)+","+str$(h)+" copied"
-    redtool=2 :tlbchanged=-1
+    redtool=0 :tlbchanged=-1
     call ungesture
   end if
   return
@@ -3098,11 +3097,15 @@ red_paste_input:
   addr=usraddr(17)
   for iy=y to y+usrdime(17,1)-1
     for ix=x to x+usrdime(17,0)-1
-      da=cara+(iy*16+ix)*16
-      for i=0 to 15 step 2
-        pokew da,peekw(addr)
-        add da,2 :add addr,2
-      next i
+      if ix>=0 and ix<16 and iy>=0 and iy<16 then
+        da=cara+(iy*16+ix)*16
+        for i=0 to 15 step 2
+          pokew da,peekw(addr)
+          add da,2 :add addr,2
+        next i
+      else
+        add addr,16
+      end if
     next ix
   next iy
   message str$(usrdime(17,0))+","+str$(usrdime(17,1))+" pasted"
@@ -3236,14 +3239,16 @@ red_slide_input:
   on redg goto red_slide_input_0, red_slide_input_1
 red_slide_input_0:
   if tapped then
+    gosub red_detectcell
+    'red_slide_x/y poke cara+(y*16+x)*16 with the raw cell, so it must be a character
+    if x<0 or x>15 or y<0 or y>15 then return
     redg=1
     'enable selection view
     viepala=rom(10)
-    gosub red_detectcell
     bg 3
     bg tint 0,0 to 15,63 pal 0
     l=0 :r=0 :t=0 :b=0
-    call rectangulize(l,t,r,b,x,x,y,y,0,15,0,63)
+    call rectangulize(l,t,r,b,x,x,y,y,0,15,0,15)
     bg tint l,t to r,b pal 1
   end if
   return
@@ -3297,9 +3302,16 @@ red_slide_y:
 red_update:
   return
 
-  red_limit:
-  'make sure the canvas is visible
-  scroll 3,0,0
+red_limit:
+'make sure the canvas is visible and that the hardware scroll matches redx,redy.
+'red_detectcell converts a touch using redx,redy, so leaving the layer scrolled
+'somewhere else (entering the editor again, or a resize) reads the wrong cells
+'until the first pan re-syncs them.
+  curr=tlbcurr-4
+  if fltshow then curr=fltcurr-4
+  redx=clamp(redx,-20,256-shownw+20)
+  redy=clamp(redy,-20-safe.t,256-curr+20)
+  scroll 3,redx,redy
   return
 
 red_initrender:
@@ -3396,10 +3408,10 @@ fltg_0_dragging:
   lstx=fltoldx-draggedx
   lsty=fltoldy-draggedy
   call dragcap(lstx,fltoldx,pressedx,touch.x,0,256-shownw)
-  call dragcap(lsty,fltoldy,pressedy,touch.y,0,256-(fltend-fltstart))
+  call dragcap(lsty,fltoldy,pressedy,touch.y,0,256-(fltend-fltcurr))
   energy=energy or %1
   'store the 3 chara used by the chara list cursor where user can't see it
-  if draggedy<0 and lsty>256-(fltend-fltstart)-16 and fltui=253 then
+  if draggedy<0 and lsty>256-(fltend-fltcurr)-16 and fltui=253 then
     fltui=64
   else if draggedy>0 and lsty<=80 and fltui=64 then
     fltui=253
@@ -3411,7 +3423,7 @@ flt_0_update:
   y=floor(lstchara/16)
   'clamp the value and make it still visible on the side of the floating content
   x=clamp(x*16-lstx,-16,shownw)
-  y=clamp(y*16-lsty,-16,fltend-fltstart)+fltcurr
+  y=clamp(y*16-lsty,-16,fltend-fltcurr)+fltcurr
   'draw cursor corners
   l=x-4 :t=y-4 :r=x+16-4 :b=y+16-4
   sprite 159,l,t,fltui
@@ -3472,10 +3484,10 @@ fltg_1_dragging:
   kolx=fltoldx-draggedx
   koly=fltoldy-draggedy
   call dragcap(kolx,fltoldx,pressedx,touch.x,0,256-shownw)
-  call dragcap(koly,fltoldy,pressedy,touch.y,0,192-(fltend-fltstart))
+  call dragcap(koly,fltoldy,pressedy,touch.y,0,192-(fltend-fltcurr))
   energy=energy or %1
   'store the 3 chara used by the chara list cursor where user can't see it
-  if draggedy<0 and lsty>256-(fltend-fltstart)-16 and fltui=253 then
+  if draggedy<0 and lsty>256-(fltend-fltcurr)-16 and fltui=253 then
     fltui=64
   else if draggedy>0 and lsty<=80 and fltui=64 then
     fltui=253
@@ -3487,7 +3499,7 @@ flt_1_update:
   x=(kolcolor and $7)
   y=floor(kolcolor/8)
   x=clamp(x*32-kolx,-32,shownw)
-  y=clamp(y*24-koly,-24,fltend-fltstart)+fltcurr
+  y=clamp(y*24-koly,-24,fltend-fltcurr)+fltcurr
   'draw cursor corners
   l=x-4 :t=y-4 :r=x+32-4 :b=y+24-4
   sprite 159,l,t,fltui
@@ -4682,6 +4694,7 @@ tlb_8_input:
 
 tlb_8_back: 'wid=0
   call ungesture
+  redtool=0
   gosub switch_chared
   return
 
