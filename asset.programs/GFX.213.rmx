@@ -994,24 +994,35 @@ end sub
 'in s$ the state string
 sub statepush(a$(),i,s$)
   add i,1,0 to ubound(a$)
-  trace "push",i,s$
+  'trace the length: a rect state is thousands of characters
+  trace "push",i,len(s$)
   a$(i)=s$
   a$((i+1)mod(ubound(a$)+1))=""
 end sub
 
 'push or append a setting ("s") only if the setting t$ is not already present in the state
-sub statepushsetting(a$(),i,t$,v)
+'(inout) f seals the current state: set when an undo consumed it or a paint gesture began,
+'        so the setting opens a new state instead of joining a group that is already history
+sub statepushsetting(a$(),i,t$,v,f)
   s$=t$+hex$(v,2)
   if i<0 then
-    call statepush(a$(),i,"01s"+s$)
+    call statepush(a$(),i,"01s"+s$) :f=0
+    exit sub
+  else if f then
+    call statepush(a$(),i,"01s"+s$) :f=0
     exit sub
   else if mid$(a$(i),3,1)<>"s" then
-    call statepush(a$(),i,"01s"+s$)
+    call statepush(a$(),i,"01s"+s$) :f=0
     exit sub
   else
     for j=4 to len(a$(i)) step 3
       if mid$(a$(i),j,1)=t$ then exit sub
     next j
+    'stateappend loses the "s" opcode when the count saturates, it would push "01p00"
+    if len(a$(i))>=768 then
+      call statepush(a$(),i,"01s"+s$)
+      exit sub
+    end if
     call stateappend(a$(),i,s$)
   end if
 end sub
@@ -1050,28 +1061,34 @@ global bgundoidx
 bgundoidx=-1
 
 'syntaxe:
-'hex number of sub-state, followed per one or more of:
-'"d" draw operation
+'a state is homogeneous, its opcode is the 3rd character
+'chars 1-2: hex count, what it counts depends on the opcode
+'"d" pen, the letter is repeated for every cell and the count is the number of cells.
+'    replayed backwards: bed_detectcell fires on a cell change, not on a new cell, so a
+'    drag coming back over a cell records it twice and only the oldest record holds the
+'    value the cell had before the gesture
 '  hex x cell coordinate
 '  hex y cell coordinate
+'  hex cell attribute, first: mcell.a is the attribute, mcell.c is the character
 '  hex character number
-'  hex cell attribute
-'"r" rect operation
+'"r" rect or paste, one record, the count is always 01
 '  hex x1 cell coordinate
 '  hex y1 cell coordinate
 '  hex x2 of cell changed
 '  hex y2 of cell changed
-'  ... repeat for each cell
-'    hex character number
+'  ... repeat for each cell, row by row
 '    hex cell attribute
-'"s" settings
+'    hex character number
+'"s" settings, the letter is written ONCE and the count is the number of settings.
+'    only the oldest value of a tag is kept, so one undo restores the whole group.
+'    every value must be positive, hex$ masks a negative and -1 would store as "FF"
 '  ... list of pair:
 '    "l"
 '    hex layer number
 '    "p"
 '    hex palette number
 '    "f"
-'    hex horiz and verti flag flip
+'    hex horiz and verti flag flip, bit1 horiz bit0 verti
 '    "c"
 '    hex chara num
 '    "t"
@@ -1141,11 +1158,13 @@ cnvg=0
 'needed for backed
 'bedchanged= layers has been panned or layout has changed and canvas and must be redrawn
 'beddrawn= layers has been drawn
-'bedhasbru= brush was selected
-'bedhaspaint= during paint, this will prevent to pan, or prevent to paint during pan
+'bedinlay= the last touched cell is inside the edited layer
+'bedg= backed canvas gesture, decided when the touch begin and kept until the release
+'=0 nothing
+'=1 panning the canvas
+'=2 drawing with the current tool
 bedchanged=0
-bedhasbru=0
-bedhaspaint=0
+bedg=0
 
 'needed for ranged
 'redg= gesture
@@ -2634,10 +2653,11 @@ bed_redraw:
   else
     infx=bedx :infy=bedy
   end if
-  gosub inf_prepare
-  'infinite view drawing cursor
-  infcl=(infpl+infpr)\2
-  infct=(infpt+infpb)\2
+  gosub inf_position
+  bedx=infx :bedy=infy
+  'infinite view drawing cursor, always inside the world
+  infcl=clamp((infpl+infpr)\2,infl,infr)
+  infct=clamp((infpt+infpb)\2,inft,infb)
   infcr=infcl-1
   infcb=infct-1
   'infinite out-of-bound drawing cursor
@@ -2645,7 +2665,6 @@ bed_redraw:
   infot=infct
   infor=infcr
   infob=infcb
-  gosub inf_position
   bedchanged=-1
   return
 
@@ -2657,9 +2676,12 @@ bed_update:
   if lstchanged then
     trace "bed_update:lstchanged"
     lstchanged=0
+    'the tool changes also pick a character
+    call statepushsetting(bgundolst$(),bgundoidx,"t",bedtool*16+bedoldt,first)
     'disable copy or paste
     if bedtool=6 or bedtool=7 then bedtool=1
     call ungesture
+    bedg=0
     'switch previous tool
     if tlb=0 or tlb=1 or tlb=3 then bedtool=bedoldt
     'redraw buttons according to toolbar
@@ -2683,20 +2705,46 @@ bed_limit:
   return
 
 bed_input:
-'handle input on the canvas depending of the current tool
-  on bedtool goto bed_pan_input, bed_pen_input, bed_rect_input, bed_start_input, bed_size_input, bed_dest_input, bed_copy_input, bed_paste_input
+'handle input on the canvas.
+'every tool shares the same gesture. the mode is decided once, when the touch begin, and
+'is kept until the release:
+'  the pan tool, or a touch starting outside of the edited layer: pan the canvas on drag
+'  a touch starting inside the edited layer: draw with the current tool
+'each tool splits its code in two labels: _0 runs while the gesture last, _1 once at the release.
+  gosub bed_detectcell
+  'decide the mode of the gesture
+  if tap then
+    bedg=1
+    if bedtool>0 and bedinlay then
+      bedg=2
+      'the paint attribute and the undo state belong to the whole gesture
+      gosub bed_attr
+      first=-1
+    end if
+  end if
+  if bedg=0 then return
+  if bedg=1 then
+    gosub bed_pan_input
+  else if released then
+    on bedtool-1 gosub bed_pen_input_1, bed_rect_input_1, bed_none_input, bed_none_input, bed_none_input, bed_copy_input_1, bed_paste_input_1
+  else
+    on bedtool-1 gosub bed_pen_input_0, bed_rect_input_0, bed_none_input, bed_none_input, bed_none_input, bed_copy_input_0, bed_paste_input_0
+  end if
+  if released then bedg=0
+  return
+
+bed_none_input:
+'the layer start, size and dest tools are not implemented yet
+  return
 
 bed_pan_input:
-'handle canvas pan
-  gosub bed_detectcell
-
-  if tapped and pressedy<fltcurr then
-    message str$(bed_ex)+","+str$(bed_ey)+" $"+hex$(bed_ex,2)+",$"+hex$(bed_ey,2)
+'pan the canvas on drag. the pan tool also prints the touched cell on tap.
+  if tapped then
+    if bedtool=0 and pressedy<fltcurr then
+      message str$(bed_ex)+","+str$(bed_ey)+" $"+hex$(bed_ex,2)+",$"+hex$(bed_ey,2)
+    end if
     return
   end if
-  goto bed_handle_pan
-
-bed_handle_pan:
   if tap then
     'store starting coordinates and old coordinates
     bedxs=bedx :bedys=bedy :bedox=bedx :bedoy=bedy
@@ -2710,156 +2758,110 @@ bed_handle_pan:
       bedchanged=-1
       energy=energy or %1
     end if
-  else if released then
-    bedhaspaint=0
   end if
   return
 
-bed_pen_input:
-'handle layer draw using a pen
-  gosub bed_detectcell
-  if bedhaspaint<0 then goto bed_handle_pan
-  if not touch then bedhaspaint=0
+bed_pen_input_0:
+'draw one cell at a time, along the drag
   if not beddrawn then return
-  'check for out of layer
-  if bed_ex<laybgl or bed_ex>laybgr or bed_ey<laybgt or bed_ey>laybgb then
-    if bedhaspaint>0 then return
-    bedhaspaint=-1
-    goto bed_handle_pan
-  end if
-
-  'check for out of background data
+  'skip the cells outside of the edited layer
+  if not bedinlay then return
+  'skip the cells outside of the loaded background data
   if bed_ex<0 or bed_ex>=bedw or bed_ey<0 or bed_ey>=bedh then return
-  if justed then gosub bed_attr
-  'draw cells
   bg laye :bg source beda
-
+  'push or extend the undo state of the gesture
   d$="d"+hex$(bed_ex,2)+hex$(bed_ey,2)+hex$(mcell.a(bed_ex,bed_ey),2)+hex$(mcell.c(bed_ex,bed_ey),2)
   if first then
     call statepush(bgundolst$(),bgundoidx,"01"+d$)
   else
     call stateappend(bgundolst$(),bgundoidx,d$)
   end if
-
-  attr bedattr
-  'draw in loaded background
-  'trace bed_ex,bed_ey,lstchara
-  mcell bed_ex,bed_ey,lstchara
-  'draw in canvas layer
-  'trace bed_ex-laym(laye),bed_ey-layn(laye)
-  cell bed_ex-laym(laye),bed_ey-layn(laye),lstchara
-  bedhaspaint=1
-
   first=0
+  attr bedattr
+  'draw in the loaded background
+  mcell bed_ex,bed_ey,lstchara
+  'draw in the canvas layer
+  cell bed_ex-laym(laye),bed_ey-layn(laye),lstchara
   usrchanged(bedlife)=-1
   return
 
-bed_rect_input:
-'handle layer draw using filled rectangle
-  gosub bed_detectcell
-
-  on bedhasbru gosub bed_rect_input_0, bed_rect_input_1
-
-  if beddrawn then
-    trace"rect"
-    'draw cells
-    bg laye :bg source beda :attr bedattr
-    'bg tint laybgl,laybgt to laybgr,laybgb pal 0
-    bg copy laybgl,laybgt,layw(laye),layh(laye) to laybgl,laybgt
-    gosub bed_rectangulize
-    bg fill l,t to r,b char lstchara
-  end if
-
-  ' if bedhaspaint<0 then goto bed_handle_pan
-  ' if not touch then bedhaspaint=0
-  ' if not beddrawn then return
-  ' 'check for out of layer
-  ' if bed_ex<laybgl or bed_ex>laybgr or bed_ey<laybgt or bed_ey>laybgb then
-  '   if bedhaspaint>0 then return
-  '   bedhaspaint=-1
-  '   goto bed_handle_pan
-  ' end if
-
-  ' 'check for out of background data
-  ' if bed_ex<0 or bed_ex>=bedw or bed_ey<0 or bed_ey>=bedh then return
-
-  ' if justed then gosub bed_attr
-
-  ' gosub bed_rectangulize
-
+bed_pen_input_1:
+'nothing to commit, the pen wrote every cell in memory as it went
   return
 
 bed_rect_input_0:
+'preview the rectangle on the canvas layer only, memory is written at the release
   if not beddrawn then return
-  'check for out of layer
-  if bed_ex<laybgl or bed_ex>laybgr or bed_ey<laybgt or bed_ey>laybgb then return
-  if pressed and justed then trace "here"
-  if tap then
-    bedhasbru=1
-    gosub bed_attr
-    gosub bed_rectangulize
-
-  end if
+  gosub bed_rectangulize
+  bg laye :bg source beda
+  'restore the layer from memory to erase the previous preview. only the cells the
+  'progressive renderer has actually drawn: they are the whole meaningful content of the
+  'plane, and a layer wider or taller than the 64x64 plane cannot be restored whole
+  'anyway, bg copy caps its width and height at 64.
+  bg copy infcl,infct,infcr-infcl+1,infcb-infct+1 to infcl-laym(laye),infct-layn(laye)
+  attr bedattr
+  bg fill l-laym(laye),t-layn(laye) to r-laym(laye),b-layn(laye) char lstchara
   return
+
 bed_rect_input_1:
-  if not touch then
-    bedhasbru=0
-  end if
+'write the previewed rectangle in memory, as one undo state for the whole gesture
+  gosub bed_rectangulize
+  bg laye :bg source beda :attr bedattr
+  'read the cells that are about to be overwritten, then overwrite them
+  r$="01r"+hex$(l,2)+hex$(t,2)+hex$(r,2)+hex$(b,2)
+  for y=t to b
+    for x=l to r
+      r$=r$+hex$(mcell.a(x,y),2)+hex$(mcell.c(x,y),2)
+      mcell x,y,lstchara
+    next x
+  next y
+  call statepush(bgundolst$(),bgundoidx,r$)
+  first=0
+  'the canvas layer already shows the rectangle, drawn by the last preview
+  usrchanged(bedlife)=-1
   return
 
-
-bed_copy_input:
-'handle layer copy cells
-'pal#0 non selected
-'pal#1 selected
-  gosub bed_detectcell
-  on bedhasbru gosub bed_copy_input_0, bed_copy_input_1
-  if beddrawn then
-    'unselect entire layer
-    bg laye
-    bg tint laybgl,laybgt to laybgr,laybgb pal 0
-    'paint user selection
-    gosub bed_rectangulize
-    bg tint l,t to r,b pal 1
-  end if
-  return
 bed_copy_input_0:
-  if not beddrawn then return
-  'check for out of layer
-  if bed_ex<laybgl or bed_ex>laybgr or bed_ey<laybgt or bed_ey>laybgb then return
-  'if pressed and justed then
+'show the selection on the canvas layer, using a fixed palette to make it readable
+'pal#0 not selected
+'pal#1 selected
   if tap then
     viepala=rom(10)
     system laye+1,1
-    bedhasbru=1
   end if
-  return
-bed_copy_input_1:
-  if released then
-    bedhasbru=0
-    viepala=pala
-    system laye+1,0
-    gosub bed_redraw
-    gosub bed_rectangulize
-    y=laye
-    gosub bed_copy_brush
-    'switch to paste tool
-    bedtool=7 :gosub tlb_1_repaint
-  end if
+  if not beddrawn then return
+  gosub bed_rectangulize
+  bg laye
+  'unselect the entire layer
+  bg tint laybgl-laym(laye),laybgt-layn(laye) to laybgr-laym(laye),laybgb-layn(laye) pal 0
+  'paint user selection
+  bg tint l-laym(laye),t-layn(laye) to r-laym(laye),b-layn(laye) pal 1
   return
 
-bed_paste_input:
-'handle pasted copied brush
-  gosub bed_detectcell
-  if beddrawn then gosub bed_paste_brush
+bed_copy_input_1:
+'create the brush from the selection
+  viepala=pala
+  system laye+1,0
+  gosub bed_redraw
+  gosub bed_rectangulize
+  gosub bed_copy_brush
+  'switch to paste tool
+  bedtool=7
+  gosub tlb_1_repaint
+  return
+
+bed_paste_input_0:
+'paste the brush where the touch begin
+  if tap then gosub bed_paste_brush
+  return
+
+bed_paste_input_1:
+'nothing to commit, the brush was pasted in memory at once
   return
 
 bed_copy_brush:
 'will reserve memory space and copy characters
-'(in) y layer (1,2,3) for user background and 0 for charalist
 '(in) l,t,r,b AAABB selection
-  'trace "layer",y
-  'trace "aabb",l,t,r,b
   'clear previous brush
   call usrfree(16)
   'reserve memory space in file 16
@@ -2870,13 +2872,10 @@ bed_copy_brush:
     message "not enough memory"
     return
   end if
-  'trace "addr",addr
   usraddr(16)=addr :usrsize(16)=s
   usrdime(16,0)=w :usrdime(16,1)=h
   call usrcheck
-  'copy select chara to brush
-  'bg source laye,64,64
-  'bg source beda
+  'copy selected cells to the brush
   for y=t to b :for x=l to r
     'copy cell and attr
     pokew addr,peekw(beda+4+(y*bedw+x)*2)
@@ -2886,29 +2885,32 @@ bed_copy_brush:
   return
 
 bed_paste_brush:
-'will paste brush copied to memory
+'will paste the brush copied to memory at bed_ex,bed_ey, clipped to the edited layer
   if usrsize(16)=0 then
     message "nothing was copied"
     return
-  else
-    trace "laye",laye
-    bg laye :bg source beda
-    addr=usraddr(16)
-    for y=bed_ey to bed_ey+usrdime(16,1)-1 :for x=bed_ex to bed_ex+usrdime(16,0)-1
-      if x>=laybgl and x<=laybgr and y>=laybgt and y<=laybgb then
-        attr peek(addr+1)
-        'paste in video ram
-        cell x,y,peek(addr)
-        'paste in memory
-        mcell x,y,peek(addr)
-      end if
-      add addr,2
-    next x :next y
-
-    'todo: bg source
-    'todo: draw bg
-    'todo: draw mem
   end if
+  'clip the brush to the edited layer
+  l=max(bed_ex,laybgl) :t=max(bed_ey,laybgt)
+  r=min(bed_ex+usrdime(16,0)-1,laybgr) :b=min(bed_ey+usrdime(16,1)-1,laybgb)
+  if r<l or b<t then return
+  bg laye :bg source beda
+  'read the cells that are about to be overwritten, then overwrite them
+  r$="01r"+hex$(l,2)+hex$(t,2)+hex$(r,2)+hex$(b,2)
+  for y=t to b
+    for x=l to r
+      addr=usraddr(16)+((y-bed_ey)*usrdime(16,0)+(x-bed_ex))*2
+      r$=r$+hex$(mcell.a(x,y),2)+hex$(mcell.c(x,y),2)
+      attr peek(addr+1)
+      'paste in the loaded background
+      mcell x,y,peek(addr)
+    next x
+  next y
+  attr bedattr
+  gosub bed_replane
+  call statepush(bgundolst$(),bgundoidx,r$)
+  first=0
+  usrchanged(bedlife)=-1
   return
 
 bed_detectcell:
@@ -2916,6 +2918,7 @@ bed_detectcell:
 '(out) beddrawn
 '(out) bed_sx,bed_sy
 '(out) bed_ex,bed_ey
+'(out) bedinlay, only refreshed when beddrawn
   'compute cell coords of touch relative to the canvas
   x=floor((touch.x+bedx)/8/bedscale)
   y=floor((touch.y+bedy)/8/bedscale)
@@ -2938,6 +2941,8 @@ bed_detectcell:
       beddrawn=-1
     end if
   end if
+  'tell if the drawn cell is inside the edited layer
+  if beddrawn then bedinlay=(bed_ex>=laybgl and bed_ex<=laybgr and bed_ey>=laybgt and bed_ey<=laybgb)
   return
 
 bed_rectangulize:
@@ -2958,6 +2963,99 @@ bed_attr:
   if bedverti then bedattr=bedattr or %10000
   if bedprio then bedattr=bedattr or %100000
   'trace "attr",bin$(bedattr)
+  return
+
+bed_undo:
+'undo the last recorded state
+'a state is homogeneous: all "d", one "r", or one "s" and its settings, so the opcode is
+'read once by peeking at the 3rd character
+  if bgundoidx<0 then goto bed_undo_none
+  s$="" :i=1 :l=0 :v=0
+  call staterewind(bgundolst$(),bgundoidx,s$)
+  if s$="" then goto bed_undo_none
+  'the state is history now, the next setting change must open a new one
+  first=-1
+  c$=mid$(s$,3,1)
+  if c$="s" then goto bed_undo_settings
+  call readhex(s$,i,l)
+  bg laye :bg source beda
+  if c$="r" then
+    i=4
+    call readhex(s$,i,x1) :call readhex(s$,i,y1)
+    call readhex(s$,i,x2) :call readhex(s$,i,y2)
+    for y=y1 to y2
+      for x=x1 to x2
+        'the attribute comes first, mcell writes the current attr with the character
+        call readhex(s$,i,v) :attr v
+        call readhex(s$,i,v)
+        'mcell checks the address it computes, never the coordinates: without this a
+        'stale state would poke into the next loaded file
+        if x>=0 and x<bedw and y>=0 and y<bedh then mcell x,y,v
+      next x
+    next y
+  else if c$="d" then
+    'replay backwards. bed_detectcell fires on a cell change, not on a new cell, so a drag
+    'coming back over a cell records it twice and only the oldest record holds the value
+    'the cell had before the gesture. records are 9 chars wide, record k starts at 3+9*k
+    while l>0
+      dec l
+      i=4+l*9
+      call readhex(s$,i,x1) :call readhex(s$,i,y1)
+      call readhex(s$,i,v) :attr v
+      call readhex(s$,i,v)
+      if x1>=0 and x1<bedw and y1>=0 and y1<bedh then mcell x1,y1,v
+    wend
+  end if
+  attr bedattr
+  usrchanged(bedlife)=-1
+  gosub bed_replane
+  return
+
+bed_undo_none:
+  message "nothing to undo"
+  return
+
+bed_replane:
+'repaint the whole meaningful part of the canvas layer from memory in one call: only the
+'cells the progressive renderer has drawn, which is everything the 64x64 plane can hold.
+'bg copy caps its width and height at 64, and a layer wider than that cannot be restored
+'whole anyway.
+  if infcr<infcl or infcb<infct then return
+  bg laye :bg source beda
+  bg copy infcl,infct,infcr-infcl+1,infcb-infct+1 to infcl-laym(laye),infct-layn(laye)
+  return
+
+bed_undo_settings:
+'one "s" followed by l records of a tag and a hex value. unlike "d" the opcode letter is
+'written once for the whole group, and the count is the number of settings behind it
+  i=1 :call readhex(s$,i,l)
+  i=4
+  while l>0
+    dec l
+    call readchr(s$,i,c$)
+    call readhex(s$,i,v)
+    if c$="l" then
+      call uselayer(v) :call updlayer(laye)
+      cnvchanged=-1
+    else if c$="p" then
+      call usepal(v)
+    else if c$="f" then
+      bedhoriz=0 :if v and %10 then bedhoriz=-1
+      bedverti=0 :if v and %1 then bedverti=-1
+    else if c$="c" then
+      lstchara=v
+    else if c$="t" then
+      bedtool=v\16 :bedoldt=v and %1111
+    else if c$="r" then
+      bedprio=0 :if v then bedprio=-1
+    end if
+  wend
+  'refresh once, after the loop: flt_update clobbers i,l,x,y,t,r,b and tlb_0_repaint x1,y1
+  gosub bed_attr
+  fltcursor=abs(bedtool>=1 and bedtool<=3)
+  if fltcursor then gosub flt_update
+  if tlb=0 then gosub tlb_0_repaint
+  if tlb=1 then gosub tlb_1_repaint
   return
 
 
@@ -3393,6 +3491,8 @@ fltg_0_none:
   'detect character number
   x=(touch.x+lstx)\16
   y=(touch.y+lsty-fltcurr)\16
+  'the charalist is shared with chared, only backed keeps an undo list
+  if editor=1 then call statepushsetting(bgundolst$(),bgundoidx,"c",lstchara,first)
   lstchara=x+y*16
   'report to other part of the code
   lstchanged=-1
@@ -3775,7 +3875,7 @@ tlb_0_input:
 
 tlb_0_pan: 'wid=0
 'enable panning tool
-  call statepushsetting(bgundolst$(),bgundoidx,"t",bedtool*16+bedoldt)
+  call statepushsetting(bgundolst$(),bgundoidx,"t",bedtool*16+bedoldt,first)
   bedtool=0
   fltcursor=0
   call ungesture
@@ -3796,20 +3896,24 @@ tlb_0_zoom: 'wid=1
 
 tlb_0_horiz: 'wid=2
 'toogle horizontal flip
-  call statepushsetting(bgundolst$(),bgundoidx,"f",bedhoriz*2+bedverti)
+'the flags are booleans, 0 or -1, and hex$ masks a negative: abs keeps them one bit wide
+  call statepushsetting(bgundolst$(),bgundoidx,"f",abs(bedhoriz)*2+abs(bedverti),first)
   bedhoriz=not bedhoriz
+  gosub bed_attr
   goto tlb_0_repaint
 
 tlb_0_verti: 'wid=3
 'toggle vertical flip
-  call statepushsetting(bgundolst$(),bgundoidx,"f",bedhoriz*2+bedverti)
+  call statepushsetting(bgundolst$(),bgundoidx,"f",abs(bedhoriz)*2+abs(bedverti),first)
   bedverti=not bedverti
+  gosub bed_attr
   goto tlb_0_repaint
 
 tlb_0_prio: 'wid=4
 'toggle priority over sprites
-  call statepushsetting(bgundolst$(),bgundoidx,"r",bedhoriz*2+bedverti)
+  call statepushsetting(bgundolst$(),bgundoidx,"r",abs(bedprio),first)
   bedprio=not bedprio
+  gosub bed_attr
   goto tlb_0_repaint
 
 tlb_0_pal: 'wid=5
@@ -3822,7 +3926,7 @@ tlb_0_layer: 'wid=6
 'show layer chooser
   message "not implemented"
   return
-  ' call statepushsetting(bgundolst$(),bgundoidx,"l",laye)
+  ' call statepushsetting(bgundolst$(),bgundoidx,"l",laye,first)
   ' for i=0 to 2
   '   add laye,1,1 to 3
   '   if layfile(laye)>=0 then exit
@@ -3833,6 +3937,7 @@ tlb_0_layer: 'wid=6
 tlb_0_draw: 'wid=7
 'the current drawing tool
   call ungesture
+  call statepushsetting(bgundolst$(),bgundoidx,"t",bedtool*16+bedoldt,first)
   if bedtool<>bedoldt then
     bedtool=bedoldt
     fltcursor=1 :gosub flt_update
@@ -3844,8 +3949,8 @@ tlb_0_draw: 'wid=7
 
 tlb_0_undo: 'wid=8
 'undo last action
-  message "undo not implemented"
-  return
+  call ungesture
+  goto bed_undo
 
 tlb_0_file: :'wid=9
 'show the file menu
@@ -3920,7 +4025,7 @@ tlb_1_redraw:
   return
 
 tlb_1_data:
-  data 7 :'number of widget
+  data 8 :'number of widget
   data 7,0,12,2 :'wid=0 back
   data 14,0,19,2 :'wid=1 zoom
   data 2,4,7,6 :'wid=2 draw
@@ -3928,12 +4033,14 @@ tlb_1_data:
   data 15,4,20,6 :'wid=4 copy
   data 2,0,6,2 :'wid=5 pan
   data 21,4,26,6 :'wid=6 paste
+  data 21,0,26,2 :'wid=7 undo
 tlb_1_input:
-  on wid goto tlb_1_back, tlb_0_zoom, tlb_1_draw, tlb_1_rect, tlb_1_copy, tlb_1_pan, tlb_1_paste
+  on wid goto tlb_1_back, tlb_0_zoom, tlb_1_draw, tlb_1_rect, tlb_1_copy, tlb_1_pan, tlb_1_paste, tlb_0_undo
 
 tlb_1_back: 'wid=0
 'go back to the first toolbar of backed
   call ungesture
+  call statepushsetting(bgundolst$(),bgundoidx,"t",bedtool*16+bedoldt,first)
   tlb=0 :tlbchanged=-1
   if bedoldt>=6 and bedoldt<=7 then bedoldt=1
   if bedtool>=6 and bedtool<=7 then bedtool=bedoldt
@@ -3946,20 +4053,21 @@ tlb_1_back: 'wid=0
 tlb_1_draw: 'wid=2
 'the current drawing tool
   call ungesture
+  call statepushsetting(bgundolst$(),bgundoidx,"t",bedtool*16+bedoldt,first)
   bedtool=1 :bedoldt=1
   fltcursor=1 :gosub flt_update
   goto tlb_1_repaint
 
 tlb_1_rect: 'wid=3
 'select rectangle drawing tool
-  'message "not finished"
-  'return
+  call statepushsetting(bgundolst$(),bgundoidx,"t",bedtool*16+bedoldt,first)
   bedtool=2 :bedoldt=2
   goto tlb_1_repaint
 
 tlb_1_copy: 'wid=4
 'copy rectangle region
   call ungesture
+  call statepushsetting(bgundolst$(),bgundoidx,"t",bedtool*16+bedoldt,first)
   fltcursor=0
   bedtool=6
   goto tlb_1_repaint
@@ -3967,6 +4075,7 @@ tlb_1_copy: 'wid=4
 tlb_1_pan: 'wid=5
 'enable panning tool
   call ungesture
+  call statepushsetting(bgundolst$(),bgundoidx,"t",bedtool*16+bedoldt,first)
   if bedtool<>0 then bedoldt=bedtool
   fltcursor=0
   bedtool=0
@@ -3975,6 +4084,7 @@ tlb_1_pan: 'wid=5
 tlb_1_paste: 'wid=6
 'enable pasting brush
   call ungesture
+  call statepushsetting(bgundolst$(),bgundoidx,"t",bedtool*16+bedoldt,first)
   fltcursor=0
   bedtool=7
   goto tlb_1_repaint
@@ -4105,6 +4215,8 @@ tlb_2_load: 'wid=2
     'a freed file, and uselayer would then cache beda=0, aiming the editor at the characters.
     if err<>0 then return
     message "file #"+hex$(bedlife)+" loaded"
+    'the recorded states name cells of the background being replaced
+    bgundoidx=-1 :first=-1
     call stplayer(3,bedlife)
     call uselayer(3)
     call updlayer(laye)
@@ -4198,6 +4310,7 @@ tlb_2_reaction:
   return
 
 tlb_2_new:
+trace"=tlb_2_new"
   if fedmode=0 then
     call ungesture
     tlb=6
@@ -4268,6 +4381,8 @@ tlb_3_pal: 'wid=0..7
   if tapped then
     'paint old button to grey
     bg copy pale*6,0,6,3 to (pale mod 4)*6+2,(pale\4)*4
+    'tlb_3 is shared by backed, chared and ranged
+    if editor=1 then call statepushsetting(bgundolst$(),bgundoidx,"p",pale,first)
     call usepal(wid)
   end if
   'paint new button to pink
@@ -4463,6 +4578,7 @@ tlb_6_back: 'wid=0
   return
 
 tlb_6_width:
+trace"=tlb_6_width"
   tlb_6_x=8 :tlb_6_v=tlb_6_w
   gosub tlb_6_dim
   keyboard on
@@ -4535,6 +4651,7 @@ tlb_6_edit:
   return
 
 tlb_6_new:
+trace"=tlb_6_new"
 'erase current file and create a new one
   'todo: check for changes not saved
   if addr<=0 then return
@@ -4543,6 +4660,8 @@ tlb_6_new:
     call usrnewbg(tlb_6_w,tlb_6_h,fedlife,bedlife,err)
     'nothing was created, the previous background is still the one loaded
     if err<>0 then return
+    'the recorded states name cells of the background being replaced
+    bgundoidx=-1 :first=-1
     call stplayer(3,bedlife)
     call uselayer(3)
     call updlayer(laye)
