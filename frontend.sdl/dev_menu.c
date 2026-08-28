@@ -54,7 +54,6 @@ static const struct DevShortcut devShortcuts[] = {
 	{"D", NULL},
 	{"E", "EJECT"},
 	{"S", "SCREENSHOT"},
-	{"Z", "ZOOM"},
 	{"+/-", "VOLUME"},
 };
 
