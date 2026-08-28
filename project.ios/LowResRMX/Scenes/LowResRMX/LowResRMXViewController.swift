@@ -305,6 +305,7 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
 	override func viewDidAppear(_ animated: Bool)
 	{
 		super.viewDidAppear(animated)
+		audioPlayer?.start()
 		displayLink?.add(to: .current, forMode: .default)
 		checkShowError()
 	}
