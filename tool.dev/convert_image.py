@@ -15,6 +15,7 @@ Requires Pillow -- see SETUP.md.
 """
 
 import argparse
+import math
 import os
 import sys
 from collections import Counter
@@ -336,19 +337,40 @@ def tile_variants(pixels, use_flips):
 	]
 
 
-def pack_planes(pixels):
-	"""Two 64-bit ints, so tile distance is a pair of XOR popcounts instead of 64 compares."""
-	low = 0
-	high = 0
+def palette_levels(palette):
+	"""Rank a palette's four slots by Oklab lightness.
+
+	Slot numbers themselves carry no color meaning -- choose_palette_colors hands them out in
+	greedy frequency order -- so comparing tiles by slot index measures nothing. Ranking by
+	lightness gives the ordering the raw indices lack.
+	"""
+	order = sorted(range(PALETTE_SIZE), key=lambda slot: MASTER_LAB[palette[slot]][0])
+	levels = [0] * PALETTE_SIZE
+	for rank, slot in enumerate(order):
+		levels[slot] = rank
+	return levels
+
+
+def pack_thermometer(pixels, levels):
+	"""Three 64-bit planes holding each pixel's lightness rank in thermometer code.
+
+	0 -> 000, 1 -> 001, 2 -> 011, 3 -> 111. Hamming distance over this encoding is exactly the
+	difference in rank, so tile distance stays three XOR popcounts while becoming monotone in
+	how different the pixels actually look.
+	"""
+	first = 0
+	second = 0
+	third = 0
 	for value in pixels:
-		low = (low << 1) | (value & 1)
-		high = (high << 1) | ((value >> 1) & 1)
-	return low, high
+		level = levels[value]
+		first = (first << 1) | (level >= 1)
+		second = (second << 1) | (level >= 2)
+		third = (third << 1) | (level >= 3)
+	return first, second, third
 
 
-def character_distance(a, b):
-	# The high plane carries twice the color-index weight, so it counts double.
-	return (a[0] ^ b[0]).bit_count() + 2 * (a[1] ^ b[1]).bit_count()
+def thermometer_distance(a, b):
+	return ((a[0] ^ b[0]).bit_count() + (a[1] ^ b[1]).bit_count() + (a[2] ^ b[2]).bit_count())
 
 
 # --- ROM entries ------------------------------------------------------------------------
@@ -469,57 +491,101 @@ def dedupe_characters(quantized, use_flips):
 	return characters, cells
 
 
-def merge_characters(characters, cells, budget, use_flips):
-	"""Drop the character count to `budget` by remapping rare characters onto common ones.
+def merge_characters(characters, cells, budget, use_flips, palettes, assignment, passes):
+	"""Cluster the characters down to `budget` with k-means.
 
-	Flips compose by XOR, so if a dropped character is best matched by orientation `h` of an
-	anchor, a cell that reached it through flip `g` reaches the anchor through `g ^ h`.
+	Picking the most-used tiles as anchors and snapping the rest onto them looks reasonable but
+	biases the result spatially: on a photo most characters are used exactly once, so the ranking
+	falls through to a tie-break on first-seen order and the top of the image is kept verbatim
+	while the bottom is merged away. Clustering removes that -- every character can move, and a
+	cluster's representative is recomputed as the compromise that costs its members least, so a
+	character already in use degrades a little in order to serve several cells.
+
+	Flips compose by XOR: if a member matched orientation `h` of its cluster, a cell that reached
+	that member through flip `g` reaches the representative through `g ^ h`.
 	"""
 	if len(characters) <= budget:
 		return characters, cells, 0, 0.0
 
 	usage = Counter(index for index, _flip in cells)
-	usage[0] = usage.get(0, 0) + len(cells)  # character 0 is reserved, never merged away
-	ranked = sorted(range(len(characters)), key=lambda i: (-usage.get(i, 0), i))
-	anchors = sorted(ranked[:budget])
-	anchor_set = set(anchors)
+	# Each character is compared under the palette it is mostly drawn with.
+	palette_of = {}
+	for index, (character, _flip) in enumerate(cells):
+		palette_of.setdefault(character, Counter())[assignment[index]] += 1
+	palette_of = {c: p.most_common(1)[0][0] for c, p in palette_of.items()}
 
-	packed = [pack_planes(pixels) for pixels in characters]
-	anchor_variants = []
-	for anchor in anchors:
-		variants = []
-		for variant, flip in tile_variants(characters[anchor], use_flips):
-			variants.append((pack_planes(variant), flip, anchor))
-		anchor_variants.append(variants)
+	levels = [palette_levels(palette) for palette in palettes]
+	# Cost of drawing slot `a` as slot `b`, per palette, in Oklab distance.
+	slot_cost = [
+		[[math.sqrt(COLOR_DIST[palette[a]][palette[b]]) for b in range(PALETTE_SIZE)]
+			for a in range(PALETTE_SIZE)]
+		for palette in palettes
+	]
 
-	remap = {}
-	total_error = 0
-	for index in range(len(characters)):
-		if index in anchor_set:
-			continue
-		source = packed[index]
-		best = None
-		for variants in anchor_variants:
-			for candidate, flip, anchor in variants:
-				distance = character_distance(source, candidate)
-				if best is None or distance < best[0]:
-					best = (distance, anchor, flip)
-		remap[index] = (best[1], best[2])
-		total_error += best[0] * usage.get(index, 0)
+	# Seed with the most-used characters, tie-broken deterministically but without positional
+	# meaning, so the starting set is not itself biased toward the top of the image.
+	ranked = sorted(range(1, len(characters)),
+		key=lambda i: (-usage.get(i, 0), hash(characters[i])))
+	centroids = [BLANK_CHARACTER] + [characters[i] for i in ranked[:budget - 1]]
 
-	renumber = {anchor: position for position, anchor in enumerate(anchors)}
-	new_characters = [characters[anchor] for anchor in anchors]
-	new_cells = []
-	for index, flip in cells:
-		if index in remap:
-			anchor, extra = remap[index]
-			new_cells.append((renumber[anchor], flip ^ extra))
-		else:
-			new_cells.append((renumber[index], flip))
+	packed = [pack_thermometer(characters[i], levels[palette_of.get(i, 0)])
+		for i in range(len(characters))]
 
-	merged = len(characters) - budget
-	mean_error = total_error / (len(cells) * PIXELS_PER_CHAR) if cells else 0.0
-	return new_characters, new_cells, merged, mean_error
+	mapping = None
+	for _pass in range(passes):
+		# Pack every centroid orientation once per palette, not once per comparison -- there are
+		# only 8 palettes, and doing this inside the loop below costs 25x the total runtime.
+		centroid_packs = [
+			[[(pack_thermometer(variant, level), flip)
+				for variant, flip in tile_variants(centroid, use_flips)]
+				for level in levels]
+			for centroid in centroids
+		]
+		members = [[] for _ in centroids]
+		mapping = {0: (0, 0)}
+		for index in range(1, len(characters)):
+			source = packed[index]
+			palette = palette_of.get(index, 0)
+			best = None
+			for cluster in range(len(centroids)):
+				for candidate, flip in centroid_packs[cluster][palette]:
+					distance = thermometer_distance(source, candidate)
+					if best is None or distance < best[0]:
+						best = (distance, cluster, flip)
+			mapping[index] = (best[1], best[2])
+			members[best[1]].append((index, best[2]))
+
+		for cluster in range(1, len(centroids)):
+			if not members[cluster]:
+				continue
+			# Per pixel, the slot whose total weighted color error across the members is lowest.
+			totals = [[0.0] * PALETTE_SIZE for _ in range(PIXELS_PER_CHAR)]
+			for index, flip in members[cluster]:
+				pixels = flip_pixels(characters[index], flip & ATTR_FLIP_X, flip & ATTR_FLIP_Y)
+				weight = usage.get(index, 1)
+				costs = slot_cost[palette_of.get(index, 0)]
+				for position, value in enumerate(pixels):
+					row = costs[value]
+					total = totals[position]
+					for slot in range(PALETTE_SIZE):
+						total[slot] += weight * row[slot]
+			centroids[cluster] = tuple(
+				min(range(PALETTE_SIZE), key=lambda slot: total[slot]) for total in totals)
+
+	new_cells = [(mapping[index][0], flip ^ mapping[index][1]) for index, flip in cells]
+
+	# Mean Oklab distance per pixel between what each cell asked for and what it now draws.
+	error = 0.0
+	for index, (character, flip) in enumerate(new_cells):
+		costs = slot_cost[assignment[index]]
+		old_character, old_flip = cells[index]
+		wanted = flip_pixels(characters[old_character], old_flip & ATTR_FLIP_X, old_flip & ATTR_FLIP_Y)
+		drawn = flip_pixels(centroids[character], flip & ATTR_FLIP_X, flip & ATTR_FLIP_Y)
+		for a, b in zip(wanted, drawn):
+			if a != b:
+				error += costs[a][b]
+	mean_error = error / (len(new_cells) * PIXELS_PER_CHAR) if new_cells else 0.0
+	return centroids, new_cells, len(characters) - budget, mean_error
 
 
 def render_preview(palette_bytes, character_bytes, cells, cells_x, cells_y):
@@ -578,6 +644,8 @@ def main():
 	parser.add_argument("--no-preview", action="store_true", help="skip the PNG preview")
 	parser.add_argument("--iterations", type=int, default=8,
 		help="palette clustering passes (default 8)")
+	parser.add_argument("--merge-passes", type=int, default=4,
+		help="character clustering passes, used only when over budget (default 4)")
 	args = parser.parse_args()
 
 	if not 1 <= args.characters <= MAX_CHARACTERS:
@@ -612,7 +680,8 @@ def main():
 	characters, cells = dedupe_characters(quantized, not args.no_flip)
 	unique = len(characters)
 	characters, cells, merged, mean_error = merge_characters(
-		characters, cells, args.characters, not args.no_flip)
+		characters, cells, args.characters, not args.no_flip, palettes, assignment,
+		max(1, args.merge_passes))
 
 	cells = [
 		(character, flip | assignment[index])
@@ -661,8 +730,8 @@ def main():
 		% (len(palettes), backdrop, " (slot 0 free)" if args.free_color0 else ""),
 		file=sys.stderr)
 	if merged:
-		print("characters: %d unique -> %d, merged %d, mean error %.2f%%"
-			% (unique, len(characters), merged, mean_error * 100.0 / 3.0), file=sys.stderr)
+		print("characters: %d unique -> %d, merged %d, mean error %.4f per pixel"
+			% (unique, len(characters), merged, mean_error), file=sys.stderr)
 	else:
 		print("characters: %d of %d" % (len(characters), args.characters), file=sys.stderr)
 	print("wrote %s%s" % (output_path, " and " + preview_path if preview_path else ""),

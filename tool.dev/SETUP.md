@@ -9,6 +9,7 @@ for node installed with brew:
 python3 -m venv venv
 . venv/bin/activate
 pip3 install markdown-it-py[plugins]
+pip3 install Pillow
 
 
 
