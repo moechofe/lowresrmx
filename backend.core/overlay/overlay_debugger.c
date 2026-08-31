@@ -333,7 +333,7 @@ static void process_command_line(struct Core *core)
 			core->overlay->textLib.cursorY = 0;
 			core->interpreter->state = StateEvaluate;
 
-			struct ControlsInfo info;
+			struct ControlsInfo info = {0};
 			info.keyboardMode = KeyboardModeOff;
 #if SIMULATED_KEYBOARD
 			core->interpreter->simulatedKeyboardOn = false;
@@ -647,7 +647,7 @@ void overlay_debugger(struct Core *core)
 	struct TextLib *lib = &core->overlay->textLib;
 	struct Overlay *overlay = core->overlay;
 
-	struct ControlsInfo info;
+	struct ControlsInfo info = {0};
 	info.keyboardMode = KeyboardModeOn;
 #ifdef SIMULATED_KEYBOARD
 	core->interpreter->simulatedKeyboardOn = true;

@@ -3040,18 +3040,18 @@ Enabling the _double size_ will make the background layer rendered at twice the 
 
 Trigger an haptic feedback on the device make it vibrate using a `pattern` (0..9).
 
-| pattern | feeling   |
-| -------:| --------- |
-|       0 |           |
-|       1 | tok-tirti |
-|       2 | tok-tik   |
-|       3 | took-ti   |
-|       4 | took      |
-|       5 | tik       |
-|       6 | tok       |
-|       7 | ti        |
-|       8 | tf        |
-|       9 | t         |
+| pattern | name      | feels like                             |
+| -------:| --------- | -------------------------------------- |
+|       0 | none      | nothing                                |
+|       1 | error     | 4 taps, the last one weaker and duller |
+|       2 | warning   | 2 taps, the second one weaker          |
+|       3 | success   | 2 taps, the second one stronger        |
+|       4 | heavy     | 1 strong tap                           |
+|       5 | light     | 1 gentle tap                           |
+|       6 | medium    | 1 tap                                  |
+|       7 | rigid     | 1 short and very sharp tap             |
+|       8 | soft      | 1 long and dull tap                    |
+|       9 | selection | 1 tiny crisp tick                      |
 
 Not supported on all devices.
 

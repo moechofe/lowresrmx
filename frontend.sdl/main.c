@@ -22,6 +22,7 @@
 #include "config.h"
 #include "core.h"
 #include "dev_menu.h"
+#include "haptic.h"
 #include "runner.h"
 #include "sdl_include.h"
 #include "settings.h"
@@ -95,7 +96,6 @@ void toggleZoom(void);
 void changeVolume(int delta);
 void audioCallback(void *userdata, SDL_AudioStream *stream, int additional_amount, int total_amount);
 void saveScreenshot(void *pixels, int scale);
-void initHaptic();
 
 bool eventFilter(void *userdata, SDL_Event *event)
 {
@@ -114,7 +114,6 @@ SDL_Window *window = NULL;
 SDL_Renderer *renderer = NULL;
 SDL_Texture *texture = NULL;
 SDL_AudioStream *audioStream = NULL;
-SDL_Haptic *haptic = NULL;
 #if SDL_SCALING
 float rendererScale = 1;
 #endif
@@ -212,7 +211,7 @@ int main(int argc, const char *argv[])
 			SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &desiredAudioSpec, &audioCallback, runner.core);
 
 		// Used and android for haptic feedback and keyboard closed
-		initHaptic();
+		haptic_init();
 
 		SDL_AddEventWatch(&eventFilter, runner.core);
 
@@ -254,6 +253,8 @@ int main(int argc, const char *argv[])
 	}
 
 	// closeJoysticks();
+
+	haptic_deinit();
 
 	SDL_DestroyAudioStream(audioStream);
 
@@ -453,6 +454,8 @@ void update(void *arg)
 	SDL_Event event;
 	bool hasInput = false;
 	bool forceRender = false;
+
+	haptic_update();
 
 	if(releasedTouch)
 	{
@@ -1089,21 +1092,3 @@ void onerror(const char *filename)
 }
 
 #endif
-
-void initHaptic()
-{
-	SDL_HapticID *haptics = SDL_GetHaptics(NULL);
-	if(haptics)
-	{
-		haptic = SDL_OpenHaptic(haptics[0]);
-		if(!haptic)
-			SDL_Log("Haptic: %s", SDL_GetError());
-		SDL_free(haptics);
-	}
-
-	if(!haptic)
-		return;
-
-	if(!SDL_InitHapticRumble(haptic))
-		return;
-}
