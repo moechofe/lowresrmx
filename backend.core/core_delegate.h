@@ -53,6 +53,7 @@ struct ControlsInfo
 	bool isAudioEnabled;
 	bool isInputState;
 	bool isCompatMode;
+	bool isPortraitLocked;
 };
 
 struct CoreDelegate

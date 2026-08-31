@@ -97,6 +97,7 @@ struct Interpreter
 
 	bool compat;
 	bool simulatedKeyboardOn;
+	bool lockPortrait;
 
 	struct Tokenizer tokenizer;
 

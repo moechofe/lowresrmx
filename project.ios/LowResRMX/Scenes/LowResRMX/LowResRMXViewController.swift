@@ -64,6 +64,16 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
 	var screenHeight: CGFloat = 0.0
 
 	var isCompatMode: Bool = false
+	var isPortraitLocked: Bool = false
+	{
+		didSet
+		{
+			if isPortraitLocked != oldValue
+			{
+				applyOrientationLock()
+			}
+		}
+	}
 
 	// safe area insets
 	var top: CGFloat = 0.0
@@ -280,21 +290,42 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
 			object: nil
 		)
 
-		// Sauce: https://developer.apple.com/forums/thread/110064
-		let value = UIInterfaceOrientation.portrait.rawValue
-		UIDevice.current.setValue(value, forKey: "orientation")
+		applyOrientationLock()
 	}
 
 	// Saurce: https://developer.apple.com/forums/thread/110064
 	override var supportedInterfaceOrientations: UIInterfaceOrientationMask
 	{
-		.portrait
+		isPortraitLocked ? .portrait : .all
 	}
 
 	// Saurce: https://developer.apple.com/forums/thread/110064
 	override var shouldAutorotate: Bool
 	{
 		true
+	}
+
+	/// Ask UIKit to re-read `supportedInterfaceOrientations`, and snap back to portrait when the
+	/// program locked it while the device is held in landscape.
+	/// Sauce: https://developer.apple.com/forums/thread/110064
+	private func applyOrientationLock()
+	{
+		if #available(iOS 16.0, *)
+		{
+			setNeedsUpdateOfSupportedInterfaceOrientations()
+			if isPortraitLocked, let windowScene = view.window?.windowScene
+			{
+				windowScene.requestGeometryUpdate(.iOS(interfaceOrientations: .portrait))
+			}
+		}
+		else
+		{
+			if isPortraitLocked
+			{
+				UIDevice.current.setValue(UIInterfaceOrientation.portrait.rawValue, forKey: "orientation")
+			}
+			UIViewController.attemptRotationToDeviceOrientation()
+		}
 	}
 
 	deinit
@@ -1065,6 +1096,7 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
 				self.isCompatMode = true
 				self.view.setNeedsLayout()
 			}
+			self.isPortraitLocked = controlsInfo.isPortraitLocked
 		}
 	}
 

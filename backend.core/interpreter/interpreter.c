@@ -116,6 +116,7 @@ struct CoreError itp_compileProgram(struct Core *core, const char *sourceCode)
 	interpreter->numLabelStackItems = 0;
 	interpreter->isSingleLineIf = false;
 	interpreter->compat = false;
+	interpreter->lockPortrait = false;
 
 	enum ErrorCode errorCode;
 	do

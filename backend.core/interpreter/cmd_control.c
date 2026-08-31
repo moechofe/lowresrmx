@@ -1141,7 +1141,7 @@ enum ErrorCode cmd_SYSTEM(struct Core *core)
 	++interpreter->pc;
 
 	// type value
-	struct TypedValue tValue = itp_evaluateNumericExpression(core, 0, 8);
+	struct TypedValue tValue = itp_evaluateNumericExpression(core, 0, 9);
 	if(tValue.type == ValueTypeError)
 		return tValue.v.errorCode;
 
@@ -1193,6 +1193,11 @@ enum ErrorCode cmd_SYSTEM(struct Core *core)
 
 		case 8:
 			core->machine->videoRegisters.attr.planeDDoubled = (sValue.v.floatValue != 0.0f);
+			break;
+
+		case 9:
+			interpreter->lockPortrait = (sValue.v.floatValue != 0.0f);
+			delegate_controlsDidChange(core);
 			break;
 		}
 	}
