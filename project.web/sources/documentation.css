@@ -1,21 +1,6 @@
 :root { color-scheme: light dark; }
 :target { scroll-margin-top: 2em; }
 
-/* Dark mode for WKWebView on iOS < 17.5 */
-@media (prefers-color-scheme: dark) {
-	body { background-color: #171717; color: #eee; }
-	hr { border-top-color: #444; }
-	code { background-color: #444; }
-	pre { background-color: #333; }
-	table thead, table tr:not(:last-child) { border-bottom-color: #444; }
-	blockquote { background: #2a2320; }
-	blockquote::before { color: #945d34; }
-	blockquote code { background-color: #4a3a2e; }
-	h2::before, h3::before { background: #666; }
-	h4, h5 { background-color: #468; }
-	h4::before, h5::before { background-color: #2cf; }
-}
-
 html { font-size: 1.1em; }
 * { font-size: 1em; font-family: system-ui; }
 body { margin: 1.5em; overflow-x: hidden; background-color: #fff; color: #222; }
@@ -58,6 +43,22 @@ h1:focus, h2:focus, h3:focus, h4:focus, h5:focus, h6:focus, [id]:focus { outline
 
 h2:first-child::before { display: none; }
 h2:first-child { margin-top: 0; }
+
+/* Dark mode for WKWebView on iOS < 17.5 */
+@media (prefers-color-scheme: dark) {
+	body { background-color: #171717; color: #eee; }
+	hr { border-top-color: #444; }
+	code { background-color: #444; }
+	pre { background-color: #333; }
+	table thead, table tr:not(:last-child) { border-bottom-color: #444; }
+	blockquote { background: #2a2320; }
+	blockquote::before { color: #945d34; }
+	blockquote code { background-color: #4a3a2e; }
+	h2::before, h3::before { background: #666; }
+	h4, h5 { background-color: #468; }
+	h4::before, h5::before { background-color: #2cf; }
+	code, pre { background-color: #666; color: #fff; }
+}
 
 .famicube{display:flex;flex-wrap:wrap}
 .famicube div{font-family: monospace; font-weight: bold; padding: 0.8em 1em; width: 2em; font-size: 1.2em; text-align: center;}

@@ -3026,6 +3026,7 @@ Sets the `value` to system `setting`.
 |       6 | double size for layer 1     | 0 or 1 |
 |       7 | double size for layer 2     | 0 or 1 |
 |       8 | double size for layer 3     | 0 or 1 |
+|       9 | locked in portrait          | 0 or 1 |
 
 Enabling the _energy saving mode_ setting will reduce the refresh rate whenever there is no user input. The CPU cycles are not affected.
 

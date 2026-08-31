@@ -6,7 +6,7 @@ html {
 body {
 	margin: 0;
 	display: flex;
-	gap: 1em;
+	gap: 0;
 	overflow: hidden;
 	height: 100%;
 }
@@ -29,6 +29,7 @@ article {
 	height: 100%;
 	overflow-x: hidden;
 	overflow-y: scroll;
+	padding-left: 1.75em;
 }
 
 aside li { padding: 0; line-height: 1em; }
@@ -44,6 +45,16 @@ aside:not(.open) li.h3:has(+ li.h4) > a::before {
 	border-radius: 0.25em;
 	padding: 0 0.5em;
 	margin-right: 0.25em;
+}
+
+@media (prefers-color-scheme: dark) {
+	aside li a { color: #ddd; }
+	aside li.h2 { background-color: #945d34; }
+	aside li.h3 { background-color: #333; }
+	aside li.h4 { border-bottom-color: #444; }
+	aside:not(.open) li.h3:has(+ li.h4) > a::before {
+		background-color: #444;
+	}
 }
 
 @media (max-width:700px) {
