@@ -37,3 +37,10 @@
 
         Change `resources.color` value with your color.
 
+# Generate APK
+
+    1. Build >> Generate Signed Bundle or APK >> Android App Bundle
+
+        And follow https://developer.android.com/studio/publish/app-signing?utm_source=android-studio-app&utm_medium=app#generate-key
+
+    2. locate the bundle in `app/release`
