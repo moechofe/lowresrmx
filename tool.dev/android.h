@@ -25,3 +25,4 @@
 #include "utils.h"
 #include "main.h"
 
+#include "haptic.h"
