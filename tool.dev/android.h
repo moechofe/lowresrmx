@@ -17,6 +17,7 @@
 #include "globmatch.h"
 #include "config.h"
 #include "sdl_include.h"
+#include "haptic.h"
 #include "runner.h"
 #include "screenshot.h"
 #include "settings.h"
@@ -25,4 +26,3 @@
 #include "utils.h"
 #include "main.h"
 
-#include "haptic.h"
