@@ -26,7 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface HelpContent : NSObject <NSXMLParserDelegate>
 
 @property (readonly) NSURL *url;
-@property (readonly) NSString *manualHtml;
+@property (readonly, nullable) NSString *manualHtml;
 @property (readonly) NSMutableArray *chapters;
 
 - (instancetype)initWithURL:(NSURL *)url;

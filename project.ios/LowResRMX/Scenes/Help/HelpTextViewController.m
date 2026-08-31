@@ -33,6 +33,8 @@
 @property (strong, nonatomic) HelpChapter *lastFoundChapter;
 @property (strong, nonatomic) NSArray<HelpChapter *> *lastSearchResults;
 
+- (void)reloadManual;
+
 @end
 
 @implementation HelpTextViewController
@@ -54,7 +56,29 @@
 
 	[self injectColorSchemeSupport];
 
+	[self reloadManual];
+}
+
+- (void)viewWillAppear:(BOOL)animated
+{
+	[super viewWillAppear:animated];
+
+	// iOS can kill the WebKit process, reload it
+	if (self.webView.URL == nil && !self.webView.isLoading)
+	{
+		[self reloadManual];
+	}
+}
+
+- (void)reloadManual
+{
 	HelpContent *helpContent = AppController.shared.helpContent;
+	if (helpContent.manualHtml == nil)
+	{
+		NSLog(@"Help manual could not be read from %@", helpContent.url);
+		return;
+	}
+	// self.chapter is re-applied by didFinishNavigation:, so the reader keeps their place.
 	[self.webView loadHTMLString:helpContent.manualHtml baseURL:helpContent.url];
 }
 
@@ -120,6 +144,28 @@
 	if (self.chapter)
 	{
 		[self jumpToChapter:self.chapter];
+	}
+}
+
+- (void)webView:(WKWebView *)webView didFailNavigation:(WKNavigation *)navigation withError:(NSError *)error
+{
+	[self.activityView stopAnimating];
+	NSLog(@"Help load failed: %@", error.localizedDescription);
+}
+
+- (void)webView:(WKWebView *)webView didFailProvisionalNavigation:(WKNavigation *)navigation withError:(NSError *)error
+{
+	[self.activityView stopAnimating];
+	NSLog(@"Help provisional load failed: %@", error.localizedDescription);
+}
+
+- (void)webViewWebContentProcessDidTerminate:(WKWebView *)webView
+{
+	// iOS can kill the WebKit process, reload it
+	NSLog(@"Help web content process terminated");
+	if (self.viewIfLoaded.window != nil)
+	{
+		[self reloadManual];
 	}
 }
 
