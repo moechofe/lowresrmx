@@ -18963,9 +18963,8 @@ struct HapticQueuedPulse
 	float intensity;
 };
 
-// Apple's nine iOS patterns, measured in doc.agent/haptics.md. Index parallel with
-// enum HapticMode and with the HAPTIC pattern table of the manual.
-// sauce: doc.agent/haptics.md
+// try to replicate Apple's nine iOS patterns
+// Sauce: https://developer.apple.com/design/human-interface-guidelines/playing-haptics
 static const struct HapticPattern hapticPatterns[] = {
 	{0, {{0, 0, 0.0f}}}, // None
 	{4, {{0, 12, 0.8f}, {50, 12, 0.8f}, {136, 12, 1.0f}, {236, 12, 0.6f}}}, // Error
@@ -19032,8 +19031,6 @@ void haptic_play(enum HapticMode mode)
 	if(!hapticDevice)
 		return;
 
-	// controlsDidChange fires for many reasons other than HAPTIC, so only trust a
-	// value that is actually inside the pattern table.
 	if(mode <= None || mode > Selection)
 		return;
 
@@ -19062,10 +19059,6 @@ void haptic_update(void)
 	if(SDL_GetTicks() < pulse->at)
 		return;
 
-	// One pulse per frame only: every SDL_PlayHapticRumble supersedes the previous
-	// one, so playing two of them in the same frame would swallow the first. All
-	// the onsets are at least 50 ms apart so no pulse is ever skipped, but the
-	// frame rate does quantize them to about 17 ms.
 	SDL_PlayHapticRumble(
 		hapticDevice, pulse->intensity * HAPTIC_INTENSITY_SCALE, (Uint32)(pulse->duration * HAPTIC_DURATION_SCALE));
 	++hapticQueueIndex;
