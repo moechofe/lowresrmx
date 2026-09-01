@@ -7,6 +7,8 @@ Create your games and play it on the go using an iPhone or iPad and soon Android
 
 It _will_ include a project manager, a code editor and some tools to edit game assets: sprites, palettes, backgrounds, instruments and musics.
 
+Community website: https://ret.ro.it/
+
 ### Goal
 
 I want to be able to create games on the go using my iPad and eventually, put them on the App Store for free. LowRes NX can do that but come with limitation that remove appealing, like no fullscreen, and no fine touch detection.
