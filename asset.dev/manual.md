@@ -2059,7 +2059,7 @@ Copy from the rectangle `x1, y1` (0..63) with `width, height` (0..63) the cell's
 
 Draw to the `x, y` cell to the background source specified previously using [`BG SOURCE`](#bg-source-address-width-height) with the `character` using the current attributes.
 
-Similar to [`CELL`](#cell-attributes) but modify the source in memory instead of the current layer.
+Similar to [`CELL`](#cell-x-y-character) but modify the source in memory instead of the current layer.
 
 The source MUST point to writable memory.
 
