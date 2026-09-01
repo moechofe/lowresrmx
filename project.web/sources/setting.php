@@ -13,8 +13,15 @@ if(preg_match('/\/author$/',$urlPath)&&$isPost)
 	if(empty($author)) badRequest("Fail to read author");
 	if(strlen($author)<4||strlen($author)>MAX_AUTHOR_NAME) badRequest("Fail to read author");
 
+	$slug=slugifyAuthor($author);
+	if($slug==="") badRequest("Fail to read author");
+	if(!claimAuthorSlug($user_id,$slug)) conflict("Fail to claim author name");
+
 	redis()->hset("u:$user_id","author",$author);
 
+	header("Content-Type: application/json",true);
+	header("X-Robots-Tag: noindex", true);
+	echo json_encode(["slug"=>$slug]);
 	exit;
 }
 

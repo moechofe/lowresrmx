@@ -10,7 +10,7 @@ if(preg_match("/^\/($MATCH_ENTRY_TOKEN)\.html$/",$urlPath,$matches))
 	$first_id=$matches[1];
 
 	// Get the first entry post
-	list($program_id,$title,$text,$ut,$author,$status,$name)=redis()->hmget("f:$first_id:f","pid","title","text","ut","author","status","name");
+	list($program_id,$title,$text,$ut,$author,$status,$name,$uid)=redis()->hmget("f:$first_id:f","pid","title","text","ut","author","status","name","uid");
 	if(empty($title) or empty($ut)) badRequest("Fail to read entry");
 	if($status==="banned") badRequest("Fail to validate entry");
 	if(!empty($text)) $text=markdown2html(zstd_uncompress($text));
@@ -26,6 +26,7 @@ if(preg_match("/^\/($MATCH_ENTRY_TOKEN)\.html$/",$urlPath,$matches))
 	$eid=$first_id;
 	$pid=$program_id;
 	track('view:entry');
+	$author_slug=$uid?strval(redis()->hget("u:$uid","slug")):"";
 	require_once __DIR__.'/entry.html';
 	exit;
 }

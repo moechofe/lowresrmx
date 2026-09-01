@@ -14,6 +14,8 @@ article pre { font-size: 1em; padding: 0.25em 0.5em; }
 .points::after { content:"pts"; }
 .author { color:var(--pico-secondary); font-weight: bold; }
 .author::before { content:"by "; font-weight:normal; }
+.author a { color: inherit; }
+.author a:not([href]) { text-decoration: none; cursor: default; }
 .date { color:var(--pico-secondary); }
 .date::before { content:"the "; }
 

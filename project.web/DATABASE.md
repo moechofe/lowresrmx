@@ -108,16 +108,17 @@
     - _(str)_ `["name"]`
     - _(str)_ `["picture"]` URL of a public picture
     - _(str)_ `["author"]` current `AUTHOR_NAME`
+    - _(str)_ `["slug"]` current `SLUG` (see `"a:SLUG"`)
     - _(str)_ `["locale"]` ISO 639-1:2002
 
 - _(list)_ `"u:USER_ID:c"` list of comment entries ID
 
 - _(list)_ `"u:USER_ID:a"` list of `AUTHOR_NAME`
 
-<!-- TODO: implement
-- _(str)_ `"a:AUTHOR_NAME"` `USER_ID`
+- _(str)_ `"a:SLUG"` `USER_ID`
 
-    > Used to have a custom URL on the website must be unique. -->
+    Unique reverse index, derived from `["author"]` by `slugifyAuthor()`.
+    Used by `GET /~SLUG` to serve the public user page.
 
 #### Notification related
 
@@ -196,7 +197,7 @@
 
     With `EVENT` being one of:
 
-    - Page views: `"view:community"`, `"view:show"`, `"view:chat"`, `"view:help"`, `"view:share"`, `"view:setting"`, `"view:about"`, `"view:entry"`, `"view:player"`
+    - Page views: `"view:community"`, `"view:show"`, `"view:chat"`, `"view:help"`, `"view:share"`, `"view:setting"`, `"view:about"`, `"view:entry"`, `"view:player"`, `"view:userpage"`
     - Content: `"vote"`, `"comment"`, `"upload"`, `"publish"`, `"post"`, `"replace"`
     - Engagement: `"react"`, `"search"`
     - Account: `"signin:google"`, `"signin:discord"`, `"signin:github"`, `"signup"`, `"signout"`, `"delete"` (program), `"account_delete"`

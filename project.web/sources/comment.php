@@ -86,7 +86,7 @@ if(preg_match("/\/($MATCH_ENTRY_TOKEN)\/(\d+)$/",$urlPath,$matches)&&$isGet)
 	$comments=[];
 	foreach($list as $cid)
 	{
-		list($text,$ct,$author,$status)=redis()->hmget("f:$first_id:$cid","text","ct","author","status");
+		list($text,$ct,$author,$status,$uid)=redis()->hmget("f:$first_id:$cid","text","ct","author","status","uid");
 		if(empty($text)) continue;
 		if($status==="banned") continue;
 		$comments[]=[
@@ -94,6 +94,7 @@ if(preg_match("/\/($MATCH_ENTRY_TOKEN)\/(\d+)$/",$urlPath,$matches)&&$isGet)
 			"text"=>markdown2html(zstd_uncompress($text)),
 			"ct"=>$ct,
 			"author"=>$author,
+			"slug"=>$uid?strval(redis()->hget("u:$uid","slug")):"",
 			"reactions"=>readReactions("$first_id:$cid",$user_id),
 		];
 	}

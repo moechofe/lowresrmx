@@ -80,7 +80,8 @@ const addComments=(cmnt_list)=>{
 	const items=cmnt_list.map(data=>{
 		const item=instanciate(item_tpl);
 
-		find(item,'.author > span').textContent=data.author;
+		find(item,'.author span').textContent=data.author;
+		if(data.slug) attr(find(item,'.author a'),'href',`/~${encodeURIComponent(data.slug)}`);
 		humanDate(find(item,'.date'),data.ct);
 		find(item,'.text').innerHTML=data.text;
 		renderReactions(find(item,'.reactions'),`${eid}/${data.cid}`,data.reactions);

@@ -40,11 +40,11 @@ fi
 mkdir -p "$TEMP_DIR"
 rm -rf "${TEMP_DIR:?}"/*
 
-DYN_HTML=(entry.html player.html sign-in.html)
+DYN_HTML=(entry.html player.html sign-in.html userpage.html)
 STATIC_HTML=(list.html chat.html community.html documentation.html footer.html header.html help.html maintenance.html message.html privacy-policy.html setting.html share.html show.html terms-of-service.html about.html)
-CSS_FILES=(chat.css community.css documentation.css documentation-www.css entry.css footer.css header.css help.css list.css setting.css share.css show.css sign-in.css player.css about.css)
-JS_FILES=(chat.js community.js entry.js help.js setting.js share.js show.js sign-in.js about.js documentation.js)
-PHP_FILES=(admin.php comment.php common.php download.php entry.php favicon.ico index.php list.php logo-white.png logo-colored.png pico.min.css player.php rank.php redis.php robots.txt score.php setting.php share.php sign.php token.php updrank.php upload.php markdown.php image.php notification.php reaction.php discord.php)
+CSS_FILES=(chat.css community.css documentation.css documentation-www.css entry.css footer.css header.css help.css list.css setting.css share.css show.css sign-in.css player.css about.css userpage.css)
+JS_FILES=(chat.js community.js entry.js help.js setting.js share.js show.js sign-in.js about.js documentation.js userpage.js)
+PHP_FILES=(admin.php comment.php common.php download.php entry.php favicon.ico index.php list.php logo-white.png logo-colored.png pico.min.css player.php rank.php redis.php robots.txt score.php setting.php share.php sign.php token.php updrank.php upload.php markdown.php image.php notification.php reaction.php discord.php userpage.php)
 WASM_FILES=(player.wasm player.js)
 COPY_FILES=(emoji-picker-element.js emoji-data.json 04.webp 05.webp 06.webp medium-zoom.min.js)
 
@@ -165,6 +165,7 @@ share.html share.js share.css \
 header.html header.css \
 footer.html footer.css \
 list.php list.html list.css \
+userpage.php userpage.html userpage.css userpage.js \
 favicon.ico logo-white.png logo-colored.png \
 message.html privacy-policy.html terms-of-service.html \
 pico.min.css \

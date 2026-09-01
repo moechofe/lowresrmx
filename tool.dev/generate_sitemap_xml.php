@@ -58,5 +58,26 @@ while($cursor!=="0"):
 	endforeach;
 	list($cursor,$list)=$client->scan($cursor,"match","f:*:f");
 endwhile;
+
+$cursor="0";
+do
+{
+	list($cursor,$list)=$client->scan($cursor,"match","a:*","count",1000);
+	foreach($list as $key):
+		$slug=substr($key,2);
+		if($slug==="") continue;
+		$user_id=$client->get($key);
+		if(empty($user_id)) continue;
+?>
+	<url>
+		<loc>https://ret.ro.it/~<?=rawurlencode($slug)?></loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+		<lastmod><?=date('Y-m-d')?></lastmod>
+	</url>
+<?php
+	endforeach;
+}
+while($cursor!=="0");
 ?>
 </urlset>

@@ -94,6 +94,7 @@ const showError=()=>{
 /** @typedef {{
  * author: string,
  * picture: string,
+ * slug: string,
  * token: string
  * }}
  */
@@ -121,6 +122,11 @@ const setupSign=()=>new Promise(res=>{
 				remove(query('.user-profile .profile'));
 			}
 			//query('.user-profile .picture').style.backgroundImage="url('"+signed.picture+"')";
+			if(signed.slug)
+			{
+				attr(query('.user-profile .user-page a'),'href',`/~${encodeURIComponent(signed.slug)}`);
+				show(query('.user-profile .user-page'));
+			}
 			csrf=signed.token;
 			queryAll('.is-signed').forEach((item)=>show(item));
 			res(signed);

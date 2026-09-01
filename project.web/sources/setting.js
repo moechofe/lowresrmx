@@ -16,6 +16,8 @@ const setupSetting=(user)=>{
 	if(user.author) attr(input,'value',user.author);
 	else attr(input,'placeholder',"Enter an author name");
 
+	if(user.slug) text(query('fieldset small.page'),`Your page: /~${user.slug}`);
+
 	on(input,'change',()=>{
 		if(input.value.length<4) return;
 		disable(input);
@@ -25,8 +27,24 @@ const setupSetting=(user)=>{
 				'Content-Type':'text/plain',
 				[HEADER_TOKEN]:csrf
 			}).then((res)=>{
-				if(res.ok) text(query('.user-profile .name'),input.value?input.value:"No author name yet");
-				else dialogOn(query('dialog.error'));
+				if(res.status===409)
+				{
+					attr(input,'aria-invalid',"true");
+					return null;
+				}
+				if(!res.ok)
+				{
+					dialogOn(query('dialog.error'));
+					return null;
+				}
+				attr(input,'aria-invalid',null);
+				return res.json();
+			}).then((ans)=>{
+				if(!ans) return;
+				text(query('.user-profile .name'),input.value?input.value:"No author name yet");
+				text(query('fieldset small.page'),`Your page: /~${ans.slug}`);
+				attr(query('.user-profile .user-page a'),'href',`/~${encodeURIComponent(ans.slug)}`);
+				show(query('.user-profile .user-page'));
 			}).catch(_=>{
 				dialogOn(query('dialog.error'));
 			}).finally(_=>{enable(input);unbusy(label);});

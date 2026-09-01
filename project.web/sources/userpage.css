@@ -1,0 +1,7 @@
+<?php
+require_once __DIR__.'/header.css';
+require_once __DIR__.'/list.css';
+require_once __DIR__.'/footer.css';
+?>
+.userpage hgroup { margin-bottom: var(--pico-block-spacing-vertical); }
+.userpage .what { display: inherit; align-content: inherit; }

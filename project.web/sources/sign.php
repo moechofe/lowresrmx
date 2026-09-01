@@ -63,6 +63,7 @@ if(preg_match('/^\/google$/',$urlPath)&&$isGet&&!empty($_GET['code'])&&!empty($_
 	redis()->hset("u:$user_id","picture",@$profile_response['picture']);
 	redis()->hsetnx("u:$user_id","author",@$profile_response['given_name']);
 	redis()->hsetnx("u:$user_id","locale",@$profile_response['locale']?:'en');
+	ensureAuthorSlug($user_id);
 	track('signin:google');
 	if($isNewUser) track('signup');
 
@@ -178,6 +179,7 @@ if(preg_match('/^\/discord$/',$urlPath)&&$isGet&&!empty($_GET['code'])&&!empty($
 	redis()->hset("u:$user_id","picture",$picture);
 	redis()->hsetnx("u:$user_id","author",$profile_response['username']);
 	redis()->hsetnx("u:$user_id","locale",$profile_response['locale']?:'en');
+	ensureAuthorSlug($user_id);
 	track('signin:discord');
 	if($isNewUser) track('signup');
 
@@ -300,6 +302,7 @@ elseif(preg_match('/^\/github$/',$urlPath)&&$isGet&&!empty($_GET['code'])&&!empt
 	redis()->hsetnx("u:$user_id","name",$profile_response['login']);
 	redis()->hset("u:$user_id","picture",@$profile_response['avatar_url']);
 	redis()->hsetnx("u:$user_id","author",$profile_response['login']);
+	ensureAuthorSlug($user_id);
 	// GitHub doesn't provide locale, so we can't set it.
 	track('signin:github');
 	if($isNewUser) track('signup');
@@ -377,12 +380,12 @@ elseif(preg_match('/^\/is_signed$/',$urlPath)&&$isPost)
 		exit;
 	}
 
-	list($picture,$author)=redis()->hmget("u:$user_id","picture","author");
+	list($picture,$author,$slug)=redis()->hmget("u:$user_id","picture","author","slug");
 
 	$token=bin2hex($token);
 	header("Content-Type: application/json",true);
 	header("X-Robots-Tag: noindex", true);
-	echo json_encode(compact("picture","author","token"));
+	echo json_encode(compact("picture","author","slug","token"));
 
 	exit;
 }

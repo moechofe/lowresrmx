@@ -32,6 +32,7 @@ defined('REDIS_SCAN_CURSOR_FILE') or define('REDIS_SCAN_CURSOR_FILE',"./.updrank
 const SYLLABLE_LIST=['ing','er','a','ly','ed','i','es','re','tion','in','e','con','y','ter','ex','al','de','com','o','di','en','an','ty','ry','u','ti','ri','be','per','to','pro','ac','ad','ar','ers','ment','or','tions','ble','der','ma','na','si','un','at','dis','ca','cal','man','ap','po','sion','vi','el','est','la','lar','pa','ture','for','is','mer','pe','ra','so','ta','as','col','fi','ful','ger','low','ni','par','son','tle','day','ny','pen','pre','tive','car','ci','mo','on','ous','pi','se','ten','tor','ver','ber','can','dy','et','it','mu','no','ple','cu','fac','fer','gen','ic','land','light','ob','of','pos','tain','den','ings','mag','ments','set','some','sub','sur','ters','tu','af','au','cy','fa','im','li','lo','men','min','mon','op','out','rec','ro','sen','side','tal','tic','ties','ward','age','ba','but','cit','cle','co','cov','da','dif','ence','ern','eve','hap','ies','ket','lec','main','mar','mis','my','nal','ness','ning','n\'t','nu','oc','pres','sup','te','ted','tem','tin','tri','tro','up','va','ven','vis','am','bor','by','cat','cent','ev','gan','gle','head','high','il','lu','me','nore','part','por','read','rep','su','tend','ther','ton','try','um','uer','way','ate','bet','bles','bod','cap','cial','cir','cor','coun','cus','dan','dle','ef','end','ent','ered','fin','form','go','har','ish','lands','let','long','mat','meas','mem','mul','ner','play','ples','ply','port','press','sat','sec','ser','south','sun','the','ting','tra','tures','val','var','vid','wil','win','won','work','act','ag','air','als','bat','bi','cate','cen','char','come','cul','ders','east','fect','fish','fix','gi','grand','great','heav','ho','hunt','ion','its','jo','lat','lead','lect','lent','less','lin','mal','mi','mil','moth','near','nel','net','new','one','point','prac','ral','rect','ried','round','row','sa','sand','self','sent','ship','sim','sions','sis','sons','stand','sug','tel','tom','tors','tract','tray','us','vel','west','where','write'];
 
 const MAX_AUTHOR_NAME=100;
+const MAX_AUTHOR_SLUG=64;
 const MAX_POST_TITLE=100;
 const MAX_POST_NAME=100;
 const MAX_POST_TEXT=15000;
@@ -127,6 +128,14 @@ function tooManyRequests(string $reason):void
 	exit;
 }
 
+function conflict(string $reason):void
+{
+	header("HTTP/1.1 409 Conflict",true,409);
+	trigger_error($reason);
+	backtrace();
+	exit;
+}
+
 function redis():Client
 {
 	static $client=null;
@@ -153,6 +162,62 @@ function track(string $event):void
 	redis()->incr("stat:$event");
 	redis()->incr("stat:$event:$day");
 	redis()->expire("stat:$event:$day",STAT_TTL);
+}
+
+// Turn a free-form author name into the URL segment used by /~SLUG (see DATABASE.md "a:SLUG").
+// Returns "" when nothing usable is left (e.g. an emoji-only name).
+function slugifyAuthor(string $author):string
+{
+	$s=trim($author);
+	if(class_exists('Transliterator'))
+	{
+		$tr=Transliterator::create('Any-Latin; Latin-ASCII');
+		if($tr) $s=$tr->transliterate($s);
+	}
+	else $s=@iconv('UTF-8','ASCII//TRANSLIT',$s)?:$s;
+	$s=mb_strtolower($s,'UTF-8');
+	$s=preg_replace('/[^a-z0-9]+/','-',$s);
+	$s=trim($s,'-');
+	return substr($s,0,MAX_AUTHOR_SLUG);
+}
+
+// Atomically claim "a:SLUG" for the user and release the slug they held before.
+// Returns false when another user already owns the slug.
+function claimAuthorSlug(string $user_id,string $slug):bool
+{
+	if($slug==="") return false;
+	$owner=redis()->get("a:$slug");
+	if($owner===$user_id)
+	{
+		redis()->hset("u:$user_id","slug",$slug);
+		return true;
+	}
+	if(!empty($owner)) return false;
+	if(intval(redis()->setnx("a:$slug",$user_id))!==1) return false;
+	$old=redis()->hget("u:$user_id","slug");
+	if(!empty($old)&&$old!==$slug&&redis()->get("a:$old")===$user_id) redis()->del("a:$old");
+	redis()->hset("u:$user_id","slug",$slug);
+	return true;
+}
+
+// Make sure the user has a page URL, appending -2, -3, ... on collision.
+// Idempotent; returns "" when the author name yields no usable slug.
+function ensureAuthorSlug(string $user_id):string
+{
+	$slug=redis()->hget("u:$user_id","slug");
+	if(!empty($slug)&&redis()->get("a:$slug")===$user_id) return $slug;
+	$author=redis()->hget("u:$user_id","author");
+	if(empty($author)) $author=redis()->hget("u:$user_id","name");
+	$base=slugifyAuthor(strval($author));
+	if($base==="") return "";
+	if(claimAuthorSlug($user_id,$base)) return $base;
+	for($i=2;$i<100;++$i)
+	{
+		$suffix="-$i";
+		$try=substr($base,0,MAX_AUTHOR_SLUG-strlen($suffix)).$suffix;
+		if(claimAuthorSlug($user_id,$try)) return $try;
+	}
+	return "";
 }
 
 function revokeSession(string $session_id):void

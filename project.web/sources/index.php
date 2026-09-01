@@ -14,6 +14,7 @@ require_once __DIR__.'/download.php';
 
 require_once __DIR__.'/share.php';
 require_once __DIR__.'/list.php';
+require_once __DIR__.'/userpage.php';
 
 require_once __DIR__.'/entry.php';
 require_once __DIR__.'/comment.php';
@@ -45,6 +46,8 @@ if(in_array($urlPath,[
 	'/setting.html',
 	'/setting.js',
 	'/setting.css',
+	'/userpage.js',
+	'/userpage.css',
 	'/about.html',
 	'/about.js',
 	'/about.css',
