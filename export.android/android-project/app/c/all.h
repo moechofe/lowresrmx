@@ -19,6 +19,8 @@
 
 #if defined(_WIN32)
 #include <SDL3/SDL.h>
+// SDL_main.h provides WinMain and UTF-8 argv for the windowed (WIN32_EXECUTABLE) build.
+#include <SDL3/SDL_main.h>
 #include <SDL3/SDL_stdinc.h>
 #elif defined(__ANDROID__)
 #include <SDL3/SDL.h>
@@ -2830,7 +2832,7 @@ struct Settings
 	char toolNames[MAX_TOOLS][TOOL_NAME_SIZE];
 };
 
-#if defined(__ANDROID__)
+#if defined(__ANDROID__) || defined(_WIN32)
 void settings_init(struct Settings *settings, char *filenameOut, int argc, char *argv[]);
 #else
 void settings_init(struct Settings *settings, char *filenameOut, int argc, const char *argv[]);
