@@ -126,16 +126,28 @@ class ProjectManager: NSObject
 
 	func importProgram(from url: URL, completion: @escaping ((Error?) -> Void))
 	{
-		// A file URL can arrive before `setup()` has run, when a cold launch goes
-		// straight to `scene(_:willConnectTo:)`. The destination container isn't known
-		// yet, so hold the import instead of writing it to the wrong one.
+		let didStartAccessing = url.startAccessingSecurityScopedResource()
+
+		let finish: (Error?) -> Void = { error in
+			if didStartAccessing
+			{
+				url.stopAccessingSecurityScopedResource()
+			}
+			completion(error)
+		}
+
 		guard isSetupComplete
 		else
 		{
-			pendingImports.append((url: url, completion: completion))
+			pendingImports.append((url: url, completion: finish))
 			return
 		}
 
+		performImport(from: url, completion: finish)
+	}
+
+	private func performImport(from url: URL, completion: @escaping ((Error?) -> Void))
+	{
 		let originalName = url.deletingPathExtension().lastPathComponent
 		let name = availableProgramName(original: originalName)
 		let destUrl = currentDocumentsUrl.appendingPathComponent(name).appendingPathExtension("rmx")
@@ -180,7 +192,7 @@ class ProjectManager: NSObject
 
 		for pendingImport in imports
 		{
-			importProgram(from: pendingImport.url, completion: pendingImport.completion)
+			performImport(from: pendingImport.url, completion: pendingImport.completion)
 		}
 	}
 
