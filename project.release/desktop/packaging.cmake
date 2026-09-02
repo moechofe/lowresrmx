@@ -80,6 +80,10 @@ install(DIRECTORY "${PROJECT_ROOT_DIR}/asset.programs/" DESTINATION programs FIL
 #   cpack --config build/CPackConfig.cmake -G ZIP -B dist \
 #     -D CPACK_PACKAGE_FILE_NAME=LowResRMX-1.0_68-linux-x86_64
 
+# Per-generator overrides (ZIP gets CHANGELOG.md, the installers do not) live in a cpack-time
+# config file, because install() rules cannot see which generator is running.
+set(CPACK_PROJECT_CONFIG_FILE "${LOWRESRMX_PACKAGING_DIR}/cpack_generator_config.cmake")
+
 set(CPACK_PACKAGE_NAME "LowResRMX")
 set(CPACK_PACKAGE_VENDOR "Martin Mauchauffee")
 set(CPACK_PACKAGE_VERSION "${LOWRESRMX_VERSION_NUMERIC}")
