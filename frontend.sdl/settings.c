@@ -144,59 +144,63 @@ bool settings_filename(char *destination)
 
 void settings_setParameter(struct Parameters *parameters, const char *key, const char *value)
 {
-	if(strcmp(key, "fullscreen") == 0)
+	if(false)
 	{
-		if(strcmp(value, optionYes) == 0)
-		{
-			parameters->fullscreen = true;
-		}
-		else if(strcmp(value, optionNo) == 0)
-		{
-			parameters->fullscreen = false;
-		}
+
 	}
-	else if(strcmp(key, "disabledev") == 0)
-	{
-		if(strcmp(value, optionYes) == 0)
-		{
-			parameters->disabledev = true;
-		}
-		else if(strcmp(value, optionNo) == 0)
-		{
-			parameters->disabledev = false;
-		}
-	}
-	else if(strcmp(key, "mapping") == 0)
-	{
-		int i = SDL_atoi(value);
-		if(i >= 0 && i <= 1)
-		{
-			parameters->mapping = i;
-		}
-	}
-	else if(strcmp(key, "disabledelay") == 0)
-	{
-		if(strcmp(value, optionYes) == 0)
-		{
-			parameters->disabledelay = true;
-		}
-		else if(strcmp(value, optionNo) == 0)
-		{
-			parameters->disabledelay = false;
-		}
-	}
-	else if(strcmp(key, "zoom") == 0)
-	{
-		int i = SDL_atoi(value);
-		if(i >= 0 && i <= 3)
-		{
-#ifdef __EMSCRIPTEN__
-			parameters->zoom = 1;
-#else
-			parameters->zoom = i;
-#endif
-		}
-	}
+// 	else if(strcmp(key, "fullscreen") == 0)
+// 	{
+// 		if(strcmp(value, optionYes) == 0)
+// 		{
+// 			parameters->fullscreen = true;
+// 		}
+// 		else if(strcmp(value, optionNo) == 0)
+// 		{
+// 			parameters->fullscreen = false;
+// 		}
+// 	}
+// 	else if(strcmp(key, "disabledev") == 0)
+// 	{
+// 		if(strcmp(value, optionYes) == 0)
+// 		{
+// 			parameters->disabledev = true;
+// 		}
+// 		else if(strcmp(value, optionNo) == 0)
+// 		{
+// 			parameters->disabledev = false;
+// 		}
+// 	}
+// 	else if(strcmp(key, "mapping") == 0)
+// 	{
+// 		int i = SDL_atoi(value);
+// 		if(i >= 0 && i <= 1)
+// 		{
+// 			parameters->mapping = i;
+// 		}
+// 	}
+// 	else if(strcmp(key, "disabledelay") == 0)
+// 	{
+// 		if(strcmp(value, optionYes) == 0)
+// 		{
+// 			parameters->disabledelay = true;
+// 		}
+// 		else if(strcmp(value, optionNo) == 0)
+// 		{
+// 			parameters->disabledelay = false;
+// 		}
+// 	}
+// 	else if(strcmp(key, "zoom") == 0)
+// 	{
+// 		int i = SDL_atoi(value);
+// 		if(i >= 0 && i <= 3)
+// 		{
+// #ifdef __EMSCRIPTEN__
+// 			parameters->zoom = 1;
+// #else
+// 			parameters->zoom = i;
+// #endif
+// 		}
+// 	}
 	else
 	{
 		printf("unknown parameter %s\n", key);
@@ -220,30 +224,29 @@ void settings_saveAs(struct Settings *settings, const char *filename)
 	FILE *file = fopen_utf8(filename, "w");
 	if(file)
 	{
-		fputs("# Start the application in fullscreen mode.\n# fullscreen yes/no\n", file);
-		fputs("fullscreen ", file);
-		fputs(settings->file.fullscreen ? optionYes : optionNo, file);
-		fputs("\n\n", file);
+		// fputs("# Start the application in fullscreen mode.\n# fullscreen yes/no\n", file);
+		// fputs("fullscreen ", file);
+		// fputs(settings->file.fullscreen ? optionYes : optionNo, file);
+		// fputs("\n\n", file);
 
-		fputs("# Start the application in zoom mode: 0 = pixel perfect, 1 = large, 2 = overscan, 3 = squeeze.\n# zoom "
-			"0-3\n",
-			file);
-		fprintf(file, "zoom %d\n\n", settings->file.zoom);
+		// fputs("# Start the application in zoom mode: 0 = pixel perfect, 1 = large, 2 = overscan, 3 = squeeze.\n# zoom "
+		// 	"0-3\n",
+		// 	file);
+		// fprintf(file, "zoom %d\n\n", settings->file.zoom);
 
-		fputs("# Disable the Development Menu, Esc key quits LowRes NX.\n# disabledev yes/no\n", file);
-		fputs("disabledev ", file);
-		fputs(settings->file.disabledev ? optionYes : optionNo, file);
-		fputs("\n\n", file);
+		// fputs("# Disable the Development Menu, Esc key quits LowRes NX.\n# disabledev yes/no\n", file);
+		// fputs("disabledev ", file);
+		// fputs(settings->file.disabledev ? optionYes : optionNo, file);
+		// fputs("\n\n", file);
 
-		fputs("# Set the key mapping. 0 = standard, 1 = GameShell.\n# mapping 0-1\n", file);
-		fprintf(file, "mapping %d\n\n", settings->file.mapping);
+		// fputs("# Set the key mapping. 0 = standard, 1 = GameShell.\n# mapping 0-1\n", file);
+		// fprintf(file, "mapping %d\n\n", settings->file.mapping);
 
-		fputs("# Disable the delay for too short frames.\n# disabledelay yes/no\n", file);
-		fputs("disabledelay ", file);
-		fputs(settings->file.disabledelay ? optionYes : optionNo, file);
-		fputs("\n\n", file);
-
-		fprintf(file, "# Add editor programs for the Development Menu (max %d).\n# tool My Tool.rmx\n", MAX_TOOLS);
+		// fputs("# Disable the delay for too short frames.\n# disabledelay yes/no\n", file);
+		// fputs("disabledelay ", file);
+		// fputs(settings->file.disabledelay ? optionYes : optionNo, file);
+		// fputs("\n\n", file);
+		fprintf(file, "# Add editor programs for the Development Menu (max %d).\n# tool path/to/my_tool.rmx\n", MAX_TOOLS);
 		for(int i = 0; i < settings->numTools; i++)
 		{
 			fputs("tool ", file);

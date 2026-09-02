@@ -20,7 +20,6 @@
 #import "EditorTextView.h"
 #import "SyntaxWrapper.h"
 
-
 static NSArray<UIColor *> *syntaxColors(void) {
 	static NSArray<UIColor *> *colors;
 	static dispatch_once_t once;
@@ -112,7 +111,6 @@ static NSArray<UIColor *> *syntaxColors(void) {
 	}
 
 	UIFont *font = self.font ?: [UIFont monospacedSystemFontOfSize:14 weight:UIFontWeightRegular];
-
 
 	[SyntaxWrapper.shared spansForText:text completion:^(SourceSpans *spans) {
 		// Already on the main queue.
