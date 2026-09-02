@@ -1,13 +1,13 @@
 # Retro Game Creator
 
-> This is a fork of the excellent fantasy console LowRes NX by Timo "Inutilis" Kloss.
-> This is a heavily modified version and way more complicated to use, I recommend you to stay on the original app: [LowRes NX Coder on App Store](https://apps.apple.com/app/lowres-nx-coder/id1318884577).
+Create your games and play it on the go using an iPhone or iPad and soon Android (comming this decade). Retro Game Creator is a virtual game console and a game development environment that include all the tools to start and finish a project.
 
-Create your games and play it on the go using an iPhone or iPad and soon Android (I hope). LowResRMX is a virtual game console and a game development environment that include all the tools to start and finish a project.
-
-It _will_ include a project manager, a code editor and some tools to edit game assets: sprites, palettes, backgrounds, instruments and musics.
+It include a project manager, a code editor and some tools to edit game assets: sprites, palettes, backgrounds, instruments and musics.
 
 Community website: https://ret.ro.it/
+
+> This is a fork of the excellent fantasy console LowRes NX by Timo "Inutilis" Kloss.
+> This is a heavily modified version and way more complicated to use, I recommend you to stay on the original app: [LowRes NX Coder on App Store](https://apps.apple.com/app/lowres-nx-coder/id1318884577).
 
 ### Goal
 
