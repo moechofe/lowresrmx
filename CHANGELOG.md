@@ -1,5 +1,7 @@
 ### 1.0_68
 
+- Package desktop app
+
 ### 1.0_67
 
 - Web: add public page that list user's published program.
