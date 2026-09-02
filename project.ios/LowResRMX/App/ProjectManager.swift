@@ -30,8 +30,6 @@ class ProjectManager: NSObject
 
 	var isCloudEnabled: Bool
 	{
-		// TODO: disable iCloud for now
-		// return false
 		FileManager.default.ubiquityIdentityToken != nil
 	}
 
@@ -48,9 +46,11 @@ class ProjectManager: NSObject
 
 	var currentDocumentsUrl: URL
 	{
-		if isCloudEnabled
+		// `setup()` resolves the ubiquitous container asynchronously, so it is still
+		// nil early at launch. Fall back to the local container instead of trapping.
+		if isCloudEnabled, let ubiquitousDocumentsUrl
 		{
-			ubiquitousDocumentsUrl!
+			ubiquitousDocumentsUrl
 		}
 		else
 		{
@@ -59,6 +59,9 @@ class ProjectManager: NSObject
 	}
 
 	private let queue = OperationQueue()
+
+	private var isSetupComplete = false
+	private var pendingImports: [(url: URL, completion: (Error?) -> Void)] = []
 
 	func setup(completion: @escaping (() -> Void))
 	{
@@ -98,6 +101,8 @@ class ProjectManager: NSObject
 				{
 					self.setupCloudIcons()
 				}
+				self.isSetupComplete = true
+				self.runPendingImports()
 				completion()
 			}
 		}
@@ -121,6 +126,16 @@ class ProjectManager: NSObject
 
 	func importProgram(from url: URL, completion: @escaping ((Error?) -> Void))
 	{
+		// A file URL can arrive before `setup()` has run, when a cold launch goes
+		// straight to `scene(_:willConnectTo:)`. The destination container isn't known
+		// yet, so hold the import instead of writing it to the wrong one.
+		guard isSetupComplete
+		else
+		{
+			pendingImports.append((url: url, completion: completion))
+			return
+		}
+
 		let originalName = url.deletingPathExtension().lastPathComponent
 		let name = availableProgramName(original: originalName)
 		let destUrl = currentDocumentsUrl.appendingPathComponent(name).appendingPathExtension("rmx")
@@ -155,6 +170,17 @@ class ProjectManager: NSObject
 					completion(error)
 				}
 			}
+		}
+	}
+
+	private func runPendingImports()
+	{
+		let imports = pendingImports
+		pendingImports = []
+
+		for pendingImport in imports
+		{
+			importProgram(from: pendingImport.url, completion: pendingImport.completion)
 		}
 	}
 
