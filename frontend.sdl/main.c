@@ -29,6 +29,10 @@
 #include "system_paths.h"
 #include "utils.h"
 
+#if defined(_WIN32)
+#include <SDL3/SDL_main.h>
+#endif
+
 #if SCREENSHOTS
 #include "screenshot.h"
 #endif
