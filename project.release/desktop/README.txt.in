@@ -1,9 +1,14 @@
 LowResRMX @LOWRESRMX_VERSION@ - Retro Game Creator
 https://ret.ro.it/about.html
 
-A fantasy console: write, run and share small games in a BASIC dialect.
-Forked from LowRes NX by Timo Kloss. License: zlib (see LICENSE.txt).
-Full language and API reference: manual.html
+A fantasy console: write, run and share small games in a BASIC dialect, targeting mobile device.
+
+Create your games and play it on the go using an iPhone or iPad and soon Android (comming this decade).
+Retro Game Creator is a virtual game console and a game development environment that include all the tools to start and finish a project.
+
+It include a project manager, a code editor and some tools to edit game assets: sprites, palettes, backgrounds, instruments and musics.
+
+> This is a fork of the excellent fantasy console [LowRes NX by Timo "Inutilis" Kloss](https://lowresnx.inutilis.com).
 
 
 RUNNING A PROGRAM
@@ -12,23 +17,6 @@ RUNNING A PROGRAM
 
 or start LowResRMX and drag a .rmx file onto the window.
 On macOS you can also double-click a .rmx file.
-
-
-COMMAND LINE OPTIONS  (-option value)
-
-  -fullscreen yes|no     start fullscreen
-  -zoom 0|1|2|3          0 = pixel perfect, 1 = large, 2 = overscan, 3 = squeeze
-  -disabledev yes|no     disable the Development Menu; ESC then quits
-  -disabledelay yes|no   do not sleep on short frames (uncapped speed)
-  -mapping 0|1           0 = standard keys, 1 = GameShell keys
-
-
-GAME CONTROLS  (mapping 0)
-
-  player 1   arrow keys, Z = A, X = B, N = alt A, M = alt B
-  player 2   E/D/S/F = up/down/left/right, TAB = A, Q = B, SHIFT = alt A, A = alt B
-
-mapping 1 (GameShell): player 1 arrows + J/K/I/U, player 2 arrows + H/L/O/Y.
 
 
 HOT KEYS
@@ -45,9 +33,6 @@ Inside the Development Menu the same keys work without CTRL (R, E, D, S, Z, +, -
 
 
 SETTINGS FILE
-
-Written on first run, edit it to set defaults and to register editor programs
-(one "tool <path>.rmx" line per entry, up to 16):
 
   Linux    ~/.local/share/martin_mauchauffee/LowResRMX/settings.txt
   Windows  %APPDATA%\martin_mauchauffee\LowResRMX\settings.txt

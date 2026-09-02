@@ -70,6 +70,7 @@ endif()
 install(FILES
 	"${CMAKE_CURRENT_BINARY_DIR}/README.txt"
 	"${CMAKE_CURRENT_BINARY_DIR}/LICENSE.txt"
+	"${PROJECT_ROOT_DIR}/asset.dev/manual.md"
 	"${PROJECT_ROOT_DIR}/asset.manual/manual.html"
 	DESTINATION .
 )
