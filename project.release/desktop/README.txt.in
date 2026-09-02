@@ -1,0 +1,64 @@
+LowResRMX @LOWRESRMX_VERSION@ - Retro Game Creator
+https://ret.ro.it/about.html
+
+A fantasy console: write, run and share small games in a BASIC dialect.
+Forked from LowRes NX by Timo Kloss. License: zlib (see LICENSE.txt).
+Full language and API reference: manual.html
+
+
+RUNNING A PROGRAM
+
+  LowResRMX programs/Color Picker.rmx
+
+or start LowResRMX and drag a .rmx file onto the window.
+On macOS you can also double-click a .rmx file.
+
+
+COMMAND LINE OPTIONS  (-option value)
+
+  -fullscreen yes|no     start fullscreen
+  -zoom 0|1|2|3          0 = pixel perfect, 1 = large, 2 = overscan, 3 = squeeze
+  -disabledev yes|no     disable the Development Menu; ESC then quits
+  -disabledelay yes|no   do not sleep on short frames (uncapped speed)
+  -mapping 0|1           0 = standard keys, 1 = GameShell keys
+
+
+GAME CONTROLS  (mapping 0)
+
+  player 1   arrow keys, Z = A, X = B, N = alt A, M = alt B
+  player 2   E/D/S/F = up/down/left/right, TAB = A, Q = B, SHIFT = alt A, A = alt B
+
+mapping 1 (GameShell): player 1 arrows + J/K/I/U, player 2 arrows + H/L/O/Y.
+
+
+HOT KEYS
+
+  ESC              open / close the Development Menu (quits when -disabledev yes)
+  CTRL+R           reload and restart the program
+  CTRL+E           eject (reboot the console)
+  CTRL+D           toggle debug mode
+  CTRL+S           save a 4x screenshot to the Desktop (CTRL+SHIFT+S for 1x)
+  CTRL+Z           cycle zoom mode
+  CTRL+PLUS/MINUS  volume
+
+Inside the Development Menu the same keys work without CTRL (R, E, D, S, Z, +, -).
+
+
+SETTINGS FILE
+
+Written on first run, edit it to set defaults and to register editor programs
+(one "tool <path>.rmx" line per entry, up to 16):
+
+  Linux    ~/.local/share/martin_mauchauffee/LowResRMX/settings.txt
+  Windows  %APPDATA%\martin_mauchauffee\LowResRMX\settings.txt
+  macOS    ~/Library/Application Support/martin_mauchauffee/LowResRMX/settings.txt
+
+
+NOTES
+
+macOS: this build is not signed by Apple. The first launch is blocked by
+Gatekeeper - right-click LowResRMX.app and choose Open, or run
+"xattr -dr com.apple.quarantine /Applications/LowResRMX.app".
+
+Windows: the installer is not signed, so SmartScreen shows a warning -
+choose "More info" then "Run anyway".
