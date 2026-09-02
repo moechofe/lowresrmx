@@ -1,0 +1,173 @@
+name: release-desktop
+
+on:
+  push:
+    tags: ['1.0_*']
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version for a test build (no release is created)'
+        default: '0.0_0'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-desktop-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  linux:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Version
+        id: v
+        run: echo "version=${{ github.ref_type == 'tag' && github.ref_name || inputs.version }}" >> "$GITHUB_OUTPUT"
+      - name: SDL build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential git make pkg-config cmake ninja-build \
+            libasound2-dev libpulse-dev libaudio-dev libfribidi-dev libjack-dev libsndio-dev \
+            libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxfixes-dev libxi-dev \
+            libxss-dev libxtst-dev libxkbcommon-dev libdrm-dev libgbm-dev libgl1-mesa-dev \
+            libgles2-mesa-dev libegl1-mesa-dev libdbus-1-dev libibus-1.0-dev libudev-dev \
+            libthai-dev libusb-1.0-0-dev libpipewire-0.3-dev libwayland-dev libdecor-0-dev \
+            liburing-dev
+      - name: Configure and build
+        run: |
+          cmake -S project.cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release \
+            -DLOWRESRMX_VERSION=${{ steps.v.outputs.version }}
+          cmake --build build --parallel
+      - name: Package
+        run: |
+          cpack --config build/CPackConfig.cmake -G ZIP -B dist \
+            -D CPACK_PACKAGE_FILE_NAME=LowResRMX-${{ steps.v.outputs.version }}-linux-x86_64
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux
+          path: dist/*.zip
+          if-no-files-found: error
+
+  windows:
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+      - name: Version
+        id: v
+        shell: bash
+        run: echo "version=${{ github.ref_type == 'tag' && github.ref_name || inputs.version }}" >> "$GITHUB_OUTPUT"
+      - name: Configure and build
+        shell: bash
+        run: |
+          cmake -S project.cmake -B build -G "Visual Studio 17 2022" -A x64 \
+            -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded \
+            -DLOWRESRMX_VERSION=${{ steps.v.outputs.version }}
+          cmake --build build --config Release --parallel
+      - name: Package
+        shell: bash
+        run: |
+          cpack --config build/CPackConfig.cmake -C Release -G ZIP -B dist \
+            -D CPACK_PACKAGE_FILE_NAME=LowResRMX-${{ steps.v.outputs.version }}-windows-x64
+          cpack --config build/CPackConfig.cmake -C Release -G NSIS -B dist \
+            -D CPACK_PACKAGE_FILE_NAME=LowResRMX-${{ steps.v.outputs.version }}-windows-x64-setup
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows
+          path: |
+            dist/*.zip
+            dist/*.exe
+          if-no-files-found: error
+
+  macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Version
+        id: v
+        run: echo "version=${{ github.ref_type == 'tag' && github.ref_name || inputs.version }}" >> "$GITHUB_OUTPUT"
+      - name: Configure and build (universal)
+        run: |
+          cmake -S project.cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" \
+            -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 \
+            -DLOWRESRMX_VERSION=${{ steps.v.outputs.version }}
+          cmake --build build --parallel
+      - name: Ad-hoc sign and check
+        run: |
+          codesign --force --sign - --timestamp=none build/LowResRMX.app
+          codesign --verify --verbose build/LowResRMX.app
+          lipo -archs build/LowResRMX.app/Contents/MacOS/LowResRMX
+      - name: Package
+        run: |
+          cpack --config build/CPackConfig.cmake -G ZIP -B dist \
+            -D CPACK_PACKAGE_FILE_NAME=LowResRMX-${{ steps.v.outputs.version }}-macos-universal
+          cpack --config build/CPackConfig.cmake -G DragNDrop -B dist \
+            -D CPACK_PACKAGE_FILE_NAME=LowResRMX-${{ steps.v.outputs.version }}-macos-universal
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos
+          path: |
+            dist/*.zip
+            dist/*.dmg
+          if-no-files-found: error
+
+  android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Version
+        id: v
+        run: echo "version=${{ github.ref_type == 'tag' && github.ref_name || inputs.version }}" >> "$GITHUB_OUTPUT"
+      - name: Merge script dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y fd-find ripgrep zip
+          sudo ln -sf "$(command -v fdfind)" /usr/local/bin/fd
+      - name: Check the merged engine is not stale
+        run: |
+          bash tool.dev/merge_for_android_export.bash
+          for f in export.android/android-project/app/c/all.c export.android/android-project/app/c/all.h; do
+            git show "HEAD:$f" | sort > /tmp/committed.txt
+            sort "$f" > /tmp/regenerated.txt
+            diff -q /tmp/committed.txt /tmp/regenerated.txt \
+              || { echo "::error::$f is stale: run bash tool.dev/merge_for_android_export.bash and commit"; exit 1; }
+          done
+          git checkout -- export.android/android-project/app/c/
+      - name: Package
+        run: |
+          mkdir -p dist
+          bash project.release/package_android_export.bash ${{ steps.v.outputs.version }} dist
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android
+          path: dist/*.zip
+          if-no-files-found: error
+
+  publish:
+    needs: [linux, windows, macos, android]
+    if: github.ref_type == 'tag'
+    runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ github.ref_name }}
+      BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - name: Release notes
+        run: bash project.release/notes_from_changelog.bash "$VERSION" > notes.md
+      - name: GitHub Release
+        run: |
+          bash project.release/gh_release.bash "$VERSION" notes.md \
+            dist/LowResRMX-$VERSION-linux-x86_64.zip \
+            dist/LowResRMX-$VERSION-windows-x64.zip \
+            dist/LowResRMX-$VERSION-windows-x64-setup.exe \
+            dist/LowResRMX-$VERSION-macos-universal.zip \
+            dist/LowResRMX-$VERSION-macos-universal.dmg \
+            dist/LowResRMX-$VERSION-android-export.zip
+      - name: itch.io
+        run: bash project.release/push_itch.bash "$VERSION" dist

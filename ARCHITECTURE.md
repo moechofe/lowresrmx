@@ -67,6 +67,10 @@
 
     Xcode project for the iOS app.
 
+- 📂 `project.release`
+
+    Release packaging and publishing for the desktop app (CPack: zip, NSIS, DMG) and the Android export template.
+
 - 📂 `project.wasm`
 
     Emscripten project for the WASM player.

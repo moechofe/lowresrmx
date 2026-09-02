@@ -1,4 +1,31 @@
+### 1.0_68
+
+### 1.0_67
+
+- Web: add public page that list user's published program.
+
+### 1.0_66
+
+- Android export support 'HAPTIC' now.
+- GFX: can edit the 256 characters at once.
+- GFX: can undo with character and spritesheet editors.
+- GFX: allow to only paint palette, or flip, or character, or...
+- iOS: fix manual not showning after a while, (killed by OS).
+- iOS: fix monospace bg color in dark mode.
+
 ### 1.0_65
+
+- GFX: bg editor support undo.
+- GFX: fix overloading file loading.
+- GFX: fix floating bar drag when bottom bar is folded.
+- GFX: fix copying brush outside on grid view.
+- GFX: fix pasting now clip instead of wraping on grid view.
+- GFX: fix wrong palette shown when switch from/to grid view.
+- GFX: bg tool that touch outside of the bg will pan.
+- GFX: can draw bg with rectangle.
+- GFX: fix bg scroll bug after creating new bg.
+- Fix crash with 'SKIP'.
+- iOS: fix a couple of dropped frames the first time a program plays a sound.
 
 - Redo the desktop Development Menu.
 
@@ -6,9 +33,6 @@
     - Scroll it by dragging with the mouse or with the wheel.
     - Editor programs are a plain list, up to 16 of them instead of 4.
 
-- Fix crash with 'SKIP'
-- GFX: fix overloading file loading
-- GFX: fix floating bar drag when bottom bar is folded
 
 ### 1.0_64
 

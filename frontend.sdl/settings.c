@@ -32,7 +32,7 @@ bool settings_filename(char *destination);
 void settings_setParameter(struct Parameters *parameters, const char *key, const char *value);
 void settings_saveAs(struct Settings *settings, const char *filename);
 
-#if defined(__ANDROID__)
+#if defined(__ANDROID__) || defined(_WIN32)
 void settings_init(struct Settings *settings, char *filenameOut, int argc, char *argv[])
 #else
 void settings_init(struct Settings *settings, char *filenameOut, int argc, const char *argv[])

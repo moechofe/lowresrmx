@@ -19,6 +19,8 @@
 
 #if defined(_WIN32)
 #include <SDL3/SDL.h>
+// SDL_main.h provides WinMain and UTF-8 argv for the windowed (WIN32_EXECUTABLE) build.
+#include <SDL3/SDL_main.h>
 #include <SDL3/SDL_stdinc.h>
 #elif defined(__ANDROID__)
 #include <SDL3/SDL.h>
