@@ -19083,6 +19083,10 @@ void haptic_update(void)
 // 3. This notice may not be removed or altered from any source distribution.
 
 
+#if defined(_WIN32)
+#include <SDL3/SDL_main.h>
+#endif
+
 #if SCREENSHOTS
 #endif
 
