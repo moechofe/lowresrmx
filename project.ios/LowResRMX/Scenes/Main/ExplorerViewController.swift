@@ -51,6 +51,12 @@ class ExplorerViewController: UIViewController, UICollectionViewDelegateFlowLayo
 
 		collectionView.indicatorStyle = .white
 
+		// disable iOS 26 changing navigation color because of the content
+		if #available(iOS 26.0, *)
+		{
+			collectionView.topEdgeEffect.style = .hard
+		}
+
 		if ProjectManager.shared.isCloudEnabled
 		{
 			setupCloud()

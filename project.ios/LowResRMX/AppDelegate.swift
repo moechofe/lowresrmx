@@ -48,7 +48,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate
 		appearance.configureWithOpaqueBackground()
 		appearance.backgroundColor = .systemBackground
 
-		// All four slots, or the bar changes color as the content scrolls.
 		let navigationBar = UINavigationBar.appearance()
 		navigationBar.standardAppearance = appearance
 		navigationBar.compactAppearance = appearance
