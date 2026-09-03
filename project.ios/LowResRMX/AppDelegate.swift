@@ -37,7 +37,23 @@ class AppDelegate: UIResponder, UIApplicationDelegate
 		didFinishLaunchingWithOptions _: [UIApplication.LaunchOptionsKey: Any]?
 	) -> Bool
 	{
-		true
+		configureNavigationBarAppearance()
+		return true
+	}
+
+	/// Force opaque navigation bars
+	private func configureNavigationBarAppearance()
+	{
+		let appearance = UINavigationBarAppearance()
+		appearance.configureWithOpaqueBackground()
+		appearance.backgroundColor = .systemBackground
+
+		// All four slots, or the bar changes color as the content scrolls.
+		let navigationBar = UINavigationBar.appearance()
+		navigationBar.standardAppearance = appearance
+		navigationBar.compactAppearance = appearance
+		navigationBar.scrollEdgeAppearance = appearance
+		navigationBar.compactScrollEdgeAppearance = appearance
 	}
 
 	func applicationWillResignActive(_: UIApplication)

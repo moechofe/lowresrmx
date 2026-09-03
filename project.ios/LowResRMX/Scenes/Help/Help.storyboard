@@ -145,7 +145,7 @@
         <scene sceneID="Z0i-bd-2n2">
             <objects>
                 <navigationController extendedLayoutIncludesOpaqueBars="YES" id="ZzF-vd-cgo" sceneMemberID="viewController">
-                    <navigationBar key="navigationBar" contentMode="scaleToFill" translucent="NO" id="yBO-ew-DN8">
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="yBO-ew-DN8">
                         <rect key="frame" x="0.0" y="100" width="375" height="54"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </navigationBar>
@@ -161,7 +161,7 @@
         <scene sceneID="KdV-MH-j2G">
             <objects>
                 <navigationController storyboardIdentifier="Contents" title="Contents" id="a40-4h-tm3" customClass="HelpMasterNavController" sceneMemberID="viewController">
-                    <navigationBar key="navigationBar" contentMode="scaleToFill" translucent="NO" id="LGn-Hv-V0x">
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="LGn-Hv-V0x">
                         <rect key="frame" x="0.0" y="100" width="375" height="54"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </navigationBar>
