@@ -1,3 +1,10 @@
+### 1.0_70
+
+- GFX: fix bg file detection.
+- iOS: fix crash while openning an rmx from a cold boot.
+- iOS: can import rmx from the Files app.
+- Desktop: fix skewed screenshots on Windows.
+
 ### 1.0_69
 
 - Package desktop app

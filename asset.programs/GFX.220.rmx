@@ -1,4 +1,4 @@
-version$="0.219"
+version$="0.220"
 'offical graphics editor for Retro Game Creator (LowResRMX) for iOS
 'author: martin mauchauffee
 
@@ -596,11 +596,11 @@ sub usrtype(f,t,t$)
 '(out) t$ type
   t$="" :t=0
   if fsize(f)=0 then exit sub
-  t$="pal?" :t=1
-  if fsize(f)=32 then exit sub
   load f,$9000,4
   t$="back?" :t=3
   if peekw($9000)=0 and peek($9002)>0 and peek($9003)>0 and peek($9002)*peek($9003)*2+4=fsize(f) then exit sub
+  t$="pal?" :t=1
+  if fsize(f)=32 then exit sub
   t$="chara?" :t=2
 end sub
 
@@ -757,7 +757,9 @@ sub usrloadbg(new,old,dst,err)
     exit sub
   end if
   t=0 :t$="" :call usrtype(new,t,t$)
-  if t<>3 and t<>1 then
+  'only a real background: usrload reads the dimensions from the header for t=3 only, so
+  'any other type would set up the layer with a 0x0 size
+  if t<>3 then
     err=2
     exit sub
   end if
@@ -5087,6 +5089,19 @@ tlb_8_slide: 'wid=8
   if redtool=7 then gosub red_slide_off
   call toggletool(redtool,7,0)
   goto tlb_8_redraw
+
+
+
+'''TLB_9 backed more
+
+'[clr] [cut] [copy] [past]
+'[char][layr] [more][file]
+
+'[resize] [shift] [layers]
+'[off||chr||pal||fli||pri]
+'             [back] [oob]
+
+
 
 
 

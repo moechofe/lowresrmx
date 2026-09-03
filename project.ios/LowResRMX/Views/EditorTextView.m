@@ -113,22 +113,22 @@ static NSArray<UIColor *> *syntaxColors(void) {
 	UIFont *font = self.font ?: [UIFont monospacedSystemFontOfSize:14 weight:UIFontWeightRegular];
 
 	[SyntaxWrapper.shared spansForText:text completion:^(SourceSpans *spans) {
-		// Already on the main queue.
-		 if (currentToken != syntaxHighlightingToken) {
-			 return;
-		 }
-		 NSArray<UIColor *> *colors = syntaxColors();
-		 NSMutableArray *updates = [NSMutableArray array];
-		 for (NSUInteger i = 0; i < spans.count; i++) {
-			 SourceSpan span = [spans spanAtIndex:i];
-			 if (NSIntersectionRange(span.range, expandedRange).length == 0) {
-				 continue;
-			 }
-			 [updates addObject:@{ @"range" : [NSValue valueWithRange:span.range],
-					       @"color" : colors[(NSUInteger)span.kind] }];
-		 }
-		 [self applyUpdates:updates toStorage:self.textStorage range:expandedRange font:font token:currentToken latestTokenPtr:&syntaxHighlightingToken];
-	 }];
+	        // Already on the main queue.
+		if (currentToken != syntaxHighlightingToken) {
+			return;
+		}
+		NSArray<UIColor *> *colors = syntaxColors();
+		NSMutableArray *updates = [NSMutableArray array];
+		for (NSUInteger i = 0; i < spans.count; i++) {
+			SourceSpan span = [spans spanAtIndex:i];
+			if (NSIntersectionRange(span.range, expandedRange).length == 0) {
+				continue;
+			}
+			[updates addObject:@{ @"range" : [NSValue valueWithRange:span.range],
+					      @"color" : colors[(NSUInteger)span.kind] }];
+		}
+		[self applyUpdates:updates toStorage:self.textStorage range:expandedRange font:font token:currentToken latestTokenPtr:&syntaxHighlightingToken];
+	}];
 }
 
 - (void)initKeyboardToolbar {

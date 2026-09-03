@@ -123,8 +123,8 @@
 	{
 		[self updateDynamicConstraints];
 		[UIView animateWithDuration:0.3 animations:^{
-			 [self layoutIfNeeded];
-		 }];
+			[self layoutIfNeeded];
+		}];
 	}
 }
 
@@ -136,8 +136,8 @@
 	{
 		[self updateDynamicConstraints];
 		[UIView animateWithDuration:0.3 animations:^{
-			 [self layoutIfNeeded];
-		 }];
+			[self layoutIfNeeded];
+		}];
 	}
 }
 

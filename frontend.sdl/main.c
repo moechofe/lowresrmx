@@ -99,7 +99,7 @@ void setTouchPosition(int windowX, int windowY);
 void toggleZoom(void);
 void changeVolume(int delta);
 void audioCallback(void *userdata, SDL_AudioStream *stream, int additional_amount, int total_amount);
-void saveScreenshot(void *pixels, int scale);
+void saveScreenshot(void *pixels, int pitch, int scale);
 
 bool eventFilter(void *userdata, SDL_Event *event)
 {
@@ -873,7 +873,7 @@ void update(void *arg)
 
 		if(screenshotRequestedWithScale > 0)
 		{
-			saveScreenshot(pixels, screenshotRequestedWithScale);
+			saveScreenshot(pixels, pitch, screenshotRequestedWithScale);
 			screenshotRequestedWithScale = 0;
 		}
 
@@ -1064,10 +1064,10 @@ void audioCallback(void *userdata, SDL_AudioStream *stream, int additional_amoun
 	}
 }
 
-void saveScreenshot(void *pixels, int scale)
+void saveScreenshot(void *pixels, int pitch, int scale)
 {
 #if SCREENSHOTS
-	bool succeeded = screenshot_save(pixels, scale);
+	bool succeeded = screenshot_save(pixels, pitch, scale);
 	if(succeeded)
 	{
 		overlay_message(runner.core, "SCREENSHOT SAVED");

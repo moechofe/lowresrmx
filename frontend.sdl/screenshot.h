@@ -27,7 +27,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
-bool screenshot_save(uint32_t *pixels, int scale);
+bool screenshot_save(uint32_t *pixels, int pitch, int scale);
 
 #endif
 

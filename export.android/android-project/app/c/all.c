@@ -19152,7 +19152,7 @@ void setTouchPosition(int windowX, int windowY);
 void toggleZoom(void);
 void changeVolume(int delta);
 void audioCallback(void *userdata, SDL_AudioStream *stream, int additional_amount, int total_amount);
-void saveScreenshot(void *pixels, int scale);
+void saveScreenshot(void *pixels, int pitch, int scale);
 
 bool eventFilter(void *userdata, SDL_Event *event)
 {
@@ -19926,7 +19926,7 @@ void update(void *arg)
 
 		if(screenshotRequestedWithScale > 0)
 		{
-			saveScreenshot(pixels, screenshotRequestedWithScale);
+			saveScreenshot(pixels, pitch, screenshotRequestedWithScale);
 			screenshotRequestedWithScale = 0;
 		}
 
@@ -20117,10 +20117,10 @@ void audioCallback(void *userdata, SDL_AudioStream *stream, int additional_amoun
 	}
 }
 
-void saveScreenshot(void *pixels, int scale)
+void saveScreenshot(void *pixels, int pitch, int scale)
 {
 #if SCREENSHOTS
-	bool succeeded = screenshot_save(pixels, scale);
+	bool succeeded = screenshot_save(pixels, pitch, scale);
 	if(succeeded)
 	{
 		overlay_message(runner.core, "SCREENSHOT SAVED");
@@ -20484,8 +20484,13 @@ void persistentRamDidChange(void *context, uint8_t *data, int size)
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 
-bool writeImage(const char *filename, int width, int height, uint32_t *pixels, int scale)
+bool writeImage(const char *filename, int width, int height, uint32_t *pixels, int pitch, int scale)
 {
+	// pitch is the source row stride in bytes, which is not always
+	// width * 4: SDL_LockTexture pads rows (Direct3D on Windows notably),
+	// so the source buffer must be walked with its own stride
+	const int srcWidth = pitch / (int)sizeof(uint32_t);
+
 	uint8_t *data = malloc(width * height * 3 * scale * scale);
 	if(data)
 	{
@@ -20496,7 +20501,7 @@ bool writeImage(const char *filename, int width, int height, uint32_t *pixels, i
 			{
 				for(int x = 0; x < width; x++)
 				{
-					uint32_t pixel = pixels[y * width + x];
+					uint32_t pixel = pixels[y * srcWidth + x];
 					// stbi_write_png with comp=3 wants R,G,B. The engine's word layout
 					// depends on ABGR (see machine/video_chip.h): 0xAARRGGBB when 0,
 					// 0xAABBGGRR when 1.
@@ -20527,7 +20532,7 @@ bool writeImage(const char *filename, int width, int height, uint32_t *pixels, i
 	return false;
 }
 
-bool screenshot_save(uint32_t *pixels, int scale)
+bool screenshot_save(uint32_t *pixels, int pitch, int scale)
 {
 	char filename[FILENAME_MAX];
 
@@ -20538,7 +20543,7 @@ bool screenshot_save(uint32_t *pixels, int scale)
 	time(&rawtime);
 	struct tm *timeinfo = localtime(&rawtime);
 	strftime(&filename[len], FILENAME_MAX - len - 1, "LowRes NX %Y-%m-%d %H_%M_%S.png", timeinfo);
-	return writeImage(filename, SCREEN_WIDTH, SCREEN_HEIGHT, pixels, scale);
+	return writeImage(filename, SCREEN_WIDTH, SCREEN_HEIGHT, pixels, pitch, scale);
 }
 
 #endif

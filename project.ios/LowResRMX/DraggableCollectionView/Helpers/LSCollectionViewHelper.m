@@ -291,10 +291,10 @@ typedef NS_ENUM(NSInteger, _ScrollingDirection) {
 
 			// Remove the item
 			[self.collectionView performBatchUpdates:^{
-				 [self.collectionView deleteItemsAtIndexPaths:@[fromIndexPath]];
-				 self.layoutHelper.fromIndexPath = nil;
-				 self.layoutHelper.toIndexPath = nil;
-			 } completion:nil];
+				[self.collectionView deleteItemsAtIndexPaths:@[fromIndexPath]];
+				self.layoutHelper.fromIndexPath = nil;
+				self.layoutHelper.toIndexPath = nil;
+			} completion:nil];
 		}
 		else
 		{
@@ -306,16 +306,16 @@ typedef NS_ENUM(NSInteger, _ScrollingDirection) {
 
 			// Move the item
 			[self.collectionView performBatchUpdates:^{
-				 [self.collectionView moveItemAtIndexPath:fromIndexPath toIndexPath:toIndexPath];
-				 self.layoutHelper.fromIndexPath = nil;
-				 self.layoutHelper.toIndexPath = nil;
-			 } completion:^(BOOL finished) {
-				 if (finished) {
-					 if ([dataSource respondsToSelector:@selector(collectionView:didMoveItemAtIndexPath:toIndexPath:)]) {
-						 [dataSource collectionView:self.collectionView didMoveItemAtIndexPath:fromIndexPath toIndexPath:toIndexPath];
-					 }
-				 }
-			 }];
+				[self.collectionView moveItemAtIndexPath:fromIndexPath toIndexPath:toIndexPath];
+				self.layoutHelper.fromIndexPath = nil;
+				self.layoutHelper.toIndexPath = nil;
+			} completion:^(BOOL finished) {
+				if (finished) {
+					if ([dataSource respondsToSelector:@selector(collectionView:didMoveItemAtIndexPath:toIndexPath:)]) {
+						[dataSource collectionView:self.collectionView didMoveItemAtIndexPath:fromIndexPath toIndexPath:toIndexPath];
+					}
+				}
+			}];
 		}
 
 		// Switch mock for cell
@@ -366,9 +366,9 @@ typedef NS_ENUM(NSInteger, _ScrollingDirection) {
 		return;
 	}
 	[self.collectionView performBatchUpdates:^{
-		 self.layoutHelper.hideIndexPath = indexPath;
-		 self.layoutHelper.toIndexPath = indexPath;
-	 } completion:nil];
+		self.layoutHelper.hideIndexPath = indexPath;
+		self.layoutHelper.toIndexPath = indexPath;
+	} completion:nil];
 }
 
 - (void)handlePanGesture:(UIPanGestureRecognizer *)sender
