@@ -8,6 +8,8 @@ Community website: https://ret.ro.it/
 
 > This is a fork of the excellent fantasy console [LowRes NX by Timo "Inutilis" Kloss](https://lowresnx.inutilis.com). 
 
+<a href="https://testflight.apple.com/join/1vdyycrU"><img src="https://developer.apple.com/app-store/marketing/guidelines/images/badge-example-preferred.png" height=50px width=auto></a> <a href="https://moechofe.itch.io/lowresrmx"><img src="https://static.itch.io/images/badge.svg" height=50px width=auto></a>
+
 ### Goal
 
 I want to be able to create games on the go using my iPad and eventually, put them on the App Store for free. LowRes NX can do that but come with limitation that remove appealing, like no fullscreen, and no fine touch detection.
