@@ -19,7 +19,7 @@
 
 import UIKit
 
-class ExplorerViewController: UIViewController, UICollectionViewDelegateFlowLayout, UICollectionViewDataSource, ExplorerItemCellDelegate, NSMetadataQueryDelegate
+class ExplorerViewController: UIViewController, UICollectionViewDelegateFlowLayout, UICollectionViewDataSource
 {
 	@IBOutlet var collectionView: UICollectionView!
 	@IBOutlet var activityView: UIActivityIndicatorView!
@@ -31,10 +31,11 @@ class ExplorerViewController: UIViewController, UICollectionViewDelegateFlowLayo
 	private var didAddProgramObserver: Any?
 	private var queryDidFinishGatheringObserver: Any?
 	private var queryDidUpdateObserver: Any?
-	private var willShowMenuObserver: Any?
-	private var didHideMenuObserver: Any?
-	private var isVisible: Bool = false
-	private var unassignedItems = [URL: ExplorerItem]()
+	private var isVisible = false
+	private var isContextMenuVisible = false
+	private var runningFileOperations = 0
+	private var needsFileListUpdate = false
+	private var areQueryUpdatesEnabled = true
 
 	override func viewDidLoad()
 	{
@@ -67,14 +68,14 @@ class ExplorerViewController: UIViewController, UICollectionViewDelegateFlowLayo
 		}
 
 		didAddProgramObserver = NotificationCenter.default.addObserver(forName: NSNotification.Name.ProjectManagerDidAddProgram, object: nil, queue: nil)
-		{ notification in
-			let item: ExplorerItem! = notification.userInfo!["item"] as! ExplorerItem?
-			self.unassignedItems[item.fileUrl] = item
-			self.addedItem = item
-			if self.isVisible
+		{ [weak self] notification in
+			guard let self, let item = notification.userInfo?["item"] as? ExplorerItem
+			else
 			{
-				self.showAddedItem()
+				return
 			}
+			addedItem = item
+			showAddedItem()
 		}
 	}
 
@@ -105,6 +106,8 @@ class ExplorerViewController: UIViewController, UICollectionViewDelegateFlowLayo
 	{
 		super.viewDidAppear(animated)
 		isVisible = true
+		// no context menu can outlive the view controller going away and coming back
+		isContextMenuVisible = false
 		showAddedItem()
 		if let indexPaths = collectionView.indexPathsForSelectedItems, !indexPaths.isEmpty
 		{
@@ -112,29 +115,12 @@ class ExplorerViewController: UIViewController, UICollectionViewDelegateFlowLayo
 			collectionView.performBatchUpdates({
 				self.collectionView.reloadItems(at: indexPaths)
 			}, completion: { _ in
-				self.metadataQuery?.enableUpdates()
+				self.syncQueryUpdates()
 			})
 		}
 		else
 		{
-			metadataQuery?.enableUpdates()
-		}
-
-		willShowMenuObserver = NotificationCenter.default.addObserver(
-			forName: UIMenuController.willShowMenuNotification,
-			object: nil,
-			queue: nil
-		)
-		{ [weak self] _ in
-			self?.metadataQuery?.disableUpdates()
-		}
-		didHideMenuObserver = NotificationCenter.default.addObserver(
-			forName: UIMenuController.didHideMenuNotification,
-			object: nil,
-			queue: nil
-		)
-		{ [weak self] _ in
-			self?.metadataQuery?.enableUpdates()
+			syncQueryUpdates()
 		}
 	}
 
@@ -142,18 +128,7 @@ class ExplorerViewController: UIViewController, UICollectionViewDelegateFlowLayo
 	{
 		super.viewWillDisappear(animated)
 		isVisible = false
-		metadataQuery?.disableUpdates()
-
-		if willShowMenuObserver != nil
-		{
-			NotificationCenter.default.removeObserver(willShowMenuObserver!)
-			willShowMenuObserver = nil
-		}
-		if didHideMenuObserver != nil
-		{
-			NotificationCenter.default.removeObserver(didHideMenuObserver!)
-			didHideMenuObserver = nil
-		}
+		syncQueryUpdates()
 	}
 
 	override func viewWillLayoutSubviews()
@@ -201,7 +176,6 @@ class ExplorerViewController: UIViewController, UICollectionViewDelegateFlowLayo
 		metadataQuery = query
 		query.searchScopes = [NSMetadataQueryUbiquitousDocumentsScope]
 		query.predicate = NSPredicate(format: "%K LIKE '*.rmx'", NSMetadataItemFSNameKey)
-		query.delegate = self
 
 		queryDidFinishGatheringObserver = NotificationCenter.default.addObserver(forName: NSNotification.Name.NSMetadataQueryDidFinishGathering, object: query, queue: nil, using: { [weak self] _ in
 			self?.activityView.stopAnimating()
@@ -229,6 +203,70 @@ class ExplorerViewController: UIViewController, UICollectionViewDelegateFlowLayo
 		}
 	}
 
+	// MARK: - Refresh gating
+
+	private var isCollectionViewLocked: Bool
+	{
+		isContextMenuVisible || runningFileOperations > 0
+	}
+
+	private func syncQueryUpdates()
+	{
+		let shouldEnable = isVisible && !isCollectionViewLocked
+		if shouldEnable != areQueryUpdatesEnabled
+		{
+			areQueryUpdatesEnabled = shouldEnable
+			if shouldEnable
+			{
+				metadataQuery?.enableUpdates()
+			}
+			else
+			{
+				metadataQuery?.disableUpdates()
+			}
+		}
+		applyDeferredUpdates()
+	}
+
+	private func beginFileOperation()
+	{
+		runningFileOperations += 1
+		syncQueryUpdates()
+	}
+
+	private func endFileOperation()
+	{
+		runningFileOperations -= 1
+		syncQueryUpdates()
+	}
+
+	private func applyDeferredUpdates()
+	{
+		guard !isCollectionViewLocked
+		else
+		{
+			return
+		}
+		if needsFileListUpdate
+		{
+			updateCloudFileList()
+		}
+		showAddedItem()
+	}
+
+	private func refreshVisibleCells()
+	{
+		guard let items
+		else
+		{
+			return
+		}
+		for indexPath in collectionView.indexPathsForVisibleItems where indexPath.item < items.count
+		{
+			(collectionView.cellForItem(at: indexPath) as? ExplorerItemCell)?.item = items[indexPath.item]
+		}
+	}
+
 	private func updateCloudFileList()
 	{
 		guard let query = metadataQuery
@@ -237,30 +275,67 @@ class ExplorerViewController: UIViewController, UICollectionViewDelegateFlowLayo
 			return
 		}
 
-		query.disableUpdates()
+		guard !isCollectionViewLocked
+		else
+		{
+			needsFileListUpdate = true
+			return
+		}
+		needsFileListUpdate = false
 
-		var items = query.results as! [ExplorerItem]
-		items.sort(by: { item1, item2 -> Bool in
+		var itemsByUrl = [URL: ExplorerItem]()
+		for item in items ?? []
+		{
+			itemsByUrl[item.fileUrl] = item
+		}
+
+		var newItems = [ExplorerItem]()
+		for metadataItem in query.results as! [NSMetadataItem]
+		{
+			guard let url = metadataItem.value(forAttribute: NSMetadataItemURLKey) as? URL
+			else
+			{
+				continue
+			}
+			let item = itemsByUrl[url] ?? ExplorerItem(fileUrl: url)
+			item.metadataItem = metadataItem
+			newItems.append(item)
+		}
+		newItems.sort(by: { item1, item2 -> Bool in
 			return item1.createdAt < item2.createdAt
 		})
-		self.items = items
+
+		// the query has picked up a program this app just created
+		if let addedItem, newItems.contains(where: { $0.fileUrl == addedItem.fileUrl })
+		{
+			self.addedItem = nil
+		}
+
+		if let items, items.elementsEqual(newItems, by: { $0 === $1 })
+		{
+			// same programs in the same order: refresh contents without dequeueing
+			refreshVisibleCells()
+			return
+		}
+
+		items = newItems
 		collectionView.reloadData()
 		updateFooter()
-
-		query.enableUpdates()
 	}
 
 	func showAddedItem()
 	{
-		if let addedItem, items != nil
+		guard isVisible, !isCollectionViewLocked, let addedItem, items != nil
+		else
 		{
-			items!.append(addedItem)
-			let indexPath = IndexPath(item: items!.count - 1, section: 0)
-			collectionView.insertItems(at: [indexPath])
-			collectionView.scrollToItem(at: indexPath, at: .bottom, animated: true)
-			updateFooter()
-			self.addedItem = nil
+			return
 		}
+		items!.append(addedItem)
+		let indexPath = IndexPath(item: items!.count - 1, section: 0)
+		collectionView.insertItems(at: [indexPath])
+		collectionView.scrollToItem(at: indexPath, at: .bottom, animated: true)
+		updateFooter()
+		self.addedItem = nil
 	}
 
 	private func updateFooter()
@@ -387,13 +462,13 @@ class ExplorerViewController: UIViewController, UICollectionViewDelegateFlowLayo
 
 	func deleteItem(_ item: ExplorerItem)
 	{
-		metadataQuery?.disableUpdates()
+		beginFileOperation()
 
 		ProjectManager.shared.deleteProject(item: item)
 		{ error in
 			if let error
 			{
-				self.metadataQuery?.enableUpdates()
+				self.endFileOperation()
 				self.showAlert(withTitle: "Could not Delete Program", message: error.localizedDescription, block: nil)
 			}
 			else
@@ -406,7 +481,7 @@ class ExplorerViewController: UIViewController, UICollectionViewDelegateFlowLayo
 					}
 				}, completion: { _ in
 					self.updateFooter()
-					self.metadataQuery?.enableUpdates()
+					self.endFileOperation()
 				})
 			}
 		}
@@ -414,13 +489,13 @@ class ExplorerViewController: UIViewController, UICollectionViewDelegateFlowLayo
 
 	func renameItem(_ item: ExplorerItem, newName: String)
 	{
-		metadataQuery?.disableUpdates()
+		beginFileOperation()
 
 		ProjectManager.shared.renameProject(item: item, newName: newName)
 		{ error in
 			if let error
 			{
-				self.metadataQuery?.enableUpdates()
+				self.endFileOperation()
 				self.showAlert(withTitle: "Could not Rename Program", message: error.localizedDescription, block: nil)
 			}
 			else
@@ -431,7 +506,7 @@ class ExplorerViewController: UIViewController, UICollectionViewDelegateFlowLayo
 						self.collectionView.reloadItems(at: [IndexPath(item: index, section: 0)])
 					}
 				}, completion: { _ in
-					self.metadataQuery?.enableUpdates()
+					self.endFileOperation()
 				})
 			}
 		}
@@ -439,11 +514,11 @@ class ExplorerViewController: UIViewController, UICollectionViewDelegateFlowLayo
 
 	func duplicateItem(_ item: ExplorerItem)
 	{
-		metadataQuery?.disableUpdates()
+		beginFileOperation()
 
 		ProjectManager.shared.duplicateProject(item: item)
 		{ error in
-			self.metadataQuery?.enableUpdates()
+			self.endFileOperation()
 
 			if let error
 			{
@@ -463,7 +538,6 @@ class ExplorerViewController: UIViewController, UICollectionViewDelegateFlowLayo
 	{
 		let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "ProjectCell", for: indexPath) as! ExplorerItemCell
 		cell.item = items?[indexPath.item]
-		cell.delegate = self
 		return cell
 	}
 
@@ -484,14 +558,7 @@ class ExplorerViewController: UIViewController, UICollectionViewDelegateFlowLayo
 
 	func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt _: IndexPath) -> CGSize
 	{
-		// let traits = collectionView.traitCollection
 		var cellSize: CGSize
-		//        if traits.horizontalSizeClass == .regular && traits.verticalSizeClass == .regular {
-		//            cellSize = CGSize(width: 180, height: 170)
-		//        } else {
-		//            cellSize = CGSize(width: 110, height: 105)
-		//        }
-		// cellSize = CGSize(width:110, height: 185)
 		cellSize = CGSize(width: 110, height: 150)
 		let layout = collectionViewLayout as! UICollectionViewFlowLayout
 		let width = collectionView.bounds.size.width - layout.sectionInset.left - layout.sectionInset.right
@@ -499,71 +566,72 @@ class ExplorerViewController: UIViewController, UICollectionViewDelegateFlowLayo
 		return CGSize(width: floor(width / numItemsPerLine), height: cellSize.height)
 	}
 
-	@available(iOS 13.0, *)
 	func collectionView(_ collectionView: UICollectionView, contextMenuConfigurationForItemAt indexPath: IndexPath, point _: CGPoint) -> UIContextMenuConfiguration?
 	{
+		// the cell is the source of truth for what the user actually pressed
 		guard let cell = collectionView.cellForItem(at: indexPath) as? ExplorerItemCell, let item = cell.item else { return nil }
 
 		return UIContextMenuConfiguration(identifier: item.fileUrl as NSURL, previewProvider: nil)
 		{ _ -> UIMenu? in
 			let renameAction = UIAction(title: "Rename...", image: UIImage(systemName: "pencil"))
 			{ [weak self] _ in
-				self?.explorerItemCell(cell, didSelectRename: item)
+				self?.showRenameAlert(for: item)
 			}
 			let duplicateAction = UIAction(title: "Duplicate", image: UIImage(systemName: "plus.square.on.square"))
 			{ [weak self] _ in
-				self?.explorerItemCell(cell, didSelectDuplicate: item)
+				self?.duplicateItem(item)
 			}
 			let deleteAction = UIAction(title: "Delete...", image: UIImage(systemName: "minus.circle"), attributes: .destructive)
 			{ [weak self] _ in
-				self?.explorerItemCell(cell, didSelectDelete: item)
+				self?.showDeleteConfirmation(for: item)
 			}
 			let shareAction = UIAction(title: "Share...", image: UIImage(systemName: "square.and.arrow.up"))
 			{ [weak self] _ in
-				self?.explorerItemCell(cell, didSelectShare: item)
+				guard let self else { return }
+				shareItem(item, from: self.cell(for: item))
 			}
 			return UIMenu(title: "", children: [shareAction, renameAction, duplicateAction, deleteAction])
 		}
 	}
 
-	@available(iOS 13.0, *)
 	func collectionView(_: UICollectionView, willDisplayContextMenu _: UIContextMenuConfiguration, animator _: UIContextMenuInteractionAnimating?)
 	{
-		metadataQuery?.disableUpdates()
+		isContextMenuVisible = true
+		syncQueryUpdates()
 	}
 
-	@available(iOS 13.0, *)
-	func collectionView(_: UICollectionView, willEndContextMenuInteraction _: UIContextMenuConfiguration, animator _: UIContextMenuInteractionAnimating?)
+	func collectionView(_: UICollectionView, willEndContextMenuInteraction _: UIContextMenuConfiguration, animator: UIContextMenuInteractionAnimating?)
 	{
-		metadataQuery?.enableUpdates()
-	}
-
-	func collectionView(_: UICollectionView, shouldShowMenuForItemAt _: IndexPath) -> Bool
-	{
-		UIMenuController.shared.menuItems = [
-			UIMenuItem(title: "Share...", action: #selector(ExplorerItemCell.shareItem)),
-			UIMenuItem(title: "Rename...", action: #selector(ExplorerItemCell.renameItem)),
-			UIMenuItem(title: "Duplicate", action: #selector(ExplorerItemCell.duplicateItem)),
-			UIMenuItem(title: "Delete...", action: #selector(ExplorerItemCell.deleteItem)),
-		]
-		return true
-	}
-
-	func collectionView(_: UICollectionView, canPerformAction action: Selector, forItemAt _: IndexPath, withSender _: Any?) -> Bool
-	{
-		if action == #selector(ExplorerItemCell.renameItem) || action == #selector(ExplorerItemCell.deleteItem) || action == #selector(ExplorerItemCell.duplicateItem)
+		// The lifted cell is handed back to the collection view only when the
+		// dismissal animation ends, so stay locked until then.
+		if let animator
 		{
-			return true
+			animator.addCompletion
+			{
+				self.isContextMenuVisible = false
+				self.syncQueryUpdates()
+			}
 		}
-		return false
+		else
+		{
+			isContextMenuVisible = false
+			syncQueryUpdates()
+		}
 	}
 
-	func collectionView(_: UICollectionView, performAction _: Selector, forItemAt _: IndexPath, withSender _: Any?)
-	{}
+	// MARK: - Item actions
 
-	// MARK: - ExplorerItemCellDelegate
+	private func cell(for item: ExplorerItem) -> UICollectionViewCell?
+	{
+		guard let index = items?.firstIndex(of: item)
+		else
+		{
+			return nil
+		}
+		return collectionView.cellForItem(at: IndexPath(item: index, section: 0))
+	}
 
-	func explorerItemCell(_: ExplorerItemCell, didSelectRename item: ExplorerItem)
+	func showRenameAlert(for item: ExplorerItem)
 	{
 		let alert = UIAlertController(title: "Rename “\(item.name)”", message: nil, preferredStyle: .alert)
 		alert.addTextField
@@ -585,7 +653,7 @@ class ExplorerViewController: UIViewController, UICollectionViewDelegateFlowLayo
 		present(alert, animated: true, completion: nil)
 	}
 
-	func explorerItemCell(_ cell: ExplorerItemCell, didSelectDelete item: ExplorerItem)
+	func showDeleteConfirmation(for item: ExplorerItem)
 	{
 		var message: String?
 		if ProjectManager.shared.isCloudEnabled
@@ -597,41 +665,14 @@ class ExplorerViewController: UIViewController, UICollectionViewDelegateFlowLayo
 			deleteItem(item)
 		}))
 		alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
-		present(alert, animated: true, completion: nil)
 		if let pop = alert.popoverPresentationController
 		{
-			pop.sourceView = cell
-			pop.sourceRect = cell.bounds
+			// must be set before presenting: on iPad the action sheet is a popover
+			let anchorView: UIView = cell(for: item) ?? view
+			pop.sourceView = anchorView
+			pop.sourceRect = anchorView.bounds
 			pop.permittedArrowDirections = [.down, .up]
 		}
-	}
-
-	func explorerItemCell(_ cell: ExplorerItemCell, didSelectShare item: ExplorerItem)
-	{
-		shareItem(item, from: cell)
-	}
-
-	func explorerItemCell(_: ExplorerItemCell, didSelectDuplicate item: ExplorerItem)
-	{
-		duplicateItem(item)
-	}
-
-	// MARK: - NSMetadataQueryDelegate
-
-	func metadataQuery(_: NSMetadataQuery, replacementObjectForResultObject result: NSMetadataItem) -> Any
-	{
-		var resultItem: ExplorerItem
-		let url = result.value(forAttribute: NSMetadataItemURLKey) as! URL
-		if let item = unassignedItems[url]
-		{
-			unassignedItems.removeValue(forKey: url)
-			resultItem = item
-		}
-		else
-		{
-			resultItem = ExplorerItem(fileUrl: url)
-		}
-		resultItem.metadataItem = result
-		return resultItem
+		present(alert, animated: true, completion: nil)
 	}
 }

@@ -19,21 +19,11 @@
 
 import UIKit
 
-protocol ExplorerItemCellDelegate: AnyObject
-{
-	func explorerItemCell(_ cell: ExplorerItemCell, didSelectRename item: ExplorerItem)
-	func explorerItemCell(_ cell: ExplorerItemCell, didSelectDelete item: ExplorerItem)
-	func explorerItemCell(_ cell: ExplorerItemCell, didSelectDuplicate item: ExplorerItem)
-	func explorerItemCell(_ cell: ExplorerItemCell, didSelectShare item: ExplorerItem)
-}
-
 class ExplorerItemCell: UICollectionViewCell
 {
 	@IBOutlet var nameLabel: UILabel!
 	@IBOutlet var shadowView: UIView!
 	@IBOutlet var previewImageView: UIImageView!
-
-	weak var delegate: ExplorerItemCellDelegate?
 
 	var item: ExplorerItem?
 	{
@@ -58,37 +48,5 @@ class ExplorerItemCell: UICollectionViewCell
 		shadowView.layer.shadowOffset = CGSize(width: 0, height: 1)
 		shadowView.layer.shadowOpacity = 1.0
 		shadowView.layer.shadowRadius = 2.0
-	}
-
-	@objc func shareItem(_: Any?)
-	{
-		if let delegate
-		{
-			delegate.explorerItemCell(self, didSelectShare: item!)
-		}
-	}
-
-	@objc func renameItem(_: Any?)
-	{
-		if let delegate
-		{
-			delegate.explorerItemCell(self, didSelectRename: item!)
-		}
-	}
-
-	@objc func deleteItem(_: Any?)
-	{
-		if let delegate
-		{
-			delegate.explorerItemCell(self, didSelectDelete: item!)
-		}
-	}
-
-	@objc func duplicateItem(_: Any?)
-	{
-		if let delegate
-		{
-			delegate.explorerItemCell(self, didSelectDuplicate: item!)
-		}
 	}
 }
