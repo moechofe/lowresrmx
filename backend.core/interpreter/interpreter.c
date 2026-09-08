@@ -428,7 +428,7 @@ void itp_runInterrupt(struct Core *core, enum InterruptType type)
 				delegate_interpreterDidFail(core, err_makeCoreError(errorCode, interpreter->pc->sourcePosition, -1));
 			}
 
-			errorCode = lab_pushLabelStackItem(interpreter, LabelTypeONCALL, NULL);
+			errorCode = lab_pushLabelStackItem(interpreter, LabelTypeONCALL, startToken);
 
 			while(errorCode == ErrorNone
 			      // cycles can exceed interrupt limit (see interruptOverCycles), but there is still a hard limit for

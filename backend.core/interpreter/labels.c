@@ -19,6 +19,8 @@
 
 #include "labels.h"
 #include "interpreter.h"
+#include <stdbool.h>
+#include <string.h>
 
 enum ErrorCode lab_pushLabelStackItem(struct Interpreter *interpreter, enum LabelType type, struct Token *token)
 {
@@ -66,4 +68,35 @@ struct LabelStackItem *lab_searchLabelStackItem(struct Interpreter *interpreter,
 		--i;
 	}
 	return NULL;
+}
+
+static bool lab_isNameCharacter(char character)
+{
+	return (character >= 'a' && character <= 'z') || (character >= 'A' && character <= 'Z') ||
+	       (character >= '0' && character <= '9') || character == '_';
+}
+
+void lab_getStackItemName(struct Interpreter *interpreter, const struct LabelStackItem *item, char *buffer,
+                          size_t bufferSize)
+{
+	if(bufferSize == 0)
+		return;
+	buffer[0] = '\0';
+
+	// the program was freed
+	if(!item || !item->token || !interpreter->sourceCode || item->token->sourcePosition <= 0)
+		return;
+
+	// scan backwards
+	const char *sourceCode = interpreter->sourceCode;
+	const char *end = &sourceCode[item->token->sourcePosition];
+	const char *start = end;
+	while(start > sourceCode && lab_isNameCharacter(start[-1]))
+		--start;
+
+	size_t length = (size_t)(end - start);
+	if(length > bufferSize - 1)
+		length = bufferSize - 1;
+	memcpy(buffer, start, length);
+	buffer[length] = '\0';
 }
