@@ -25,8 +25,6 @@ void main() async {
   runApp(const MyApp());
 }
 
-/// Runs once after a fresh install or an app update, before the UI starts.
-/// Put migrations and asset refreshes here.
 Future<void> onInstallChanged(InstallChange change) async {
 	if (change == InstallChange.downgraded) {
 		return;
