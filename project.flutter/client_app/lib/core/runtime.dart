@@ -1,18 +1,3 @@
-// TODO: TEST to reach the end of a program, how it is handled compare to produce an error
-// TODO: TEST to reach the end of a program, how it is handled compare to produce an error
-// TODO: TEST to reach the end of a program, how it is handled compare to produce an error
-// TODO: TEST to reach the end of a program, how it is handled compare to produce an error
-// TODO: TEST to reach the end of a program, how it is handled compare to produce an error
-// TODO: TEST to reach the end of a program, how it is handled compare to produce an error
-// TODO: TEST to reach the end of a program, how it is handled compare to produce an error
-// TODO: TEST to reach the end of a program, how it is handled compare to produce an error
-// TODO: TEST to reach the end of a program, how it is handled compare to produce an error
-// TODO: TEST to reach the end of a program, how it is handled compare to produce an error
-// TODO: TEST to reach the end of a program, how it is handled compare to produce an error
-// TODO: TEST to reach the end of a program, how it is handled compare to produce an error
-// TODO: TEST to reach the end of a program, how it is handled compare to produce an error
-// TODO: TEST to reach the end of a program, how it is handled compare to produce an error
-
 import 'dart:async';
 import 'dart:developer';
 import 'dart:ffi' as ffi;
@@ -32,8 +17,6 @@ import 'package:flutter_miniaudio/flutter_miniaudio.dart';
 
 import 'package:core_plugin/core_plugin_bindings_generated.dart';
 import 'package:core_plugin/core_plugin.dart';
-
-import 'package:lowresrmx/data/outline_entry.dart';
 
 class Location {
   late final int row;
@@ -103,7 +86,6 @@ enum IsolateMessageType {
   traceOn,
   traceOff,
   thumbnail,
-  renderFrame,
 	audioStart,
 	audioStop,
 	renderAudio,
@@ -123,6 +105,12 @@ class CompileAndRunMsg {
 class CompileOnlyMsg {
   final String code;
   CompileOnlyMsg(this.code);
+}
+
+/// Message used to ask the isolate to advance the engine, then render one frame at 1/60s.
+class RenderFrameMsg {
+  final int steps;
+  RenderFrameMsg(this.steps);
 }
 
 /// Message used to transport the error from the isolate to the app
@@ -319,19 +307,6 @@ class Runtime extends ChangeNotifier {
   void trace(bool trace) {
     runnerTrace(runner, trace);
   }
-
-  List<OutlineEntry> getOutline() {
-		// TODO: repair
-		return [];
-    int count = runnerGetSymbolCount(runner);
-    List<OutlineEntry> list = [];
-    for (int i = 0; i < count; ++i) {
-      String name = runnerGetSymbolName(runner, i);
-      int position = runnerGetSymbolPosition(runner, i);
-      list.add(OutlineEntry(name, position));
-    }
-    return list;
-  }
 }
 
 /// Used to hold the [Runtime] instance into an isolate.
@@ -378,19 +353,13 @@ void isolateEntryPoint(List<Object?> arguments) {
         // Receive the code and compile it, then send back the error
         final Error err = runtime.compileOnly(message.code);
         sendPort.send(err);
-        // Also send the list of outline entries
-        final List<OutlineEntry> outline = runtime.getOutline();
-        sendPort.send(outline);
-      } else if (message is IsolateMessageType &&
-          message == IsolateMessageType.renderFrame) {
-        // Render the frame
-        // var stopwatch = Stopwatch()..start();
+      } else if (message is RenderFrameMsg) {
+        // Advance the engine the number of 1/60 s frames the ticker owes it, then render once
         Error err = runtime.update();
-        // updateTime = stopwatch.elapsed.inMicroseconds / Duration.microsecondsPerSecond;
-        // stopwatch.reset();
+        for (int step = 1; err.ok && step < message.steps; step++) {
+          err = runtime.update();
+        }
         runtime.renderFrame();
-        // renderTime = stopwatch.elapsed.inMicroseconds / Duration.microsecondsPerSecond;
-        // sendPort.send(MeasurementMsg(updateTime, renderTime));
         if (runtime.textureId != null) {
           sendPort.send(IsolateMessageType.notifyFrame);
         } else {
@@ -472,9 +441,6 @@ typedef KeyboardVisibleCallback = void Function(bool);
 /// To receive the input mode changes.
 typedef InputModeCallback = void Function(bool);
 
-/// To receive the outline entries.
-typedef OutlineCallback = void Function(List<OutlineEntry>);
-
 /// Used to group all communication with the isolate in one place
 class ComPort {
   late final Isolate isolate;
@@ -483,6 +449,15 @@ class ComPort {
 	/// Regulary render the frame.
   late final Ticker ticker;
   Duration prevDuration = Duration.zero;
+
+	// To handle 60 FPS, or try to catch up.
+  static const int _stepsPerSecond = 60;
+  static const int _stepsPerAudioChunk = 2;
+  static const int _maxStepsPerTick = 4;
+  static const int _accumulatorPhase = Duration.microsecondsPerSecond ~/ 2;
+  int _stepAccumulator = _accumulatorPhase;
+  int _stepsSinceAudio = 0;
+
   Stopwatch runtimeStopwatch = Stopwatch();
   int prevRuntimeElapsed = 0;
   final Completer<SendPort> ready = Completer();
@@ -493,7 +468,6 @@ class ComPort {
   SaveDataDiskCallback? onSaveDataDisk;
   KeyboardVisibleCallback? onKeyboardVisible;
   InputModeCallback? onInputMode;
-  OutlineCallback? onOutline;
 
   StreamController<double> deltaTime = StreamController<double>();
   StreamController<double> updateTime = StreamController<double>();
@@ -587,32 +561,39 @@ class ComPort {
         if (onInputMode != null) {
           onInputMode!(message.enable);
         }
-      } else if (message is List<OutlineEntry>) {
-        // Receive the outline entries
-        if (onOutline != null) {
-          onOutline!(message);
-        }
       } else if (message is MeasurementMsg) {
         updateTime.add(message.updateTime);
         renderTime.add(message.renderTime);
       }
     });
 
-		bool tickerByTwo = true;
-
     ticker = Ticker((Duration currDuration) {
       final delta = currDuration - prevDuration;
       deltaTime.add(delta.inMicroseconds / Duration.microsecondsPerSecond);
       prevDuration = currDuration;
 
+      _stepAccumulator += delta.inMicroseconds * _stepsPerSecond;
+      int steps = _stepAccumulator ~/ Duration.microsecondsPerSecond;
+      if (steps <= 0) {
+        // Display faster than 60 FPS
+        return;
+      }
+      if (steps > _maxStepsPerTick) {
+        steps = _maxStepsPerTick;
+        _stepAccumulator = _accumulatorPhase;
+      } else {
+        _stepAccumulator -= steps * Duration.microsecondsPerSecond;
+      }
+
       // NOTE: If started before the SendPort is ready, it will crash.
-      sendPort.send(IsolateMessageType.renderFrame);
+      sendPort.send(RenderFrameMsg(steps));
 
-			if (tickerByTwo) {
-				sendPort.send(IsolateMessageType.renderAudio);
-			}
-
-			tickerByTwo = !tickerByTwo;
+      // Audio is drained after the frames that filled the ring, not before.
+      _stepsSinceAudio += steps;
+      while (_stepsSinceAudio >= _stepsPerAudioChunk) {
+        _stepsSinceAudio -= _stepsPerAudioChunk;
+        sendPort.send(IsolateMessageType.renderAudio);
+      }
     });
 
     return ready.future;
@@ -647,6 +628,8 @@ class ComPort {
     ticker.stop();
 		sendPort.send(IsolateMessageType.audioStop);
     prevDuration = Duration.zero;
+    _stepAccumulator = _accumulatorPhase;
+    _stepsSinceAudio = 0;
     runtimeStopwatch.stop();
     runtimeStopwatch.reset();
     prevRuntimeElapsed = 0;

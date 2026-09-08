@@ -1,4 +1,4 @@
-package com.lowresrmx.client_app
+package it.ro.ret.flutter.LowResRMX
 
 import android.content.Intent
 import android.net.Uri

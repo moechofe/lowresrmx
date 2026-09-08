@@ -246,52 +246,65 @@ class CorePluginBindings {
   late final _runnerTrace =
       _runnerTracePtr.asFunction<void Function(ffi.Pointer<Runner>, bool)>();
 
-  int runnerGetSymbolCount(
-    ffi.Pointer<Runner> arg0,
+  /// @brief Opaque handle on a `struct Syntax`. Kept as void* on purpose: naming the struct would
+  /// make ffigen pull `struct Tokenizer` (32768 tokens, an anonymous union) into the bindings.
+  ffi.Pointer<ffi.Void> syntaxCreate() {
+    return _syntaxCreate();
+  }
+
+  late final _syntaxCreatePtr =
+      _lookup<ffi.NativeFunction<ffi.Pointer<ffi.Void> Function()>>(
+          'syntaxCreate');
+  late final _syntaxCreate =
+      _syntaxCreatePtr.asFunction<ffi.Pointer<ffi.Void> Function()>();
+
+  void syntaxDestroy(
+    ffi.Pointer<ffi.Void> arg0,
   ) {
-    return _runnerGetSymbolCount(
+    return _syntaxDestroy(
       arg0,
     );
   }
 
-  late final _runnerGetSymbolCountPtr =
-      _lookup<ffi.NativeFunction<ffi.Int Function(ffi.Pointer<Runner>)>>(
-          'runnerGetSymbolCount');
-  late final _runnerGetSymbolCount =
-      _runnerGetSymbolCountPtr.asFunction<int Function(ffi.Pointer<Runner>)>();
+  late final _syntaxDestroyPtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ffi.Void>)>>(
+          'syntaxDestroy');
+  late final _syntaxDestroy =
+      _syntaxDestroyPtr.asFunction<void Function(ffi.Pointer<ffi.Void>)>();
 
-  ffi.Pointer<ffi.Char> runnerGetSymbolName(
-    ffi.Pointer<Runner> arg0,
-    int arg1,
+  /// @brief Tokenizes sourceCode and returns the number of spans found.
+  int syntaxScan(
+    ffi.Pointer<ffi.Void> arg0,
+    ffi.Pointer<ffi.Char> arg1,
   ) {
-    return _runnerGetSymbolName(
+    return _syntaxScan(
       arg0,
       arg1,
     );
   }
 
-  late final _runnerGetSymbolNamePtr = _lookup<
+  late final _syntaxScanPtr = _lookup<
       ffi.NativeFunction<
-          ffi.Pointer<ffi.Char> Function(
-              ffi.Pointer<Runner>, ffi.Int)>>('runnerGetSymbolName');
-  late final _runnerGetSymbolName = _runnerGetSymbolNamePtr
-      .asFunction<ffi.Pointer<ffi.Char> Function(ffi.Pointer<Runner>, int)>();
+          ffi.Int Function(
+              ffi.Pointer<ffi.Void>, ffi.Pointer<ffi.Char>)>>('syntaxScan');
+  late final _syntaxScan = _syntaxScanPtr
+      .asFunction<int Function(ffi.Pointer<ffi.Void>, ffi.Pointer<ffi.Char>)>();
 
-  int runnerGetSymbolPosition(
-    ffi.Pointer<Runner> arg0,
-    int arg1,
+  /// @brief Spans of the last scan, valid until the next syntaxScan or syntaxDestroy.
+  ffi.Pointer<SyntaxSpan> syntaxSpans(
+    ffi.Pointer<ffi.Void> arg0,
   ) {
-    return _runnerGetSymbolPosition(
+    return _syntaxSpans(
       arg0,
-      arg1,
     );
   }
 
-  late final _runnerGetSymbolPositionPtr = _lookup<
-          ffi.NativeFunction<ffi.Int Function(ffi.Pointer<Runner>, ffi.Int)>>(
-      'runnerGetSymbolPosition');
-  late final _runnerGetSymbolPosition = _runnerGetSymbolPositionPtr
-      .asFunction<int Function(ffi.Pointer<Runner>, int)>();
+  late final _syntaxSpansPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Pointer<SyntaxSpan> Function(
+              ffi.Pointer<ffi.Void>)>>('syntaxSpans');
+  late final _syntaxSpans = _syntaxSpansPtr
+      .asFunction<ffi.Pointer<SyntaxSpan> Function(ffi.Pointer<ffi.Void>)>();
 
   void inputKeyDown(
     ffi.Pointer<Input> arg0,
@@ -532,6 +545,9 @@ final class ControlsInfo extends ffi.Struct {
 
   @ffi.Bool()
   external bool isCompatMode;
+
+  @ffi.Bool()
+  external bool isPortraitLocked;
 }
 
 abstract class KeyboardMode {
@@ -598,4 +614,27 @@ final class CoreInput extends ffi.Struct {
 
   @ffi.Int()
   external int keyboardHeight;
+}
+
+final class SyntaxSpan extends ffi.Struct {
+  @ffi.Int()
+  external int start;
+
+  @ffi.Int()
+  external int length;
+
+  @ffi.Int32()
+  external int kind;
+
+  @ffi.Bool()
+  external bool isDeclaration;
+}
+
+abstract class SyntaxKind {
+  static const int SyntaxKeyword = 0;
+  static const int SyntaxNumber = 1;
+  static const int SyntaxString = 2;
+  static const int SyntaxComment = 3;
+  static const int SyntaxLabel = 4;
+  static const int SyntaxSub = 5;
 }

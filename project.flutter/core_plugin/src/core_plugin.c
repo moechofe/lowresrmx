@@ -274,51 +274,34 @@ FFI_PLUGIN_EXPORT void runnerTrace(Runner *runner,bool enabled)
 	core_setDebug(runner->core,enabled);
 }
 
-FFI_PLUGIN_EXPORT int runnerGetSymbolCount(Runner *runner)
+FFI_PLUGIN_EXPORT void* syntaxCreate(void)
 {
-	if(!runner->core) return 0;
-	struct Tokenizer *tokenizer=&runner->core->interpreter->tokenizer;
-	return tokenizer->numJumpLabelItems + tokenizer->numSubItems;
+	struct Syntax *syntax=malloc(sizeof(struct Syntax));
+	if(!syntax) return NULL;
+	syntax_init(syntax);
+	return syntax;
 }
 
-FFI_PLUGIN_EXPORT const char* runnerGetSymbolName(Runner *runner,int i)
+FFI_PLUGIN_EXPORT void syntaxDestroy(void *handle)
 {
-	if(!runner->core) return NULL;
-	struct Tokenizer *tokenizer=&runner->core->interpreter->tokenizer;
-
-	if (i > tokenizer->numJumpLabelItems + tokenizer->numSubItems)
-	{
-		return NULL;
-	}
-	else if (i < tokenizer->numJumpLabelItems)
-	{
-		int s = tokenizer->jumpLabelItems[i].symbolIndex;
-		return tokenizer->symbols[s].name;
-	}
-	else
-	{
-		int s = tokenizer->subItems[i - tokenizer->numJumpLabelItems].symbolIndex;
-		return tokenizer->symbols[s].name;
-	}
+	if(!handle) return;
+	syntax_deinit((struct Syntax*)handle);
+	free(handle);
 }
 
-FFI_PLUGIN_EXPORT int runnerGetSymbolPosition(Runner *runner,int i)
+FFI_PLUGIN_EXPORT int syntaxScan(void *handle,const char *sourceCode)
 {
-	if(!runner->core) return -1;
-	struct Tokenizer *tokenizer=&runner->core->interpreter->tokenizer;
+	if(!handle) return 0;
+	if(!sourceCode) return 0;
+	struct Syntax *syntax=(struct Syntax*)handle;
+	syntax_update(syntax,sourceCode);
+	return syntax->numSpans;
+}
 
-	if (i > tokenizer->numJumpLabelItems + tokenizer->numSubItems)
-	{
-		return -1;
-	}
-	else if (i < tokenizer->numJumpLabelItems)
-	{
-		return tokenizer->jumpLabelItems[i].token->sourcePosition;
-	}
-	else
-	{
-		return tokenizer->subItems[i - tokenizer->numJumpLabelItems].token->sourcePosition;
-	}
+FFI_PLUGIN_EXPORT const struct SyntaxSpan* syntaxSpans(void *handle)
+{
+	if(!handle) return NULL;
+	return ((struct Syntax*)handle)->spans;
 }
 
 FFI_PLUGIN_EXPORT void inputKeyDown(Input *input,int ascii)

@@ -61,9 +61,10 @@ FFI_PLUGIN_EXPORT void runnerRenderToTexture(Runner* runner, int64_t textureId);
 
 FFI_PLUGIN_EXPORT void runnerTrace(Runner*,bool);
 
-FFI_PLUGIN_EXPORT int runnerGetSymbolCount(Runner*);
-FFI_PLUGIN_EXPORT const char* runnerGetSymbolName(Runner*,int);
-FFI_PLUGIN_EXPORT int runnerGetSymbolPosition(Runner*,int);
+FFI_PLUGIN_EXPORT void* syntaxCreate(void);
+FFI_PLUGIN_EXPORT void syntaxDestroy(void*);
+FFI_PLUGIN_EXPORT int syntaxScan(void*,const char*);
+FFI_PLUGIN_EXPORT const struct SyntaxSpan* syntaxSpans(void*);
 
 FFI_PLUGIN_EXPORT void inputKeyDown(Input*,int);
 

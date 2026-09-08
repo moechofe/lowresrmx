@@ -1,20 +1,15 @@
+import 'package:lowresrmx/core/runtime.dart';
 
-import 'package:flutter/material.dart';
-
-class OutlineEntry {
-	final String identifier;
-	final int position;
-
-	OutlineEntry(this.identifier, this.position);
+enum OutlineKind {
+	label,
+	sub,
 }
 
-class MyOutlineEntries extends ChangeNotifier {
-	final List<OutlineEntry> _entries = [];
+/// One label or SUB declaration, as listed by the outline drawer.
+class OutlineEntry {
+	final String identifier;
+	final OutlineKind kind;
+	final Location location;
 
-	List<OutlineEntry> get entries => _entries;
-	set entries(List<OutlineEntry> entries) {
-		_entries.clear();
-		_entries.addAll(entries);
-		notifyListeners();
-	}
+	OutlineEntry({required this.identifier, required this.kind, required this.location});
 }

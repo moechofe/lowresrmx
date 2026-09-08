@@ -12,7 +12,6 @@ import 'package:re_editor/re_editor.dart';
 import 'package:lowresrmx/core/runtime.dart';
 import 'package:lowresrmx/data/library.dart';
 import 'package:lowresrmx/data/location.dart';
-import 'package:lowresrmx/data/outline_entry.dart';
 import 'package:lowresrmx/data/preference.dart';
 import 'package:lowresrmx/page/run_page.dart';
 import 'package:lowresrmx/widget/code_editor.dart';
@@ -124,9 +123,6 @@ class _MyEditPageState extends State<MyEditPage> with WidgetsBindingObserver {
   /// Used to gather location of errors and warnings caused by the continuous compilation.
   final MyContinousLocation location = MyContinousLocation();
 
-  /// Used to store the outline entries to feed the outline drawer.
-  final MyOutlineEntries outline = MyOutlineEntries();
-
   /// The program name to execute.
   String? editedProgramName;
 
@@ -170,8 +166,6 @@ class _MyEditPageState extends State<MyEditPage> with WidgetsBindingObserver {
   Future<bool> initEditor(BuildContext context) async {
     if (codeReady.isCompleted) return true;
 
-    final ComPort comPort = context.read<ComPort>();
-
     log("initEditor()");
 
     final programName = (ModalRoute.of(context)!.settings.arguments
@@ -207,11 +201,6 @@ class _MyEditPageState extends State<MyEditPage> with WidgetsBindingObserver {
       });
     }
 
-    // Compilation will update the outline entries.
-    comPort.onOutline = (entries) {
-      outline.entries = entries;
-    };
-
     compileOnly();
 
     editedProgramPreference = MyProgramPreference(programName);
@@ -221,7 +210,7 @@ class _MyEditPageState extends State<MyEditPage> with WidgetsBindingObserver {
     return true;
   }
 
-  /// Compile the current program and report errors in the gutter and outline in the drawer.
+  /// Compile the current program and report errors in the gutter.
   void compileOnly() {
     int currentHash = editingController.text.hashCode;
     if (lastCodeHash != currentHash) {
@@ -381,7 +370,6 @@ class _MyEditPageState extends State<MyEditPage> with WidgetsBindingObserver {
                 providers: [
                   ChangeNotifierProvider(create: (_) => findController),
                   ChangeNotifierProvider(create: (_) => location),
-                  ChangeNotifierProvider(create: (_) => outline),
                 ],
                 builder: (providerContext, _) {
                   return buildScaffold(providerContext);
@@ -452,10 +440,8 @@ class _MyEditPageState extends State<MyEditPage> with WidgetsBindingObserver {
   }
 
   Widget buildOutlineDrawer(BuildContext providerContext) {
-    final MyOutlineEntries outline = providerContext.watch<MyOutlineEntries>();
     return MyOutlineDrawer(
-        program: editingController.text,
-        entries: outline.entries,
+        editingController: editingController,
         gotoLocation: (location) {
           gotoLocation(location);
         });

@@ -42,7 +42,14 @@ void runnerRegisterNativeTexture(int textureId, ffi.Pointer<ffi.Void> nativeHand
 void runnerUnregisterNativeTexture(int textureId) => _bindings.runnerUnregisterNativeTexture(textureId);
 void runnerRenderToTexture(ffi.Pointer<Runner> runner, int textureId) => _bindings.runnerRenderToTexture(runner, textureId);
 
-CoreError runnerCompileProgram(ffi.Pointer<Runner> runner, String code) => _bindings.runnerCompileProgram(runner, code.toNativeUtf8().cast<ffi.Char>());
+CoreError runnerCompileProgram(ffi.Pointer<Runner> runner, String code) {
+  final ffi.Pointer<Utf8> native = code.toNativeUtf8();
+  try {
+    return _bindings.runnerCompileProgram(runner, native.cast<ffi.Char>());
+  } finally {
+    malloc.free(native);
+  }
+}
 
 String runnerGetError(ffi.Pointer<Runner> runner, int code) => _bindings.runnerGetError(runner, code).cast<Utf8>().toDartString();
 
@@ -53,9 +60,18 @@ void runnerRender(ffi.Pointer<Runner> runner, ffi.Pointer<ffi.Uint8> pixels) => 
 
 void runnerTrace(ffi.Pointer<Runner> runner, bool trace) => _bindings.runnerTrace(runner, trace);
 
-int runnerGetSymbolCount(ffi.Pointer<Runner> runner) => _bindings.runnerGetSymbolCount(runner);
-String runnerGetSymbolName(ffi.Pointer<Runner> runner, int index) => _bindings.runnerGetSymbolName(runner, index).cast<Utf8>().toDartString();
-int runnerGetSymbolPosition(ffi.Pointer<Runner> runner, int index) => _bindings.runnerGetSymbolPosition(runner, index);
+ffi.Pointer<ffi.Void> syntaxCreate() => _bindings.syntaxCreate();
+void syntaxDestroy(ffi.Pointer<ffi.Void> syntax) => _bindings.syntaxDestroy(syntax);
+int syntaxScan(ffi.Pointer<ffi.Void> syntax, String sourceCode) {
+  final ffi.Pointer<Utf8> native = sourceCode.toNativeUtf8();
+  try {
+    return _bindings.syntaxScan(syntax, native.cast<ffi.Char>());
+  } finally {
+    malloc.free(native);
+  }
+}
+
+ffi.Pointer<SyntaxSpan> syntaxSpans(ffi.Pointer<ffi.Void> syntax) => _bindings.syntaxSpans(syntax);
 
 void inputKeyDown(ffi.Pointer<Input> input, int key) => _bindings.inputKeyDown(input, key);
 
