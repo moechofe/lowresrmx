@@ -8,22 +8,30 @@ import 'package:lowresrmx/page/edit_page.dart';
 import 'package:lowresrmx/page/library_page.dart';
 import 'package:lowresrmx/theme.dart';
 import 'package:provider/provider.dart';
-import 'package:package_info_plus/package_info_plus.dart';
 
 late final ComPort comPort;
 
 void main() async {
 	WidgetsFlutterBinding.ensureInitialized();
-	PackageInfo packageInfo = await PackageInfo.fromPlatform();
-  String installedVersion = packageInfo.version;
-	String previousVersion = await MyPreference.getPreviouslyInstalledVersion();
-	if (installedVersion.compareTo(previousVersion) > 0) {
-		MyLibrary.reinstallDefaultPrograms();
+
+	final InstallChange change = await MyPreference.consumeInstallChange();
+	if (change != InstallChange.unchanged) {
+		log("main() install change: $change");
+		await onInstallChanged(change);
 	}
 
   comPort = ComPort();
   await comPort.init();
   runApp(const MyApp());
+}
+
+/// Runs once after a fresh install or an app update, before the UI starts.
+/// Put migrations and asset refreshes here.
+Future<void> onInstallChanged(InstallChange change) async {
+	if (change == InstallChange.downgraded) {
+		return;
+	}
+	await MyLibrary.reinstallDefaultPrograms();
 }
 
 class MyApp extends StatefulWidget {

@@ -8,6 +8,8 @@ import 'package:path/path.dart' as p;
 
 import 'package:shared_preferences/shared_preferences.dart';
 
+enum InstallChange { unchanged, freshInstall, updated, downgraded }
+
 abstract class MyPreference {
 	static Future<String> getProgramDirectory() async {
 		// final prefs = await SharedPreferences.getInstance();
@@ -47,6 +49,11 @@ abstract class MyPreference {
         .toList();
   }
 
+	static Future<void> setToolProgram(String program) async {
+		final prefs = await SharedPreferences.getInstance();
+		await prefs.setBool("$program-isTool", true);
+	}
+
   static Future<void> renameProgram(String oldName, String newName) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool("$newName-isTool", prefs.getBool("$oldName-isTool") ?? false);
@@ -73,14 +80,39 @@ abstract class MyPreference {
 		prefs.setDouble("editorFontSize", fontSize);
 	}
 
-	static Future<String> getPreviouslyInstalledVersion() async {
+	static Future<InstallChange> consumeInstallChange() async {
 		final prefs = await SharedPreferences.getInstance();
-		return prefs.getString("previouslyInstalledVersion") ?? "";
+		final PackageInfo info = await PackageInfo.fromPlatform();
+		final String current = "${info.version}+${info.buildNumber}";
+		final String? previous = prefs.getString("installedBuild");
+		if (previous == current) {
+			return InstallChange.unchanged;
+		}
+		await prefs.setString("installedBuild", current);
+		if (previous == null) {
+			return InstallChange.freshInstall;
+		}
+		return compareBuilds(current, previous) > 0
+				? InstallChange.updated
+				: InstallChange.downgraded;
 	}
 
-	static Future<void> setPreviouslyInstalledVersion(String version) async {
-		final prefs = await SharedPreferences.getInstance();
-		prefs.setString("previouslyInstalledVersion", version);
+	static int compareBuilds(String a, String b) {
+		final List<String> as = a.split(RegExp(r'[.+]'));
+		final List<String> bs = b.split(RegExp(r'[.+]'));
+		final int count = as.length > bs.length ? as.length : bs.length;
+		for (int i = 0; i < count; i++) {
+			final String av = i < as.length ? as[i] : "0";
+			final String bv = i < bs.length ? bs[i] : "0";
+			final int? ai = int.tryParse(av);
+			final int? bi = int.tryParse(bv);
+			final int order =
+					(ai != null && bi != null) ? ai.compareTo(bi) : av.compareTo(bv);
+			if (order != 0) {
+				return order;
+			}
+		}
+		return 0;
 	}
 
 	static Future<bool> getGoogleSigned() async {

@@ -217,6 +217,9 @@ class MyLibrary extends ChangeNotifier {
 			final fileName = p.basename(path);
 			final file = File(p.join(libraryDir.path, fileName));
 			await file.writeAsBytes(byteData.buffer.asUint8List());
+			if (fileName.contains("GFX")) {
+				await MyPreference.setToolProgram(fileName);
+			}
 		}
   }
 
