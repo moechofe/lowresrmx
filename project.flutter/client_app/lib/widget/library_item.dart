@@ -47,9 +47,10 @@ class _MyLibraryItemState extends State<MyLibraryItem> {
     return MyLibrary.readThumbnail(widget.programName);
   }
 
-  void gotoEdit(BuildContext context) {
-    Navigator.of(context).pushReplacementNamed(MyEditPage.routeName,
+  Future<void> gotoEdit(BuildContext context) async {
+    await Navigator.of(context).pushNamed(MyEditPage.routeName,
         arguments: {"programName": widget.programName});
+    MyLibrary().refresh();
   }
 
   @override

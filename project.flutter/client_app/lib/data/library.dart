@@ -26,6 +26,12 @@ class MyLibrary extends ChangeNotifier {
 
   MyLibrary._internal();
 
+  /// Rebuilds every view listening to the library. Needed when a program file
+  /// changed under a page that stayed alive, e.g. the editor writing code back.
+  void refresh() {
+    notifyListeners();
+  }
+
   static String extension = ".rmx";
 
   static Future<Directory> getLibraryDir() async {

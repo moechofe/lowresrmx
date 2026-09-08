@@ -154,15 +154,17 @@ class _MyEditPageState extends State<MyEditPage> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    final programName = (ModalRoute.of(context)!.settings.arguments
-        as Map)["programName"]! as String;
     super.didChangeAppLifecycleState(state);
     if (state == AppLifecycleState.paused) {
-      // The editor may not be ready here, if app is home before the editor is ready.
-      if (codeReady.isCompleted) {
-        MyLibrary.writeCode(programName, editingController.text);
-      }
+      saveCode();
     }
+  }
+
+  void saveCode() {
+    if (!codeReady.isCompleted) return;
+    final programName = (ModalRoute.of(context)!.settings.arguments
+        as Map)["programName"]! as String;
+    MyLibrary.writeCode(programName, editingController.text);
   }
 
   Future<bool> initEditor(BuildContext context) async {
@@ -355,6 +357,9 @@ class _MyEditPageState extends State<MyEditPage> with WidgetsBindingObserver {
     if (executedProgramName != null && editedProgramName != null) {
       assert(absorb, "Should be absorbing");
       WidgetsBinding.instance.addPostFrameCallback((_) {
+        // The editor can be popped while a program is compiling; its context is
+        // then dead and pushing the run page over it would throw.
+        if (!mounted) return;
         // Need to reset the values here. A rebuild may be requested and I don't wont to gotoRun twice.
         String programName = editedProgramName!;
         String dataDiskName = dataDiskProgramName!;
@@ -392,30 +397,33 @@ class _MyEditPageState extends State<MyEditPage> with WidgetsBindingObserver {
   }
 
   Widget buildScaffold(BuildContext providerContext) {
-    return AbsorbPointer(
-      absorbing: absorb,
-      child: Scaffold(
-        key: scaffoldKey,
-        appBar: buildAppBar(providerContext),
-        drawer: buildDrawer(providerContext),
-        endDrawer: buildOutlineDrawer(providerContext),
-        body: buildBody(providerContext),
-        floatingActionButton: FloatingActionButton.small(
-          onPressed: () {
-            final programName = (ModalRoute.of(context)!.settings.arguments
-                as Map)["programName"]! as String;
-            runEditedProgramWithLibraryDataDisk(programName);
+    return PopScope(
+      // Back leaves the editor for the library page below. Nothing else writes
+      // the code on that path, so it has to happen here.
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) saveCode();
+      },
+      child: AbsorbPointer(
+        absorbing: absorb,
+        child: Scaffold(
+          key: scaffoldKey,
+          appBar: buildAppBar(providerContext),
+          drawer: buildDrawer(providerContext),
+          endDrawer: buildOutlineDrawer(providerContext),
+          body: buildBody(providerContext),
+          floatingActionButton: FloatingActionButton.small(
+            onPressed: () {
+              final programName = (ModalRoute.of(context)!.settings.arguments
+                  as Map)["programName"]! as String;
+              runEditedProgramWithLibraryDataDisk(programName);
+            },
+            tooltip: "Run program",
+            child: const Icon(Icons.play_arrow_rounded),
+          ),
+          onDrawerChanged: (isOpened) {
+            if (!isOpened) saveCode();
           },
-          tooltip: "Run program",
-          child: const Icon(Icons.play_arrow_rounded),
         ),
-        onDrawerChanged: (isOpened) {
-          if (!isOpened) {
-            final programName = (ModalRoute.of(context)!.settings.arguments
-                as Map)["programName"]! as String;
-            MyLibrary.writeCode(programName, editingController.text);
-          }
-        },
       ),
     );
   }

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:lowresrmx/data/preference.dart';
-import 'package:lowresrmx/page/library_page.dart';
 import 'package:lowresrmx/page/manual_page.dart';
 import 'package:lowresrmx/page/settings_page.dart';
 import 'package:provider/provider.dart';
@@ -40,8 +39,9 @@ class _MyEditDrawerState extends State<MyEditDrawer> {
   late final MyProgramPreference programPreference;
 
   void gotoLibrary(BuildContext context) {
-    Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => const MyLibraryPage()));
+    Navigator.of(context)
+      ..pop() // Drawer
+      ..pop(); // MyEditPage
   }
 
   void gotoSettings(BuildContext context) {
@@ -84,13 +84,9 @@ class _MyEditDrawerState extends State<MyEditDrawer> {
           // title: const Text("Back to Programs"),
 					title: Text(widget.editedProgramName),
           leading: IconButton(
-              // icon: const Icon(Icons.library_books_rounded),
 							icon: const Icon(Icons.arrow_back_rounded),
               tooltip: "Program library",
-              onPressed: () {
-                Navigator.of(context).pop();
-                // gotoLibrary(context);
-              }),
+              onPressed: () => gotoLibrary(context)),
         ),
         body: buildListView());
   }
@@ -174,10 +170,7 @@ class _MyEditDrawerState extends State<MyEditDrawer> {
 		return ListTile(
 				leading: const Icon(Icons.library_books_rounded),
 				title: const Text("Back to Programs"),
-				onTap: () {
-					Navigator.of(context).pop();
-					gotoLibrary(context);
-				}
+				onTap: () => gotoLibrary(context)
 		);
 	}
 

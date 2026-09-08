@@ -210,7 +210,7 @@ class _MyLibraryPageState extends State<MyLibraryPage> {
           },
           child: const Icon(Icons.add_rounded),
         ),
-        body: MyCatalogGrid(sort: sort));
+        body: SafeArea(child:MyCatalogGrid(sort: sort)));
   }
 
   Widget buildDrawer(BuildContext context) {
