@@ -110,6 +110,9 @@ class MyTextureRenderBox extends RenderBox {
   }
 
   @override
+  bool hitTestSelf(Offset position) => true;
+
+  @override
   void paint(PaintingContext context, Offset offset) {
     final double scaleX = size.width / _textureSize.width;
     final double scaleY = size.height / _textureSize.height;
