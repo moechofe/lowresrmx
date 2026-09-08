@@ -282,18 +282,12 @@ void core_traceError(struct Core *core, struct CoreError error)
 		}
 
 		txtlib_printText(lib, "trace:\n");
-		char buffer[20];
+		char name[SYMBOL_NAME_SIZE];
 		for(int i = 0; i < core->interpreter->numLabelStackItems; ++i)
 		{
-			txtlib_printText(&core->overlay->textLib, "  ");
-
-			char *ptr = (char *)(&core->interpreter->sourceCode[core->interpreter->labelStackItems[i].token->sourcePosition - 1]);
-			while((*ptr >= 'a' && *ptr <= 'z') || (*ptr >= 'A' && *ptr <= 'Z') || (*ptr >= '0' && *ptr <= '9') || *ptr == '_') ptr--;
-			size_t len = &core->interpreter->sourceCode[core->interpreter->labelStackItems[i].token->sourcePosition - 1] - ptr;
-			if(len > 20) len = 20;
-			buffer[len] = '\0';
-			memcpy(&buffer, ptr + 1, len);
-			txtlib_printText(&core->overlay->textLib, buffer);
+			lab_getStackItemName(core->interpreter, &core->interpreter->labelStackItems[i], name, sizeof(name));
+			txtlib_printText(lib, "  ");
+			txtlib_printText(lib, name);
 			txtlib_printText(lib, "\n");
 		}
 	}
@@ -626,6 +620,7 @@ void delegate_controlsDidChange(struct Core *core)
 		info.isAudioEnabled = core->machineInternals->audioInternals.audioEnabled;
 		info.hapticMode = core->machine->ioRegisters.haptic;
 		info.isCompatMode = core->interpreter->compat;
+		info.isPortraitLocked = core->interpreter->lockPortrait;
 		core->machine->ioRegisters.haptic = 0;
 		core->delegate->controlsDidChange(core->delegate->context, info);
 	}
@@ -4073,7 +4068,7 @@ enum ErrorCode cmd_SYSTEM(struct Core *core)
 	++interpreter->pc;
 
 	// type value
-	struct TypedValue tValue = itp_evaluateNumericExpression(core, 0, 8);
+	struct TypedValue tValue = itp_evaluateNumericExpression(core, 0, 9);
 	if(tValue.type == ValueTypeError)
 		return tValue.v.errorCode;
 
@@ -4125,6 +4120,11 @@ enum ErrorCode cmd_SYSTEM(struct Core *core)
 
 		case 8:
 			core->machine->videoRegisters.attr.planeDDoubled = (sValue.v.floatValue != 0.0f);
+			break;
+
+		case 9:
+			interpreter->lockPortrait = (sValue.v.floatValue != 0.0f);
+			delegate_controlsDidChange(core);
 			break;
 		}
 	}
@@ -9368,6 +9368,7 @@ struct CoreError itp_compileProgram(struct Core *core, const char *sourceCode)
 	interpreter->numLabelStackItems = 0;
 	interpreter->isSingleLineIf = false;
 	interpreter->compat = false;
+	interpreter->lockPortrait = false;
 
 	enum ErrorCode errorCode;
 	do
@@ -9679,7 +9680,8 @@ void itp_runInterrupt(struct Core *core, enum InterruptType type)
 				delegate_interpreterDidFail(core, err_makeCoreError(errorCode, interpreter->pc->sourcePosition, -1));
 			}
 
-			errorCode = lab_pushLabelStackItem(interpreter, LabelTypeONCALL, NULL);
+			// startToken follows the handler's name, which lets a stack trace name the interrupt
+			errorCode = lab_pushLabelStackItem(interpreter, LabelTypeONCALL, startToken);
 
 			while(errorCode == ErrorNone
 			      // cycles can exceed interrupt limit (see interruptOverCycles), but there is still a hard limit for
@@ -11537,6 +11539,8 @@ struct TypedValue itp_evaluateLFOAttributes(struct Core *core, union LFOAttribut
 //    misrepresented as being the original software.
 // 3. This notice may not be removed or altered from any source distribution.
 
+#include <stdbool.h>
+#include <string.h>
 
 enum ErrorCode lab_pushLabelStackItem(struct Interpreter *interpreter, enum LabelType type, struct Token *token)
 {
@@ -11584,6 +11588,37 @@ struct LabelStackItem *lab_searchLabelStackItem(struct Interpreter *interpreter,
 		--i;
 	}
 	return NULL;
+}
+
+static bool lab_isNameCharacter(char character)
+{
+	return (character >= 'a' && character <= 'z') || (character >= 'A' && character <= 'Z') ||
+	       (character >= '0' && character <= '9') || character == '_';
+}
+
+void lab_getStackItemName(struct Interpreter *interpreter, const struct LabelStackItem *item, char *buffer,
+                          size_t bufferSize)
+{
+	if(bufferSize == 0)
+		return;
+	buffer[0] = '\0';
+
+	// the program was freed
+	if(!item || !item->token || !interpreter->sourceCode || item->token->sourcePosition <= 0)
+		return;
+
+	// scan backwards
+	const char *sourceCode = interpreter->sourceCode;
+	const char *end = &sourceCode[item->token->sourcePosition];
+	const char *start = end;
+	while(start > sourceCode && lab_isNameCharacter(start[-1]))
+		--start;
+
+	size_t length = (size_t)(end - start);
+	if(length > bufferSize - 1)
+		length = bufferSize - 1;
+	memcpy(buffer, start, length);
+	buffer[length] = '\0';
 }
 // Copyright 2016-2024 Timo Kloss
 // Copyright 2021-2026 Martin Mauchauffée
@@ -17576,7 +17611,7 @@ static void process_command_line(struct Core *core)
 			core->overlay->textLib.cursorY = 0;
 			core->interpreter->state = StateEvaluate;
 
-			struct ControlsInfo info;
+			struct ControlsInfo info = {0};
 			info.keyboardMode = KeyboardModeOff;
 #if SIMULATED_KEYBOARD
 			core->interpreter->simulatedKeyboardOn = false;
@@ -17717,17 +17752,12 @@ static void process_command_line(struct Core *core)
 			sprintf(buffer, "  %d", number);
 			txtlib_printText(&core->overlay->textLib, buffer);
 			new_line(core);
+			char name[SYMBOL_NAME_SIZE];
 			for(int i = 0; i < core->interpreter->numLabelStackItems; ++i)
 			{
+				lab_getStackItemName(core->interpreter, &core->interpreter->labelStackItems[i], name, sizeof(name));
 				txtlib_printText(&core->overlay->textLib, "  ");
-
-				char *ptr = (char *)(&core->interpreter->sourceCode[core->interpreter->labelStackItems[i].token->sourcePosition - 1]);
-				while((*ptr >= 'a' && *ptr <= 'z') || (*ptr >= 'A' && *ptr <= 'Z') || (*ptr >= '0' && *ptr <= '9') || *ptr == '_') ptr--;
-				size_t len = &core->interpreter->sourceCode[core->interpreter->labelStackItems[i].token->sourcePosition - 1] - ptr;
-				if(len > 20) len = 20;
-				buffer[len] = '\0';
-				memcpy(&buffer, ptr + 1, len);
-				txtlib_printText(&core->overlay->textLib, buffer);
+				txtlib_printText(&core->overlay->textLib, name);
 				new_line(core);
 			}
 			new_line(core);
@@ -17890,7 +17920,7 @@ void overlay_debugger(struct Core *core)
 	struct TextLib *lib = &core->overlay->textLib;
 	struct Overlay *overlay = core->overlay;
 
-	struct ControlsInfo info;
+	struct ControlsInfo info = {0};
 	info.keyboardMode = KeyboardModeOn;
 #ifdef SIMULATED_KEYBOARD
 	core->interpreter->simulatedKeyboardOn = true;

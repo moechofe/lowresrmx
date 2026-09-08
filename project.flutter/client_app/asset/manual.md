@@ -2059,7 +2059,7 @@ Copy from the rectangle `x1, y1` (0..63) with `width, height` (0..63) the cell's
 
 Draw to the `x, y` cell to the background source specified previously using [`BG SOURCE`](#bg-source-address-width-height) with the `character` using the current attributes.
 
-Similar to [`CELL`](#cell-attributes) but modify the source in memory instead of the current layer.
+Similar to [`CELL`](#cell-x-y-character) but modify the source in memory instead of the current layer.
 
 The source MUST point to writable memory.
 
@@ -3026,6 +3026,7 @@ Sets the `value` to system `setting`.
 |       6 | double size for layer 1     | 0 or 1 |
 |       7 | double size for layer 2     | 0 or 1 |
 |       8 | double size for layer 3     | 0 or 1 |
+|       9 | locked in portrait          | 0 or 1 |
 
 Enabling the _energy saving mode_ setting will reduce the refresh rate whenever there is no user input. The CPU cycles are not affected.
 
@@ -3039,18 +3040,18 @@ Enabling the _double size_ will make the background layer rendered at twice the 
 
 Trigger an haptic feedback on the device make it vibrate using a `pattern` (0..9).
 
-| pattern | feeling   |
-| -------:| --------- |
-|       0 |           |
-|       1 | tok-tirti |
-|       2 | tok-tik   |
-|       3 | took-ti   |
-|       4 | took      |
-|       5 | tik       |
-|       6 | tok       |
-|       7 | ti        |
-|       8 | tf        |
-|       9 | t         |
+| pattern | name      | feels like                             |
+| -------:| --------- | -------------------------------------- |
+|       0 | none      | nothing                                |
+|       1 | error     | 4 taps, the last one weaker and duller |
+|       2 | warning   | 2 taps, the second one weaker          |
+|       3 | success   | 2 taps, the second one stronger        |
+|       4 | heavy     | 1 strong tap                           |
+|       5 | light     | 1 gentle tap                           |
+|       6 | medium    | 1 tap                                  |
+|       7 | rigid     | 1 short and very sharp tap             |
+|       8 | soft      | 1 long and dull tap                    |
+|       9 | selection | 1 tiny crisp tick                      |
 
 Not supported on all devices.
 
