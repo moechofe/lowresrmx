@@ -18,6 +18,7 @@ enum MyLibrarySort {
 enum MyLibraryGrid {
 	two,
 	three,
+	list,
 }
 
 /// A class to manage the library of programs.

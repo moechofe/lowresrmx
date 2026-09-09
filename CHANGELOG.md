@@ -1,3 +1,7 @@
+### 1.0_73
+
+- Flutter: add a `List` display mode to the program library: small thumbnail left, name right.
+
 ### 1.0_72
 
 - Fix `=TAP` missing taps on the frames where the program does not run, for instance while a text window scrolls.

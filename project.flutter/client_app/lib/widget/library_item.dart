@@ -13,6 +13,9 @@ import 'package:provider/provider.dart';
 final Uint8List transparentPng = const Base64Codec().decode(
     "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAAA1BMVEUAAACnej3aAAAAAXRSTlMAQObYZgAAAApJREFUCNdjYAAAAAIAAeIhvDMAAAAASUVORK5CYII=");
 
+const double listThumbnailExtent = 40.0;
+const Key libraryItemThumbnailKey = Key('library-item-thumbnail');
+
 enum MyItemMenuOption {
   // isTool,
   rename,
@@ -62,8 +65,12 @@ class _MyLibraryItemState extends State<MyLibraryItem> {
     final MyProgramPreference preference = context.read<MyProgramPreference>();
     return LayoutBuilder(builder: (context, constraints) {
       return Card(
-        surfaceTintColor: colorScheme.primaryContainer,
-        elevation: 3,
+        surfaceTintColor: colorScheme.surfaceBright,
+        elevation: switch(widget.grid) {
+					MyLibraryGrid.two => 2,
+					MyLibraryGrid.three => 1,
+					MyLibraryGrid.list => 0,
+				},
         child: FutureBuilder<MyProgramPreference>(
             future: preference.loadPreference(),
             builder: (context, snapshot) {
@@ -90,10 +97,20 @@ class _MyLibraryItemState extends State<MyLibraryItem> {
           gotoEdit(context);
         },
         borderRadius: BorderRadius.circular(12.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [buildThumbnail(constraints), buildName()],
-        ),
+        child: switch (widget.grid) {
+          MyLibraryGrid.two || MyLibraryGrid.three => Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [buildThumbnail(constraints), buildName()],
+            ),
+          MyLibraryGrid.list => Row(
+              children: [
+                Padding(
+                    padding: const EdgeInsets.all(0.0),
+                    child: buildThumbnail(constraints)),
+                buildName(),
+              ],
+            ),
+        },
       ),
     );
   }
@@ -107,17 +124,21 @@ class _MyLibraryItemState extends State<MyLibraryItem> {
 								MyLibraryGrid.two => EdgeInsets.only(
 									left: 12.0, right: 12.0, top: 4.0, bottom: 4.0),
 								MyLibraryGrid.three => EdgeInsets.only(
-									left: 6.0, right: 6.0, top: 0.0, bottom: 0.0)
+									left: 6.0, right: 6.0, top: 0.0, bottom: 0.0),
+								MyLibraryGrid.list => const EdgeInsets.only(
+									left: 8.0, right: 12.0)
 							},
               child: Text(
                 style: switch(widget.grid) {
 									MyLibraryGrid.two => libraryItemTextStyle,
-									MyLibraryGrid.three => libraryItemSmallTextStyle
+									MyLibraryGrid.three => libraryItemSmallTextStyle,
+									MyLibraryGrid.list => libraryItemTextStyle
 								},
                 widget.programName,
                 maxLines: switch(widget.grid) {
 									MyLibraryGrid.two => 1,
-									MyLibraryGrid.three => 2
+									MyLibraryGrid.three => 2,
+									MyLibraryGrid.list => 2
 								},
                 overflow: TextOverflow.ellipsis,
               ),
@@ -125,9 +146,18 @@ class _MyLibraryItemState extends State<MyLibraryItem> {
   }
 
   SizedBox buildThumbnail(BoxConstraints constraints) {
+    final double extent = switch (widget.grid) {
+      MyLibraryGrid.two || MyLibraryGrid.three => constraints.maxWidth - 8,
+      MyLibraryGrid.list => listThumbnailExtent,
+    };
+    final double radius = switch (widget.grid) {
+      MyLibraryGrid.two || MyLibraryGrid.three => 12.0,
+      MyLibraryGrid.list => 8.0,
+    };
     return SizedBox(
-      width: constraints.maxWidth - 8,
-      height: constraints.maxWidth - 8,
+      key: libraryItemThumbnailKey,
+      width: extent,
+      height: extent,
       child: FutureBuilder(
           future: loadThumbnail(),
           builder: (context, snapshot) {
@@ -135,7 +165,7 @@ class _MyLibraryItemState extends State<MyLibraryItem> {
               return Opacity(
                 opacity: Platform.isLinux ? 0.2 : 1.0,
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(12.0),
+                  borderRadius: BorderRadius.circular(radius),
                   child: Image(
                       image: snapshot.data as ImageProvider,
                       fit: BoxFit.cover,

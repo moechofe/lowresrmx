@@ -16,6 +16,7 @@ enum MyLibraryMenuOption {
   newest,
 	two,
 	three,
+	list,
 }
 
 class MyLibraryPage extends StatefulWidget {
@@ -73,6 +74,11 @@ class _MyLibraryPageState extends State<MyLibraryPage> {
 					checked: grid == MyLibraryGrid.three,
 					child: const Text('3 Columns'),
 				),
+				CheckedPopupMenuItem<MyLibraryMenuOption>(
+					value: MyLibraryMenuOption.list,
+					checked: grid == MyLibraryGrid.list,
+					child: const Text('List'),
+				),
       ],
       onSelected: (MyLibraryMenuOption value) {
         switch (value) {
@@ -102,6 +108,11 @@ class _MyLibraryPageState extends State<MyLibraryPage> {
 					case MyLibraryMenuOption.three:
 						setState(() {
 							grid = MyLibraryGrid.three;
+						});
+						break;
+					case MyLibraryMenuOption.list:
+						setState(() {
+							grid = MyLibraryGrid.list;
 						});
 						break;
         }

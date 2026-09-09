@@ -51,7 +51,7 @@ class MyTheme {
       tertiaryFixedDim: Color(0xffd8c58d),
       onTertiaryFixedVariant: Color(0xff534619),
       surfaceDim: Color(0xffe8d6d2),
-      surfaceBright: Color(0xfffff8f6),
+      surfaceBright: Color(0xffffffff),
       surfaceContainerLowest: Color(0xffffffff),
       surfaceContainerLow: Color(0xfffff1ed),
       surfaceContainer: Color(0xfffceae5),

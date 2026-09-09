@@ -9,16 +9,9 @@ import 'package:lowresrmx/widget/library_item.dart';
 
 class MyLibraryGridDelegate extends SliverGridDelegate {
 	final int countPerRow;
-	final int titleHeight;
+	final double titleHeight;
 
-	MyLibraryGridDelegate(MyLibraryGrid grid)
-			: countPerRow = switch (grid) {
-					MyLibraryGrid.two => 2,
-					MyLibraryGrid.three => 3,
-				}, titleHeight = switch(grid){
-					MyLibraryGrid.two => 40,
-					MyLibraryGrid.three => 50,
-				};
+	const MyLibraryGridDelegate({required this.countPerRow, required this.titleHeight});
 
   @override
   SliverGridLayout getLayout(SliverConstraints constraints) {
@@ -36,7 +29,8 @@ class MyLibraryGridDelegate extends SliverGridDelegate {
 
   @override
   bool shouldRelayout(covariant MyLibraryGridDelegate oldDelegate) {
-    return oldDelegate.countPerRow != countPerRow;
+    return oldDelegate.countPerRow != countPerRow ||
+        oldDelegate.titleHeight != titleHeight;
   }
 }
 
@@ -44,6 +38,9 @@ class MyCatalogGrid extends StatelessWidget {
   final MyLibrarySort sort;
 	final MyLibraryGrid grid;
   const MyCatalogGrid({required this.sort, required this.grid, super.key});
+
+  static const EdgeInsets _padding =
+      EdgeInsets.only(left: 12.0, right: 12.0, bottom: 24.0);
 
   @override
   Widget build(BuildContext context) {
@@ -53,13 +50,14 @@ class MyCatalogGrid extends StatelessWidget {
         future: MyLibrary.buildList(sort),
         builder: (context, snapshot) {
           if (snapshot.hasData) {
-            return GridView.builder(
-                padding: const EdgeInsets.only(
-                    left: 12.0, right: 12.0, bottom: 24.0),
-                gridDelegate: MyLibraryGridDelegate(grid),
-                itemCount: snapshot.data!.length,
-                itemBuilder: (context, index) =>
-                    _buildGridItem(snapshot.data![index], index));
+            final List<String> names = snapshot.data!;
+            return switch (grid) {
+              MyLibraryGrid.two => _buildGrid(names,
+                  const MyLibraryGridDelegate(countPerRow: 2, titleHeight: 40.0)),
+              MyLibraryGrid.three => _buildGrid(names,
+                  const MyLibraryGridDelegate(countPerRow: 3, titleHeight: 50.0)),
+              MyLibraryGrid.list => _buildList(names),
+            };
           } else {
             // TODO: report error
             // TODO: Do it better
@@ -68,13 +66,25 @@ class MyCatalogGrid extends StatelessWidget {
         });
   }
 
-  Widget _buildGridItem(String programName, int index) {
+  Widget _buildGrid(List<String> names, MyLibraryGridDelegate delegate) =>
+      GridView.builder(
+          padding: _padding,
+          gridDelegate: delegate,
+          itemCount: names.length,
+          itemBuilder: (context, index) => _buildItem(names[index]));
+
+  Widget _buildList(List<String> names) => ListView.builder(
+      padding: _padding,
+      itemCount: names.length,
+      itemBuilder: (context, index) => _buildItem(names[index]));
+
+  Widget _buildItem(String programName) {
     // Used to make sure to rebuild the item when a preference changes.
     return ChangeNotifierProvider(
       create: (_) => MyProgramPreference(programName),
       child: MyLibraryItem(
           programName: programName,
-					grid: grid,
+          grid: grid,
           // The key is used to identify the item in the list when program are added or removed.
           key: ValueKey(programName)),
     );
