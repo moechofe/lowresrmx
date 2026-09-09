@@ -8,12 +8,22 @@ import 'package:lowresrmx/data/preference.dart';
 import 'package:lowresrmx/widget/library_item.dart';
 
 class MyLibraryGridDelegate extends SliverGridDelegate {
+	final int countPerRow;
+	final int titleHeight;
+
+	MyLibraryGridDelegate(MyLibraryGrid grid)
+			: countPerRow = switch (grid) {
+					MyLibraryGrid.two => 2,
+					MyLibraryGrid.three => 3,
+				}, titleHeight = switch(grid){
+					MyLibraryGrid.two => 40,
+					MyLibraryGrid.three => 50,
+				};
+
   @override
   SliverGridLayout getLayout(SliverConstraints constraints) {
-    int countPerRow = constraints.crossAxisExtent ~/ 150;
-    if (countPerRow < 1) countPerRow = 1;
     final double cross = constraints.crossAxisExtent / countPerRow;
-    final double main = cross + 40; // 40 is the height of the ListTile
+    final double main = cross + titleHeight;
     return SliverGridRegularTileLayout(
       childMainAxisExtent: main,
       childCrossAxisExtent: cross,
@@ -26,13 +36,14 @@ class MyLibraryGridDelegate extends SliverGridDelegate {
 
   @override
   bool shouldRelayout(covariant MyLibraryGridDelegate oldDelegate) {
-    return false;
+    return oldDelegate.countPerRow != countPerRow;
   }
 }
 
 class MyCatalogGrid extends StatelessWidget {
   final MyLibrarySort sort;
-  const MyCatalogGrid({required this.sort, super.key});
+	final MyLibraryGrid grid;
+  const MyCatalogGrid({required this.sort, required this.grid, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -45,8 +56,7 @@ class MyCatalogGrid extends StatelessWidget {
             return GridView.builder(
                 padding: const EdgeInsets.only(
                     left: 12.0, right: 12.0, bottom: 24.0),
-                gridDelegate: MyLibraryGridDelegate(),
-
+                gridDelegate: MyLibraryGridDelegate(grid),
                 itemCount: snapshot.data!.length,
                 itemBuilder: (context, index) =>
                     _buildGridItem(snapshot.data![index], index));
@@ -64,6 +74,7 @@ class MyCatalogGrid extends StatelessWidget {
       create: (_) => MyProgramPreference(programName),
       child: MyLibraryItem(
           programName: programName,
+					grid: grid,
           // The key is used to identify the item in the list when program are added or removed.
           key: ValueKey(programName)),
     );

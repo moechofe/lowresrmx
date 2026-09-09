@@ -15,6 +15,11 @@ enum MyLibrarySort {
   newest,
 }
 
+enum MyLibraryGrid {
+	two,
+	three,
+}
+
 /// A class to manage the library of programs.
 /// Listening to this class will notify when program are created, renamed or deleted.
 class MyLibrary extends ChangeNotifier {

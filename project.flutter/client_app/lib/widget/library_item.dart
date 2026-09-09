@@ -24,9 +24,11 @@ enum MyItemMenuOption {
 /// A [Card] with thumbnail, name of a program, a popup menu and a tap action to open the program editor.
 class MyLibraryItem extends StatefulWidget {
   final String programName;
+	final MyLibraryGrid grid;
 
   const MyLibraryItem({
     required this.programName,
+		required this.grid,
     super.key,
   });
 
@@ -101,12 +103,22 @@ class _MyLibraryItemState extends State<MyLibraryItem> {
         child: Align(
             alignment: Alignment.centerLeft,
             child: Padding(
-              padding: const EdgeInsets.only(
-                  left: 12.0, right: 12.0, top: 4.0, bottom: 4.0),
+              padding: switch(widget.grid) {
+								MyLibraryGrid.two => EdgeInsets.only(
+									left: 12.0, right: 12.0, top: 4.0, bottom: 4.0),
+								MyLibraryGrid.three => EdgeInsets.only(
+									left: 6.0, right: 6.0, top: 0.0, bottom: 0.0)
+							},
               child: Text(
-                style: libraryItemTextStyle,
+                style: switch(widget.grid) {
+									MyLibraryGrid.two => libraryItemTextStyle,
+									MyLibraryGrid.three => libraryItemSmallTextStyle
+								},
                 widget.programName,
-                maxLines: 1,
+                maxLines: switch(widget.grid) {
+									MyLibraryGrid.two => 1,
+									MyLibraryGrid.three => 2
+								},
                 overflow: TextOverflow.ellipsis,
               ),
             )));

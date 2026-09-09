@@ -14,11 +14,9 @@ enum MyLibraryMenuOption {
   name,
   oldest,
   newest,
+	two,
+	three,
 }
-
-// enum MyLibraryFolderOption {
-// 	reset
-// }
 
 class MyLibraryPage extends StatefulWidget {
   const MyLibraryPage({super.key});
@@ -29,6 +27,7 @@ class MyLibraryPage extends StatefulWidget {
 
 class _MyLibraryPageState extends State<MyLibraryPage> {
   MyLibrarySort sort = MyLibrarySort.name;
+	MyLibraryGrid grid = MyLibraryGrid.two;
 
   Future<String> getVersionInfo() async {
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
@@ -64,6 +63,16 @@ class _MyLibraryPageState extends State<MyLibraryPage> {
           checked: sort == MyLibrarySort.newest,
           child: const Text('Sort by newest'),
         ),
+				CheckedPopupMenuItem<MyLibraryMenuOption>(
+					value: MyLibraryMenuOption.two,
+					checked: grid == MyLibraryGrid.two,
+					child: const Text('2 Columns'),
+				),
+				CheckedPopupMenuItem<MyLibraryMenuOption>(
+					value: MyLibraryMenuOption.three,
+					checked: grid == MyLibraryGrid.three,
+					child: const Text('3 Columns'),
+				),
       ],
       onSelected: (MyLibraryMenuOption value) {
         switch (value) {
@@ -85,6 +94,16 @@ class _MyLibraryPageState extends State<MyLibraryPage> {
               sort = MyLibrarySort.newest;
             });
             break;
+					case MyLibraryMenuOption.two:
+						setState(() {
+							grid = MyLibraryGrid.two;
+						});
+						break;
+					case MyLibraryMenuOption.three:
+						setState(() {
+							grid = MyLibraryGrid.three;
+						});
+						break;
         }
         // Handle menu item selection
       },
@@ -120,7 +139,7 @@ class _MyLibraryPageState extends State<MyLibraryPage> {
           },
           child: const Icon(Icons.add_rounded),
         ),
-        body: SafeArea(child:MyCatalogGrid(sort: sort)));
+        body: SafeArea(child:MyCatalogGrid(sort: sort, grid: grid)));
   }
 
   Widget buildDrawer(BuildContext context) {
