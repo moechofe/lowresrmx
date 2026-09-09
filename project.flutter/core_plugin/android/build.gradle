@@ -35,11 +35,11 @@ android {
     // to bump the version in their app.
     compileSdk = 34
 
-    // Use the NDK version
-    // declared in /android/app/build.gradle file of the Flutter project.
-    // Replace it with a version number if this plugin requires a specific NDK version.
-    // (e.g. ndkVersion "23.1.7779620")
-    ndkVersion = android.ndkVersion
+    // Must match `flutter.ndkVersion` used by client_app. Do NOT write
+    // `ndkVersion = android.ndkVersion` here: inside this block `android` is this
+    // very extension, so it self-assigns and AGP's default NDK (27.x) wins — which
+    // links 4 KB-aligned segments and breaks 16 KB-page devices.
+    ndkVersion = "28.2.13676358"
 
     // Invoke the shared CMake build with the Android Gradle Plugin.
     externalNativeBuild {

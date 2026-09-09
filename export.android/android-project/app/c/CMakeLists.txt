@@ -16,6 +16,10 @@ add_sdl_executable(${PROJECT_NAME}
 
 target_link_libraries(${PROJECT_NAME} PRIVATE SDL3::SDL3)
 
+if(ANDROID)
+	target_link_options(${PROJECT_NAME} PRIVATE "-Wl,-z,max-page-size=16384")
+endif()
+
 set_target_properties(${PROJECT_NAME} PROPERTIES
 	CXX_STANDARD 11
 )

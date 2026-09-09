@@ -25,4 +25,7 @@ target_compile_definitions(core_plugin PUBLIC ABGR=1)
 
 if (ANDROID)
   target_link_libraries(core_plugin android log)
+  # 64-bit Android devices may use 16 KB pages; NDK < 28 still links with a 4 KB
+  # max-page-size by default, which Play rejects.
+  target_link_options(core_plugin PRIVATE "-Wl,-z,max-page-size=16384")
 endif()
