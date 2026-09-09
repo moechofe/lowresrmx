@@ -15,7 +15,10 @@ venv
 .settings
 .classpath
 local.properties
+key.properties
 !build.gradle
 /package
 private.php
 dump.rdb
+private/
+project.flutter/*/test
