@@ -250,7 +250,8 @@ class _MyRunPageState extends State<MyRunPage> {
           safeArea.top + viewInsets.top,
           safeArea.left + viewInsets.left,
           safeArea.bottom + viewInsets.bottom,
-          safeArea.right + viewInsets.right);
+          safeArea.right + viewInsets.right,
+          MediaQuery.of(context).devicePixelRatio);
       // Capture simple touch events
       return Scaffold(
           resizeToAvoidBottomInset: false,

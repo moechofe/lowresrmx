@@ -162,6 +162,20 @@ class OrientationChangeMsg {
       this.safeBottom, this.safeRight);
 }
 
+/// Message used to hand the render isolate a new destination surface.
+class SurfaceChangeMsg {
+  const SurfaceChangeMsg(this.address, this.bytesPerRow, this.width, this.height);
+
+  /// 0 keeps the native handle the C side already has (Android).
+  final int address;
+
+  /// 0 means width*4.
+  final int bytesPerRow;
+
+  final int width;
+  final int height;
+}
+
 class MeasurementMsg {
   final double updateTime;
   final double renderTime;
@@ -278,14 +292,30 @@ class Runtime extends ChangeNotifier {
         position: err.sourcePosition);
   }
 
+  /// Points the engine at a destination surface and its device-pixel geometry. Called only from
+  /// the render isolate, so neither the handle nor the geometry can change under a blit.
+  void setSurface(int address, int bytesPerRow, int width, int height) {
+    if (textureId == null) return;
+    if (address != 0) {
+      runnerRegisterNativeTexture(textureId!, ffi.Pointer.fromAddress(address));
+    }
+    runnerSetTextureGeometry(textureId!, width, height, bytesPerRow);
+  }
+
+  /// Renders one frame into the CPU pixel buffer at fantasy resolution, whatever the texture
+  /// mode is. Thumbnails need these pixels, not the device-resolution surface.
+  void renderPixels() {
+    runnerRender(runner, pixels);
+    bytesList = pixels.asTypedList(bufferSize);
+  }
+
   void renderFrame() {
-		// Faster, use texture uploaded to the GPU
+		// Faster, the engine upscales straight into the device-resolution surface
     if (textureId != null) {
       runnerRenderToTexture(runner, textureId!);
 		// Slower, recreate an image using pixel buffer
     } else {
-    	runnerRender(runner, pixels);
-    	bytesList = pixels.asTypedList(bufferSize);
+    	renderPixels();
     }
   }
 
@@ -314,7 +344,10 @@ void isolateEntryPoint(List<Object?> arguments) {
   final RootIsolateToken rootIsolateToken = arguments[0] as RootIsolateToken;
   final SendPort sendPort = arguments[1] as SendPort;
   final int textureId = arguments[2] as int;
-  final int? nativeHandle = arguments[3] as int?;
+  final int address = arguments[3] as int;
+  final int bytesPerRow = arguments[4] as int;
+  final int surfaceWidth = arguments[5] as int;
+  final int surfaceHeight = arguments[6] as int;
 
   BackgroundIsolateBinaryMessenger.ensureInitialized(rootIsolateToken);
 
@@ -322,13 +355,7 @@ void isolateEntryPoint(List<Object?> arguments) {
   final Runtime runtime = Runtime();
 
   runtime.textureId = textureId;
-
-  if (nativeHandle != null) {
-    runnerRegisterNativeTexture(
-      textureId, ffi.Pointer.fromAddress(nativeHandle));
-  }
-
-  // double updateTime, renderTime;
+  runtime.setSurface(address, bytesPerRow, surfaceWidth, surfaceHeight);
 
   try {
     runtime.initState();
@@ -393,6 +420,10 @@ void isolateEntryPoint(List<Object?> arguments) {
         // Receive the screen size and the safe area
         runtime.resize(message.width, message.height, message.safeTop,
             message.safeLeft, message.safeBottom, message.safeRight);
+      } else if (message is SurfaceChangeMsg) {
+        // Receive the new destination surface after a rotation or an inset change
+        runtime.setSurface(message.address, message.bytesPerRow, message.width,
+            message.height);
       } else if (message is KeyboardKeyDownMsg) {
         runtime.keyDown(message.ascii);
       } else if (message is Offset) {
@@ -412,7 +443,8 @@ void isolateEntryPoint(List<Object?> arguments) {
         runtime.trace(false);
       } else if (message is IsolateMessageType &&
           message == IsolateMessageType.thumbnail) {
-        runtime.renderFrame();
+        // Thumbnails need fantasy-resolution pixels, not the device-resolution surface.
+        runtime.renderPixels();
         sendPort.send(ThumbnailMsg(runtime.bytesList!));
       }
     } catch (e, stack) {
@@ -477,19 +509,36 @@ class ComPort {
 
   int? textureId;
 
+  /// Device-pixel size of the render surface, to skip redundant resizes.
+  int _surfaceWidth = 0;
+  int _surfaceHeight = 0;
+
   /// Setup the communication with the isolate and listen for messages
   Future<SendPort> init() async {
-    final int id = await registerTexture();
-    textureId = id;
-    int? handle;
-    if (Platform.isIOS) {
-      handle = await const MethodChannel('com.lowresrmx/core_plugin')
-          .invokeMethod<int>('getBufferAddress', id);
+    final Size physical =
+        ui.PlatformDispatcher.instance.implicitView?.physicalSize ?? Size.zero;
+    int width = physical.width.round();
+    int height = physical.height.round();
+    if (width <= 0 || height <= 0) {
+      // no view metrics yet: the run page's first layout resizes the surface
+      width = Runtime.screenWidth;
+      height = Runtime.screenHeight;
     }
+    final TextureSurface surface = await registerTexture(width, height);
+    textureId = surface.textureId;
+    _surfaceWidth = width;
+    _surfaceHeight = height;
 
     receivePort = ReceivePort();
-    isolate = await Isolate.spawn(isolateEntryPoint,
-        [RootIsolateToken.instance!, receivePort.sendPort, id, handle]);
+    isolate = await Isolate.spawn(isolateEntryPoint, [
+      RootIsolateToken.instance!,
+      receivePort.sendPort,
+      surface.textureId,
+      surface.address,
+      surface.bytesPerRow,
+      width,
+      height,
+    ]);
 
     receivePort.listen((message) {
       if (message is SendPort) {
@@ -635,11 +684,20 @@ class ComPort {
     prevRuntimeElapsed = 0;
   }
 
-  /// Update the device screen size and the safe area
-  void resize(double inWidth, double inHeight, double safeTop, double safeLeft,
-      double safeBottom, double safeRight) {
+  /// Update the device screen size and the safe area, and resize the render surface to match.
+  Future<void> resize(double inWidth, double inHeight, double safeTop, double safeLeft,
+      double safeBottom, double safeRight, double devicePixelRatio) async {
     sendPort.send(OrientationChangeMsg(
         inWidth, inHeight, safeTop, safeLeft, safeBottom, safeRight));
+    final int width = (inWidth * devicePixelRatio).round();
+    final int height = (inHeight * devicePixelRatio).round();
+    if (width <= 0 || height <= 0 || textureId == null) return;
+    // Dedupe before the await, so the per-build calls from LayoutBuilder cannot queue duplicates.
+    if (width == _surfaceWidth && height == _surfaceHeight) return;
+    _surfaceWidth = width;
+    _surfaceHeight = height;
+    final TextureSurface surface = await resizeTexture(textureId!, width, height);
+    sendPort.send(SurfaceChangeMsg(surface.address, surface.bytesPerRow, width, height));
   }
 
   /// Send the touch event to the runtime
