@@ -1,3 +1,12 @@
+### 1.0_71
+
+- iOS: fix long press acting on the wrong program while iCloud updates the list.
+- Flutter: fix the back button not returning to the program list from the editor.
+- Flutter: fix the editor outline drawer listing nothing, and jump to the tapped declaration.
+- Flutter: import a shared rmx from any page and show a snackbar.
+- Flutter: fix the blurry fantasy screen, rendering it at the device resolution.
+- Flutter: fix "Save thumbnail" failing while the native texture is in use.
+
 ### 1.0_70
 
 - GFX: fix bg file detection.
@@ -15,7 +24,7 @@
 
 ### 1.0_66
 
-- Android export support 'HAPTIC' now.
+- Android export: support 'HAPTIC' now.
 - GFX: can edit the 256 characters at once.
 - GFX: can undo with character and spritesheet editors.
 - GFX: allow to only paint palette, or flip, or character, or...
