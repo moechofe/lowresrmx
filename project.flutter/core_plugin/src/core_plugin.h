@@ -47,7 +47,7 @@ FFI_PLUGIN_EXPORT void runnerDeinit(Runner*);
 FFI_PLUGIN_EXPORT struct CoreError runnerCompileProgram(Runner*,const char*);
 FFI_PLUGIN_EXPORT const char* runnerGetError(Runner*,enum ErrorCode);
 
-FFI_PLUGIN_EXPORT void runnerStart(Runner*,int scondsSincePowerOn,const char *originalDataDisk,size_t originalDataDiskSize);
+FFI_PLUGIN_EXPORT void runnerStart(Runner*,Input*,int scondsSincePowerOn,const char *originalDataDisk,size_t originalDataDiskSize);
 
 FFI_PLUGIN_EXPORT void runnerRenderAudio(Runner* runner, int16_t* output, int numSamples, int outputFrequency, int volume);
 
@@ -58,6 +58,8 @@ FFI_PLUGIN_EXPORT void runnerRender(Runner*,void*);
 FFI_PLUGIN_EXPORT void runnerRegisterNativeTexture(int64_t textureId, void* nativeHandle);
 FFI_PLUGIN_EXPORT void runnerUnregisterNativeTexture(int64_t textureId);
 FFI_PLUGIN_EXPORT void runnerRenderToTexture(Runner* runner, int64_t textureId);
+FFI_PLUGIN_EXPORT void runnerSetTextureGeometry(int64_t textureId, int width, int height, int pitch);
+FFI_PLUGIN_EXPORT void screenBlitScaled(const uint32_t *src, uint32_t *dst, int dstWidth, int dstHeight, int dstPitch);
 
 FFI_PLUGIN_EXPORT void runnerTrace(Runner*,bool);
 

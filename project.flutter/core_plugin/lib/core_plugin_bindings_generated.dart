@@ -91,12 +91,14 @@ class CorePluginBindings {
 
   void runnerStart(
     ffi.Pointer<Runner> arg0,
+    ffi.Pointer<Input> arg1,
     int scondsSincePowerOn,
     ffi.Pointer<ffi.Char> originalDataDisk,
     int originalDataDiskSize,
   ) {
     return _runnerStart(
       arg0,
+      arg1,
       scondsSincePowerOn,
       originalDataDisk,
       originalDataDiskSize,
@@ -105,10 +107,11 @@ class CorePluginBindings {
 
   late final _runnerStartPtr = _lookup<
       ffi.NativeFunction<
-          ffi.Void Function(ffi.Pointer<Runner>, ffi.Int, ffi.Pointer<ffi.Char>,
-              ffi.Size)>>('runnerStart');
+          ffi.Void Function(ffi.Pointer<Runner>, ffi.Pointer<Input>, ffi.Int,
+              ffi.Pointer<ffi.Char>, ffi.Size)>>('runnerStart');
   late final _runnerStart = _runnerStartPtr.asFunction<
-      void Function(ffi.Pointer<Runner>, int, ffi.Pointer<ffi.Char>, int)>();
+      void Function(ffi.Pointer<Runner>, ffi.Pointer<Input>, int,
+          ffi.Pointer<ffi.Char>, int)>();
 
   void runnerRenderAudio(
     ffi.Pointer<Runner> runner,
@@ -230,6 +233,57 @@ class CorePluginBindings {
   late final _runnerRenderToTexture = _runnerRenderToTexturePtr
       .asFunction<void Function(ffi.Pointer<Runner>, int)>();
 
+  /// Destination surface geometry for a registered texture, in device pixels.
+  /// pitch is bytes per row; 0 means width*4. On Android this also re-requests the
+  /// ANativeWindow buffer geometry, and the pitch is taken from the locked buffer instead.
+  void runnerSetTextureGeometry(
+    int textureId,
+    int width,
+    int height,
+    int pitch,
+  ) {
+    return _runnerSetTextureGeometry(
+      textureId,
+      width,
+      height,
+      pitch,
+    );
+  }
+
+  late final _runnerSetTextureGeometryPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Void Function(ffi.Int64, ffi.Int, ffi.Int,
+              ffi.Int)>>('runnerSetTextureGeometry');
+  late final _runnerSetTextureGeometry = _runnerSetTextureGeometryPtr
+      .asFunction<void Function(int, int, int, int)>();
+
+  /// Nearest-neighbour upscale of one SCREEN_WIDTHxSCREEN_HEIGHT frame into a device-resolution
+  /// surface, covering it from the top-left corner and clipping the overflow.
+  /// Exported so the mapping can be exercised without a device.
+  void screenBlitScaled(
+    ffi.Pointer<ffi.Uint32> src,
+    ffi.Pointer<ffi.Uint32> dst,
+    int dstWidth,
+    int dstHeight,
+    int dstPitch,
+  ) {
+    return _screenBlitScaled(
+      src,
+      dst,
+      dstWidth,
+      dstHeight,
+      dstPitch,
+    );
+  }
+
+  late final _screenBlitScaledPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Void Function(ffi.Pointer<ffi.Uint32>, ffi.Pointer<ffi.Uint32>,
+              ffi.Int, ffi.Int, ffi.Int)>>('screenBlitScaled');
+  late final _screenBlitScaled = _screenBlitScaledPtr.asFunction<
+      void Function(
+          ffi.Pointer<ffi.Uint32>, ffi.Pointer<ffi.Uint32>, int, int, int)>();
+
   void runnerTrace(
     ffi.Pointer<Runner> arg0,
     bool arg1,
@@ -246,8 +300,6 @@ class CorePluginBindings {
   late final _runnerTrace =
       _runnerTracePtr.asFunction<void Function(ffi.Pointer<Runner>, bool)>();
 
-  /// @brief Opaque handle on a `struct Syntax`. Kept as void* on purpose: naming the struct would
-  /// make ffigen pull `struct Tokenizer` (32768 tokens, an anonymous union) into the bindings.
   ffi.Pointer<ffi.Void> syntaxCreate() {
     return _syntaxCreate();
   }
@@ -272,7 +324,6 @@ class CorePluginBindings {
   late final _syntaxDestroy =
       _syntaxDestroyPtr.asFunction<void Function(ffi.Pointer<ffi.Void>)>();
 
-  /// @brief Tokenizes sourceCode and returns the number of spans found.
   int syntaxScan(
     ffi.Pointer<ffi.Void> arg0,
     ffi.Pointer<ffi.Char> arg1,
@@ -290,7 +341,6 @@ class CorePluginBindings {
   late final _syntaxScan = _syntaxScanPtr
       .asFunction<int Function(ffi.Pointer<ffi.Void>, ffi.Pointer<ffi.Char>)>();
 
-  /// @brief Spans of the last scan, valid until the next syntaxScan or syntaxDestroy.
   ffi.Pointer<SyntaxSpan> syntaxSpans(
     ffi.Pointer<ffi.Void> arg0,
   ) {

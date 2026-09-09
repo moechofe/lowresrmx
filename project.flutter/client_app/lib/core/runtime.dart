@@ -236,8 +236,7 @@ class Runtime extends ChangeNotifier {
       final int dataSize = dataList.length;
       final ffi.Pointer<ffi.Uint8> dataDiskPtr = calloc<ffi.Uint8>(dataSize);
       dataDiskPtr.asTypedList(dataDisk.length).setAll(0, dataList);
-      // TODO: compute secondsSincePowerOn
-      runnerStart(runner, 123, ffi.Pointer.fromAddress(dataDiskPtr.address), dataSize);
+      runnerStart(runner, input, 123, ffi.Pointer.fromAddress(dataDiskPtr.address), dataSize);
     }
     return Error(
         code: err.code,
@@ -513,6 +512,11 @@ class ComPort {
   int _surfaceWidth = 0;
   int _surfaceHeight = 0;
 
+  /// True once SHOWN/SAFE have been pushed to the isolate. The engine sizes the text window when
+  /// the program starts, and the run page only lays out (and calls [resize]) after the edit page
+  /// has already asked for the compile, so the first run has to seed the geometry itself.
+  bool _geometrySent = false;
+
   /// Setup the communication with the isolate and listen for messages
   Future<SendPort> init() async {
     final Size physical =
@@ -650,9 +654,30 @@ class ComPort {
 
   /// Compile and run the code in the isolate
   Future<Error> compileAndRun(String code, String dataDisk) async {
+    _sendInitialGeometry();
     compileCompleter = Completer();
     sendPort.send(CompileAndRunMsg(code, dataDisk));
     return compileCompleter!.future;
+  }
+
+  /// Pushes the window geometry read straight from the view, for the case where the program is
+  /// started before any page has laid out. Without it the engine boots with SHOWN 0x0 and the
+  /// text window collapses, so PRINT writes nothing until the program calls CLS.
+  void _sendInitialGeometry() {
+    if (_geometrySent) return;
+    final ui.FlutterView? view = ui.PlatformDispatcher.instance.implicitView;
+    if (view == null) return;
+    final double dpr = view.devicePixelRatio;
+    if (dpr <= 0) return;
+    final ui.ViewPadding padding = view.padding;
+    sendPort.send(OrientationChangeMsg(
+        view.physicalSize.width / dpr,
+        view.physicalSize.height / dpr,
+        padding.top / dpr,
+        padding.left / dpr,
+        padding.bottom / dpr,
+        padding.right / dpr));
+    _geometrySent = true;
   }
 
   /// Used to compile and report error in the editor
@@ -689,6 +714,7 @@ class ComPort {
       double safeBottom, double safeRight, double devicePixelRatio) async {
     sendPort.send(OrientationChangeMsg(
         inWidth, inHeight, safeTop, safeLeft, safeBottom, safeRight));
+    _geometrySent = true;
     final int width = (inWidth * devicePixelRatio).round();
     final int height = (inHeight * devicePixelRatio).round();
     if (width <= 0 || height <= 0 || textureId == null) return;

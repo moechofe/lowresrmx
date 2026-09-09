@@ -9,8 +9,11 @@ import io.flutter.view.TextureRegistry
 class CorePlugin: FlutterPlugin, MethodChannel.MethodCallHandler {
     private lateinit var channel: MethodChannel
     private lateinit var textureRegistry: TextureRegistry
-    private val textures = mutableMapOf<Long, TextureRegistry.SurfaceTextureEntry>()
-    private val surfaces = mutableMapOf<Long, Surface>()
+    // SurfaceProducer, not createSurfaceTexture(): a SurfaceTexture is sampled through
+    // getTransformMatrix(), whose half-texel crop resamples the frame with a (w-1)/w scale and
+    // softens every fantasy-pixel edge by one device pixel. The producer is ImageReader-backed
+    // and composited 1:1.
+    private val producers = mutableMapOf<Long, TextureRegistry.SurfaceProducer>()
 
     override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         channel = MethodChannel(flutterPluginBinding.binaryMessenger, "com.lowresrmx/core_plugin")
@@ -18,37 +21,51 @@ class CorePlugin: FlutterPlugin, MethodChannel.MethodCallHandler {
         textureRegistry = flutterPluginBinding.textureRegistry
     }
 
+    /// Surface geometry as the method channel reports it on both platforms. The address is the
+    /// ANativeWindow pointer, adopted by the render isolate exactly like the iOS pixel buffer, so
+    /// the platform thread never mutates a handle the renderer is blitting into. bytesPerRow is 0
+    /// because the pitch comes from the locked buffer.
+    private fun surfaceMap(textureId: Long, surface: Surface, width: Int, height: Int): Map<String, Any> =
+        mapOf(
+            "textureId" to textureId,
+            "address" to nativeSurfaceHandle(surface, width, height),
+            "bytesPerRow" to 0
+        )
+
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
         when (call.method) {
             "registerTexture" -> {
-                val entry = textureRegistry.createSurfaceTexture()
-                val textureId = entry.id()
-                entry.surfaceTexture().setDefaultBufferSize(216, 384)
-                val surface = Surface(entry.surfaceTexture())
-                textures[textureId] = entry
-                surfaces[textureId] = surface
-                nativeRegisterTexture(textureId, surface)
-                result.success(textureId)
+                val width = (call.argument<Int>("width") ?: 216).coerceAtLeast(1)
+                val height = (call.argument<Int>("height") ?: 384).coerceAtLeast(1)
+                val producer = textureRegistry.createSurfaceProducer()
+                producer.setSize(width, height)
+                val textureId = producer.id()
+                producers[textureId] = producer
+                result.success(surfaceMap(textureId, producer.surface, width, height))
             }
-            "unregisterTexture" -> {
-                val id = call.arguments as Long
-                nativeUnregisterTexture(id)
-                surfaces.remove(id)?.release()
-                textures.remove(id)?.release()
-                result.success(null)
-            }
-            "getSurface" -> {
-                val id = call.arguments as Long
-                val entry = textures[id]
-                if (entry != null) {
-                    result.success(entry.surfaceTexture())
+            "resizeTexture" -> {
+                val id = (call.argument<Number>("textureId"))!!.toLong()
+                val width = (call.argument<Int>("width") ?: 216).coerceAtLeast(1)
+                val height = (call.argument<Int>("height") ?: 384).coerceAtLeast(1)
+                val producer = producers[id]
+                if (producer != null) {
+                    producer.setSize(width, height)
+                    // A resized producer hands out a new Surface; the render isolate adopts it
+                    // and releases the window it was using.
+                    result.success(surfaceMap(id, producer.surface, width, height))
                 } else {
                     result.error("NOT_FOUND", "Texture not found", null)
                 }
             }
+            "unregisterTexture" -> {
+                // A Dart int arrives as Integer for small values, so cast through Number.
+                val id = (call.arguments as Number).toLong()
+                nativeUnregisterTexture(id)
+                producers.remove(id)?.release()
+                result.success(null)
+            }
             "notifyFrameAvailable" -> {
-                // On Android, SurfaceTexture.onFrameAvailable is triggered automatically
-                // by ANativeWindow_unlockAndPost.
+                // On Android, the frame is published by ANativeWindow_unlockAndPost.
                 result.success(null)
             }
             else -> result.notImplemented()
@@ -57,24 +74,18 @@ class CorePlugin: FlutterPlugin, MethodChannel.MethodCallHandler {
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
         channel.setMethodCallHandler(null)
-        surfaces.values.forEach { it.release() }
-        surfaces.clear()
-        textures.values.forEach { it.release() }
-        textures.clear()
+        producers.values.forEach { it.release() }
+        producers.clear()
     }
 
-    private external fun nativeRegisterTexture(textureId: Long, surface: Surface)
+    /// Wraps the surface in an ANativeWindow, requests RGBA_8888 at the device-pixel size and
+    /// returns the pointer. Ownership of that reference passes to the C side.
+    private external fun nativeSurfaceHandle(surface: Surface, width: Int, height: Int): Long
     private external fun nativeUnregisterTexture(textureId: Long)
 
-    // JNI methods to be called from C++
     companion object {
         init {
             System.loadLibrary("core_plugin")
-        }
-
-        @JvmStatic
-        fun getSurface(plugin: CorePlugin, textureId: Long): Surface? {
-            return plugin.surfaces[textureId]
         }
     }
 }

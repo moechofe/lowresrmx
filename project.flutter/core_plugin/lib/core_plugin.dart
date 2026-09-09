@@ -10,9 +10,31 @@ import 'core_plugin_bindings_generated.dart';
 const String _libName = 'core_plugin';
 const MethodChannel _channel = MethodChannel('com.lowresrmx/core_plugin');
 
-Future<int> registerTexture() async {
-  return (await _channel.invokeMethod<int>('registerTexture'))!;
+/// A platform surface the engine renders into, sized in device pixels.
+class TextureSurface {
+  const TextureSurface({required this.textureId, required this.address, required this.bytesPerRow});
+
+  final int textureId;
+
+  /// Base address of the surface memory; 0 when C already holds a native handle (Android).
+  final int address;
+
+  /// Bytes per row; 0 when C takes the pitch from the surface at render time (Android).
+  final int bytesPerRow;
+
+  static TextureSurface fromMap(Map<Object?, Object?> map) => TextureSurface(
+      textureId: map["textureId"]! as int,
+      address: map["address"]! as int,
+      bytesPerRow: map["bytesPerRow"]! as int);
 }
+
+Future<TextureSurface> registerTexture(int width, int height) async =>
+    TextureSurface.fromMap((await _channel.invokeMapMethod<Object?, Object?>(
+        'registerTexture', {"width": width, "height": height}))!);
+
+Future<TextureSurface> resizeTexture(int textureId, int width, int height) async =>
+    TextureSurface.fromMap((await _channel.invokeMapMethod<Object?, Object?>(
+        'resizeTexture', {"textureId": textureId, "width": width, "height": height}))!);
 
 Future<void> unregisterTexture(int textureId) async {
   await _channel.invokeMethod('unregisterTexture', textureId);
@@ -41,6 +63,7 @@ void runnerDeinit(ffi.Pointer<Runner> runner) => _bindings.runnerDeinit(runner);
 void runnerRegisterNativeTexture(int textureId, ffi.Pointer<ffi.Void> nativeHandle) => _bindings.runnerRegisterNativeTexture(textureId, nativeHandle);
 void runnerUnregisterNativeTexture(int textureId) => _bindings.runnerUnregisterNativeTexture(textureId);
 void runnerRenderToTexture(ffi.Pointer<Runner> runner, int textureId) => _bindings.runnerRenderToTexture(runner, textureId);
+void runnerSetTextureGeometry(int textureId, int width, int height, int pitch) => _bindings.runnerSetTextureGeometry(textureId, width, height, pitch);
 
 CoreError runnerCompileProgram(ffi.Pointer<Runner> runner, String code) {
   final ffi.Pointer<Utf8> native = code.toNativeUtf8();
@@ -53,7 +76,7 @@ CoreError runnerCompileProgram(ffi.Pointer<Runner> runner, String code) {
 
 String runnerGetError(ffi.Pointer<Runner> runner, int code) => _bindings.runnerGetError(runner, code).cast<Utf8>().toDartString();
 
-void runnerStart(ffi.Pointer<Runner> runner, int scondsSincePowerOn, ffi.Pointer<ffi.Char> originalDataDisk, int originalDataDiskSize) => _bindings.runnerStart(runner, scondsSincePowerOn, originalDataDisk, originalDataDiskSize);
+void runnerStart(ffi.Pointer<Runner> runner, ffi.Pointer<Input> input, int scondsSincePowerOn, ffi.Pointer<ffi.Char> originalDataDisk, int originalDataDiskSize) => _bindings.runnerStart(runner, input, scondsSincePowerOn, originalDataDisk, originalDataDiskSize);
 bool runnerShouldRender(ffi.Pointer<Runner> runner) => _bindings.runnerShouldRender(runner);
 CoreError runnerUpdate(ffi.Pointer<Runner> runner, ffi.Pointer<Input> input) => _bindings.runnerUpdate(runner, input);
 void runnerRender(ffi.Pointer<Runner> runner, ffi.Pointer<ffi.Uint8> pixels) => _bindings.runnerRender(runner, pixels.cast<ffi.Void>());

@@ -813,6 +813,7 @@ enum ErrorCode lab_pushLabelStackItem(struct Interpreter *interpreter, enum Labe
 struct LabelStackItem *lab_popLabelStackItem(struct Interpreter *interpreter);
 struct LabelStackItem *lab_peekLabelStackItem(struct Interpreter *interpreter);
 struct LabelStackItem *lab_searchLabelStackItem(struct Interpreter *interpreter, enum LabelType types[], int numTypes);
+void lab_getStackItemName(struct Interpreter *interpreter, const struct LabelStackItem *item, char *buffer, size_t bufferSize);
 
 #endif /* labels_h */
 // Copyright 2016-2024 Timo Kloss

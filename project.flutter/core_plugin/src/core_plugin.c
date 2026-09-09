@@ -111,10 +111,11 @@ FFI_PLUGIN_EXPORT const char* runnerGetError(Runner *runner,enum ErrorCode code)
 	return err_getString(code);
 }
 
-FFI_PLUGIN_EXPORT void runnerStart(Runner *runner,int scondsSincePowerOn,const char *originalDataDisk,size_t originalDataDiskSize)
+FFI_PLUGIN_EXPORT void runnerStart(Runner *runner,Input *input,int scondsSincePowerOn,const char *originalDataDisk,size_t originalDataDiskSize)
 {
 	if(!runner->core) return;
 	runner->runningError=err_makeCoreError(ErrorNone,-1,-1);
+	if(input) core_handleInput(runner->core,input);
 	core_willRunProgram(runner->core,scondsSincePowerOn);
 	// originalDataDisk memory is managed by the caller.
 	// runner->dataDisk memory is managed by the callee.
@@ -151,6 +152,9 @@ FFI_PLUGIN_EXPORT bool runnerShouldRender(Runner *runner)
 typedef struct NativeTexture {
     int64_t textureId;
     void *nativeHandle;
+    int width;
+    int height;
+    int pitch;
 } NativeTexture;
 
 #define MAX_NATIVE_TEXTURES 4
@@ -159,9 +163,46 @@ static NativeTexture nativeTextures[MAX_NATIVE_TEXTURES];
 FFI_PLUGIN_EXPORT void runnerRegisterNativeTexture(int64_t textureId, void* nativeHandle)
 {
     for (int i = 0; i < MAX_NATIVE_TEXTURES; i++) {
-        if (nativeTextures[i].textureId == 0 || nativeTextures[i].textureId == textureId) {
+        if (nativeTextures[i].textureId == textureId) {
+            // Same texture, new surface memory: iOS hands over a new pixel buffer on resize,
+            // Android a new ANativeWindow. Only the render isolate gets here, so the window it
+            // was blitting into can be released right away. The geometry belongs to
+            // runnerSetTextureGeometry() and must survive this.
+#if __ANDROID__
+            if (nativeTextures[i].nativeHandle && nativeTextures[i].nativeHandle != nativeHandle) {
+                ANativeWindow_release((ANativeWindow *)nativeTextures[i].nativeHandle);
+            }
+#endif
+            nativeTextures[i].nativeHandle = nativeHandle;
+            return;
+        }
+        if (nativeTextures[i].textureId == 0) {
             nativeTextures[i].textureId = textureId;
             nativeTextures[i].nativeHandle = nativeHandle;
+            nativeTextures[i].width = SCREEN_WIDTH;
+            nativeTextures[i].height = SCREEN_HEIGHT;
+            nativeTextures[i].pitch = 0;
+            return;
+        }
+    }
+}
+
+FFI_PLUGIN_EXPORT void runnerSetTextureGeometry(int64_t textureId, int width, int height, int pitch)
+{
+    if (width <= 0 || height <= 0) return;
+    for (int i = 0; i < MAX_NATIVE_TEXTURES; i++) {
+        if (nativeTextures[i].textureId == textureId) {
+            nativeTextures[i].width = width;
+            nativeTextures[i].height = height;
+            nativeTextures[i].pitch = pitch;
+#if __ANDROID__
+            // Only the render isolate calls this, and it is also the only thread that locks the
+            // window, so re-requesting the buffer size here never races a lock.
+            if (nativeTextures[i].nativeHandle) {
+                ANativeWindow_setBuffersGeometry((ANativeWindow *)nativeTextures[i].nativeHandle,
+                    width, height, WINDOW_FORMAT_RGBA_8888);
+            }
+#endif
             return;
         }
     }
@@ -178,6 +219,9 @@ FFI_PLUGIN_EXPORT void runnerUnregisterNativeTexture(int64_t textureId)
 #endif
             nativeTextures[i].textureId = 0;
             nativeTextures[i].nativeHandle = NULL;
+            nativeTextures[i].width = 0;
+            nativeTextures[i].height = 0;
+            nativeTextures[i].pitch = 0;
             return;
         }
     }
@@ -189,15 +233,16 @@ FFI_PLUGIN_EXPORT void runnerUnregisterNativeTexture(int64_t textureId)
 
 #define JNI_EXPORT __attribute__((visibility("default")))
 
-JNI_EXPORT void JNICALL
-Java_com_lowresrmx_core_1plugin_CorePlugin_nativeRegisterTexture(JNIEnv *env, jobject thiz, jlong texture_id, jobject surface) {
+/// Wraps a Surface in an ANativeWindow at the requested device-pixel size and hands the pointer
+/// to Dart, which registers it from the render isolate. ANativeWindow_fromSurface() already
+/// carries a reference; runnerRegisterNativeTexture()/runnerUnregisterNativeTexture() release it.
+JNI_EXPORT jlong JNICALL
+Java_com_lowresrmx_core_1plugin_CorePlugin_nativeSurfaceHandle(JNIEnv *env, jobject thiz, jobject surface, jint width, jint height) {
 	ANativeWindow *window = ANativeWindow_fromSurface(env, surface);
-	if (window) {
-		// Force RGBA_8888
-		ANativeWindow_setBuffersGeometry(window, SCREEN_WIDTH, SCREEN_HEIGHT, WINDOW_FORMAT_RGBA_8888);
-		ANativeWindow_acquire(window);
-		runnerRegisterNativeTexture(texture_id, window);
-	}
+	if (!window) return 0;
+	// Force RGBA_8888 at the device-pixel size the surface was created with
+	ANativeWindow_setBuffersGeometry(window, width, height, WINDOW_FORMAT_RGBA_8888);
+	return (jlong)(intptr_t)window;
 }
 
 JNI_EXPORT void JNICALL
@@ -211,53 +256,108 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved) {
 }
 #endif
 
+// Opaque black in both byte orders the engine can emit: the alpha byte is the high byte of the
+// 32-bit word for ABGR=0 (B,G,R,A) and ABGR=1 (R,G,B,A) alike.
+#define OPAQUE_BLACK 0xff000000u
+
+// One fantasy-resolution frame, upscaled from here into the device-resolution surface.
+static uint32_t screenBuffer[SCREEN_WIDTH * SCREEN_HEIGHT];
+static bool screenBufferCleared = false;
+
+FFI_PLUGIN_EXPORT void screenBlitScaled(const uint32_t *src, uint32_t *dst, int dstWidth, int dstHeight, int dstPitch)
+{
+    if (!src || !dst || dstWidth <= 0 || dstHeight <= 0) return;
+    if (dstPitch <= 0) dstPitch = dstWidth * 4;
+
+    // The fantasy screen covers the device screen: scaled by whichever axis needs the larger
+    // factor, pinned top-left, the other axis clipped. Same factor Runtime.resize() derives from
+    // the logical size in runtime.dart (216/384 == 9/16 exactly).
+    //
+    // 1/scale is kept as the exact rational num/den = min(SCREEN_WIDTH/dstWidth,
+    // SCREEN_HEIGHT/dstHeight), so a source coordinate is exactly floor(dst * num / den).
+    // Stepping the remainder (Bresenham) gets there with one add and one compare per pixel:
+    // no division, and no drift, which truncated 16.16 fixed point does accumulate — at
+    // 1080x2340 a 16.16 step lands on source column 31 where the exact mapping says 32.
+    int num, den;
+    if ((int64_t)SCREEN_WIDTH * dstHeight <= (int64_t)SCREEN_HEIGHT * dstWidth)
+    {
+        num = SCREEN_WIDTH;
+        den = dstWidth;
+    }
+    else
+    {
+        num = SCREEN_HEIGHT;
+        den = dstHeight;
+    }
+
+    int prevSrcY = -1;
+    uint32_t *prevRow = NULL;
+    int srcY = 0, errY = 0;
+    for (int y = 0; y < dstHeight; y++)
+    {
+        uint32_t *out = (uint32_t *)((uint8_t *)dst + (size_t)y * (size_t)dstPitch);
+        const int rowY = srcY < SCREEN_HEIGHT ? srcY : SCREEN_HEIGHT - 1;
+        // every source row lands on several device rows: copy the one just built
+        if (rowY == prevSrcY && prevRow)
+        {
+            memcpy(out, prevRow, (size_t)dstWidth * 4);
+        }
+        else
+        {
+            const uint32_t *in = src + (size_t)rowY * SCREEN_WIDTH;
+            int srcX = 0, errX = 0;
+            for (int x = 0; x < dstWidth; x++)
+            {
+                out[x] = in[srcX < SCREEN_WIDTH ? srcX : SCREEN_WIDTH - 1];
+                errX += num;
+                while (errX >= den) { errX -= den; srcX++; }
+            }
+            prevSrcY = rowY;
+            prevRow = out;
+        }
+        errY += num;
+        while (errY >= den) { errY -= den; srcY++; }
+    }
+}
+
 FFI_PLUGIN_EXPORT void runnerRenderToTexture(Runner* runner, int64_t textureId)
 {
     if (!runner->core) return;
 
-    void *nativeHandle = NULL;
+    NativeTexture *texture = NULL;
     for (int i = 0; i < MAX_NATIVE_TEXTURES; i++) {
         if (nativeTextures[i].textureId == textureId) {
-            nativeHandle = nativeTextures[i].nativeHandle;
+            texture = &nativeTextures[i];
             break;
         }
     }
 
-    if (!nativeHandle) return;
+    if (!texture || !texture->nativeHandle) return;
+
+    // In COMPAT mode the core writes only the shown region, so the rest must hold something
+    // deliberate rather than uninitialised memory (same reason as LowResRMXView.clear()).
+    if (!screenBufferCleared) {
+        for (int i = 0; i < SCREEN_WIDTH * SCREEN_HEIGHT; i++) screenBuffer[i] = OPAQUE_BLACK;
+        screenBufferCleared = true;
+    }
+    video_renderScreen(runner->core, screenBuffer, SCREEN_WIDTH * 4);
 
 #if __ANDROID__
-    ANativeWindow *window = (ANativeWindow *)nativeHandle;
+    ANativeWindow *window = (ANativeWindow *)texture->nativeHandle;
     ANativeWindow_Buffer buffer;
-    if (ANativeWindow_lock(window, &buffer, NULL) == 0) {
-        if (buffer.bits != NULL) {
-            if (buffer.stride == SCREEN_WIDTH) {
-                video_renderScreen(runner->core, (uint32_t *)buffer.bits, SCREEN_WIDTH*4);
-            } else {
-                // If stride is different, we need to render row by row or adjust video_renderScreen.
-                // For now, let's just log it.
-                __android_log_print(ANDROID_LOG_WARN, "core_plugin", "Stride mismatch: %d != %d", buffer.stride, SCREEN_WIDTH);
-
-                // Temporary: allocate a temporary buffer and copy if stride doesn't match
-                uint32_t *temp = malloc(SCREEN_WIDTH * SCREEN_HEIGHT * 4);
-                if (temp) {
-                    video_renderScreen(runner->core, temp, SCREEN_WIDTH * 4);
-                    for (int y = 0; y < SCREEN_HEIGHT; y++) {
-                        memcpy((uint32_t *)buffer.bits + y * buffer.stride, temp + y * SCREEN_WIDTH, SCREEN_WIDTH * 4);
-                    }
-                    free(temp);
-                }
-            }
-        }
-        ANativeWindow_unlockAndPost(window);
-    } else {
+    if (ANativeWindow_lock(window, &buffer, NULL) != 0) {
         __android_log_print(ANDROID_LOG_ERROR, "core_plugin", "ANativeWindow_lock failed");
+        return;
     }
-#elif __APPLE__
-    // On iOS, nativeHandle is the base address of the CVPixelBuffer
-    video_renderScreen(runner->core, (uint32_t *)nativeHandle, SCREEN_WIDTH * 4);
+    if (buffer.bits) {
+        // the locked buffer carries its own geometry; ANativeWindow_setBuffersGeometry() asked
+        // for texture->width/height and stride is in pixels
+        screenBlitScaled(screenBuffer, (uint32_t *)buffer.bits, buffer.width, buffer.height, buffer.stride * 4);
+    }
+    ANativeWindow_unlockAndPost(window);
 #else
-    // Placeholder for other platforms
-    video_renderScreen(runner->core, (uint32_t *)nativeHandle, SCREEN_WIDTH * 4);
+    // iOS (and any other platform): nativeHandle is the CVPixelBuffer base address
+    screenBlitScaled(screenBuffer, (uint32_t *)texture->nativeHandle, texture->width, texture->height, texture->pitch);
 #endif
 }
 

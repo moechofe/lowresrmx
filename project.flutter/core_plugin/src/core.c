@@ -9680,7 +9680,6 @@ void itp_runInterrupt(struct Core *core, enum InterruptType type)
 				delegate_interpreterDidFail(core, err_makeCoreError(errorCode, interpreter->pc->sourcePosition, -1));
 			}
 
-			// startToken follows the handler's name, which lets a stack trace name the interrupt
 			errorCode = lab_pushLabelStackItem(interpreter, LabelTypeONCALL, startToken);
 
 			while(errorCode == ErrorNone
@@ -14195,8 +14194,8 @@ void txtlib_resetWindow(struct TextLib *lib)
 	int right = fake_safe ? fake_right : io->safe.right;
 	int top = fake_safe ? fake_top : io->safe.top;
 	int bottom = fake_safe ? fake_bottom : io->safe.bottom;
-	int width = fake_shown ? fake_width : io->shown.width;
-	int height = fake_shown ? fake_height : io->shown.height;
+	int width = fake_shown ? fake_width : (io->shown.width ? io->shown.width : SCREEN_WIDTH);
+	int height = fake_shown ? fake_height : (io->shown.height ? io->shown.height : SCREEN_HEIGHT);
 
 	lib->windowX = (left + 7) / 8;
 	lib->windowY = (top + 7) / 8;
