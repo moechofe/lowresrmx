@@ -1,6 +1,9 @@
 import 'dart:developer' show log;
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:lowresrmx/app_keys.dart';
 import 'package:lowresrmx/core/runtime.dart';
+import 'package:lowresrmx/data/import_service.dart';
 import 'package:lowresrmx/data/library.dart';
 import 'package:lowresrmx/data/preference.dart';
 import 'package:lowresrmx/data/sync_manager.dart';
@@ -44,6 +47,10 @@ class MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
+    if (Platform.isAndroid || Platform.isIOS) {
+      WidgetsBinding.instance
+          .addPostFrameCallback((_) => MyImportService().start());
+    }
   }
 
   @override
@@ -71,6 +78,8 @@ class MyAppState extends State<MyApp> {
         	highContrastTheme: theme.lightHighContrast(),
         	highContrastDarkTheme: theme.darkHighContrast(),
 					restorationScopeId: 'root',
+					navigatorKey: appNavigatorKey,
+					scaffoldMessengerKey: appMessengerKey,
         	initialRoute: '/',
         	routes: {
         		'/': (context) => const MyLibraryPage(),

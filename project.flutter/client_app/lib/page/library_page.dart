@@ -1,6 +1,4 @@
-import 'dart:async';
 import 'dart:developer';
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:lowresrmx/data/library.dart';
 import 'package:lowresrmx/data/preference.dart';
@@ -9,11 +7,7 @@ import 'package:lowresrmx/page/manual_page.dart';
 import 'package:lowresrmx/page/settings_page.dart';
 import 'package:lowresrmx/widget/library_grid.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:path/path.dart' as p;
 import 'package:provider/provider.dart';
-import 'package:share_handler/share_handler.dart';
-import 'package:flutter/services.dart';
-import 'package:app_links/app_links.dart';
 
 enum MyLibraryMenuOption {
   setting,
@@ -35,85 +29,6 @@ class MyLibraryPage extends StatefulWidget {
 
 class _MyLibraryPageState extends State<MyLibraryPage> {
   MyLibrarySort sort = MyLibrarySort.name;
-  StreamSubscription<SharedMedia>? streamSubscription;
-  StreamSubscription<Uri>? appLinksSubscription;
-  SharedMedia? sharedMedia;
-  TextEditingController? nameController;
-  String? importedProgram;
-  bool importedError = false;
-
-  @override
-  void initState() {
-    super.initState();
-    if (Platform.isAndroid || Platform.isIOS) {
-      initSharedMedia();
-    }
-  }
-
-  @override
-  void dispose() {
-    streamSubscription?.cancel();
-    appLinksSubscription?.cancel();
-    super.dispose();
-  }
-
-  bool mediaIsAProgram(SharedMedia media) {
-    if (media.attachments == null) {
-      return false;
-    }
-    if (media.attachments!.length != 1) {
-      return false;
-    }
-    final SharedAttachment attachment = media.attachments![0]!;
-    if (p.extension(attachment.path) != MyLibrary.extension) {
-      return false;
-    }
-    return true;
-  }
-
-  Future<void> initSharedMedia() async {
-    // For shared from device
-    final handler = ShareHandlerPlatform.instance;
-    final media = await handler.getInitialSharedMedia();
-    if (media != null && mediaIsAProgram(media)) {
-      sharedMedia = media;
-    }
-    streamSubscription = handler.sharedMediaStream.listen((media) {
-      if (!mounted) return;
-      if (mediaIsAProgram(media)) {
-        setState(() {
-          sharedMedia = media;
-        });
-      }
-    });
-
-    // For shared from browser
-    final appLinks = AppLinks();
-    appLinks.getInitialLink().then((uri) {
-      if (uri != null) {
-        handleUri(uri);
-      }
-    });
-    appLinksSubscription = appLinks.uriLinkStream.listen((uri) {
-      if (!mounted) return;
-      handleUri(uri);
-    });
-  }
-
-  void handleUri(Uri uri) async {
-    if (uri.scheme != "lowresrmx") return;
-    final pid = uri.queryParameters['i'];
-    final name = uri.queryParameters['n'];
-		importedError = true;
-    if (pid != null && name != null) {
-      final newProgram = await MyLibrary.importFromRetroit(pid, name);
-      if (newProgram != null)
-			{
-				importedProgram = newProgram;
-				importedError = false;
-			}
-    }
-  }
 
   Future<String> getVersionInfo() async {
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
@@ -179,11 +94,6 @@ class _MyLibraryPageState extends State<MyLibraryPage> {
   @override
   Widget build(BuildContext context) {
     log("MyLibraryPage.build()");
-    if (sharedMedia != null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        showSaveSharedMedia(sharedMedia!.attachments![0]!.path);
-      });
-    }
     return Scaffold(
         appBar: AppBar(title: const Text("Programs"), actions: [
           // Consumer<SyncManager>(
@@ -263,59 +173,5 @@ class _MyLibraryPageState extends State<MyLibraryPage> {
       ),
       titleAlignment: ListTileTitleAlignment.top,
     );
-  }
-
-  void showSaveSharedMedia(String inputFile) async {
-    // Retrieve media name and content
-    final String mediaName = p.basenameWithoutExtension(inputFile);
-    final File mediaFile = File(inputFile);
-    if (!await mediaFile.exists()) {
-      log("File not found: $inputFile");
-      return;
-    }
-    final String mediaCode = await mediaFile.readAsString();
-    showSaveProgram(mediaCode, name: mediaName);
-  }
-
-  void showSaveProgram(String mediaCode, {String? name}) async {
-    final String mediaName = name ?? "unnamed";
-    nameController = TextEditingController(text: mediaName);
-    if (!mounted) return;
-    String? newName = await showDialog<String?>(
-        context: context,
-        builder: (BuildContext context) {
-          String newName = mediaName;
-          return AlertDialog(
-              icon: const Icon(Icons.drive_file_rename_outline_rounded),
-              title: const Text("Name"),
-              content: TextField(
-                controller: nameController,
-                autofocus: true,
-                onChanged: (value) => newName = value,
-                decoration: const InputDecoration(
-                  labelText: "Name",
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text("Cancel"),
-                ),
-                TextButton(
-                  onPressed: () => Navigator.pop(context, newName),
-                  child: const Text("Import"),
-                )
-              ]);
-        });
-    if (newName != null) {
-      final File newFile = await MyLibrary.createProgram();
-      final String automaticName = p.basenameWithoutExtension(newFile.path);
-      await MyLibrary.writeCode(automaticName, mediaCode);
-      await MyLibrary.renameProgram(automaticName, newName);
-      setState(() {
-        sharedMedia = null;
-        nameController = null;
-      });
-    }
   }
 }

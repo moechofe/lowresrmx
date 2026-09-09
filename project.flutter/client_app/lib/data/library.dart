@@ -63,8 +63,13 @@ class MyLibrary extends ChangeNotifier {
       programPath = p.join(libraryDir.path, "$name $counter$extension");
       programFile = File(programPath);
     }
-		return counter>=0 ? "$name $counter$extension" : name;
+		return counter >= 0 ? "$name $counter" : name;
 	}
+
+  static String sanitizeName(String name) {
+    final String clean = name.replaceAll(RegExp(r'[^\w\s_]+'), '');
+    return clean.trim().isEmpty ? "unnamed" : clean;
+  }
 
   static Future<File> createProgram() async {
     final Directory libraryDir = await getLibraryDir();
@@ -80,8 +85,7 @@ class MyLibrary extends ChangeNotifier {
   static Future<void> renameProgram(String programName, String nameName) async {
     final Directory libraryDir = await getLibraryDir();
 		// Prevent bad characters in the name
-		nameName = nameName.replaceAll(RegExp(r'[^\w\s_]+'), '');
-		if (nameName.isEmpty) { nameName = "unnamed"; }
+		nameName = sanitizeName(nameName);
 		// Search for a unique name
 		final String endingDigits = nameName.replaceAll(RegExp(r'(.*)\d+$'), '');
 		int counter = 0;
@@ -181,7 +185,14 @@ class MyLibrary extends ChangeNotifier {
 
   static Future<void> writeCode(String programName, String code) async {
     final File codeFile = await getCodeFile(programName);
-    codeFile.writeAsString(code);
+    await codeFile.writeAsString(code);
+  }
+
+  static Future<String> importCode(String suggestedName, String code) async {
+    final String unique = await findUniqueName(sanitizeName(suggestedName));
+    await writeCode(unique, code);
+    MyLibrary().notifyListeners();
+    return unique;
   }
 
   static Future<FileImage> readThumbnail(String programName) async {

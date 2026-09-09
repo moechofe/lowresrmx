@@ -230,7 +230,10 @@ class _MyRunPageState extends State<MyRunPage> {
 
     return PopScope(
       canPop: false,
-      onPopInvoked: (_) => gotoEditor(context),
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) return;
+        gotoEditor(context);
+      },
       child: buildLayout(context),
     );
   }
