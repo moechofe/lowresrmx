@@ -1848,6 +1848,10 @@ struct Interpreter
 	bool waitTap;
 	bool exitEvaluation;
 	union IOStatus lastFrameIOStatus;
+	// A touch-down edge stays pending until a frame in which the program actually reads TAP:
+	// the main program does not run on every frame (WAIT, and the frame a text window scrolls).
+	bool tapPending;
+	bool tapRead;
 	float timer;
 	int seed;
 	union Value *lastVariableValue;
@@ -1867,6 +1871,7 @@ void itp_runProgram(struct Core *core);
 void itp_runInterrupt(struct Core *core, enum InterruptType type);
 enum ErrorCode itp_evaluateCommand(struct Core *core);
 void itp_didFinishVBL(struct Core *core);
+bool itp_readTap(struct Core *core);
 void itp_endProgram(struct Core *core);
 void itp_freeProgram(struct Core *core);
 

@@ -98,8 +98,7 @@ struct TypedValue fnc_TAP(struct Core *core)
 
 	if(interpreter->pass == PassRun)
 	{
-		value.v.floatValue =
-			(core->machine->ioRegisters.status.touch && !core->interpreter->lastFrameIOStatus.touch) ? BAS_TRUE : BAS_FALSE;
+		value.v.floatValue = itp_readTap(core) ? BAS_TRUE : BAS_FALSE;
 	}
 	return value;
 }

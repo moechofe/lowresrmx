@@ -1,5 +1,6 @@
 ### 1.0_72
 
+- Fix `=TAP` missing taps on the frames where the program does not run, for instance while a text window scrolls.
 - iOS: fix long press acting on the wrong program while iCloud updates the list.
 - Flutter: fix the back button not returning to the program list from the editor.
 - Flutter: fix the editor outline drawer listing nothing, and jump to the tapped declaration.

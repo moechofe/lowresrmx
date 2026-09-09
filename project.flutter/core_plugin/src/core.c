@@ -4709,8 +4709,7 @@ struct TypedValue fnc_TAP(struct Core *core)
 
 	if(interpreter->pass == PassRun)
 	{
-		value.v.floatValue =
-			(core->machine->ioRegisters.status.touch && !core->interpreter->lastFrameIOStatus.touch) ? BAS_TRUE : BAS_FALSE;
+		value.v.floatValue = itp_readTap(core) ? BAS_TRUE : BAS_FALSE;
 	}
 	return value;
 }
@@ -9405,6 +9404,8 @@ struct CoreError itp_compileProgram(struct Core *core, const char *sourceCode)
 	interpreter->currentDataValueToken = interpreter->firstData ? interpreter->firstData + 1 : NULL;
 	interpreter->isSingleLineIf = false;
 	interpreter->lastFrameIOStatus.value = 0;
+	interpreter->tapPending = false;
+	interpreter->tapRead = false;
 	interpreter->seed = 0;
 	interpreter->simulatedKeyboardOn = false;
 
@@ -9440,6 +9441,7 @@ void itp_runProgram(struct Core *core)
 			if(core->machine->ioRegisters.status.touch && !interpreter->lastFrameIOStatus.touch)
 			{
 				interpreter->waitTap = false;
+				interpreter->tapRead = true;
 			}
 			else
 			{
@@ -9729,11 +9731,28 @@ void itp_runInterrupt(struct Core *core, enum InterruptType type)
 	}
 }
 
+bool itp_readTap(struct Core *core)
+{
+	struct Interpreter *interpreter = core->interpreter;
+
+	bool touchDidBegin = core->machine->ioRegisters.status.touch && !interpreter->lastFrameIOStatus.touch;
+	bool tap = touchDidBegin || interpreter->tapPending;
+	if(tap)
+	{
+		interpreter->tapRead = true;
+	}
+	return tap;
+}
+
 void itp_didFinishVBL(struct Core *core)
 {
 	struct Interpreter *interpreter = core->interpreter;
 
-	interpreter->lastFrameIOStatus = core->machine->ioRegisters.status;
+	union IOStatus status = core->machine->ioRegisters.status;
+	bool touchDidBegin = status.touch && !interpreter->lastFrameIOStatus.touch;
+	interpreter->tapPending = (touchDidBegin || interpreter->tapPending) && !interpreter->tapRead;
+	interpreter->tapRead = false;
+	interpreter->lastFrameIOStatus = status;
 
 	// timer
 	interpreter->timer++;

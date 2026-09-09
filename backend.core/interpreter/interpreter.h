@@ -133,6 +133,8 @@ struct Interpreter
 	bool waitTap;
 	bool exitEvaluation;
 	union IOStatus lastFrameIOStatus;
+	bool tapPending;
+	bool tapRead;
 	float timer;
 	int seed;
 	union Value *lastVariableValue;
@@ -152,6 +154,7 @@ void itp_runProgram(struct Core *core);
 void itp_runInterrupt(struct Core *core, enum InterruptType type);
 enum ErrorCode itp_evaluateCommand(struct Core *core);
 void itp_didFinishVBL(struct Core *core);
+bool itp_readTap(struct Core *core);
 void itp_endProgram(struct Core *core);
 void itp_freeProgram(struct Core *core);
 
