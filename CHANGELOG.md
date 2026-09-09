@@ -1,4 +1,4 @@
-### 1.0_71
+### 1.0_72
 
 - iOS: fix long press acting on the wrong program while iCloud updates the list.
 - Flutter: fix the back button not returning to the program list from the editor.
@@ -6,6 +6,7 @@
 - Flutter: import a shared rmx from any page and show a snackbar.
 - Flutter: fix the blurry fantasy screen, rendering it at the device resolution.
 - Flutter: fix "Save thumbnail" failing while the native texture is in use.
+- Flutter: fix `=KEYBOARD` always returning 0 instead of the height the device keyboard occludes.
 
 ### 1.0_70
 

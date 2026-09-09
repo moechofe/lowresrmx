@@ -158,8 +158,11 @@ class OrientationChangeMsg {
   final double safeLeft;
   final double safeBottom;
   final double safeRight;
+
+  final double keyboardHeight;
+
   OrientationChangeMsg(this.width, this.height, this.safeTop, this.safeLeft,
-      this.safeBottom, this.safeRight);
+      this.safeBottom, this.safeRight, this.keyboardHeight);
 }
 
 /// Message used to hand the render isolate a new destination surface.
@@ -218,6 +221,8 @@ class Runtime extends ChangeNotifier {
   double _screenScale = 1.0;
   double get screenScale => _screenScale;
 
+  int _keyboardHeight = 0;
+
   void initState() async {
     runnerInit(runner);
   }
@@ -253,9 +258,8 @@ class Runtime extends ChangeNotifier {
   }
 
   void resize(double inWidth, double inHeight, double safeTop, double safeLeft,
-      double safeBottom, safeRight) {
+      double safeBottom, double safeRight, double keyboardHeight) {
     double ratio = inWidth / inHeight;
-    _screenScale;
 
     if (ratio > 9.0 / 16.0) {
       _screenScale = inWidth / screenWidth.toDouble();
@@ -269,6 +273,13 @@ class Runtime extends ChangeNotifier {
     input.ref.left = (safeLeft / _screenScale).toInt();
     input.ref.bottom = (safeBottom / _screenScale).toInt();
     input.ref.right = (safeRight / _screenScale).toInt();
+
+    final int occluded = (keyboardHeight / _screenScale).ceil();
+    if (occluded != _keyboardHeight) {
+      _keyboardHeight = occluded;
+      input.ref.keyboardHeight = occluded;
+      input.ref.keyboardChange = occluded > 0 ? 1 : -1;
+    }
   }
 
   void keyDown(int ascii) {
@@ -277,6 +288,7 @@ class Runtime extends ChangeNotifier {
 
   Error update() {
     final CoreError err = runnerUpdate(runner, input);
+    input.ref.keyboardChange = 0;
     if (runner.ref.shouldSaveDisk) {
       dataDiskToSave = runner.ref.dataDisk
           .cast<Utf8>()
@@ -418,7 +430,8 @@ void isolateEntryPoint(List<Object?> arguments) {
       } else if (message is OrientationChangeMsg) {
         // Receive the screen size and the safe area
         runtime.resize(message.width, message.height, message.safeTop,
-            message.safeLeft, message.safeBottom, message.safeRight);
+            message.safeLeft, message.safeBottom, message.safeRight,
+            message.keyboardHeight);
       } else if (message is SurfaceChangeMsg) {
         // Receive the new destination surface after a rotation or an inset change
         runtime.setSurface(message.address, message.bytesPerRow, message.width,
@@ -676,7 +689,8 @@ class ComPort {
         padding.top / dpr,
         padding.left / dpr,
         padding.bottom / dpr,
-        padding.right / dpr));
+        padding.right / dpr,
+        view.viewInsets.bottom / dpr));
     _geometrySent = true;
   }
 
@@ -711,9 +725,10 @@ class ComPort {
 
   /// Update the device screen size and the safe area, and resize the render surface to match.
   Future<void> resize(double inWidth, double inHeight, double safeTop, double safeLeft,
-      double safeBottom, double safeRight, double devicePixelRatio) async {
-    sendPort.send(OrientationChangeMsg(
-        inWidth, inHeight, safeTop, safeLeft, safeBottom, safeRight));
+      double safeBottom, double safeRight, double keyboardHeight,
+      double devicePixelRatio) async {
+    sendPort.send(OrientationChangeMsg(inWidth, inHeight, safeTop, safeLeft,
+        safeBottom, safeRight, keyboardHeight));
     _geometrySent = true;
     final int width = (inWidth * devicePixelRatio).round();
     final int height = (inHeight * devicePixelRatio).round();
