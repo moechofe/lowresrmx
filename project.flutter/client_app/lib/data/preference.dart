@@ -136,14 +136,18 @@ abstract class MyPreference {
 		return 0;
 	}
 
-	static Future<bool> getGoogleSigned() async {
+	static Future<String?> getGoogleAccount() async {
 		final prefs = await SharedPreferences.getInstance();
-		return prefs.getBool("googleSigned") ?? false;
+		return prefs.getString("googleAccount");
 	}
 
-	static Future<void> setGoogleSigned(bool value) async {
+	static Future<void> setGoogleAccount(String? email) async {
 		final prefs = await SharedPreferences.getInstance();
-		prefs.setBool("googleSigned", value);
+		if (email == null) {
+			prefs.remove("googleAccount");
+		} else {
+			prefs.setString("googleAccount", email);
+		}
 	}
 }
 

@@ -79,15 +79,15 @@ class _MyEditDrawerState extends State<MyEditDrawer> {
 
   Widget buildScaffold(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          automaticallyImplyLeading: false,
-          // title: const Text("Back to Programs"),
-					title: Text(widget.editedProgramName),
-          leading: IconButton(
-							icon: const Icon(Icons.arrow_back_rounded),
-              tooltip: "Program library",
-              onPressed: () => gotoLibrary(context)),
-        ),
+        // appBar: AppBar(
+        //   // automaticallyImplyLeading: false,
+        //   // title: const Text("Back to Programs"),
+				// 	// title: Text(widget.editedProgramName),
+        //   // leading: IconButton(
+				// 	// 		icon: const Icon(Icons.arrow_back_rounded),
+        //   //     tooltip: "Program library",
+        //   //     onPressed: () => gotoLibrary(context)),
+        // ),
         body: buildListView());
   }
 

@@ -5,9 +5,13 @@ import 'package:lowresrmx/data/preference.dart';
 import 'package:lowresrmx/data/sync_manager.dart';
 import 'package:lowresrmx/page/manual_page.dart';
 import 'package:lowresrmx/page/settings_page.dart';
+import 'package:lowresrmx/widget/google_account_tile.dart';
 import 'package:lowresrmx/widget/library_grid.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+final Uri retroit = Uri.parse('https://ret.ro.it');
 
 enum MyLibraryMenuOption {
   setting,
@@ -108,20 +112,20 @@ class MyLibraryPage extends StatelessWidget {
     log("MyLibraryPage.build()");
     return Scaffold(
         appBar: AppBar(title: const Text("Programs"), actions: [
-          // Consumer<SyncManager>(
-          //   builder: (context, sync, child) {
-          //     if (!sync.isLoggedIn) return const SizedBox.shrink();
-          //     return Icon(
-          //       sync.isAuthorized
-          //           ? Icons.cloud_done_rounded
-          //           : Icons.cloud_off_rounded,
-          //       size: 20,
-          //       color: sync.isAuthorized
-          //           ? null
-          //           : Theme.of(context).colorScheme.error,
-          //     );
-          //   },
-          // ),
+          Consumer<SyncManager>(
+            builder: (context, sync, child) {
+              if (sync.accountEmail == null) return const SizedBox.shrink();
+              return Icon(
+                sync.isAuthorized
+                    ? Icons.cloud_done_rounded
+                    : Icons.cloud_off_rounded,
+                size: 20,
+                color: sync.isAuthorized
+                    ? null
+                    : Theme.of(context).colorScheme.error,
+              );
+            },
+          ),
           buildMorePopupMenu(context, preference),
           const SizedBox(width: 8.0),
         ]),
@@ -141,17 +145,34 @@ class MyLibraryPage extends StatelessWidget {
     return Drawer(
       child: ListView(
         children: [
+					buildCommunityTile(context),
           const MyManualTile(),
-          buildSettingItem(context),
-          buildReinstallItem(context),
+          buildSettingTile(context),
+          buildReinstallTile(context),
+					const Divider(),
+          const MyGoogleAccountTile(),
           const Divider(),
-          buildAboutItem(context),
+          buildAboutTile(context),
         ],
       ),
     );
   }
 
-  Widget buildSettingItem(BuildContext context) {
+	Future<void> openRetroit() async {
+		if (!await launchUrl(retroit)) {
+			throw Exception('Could not launch $retroit');
+		}
+	}
+
+	Widget buildCommunityTile(BuildContext context) {
+		return ListTile(
+			leading: const Icon(Icons.web_rounded),
+			title: const Text("Community website"),
+			onTap: openRetroit
+		);
+	}
+
+  Widget buildSettingTile(BuildContext context) {
     return ListTile(
         leading: const Icon(Icons.settings),
         title: const Text("Editor settings"),
@@ -161,7 +182,7 @@ class MyLibraryPage extends StatelessWidget {
         });
   }
 
-  Widget buildReinstallItem(BuildContext context) {
+  Widget buildReinstallTile(BuildContext context) {
     return ListTile(
       leading: const Icon(Icons.restore_rounded),
       title: const Text("Reinstall default programs"),
@@ -173,7 +194,7 @@ class MyLibraryPage extends StatelessWidget {
     );
   }
 
-  Widget buildAboutItem(BuildContext context) {
+  Widget buildAboutTile(BuildContext context) {
     return ListTile(
       title: const Text("LowResRMX version"),
       subtitle: FutureBuilder(
