@@ -234,7 +234,7 @@ class _MyEditPageState extends State<MyEditPage> with WidgetsBindingObserver {
       absorb = true;
       MyLibrary.writeCode(executedProgramName, editingController.text)
           .then((_) {
-        MyLibrary.readCode(".dataDisk").then((dataDisk) {
+        MyLibrary.readCode("Disk").then((dataDisk) {
           compileAndRun(comPort,
                   programSource: editingController.text, dataDisk: dataDisk)
               .then((Error err) {
@@ -242,7 +242,7 @@ class _MyEditPageState extends State<MyEditPage> with WidgetsBindingObserver {
               setState(() {
                 this.executedProgramName = executedProgramName;
                 editedProgramName = executedProgramName;
-                dataDiskProgramName = ".dataDisk";
+                dataDiskProgramName = "Disk";
               });
             } else {
               setState(() {
