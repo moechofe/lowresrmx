@@ -69,6 +69,8 @@ class MyAppState extends State<MyApp> {
           Provider<ComPort>(create: (_) => comPort),
           ChangeNotifierProvider<MyEditorPreference>(
               create: (_) => MyEditorPreference()),
+					ChangeNotifierProvider<MyLibraryPreference>(
+							create: (_) => MyLibraryPreference()..init()),
         ],
         child: MaterialApp(
         	debugShowCheckedModeBanner: false,

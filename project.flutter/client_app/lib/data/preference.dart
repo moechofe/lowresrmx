@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
+import 'package:lowresrmx/data/library.dart';
 
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
@@ -78,6 +79,26 @@ abstract class MyPreference {
 	static Future<void> setEditorFontSize(double fontSize) async {
 		final prefs = await SharedPreferences.getInstance();
 		prefs.setDouble("editorFontSize", fontSize);
+	}
+
+	static Future<MyLibrarySort> getLibrarySort() async {
+		final prefs = await SharedPreferences.getInstance();
+		return MyLibrarySort.values[(prefs.getInt("librarySort")??0).clamp(0,MyLibrarySort.values.length-1)];
+	}
+
+	static Future<void> setLibrarySort(MyLibrarySort sort) async {
+		final prefs = await SharedPreferences.getInstance();
+		prefs.setInt("librarySort",sort.index);
+	}
+
+	static Future<MyLibraryGrid> getLibraryGrid() async {
+		final prefs = await SharedPreferences.getInstance();
+		return MyLibraryGrid.values[(prefs.getInt("libraryGrid")??0).clamp(0,MyLibraryGrid.values.length-1)];
+	}
+
+	static Future<void> setLibraryGrid(MyLibraryGrid grid) async {
+		final prefs = await SharedPreferences.getInstance();
+		prefs.setInt("libraryGrid",grid.index);
 	}
 
 	static Future<InstallChange> consumeInstallChange() async {
@@ -170,6 +191,30 @@ class MyEditorPreference extends ChangeNotifier {
 	set fontSize(double value) {
 		_fontSize = value;
 		MyPreference.setEditorFontSize(value);
+		notifyListeners();
+	}
+}
+
+class MyLibraryPreference extends ChangeNotifier {
+	Future<void> init() async {
+		_sort = await MyPreference.getLibrarySort();
+		_grid = await MyPreference.getLibraryGrid();
+		notifyListeners();
+	}
+
+	MyLibrarySort _sort = MyLibrarySort.name;
+	MyLibrarySort get sort => _sort;
+	set sort(MyLibrarySort value) {
+		_sort = value;
+		MyPreference.setLibrarySort(value);
+		notifyListeners();
+	}
+
+	MyLibraryGrid _grid = MyLibraryGrid.three;
+	MyLibraryGrid get grid => _grid;
+	set grid(MyLibraryGrid value) {
+		_grid = value;
+		MyPreference.setLibraryGrid(value);
 		notifyListeners();
 	}
 }

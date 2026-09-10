@@ -16,15 +16,7 @@ final Uint8List transparentPng = const Base64Codec().decode(
 const double listThumbnailExtent = 40.0;
 const Key libraryItemThumbnailKey = Key('library-item-thumbnail');
 
-enum MyItemMenuOption {
-  // isTool,
-  rename,
-  share,
-  duplicate,
-  delete,
-}
-
-/// A [Card] with thumbnail, name of a program, a popup menu and a tap action to open the program editor.
+/// A [Card] with thumbnail, name of a program, a long-press menu and a tap action to open the program editor.
 class MyLibraryItem extends StatefulWidget {
   final String programName;
 	final MyLibraryGrid grid;
@@ -75,8 +67,7 @@ class _MyLibraryItemState extends State<MyLibraryItem> {
             future: preference.loadPreference(),
             builder: (context, snapshot) {
               if (snapshot.hasData) {
-                return buildContent(
-                    context, constraints, snapshot.data as MyProgramPreference);
+                return buildContent(context, constraints);
               } else {
                 return const SizedBox();
               }
@@ -85,33 +76,29 @@ class _MyLibraryItemState extends State<MyLibraryItem> {
     });
   }
 
-  Widget buildContent(BuildContext context, BoxConstraints constraints,
-      MyProgramPreference preference) {
-    // Unfortunatly, Inkwell does not support onLongPressStart with details, and I need the position to place the popup menu.
-    return GestureDetector(
-      onLongPressStart: (details) {
-        showPopupMenu(context, details, preference);
+  Widget buildContent(BuildContext context, BoxConstraints constraints) {
+    return InkWell(
+      onTap: () {
+        gotoEdit(context);
       },
-      child: InkWell(
-        onTap: () {
-          gotoEdit(context);
-        },
-        borderRadius: BorderRadius.circular(12.0),
-        child: switch (widget.grid) {
-          MyLibraryGrid.two || MyLibraryGrid.three => Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [buildThumbnail(constraints), buildName()],
-            ),
-          MyLibraryGrid.list => Row(
-              children: [
-                Padding(
-                    padding: const EdgeInsets.all(0.0),
-                    child: buildThumbnail(constraints)),
-                buildName(),
-              ],
-            ),
-        },
-      ),
+      onLongPress: () {
+        showItemMenu(context);
+      },
+      borderRadius: BorderRadius.circular(12.0),
+      child: switch (widget.grid) {
+        MyLibraryGrid.two || MyLibraryGrid.three => Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [buildThumbnail(constraints), buildName()],
+          ),
+        MyLibraryGrid.list => Row(
+            children: [
+              Padding(
+                  padding: const EdgeInsets.all(0.0),
+                  child: buildThumbnail(constraints)),
+              buildName(),
+            ],
+          ),
+      },
     );
   }
 
@@ -181,60 +168,59 @@ class _MyLibraryItemState extends State<MyLibraryItem> {
     );
   }
 
-  void showPopupMenu(BuildContext context, LongPressStartDetails details,
-      MyProgramPreference preference) {
-    showMenu<MyItemMenuOption?>(
+  void showItemMenu(BuildContext context) {
+    showModalBottomSheet<void>(
       context: context,
-      position: RelativeRect.fromLTRB(
-        details.globalPosition.dx,
-        details.globalPosition.dy,
-        details.globalPosition.dx,
-        details.globalPosition.dy,
+      showDragHandle: true,
+      builder: (BuildContext sheetContext) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+							leading: FutureBuilder(
+								future: loadThumbnail(),
+								builder: (context, snapshot) {
+									if (snapshot.hasData) {
+										return Opacity(
+											opacity: Platform.isLinux ? 0.2 : 1.0,
+											child: ClipRRect(
+												borderRadius: BorderRadius.circular(12.0),
+												child: Image(
+														image: snapshot.data as ImageProvider,
+														fit: BoxFit.cover,
+														errorBuilder: (context, error, stackTrace) {
+															return Image(image: MemoryImage(transparentPng));
+														}),
+											),
+										);
+									} else {
+										return const SizedBox();
+									}
+								}),
+              title: Text(widget.programName,
+                  style: libraryItemTextStyle, overflow: TextOverflow.ellipsis),
+            ),
+            const Divider(height: 1.0),
+            ListTile(
+              leading: const Icon(Icons.drive_file_rename_outline_rounded),
+              title: const Text('Rename'),
+              onTap: () {
+                Navigator.pop(sheetContext);
+                showRenameDialog();
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.delete),
+              title: const Text('Delete'),
+              onTap: () {
+                Navigator.pop(sheetContext);
+                showDeleteDialog();
+              },
+            ),
+          ],
+        ),
       ),
-      items: [
-        const PopupMenuItem<MyItemMenuOption>(
-          value: MyItemMenuOption.rename,
-          child: ListTile(
-            leading: Icon(Icons.drive_file_rename_outline_rounded),
-            title: Text('Rename'),
-          ),
-        ),
-        // const PopupMenuItem<MyItemMenuOption>(
-        //   value: MyItemMenuOption.share,
-        //   child: Text('Share'),
-        // ),
-        // const PopupMenuItem<MyItemMenuOption>(
-        //   value: MyItemMenuOption.duplicate,
-        //   child: Text('Duplicate'),
-        // ),
-        const PopupMenuItem<MyItemMenuOption>(
-          value: MyItemMenuOption.delete,
-          child: ListTile(leading: Icon(Icons.delete), title: Text('Delete')),
-        ),
-        // const PopupMenuDivider(),
-        // CheckedPopupMenuItem<MyItemMenuOption>(
-        //     value: MyItemMenuOption.isTool,
-        //     checked: preference.isTool,
-        //     child: const Text('Is Tool')),
-      ],
-    ).then((value) {
-      if (value == null) return;
-      switch (value) {
-        // case MyItemMenuOption.isTool:
-        //   preference.setTool(!preference.isTool);
-        //   break;
-        case MyItemMenuOption.rename:
-          showRenameDialog();
-          break;
-        case MyItemMenuOption.share:
-          break;
-        case MyItemMenuOption.duplicate:
-          break;
-        case MyItemMenuOption.delete:
-          showDeleteDialog();
-          break;
-      }
-    });
+    );
   }
 
   void showRenameDialog() async {

@@ -19,16 +19,8 @@ enum MyLibraryMenuOption {
 	list,
 }
 
-class MyLibraryPage extends StatefulWidget {
+class MyLibraryPage extends StatelessWidget {
   const MyLibraryPage({super.key});
-
-  @override
-  State<MyLibraryPage> createState() => _MyLibraryPageState();
-}
-
-class _MyLibraryPageState extends State<MyLibraryPage> {
-  MyLibrarySort sort = MyLibrarySort.name;
-	MyLibraryGrid grid = MyLibraryGrid.two;
 
   Future<String> getVersionInfo() async {
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
@@ -41,7 +33,8 @@ class _MyLibraryPageState extends State<MyLibraryPage> {
             MySettingsPage(context.read<MyEditorPreference>())));
   }
 
-  Widget buildMorePopupMenu(BuildContext context) {
+  Widget buildMorePopupMenu(
+      BuildContext context, MyLibraryPreference preference) {
     return PopupMenuButton<MyLibraryMenuOption>(
       itemBuilder: (BuildContext context) =>
           <PopupMenuEntry<MyLibraryMenuOption>>[
@@ -51,32 +44,32 @@ class _MyLibraryPageState extends State<MyLibraryPage> {
         ),
         CheckedPopupMenuItem<MyLibraryMenuOption>(
           value: MyLibraryMenuOption.name,
-          checked: sort == MyLibrarySort.name,
+          checked: preference.sort == MyLibrarySort.name,
           child: const Text('Sort by name'),
         ),
         CheckedPopupMenuItem<MyLibraryMenuOption>(
           value: MyLibraryMenuOption.oldest,
-          checked: sort == MyLibrarySort.oldest,
+          checked: preference.sort == MyLibrarySort.oldest,
           child: const Text('Sort by oldest'),
         ),
         CheckedPopupMenuItem<MyLibraryMenuOption>(
           value: MyLibraryMenuOption.newest,
-          checked: sort == MyLibrarySort.newest,
+          checked: preference.sort == MyLibrarySort.newest,
           child: const Text('Sort by newest'),
         ),
 				CheckedPopupMenuItem<MyLibraryMenuOption>(
 					value: MyLibraryMenuOption.two,
-					checked: grid == MyLibraryGrid.two,
+					checked: preference.grid == MyLibraryGrid.two,
 					child: const Text('2 Columns'),
 				),
 				CheckedPopupMenuItem<MyLibraryMenuOption>(
 					value: MyLibraryMenuOption.three,
-					checked: grid == MyLibraryGrid.three,
+					checked: preference.grid == MyLibraryGrid.three,
 					child: const Text('3 Columns'),
 				),
 				CheckedPopupMenuItem<MyLibraryMenuOption>(
 					value: MyLibraryMenuOption.list,
-					checked: grid == MyLibraryGrid.list,
+					checked: preference.grid == MyLibraryGrid.list,
 					child: const Text('List'),
 				),
       ],
@@ -86,43 +79,32 @@ class _MyLibraryPageState extends State<MyLibraryPage> {
             // TODO: open settings
             break;
           case MyLibraryMenuOption.name:
-            setState(() {
-              sort = MyLibrarySort.name;
-            });
+            preference.sort = MyLibrarySort.name;
             break;
           case MyLibraryMenuOption.oldest:
-            setState(() {
-              sort = MyLibrarySort.oldest;
-            });
+            preference.sort = MyLibrarySort.oldest;
             break;
           case MyLibraryMenuOption.newest:
-            setState(() {
-              sort = MyLibrarySort.newest;
-            });
+            preference.sort = MyLibrarySort.newest;
             break;
 					case MyLibraryMenuOption.two:
-						setState(() {
-							grid = MyLibraryGrid.two;
-						});
+						preference.grid = MyLibraryGrid.two;
 						break;
 					case MyLibraryMenuOption.three:
-						setState(() {
-							grid = MyLibraryGrid.three;
-						});
+						preference.grid = MyLibraryGrid.three;
 						break;
 					case MyLibraryMenuOption.list:
-						setState(() {
-							grid = MyLibraryGrid.list;
-						});
+						preference.grid = MyLibraryGrid.list;
 						break;
         }
-        // Handle menu item selection
       },
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final MyLibraryPreference preference =
+        context.watch<MyLibraryPreference>();
     log("MyLibraryPage.build()");
     return Scaffold(
         appBar: AppBar(title: const Text("Programs"), actions: [
@@ -140,7 +122,7 @@ class _MyLibraryPageState extends State<MyLibraryPage> {
           //     );
           //   },
           // ),
-          buildMorePopupMenu(context),
+          buildMorePopupMenu(context, preference),
           const SizedBox(width: 8.0),
         ]),
         drawer: buildDrawer(context),
@@ -150,7 +132,9 @@ class _MyLibraryPageState extends State<MyLibraryPage> {
           },
           child: const Icon(Icons.add_rounded),
         ),
-        body: SafeArea(child:MyCatalogGrid(sort: sort, grid: grid)));
+        body: SafeArea(
+            child: MyCatalogGrid(
+                sort: preference.sort, grid: preference.grid)));
   }
 
   Widget buildDrawer(BuildContext context) {
