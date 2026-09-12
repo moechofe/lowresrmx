@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:developer';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
@@ -153,7 +152,7 @@ class MyLibrary extends ChangeNotifier {
   }
 
   static Future<List<String>> buildList(MyLibrarySort sort) async {
-		log("MyLibrary.buildList()");
+		debugPrint("MyLibrary.buildList()");
 		await MyLibrary.createDataDiskIfNotExists();
 
     final Directory libraryDir = await getLibraryDir();
@@ -179,7 +178,7 @@ class MyLibrary extends ChangeNotifier {
           .map((file) => p.basenameWithoutExtension(file.path))
           .toList();
     } catch (e) {
-      log("Error: $e");
+      debugPrint("Error: $e");
 
       return [];
     }

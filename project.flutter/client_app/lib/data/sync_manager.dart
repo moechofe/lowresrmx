@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:developer' show log;
 import 'dart:io' as io;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -303,7 +302,7 @@ class SyncManager with ChangeNotifier, WidgetsBindingObserver {
         },
       );
 
-      log("sync: $reason full=$full up=${result.filesUploaded} "
+      debugPrint("sync: $reason full=$full up=${result.filesUploaded} "
           "down=${result.filesDownloaded} errors=${result.errors}");
 
       if (full && result.errors.isEmpty) {
@@ -316,14 +315,14 @@ class SyncManager with ChangeNotifier, WidgetsBindingObserver {
       }
     } on GoogleAuthorizationRequired {
       _authorized = false;
-      log("sync: authorization lost");
+      debugPrint("sync: authorization lost");
     } catch (error) {
-      log("sync failed: $error");
+      debugPrint("sync failed: $error");
     } finally {
       try {
         await adapter.finish();
       } catch (error) {
-        log("sync: hash cache not saved: $error");
+        debugPrint("sync: hash cache not saved: $error");
       }
       client.close();
       if (localChanges > 0) {
@@ -355,7 +354,7 @@ class SyncManager with ChangeNotifier, WidgetsBindingObserver {
         await adapter.uploadFile(name, await adapter.downloadFile(key));
       }
       await adapter.deleteFile(key);
-      log("sync: migrated $key -> $name");
+      debugPrint("sync: migrated $key -> $name");
     }
     await MyPreference.setSyncPathMigrated();
   }
@@ -387,7 +386,7 @@ class SyncManager with ChangeNotifier, WidgetsBindingObserver {
         // pulls it back.
         if (peer.sha256 == base.sha256) {
           await adapter.deleteFile(name);
-          log("sync: deleted remote $name");
+          debugPrint("sync: deleted remote $name");
         }
       } else if (local != null && peer == null) {
         // Deleted elsewhere. Only delete locally when this copy is unmodified
@@ -400,7 +399,7 @@ class SyncManager with ChangeNotifier, WidgetsBindingObserver {
           if (await file.exists()) await file.delete();
           files.remove(name);
           removed += 1;
-          log("sync: deleted local $name");
+          debugPrint("sync: deleted local $name");
         }
       }
     }
@@ -428,7 +427,7 @@ class SyncManager with ChangeNotifier, WidgetsBindingObserver {
     if (!_dirty &&
         last != null &&
         DateTime.now().difference(last) < fullSyncCooldown) {
-      log("sync: $reason skipped (cooldown)");
+      debugPrint("sync: $reason skipped (cooldown)");
       return;
     }
     await syncAllPrograms(reason: reason);

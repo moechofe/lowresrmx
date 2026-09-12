@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:lowresrmx/data/location.dart';
@@ -133,7 +131,7 @@ class MyErrorGutterRenderObject extends RenderBox {
     );
     _textPainter.layout();
     size = Size(_textPainter.width, constraints.maxHeight);
-		log("MyErrorGutterRenderObject size: $size");
+		debugPrint("MyErrorGutterRenderObject size: $size");
   }
 
   @override

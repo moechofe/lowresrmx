@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/foundation.dart';
 import 'package:lowresrmx/data/library.dart';
 
@@ -24,7 +22,7 @@ abstract class MyPreference {
 				libraryPath = p.join(libraryPath, packageInfo.appName);
 			}
 		// }
-		log("Library path: $libraryPath");
+		debugPrint("Library path: $libraryPath");
 		return libraryPath;
 	}
 
@@ -40,7 +38,7 @@ abstract class MyPreference {
 
   static Future<List<String>> listToolProgram() async {
     final prefs = await SharedPreferences.getInstance();
-		log("Keys: ${prefs.getKeys()}");
+		debugPrint("Keys: ${prefs.getKeys()}");
 		// List the programs that are tools
     return prefs
         .getKeys()

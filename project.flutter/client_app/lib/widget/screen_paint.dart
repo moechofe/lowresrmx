@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -38,7 +37,7 @@ class MyScreenPaint extends StatefulWidget {
 class _MyScreenPaintState extends State<MyScreenPaint> {
   @override
   Widget build(BuildContext context) {
-    log("MyScreenPaint.build()");
+    debugPrint("MyScreenPaint.build()");
     final comport = context.watch<ComPort>();
 
     if (comport.textureId != null) {

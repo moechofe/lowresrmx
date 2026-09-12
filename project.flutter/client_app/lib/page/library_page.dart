@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:lowresrmx/data/library.dart';
 import 'package:lowresrmx/data/preference.dart';
@@ -109,7 +108,7 @@ class MyLibraryPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final MyLibraryPreference preference =
         context.watch<MyLibraryPreference>();
-    log("MyLibraryPage.build()");
+    debugPrint("MyLibraryPage.build()");
     return Scaffold(
         appBar: AppBar(title: const Text("Programs"), actions: [
           Consumer<SyncManager>(

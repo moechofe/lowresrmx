@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:developer' show log;
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -175,7 +174,7 @@ class _MyEditPageState extends State<MyEditPage> with WidgetsBindingObserver {
   Future<bool> initEditor(BuildContext context) async {
     if (codeReady.isCompleted) return true;
 
-    log("initEditor()");
+    debugPrint("initEditor()");
 
     final programName = (ModalRoute.of(context)!.settings.arguments
         as Map)["programName"]! as String;
@@ -202,9 +201,9 @@ class _MyEditPageState extends State<MyEditPage> with WidgetsBindingObserver {
 
     // When the code is ready, it will place the cursor at the error location and scroll to it.
     if (runningError != null) {
-      log("Error ${runningError.msg}, ${runningError.getLocation(editingController.text).row}");
+      debugPrint("Error ${runningError.msg}, ${runningError.getLocation(editingController.text).row}");
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        log("addPostFrameCallback");
+        debugPrint("addPostFrameCallback");
         location.setLocation(runningError.getLocation(editingController.text));
         gotoLocation(location.location);
       });

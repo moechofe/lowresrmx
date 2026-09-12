@@ -1,4 +1,3 @@
-import 'dart:developer' show log;
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:lowresrmx/app_keys.dart';
@@ -19,7 +18,7 @@ void main() async {
 
 	final InstallChange change = await MyPreference.consumeInstallChange();
 	if (change != InstallChange.unchanged) {
-		log("main() install change: $change");
+		debugPrint("main() install change: $change");
 		await onInstallChanged(change);
 	}
 
@@ -61,7 +60,7 @@ class MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     final MyTheme theme = MyTheme(Theme.of(context).textTheme);
-    log("MyApp.build() Not good if called multiple times.");
+    debugPrint("MyApp.build() Not good if called multiple times.");
     return MultiProvider(
         providers: [
           ChangeNotifierProvider<SyncManager>(create: (_) => SyncManager()),

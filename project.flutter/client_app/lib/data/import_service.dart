@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:developer' show log;
 import 'dart:io';
 
 import 'package:app_links/app_links.dart';
@@ -82,13 +81,13 @@ class MyImportService {
     try {
       final File file = File(path);
       if (!await file.exists()) {
-        log("Shared file not found: $path");
+        debugPrint("Shared file not found: $path");
         showFailed(name);
         return;
       }
       showImported(await MyLibrary.importCode(name, await file.readAsString()));
     } catch (error) {
-      log("Import failed: $error");
+      debugPrint("Import failed: $error");
       showFailed(name);
     }
   }
@@ -107,7 +106,7 @@ class MyImportService {
       }
       showImported(imported);
     } catch (error) {
-      log("Import failed: $error");
+      debugPrint("Import failed: $error");
       showFailed(name);
     }
   }

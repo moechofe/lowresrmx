@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:developer';
 import 'dart:ffi' as ffi;
 import 'dart:isolate';
 import 'dart:ui' as ui;
@@ -371,7 +370,7 @@ void isolateEntryPoint(List<Object?> arguments) {
   try {
     runtime.initState();
   } catch (e) {
-    log("Error during runtime.initState: $e");
+    debugPrint("Error during runtime.initState: $e");
   }
 
   // Remember the keyboard state to avoid sending the same message each frame.
@@ -460,7 +459,7 @@ void isolateEntryPoint(List<Object?> arguments) {
         sendPort.send(ThumbnailMsg(runtime.bytesList!));
       }
     } catch (e, stack) {
-      log("Isolate error: $e\n$stack");
+      debugPrint("Isolate error: $e\n$stack");
       sendPort.send(RunningErrorMsg(
           Error(code: -1, msg: "Isolate crashed: $e", position: -1)));
     }
@@ -703,7 +702,7 @@ class ComPort {
 
   /// Start updating the runtime at 60 fps
   void start() {
-		log("Ticker started");
+		debugPrint("Ticker started");
 		sendPort.send(IsolateMessageType.audioStart);
     ticker.start();
     runtimeStopwatch.start();
@@ -712,7 +711,7 @@ class ComPort {
 
   /// Stop updating the runtime
   void stop() {
-		log("Ticker stopped");
+		debugPrint("Ticker stopped");
     ticker.stop();
 		sendPort.send(IsolateMessageType.audioStop);
     prevDuration = Duration.zero;

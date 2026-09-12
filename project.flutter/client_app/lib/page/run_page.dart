@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:developer' show log;
 import 'dart:convert';
 import 'dart:ui' as ui show Image;
 import 'package:flutter/gestures.dart';
@@ -131,7 +130,7 @@ class _MyRunPageState extends State<MyRunPage> {
       }
     };
     widget.comPort.onInputMode = (mode) {
-      log("Input mode: $mode");
+      debugPrint("Input mode: $mode");
     };
 		widget.comPort.onImage = (image) {
 			imageNotifier.value = image;
@@ -200,7 +199,7 @@ class _MyRunPageState extends State<MyRunPage> {
   Widget build(BuildContext context) {
 // TODO: must include Provider for MyProgramPreference
 
-    log("RunPageState.build()");
+    debugPrint("RunPageState.build()");
     return FutureBuilder(
         future: programPreference.loadPreference(),
         builder: (context, snapshot) {
@@ -243,7 +242,7 @@ class _MyRunPageState extends State<MyRunPage> {
       // Send the safe area to the runtime.
       final EdgeInsets safeArea = MediaQuery.of(context).padding;
       final EdgeInsets viewInsets = MediaQuery.of(context).viewInsets;
-      log("LayoutBuilder: ${viewInsets.toString()} ${safeArea.toString()}");
+      debugPrint("LayoutBuilder: ${viewInsets.toString()} ${safeArea.toString()}");
       widget.comPort.resize(
           constraints.maxWidth,
           constraints.maxHeight,
@@ -308,12 +307,12 @@ class _MyRunPageState extends State<MyRunPage> {
             return KeyEventResult.handled;
           } else {
             String? char = (event as KeyEvent).character;
-            log("Char: $char");
+            debugPrint("Char: $char");
             if (char != null) {
               Uint8List list = ascii.encode(char);
               if (list.length == 1) {
                 int code = list[0];
-                log("Code: $code");
+                debugPrint("Code: $code");
                 if (code >= 32 && code <= 95) {
                   widget.comPort.keyDown(code);
                   return KeyEventResult.handled;
