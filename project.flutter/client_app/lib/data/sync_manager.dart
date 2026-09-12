@@ -24,6 +24,10 @@ class SyncManager with ChangeNotifier, WidgetsBindingObserver {
 
   static const List<String> googleScopes = [drive.DriveApi.driveFileScope];
 
+	static const String _clientId = kReleaseMode
+		? "204783433847-lpkr3jh2gr16udtfq7979sasvu4uvqk4.apps.googleusercontent.com"
+		: "204783433847-laro4ojkci5oriqqv956dp2n4pjigpuu.apps.googleusercontent.com";
+
   late Future<void> _signInInitialized;
   GoogleSignInAccount? _currentUser;
   String? _accountEmail;
@@ -82,9 +86,7 @@ class SyncManager with ChangeNotifier, WidgetsBindingObserver {
 
     _signInInitialized = signIn
         .initialize(
-          // It is safe
-          clientId:
-              "204783433847-laro4ojkci5oriqqv956dp2n4pjigpuu.apps.googleusercontent.com",
+          clientId: _clientId,
           serverClientId:
               "204783433847-3m9hqdqcofo8lsj1bqkh3bm2upa4kvjh.apps.googleusercontent.com",
         )
