@@ -27,7 +27,7 @@ class MyLibraryPage extends StatelessWidget {
 
   Future<String> getVersionInfo() async {
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
-    return packageInfo.version;
+    return "${packageInfo.version} (${packageInfo.buildNumber})";
   }
 
   void gotoSettings(BuildContext context) {
@@ -198,6 +198,7 @@ class MyLibraryPage extends StatelessWidget {
 
   Widget buildAboutTile(BuildContext context) {
     return ListTile(
+      leading: const Icon(Icons.commit_rounded),
       title: const Text("LowResRMX version"),
       subtitle: FutureBuilder(
         future: getVersionInfo(),
@@ -208,7 +209,6 @@ class MyLibraryPage extends StatelessWidget {
           return const Text("…");
         },
       ),
-      titleAlignment: ListTileTitleAlignment.top,
     );
   }
 }

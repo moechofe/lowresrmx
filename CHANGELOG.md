@@ -1,4 +1,4 @@
-### 1.0_73
+### 1.0_73, 1.0_74
 
 - Flutter: add a `List` display mode to the program library: small thumbnail left, name right.
 - Flutter: connect a Google account from the program list drawer, and stay connected across launches without a sign-in popup.
