@@ -149,6 +149,38 @@ abstract class MyPreference {
 			prefs.setString("googleAccount", email);
 		}
 	}
+
+	static Future<String?> getSyncBaseline() async {
+		final prefs = await SharedPreferences.getInstance();
+		return prefs.getString("syncBaseline");
+	}
+
+	static Future<void> setSyncBaseline(String json) async {
+		final prefs = await SharedPreferences.getInstance();
+		await prefs.setString("syncBaseline", json);
+	}
+
+	static Future<String?> getSyncHashCache() async {
+		final prefs = await SharedPreferences.getInstance();
+		return prefs.getString("syncHashCache");
+	}
+
+	static Future<void> setSyncHashCache(String json) async {
+		final prefs = await SharedPreferences.getInstance();
+		await prefs.setString("syncHashCache", json);
+	}
+
+	/// True once the one-time rename of absolute-path Drive files ran.
+	static Future<bool> getSyncPathMigrated() async {
+		final prefs = await SharedPreferences.getInstance();
+		return prefs.getBool("syncPathMigrated") ?? false;
+	}
+
+	static Future<void> setSyncPathMigrated() async {
+		final prefs = await SharedPreferences.getInstance();
+		await prefs.setBool("syncPathMigrated", true);
+		await prefs.remove("lastSynced");
+	}
 }
 
 /// A preference notifier for each program.

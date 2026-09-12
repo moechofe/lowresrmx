@@ -14,8 +14,8 @@ import 'package:lowresrmx/data/preference.dart';
 import 'package:cloud_sync_core/cloud_sync_core.dart';
 import 'package:cloud_sync_drive/cloud_sync_drive.dart';
 import 'package:path/path.dart' as p;
-import 'package:cryptography/cryptography.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:crypto/crypto.dart';
+import 'package:lowresrmx/data/sync_adapter.dart';
 
 class SyncManager with ChangeNotifier {
   SyncManager() {
@@ -85,16 +85,6 @@ class SyncManager with ChangeNotifier {
       _unavailable = true;
       notifyListeners();
     });
-
-	// 	final authClient = DriveAuthClient({
-  //   	'Authorization': 'Bearer YOUR_ACCESS_TOKEN_HERE',
-  // 	});
-
-	// 	final adapter = DriveAdapter.appFiles(
-  //   httpClient: authClient,
-  //   folderName: 'MyApp',
-  //   subPath: 'Backups',
-  // );
   }
 
   /// Signs in when no account is connected yet and asks for the Drive scopes.
@@ -192,127 +182,200 @@ class SyncManager with ChangeNotifier {
     return <String, String>{'Authorization': 'Bearer $token'};
   }
 
-	Future<SyncEngine> getSyncEngine() async {
-		final String? token = await _accessToken();
-		final authClient = DriveAuthClient({
-    	'Authorization': "Bearer $token"
-  	});
-		final adapter = DriveAdapter.appFiles(
-			httpClient: authClient,
-			folderName: 'Game Creator'
-		);
-		final engine = SyncEngine(adapter: adapter);
-		return engine;
-	}
+  static Future<String> _hashFile(io.File file) async =>
+      sha256.convert(await file.readAsBytes()).toString();
 
-	Future<String> _hashFromFile(io.File file) async {
-		// final hashPath = "${file.path}.sha256";
-		// final hashFile = io.File(hashPath);
-		final algorithm = Sha256();
-		final hash=await algorithm.hash(await file.readAsBytes());
-		return base64Encode(hash.bytes);
-	}
+  /// Every syncable file in the library, keyed by bare file name.
+  ///
+  /// The Drive adapter is a flat store keyed by the Drive file *name*, so a
+  /// manifest key is a file name, never a device path — absolute paths do not
+  /// survive a reinstall or another device.
+  Future<Map<String, SyncFileEntry>> _libraryManifest() async {
+    final io.Directory libraryDir = await MyLibrary.getLibraryDir();
+    final Map<String, SyncFileEntry> files = {};
+    await for (final entry in libraryDir.list()) {
+      if (entry is! io.File) continue;
+      final String name = p.basename(entry.path);
+      if (!_isSyncable(name)) continue;
+      files[name] = SyncFileEntry(
+        path: name,
+        sha256: await _hashFile(entry),
+        lastModified: await entry.lastModified(),
+      );
+    }
+    return files;
+  }
 
-	Future<void> _syncFiles(Map<String, SyncFileEntry> files) async {
-		final prefs = await SharedPreferences.getInstance();
+  static bool _isSyncable(String name) {
+    if (name.isEmpty || name.startsWith(".") || name.contains("/")) return false;
+    final String extension = p.extension(name);
+    return extension == MyLibrary.codeExtension ||
+        extension == MyLibrary.thumbExtension;
+  }
 
-		final lastSynced = prefs.getString("lastSynced");
-		log("lastSynced: $lastSynced");
-		final manifest = SyncManifest(
-			files: files,
-			lastSynced: lastSynced!=null ? DateTime.parse(lastSynced) : DateTime.now()
-		);
+  Future<void> _syncFiles(
+    Map<String, SyncFileEntry> files, {
+    required bool full,
+  }) async {
+    final io.Directory libraryDir = await MyLibrary.getLibraryDir();
+    final http.Client client = authorizedClient();
+    final CachedDriveAdapter adapter = CachedDriveAdapter(
+      DriveAdapter.appFiles(httpClient: client, folderName: 'Game Creator'),
+    );
+    int localChanges = 0;
+    try {
+      await adapter.load();
+      await adapter.ensureFolder();
+      await _migrateLegacyPaths(adapter);
+      if (full) {
+        localChanges += await _propagateDeletions(adapter, files, libraryDir);
+      }
 
-		final engine = await getSyncEngine();
+      final SyncEngine engine = SyncEngine(adapter: adapter);
+      final SyncResult result = await engine.sync(
+        localPath: libraryDir.path,
+        localManifest: SyncManifest(files: files, lastSynced: DateTime.now()),
+        direction: full ? SyncDirection.bidirectional : SyncDirection.push,
+        readLocalFile: (name) =>
+            io.File(p.join(libraryDir.path, name)).readAsBytes(),
+        writeLocalFile: (name, bytes) async {
+          if (!_isSyncable(name)) return;
+          final io.File file = io.File(p.join(libraryDir.path, name));
+          if (p.extension(name) == MyLibrary.thumbExtension) {
+            await FileImage(file).evict();
+          }
+          await file.writeAsBytes(bytes);
+          localChanges += 1;
+        },
+      );
 
-		final result = await engine.sync(
-			localPath: '/ignored-since-callbacks-are-explicit',
-			localManifest: manifest,
-			direction: SyncDirection.bidirectional,
-			readLocalFile: (path) async => io.File(path).readAsBytes(),
-			writeLocalFile: (path, bytes) async {
-				final extension = p.extension(path);
-				if (p.basename(path)[0]==".") return;
-				if (extension == MyLibrary.codeExtension || extension == MyLibrary.thumbExtension)
-				{
-					io.File(path).writeAsBytes(bytes);
-				}
-			},
-		);
+      log("sync: full=$full up=${result.filesUploaded} "
+          "down=${result.filesDownloaded} errors=${result.errors}");
 
-		prefs.setString("lastSynced",result.syncedAt.toIso8601String());
+      if (full && result.errors.isEmpty) {
+        await MyPreference.setSyncBaseline(jsonEncode(SyncManifest(
+          files: await _libraryManifest(),
+          lastSynced: result.syncedAt,
+        ).toJson()));
+      }
+    } on GoogleAuthorizationRequired {
+      _authorized = false;
+      log("sync: authorization lost");
+    } catch (error) {
+      log("sync failed: $error");
+    } finally {
+      try {
+        await adapter.finish();
+      } catch (error) {
+        log("sync: hash cache not saved: $error");
+      }
+      client.close();
+      _syncing = false;
+      notifyListeners();
+      if (localChanges > 0) MyLibrary().refresh();
+    }
+  }
 
-		log('Sync success: ${result.success}');
-		log('Sync conflict: ${result.conflicts}');
-		log('Sync uploaded: ${result.filesUploaded}');
-		log('Sync downloaded: ${result.filesDownloaded}');
-		log('Sync deleted: ${result.filesDeleted}');
-		log('Sync errors: ${result.errors.length}');
-		log(result.errors.toString());
+  /// Renames the Drive files an earlier build named after full device paths.
+  /// Runs once, before anything else touches the folder.
+  Future<void> _migrateLegacyPaths(CachedDriveAdapter adapter) async {
+    if (await MyPreference.getSyncPathMigrated()) return;
+    final Map<String, RemoteFileInfo> listing = await adapter.listFiles();
+    for (final String key in listing.keys.toList()) {
+      if (!key.contains("/")) continue;
+      final String name = key.substring(key.lastIndexOf("/") + 1);
+      if (!_isSyncable(name)) continue;
+      final RemoteFileInfo? target = listing[name];
+      if (target == null ||
+          listing[key]!.lastModified.isAfter(target.lastModified)) {
+        await adapter.uploadFile(name, await adapter.downloadFile(key));
+      }
+      await adapter.deleteFile(key);
+      log("sync: migrated $key -> $name");
+    }
+    await MyPreference.setSyncPathMigrated();
+  }
 
-		// TODO: handle conflict
+  /// Applies deletions that happened on either side since the last clean full
+  /// sync. Returns the number of local files removed.
+  Future<int> _propagateDeletions(
+    CachedDriveAdapter adapter,
+    Map<String, SyncFileEntry> files,
+    io.Directory libraryDir,
+  ) async {
+    final String? raw = await MyPreference.getSyncBaseline();
+    if (raw == null) return 0;
+    final SyncManifest baseline =
+        SyncManifest.fromJson(jsonDecode(raw) as Map<String, dynamic>);
+    final Map<String, RemoteFileInfo> remote =
+        await adapter.listFilesWithHashes();
+    int removed = 0;
 
-		_syncing = false;
-		notifyListeners();
-	}
+    for (final MapEntry<String, SyncFileEntry> entry in baseline.files.entries) {
+      final String name = entry.key;
+      final SyncFileEntry base = entry.value;
+      final SyncFileEntry? local = files[name];
+      final RemoteFileInfo? peer = remote[name];
 
-	Future<void> syncProgram(String programName) async {
-		_syncing = true;
-		notifyListeners();
+      if (local == null && peer != null) {
+        // Deleted here. Only delete remotely when the remote copy is still the
+        // one we last saw; otherwise another device changed it and the engine
+        // pulls it back.
+        if (peer.sha256 == base.sha256) {
+          await adapter.deleteFile(name);
+          log("sync: deleted remote $name");
+        }
+      } else if (local != null && peer == null) {
+        // Deleted elsewhere. Only delete locally when this copy is unmodified
+        // since the baseline; otherwise the engine uploads it again.
+        if (local.sha256 == base.sha256) {
+          final io.File file = io.File(p.join(libraryDir.path, name));
+          if (p.extension(name) == MyLibrary.thumbExtension) {
+            await FileImage(file).evict();
+          }
+          if (await file.exists()) await file.delete();
+          files.remove(name);
+          removed += 1;
+          log("sync: deleted local $name");
+        }
+      }
+    }
+    return removed;
+  }
 
-		if (!isAvailable) return;
-		if (!isAuthorized) return;
-		if (accountEmail == null) return;
+  Future<void> syncProgram(String programName) async {
+    if (!_canSync || _syncing) return;
+    _syncing = true;
+    notifyListeners();
 
-		final codeFile = await MyLibrary.getCodeFile(programName);
-		final thumbFile = await MyLibrary.getThumbFile(programName);
+    final Map<String, SyncFileEntry> files = {};
+    for (final io.File file in [
+      await MyLibrary.getCodeFile(programName),
+      await MyLibrary.getThumbFile(programName),
+    ]) {
+      if (!await file.exists()) continue;
+      final String name = p.basename(file.path);
+      if (!_isSyncable(name)) continue;
+      files[name] = SyncFileEntry(
+        path: name,
+        sha256: await _hashFile(file),
+        lastModified: await file.lastModified(),
+      );
+    }
+    if (files.isEmpty) {
+      _syncing = false;
+      notifyListeners();
+      return;
+    }
+    await _syncFiles(files, full: false);
+  }
 
-		Map<String, SyncFileEntry> files={};
-		if (await codeFile.exists())
-		{
-			files[codeFile.path] = SyncFileEntry(
-				path: codeFile.path,
-				sha256: await _hashFromFile(codeFile),
-				lastModified: await codeFile.lastModified());
-		}
-		if (await thumbFile.exists())
-		{
-			files[thumbFile.path] = SyncFileEntry(
-				path: thumbFile.path,
-				sha256: await _hashFromFile(thumbFile),
-				lastModified: await thumbFile.lastModified());
-		}
+  Future<void> syncAllPrograms() async {
+    if (!_canSync || _syncing) return;
+    _syncing = true;
+    notifyListeners();
+    await _syncFiles(await _libraryManifest(), full: true);
+  }
 
-		_syncFiles(files);
-	}
-
-	Future<void> syncAllPrograms() async {
-		_syncing = true;
-		notifyListeners();
-
-		if (!isAvailable) return;
-		if (!isAuthorized) return;
-		if (accountEmail == null) return;
-
-		final io.Directory libraryDir = await MyLibrary.getLibraryDir();
-
-		Map<String, SyncFileEntry> files={};
-		await for(var entry in libraryDir.list())
-		{
-			final extension = p.extension(entry.path);
-			if (entry is! io.File) continue;
-			if (p.basename(entry.path)[0]==".") continue;
-			if (extension == MyLibrary.codeExtension || extension == MyLibrary.thumbExtension)
-			{
-				final file = io.File(entry.path);
-				files[entry.path] = SyncFileEntry(
-					path: entry.path,
-					sha256: await _hashFromFile(file),
-					lastModified: await file.lastModified());
-			}
-		}
-
-		_syncFiles(files);
-	}
-
+  bool get _canSync => isAvailable && isAuthorized && accountEmail != null;
 }
