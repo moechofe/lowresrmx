@@ -136,15 +136,22 @@ class _MyEditPageState extends State<MyEditPage> with WidgetsBindingObserver {
   /// Used to store tool and trace flags.
   late final MyProgramPreference editedProgramPreference;
 
+  /// Captured in [initState]: [dispose] cannot look up inherited widgets.
+  late final SyncManager syncManager;
+
   @override
   // Calling this multiple times will break the editor.
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    syncManager = context.read<SyncManager>();
+    syncManager.editorOpen = true;
   }
 
   @override
   void dispose() {
+    syncManager.editorOpen = false;
+    unawaited(syncManager.maybeSyncAll("editor-close"));
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -162,8 +169,7 @@ class _MyEditPageState extends State<MyEditPage> with WidgetsBindingObserver {
     final programName = (ModalRoute.of(context)!.settings.arguments
         as Map)["programName"]! as String;
     MyLibrary.writeCode(programName, editingController.text);
-		final SyncManager sync = context.read<SyncManager>();
-		sync.syncProgram(programName);
+    syncManager.syncProgram(programName);
   }
 
   Future<bool> initEditor(BuildContext context) async {

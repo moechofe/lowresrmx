@@ -2316,7 +2316,7 @@ LOOP
 <p>Copy from the rectangle <code>x1, y1</code> (0..63) with <code>width, height</code> (0..63) the cell's attributes and character numbers from background source specified previously using <a href="#bg-source-address-width-height"><code>BG SOURCE</code></a> to <code>x2, y2</code> (0..63) of the current background layer.</p>
 <h4 data-keyword="MCELL" data-title="MCELL" id="mcell-x-y-character" tabindex="-1"><code>MCELL x, y, character</code></h4>
 <p>Draw to the <code>x, y</code> cell to the background source specified previously using <a href="#bg-source-address-width-height"><code>BG SOURCE</code></a> with the <code>character</code> using the current attributes.</p>
-<p>Similar to <a href="#cell-attributes"><code>CELL</code></a> but modify the source in memory instead of the current layer.</p>
+<p>Similar to <a href="#cell-x-y-character"><code>CELL</code></a> but modify the source in memory instead of the current layer.</p>
 <p>The source MUST point to writable memory.</p>
 <p>Example that continously draw to the background source:</p>
 <pre><code>TEXT 4, 4, &quot;touch to copy&quot;

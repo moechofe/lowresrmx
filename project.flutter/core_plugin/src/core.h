@@ -1848,8 +1848,6 @@ struct Interpreter
 	bool waitTap;
 	bool exitEvaluation;
 	union IOStatus lastFrameIOStatus;
-	// A touch-down edge stays pending until a frame in which the program actually reads TAP:
-	// the main program does not run on every frame (WAIT, and the frame a text window scrolls).
 	bool tapPending;
 	bool tapRead;
 	float timer;

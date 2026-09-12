@@ -17,7 +17,7 @@ import 'package:path/path.dart' as p;
 import 'package:crypto/crypto.dart';
 import 'package:lowresrmx/data/sync_adapter.dart';
 
-class SyncManager with ChangeNotifier {
+class SyncManager with ChangeNotifier, WidgetsBindingObserver {
   SyncManager() {
     _init();
   }
@@ -30,6 +30,23 @@ class SyncManager with ChangeNotifier {
   bool _authorized = false;
   bool _unavailable = false;
 	bool _syncing = false;
+
+  /// Shortest gap between two automatic full syncs. A library change bypasses
+  /// it — see [maybeSyncAll].
+  static const Duration fullSyncCooldown = Duration(minutes: 5);
+
+  bool _dirty = false;
+  bool _selfRefresh = false;
+  bool _editorOpen = false;
+  bool _pendingFull = false;
+  final Set<String> _pendingPrograms = {};
+  DateTime? _lastFullSync;
+
+  /// Set by the program editor while it is on screen. Automatic full syncs are
+  /// skipped meanwhile: a pull would rewrite the file under the open buffer and
+  /// the next save would push the stale text back, because the engine's default
+  /// resolver is `newerWins`.
+  set editorOpen(bool value) => _editorOpen = value;
 
   /// False when google_sign_in has no implementation on this platform (Linux,
   /// Windows) or initialization failed; every entry point is then a no-op.
@@ -50,14 +67,16 @@ class SyncManager with ChangeNotifier {
 	bool get syncing => _syncing;
 
   void _init() {
+    WidgetsBinding.instance.addObserver(this);
+    MyLibrary().addListener(_onLibraryChanged);
     final GoogleSignIn signIn = GoogleSignIn.instance;
 
     signIn.authenticationEvents.listen((event) async {
       if (event is GoogleSignInAuthenticationEventSignIn) {
-        _remember(event.user);
+        await _remember(event.user);
         await _checkAuthorization();
       } else if (event is GoogleSignInAuthenticationEventSignOut) {
-        _forget();
+        await _forget();
       }
     });
 
@@ -79,12 +98,37 @@ class SyncManager with ChangeNotifier {
       if (_accountEmail != null) {
         _authorized = await _accessToken() != null;
       }
+      _lastFullSync = await MyPreference.getSyncLastFull();
       notifyListeners();
+      unawaited(maybeSyncAll("launch"));
     }).catchError((Object err) {
       debugPrint("Google sign-in unavailable: $err");
       _unavailable = true;
       notifyListeners();
     });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    MyLibrary().removeListener(_onLibraryChanged);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      unawaited(maybeSyncAll("resume"));
+    } else if (state == AppLifecycleState.paused && _dirty) {
+      unawaited(maybeSyncAll("pause"));
+    }
+  }
+
+  /// Every library mutation — new, rename, delete, import, thumbnail write —
+  /// ends in `MyLibrary().notifyListeners()`, so one listener covers them all.
+  void _onLibraryChanged() {
+    if (_selfRefresh) return;
+    _dirty = true;
   }
 
   /// Signs in when no account is connected yet and asks for the Drive scopes.
@@ -97,7 +141,7 @@ class SyncManager with ChangeNotifier {
       if (user == null) {
         user =
             await GoogleSignIn.instance.authenticate(scopeHint: googleScopes);
-        _remember(user);
+        await _remember(user);
       }
       await user.authorizationClient.authorizeScopes(googleScopes);
       _authorized = true;
@@ -106,6 +150,7 @@ class SyncManager with ChangeNotifier {
       debugPrint("Google connect failed: $err");
     }
     notifyListeners();
+    if (_authorized) unawaited(syncAllPrograms(reason: "connect"));
     return _authorized;
   }
 
@@ -117,7 +162,7 @@ class SyncManager with ChangeNotifier {
     } on GoogleSignInException catch (err) {
       debugPrint("Google disconnect failed: $err");
     }
-    _forget();
+    await _forget();
   }
 
   /// An HTTP client that carries a fresh access token on every request.
@@ -128,17 +173,23 @@ class SyncManager with ChangeNotifier {
   /// underlying client is not closed for you.
   drive.DriveApi driveApi() => drive.DriveApi(authorizedClient());
 
-  void _remember(GoogleSignInAccount user) {
+  Future<void> _remember(GoogleSignInAccount user) async {
+    if (_accountEmail != null && _accountEmail != user.email) {
+      await MyPreference.clearSyncState();
+      _lastFullSync = null;
+    }
     _currentUser = user;
     _accountEmail = user.email;
-    MyPreference.setGoogleAccount(user.email);
+    await MyPreference.setGoogleAccount(user.email);
   }
 
-  void _forget() {
+  Future<void> _forget() async {
     _currentUser = null;
     _accountEmail = null;
     _authorized = false;
-    MyPreference.setGoogleAccount(null);
+    _lastFullSync = null;
+    await MyPreference.setGoogleAccount(null);
+    await MyPreference.clearSyncState();
     notifyListeners();
   }
 
@@ -216,6 +267,7 @@ class SyncManager with ChangeNotifier {
   Future<void> _syncFiles(
     Map<String, SyncFileEntry> files, {
     required bool full,
+    required String reason,
   }) async {
     final io.Directory libraryDir = await MyLibrary.getLibraryDir();
     final http.Client client = authorizedClient();
@@ -249,7 +301,7 @@ class SyncManager with ChangeNotifier {
         },
       );
 
-      log("sync: full=$full up=${result.filesUploaded} "
+      log("sync: $reason full=$full up=${result.filesUploaded} "
           "down=${result.filesDownloaded} errors=${result.errors}");
 
       if (full && result.errors.isEmpty) {
@@ -257,6 +309,8 @@ class SyncManager with ChangeNotifier {
           files: await _libraryManifest(),
           lastSynced: result.syncedAt,
         ).toJson()));
+        await MyPreference.setSyncLastFull(result.syncedAt);
+        _lastFullSync = result.syncedAt;
       }
     } on GoogleAuthorizationRequired {
       _authorized = false;
@@ -270,9 +324,17 @@ class SyncManager with ChangeNotifier {
         log("sync: hash cache not saved: $error");
       }
       client.close();
-      _syncing = false;
+      if (localChanges > 0) {
+        _selfRefresh = true;
+        MyLibrary().refresh();
+        _selfRefresh = false;
+      }
+      if (_pendingFull || _pendingPrograms.isNotEmpty) {
+        unawaited(Future.microtask(_drainPending));
+      } else {
+        _syncing = false;
+      }
       notifyListeners();
-      if (localChanges > 0) MyLibrary().refresh();
     }
   }
 
@@ -343,38 +405,89 @@ class SyncManager with ChangeNotifier {
     return removed;
   }
 
+  /// Full sync now, cooldown ignored. [reason] is what the log line says.
+  Future<void> syncAllPrograms({String reason = "manual"}) async {
+    if (!_canSync) return;
+    if (_syncing) {
+      _pendingFull = true;
+      return;
+    }
+    _syncing = true;
+    _dirty = false;
+    notifyListeners();
+    await _syncFiles(await _libraryManifest(), full: true, reason: reason);
+  }
+
+  /// Full sync when the library changed since the last one, or when the last one
+  /// is older than [fullSyncCooldown]. The automatic triggers use this.
+  Future<void> maybeSyncAll(String reason) async {
+    if (!_canSync || _syncing || _editorOpen) return;
+    final DateTime? last = _lastFullSync;
+    if (!_dirty &&
+        last != null &&
+        DateTime.now().difference(last) < fullSyncCooldown) {
+      log("sync: $reason skipped (cooldown)");
+      return;
+    }
+    await syncAllPrograms(reason: reason);
+  }
+
+  /// Pushes one program's files. Called on every editor save.
   Future<void> syncProgram(String programName) async {
-    if (!_canSync || _syncing) return;
+    if (!_canSync) return;
+    if (_syncing) {
+      _pendingPrograms.add(programName);
+      return;
+    }
     _syncing = true;
     notifyListeners();
+    await _pushPrograms({programName}, reason: "save");
+  }
 
+  Future<void> _pushPrograms(
+    Set<String> programNames, {
+    required String reason,
+  }) async {
     final Map<String, SyncFileEntry> files = {};
-    for (final io.File file in [
-      await MyLibrary.getCodeFile(programName),
-      await MyLibrary.getThumbFile(programName),
-    ]) {
-      if (!await file.exists()) continue;
-      final String name = p.basename(file.path);
-      if (!_isSyncable(name)) continue;
-      files[name] = SyncFileEntry(
-        path: name,
-        sha256: await _hashFile(file),
-        lastModified: await file.lastModified(),
-      );
+    for (final String programName in programNames) {
+      for (final io.File file in [
+        await MyLibrary.getCodeFile(programName),
+        await MyLibrary.getThumbFile(programName),
+      ]) {
+        if (!await file.exists()) continue;
+        final String name = p.basename(file.path);
+        if (!_isSyncable(name)) continue;
+        files[name] = SyncFileEntry(
+          path: name,
+          sha256: await _hashFile(file),
+          lastModified: await file.lastModified(),
+        );
+      }
     }
     if (files.isEmpty) {
       _syncing = false;
       notifyListeners();
       return;
     }
-    await _syncFiles(files, full: false);
+    await _syncFiles(files, full: false, reason: reason);
   }
 
-  Future<void> syncAllPrograms() async {
-    if (!_canSync || _syncing) return;
-    _syncing = true;
-    notifyListeners();
-    await _syncFiles(await _libraryManifest(), full: true);
+  /// Runs whatever was requested while a sync was in flight. A queued full sync
+  /// supersedes queued pushes: it carries them anyway.
+  Future<void> _drainPending() async {
+    final bool full = _pendingFull;
+    final Set<String> programs = Set<String>.of(_pendingPrograms);
+    _pendingFull = false;
+    _pendingPrograms.clear();
+    _syncing = false;
+    if (full) {
+      await syncAllPrograms(reason: "queued");
+    } else if (_canSync) {
+      _syncing = true;
+      await _pushPrograms(programs, reason: "queued");
+    } else {
+      notifyListeners();
+    }
   }
 
   bool get _canSync => isAvailable && isAuthorized && accountEmail != null;

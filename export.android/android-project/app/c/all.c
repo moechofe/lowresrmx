@@ -11615,7 +11615,7 @@ static bool lab_isNameCharacter(char character)
 }
 
 void lab_getStackItemName(struct Interpreter *interpreter, const struct LabelStackItem *item, char *buffer,
-                          size_t bufferSize)
+	size_t bufferSize)
 {
 	if(bufferSize == 0)
 		return;

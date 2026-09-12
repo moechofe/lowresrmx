@@ -181,6 +181,28 @@ abstract class MyPreference {
 		await prefs.setBool("syncPathMigrated", true);
 		await prefs.remove("lastSynced");
 	}
+
+	static Future<DateTime?> getSyncLastFull() async {
+		final prefs = await SharedPreferences.getInstance();
+		final String? raw = prefs.getString("syncLastFull");
+		return raw == null ? null : DateTime.tryParse(raw);
+	}
+
+	static Future<void> setSyncLastFull(DateTime when) async {
+		final prefs = await SharedPreferences.getInstance();
+		await prefs.setString("syncLastFull", when.toIso8601String());
+	}
+
+	/// Drops every per-account sync artifact. A baseline left over from another
+	/// account lists files the new Drive folder never had, and the next full sync
+	/// would read that as "deleted elsewhere" and delete them locally.
+	static Future<void> clearSyncState() async {
+		final prefs = await SharedPreferences.getInstance();
+		await prefs.remove("syncBaseline");
+		await prefs.remove("syncHashCache");
+		await prefs.remove("syncLastFull");
+		await prefs.remove("syncPathMigrated");
+	}
 }
 
 /// A preference notifier for each program.

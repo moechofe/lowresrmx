@@ -151,7 +151,7 @@ class ExplorerViewController: UIViewController, UICollectionViewDelegateFlowLayo
 				}
 			}
 			items.sort(by: { item1, item2 -> Bool in
-				return item1.createdAt < item2.createdAt
+				item1.createdAt < item2.createdAt
 			})
 			self.items = items
 		}
@@ -302,7 +302,7 @@ class ExplorerViewController: UIViewController, UICollectionViewDelegateFlowLayo
 			newItems.append(item)
 		}
 		newItems.sort(by: { item1, item2 -> Bool in
-			return item1.createdAt < item2.createdAt
+			item1.createdAt < item2.createdAt
 		})
 
 		// the query has picked up a program this app just created

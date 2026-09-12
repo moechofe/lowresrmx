@@ -6,7 +6,6 @@ import 'package:lowresrmx/data/sync_manager.dart';
 import 'package:lowresrmx/page/manual_page.dart';
 import 'package:lowresrmx/page/settings_page.dart';
 import 'package:lowresrmx/widget/google_account_tile.dart';
-import 'package:lowresrmx/widget/sync_tile.dart';
 import 'package:lowresrmx/widget/library_grid.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
@@ -155,7 +154,6 @@ class MyLibraryPage extends StatelessWidget {
           buildReinstallTile(context),
 					const Divider(),
           const MyGoogleAccountTile(),
-					const MySyncTile(),
           const Divider(),
           buildAboutTile(context),
         ],

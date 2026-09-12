@@ -319,8 +319,14 @@ class IndexSideBar: UIControl
 			oldMarker = nil
 
 			var factor = (touchY - 22.0) / (bounds.size.height - 44.0)
-			if factor < 0.0 { factor = 0.0 }
-			if factor > 1.0 { factor = 1.0 }
+			if factor < 0.0
+			{
+				factor = 0.0
+			}
+			if factor > 1.0
+			{
+				factor = 1.0
+			}
 
 			scrollCenterY = factor * textView.contentSize.height
 		}
