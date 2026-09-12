@@ -32,6 +32,12 @@ NS_ASSUME_NONNULL_BEGIN
 // Old method for compatibility
 - (void)applyColoration:(NSInteger)mode;
 
+// Restores default text attributes; for a coloration mode change, not per keystroke.
+- (void)resetColoration;
+
+// Replaces text through the text input system so UIKit's undo stack stays consistent.
+- (BOOL)replaceTextInRange:(NSRange)range withText:(NSString *) text NS_SWIFT_NAME(replaceText(in:with:));
+
 @end
 
 @protocol EditorTextViewDelegate <NSObject>

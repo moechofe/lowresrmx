@@ -84,6 +84,41 @@ static NSArray<UIColor *> *syntaxColors(void) {
 	[self applyColoration:mode inRange:NSMakeRange(0, self.text.length)];
 }
 
+// Only for a coloration mode change: the per-keystroke path must not relayout the whole document.
+- (void)resetColoration {
+	NSTextStorage *storage = self.textStorage;
+	NSRange range = NSMakeRange(0, storage.length);
+	if (range.length == 0) {
+		return;
+	}
+	UIColor *defaultColor = [UIColor blackColor];
+	if (@available(iOS 13.0, *)) {
+		defaultColor = [UIColor labelColor];
+	}
+	UIFont *font = self.font ?: [UIFont monospacedSystemFontOfSize:14 weight:UIFontWeightRegular];
+	[storage beginEditing];
+	[storage addAttribute:NSForegroundColorAttributeName value:defaultColor range:range];
+	[storage addAttribute:NSFontAttributeName value:font range:range];
+	[storage endEditing];
+}
+
+// -setText: and direct text storage edits leave UIKit's undo stack holding ranges into the old
+// text; the next undo then replaces an out-of-bounds range and throws. Editing through
+// UITextInput keeps the stack in step and makes the edit undoable.
+- (BOOL)replaceTextInRange:(NSRange)range withText:(NSString *)text {
+	if (range.location == NSNotFound || NSMaxRange(range) > self.text.length) {
+		return NO;
+	}
+	UITextPosition *start = [self positionFromPosition:self.beginningOfDocument offset:(NSInteger)range.location];
+	UITextPosition *end = start ? [self positionFromPosition:start offset:(NSInteger)range.length] : nil;
+	UITextRange *textRange = end ? [self textRangeFromPosition:start toPosition:end] : nil;
+	if (!textRange) {
+		return NO;
+	}
+	[self replaceRange:textRange withText:text];
+	return YES;
+}
+
 // New async highlighting for a range with cancellation token
 - (void)applyBasicSyntaxHighlightingAsyncInRange:(NSRange)range {
 	static NSUInteger syntaxHighlightingToken = 0;
@@ -127,7 +162,7 @@ static NSArray<UIColor *> *syntaxColors(void) {
 			[updates addObject:@{ @"range" : [NSValue valueWithRange:span.range],
 					      @"color" : colors[(NSUInteger)span.kind] }];
 		}
-		[self applyUpdates:updates toStorage:self.textStorage range:expandedRange font:font token:currentToken latestTokenPtr:&syntaxHighlightingToken];
+		[self applyUpdates:updates toStorage:self.textStorage range:expandedRange font:font token:currentToken latestTokenPtr:&syntaxHighlightingToken textLength:text.length];
 	}];
 }
 
@@ -310,11 +345,13 @@ static NSArray<UIColor *> *syntaxColors(void) {
 		NSRange lineRange = [subtext lineRangeForRange:NSMakeRange(pos, 0)];
 		pos += lineRange.length;
 	}
-	self.text = [self.text stringByReplacingCharactersInRange:originalRange withString:subtext];
+	if (![self replaceTextInRange:originalRange withText:subtext]) {
+		return;
+	}
 	[self.delegate textViewDidChange:self];
 
 	// selection and menu
-	if (finalRange.location + finalRange.length < self.text.length) {
+	if (finalRange.length > 0 && NSMaxRange(finalRange) < self.text.length) {
 		finalRange.length--;
 	}
 	self.selectedRange = finalRange;
@@ -330,7 +367,12 @@ static NSArray<UIColor *> *syntaxColors(void) {
 }
 
 // Apply updates, aborting if token is outdated
-- (void)applyUpdates:(NSArray *)updates toStorage:(NSTextStorage *)storage range:(NSRange)range font:(UIFont *)font token:(NSUInteger)token latestTokenPtr:(NSUInteger *)latestTokenPtr {
+- (void)applyUpdates:(NSArray *)updates toStorage:(NSTextStorage *)storage range:(NSRange)range font:(UIFont *)font token:(NSUInteger)token latestTokenPtr:(NSUInteger *)latestTokenPtr textLength:(NSUInteger)textLength {
+	// Every range here was computed against the snapshot handed to the background parser; if the
+	// storage changed while that ran, none of them address it any more.
+	if (storage.length != textLength) {
+		return;
+	}
 	[storage beginEditing];
 	UIColor *defaultColor = [UIColor blackColor];
 	if (@available(iOS 13.0, *)) {

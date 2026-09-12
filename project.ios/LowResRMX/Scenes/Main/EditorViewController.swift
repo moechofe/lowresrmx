@@ -72,6 +72,7 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
 		sourceCodeTextView.editorDelegate = self
 
 		sourceCodeTextView.text = document.sourceCode ?? ""
+		sourceCodeTextView.undoManager?.removeAllActions()
 		sourceCodeTextView?.applyColoration(AppController.shared.editorSyntaxHighlightingMode.rawValue)
 
 		// Apply font size setting
@@ -105,8 +106,8 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
 		// Observe syntax highlighting changes
 		NotificationCenter.default.addObserver(forName: .EditorSyntaxHighlightingDidChange, object: nil, queue: .main)
 		{ [weak self] _ in
-			// Re-apply text to trigger re-highlighting
-			self?.sourceCodeTextView.text = self?.document.sourceCode ?? ""
+			self?.sourceCodeTextView.resetColoration()
+			self?.sourceCodeTextView.applyColoration(AppController.shared.editorSyntaxHighlightingMode.rawValue)
 		}
 
 		activityIndicatorView.isHidden = true
@@ -645,6 +646,7 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
 	func projectDocumentContentDidUpdate(_ projectDocument: ProjectDocument)
 	{
 		sourceCodeTextView.text = projectDocument.sourceCode ?? ""
+		sourceCodeTextView.undoManager?.removeAllActions()
 		sourceCodeTextView?.applyColoration(AppController.shared.editorSyntaxHighlightingMode.rawValue)
 		indexSideBar.update()
 		updateStats()
@@ -841,11 +843,12 @@ class EditorViewController: UIViewController, UITextViewDelegate, EditorTextView
 				return
 			}
 			// replace
-			let changedSourceText = sourceText.replacingCharacters(in: selectedRange, with: replaceText)
-			sourceCodeTextView.text = changedSourceText
-			(sourceCodeTextView)?.applyColoration(AppController.shared.editorSyntaxHighlightingMode.rawValue, in: NSMakeRange(selectedRange.location, (replaceText as NSString).length))
-			sourceCodeTextView.selectedRange = NSMakeRange(selectedRange.location + replaceText.count, 0)
-			sourceCodeTextView.scrollSelectedRangeToVisible()
+			if sourceCodeTextView.replaceText(in: selectedRange, with: replaceText)
+			{
+				sourceCodeTextView.applyColoration(AppController.shared.editorSyntaxHighlightingMode.rawValue, in: NSMakeRange(selectedRange.location, (replaceText as NSString).length))
+				sourceCodeTextView.selectedRange = NSMakeRange(selectedRange.location + (replaceText as NSString).length, 0)
+				sourceCodeTextView.scrollSelectedRangeToVisible()
+			}
 		}
 
 		// find next
