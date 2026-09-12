@@ -69,7 +69,7 @@ class MyImportService {
       return false;
     }
     final SharedAttachment attachment = media.attachments![0]!;
-    if (p.extension(attachment.path) != MyLibrary.extension) {
+    if (p.extension(attachment.path) != MyLibrary.codeExtension) {
       return false;
     }
     return true;

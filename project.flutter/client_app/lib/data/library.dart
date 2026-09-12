@@ -38,10 +38,12 @@ class MyLibrary extends ChangeNotifier {
     notifyListeners();
   }
 
-  static String extension = ".rmx";
+  static String codeExtension = ".rmx";
+	static String thumbExtension = ".png";
 
   static Future<Directory> getLibraryDir() async {
     final String libraryPath = await MyPreference.getProgramDirectory();
+		// TODO: What if, it's a file?
     final Directory libraryDir = Directory(libraryPath);
     if (!await libraryDir.exists()) await libraryDir.create(recursive: true);
     return libraryDir;
@@ -49,24 +51,24 @@ class MyLibrary extends ChangeNotifier {
 
   static Future<File> getCodeFile(String programName) async {
     final documentDir = await getLibraryDir();
-    final codePath = p.join(documentDir.path, "$programName$extension");
+    final codePath = p.join(documentDir.path, "$programName$codeExtension");
     return File(codePath);
   }
 
   static Future<File> getThumbFile(String programName) async {
     final documentDir = await getLibraryDir();
-    final codePath = p.join(documentDir.path, "$programName.png");
+    final codePath = p.join(documentDir.path, "$programName$thumbExtension");
     return File(codePath);
   }
 
 	static Future<String> findUniqueName(String name) async {
 		final Directory libraryDir = await getLibraryDir();
-    String programPath = p.join(libraryDir.path, "$name$extension");
+    String programPath = p.join(libraryDir.path, "$name$codeExtension");
 		File programFile = File(programPath);
     int counter = -1;
     while (await programFile.exists()) {
       counter += 1;
-      programPath = p.join(libraryDir.path, "$name $counter$extension");
+      programPath = p.join(libraryDir.path, "$name $counter$codeExtension");
       programFile = File(programPath);
     }
 		return counter >= 0 ? "$name $counter" : name;
@@ -81,7 +83,7 @@ class MyLibrary extends ChangeNotifier {
     final Directory libraryDir = await getLibraryDir();
 		final name = await findUniqueName("unnamed");
 		// TODO: why not using getCodeFile
-    String programPath = p.join(libraryDir.path, "$name$extension");
+    String programPath = p.join(libraryDir.path, "$name$codeExtension");
     File programFile = File(programPath);
     await programFile.create();
     MyLibrary().notifyListeners();
@@ -96,23 +98,23 @@ class MyLibrary extends ChangeNotifier {
 		final String endingDigits = nameName.replaceAll(RegExp(r'(.*)\d+$'), '');
 		int counter = 0;
 		if (endingDigits.isNotEmpty) { counter = int.tryParse(endingDigits) ?? 1; }
-		File candidateFile = File(p.join(libraryDir.path, "$nameName$extension"));
+		File candidateFile = File(p.join(libraryDir.path, "$nameName$codeExtension"));
 		while(await candidateFile.exists()) {
 			nameName += " $counter";
 			counter += 1;
-			candidateFile = File(p.join(libraryDir.path, "$nameName$extension"));
+			candidateFile = File(p.join(libraryDir.path, "$nameName$codeExtension"));
 		}
     final String programPath =
-        p.join(libraryDir.path, "$programName$extension");
+        p.join(libraryDir.path, "$programName$codeExtension");
     final File programFile = File(p.join(libraryDir.path, programPath));
     if (await programFile.exists()) {
-      await programFile.rename(p.join(libraryDir.path, "$nameName$extension"));
+      await programFile.rename(p.join(libraryDir.path, "$nameName$codeExtension"));
     }
-    final String thumbPath = p.join(libraryDir.path, "$programName.png");
+    final String thumbPath = p.join(libraryDir.path, "$programName$thumbExtension");
     final File thumbFile = File(p.join(libraryDir.path, thumbPath));
     FileImage(thumbFile).evict();
     if (await thumbFile.exists()) {
-      await thumbFile.rename(p.join(libraryDir.path, "$nameName.png"));
+      await thumbFile.rename(p.join(libraryDir.path, "$nameName$thumbExtension"));
     }
     MyLibrary().notifyListeners();
   }
@@ -121,12 +123,12 @@ class MyLibrary extends ChangeNotifier {
     final Directory libraryDir = await getLibraryDir();
 
     final String programPath =
-        p.join(libraryDir.path, "$programName$extension");
+        p.join(libraryDir.path, "$programName$codeExtension");
     final File programFile = File(p.join(libraryDir.path, programPath));
     if (await programFile.exists()) {
       await programFile.delete();
     }
-    final String thumbPath = p.join(libraryDir.path, "$programName.png");
+    final String thumbPath = p.join(libraryDir.path, "$programName$thumbExtension");
     final File thumbFile = File(p.join(libraryDir.path, thumbPath));
     FileImage(thumbFile).evict();
     if (await thumbFile.exists()) {
@@ -159,8 +161,8 @@ class MyLibrary extends ChangeNotifier {
     try {
       List<File> fileList = await libraryDir
           .list()
-          .where((entry) => p.extension(entry.path) == extension)
-					.where((entry) => p.basename(entry.path) != ".dataDisk$extension")
+          .where((entry) => p.extension(entry.path) == codeExtension)
+					// .where((entry) => p.basename(entry.path) != ".dataDisk$extension")
           .asyncMap((entry) => entry as File)
           .toList();
 
@@ -183,7 +185,6 @@ class MyLibrary extends ChangeNotifier {
     }
   }
 
-  // TODO: convert to UPPERCASE using settings
   static Future<String> readCode(String programName) async {
     final File codeFile = await getCodeFile(programName);
     return codeFile.readAsString();
@@ -202,9 +203,7 @@ class MyLibrary extends ChangeNotifier {
   }
 
   static Future<FileImage> readThumbnail(String programName) async {
-    // This a async
     final File thumbFile = await getThumbFile(programName);
-    // This is not async
     return FileImage(thumbFile);
   }
 
@@ -218,7 +217,7 @@ class MyLibrary extends ChangeNotifier {
 	static Future<void> createDataDiskIfNotExists() async {
     final Directory libraryDir = await getLibraryDir();
     final String programPath =
-        p.join(libraryDir.path, ".dataDisk$extension");
+        p.join(libraryDir.path, "Disk$codeExtension");
     final File programFile = File(p.join(libraryDir.path, programPath));
     if (await programFile.exists() == false) {
 			await programFile.create();

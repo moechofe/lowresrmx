@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
+import 'package:lowresrmx/data/sync_manager.dart';
 import 'package:lowresrmx/widget/keyboard_bar.dart';
 
 import 'package:provider/provider.dart';
@@ -161,6 +162,8 @@ class _MyEditPageState extends State<MyEditPage> with WidgetsBindingObserver {
     final programName = (ModalRoute.of(context)!.settings.arguments
         as Map)["programName"]! as String;
     MyLibrary.writeCode(programName, editingController.text);
+		final SyncManager sync = context.read<SyncManager>();
+		sync.syncProgram(programName);
   }
 
   Future<bool> initEditor(BuildContext context) async {
