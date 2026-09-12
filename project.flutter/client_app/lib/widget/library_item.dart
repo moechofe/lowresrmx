@@ -13,7 +13,6 @@ import 'package:provider/provider.dart';
 final Uint8List transparentPng = const Base64Codec().decode(
     "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAAA1BMVEUAAACnej3aAAAAAXRSTlMAQObYZgAAAApJREFUCNdjYAAAAAIAAeIhvDMAAAAASUVORK5CYII=");
 
-const double listThumbnailExtent = 40.0;
 const Key libraryItemThumbnailKey = Key('library-item-thumbnail');
 
 /// A [Card] with thumbnail, name of a program, a long-press menu and a tap action to open the program editor.
@@ -135,7 +134,7 @@ class _MyLibraryItemState extends State<MyLibraryItem> {
   SizedBox buildThumbnail(BoxConstraints constraints) {
     final double extent = switch (widget.grid) {
       MyLibraryGrid.two || MyLibraryGrid.three => constraints.maxWidth - 8,
-      MyLibraryGrid.list => listThumbnailExtent,
+      MyLibraryGrid.list => 40.0,
     };
     final double radius = switch (widget.grid) {
       MyLibraryGrid.two || MyLibraryGrid.three => 12.0,
@@ -200,22 +199,22 @@ class _MyLibraryItemState extends State<MyLibraryItem> {
               title: Text(widget.programName,
                   style: libraryItemTextStyle, overflow: TextOverflow.ellipsis),
             ),
-            const Divider(height: 1.0),
-            ListTile(
-              leading: const Icon(Icons.drive_file_rename_outline_rounded),
-              title: const Text('Rename'),
-              onTap: () {
-                Navigator.pop(sheetContext);
-                showRenameDialog();
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.delete),
-              title: const Text('Delete'),
-              onTap: () {
-                Navigator.pop(sheetContext);
-                showDeleteDialog();
-              },
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Row(children: [
+                FilledButton.icon(onPressed: (){}, label: Text("Share"), icon: Icon(Icons.share_rounded)),
+                Spacer(),
+                OverflowBar(children: [
+                IconButton(onPressed: (){
+                  Navigator.pop(sheetContext);
+                  showRenameDialog();
+                }, icon: Icon(Icons.drive_file_rename_outline_rounded)),
+                IconButton(onPressed: (){
+                  Navigator.pop(sheetContext);
+                  showDeleteDialog();
+                }, icon: Icon(Icons.delete_forever_rounded))
+              ])
+              ]),
             ),
           ],
         ),
@@ -244,7 +243,7 @@ class _MyLibraryItemState extends State<MyLibraryItem> {
                 onPressed: () => Navigator.pop(context),
                 child: const Text("Cancel"),
               ),
-              TextButton(
+              OutlinedButton(
                 onPressed: () => Navigator.pop(context, newName),
                 child: const Text("Rename"),
               )
@@ -266,7 +265,7 @@ class _MyLibraryItemState extends State<MyLibraryItem> {
           title: const Text("Delete Program"),
           content: const Text("Are you sure you want to delete this program?"),
           actions: <Widget>[
-            TextButton(
+            FilledButton(
               onPressed: () => Navigator.pop(context, false),
               child: const Text("Cancel"),
             ),

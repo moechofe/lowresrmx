@@ -132,7 +132,7 @@ class _MyOutlineDrawerState extends State<MyOutlineDrawer> {
         hintStyle: TextStyle(
             color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5)),
         border: InputBorder.none,
-				icon: const Icon(Icons.search_outlined),
+				icon: const Icon(Icons.search_rounded),
       ),
       onChanged: (value) {},
     );
