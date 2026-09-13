@@ -1,6 +1,7 @@
 ### 1.0_76
 
 - iOS: fix crash when undoing after an indent, a search-and-replace or a text coloration change.
+- Flutter: share a program with the community from the library long-press menu.
 
 ### 1.0_73, 1.0_74, 1.0_75
 

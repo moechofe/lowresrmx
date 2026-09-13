@@ -7,8 +7,10 @@ import 'package:flutter/material.dart';
 import 'package:lowresrmx/data/library.dart';
 import 'package:lowresrmx/data/preference.dart';
 import 'package:lowresrmx/page/edit_page.dart';
+import 'package:lowresrmx/data/retroit.dart';
 import 'package:lowresrmx/style.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 final Uint8List transparentPng = const Base64Codec().decode(
     "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAAA1BMVEUAAACnej3aAAAAAXRSTlMAQObYZgAAAApJREFUCNdjYAAAAAIAAeIhvDMAAAAASUVORK5CYII=");
@@ -202,9 +204,15 @@ class _MyLibraryItemState extends State<MyLibraryItem> {
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Row(children: [
-                FilledButton.icon(onPressed: (){}, label: Text("Share"), icon: Icon(Icons.share_rounded)),
+                FilledButton.icon(onPressed: (){
+                  Navigator.pop(sheetContext);
+                  shareWithCommunity();
+                }, label: Text("Share"), icon: Icon(Icons.publish_rounded)),
                 Spacer(),
                 OverflowBar(children: [
+                IconButton(onPressed: (){
+                  // todo: share code as text
+                }, icon: Icon(Icons.share_outlined)),
                 IconButton(onPressed: (){
                   Navigator.pop(sheetContext);
                   showRenameDialog();
@@ -218,6 +226,64 @@ class _MyLibraryItemState extends State<MyLibraryItem> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Future<void> shareWithCommunity() async {
+    final File thumbFile = await MyLibrary.getThumbFile(widget.programName);
+    if (!await thumbFile.exists()) {
+      if (!mounted) return;
+      await showMessageDialog("No Program Icon",
+          "Please save a thumbnail before sharing. You can do this from the menu while the program is running.");
+      return;
+    }
+    if (!mounted) return;
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) => AlertDialog(
+        content: Row(children: [
+          const CircularProgressIndicator(),
+          const SizedBox(width: 16.0),
+          Expanded(child: Text("Sharing ${widget.programName}…")),
+        ]),
+      ),
+    );
+    Uri? page;
+    String? errorCode;
+    try {
+      page = await shareProgram(widget.programName);
+    } on RetroitUploadException catch (error) {
+      errorCode = error.code;
+    }
+    if (!mounted) return;
+    Navigator.of(context, rootNavigator: true).pop();
+    if (page == null) {
+      await showMessageDialog(
+          "POKE 53280,1", "Feature 1 has been defeated. #$errorCode");
+      return;
+    }
+    if (!await launchUrl(page, mode: LaunchMode.externalApplication)) {
+      if (!mounted) return;
+      await showMessageDialog(
+          "POKE 53280,1", "Feature 1 has been defeated. #OPN");
+    }
+  }
+
+  Future<void> showMessageDialog(String title, String message) {
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
+        icon: const Icon(Icons.error_outline_rounded),
+        title: Text(title),
+        content: Text(message),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Ok"),
+          ),
+        ],
       ),
     );
   }
