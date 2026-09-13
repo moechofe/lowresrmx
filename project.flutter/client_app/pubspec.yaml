@@ -1,7 +1,7 @@
 name: lowresrmx
 description: "Retro Game Creator"
 publish_to: 'none'
-version: 1.0.0+75
+version: 1.0.0+76
 
 environment:
   sdk: '>=3.6.0 <4.0.0'
