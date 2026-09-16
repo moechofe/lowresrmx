@@ -167,9 +167,7 @@ class _MyManualPageState extends State<MyManualPage> {
 
     if (isLargeEnough) {
       return Scaffold(
-        appBar: AppBar(
-          title: const Text("Manual")
-          ),
+        appBar: AppBar(title: const Text("Manual")),
         body: Row(children: [
           SizedBox(width: 300, child: _buildToc(closeDrawer: false)),
           Expanded(child: web),
@@ -178,8 +176,7 @@ class _MyManualPageState extends State<MyManualPage> {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Manual")),
+      appBar: AppBar(title: const Text("Manual")),
       drawer: Drawer(
         child: Column(children: [
           AppBar(

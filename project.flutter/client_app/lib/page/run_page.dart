@@ -42,22 +42,22 @@ class _MyMeasurementState extends State<MyMeasurement> {
       values.add(value);
     });
     Timer.periodic(const Duration(milliseconds: 500), (timer) {
-			if (values.isEmpty) return;
+      if (values.isEmpty) return;
       // double value = values.reduce((a, b) => a + b) / values.length;
       double max = values.reduce((a, b) => a > b ? a : b);
       values.clear();
-			if (!mounted) return;
+      if (!mounted) return;
       setState(() {
         value = max * widget.multiply;
       });
     });
   }
 
-	@override
-	void dispose() {
-		widget.stream.drain();
-		super.dispose();
-	}
+  @override
+  void dispose() {
+    widget.stream.drain();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -99,7 +99,7 @@ class MyRunPage extends StatefulWidget {
 }
 
 class _MyRunPageState extends State<MyRunPage> {
-	final ValueNotifier<ui.Image?> imageNotifier = ValueNotifier(null);
+  final ValueNotifier<ui.Image?> imageNotifier = ValueNotifier(null);
   late final MyProgramPreference programPreference;
 
   @override
@@ -132,15 +132,15 @@ class _MyRunPageState extends State<MyRunPage> {
     widget.comPort.onInputMode = (mode) {
       debugPrint("Input mode: $mode");
     };
-		widget.comPort.onImage = (image) {
-			imageNotifier.value = image;
-		};
-		WidgetsBinding.instance.endOfFrame.then((_){
-			// FIXME: This scope is executed before `MyScreenPaint.build()`
-			Future.delayed(const Duration(milliseconds: 16), () {
-				widget.comPort.start();
-			});
-		});
+    widget.comPort.onImage = (image) {
+      imageNotifier.value = image;
+    };
+    WidgetsBinding.instance.endOfFrame.then((_) {
+      // FIXME: This scope is executed before `MyScreenPaint.build()`
+      Future.delayed(const Duration(milliseconds: 16), () {
+        widget.comPort.start();
+      });
+    });
   }
 
   @override
@@ -149,7 +149,7 @@ class _MyRunPageState extends State<MyRunPage> {
     widget.comPort.onSaveDataDisk = null;
     widget.comPort.onThumbnail = null;
     widget.comPort.onRunningError = null;
-		widget.comPort.onImage = null;
+    widget.comPort.onImage = null;
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
         overlays: SystemUiOverlay.values);
 
@@ -242,7 +242,8 @@ class _MyRunPageState extends State<MyRunPage> {
       // Send the safe area to the runtime.
       final EdgeInsets safeArea = MediaQuery.of(context).padding;
       final EdgeInsets viewInsets = MediaQuery.of(context).viewInsets;
-      debugPrint("LayoutBuilder: ${viewInsets.toString()} ${safeArea.toString()}");
+      debugPrint(
+          "LayoutBuilder: ${viewInsets.toString()} ${safeArea.toString()}");
       widget.comPort.resize(
           constraints.maxWidth,
           constraints.maxHeight,
@@ -345,34 +346,35 @@ class _MyRunPageState extends State<MyRunPage> {
 
   Container buildMeasurement(BuildContext context) {
     return Container(
-        color: Colors.white,
-				padding: const EdgeInsets.only(left: 8.0, top: 20, right: 8.0, bottom: 8.0),
-          child: Column(
-						crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              MyMeasurement(
-                  text: "deltaTime",
-                  stream: widget.comPort.deltaTime.stream,
-                  multiply: 1000),
-              MyMeasurement(
-                  text: "updateTime",
-                  stream: widget.comPort.updateTime.stream,
-                  multiply: 1000),
-							MyMeasurement(
-									text: "renderTime",
-									stream: widget.comPort.renderTime.stream,
-									multiply: 1000),
-							MyMeasurement(
-									text: "decodeTime",
-									stream: widget.comPort.decodeTime.stream,
-									multiply: 1000),
-							MyMeasurement(
-									text: "runtimeDeltaTime",
-									stream: widget.comPort.runtimeDeltaTime.stream,
-									multiply: 1000),
-            ],
-          ),
-        );
+      color: Colors.white,
+      padding:
+          const EdgeInsets.only(left: 8.0, top: 20, right: 8.0, bottom: 8.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          MyMeasurement(
+              text: "deltaTime",
+              stream: widget.comPort.deltaTime.stream,
+              multiply: 1000),
+          MyMeasurement(
+              text: "updateTime",
+              stream: widget.comPort.updateTime.stream,
+              multiply: 1000),
+          MyMeasurement(
+              text: "renderTime",
+              stream: widget.comPort.renderTime.stream,
+              multiply: 1000),
+          MyMeasurement(
+              text: "decodeTime",
+              stream: widget.comPort.decodeTime.stream,
+              multiply: 1000),
+          MyMeasurement(
+              text: "runtimeDeltaTime",
+              stream: widget.comPort.runtimeDeltaTime.stream,
+              multiply: 1000),
+        ],
+      ),
+    );
   }
 
   Widget buildMenu(BuildContext context) {
@@ -384,14 +386,14 @@ class _MyRunPageState extends State<MyRunPage> {
                 child: ClipRRect(
                     borderRadius: BorderRadius.circular(100),
                     child: Opacity(
-											opacity: 0.35,
-											child: Container(
-												width: 32,
-												height: 32,
-												color: Colors.black,
-												child: Icon(Icons.adaptive.more, color: Colors.white),
-											),
-										)),
+                      opacity: 0.35,
+                      child: Container(
+                        width: 32,
+                        height: 32,
+                        color: Colors.black,
+                        child: Icon(Icons.adaptive.more, color: Colors.white),
+                      ),
+                    )),
                 itemBuilder: (BuildContext context) => [
                       const PopupMenuItem(
                         value: MyRunMenuOption.returnEditor,

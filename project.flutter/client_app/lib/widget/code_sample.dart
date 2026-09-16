@@ -57,11 +57,8 @@ class MyCodeSample extends StatelessWidget {
     return Container(
       key: codeSampleKey,
       height: codeSampleHeight,
-      padding: EdgeInsets.fromLTRB(
-          fontSize * bigFingerPaddingFactor,
-          12.0,
-          bigFinger ? fontSize * bigFingerPaddingFactor : 12.0,
-          12.0),
+      padding: EdgeInsets.fromLTRB(fontSize * bigFingerPaddingFactor, 12.0,
+          bigFinger ? fontSize * bigFingerPaddingFactor : 12.0, 12.0),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(8.0),

@@ -11,10 +11,11 @@ const double libraryBigItemExtent = 176.0;
 const double libraryMediumItemExtent = 116.0;
 
 class MyLibraryGridDelegate extends SliverGridDelegate {
-	final double targetExtent;
-	final double titleHeight;
+  final double targetExtent;
+  final double titleHeight;
 
-	const MyLibraryGridDelegate({required this.targetExtent, required this.titleHeight});
+  const MyLibraryGridDelegate(
+      {required this.targetExtent, required this.titleHeight});
 
   @override
   SliverGridLayout getLayout(SliverConstraints constraints) {
@@ -41,7 +42,7 @@ class MyLibraryGridDelegate extends SliverGridDelegate {
 
 class MyCatalogGrid extends StatelessWidget {
   final MyLibrarySort sort;
-	final MyLibraryGrid grid;
+  final MyLibraryGrid grid;
   const MyCatalogGrid({required this.sort, required this.grid, super.key});
 
   static const EdgeInsets _padding =
@@ -57,12 +58,15 @@ class MyCatalogGrid extends StatelessWidget {
           if (snapshot.hasData) {
             final List<String> names = snapshot.data!;
             return switch (grid) {
-              MyLibraryGrid.big => _buildGrid(names,
+              MyLibraryGrid.big => _buildGrid(
+                  names,
                   const MyLibraryGridDelegate(
                       targetExtent: libraryBigItemExtent, titleHeight: 40.0)),
-              MyLibraryGrid.medium => _buildGrid(names,
+              MyLibraryGrid.medium => _buildGrid(
+                  names,
                   const MyLibraryGridDelegate(
-                      targetExtent: libraryMediumItemExtent, titleHeight: 50.0)),
+                      targetExtent: libraryMediumItemExtent,
+                      titleHeight: 50.0)),
               MyLibraryGrid.list => _buildList(names),
             };
           } else {

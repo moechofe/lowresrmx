@@ -37,7 +37,7 @@ class MySearchIcon extends StatelessWidget {
             controller.findMode();
           }
         },
-				tooltip: "Search and replace",
+        tooltip: "Search and replace",
         icon: icon);
   }
 }

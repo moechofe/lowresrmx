@@ -82,9 +82,9 @@ class _MyEditDrawerState extends State<MyEditDrawer> {
         // appBar: AppBar(
         //   // automaticallyImplyLeading: false,
         //   // title: const Text("Back to Programs"),
-				// 	// title: Text(widget.editedProgramName),
+        // 	// title: Text(widget.editedProgramName),
         //   // leading: IconButton(
-				// 	// 		icon: const Icon(Icons.arrow_back_rounded),
+        // 	// 		icon: const Icon(Icons.arrow_back_rounded),
         //   //     tooltip: "Program library",
         //   //     onPressed: () => gotoLibrary(context)),
         // ),
@@ -104,7 +104,7 @@ class _MyEditDrawerState extends State<MyEditDrawer> {
                     reservedItemsAfterList,
                 itemBuilder: (context, index) {
                   if (index == 0) {
-										return buildBackItem(context);
+                    return buildBackItem(context);
                   } else if (index == 1) {
                     return const MyManualTile();
                   } else if (index == 2) {
@@ -115,7 +115,7 @@ class _MyEditDrawerState extends State<MyEditDrawer> {
                     return buildTraceItem(context);
                   } else if (index == 5) {
                     return buildToolItem(context);
-									} else if (index == 6) {
+                  } else if (index == 6) {
                     return const Divider();
                   } else if (index == 7) {
                     return const Padding(
@@ -166,13 +166,12 @@ class _MyEditDrawerState extends State<MyEditDrawer> {
         });
   }
 
-	Widget buildBackItem(BuildContext context) {
-		return ListTile(
-				leading: const Icon(Icons.library_books_rounded),
-				title: const Text("Back to Programs"),
-				onTap: () => gotoLibrary(context)
-		);
-	}
+  Widget buildBackItem(BuildContext context) {
+    return ListTile(
+        leading: const Icon(Icons.library_books_rounded),
+        title: const Text("Back to Programs"),
+        onTap: () => gotoLibrary(context));
+  }
 
   Widget buildTraceItem(BuildContext context) {
     final programPreference = context.watch<MyProgramPreference>();
@@ -194,7 +193,7 @@ class _MyEditDrawerState extends State<MyEditDrawer> {
     return SwitchListTile(
         value: currentTool,
         title: const Text("Is a Tool"),
-				subtitle: const Text("Allows edit other programs"),
+        subtitle: const Text("Allows edit other programs"),
         onChanged: (value) {
           // Store the change
           programPreference.setTool(!currentTool);

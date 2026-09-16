@@ -21,11 +21,11 @@ const Key libraryItemThumbnailKey = Key('library-item-thumbnail');
 /// A [Card] with thumbnail, name of a program, a long-press menu and a tap action to open the program editor.
 class MyLibraryItem extends StatefulWidget {
   final String programName;
-	final MyLibraryGrid grid;
+  final MyLibraryGrid grid;
 
   const MyLibraryItem({
     required this.programName,
-		required this.grid,
+    required this.grid,
     super.key,
   });
 
@@ -60,11 +60,11 @@ class _MyLibraryItemState extends State<MyLibraryItem> {
     return LayoutBuilder(builder: (context, constraints) {
       return Card(
         surfaceTintColor: colorScheme.surfaceBright,
-        elevation: switch(widget.grid) {
-					MyLibraryGrid.big => 2,
-					MyLibraryGrid.medium => 1,
-					MyLibraryGrid.list => 0,
-				},
+        elevation: switch (widget.grid) {
+          MyLibraryGrid.big => 2,
+          MyLibraryGrid.medium => 1,
+          MyLibraryGrid.list => 0,
+        },
         child: FutureBuilder<MyProgramPreference>(
             future: preference.loadPreference(),
             builder: (context, snapshot) {
@@ -109,26 +109,26 @@ class _MyLibraryItemState extends State<MyLibraryItem> {
         child: Align(
             alignment: Alignment.centerLeft,
             child: Padding(
-              padding: switch(widget.grid) {
-								MyLibraryGrid.big => EdgeInsets.only(
-									left: 12.0, right: 12.0, top: 4.0, bottom: 4.0),
-								MyLibraryGrid.medium => EdgeInsets.only(
-									left: 6.0, right: 6.0, top: 0.0, bottom: 0.0),
-								MyLibraryGrid.list => const EdgeInsets.only(
-									left: 8.0, right: 12.0)
-							},
+              padding: switch (widget.grid) {
+                MyLibraryGrid.big => EdgeInsets.only(
+                    left: 12.0, right: 12.0, top: 4.0, bottom: 4.0),
+                MyLibraryGrid.medium =>
+                  EdgeInsets.only(left: 6.0, right: 6.0, top: 0.0, bottom: 0.0),
+                MyLibraryGrid.list =>
+                  const EdgeInsets.only(left: 8.0, right: 12.0)
+              },
               child: Text(
-                style: switch(widget.grid) {
-									MyLibraryGrid.big => libraryItemTextStyle,
-									MyLibraryGrid.medium => libraryItemSmallTextStyle,
-									MyLibraryGrid.list => libraryItemTextStyle
-								},
+                style: switch (widget.grid) {
+                  MyLibraryGrid.big => libraryItemTextStyle,
+                  MyLibraryGrid.medium => libraryItemSmallTextStyle,
+                  MyLibraryGrid.list => libraryItemTextStyle
+                },
                 widget.programName,
-                maxLines: switch(widget.grid) {
-									MyLibraryGrid.big => 1,
-									MyLibraryGrid.medium => 2,
-									MyLibraryGrid.list => 2
-								},
+                maxLines: switch (widget.grid) {
+                  MyLibraryGrid.big => 1,
+                  MyLibraryGrid.medium => 2,
+                  MyLibraryGrid.list => 2
+                },
                 overflow: TextOverflow.ellipsis,
               ),
             )));
@@ -179,62 +179,71 @@ class _MyLibraryItemState extends State<MyLibraryItem> {
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-							leading: FutureBuilder(
-								future: loadThumbnail(),
-								builder: (context, snapshot) {
-									if (snapshot.hasData) {
-										return Opacity(
-											opacity: Platform.isLinux ? 0.2 : 1.0,
-											child: ClipRRect(
-												borderRadius: BorderRadius.circular(12.0),
-												child: Image(
-														image: snapshot.data as ImageProvider,
-														fit: BoxFit.cover,
-														errorBuilder: (context, error, stackTrace) {
-															return Image(image: MemoryImage(transparentPng));
-														}),
-											),
-										);
-									} else {
-										return const SizedBox();
-									}
-								}),
+              leading: FutureBuilder(
+                  future: loadThumbnail(),
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData) {
+                      return Opacity(
+                        opacity: Platform.isLinux ? 0.2 : 1.0,
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(12.0),
+                          child: Image(
+                              image: snapshot.data as ImageProvider,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Image(
+                                    image: MemoryImage(transparentPng));
+                              }),
+                        ),
+                      );
+                    } else {
+                      return const SizedBox();
+                    }
+                  }),
               title: Text(widget.programName,
                   style: libraryItemTextStyle, overflow: TextOverflow.ellipsis),
             ),
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Row(children: [
-                FilledButton.icon(onPressed: (){
-                  Navigator.pop(sheetContext);
-                  shareWithCommunity();
-                }, label: Text("Share"), icon: Icon(Icons.publish_rounded)),
+                FilledButton.icon(
+                    onPressed: () {
+                      Navigator.pop(sheetContext);
+                      shareWithCommunity();
+                    },
+                    label: Text("Share"),
+                    icon: Icon(Icons.publish_rounded)),
                 Spacer(),
                 OverflowBar(children: [
-                Builder(builder: (buttonContext) => IconButton(
-                  tooltip: "Share Code",
-                  onPressed: (){
-                    final Rect? origin = shareOrigin(buttonContext);
-                    Navigator.pop(sheetContext);
-                    shareCodeAsFile(origin);
-                  },
-                  icon: Icon(Icons.share_outlined))),
-                IconButton(
-                  tooltip: "Duplicate",
-                  onPressed: (){
-                    Navigator.pop(sheetContext);
-                    duplicateAndRename();
-                  },
-                  icon: Icon(Icons.content_copy_rounded)),
-                IconButton(onPressed: (){
-                  Navigator.pop(sheetContext);
-                  showRenameDialog(widget.programName);
-                }, icon: Icon(Icons.drive_file_rename_outline_rounded)),
-                IconButton(onPressed: (){
-                  Navigator.pop(sheetContext);
-                  showDeleteDialog();
-                }, icon: Icon(Icons.delete_forever_rounded))
-              ])
+                  Builder(
+                      builder: (buttonContext) => IconButton(
+                          tooltip: "Share Code",
+                          onPressed: () {
+                            final Rect? origin = shareOrigin(buttonContext);
+                            Navigator.pop(sheetContext);
+                            shareCodeAsFile(origin);
+                          },
+                          icon: Icon(Icons.share_outlined))),
+                  IconButton(
+                      tooltip: "Duplicate",
+                      onPressed: () {
+                        Navigator.pop(sheetContext);
+                        duplicateAndRename();
+                      },
+                      icon: Icon(Icons.content_copy_rounded)),
+                  IconButton(
+                      onPressed: () {
+                        Navigator.pop(sheetContext);
+                        showRenameDialog(widget.programName);
+                      },
+                      icon: Icon(Icons.drive_file_rename_outline_rounded)),
+                  IconButton(
+                      onPressed: () {
+                        Navigator.pop(sheetContext);
+                        showDeleteDialog();
+                      },
+                      icon: Icon(Icons.delete_forever_rounded))
+                ])
               ]),
             ),
           ],
@@ -244,7 +253,8 @@ class _MyLibraryItemState extends State<MyLibraryItem> {
   }
 
   Future<void> duplicateAndRename() async {
-    final String copyName = await MyLibrary.duplicateProgram(widget.programName);
+    final String copyName =
+        await MyLibrary.duplicateProgram(widget.programName);
     await MyPreference.copyProgram(widget.programName, copyName);
     if (!mounted) return;
     await showRenameDialog(copyName);

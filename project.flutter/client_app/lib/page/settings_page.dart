@@ -39,17 +39,16 @@ class _MySettingsPageState extends State<MySettingsPage> {
             ListTile(
               title: const Text("Font size"),
               subtitle: Slider(
-								min: 10,
-								max: 24,
-								divisions: 24-10,
-								value: widget.settings.fontSize,
-								label: widget.settings.fontSize.truncate().toString(),
-								onChanged: (value) {
-									setState(() {
-										widget.settings.fontSize=value;
-									});
-
-								}),
+                  min: 10,
+                  max: 24,
+                  divisions: 24 - 10,
+                  value: widget.settings.fontSize,
+                  label: widget.settings.fontSize.truncate().toString(),
+                  onChanged: (value) {
+                    setState(() {
+                      widget.settings.fontSize = value;
+                    });
+                  }),
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 16.0),

@@ -169,6 +169,18 @@ class _MyEditPageState extends State<MyEditPage> with WidgetsBindingObserver {
         as Map)["programName"]! as String;
     MyLibrary.writeCode(programName, editingController.text);
     syncManager.syncProgram(programName);
+    saveScrollOffset();
+  }
+
+  /// The editor route is replaced by the run page, so the state is rebuilt from
+  /// scratch on the way back and the offset has to outlive it.
+  void saveScrollOffset() {
+    if (!codeReady.isCompleted) return;
+    final ScrollController vertical = scrollController.verticalScroller;
+    if (!vertical.hasClients) return;
+    final programName = (ModalRoute.of(context)!.settings.arguments
+        as Map)["programName"]! as String;
+    MyPreference.setProgramScrollOffset(programName, vertical.offset);
   }
 
   Future<bool> initEditor(BuildContext context) async {
@@ -184,10 +196,13 @@ class _MyEditPageState extends State<MyEditPage> with WidgetsBindingObserver {
 
     // Load the program code.
     final String code = await MyLibrary.readCode(programName);
+    final double scrollOffset =
+        await MyPreference.getProgramScrollOffset(programName);
 
     editingController = CodeLineEditingController.fromText(code);
     findController = CodeFindController(editingController);
-    scrollController = CodeScrollController();
+    scrollController = CodeScrollController(
+        verticalScroller: ScrollController(initialScrollOffset: scrollOffset));
     selectionToolbarController = const MyEditPageToolbarController();
 
     // When the code change, it will compile it and report errors in the gutter.
@@ -201,7 +216,8 @@ class _MyEditPageState extends State<MyEditPage> with WidgetsBindingObserver {
 
     // When the code is ready, it will place the cursor at the error location and scroll to it.
     if (runningError != null) {
-      debugPrint("Error ${runningError.msg}, ${runningError.getLocation(editingController.text).row}");
+      debugPrint(
+          "Error ${runningError.msg}, ${runningError.getLocation(editingController.text).row}");
       WidgetsBinding.instance.addPostFrameCallback((_) {
         debugPrint("addPostFrameCallback");
         location.setLocation(runningError.getLocation(editingController.text));
@@ -232,12 +248,14 @@ class _MyEditPageState extends State<MyEditPage> with WidgetsBindingObserver {
     }
   }
 
-  Future<Error> compileAndRun(ComPort comPort,{required String programSource, required String dataDisk}) async {
-    	return await comPort.compileAndRun(programSource, dataDisk);
+  Future<Error> compileAndRun(ComPort comPort,
+      {required String programSource, required String dataDisk}) async {
+    return await comPort.compileAndRun(programSource, dataDisk);
   }
 
   void runEditedProgramWithLibraryDataDisk(String executedProgramName) {
     final ComPort comPort = context.read<ComPort>();
+    saveScrollOffset();
     setState(() {
       absorb = true;
       MyLibrary.writeCode(executedProgramName, editingController.text)
@@ -266,6 +284,7 @@ class _MyEditPageState extends State<MyEditPage> with WidgetsBindingObserver {
 
   void runToolProgramWithEditedDataDisk(String toolProgramName) {
     final ComPort comPort = context.read<ComPort>();
+    saveScrollOffset();
     final programName = (ModalRoute.of(context)!.settings.arguments
         as Map)["programName"]! as String;
     setState(() {

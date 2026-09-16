@@ -85,9 +85,9 @@ enum IsolateMessageType {
   traceOn,
   traceOff,
   thumbnail,
-	audioStart,
-	audioStop,
-	renderAudio,
+  audioStart,
+  audioStop,
+  renderAudio,
   notifyFrame,
 }
 
@@ -166,7 +166,8 @@ class OrientationChangeMsg {
 
 /// Message used to hand the render isolate a new destination surface.
 class SurfaceChangeMsg {
-  const SurfaceChangeMsg(this.address, this.bytesPerRow, this.width, this.height);
+  const SurfaceChangeMsg(
+      this.address, this.bytesPerRow, this.width, this.height);
 
   /// 0 keeps the native handle the C side already has (Android).
   final int address;
@@ -186,7 +187,6 @@ class MeasurementMsg {
 
 /// Bridge between the core and the app
 class Runtime extends ChangeNotifier {
-
   static const int _audioSampleRate = 44100;
   static const int _audioChannels = 2;
   static const int _audioBufferFrames = 1470;
@@ -210,7 +210,7 @@ class Runtime extends ChangeNotifier {
   ui.Image? image;
   String? dataDiskToSave;
   bool keyboardOpen = false;
-	bool inputMode = false;
+  bool inputMode = false;
   int? textureId;
 
   final ffi.Pointer<Input> input = calloc();
@@ -242,7 +242,8 @@ class Runtime extends ChangeNotifier {
       final int dataSize = dataList.length;
       final ffi.Pointer<ffi.Uint8> dataDiskPtr = calloc<ffi.Uint8>(dataSize);
       dataDiskPtr.asTypedList(dataDisk.length).setAll(0, dataList);
-      runnerStart(runner, input, 123, ffi.Pointer.fromAddress(dataDiskPtr.address), dataSize);
+      runnerStart(runner, input, 123,
+          ffi.Pointer.fromAddress(dataDiskPtr.address), dataSize);
     }
     return Error(
         code: err.code,
@@ -322,12 +323,12 @@ class Runtime extends ChangeNotifier {
   }
 
   void renderFrame() {
-		// Faster, the engine upscales straight into the device-resolution surface
+    // Faster, the engine upscales straight into the device-resolution surface
     if (textureId != null) {
       runnerRenderToTexture(runner, textureId!);
-		// Slower, recreate an image using pixel buffer
+      // Slower, recreate an image using pixel buffer
     } else {
-    	renderPixels();
+      renderPixels();
     }
   }
 
@@ -469,8 +470,13 @@ void isolateEntryPoint(List<Object?> arguments) {
         runtime.audioStop();
       } else if (message is OrientationChangeMsg) {
         // Receive the screen size and the safe area
-        runtime.resize(message.width, message.height, message.safeTop,
-            message.safeLeft, message.safeBottom, message.safeRight,
+        runtime.resize(
+            message.width,
+            message.height,
+            message.safeTop,
+            message.safeLeft,
+            message.safeBottom,
+            message.safeRight,
             message.keyboardHeight);
       } else if (message is SurfaceChangeMsg) {
         // Receive the new destination surface after a rotation or an inset change
@@ -530,11 +536,12 @@ class ComPort {
   late final Isolate isolate;
   late final ReceivePort receivePort;
   late final SendPort sendPort;
-	/// Regulary render the frame.
+
+  /// Regulary render the frame.
   late final Ticker ticker;
   Duration prevDuration = Duration.zero;
 
-	// To handle 60 FPS, or try to catch up.
+  // To handle 60 FPS, or try to catch up.
   static const int _stepsPerSecond = 60;
   static const int _stepsPerAudioChunk = 2;
   static const int _maxStepsPerTick = 4;
@@ -743,8 +750,8 @@ class ComPort {
 
   /// Start updating the runtime at 60 fps
   void start() {
-		debugPrint("Ticker started");
-		sendPort.send(IsolateMessageType.audioStart);
+    debugPrint("Ticker started");
+    sendPort.send(IsolateMessageType.audioStart);
     ticker.start();
     runtimeStopwatch.start();
     // sendPort.send(true);
@@ -752,9 +759,9 @@ class ComPort {
 
   /// Stop updating the runtime
   void stop() {
-		debugPrint("Ticker stopped");
+    debugPrint("Ticker stopped");
     ticker.stop();
-		sendPort.send(IsolateMessageType.audioStop);
+    sendPort.send(IsolateMessageType.audioStop);
     prevDuration = Duration.zero;
     _stepAccumulator = _accumulatorPhase;
     _stepsSinceAudio = 0;
@@ -764,8 +771,14 @@ class ComPort {
   }
 
   /// Update the device screen size and the safe area, and resize the render surface to match.
-  Future<void> resize(double inWidth, double inHeight, double safeTop, double safeLeft,
-      double safeBottom, double safeRight, double keyboardHeight,
+  Future<void> resize(
+      double inWidth,
+      double inHeight,
+      double safeTop,
+      double safeLeft,
+      double safeBottom,
+      double safeRight,
+      double keyboardHeight,
       double devicePixelRatio) async {
     sendPort.send(OrientationChangeMsg(inWidth, inHeight, safeTop, safeLeft,
         safeBottom, safeRight, keyboardHeight));
@@ -777,8 +790,10 @@ class ComPort {
     if (width == _surfaceWidth && height == _surfaceHeight) return;
     _surfaceWidth = width;
     _surfaceHeight = height;
-    final TextureSurface surface = await resizeTexture(textureId!, width, height);
-    sendPort.send(SurfaceChangeMsg(surface.address, surface.bytesPerRow, width, height));
+    final TextureSurface surface =
+        await resizeTexture(textureId!, width, height);
+    sendPort.send(
+        SurfaceChangeMsg(surface.address, surface.bytesPerRow, width, height));
   }
 
   /// Send the touch event to the runtime

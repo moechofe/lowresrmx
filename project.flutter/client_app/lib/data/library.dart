@@ -15,9 +15,9 @@ enum MyLibrarySort {
 }
 
 enum MyLibraryGrid {
-	big,
-	medium,
-	list,
+  big,
+  medium,
+  list,
 }
 
 /// A class to manage the library of programs.
@@ -38,11 +38,11 @@ class MyLibrary extends ChangeNotifier {
   }
 
   static String codeExtension = ".rmx";
-	static String thumbExtension = ".png";
+  static String thumbExtension = ".png";
 
   static Future<Directory> getLibraryDir() async {
     final String libraryPath = await MyPreference.getProgramDirectory();
-		// TODO: What if, it's a file?
+    // TODO: What if, it's a file?
     final Directory libraryDir = Directory(libraryPath);
     if (!await libraryDir.exists()) await libraryDir.create(recursive: true);
     return libraryDir;
@@ -60,18 +60,18 @@ class MyLibrary extends ChangeNotifier {
     return File(codePath);
   }
 
-	static Future<String> findUniqueName(String name) async {
-		final Directory libraryDir = await getLibraryDir();
+  static Future<String> findUniqueName(String name) async {
+    final Directory libraryDir = await getLibraryDir();
     String programPath = p.join(libraryDir.path, "$name$codeExtension");
-		File programFile = File(programPath);
+    File programFile = File(programPath);
     int counter = -1;
     while (await programFile.exists()) {
       counter += 1;
       programPath = p.join(libraryDir.path, "$name $counter$codeExtension");
       programFile = File(programPath);
     }
-		return counter >= 0 ? "$name $counter" : name;
-	}
+    return counter >= 0 ? "$name $counter" : name;
+  }
 
   static String sanitizeName(String name) {
     final String clean = name.replaceAll(RegExp(r'[^\w\s_]+'), '');
@@ -80,8 +80,8 @@ class MyLibrary extends ChangeNotifier {
 
   static Future<File> createProgram() async {
     final Directory libraryDir = await getLibraryDir();
-		final name = await findUniqueName("unnamed");
-		// TODO: why not using getCodeFile
+    final name = await findUniqueName("unnamed");
+    // TODO: why not using getCodeFile
     String programPath = p.join(libraryDir.path, "$name$codeExtension");
     File programFile = File(programPath);
     await programFile.create();
@@ -91,29 +91,35 @@ class MyLibrary extends ChangeNotifier {
 
   static Future<void> renameProgram(String programName, String nameName) async {
     final Directory libraryDir = await getLibraryDir();
-		// Prevent bad characters in the name
-		nameName = sanitizeName(nameName);
-		// Search for a unique name
-		final String endingDigits = nameName.replaceAll(RegExp(r'(.*)\d+$'), '');
-		int counter = 0;
-		if (endingDigits.isNotEmpty) { counter = int.tryParse(endingDigits) ?? 1; }
-		File candidateFile = File(p.join(libraryDir.path, "$nameName$codeExtension"));
-		while(await candidateFile.exists()) {
-			nameName += " $counter";
-			counter += 1;
-			candidateFile = File(p.join(libraryDir.path, "$nameName$codeExtension"));
-		}
+    // Prevent bad characters in the name
+    nameName = sanitizeName(nameName);
+    // Search for a unique name
+    final String endingDigits = nameName.replaceAll(RegExp(r'(.*)\d+$'), '');
+    int counter = 0;
+    if (endingDigits.isNotEmpty) {
+      counter = int.tryParse(endingDigits) ?? 1;
+    }
+    File candidateFile =
+        File(p.join(libraryDir.path, "$nameName$codeExtension"));
+    while (await candidateFile.exists()) {
+      nameName += " $counter";
+      counter += 1;
+      candidateFile = File(p.join(libraryDir.path, "$nameName$codeExtension"));
+    }
     final String programPath =
         p.join(libraryDir.path, "$programName$codeExtension");
     final File programFile = File(p.join(libraryDir.path, programPath));
     if (await programFile.exists()) {
-      await programFile.rename(p.join(libraryDir.path, "$nameName$codeExtension"));
+      await programFile
+          .rename(p.join(libraryDir.path, "$nameName$codeExtension"));
     }
-    final String thumbPath = p.join(libraryDir.path, "$programName$thumbExtension");
+    final String thumbPath =
+        p.join(libraryDir.path, "$programName$thumbExtension");
     final File thumbFile = File(p.join(libraryDir.path, thumbPath));
     FileImage(thumbFile).evict();
     if (await thumbFile.exists()) {
-      await thumbFile.rename(p.join(libraryDir.path, "$nameName$thumbExtension"));
+      await thumbFile
+          .rename(p.join(libraryDir.path, "$nameName$thumbExtension"));
     }
     MyLibrary().notifyListeners();
   }
@@ -144,7 +150,8 @@ class MyLibrary extends ChangeNotifier {
     if (await programFile.exists()) {
       await programFile.delete();
     }
-    final String thumbPath = p.join(libraryDir.path, "$programName$thumbExtension");
+    final String thumbPath =
+        p.join(libraryDir.path, "$programName$thumbExtension");
     final File thumbFile = File(p.join(libraryDir.path, thumbPath));
     FileImage(thumbFile).evict();
     if (await thumbFile.exists()) {
@@ -169,8 +176,8 @@ class MyLibrary extends ChangeNotifier {
   }
 
   static Future<List<String>> buildList(MyLibrarySort sort) async {
-		debugPrint("MyLibrary.buildList()");
-		await MyLibrary.createDataDiskIfNotExists();
+    debugPrint("MyLibrary.buildList()");
+    await MyLibrary.createDataDiskIfNotExists();
 
     final Directory libraryDir = await getLibraryDir();
 
@@ -178,7 +185,7 @@ class MyLibrary extends ChangeNotifier {
       List<File> fileList = await libraryDir
           .list()
           .where((entry) => p.extension(entry.path) == codeExtension)
-					// .where((entry) => p.basename(entry.path) != ".dataDisk$extension")
+          // .where((entry) => p.basename(entry.path) != ".dataDisk$extension")
           .asyncMap((entry) => entry as File)
           .toList();
 
@@ -230,41 +237,46 @@ class MyLibrary extends ChangeNotifier {
     MyLibrary().notifyListeners();
   }
 
-	static Future<void> createDataDiskIfNotExists() async {
+  static Future<void> createDataDiskIfNotExists() async {
     final Directory libraryDir = await getLibraryDir();
-    final String programPath =
-        p.join(libraryDir.path, "Disk$codeExtension");
+    final String programPath = p.join(libraryDir.path, "Disk$codeExtension");
     final File programFile = File(p.join(libraryDir.path, programPath));
     if (await programFile.exists() == false) {
-			await programFile.create();
-		}
-	}
-
-	static Future<void> reinstallDefaultPrograms() async {
-		final Directory libraryDir = await getLibraryDir();
-		final assetManifest = await AssetManifest.loadFromAssetBundle(rootBundle);
-		final programsDir = assetManifest.listAssets().where((path) => path.startsWith('asset/programs/')).toList();
-		for (var path in programsDir) {
-			final byteData = await rootBundle.load(path);
-			final fileName = p.basename(path);
-			final file = File(p.join(libraryDir.path, fileName));
-			await file.writeAsBytes(byteData.buffer.asUint8List());
-			final programName = p.basenameWithoutExtension(path);
-			if (programName.contains("GFX")) {
-				await MyPreference.setToolProgram(programName);
-			}
-		}
+      await programFile.create();
+    }
   }
 
-	static Future<String?> importFromRetroit(String pid, String name) async {
-		final values = await Future.wait([downloadProgram(pid), downloadThumbnail(pid)]);
-		final prg=values[0] as String;
-		final png=values[1] as img.Image?;
-		if (png == null) { return null; }
-		else {
-			final uniqueName = await findUniqueName(name);
-			await Future.wait([writeCode(uniqueName, prg), writeThumbnail(uniqueName, png)]);
-			return uniqueName;
-		}
-	}
+  static Future<void> reinstallDefaultPrograms() async {
+    final Directory libraryDir = await getLibraryDir();
+    final assetManifest = await AssetManifest.loadFromAssetBundle(rootBundle);
+    final programsDir = assetManifest
+        .listAssets()
+        .where((path) => path.startsWith('asset/programs/'))
+        .toList();
+    for (var path in programsDir) {
+      final byteData = await rootBundle.load(path);
+      final fileName = p.basename(path);
+      final file = File(p.join(libraryDir.path, fileName));
+      await file.writeAsBytes(byteData.buffer.asUint8List());
+      final programName = p.basenameWithoutExtension(path);
+      if (programName.contains("GFX")) {
+        await MyPreference.setToolProgram(programName);
+      }
+    }
+  }
+
+  static Future<String?> importFromRetroit(String pid, String name) async {
+    final values =
+        await Future.wait([downloadProgram(pid), downloadThumbnail(pid)]);
+    final prg = values[0] as String;
+    final png = values[1] as img.Image?;
+    if (png == null) {
+      return null;
+    } else {
+      final uniqueName = await findUniqueName(name);
+      await Future.wait(
+          [writeCode(uniqueName, prg), writeThumbnail(uniqueName, png)]);
+      return uniqueName;
+    }
+  }
 }

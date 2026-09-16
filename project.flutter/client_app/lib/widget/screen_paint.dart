@@ -12,7 +12,8 @@ class MyScreenPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     if (imageNotifier.value != null) {
-      canvas.drawImage(imageNotifier.value!, Offset.zero, Paint()..filterQuality = FilterQuality.none);
+      canvas.drawImage(imageNotifier.value!, Offset.zero,
+          Paint()..filterQuality = FilterQuality.none);
     }
   }
 
@@ -50,7 +51,8 @@ class _MyScreenPaintState extends State<MyScreenPaint> {
       fit: BoxFit.cover,
       alignment: Alignment.topLeft,
       child: CustomPaint(
-        size: Size(Runtime.screenWidth.toDouble(), Runtime.screenHeight.toDouble()),
+        size: Size(
+            Runtime.screenWidth.toDouble(), Runtime.screenHeight.toDouble()),
         painter: MyScreenPainter(widget.imageNotifier),
       ),
     );

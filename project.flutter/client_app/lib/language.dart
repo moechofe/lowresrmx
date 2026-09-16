@@ -192,7 +192,7 @@ final langLowResRMX = Mode(
                   "[ ]+((?:I|a|is|so|us|to|at|if|in|it|on|[A-Za-z]+['](d|ve|re|ll|t|s|n)|[A-Za-z]+[-][a-z]+|[A-Za-z][a-z]{2,})[.]?[:]?([.][ ]|[ ])){3}")
         ],
         relevance: 0),
-		Mode(className: 'number', begin: "\\b([0-9]+)\\b"),
+    Mode(className: 'number', begin: "\\b([0-9]+)\\b"),
     Mode(className: 'number', begin: "(\\\$[0-9a-fA-F]{1,4})"),
   ],
 );

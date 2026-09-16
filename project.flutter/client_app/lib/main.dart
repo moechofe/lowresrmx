@@ -14,13 +14,13 @@ import 'package:provider/provider.dart';
 late final ComPort comPort;
 
 void main() async {
-	WidgetsFlutterBinding.ensureInitialized();
+  WidgetsFlutterBinding.ensureInitialized();
 
-	final InstallChange change = await MyPreference.consumeInstallChange();
-	if (change != InstallChange.unchanged) {
-		debugPrint("main() install change: $change");
-		await onInstallChanged(change);
-	}
+  final InstallChange change = await MyPreference.consumeInstallChange();
+  if (change != InstallChange.unchanged) {
+    debugPrint("main() install change: $change");
+    await onInstallChanged(change);
+  }
 
   comPort = ComPort();
   await comPort.init();
@@ -28,10 +28,10 @@ void main() async {
 }
 
 Future<void> onInstallChanged(InstallChange change) async {
-	if (change == InstallChange.downgraded) {
-		return;
-	}
-	await MyLibrary.reinstallDefaultPrograms();
+  if (change == InstallChange.downgraded) {
+    return;
+  }
+  await MyLibrary.reinstallDefaultPrograms();
 }
 
 class MyApp extends StatefulWidget {
@@ -42,7 +42,6 @@ class MyApp extends StatefulWidget {
 }
 
 class MyAppState extends State<MyApp> {
-
   @override
   void initState() {
     super.initState();
@@ -68,24 +67,24 @@ class MyAppState extends State<MyApp> {
           Provider<ComPort>(create: (_) => comPort),
           ChangeNotifierProvider<MyEditorPreference>(
               create: (_) => MyEditorPreference()..init()),
-					ChangeNotifierProvider<MyLibraryPreference>(
-							create: (_) => MyLibraryPreference()..init()),
+          ChangeNotifierProvider<MyLibraryPreference>(
+              create: (_) => MyLibraryPreference()..init()),
         ],
         child: MaterialApp(
-        	debugShowCheckedModeBanner: false,
-        	title: 'LowResRMX',
-        	theme: theme.light(),
-        	darkTheme: theme.dark(),
-        	highContrastTheme: theme.lightHighContrast(),
-        	highContrastDarkTheme: theme.darkHighContrast(),
-					restorationScopeId: 'root',
-					navigatorKey: appNavigatorKey,
-					scaffoldMessengerKey: appMessengerKey,
-        	initialRoute: '/',
-        	routes: {
-        		'/': (context) => const MyLibraryPage(),
-						MyEditPage.routeName: (context) => const MyEditPage(),
-        	},
+          debugShowCheckedModeBanner: false,
+          title: 'LowResRMX',
+          theme: theme.light(),
+          darkTheme: theme.dark(),
+          highContrastTheme: theme.lightHighContrast(),
+          highContrastDarkTheme: theme.darkHighContrast(),
+          restorationScopeId: 'root',
+          navigatorKey: appNavigatorKey,
+          scaffoldMessengerKey: appMessengerKey,
+          initialRoute: '/',
+          routes: {
+            '/': (context) => const MyLibraryPage(),
+            MyEditPage.routeName: (context) => const MyEditPage(),
+          },
         ));
   }
 }

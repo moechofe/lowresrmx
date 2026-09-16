@@ -15,13 +15,13 @@ class MyCodeEditor extends StatefulWidget {
   final CodeFindController findController;
   final CodeScrollController scrollController;
   final FocusNode focusNode;
-	final MyEditorPreference editorSettings;
+  final MyEditorPreference editorSettings;
   const MyCodeEditor(
       {required this.editingController,
       required this.findController,
       required this.scrollController,
       required this.focusNode,
-			required this.editorSettings,
+      required this.editorSettings,
       super.key});
 
   @override
@@ -40,7 +40,7 @@ class _MyCodeEditorState extends State<MyCodeEditor> {
       autofocus: false,
       controller: widget.editingController,
       findController: widget.findController,
-			scrollController: widget.scrollController,
+      scrollController: widget.scrollController,
       padding: EdgeInsets.fromLTRB(
           5.0,
           5.0,
@@ -62,9 +62,7 @@ class _MyCodeEditorState extends State<MyCodeEditor> {
       indicatorBuilder: (context, controller, chunkController, notifier) {
         final ColorScheme colorScheme = Theme.of(context).colorScheme;
         return Row(
-          children: [
-            buildErrorGutter(colorScheme, controller, notifier)
-          ],
+          children: [buildErrorGutter(colorScheme, controller, notifier)],
         );
       },
       findBuilder: (context, controller, readonly) {
@@ -83,7 +81,7 @@ class _MyCodeEditorState extends State<MyCodeEditor> {
     return MyErrorGutter(
         controller: controller,
         notifier: notifier,
-				continousLocation: continousLocation,
+        continousLocation: continousLocation,
         textStyle: TextStyle(
           fontFamily: 'RecursiveLinear',
           fontSize: widget.editorSettings.fontSize,

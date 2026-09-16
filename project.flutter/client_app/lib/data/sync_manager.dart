@@ -4,7 +4,8 @@ import 'dart:io' as io;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:google_sign_in_platform_interface/google_sign_in_platform_interface.dart' as gsi;
+import 'package:google_sign_in_platform_interface/google_sign_in_platform_interface.dart'
+    as gsi;
 import 'package:googleapis/drive/v3.dart' as drive;
 import 'package:http/http.dart' as http;
 import 'package:lowresrmx/data/google_auth_client.dart';
@@ -23,18 +24,18 @@ class SyncManager with ChangeNotifier, WidgetsBindingObserver {
 
   static const List<String> googleScopes = [drive.DriveApi.driveFileScope];
 
-	static final String _clientId = (defaultTargetPlatform==TargetPlatform.iOS)
-    ? "204783433847-19qslfbh4c9mlccjpgqjrgmai1objh3s.apps.googleusercontent.com"
-    : (kReleaseMode
-      ? "204783433847-lpkr3jh2gr16udtfq7979sasvu4uvqk4.apps.googleusercontent.com"
-      : "204783433847-laro4ojkci5oriqqv956dp2n4pjigpuu.apps.googleusercontent.com");
+  static final String _clientId = (defaultTargetPlatform == TargetPlatform.iOS)
+      ? "204783433847-19qslfbh4c9mlccjpgqjrgmai1objh3s.apps.googleusercontent.com"
+      : (kReleaseMode
+          ? "204783433847-lpkr3jh2gr16udtfq7979sasvu4uvqk4.apps.googleusercontent.com"
+          : "204783433847-laro4ojkci5oriqqv956dp2n4pjigpuu.apps.googleusercontent.com");
 
   late Future<void> _signInInitialized;
   GoogleSignInAccount? _currentUser;
   String? _accountEmail;
   bool _authorized = false;
   bool _unavailable = false;
-	bool _syncing = false;
+  bool _syncing = false;
 
   /// Shortest gap between two automatic full syncs. A library change bypasses
   /// it — see [maybeSyncAll].
@@ -69,7 +70,7 @@ class SyncManager with ChangeNotifier, WidgetsBindingObserver {
   /// session restored at launch has the address and nothing else.
   String? get accountName => _currentUser?.displayName;
 
-	bool get syncing => _syncing;
+  bool get syncing => _syncing;
 
   void _init() {
     WidgetsBinding.instance.addObserver(this);
@@ -87,10 +88,10 @@ class SyncManager with ChangeNotifier, WidgetsBindingObserver {
 
     _signInInitialized = signIn
         .initialize(
-          clientId: _clientId,
-          serverClientId:
-              "204783433847-3m9hqdqcofo8lsj1bqkh3bm2upa4kvjh.apps.googleusercontent.com",
-        )
+      clientId: _clientId,
+      serverClientId:
+          "204783433847-3m9hqdqcofo8lsj1bqkh3bm2upa4kvjh.apps.googleusercontent.com",
+    )
         .then((_) async {
       // Nothing authenticates at launch: attemptLightweightAuthentication
       // opens a "choose a saved sign-in" sheet whenever Credential Manager
@@ -210,8 +211,9 @@ class SyncManager with ChangeNotifier, WidgetsBindingObserver {
   /// a session — and so that the account address reaches the platform, which
   /// needs it to revoke the grant in [disconnect].
   Future<String?> _accessToken() async {
-    final gsi.ClientAuthorizationTokenData? tokens =
-        await gsi.GoogleSignInPlatform.instance.clientAuthorizationTokensForScopes(
+    final gsi.ClientAuthorizationTokenData? tokens = await gsi
+        .GoogleSignInPlatform.instance
+        .clientAuthorizationTokensForScopes(
       gsi.ClientAuthorizationTokensForScopesParameters(
         request: gsi.AuthorizationRequestDetails(
           scopes: googleScopes,
@@ -261,7 +263,8 @@ class SyncManager with ChangeNotifier, WidgetsBindingObserver {
   }
 
   static bool _isSyncable(String name) {
-    if (name.isEmpty || name.startsWith(".") || name.contains("/")) return false;
+    if (name.isEmpty || name.startsWith(".") || name.contains("/"))
+      return false;
     final String extension = p.extension(name);
     return extension == MyLibrary.codeExtension ||
         extension == MyLibrary.thumbExtension;
@@ -376,7 +379,8 @@ class SyncManager with ChangeNotifier, WidgetsBindingObserver {
         await adapter.listFilesWithHashes();
     int removed = 0;
 
-    for (final MapEntry<String, SyncFileEntry> entry in baseline.files.entries) {
+    for (final MapEntry<String, SyncFileEntry> entry
+        in baseline.files.entries) {
       final String name = entry.key;
       final SyncFileEntry base = entry.value;
       final SyncFileEntry? local = files[name];

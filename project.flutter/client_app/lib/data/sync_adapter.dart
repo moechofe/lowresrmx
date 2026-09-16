@@ -6,7 +6,8 @@ import 'package:crypto/crypto.dart';
 import 'package:lowresrmx/data/preference.dart';
 
 class _HashEntry {
-  const _HashEntry({required this.modified, required this.size, required this.hash});
+  const _HashEntry(
+      {required this.modified, required this.size, required this.hash});
 
   final String modified;
   final int size;

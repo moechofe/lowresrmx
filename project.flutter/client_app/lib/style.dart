@@ -17,22 +17,22 @@ const Map<String, TextStyle> styleDark = {
 };
 
 const TextStyle libraryItemTextStyle = TextStyle(
-	fontFamily: 'Roboto',
-	fontWeight: FontWeight.w400,
-	fontSize: 18,
+  fontFamily: 'Roboto',
+  fontWeight: FontWeight.w400,
+  fontSize: 18,
 );
 
 const TextStyle libraryItemSmallTextStyle = TextStyle(
-	fontFamily: 'Roboto',
-	fontWeight: FontWeight.w400,
-	fontSize: 16,
-	height: 1.10,
+  fontFamily: 'Roboto',
+  fontWeight: FontWeight.w400,
+  fontSize: 16,
+  height: 1.10,
 );
 
 const TextStyle settingHeader = TextStyle(
-	fontFamily: 'Roboto',
-	fontWeight: FontWeight.w500,
-	fontSize: 16,
+  fontFamily: 'Roboto',
+  fontWeight: FontWeight.w500,
+  fontSize: 16,
 );
 
 const double bigFingerPaddingFactor = 1.5;

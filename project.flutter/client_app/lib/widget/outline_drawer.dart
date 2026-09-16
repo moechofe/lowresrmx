@@ -104,19 +104,23 @@ class _MyOutlineDrawerState extends State<MyOutlineDrawer> {
   PreferredSizeWidget buildAppBar(BuildContext context) {
     return AppBar(
       actions: [
-				PopupMenuButton<MyOutlineSort>(
-					icon: const Icon(Icons.sort_rounded),
-					itemBuilder: (BuildContext context) => [
-            CheckedPopupMenuItem(
-								value: MyOutlineSort.position, checked: sort == MyOutlineSort.position, child: const Text("Position")),
-						CheckedPopupMenuItem(
-								value: MyOutlineSort.alphabetic, checked: sort == MyOutlineSort.alphabetic, child: const Text("Alphabetic")),
-					],
-					onSelected: (value) {
-						setState(() {
-							sort = value;
-						});
-					}),
+        PopupMenuButton<MyOutlineSort>(
+            icon: const Icon(Icons.sort_rounded),
+            itemBuilder: (BuildContext context) => [
+                  CheckedPopupMenuItem(
+                      value: MyOutlineSort.position,
+                      checked: sort == MyOutlineSort.position,
+                      child: const Text("Position")),
+                  CheckedPopupMenuItem(
+                      value: MyOutlineSort.alphabetic,
+                      checked: sort == MyOutlineSort.alphabetic,
+                      child: const Text("Alphabetic")),
+                ],
+            onSelected: (value) {
+              setState(() {
+                sort = value;
+              });
+            }),
         const SizedBox(width: 8.0),
       ],
       title: buildSearchBar(context),
@@ -125,14 +129,14 @@ class _MyOutlineDrawerState extends State<MyOutlineDrawer> {
 
   Widget buildSearchBar(BuildContext context) {
     return TextField(
-			autofocus: false,
+      autofocus: false,
       controller: searchController,
       decoration: InputDecoration(
         hintText: "Search",
         hintStyle: TextStyle(
             color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5)),
         border: InputBorder.none,
-				icon: const Icon(Icons.search_rounded),
+        icon: const Icon(Icons.search_rounded),
       ),
       onChanged: (value) {},
     );
