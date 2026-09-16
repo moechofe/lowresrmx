@@ -153,6 +153,7 @@ struct CoreError runner_loadProgram(struct Runner *runner, const char *filename)
 void interpreterDidFail(void *context, struct CoreError coreError)
 {
 	struct Runner *runner = context;
+	runner->lastRunDidFail = true;
 	core_traceError(runner->core, coreError);
 }
 

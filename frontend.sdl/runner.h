@@ -30,6 +30,7 @@ struct Runner
 	struct Core *core;
 	struct CoreDelegate coreDelegate;
 	bool messageShownUsingDisk;
+	bool lastRunDidFail;
 };
 
 void runner_init(struct Runner *runner);

@@ -26,7 +26,7 @@ enum ErrorCode cmd_END(struct Core *core)
 {
 	struct Interpreter *interpreter = core->interpreter;
 
-	if(interpreter->pass == PassRun && interpreter->mode == ModeInterrupt)
+	if(interpreter->pass == PassRun && interpreter->mode == ModeInterrupt && !interpreter->thumbnail)
 		return ErrorNotAllowedInInterrupt;
 
 	// END
@@ -417,6 +417,9 @@ enum ErrorCode cmd_GOTO(struct Core *core)
 {
 	struct Interpreter *interpreter = core->interpreter;
 
+	if(interpreter->pass == PassRun && interpreter->thumbnail)
+		return ErrorNotAllowedInThumbnail;
+
 	// GOTO
 	struct Token *tokenGOTO = interpreter->pc;
 	++interpreter->pc;
@@ -448,6 +451,9 @@ enum ErrorCode cmd_GOTO(struct Core *core)
 enum ErrorCode cmd_GOSUB(struct Core *core)
 {
 	struct Interpreter *interpreter = core->interpreter;
+
+	if(interpreter->pass == PassRun && interpreter->thumbnail)
+		return ErrorNotAllowedInThumbnail;
 
 	// GOSUB
 	struct Token *tokenGOSUB = interpreter->pc;
@@ -484,6 +490,9 @@ enum ErrorCode cmd_GOSUB(struct Core *core)
 enum ErrorCode cmd_RETURN(struct Core *core)
 {
 	struct Interpreter *interpreter = core->interpreter;
+
+	if(interpreter->pass == PassRun && interpreter->thumbnail)
+		return ErrorNotAllowedInThumbnail;
 
 	// RETURN
 	struct Token *tokenRETURN = interpreter->pc;
@@ -545,7 +554,7 @@ enum ErrorCode cmd_WAIT(struct Core *core)
 {
 	struct Interpreter *interpreter = core->interpreter;
 
-	if(interpreter->pass == PassRun && interpreter->mode == ModeInterrupt)
+	if(interpreter->pass == PassRun && interpreter->mode == ModeInterrupt && !interpreter->thumbnail)
 		return ErrorNotAllowedInInterrupt;
 
 	// WAIT
@@ -577,6 +586,13 @@ enum ErrorCode cmd_WAIT(struct Core *core)
 
 	if(interpreter->pass == PassRun)
 	{
+		if(interpreter->thumbnail)
+		{
+			itp_endProgram(core);
+			interpreter->exitEvaluation = true;
+			return ErrorNone;
+		}
+
 		interpreter->exitEvaluation = true;
 		interpreter->waitCount = wait;
 		if(interpreter->pauseAtWait)
@@ -593,9 +609,10 @@ enum ErrorCode cmd_ON(struct Core *core)
 	// ON
 	++interpreter->pc;
 
-	// ON RASTER/VBL/PARTICLE/EMITTER
+	// ON RASTER/VBL/PARTICLE/EMITTER/THUMBNAIL
 	if(interpreter->pc->type == TokenRASTER || interpreter->pc->type == TokenVBL ||
-	   interpreter->pc->type == TokenPARTICLE || interpreter->pc->type == TokenEMITTER)
+	   interpreter->pc->type == TokenPARTICLE || interpreter->pc->type == TokenEMITTER ||
+	   interpreter->pc->type == TokenTHUMBNAIL)
 	{
 		enum TokenType type = interpreter->pc->type;
 		++interpreter->pc;
@@ -622,6 +639,10 @@ enum ErrorCode cmd_ON(struct Core *core)
 				else if(type == TokenEMITTER)
 				{
 					interpreter->currentOnEmitterToken = NULL;
+				}
+				else if(type == TokenTHUMBNAIL)
+				{
+					interpreter->currentOnThumbnailToken = NULL;
 				}
 			}
 		}
@@ -663,6 +684,10 @@ enum ErrorCode cmd_ON(struct Core *core)
 				{
 					interpreter->currentOnEmitterToken = tokenCALL->jumpToken;
 				}
+				else if(type == TokenTHUMBNAIL)
+				{
+					interpreter->currentOnThumbnailToken = tokenCALL->jumpToken;
+				}
 			}
 		}
 	}
@@ -670,6 +695,9 @@ enum ErrorCode cmd_ON(struct Core *core)
 	// ON n
 	else
 	{
+		if(interpreter->pass == PassRun && interpreter->thumbnail)
+			return ErrorNotAllowedInThumbnail;
+
 		int numArguments = 0;
 
 		struct TypedValue nValue = itp_evaluateNumericExpression(core, 0, 255);
@@ -1131,6 +1159,9 @@ enum ErrorCode cmd_WEND(struct Core *core)
 enum ErrorCode cmd_EXIT(struct Core *core)
 {
 	struct Interpreter *interpreter = core->interpreter;
+
+	if(interpreter->pass == PassRun && interpreter->thumbnail)
+		return ErrorNotAllowedInThumbnail;
 
 	// EXIT
 	struct Token *tokenEXIT = interpreter->pc;

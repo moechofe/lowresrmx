@@ -41,6 +41,9 @@ const char CoreInputKeyDelete = 127;
 
 void core_handleInput(struct Core *core, struct CoreInput *input);
 
+extern bool fake_shown, fake_safe;
+extern int fake_width, fake_height, fake_left, fake_right, fake_top, fake_bottom;
+
 void core_init(struct Core *core)
 {
 	memset(core, 0, sizeof(struct Core));
@@ -99,10 +102,52 @@ void core_setDelegate(struct Core *core, struct CoreDelegate *delegate)
 
 struct CoreError core_compileProgram(struct Core *core, const char *sourceCode, bool resetPersistent)
 {
+	core_endThumbnail(core);
 	machine_reset(core, resetPersistent);
 	overlay_reset(core);
 	disk_reset(core);
 	return itp_compileProgram(core, sourceCode);
+}
+
+bool core_startThumbnail(struct Core *core)
+{
+	struct Interpreter *interpreter = core->interpreter;
+
+	if(interpreter->state == StateNoProgram || interpreter->state == StateEnd)
+		return false;
+
+	interpreter->thumbnail = true;
+	interpreter->thumbnailPending = true;
+	interpreter->debug = false;
+
+	fake_shown = true;
+	fake_width = ICON_WIDTH;
+	fake_height = ICON_HEIGHT;
+	fake_safe = true;
+	fake_left = fake_top = fake_right = fake_bottom = 0;
+
+	core->machine->ioRegisters.status.keyboardVisible = 0;
+	core->machine->ioRegisters.keyboardHeight = 0;
+	interpreter->simulatedKeyboardOn = false;
+
+	overlay_clear(core);
+	machine_suspendEnergySaving(core, 30);
+	delegate_controlsDidChange(core);
+
+	return true;
+}
+
+void core_endThumbnail(struct Core *core)
+{
+	core->interpreter->thumbnail = false;
+	core->interpreter->thumbnailPending = false;
+	fake_shown = false;
+	fake_safe = false;
+}
+
+bool core_isThumbnailReady(struct Core *core)
+{
+	return core->interpreter->thumbnail && core->interpreter->state == StateEnd;
 }
 
 void core_traceError(struct Core *core, struct CoreError error)
@@ -156,6 +201,19 @@ void core_willRunProgram(struct Core *core, long secondsSincePowerOn)
 void core_update(struct Core *core, struct CoreInput *input)
 {
 	core_handleInput(core, input);
+
+	if(core->interpreter->thumbnail)
+	{
+		if(core->interpreter->thumbnailPending)
+		{
+			core->interpreter->thumbnailPending = false;
+			itp_runInterrupt(core, InterruptTypeThumbnail);
+			itp_endProgram(core);
+		}
+		audio_bufferRegisters(core);
+		return;
+	}
+
 	overlay_updateLayout(core, input);
 	itp_runInterrupt(core, InterruptTypeVBL);
 	prtclib_interrupt(core, &core->interpreter->particlesLib);
@@ -183,7 +241,8 @@ void core_handleInput(struct Core *core, struct CoreInput *input)
 		   key == CoreInputKeyDown || key == CoreInputKeyUp || key == CoreInputKeyRight || key == CoreInputKeyLeft ||
 		   key == CoreInputKeyDelete)
 		{
-			ioRegisters->key = key;
+			if(!core->interpreter->thumbnail)
+				ioRegisters->key = key;
 		}
 		// }
 		input->key = 0;
@@ -329,15 +388,18 @@ void core_handleInput(struct Core *core, struct CoreInput *input)
 	input->out_hasUsedInput = processedOtherInput || ioRegisters->key || ioRegisters->status.value;
 	// || ioRegisters->gamepads[0].value || ioRegisters->gamepads[1].value;
 
-	if(input->keyboardChange > 0)
+	if(!core->interpreter->thumbnail)
 	{
-		ioRegisters->status.keyboardVisible = true;
-		ioRegisters->keyboardHeight = input->keyboardHeight;
-	}
-	else if(input->keyboardChange < 0)
-	{
-		ioRegisters->status.keyboardVisible = false;
-		ioRegisters->keyboardHeight = input->keyboardHeight;
+		if(input->keyboardChange > 0)
+		{
+			ioRegisters->status.keyboardVisible = true;
+			ioRegisters->keyboardHeight = input->keyboardHeight;
+		}
+		else if(input->keyboardChange < 0)
+		{
+			ioRegisters->status.keyboardVisible = false;
+			ioRegisters->keyboardHeight = input->keyboardHeight;
+		}
 	}
 }
 

@@ -147,6 +147,8 @@ struct CoreError itp_compileProgram(struct Core *core, const char *sourceCode)
 	interpreter->state = StateEvaluate;
 	interpreter->mode = ModeNone;
 	interpreter->pauseAtWait = false;
+	interpreter->thumbnail = false;
+	interpreter->thumbnailPending = false;
 	interpreter->logGoto = false;
 	interpreter->logGosub = false;
 	interpreter->currentDataToken = interpreter->firstData;
@@ -254,6 +256,10 @@ void itp_runInterrupt(struct Core *core, enum InterruptType type)
 {
 	struct Interpreter *interpreter = core->interpreter;
 
+	// thumbnail mode is terminal: no other interrupt may run program code any more
+	if(interpreter->thumbnail && type != InterruptTypeThumbnail)
+		return;
+
 	switch(interpreter->state)
 	{
 	case StateEvaluate:
@@ -287,6 +293,11 @@ void itp_runInterrupt(struct Core *core, enum InterruptType type)
 		case InterruptTypeEmitter:
 			startToken = interpreter->currentOnEmitterToken;
 			interpreter->maxCycles = MAX_CYCLES_PER_EMITTER;
+			break;
+
+		case InterruptTypeThumbnail:
+			startToken = interpreter->currentOnThumbnailToken;
+			interpreter->maxCycles = MAX_CYCLES_PER_THUMBNAIL;
 			break;
 		}
 
@@ -568,6 +579,7 @@ void itp_freeProgram(struct Core *core)
 	interpreter->currentDataValueToken = NULL;
 	interpreter->currentOnRasterToken = NULL;
 	interpreter->currentOnVBLToken = NULL;
+	interpreter->currentOnThumbnailToken = NULL;
 	interpreter->lastVariableValue = NULL;
 
 	var_freeSimpleVariables(interpreter, SUB_LEVEL_GLOBAL);

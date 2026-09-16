@@ -74,6 +74,7 @@ enum InterruptType
 	InterruptTypeVBL,
 	InterruptTypeParticle,
 	InterruptTypeEmitter,
+	InterruptTypeThumbnail,
 };
 
 struct Interpreter
@@ -97,6 +98,8 @@ struct Interpreter
 	int cpuLoadTimer;
 
 	bool compat;
+	bool thumbnail;
+	bool thumbnailPending;
 	bool simulatedKeyboardOn;
 	bool lockPortrait;
 
@@ -129,6 +132,7 @@ struct Interpreter
 	struct Token *currentOnVBLToken;
 	struct Token *currentOnParticleToken;
 	struct Token *currentOnEmitterToken;
+	struct Token *currentOnThumbnailToken;
 
 	int waitCount;
 	bool waitTap;

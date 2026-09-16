@@ -24,7 +24,7 @@
 enum ErrorCode cmd_LOAD(struct Core *core)
 {
 	struct Interpreter *interpreter = core->interpreter;
-	if(interpreter->pass == PassRun && interpreter->mode == ModeInterrupt)
+	if(interpreter->pass == PassRun && interpreter->mode == ModeInterrupt && !interpreter->thumbnail)
 		return ErrorNotAllowedInInterrupt;
 
 	// LOAD

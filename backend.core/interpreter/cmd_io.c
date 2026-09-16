@@ -39,7 +39,7 @@ enum ErrorCode cmd_KEYBOARD(struct Core *core)
 		return ErrorSyntax;
 	++interpreter->pc;
 
-	if(interpreter->pass == PassRun)
+	if(interpreter->pass == PassRun && !interpreter->thumbnail)
 	{
 		core->machine->ioRegisters.status.keyboardVisible = (type == TokenON);
 #if SIMULATED_KEYBOARD

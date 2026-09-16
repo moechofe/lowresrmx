@@ -87,6 +87,7 @@ enum ErrorCode
 	ErrorUserDeviceDiskFull,
 	ErrorRandAddressNotSeeded,
 	ErrorAssertionFailed,
+	ErrorNotAllowedInThumbnail,
 
 	ErrorMax
 };

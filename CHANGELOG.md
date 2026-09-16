@@ -1,6 +1,8 @@
 ### 1.0_80
 
 - Flutter: setting to add padding the right of the code editor.
+- Flutter: the code editor reopens where it was left, per program, across a run.
+- Desktop: `[T]` saves the program's thumbnail as a 180x180 PNG next to its `.rmx`.
 
 ### 1.0_79
 

@@ -29,7 +29,7 @@
 enum ErrorCode cmd_PRINT(struct Core *core)
 {
 	struct Interpreter *interpreter = core->interpreter;
-	if(interpreter->pass == PassRun && interpreter->mode == ModeInterrupt)
+	if(interpreter->pass == PassRun && interpreter->mode == ModeInterrupt && !interpreter->thumbnail)
 		return ErrorNotAllowedInInterrupt;
 
 	struct TextLib *lib = &interpreter->textLib;
@@ -261,7 +261,7 @@ enum ErrorCode cmd_NUMBER(struct Core *core)
 enum ErrorCode cmd_CLS(struct Core *core)
 {
 	struct Interpreter *interpreter = core->interpreter;
-	if(interpreter->pass == PassRun && interpreter->mode == ModeInterrupt)
+	if(interpreter->pass == PassRun && interpreter->mode == ModeInterrupt && !interpreter->thumbnail)
 		return ErrorNotAllowedInInterrupt;
 
 	struct TextLib *lib = &interpreter->textLib;
@@ -297,7 +297,7 @@ enum ErrorCode cmd_CLS(struct Core *core)
 enum ErrorCode cmd_WINDOW(struct Core *core)
 {
 	struct Interpreter *interpreter = core->interpreter;
-	if(interpreter->pass == PassRun && interpreter->mode == ModeInterrupt)
+	if(interpreter->pass == PassRun && interpreter->mode == ModeInterrupt && !interpreter->thumbnail)
 		return ErrorNotAllowedInInterrupt;
 
 	// WINDOW
@@ -424,7 +424,7 @@ enum ErrorCode cmd_FONT(struct Core *core)
 enum ErrorCode cmd_LOCATE(struct Core *core)
 {
 	struct Interpreter *interpreter = core->interpreter;
-	if(interpreter->pass == PassRun && interpreter->mode == ModeInterrupt)
+	if(interpreter->pass == PassRun && interpreter->mode == ModeInterrupt && !interpreter->thumbnail)
 		return ErrorNotAllowedInInterrupt;
 
 	// LOCATE
@@ -488,7 +488,7 @@ struct TypedValue fnc_CURSOR(struct Core *core)
 enum ErrorCode cmd_CLW(struct Core *core)
 {
 	struct Interpreter *interpreter = core->interpreter;
-	if(interpreter->pass == PassRun && interpreter->mode == ModeInterrupt)
+	if(interpreter->pass == PassRun && interpreter->mode == ModeInterrupt && !interpreter->thumbnail)
 		return ErrorNotAllowedInInterrupt;
 
 	// CLW

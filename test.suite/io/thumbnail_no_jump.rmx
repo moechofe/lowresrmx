@@ -1,0 +1,16 @@
+'@thumbnail 1
+'@frames 10
+'@expect-error NotAllowedInThumbnail
+on thumbnail call thumb
+assert shown.w=216
+wait vbl
+wait vbl
+end
+
+sub thumb
+  gosub elsewhere
+  wait vbl
+end sub
+
+elsewhere:
+return

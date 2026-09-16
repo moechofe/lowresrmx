@@ -198,6 +198,7 @@ void scenario_init(struct Scenario *scenario)
 {
 	memset(scenario, 0, sizeof(struct Scenario));
 	scenario->frames = SCENARIO_DEFAULT_FRAMES;
+	scenario->thumbnailFrame = 0;
 	scenario->runs = 1;
 	scenario->width = SCENARIO_DEFAULT_WIDTH;
 	scenario->height = SCENARIO_DEFAULT_HEIGHT;
@@ -440,6 +441,13 @@ static bool parseDirective(struct Scenario *scenario, int line, const char *text
 		if(!readNumbers(text, value, 1) || value[0] < 1)
 			return fail(scenario, line, "'@frames wants a positive frame count");
 		scenario->frames = (int)value[0];
+	}
+	else if(strcmp(name, "thumbnail") == 0)
+	{
+		float value[1];
+		if(!readNumbers(text, value, 1) || value[0] < 1)
+			return fail(scenario, line, "'@thumbnail wants a frame number >= 1");
+		scenario->thumbnailFrame = (int)value[0];
 	}
 	else if(strcmp(name, "runs") == 0)
 	{

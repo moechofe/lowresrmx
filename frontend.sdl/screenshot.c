@@ -22,12 +22,60 @@
 #if SCREENSHOTS
 
 #include "core.h"
-#include "golden.h"
 #include "screenshot.h"
 #include "system_paths.h"
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+
+#define STB_IMAGE_WRITE_STATIC
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "stb_image_write.h"
+
+static bool writePng(const char *filename, int width, int height, const uint32_t *pixels, int pitch, int scale)
+{
+	// pitch is the source row stride in bytes, which is not always width * 4:
+	// SDL_LockTexture pads rows (Direct3D on Windows notably)
+	const int srcWidth = pitch / (int)sizeof(uint32_t);
+
+	uint8_t *data = malloc(width * height * 3 * scale * scale);
+	if(!data)
+	{
+		return false;
+	}
+
+	int i = 0;
+	for(int y = 0; y < height; y++)
+	{
+		for(int ys = 0; ys < scale; ys++)
+		{
+			for(int x = 0; x < width; x++)
+			{
+				uint32_t pixel = pixels[y * srcWidth + x];
+#if ABGR
+				uint8_t r = (pixel) & 0xFF;
+				uint8_t g = (pixel >> 8) & 0xFF;
+				uint8_t b = (pixel >> 16) & 0xFF;
+#else
+				uint8_t r = (pixel >> 16) & 0xFF;
+				uint8_t g = (pixel >> 8) & 0xFF;
+				uint8_t b = (pixel) & 0xFF;
+#endif
+				for(int xs = 0; xs < scale; xs++)
+				{
+					data[i++] = r;
+					data[i++] = g;
+					data[i++] = b;
+				}
+			}
+		}
+	}
+
+	int result = stbi_write_png(filename, width * scale, height * scale, 3, data, width * 3 * scale);
+	free(data);
+
+	return (result != 0);
+}
 
 bool screenshot_save(uint32_t *pixels, int pitch, int scale)
 {
@@ -40,7 +88,12 @@ bool screenshot_save(uint32_t *pixels, int pitch, int scale)
 	time(&rawtime);
 	struct tm *timeinfo = localtime(&rawtime);
 	strftime(&filename[len], FILENAME_MAX - len - 1, "LowRes NX %Y-%m-%d %H_%M_%S.png", timeinfo);
-	return writeImage(filename, SCREEN_WIDTH, SCREEN_HEIGHT, pixels, pitch, scale);
+	return writePng(filename, SCREEN_WIDTH, SCREEN_HEIGHT, pixels, pitch, scale);
+}
+
+bool screenshot_saveThumbnail(const char *filename, uint32_t *pixels, int pitch)
+{
+	return writePng(filename, ICON_WIDTH, ICON_HEIGHT, pixels, pitch, 1);
 }
 
 #endif

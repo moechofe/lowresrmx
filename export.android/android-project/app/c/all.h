@@ -137,6 +137,7 @@ enum ErrorCode
 	ErrorUserDeviceDiskFull,
 	ErrorRandAddressNotSeeded,
 	ErrorAssertionFailed,
+	ErrorNotAllowedInThumbnail,
 
 	ErrorMax
 };
@@ -688,6 +689,7 @@ struct RCString *dat_readString(struct Token *jumpToken, int skip);
 #define MAX_CYCLES_PER_RASTER 204 // 51*4 OK
 #define MAX_CYCLES_PER_PARTICLE 51 // ??
 #define MAX_CYCLES_PER_EMITTER 102 // ??
+#define MAX_CYCLES_PER_THUMBNAIL MAX_CYCLES_TOTAL_PER_FRAME
 #define TIMER_WRAP_VALUE 5184000
 
 #endif /* interpreter_config_h */
@@ -1057,6 +1059,7 @@ enum TokenType
 	TokenFLOOR,
 	TokenHAPTIC,
 	TokenLERP,
+	TokenTHUMBNAIL,
 
 	// Reserved Keywords
 	Token_reserved,
@@ -1842,6 +1845,7 @@ enum InterruptType
 	InterruptTypeVBL,
 	InterruptTypeParticle,
 	InterruptTypeEmitter,
+	InterruptTypeThumbnail,
 };
 
 struct Interpreter
@@ -1865,6 +1869,8 @@ struct Interpreter
 	int cpuLoadTimer;
 
 	bool compat;
+	bool thumbnail;
+	bool thumbnailPending;
 	bool simulatedKeyboardOn;
 	bool lockPortrait;
 
@@ -1897,6 +1903,7 @@ struct Interpreter
 	struct Token *currentOnVBLToken;
 	struct Token *currentOnParticleToken;
 	struct Token *currentOnEmitterToken;
+	struct Token *currentOnThumbnailToken;
 
 	int waitCount;
 	bool waitTap;
@@ -2214,6 +2221,9 @@ void core_setKeyboardEnabled(struct Core *core, bool enabled);
 void core_setKeyboardHeight(struct Core *core, int height);
 bool core_shouldRender(struct Core *core);
 void core_orientationChanged(struct Core *core);
+bool core_startThumbnail(struct Core *core);
+void core_endThumbnail(struct Core *core);
+bool core_isThumbnailReady(struct Core *core);
 
 void core_setInputGamepad(struct CoreInput *input, int player, bool up, bool down, bool left, bool right, bool buttonA, bool buttonB);
 
@@ -2753,6 +2763,7 @@ struct Runner
 	struct Core *core;
 	struct CoreDelegate coreDelegate;
 	bool messageShownUsingDisk;
+	bool lastRunDidFail;
 };
 
 void runner_init(struct Runner *runner);
@@ -2790,6 +2801,7 @@ struct CoreError runner_loadProgram(struct Runner *runner, const char *filename)
 #include <stdio.h>
 
 bool screenshot_save(uint32_t *pixels, int pitch, int scale);
+bool screenshot_saveThumbnail(const char *filename, uint32_t *pixels, int pitch);
 
 #endif
 
@@ -2972,6 +2984,7 @@ void showDevMenu(void);
 bool usesMainProgramAsDisk(void);
 void getDiskFilename(char *outputString);
 void getRamFilename(char *outputString);
+void getThumbnailFilename(char *outputString);
 void setMouseEnabled(bool enabled);
 
 #endif /* main_h */

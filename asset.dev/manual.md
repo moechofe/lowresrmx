@@ -196,7 +196,7 @@ The original LowRes NX, despite being an excellent development environment, lack
 
 **The iOS app:**
 
-- The size of the program thumbnails are 128x128 pixels.
+- The size of the program thumbnails are 180x180 pixels.
 
 **The fantasy hardware:**
 
@@ -1029,7 +1029,7 @@ It's possible to put multiple instructions using a colon : on one line but with 
 
 Some identifier cannot be used by the user for variables, proceduce or label name because they are keywords reserved by the language and it's API:
 
-`ABS`, `ADD`, `AND`, `ASC`, `ASSERT`, `ATAN`, `ATTR`, `AT`, `BG`, `=BIN$`, `CALL`, `=CEIL`, `=CELL.A`, `=CELL.C`, `CELL`, `CHAR`, `=CHR$`, `=CLAMP`, `CLS`, `CLW`, `=COLOR`, `COMPAT`, `COPY`, `=COS`, `CURSOR.X`, `CURSOR.Y`, `DATA`, `DEC`, `DIM`, `DMA`, `DO`, `EASE`, `ELSE`, `EMITTER`, `END`, `ENVELOPE`, `EXIT`, `EXP`, `=FILE$`, `FILES`, `FILL`, `FLIP`, `FLOOR`, `FONT`, `FOR`, `FSIZE`, `GLOBAL`, `GOSUB`, `GOTO`, `HAPTIC`, `=HEX$`, `HIT`, `IF`, `INC`, `=INKEY$`, `INPUT`, `=INSTR`, `INT`, `KEYBOARD`, `LEFT$`, `LEN`, `=LERP`, `LFO.A`, `LFO`, `LOAD`, `LOCATE`, `LOG`, `LOOP`, `MAX`, `MCELL.A`, `MCELL.C`, `MCELL`, `MESSAGE`, `MID$`, `MIN`, `MOD`, `MUSIC`, `NEXT`, `NOT`, `NUMBER`, `OFF`, `ON`, `OR`, `PALETTE`, `PAL`, `PARTICLE`, `PAUSE`, `PEEKL`, `PEEKW`, `PEEK`, `PI`, `PLAY`, `POKEL`, `POKEW`, `POKE`, `PRINT`, `PRIO`, `RANDOMIZE`, `RASTER`, `READ`, `REPEAT`, `RESTORE`, `RETURN`, `RIGHT$`, `RND`, `ROL`, `ROM`, `ROR`, `SAFE.B`, `SAFE.L`, `SAFE.R`, `SAFE.T`, `SAVE`, `SCROLL.X`, `SCROLL.Y`, `SCROLL`, `SGN`, `SHOWN.H`, `SHOWN.W`, `SIN`, `SIZE`, `SKIP`, `SOUND`, `SOURCE`, `SPRITE.A`, `SPRITE.C`, `SPRITE.X`, `SPRITE.Y`, `SPRITE`, `SQR`, `STEP`, `STOP`, `STR$`, `SUB`, `SWAP`, `SYSTEM`, `TAN`, `TAP`, `TEXT`, `THEN`, `TIMER`, `TINT`, `TOUCH.X`, `TOUCH.Y`, `TOUCH`, `TO`, `TRACE`, `TRACK`, `UBOUND`, `UNTIL`, `VAL`, `VBL`, `VIEW`, `VOLUME`, `WAIT`, `WAVE`, `WEND`, `WHILE`, `WINDOW`, `XOR`.
+`ABS`, `ADD`, `AND`, `ASC`, `ASSERT`, `ATAN`, `ATTR`, `AT`, `BG`, `=BIN$`, `CALL`, `=CEIL`, `=CELL.A`, `=CELL.C`, `CELL`, `CHAR`, `=CHR$`, `=CLAMP`, `CLS`, `CLW`, `=COLOR`, `COMPAT`, `COPY`, `=COS`, `CURSOR.X`, `CURSOR.Y`, `DATA`, `DEC`, `DIM`, `DMA`, `DO`, `EASE`, `ELSE`, `EMITTER`, `END`, `ENVELOPE`, `EXIT`, `EXP`, `=FILE$`, `FILES`, `FILL`, `FLIP`, `FLOOR`, `FONT`, `FOR`, `FSIZE`, `GLOBAL`, `GOSUB`, `GOTO`, `HAPTIC`, `=HEX$`, `HIT`, `IF`, `INC`, `=INKEY$`, `INPUT`, `=INSTR`, `INT`, `KEYBOARD`, `LEFT$`, `LEN`, `=LERP`, `LFO.A`, `LFO`, `LOAD`, `LOCATE`, `LOG`, `LOOP`, `MAX`, `MCELL.A`, `MCELL.C`, `MCELL`, `MESSAGE`, `MID$`, `MIN`, `MOD`, `MUSIC`, `NEXT`, `NOT`, `NUMBER`, `OFF`, `ON`, `OR`, `PALETTE`, `PAL`, `PARTICLE`, `PAUSE`, `PEEKL`, `PEEKW`, `PEEK`, `PI`, `PLAY`, `POKEL`, `POKEW`, `POKE`, `PRINT`, `PRIO`, `RANDOMIZE`, `RASTER`, `READ`, `REPEAT`, `RESTORE`, `RETURN`, `RIGHT$`, `RND`, `ROL`, `ROM`, `ROR`, `SAFE.B`, `SAFE.L`, `SAFE.R`, `SAFE.T`, `SAVE`, `SCROLL.X`, `SCROLL.Y`, `SCROLL`, `SGN`, `SHOWN.H`, `SHOWN.W`, `SIN`, `SIZE`, `SKIP`, `SOUND`, `SOURCE`, `SPRITE.A`, `SPRITE.C`, `SPRITE.X`, `SPRITE.Y`, `SPRITE`, `SQR`, `STEP`, `STOP`, `STR$`, `SUB`, `SWAP`, `SYSTEM`, `TAN`, `TAP`, `TEXT`, `THEN`, `THUMBNAIL`, `TIMER`, `TINT`, `TOUCH.X`, `TOUCH.Y`, `TOUCH`, `TO`, `TRACE`, `TRACK`, `UBOUND`, `UNTIL`, `VAL`, `VBL`, `VIEW`, `VOLUME`, `WAIT`, `WAVE`, `WEND`, `WHILE`, `WINDOW`, `XOR`.
 
 ## BASIC instructions
 
@@ -2473,6 +2473,33 @@ Will stop the execution of a sub-routine during RASTER interrupt.
 
 TODO: link to interrupt
 
+#### `ON THUMBNAIL CALL procedure`
+
+The host may ask the program, at any moment, to draw its own 180x180 thumbnail. The `procedure` is then called once, with [`=SHOWN.W`/`=SHOWN.H`](#width-shown-wheight-shown-h) reporting 180, [`=SAFE.L`/`=SAFE.T`/`=SAFE.R`/`=SAFE.B`](#left-safe-ltop-safe-tright-safe-rbottom-safe-b) reporting 0, the keyboard disabled and the overlay off. The drawing must be laid out to fit that square.
+
+The program does not resume: entering thumbnail mode abandons the main program where it stands, and the first [`WAIT`](#wait-vblwait-frame) inside the `procedure` ends the program like [`END`](#end). The only way out is to quit or reload the program.
+
+Because the `procedure` cannot re-enter, resume or unwind the abandoned main program, [`GOTO`](#goto), [`GOSUB`](#gosubreturn), [`RETURN`](#gosubreturn), [`CALL`](#call), [`EXIT`](#do-loop-exit), [`ON n GOTO/GOSUB/RESTORE/CALL`](#on-gotoon-gosub), [`INPUT`](#input-prompt-variableinput-prompt-variable), [`PAUSE`](#pause), [`LOAD`](#load-file-address-limit-offset), [`SAVE`](#save-file-comment-address-size) and [`FILES`](#files) raise a `Not Allowed In Thumbnail` error. [`EXIT SUB` and `END SUB`](#sub-end-sub-exit-sub) work as usual.
+
+    ON THUMBNAIL CALL t
+
+    CLS
+    PRINT "PLAYING"
+    DO
+      WAIT VBL
+    LOOP
+
+    SUB t
+      CLS
+      WINDOW 0, 0, 22, 22, 0
+      TEXT 1, 1, "MY GAME"
+      WAIT VBL
+    END SUB
+
+#### `ON THUMBNAIL OFF`
+
+Will forget the `procedure` registered for the thumbnail interrupt.
+
 ### Math API
 
 #### `pi =PI`
@@ -3721,6 +3748,7 @@ TODO: interrupts
 - [`CALL`](#call)
 - [`ON CALL`](#on-call)
 - [`ON VBL CALL procedure`](#on-vbl-call-procedure)
+- [`ON THUMBNAIL CALL procedure`](#on-thumbnail-call-procedure)
 - [`ON RASTER CALL procedure`](#on-raster-call-procedure)
 
 **`CEIL`**:
@@ -3968,6 +3996,7 @@ TODO: interrupts
 - [`SPRITE VIEW ON`<br>`SPRITE VIEW OFF`](#sprite-view-onsprite-view-off)
 - [`BG VIEW ON`<br>`BG VIEW OFF`](#bg-view-onbg-view-off)
 - [`ON VBL OFF`](#on-vbl-off)
+- [`ON THUMBNAIL OFF`](#on-thumbnail-off)
 - [`ON RASTER OFF`](#on-raster-off)
 
 **`ON`**:
@@ -3979,6 +4008,8 @@ TODO: interrupts
 - [`BG VIEW ON`<br>`BG VIEW OFF`](#bg-view-onbg-view-off)
 - [`ON VBL CALL procedure`](#on-vbl-call-procedure)
 - [`ON VBL OFF`](#on-vbl-off)
+- [`ON THUMBNAIL CALL procedure`](#on-thumbnail-call-procedure)
+- [`ON THUMBNAIL OFF`](#on-thumbnail-off)
 - [`ON RASTER CALL procedure`](#on-raster-call-procedure)
 - [`ON RASTER OFF`](#on-raster-off)
 
@@ -4190,6 +4221,10 @@ TODO: interrupts
 
 **`THEN`**:
 - [`IF/THEN/ELSE IF/ELSE/END IF`<br>`IF/THEN`](#if-then-else-if-else-end-ifif-then)
+
+**`THUMBNAIL`**:
+- [`ON THUMBNAIL CALL procedure`](#on-thumbnail-call-procedure)
+- [`ON THUMBNAIL OFF`](#on-thumbnail-off)
 
 **`TIMER`**:
 - [`frames =TIMER`](#frames-timer)

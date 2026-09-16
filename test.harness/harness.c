@@ -713,6 +713,9 @@ void harness_afterUpdate(struct HarnessSuite *suite, struct Core *core, struct C
 		suite->cases[suite->caseIndex].numFrames = suite->frame;
 	}
 
+	if(suite->scenario.thumbnailFrame == suite->frame)
+		core_startThumbnail(core);
+
 	// the engine clears input->key itself (core_handleInput), these two it does not
 	input->keyboardChange = 0;
 	input->pause = false;

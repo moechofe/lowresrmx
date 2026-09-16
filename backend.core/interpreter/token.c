@@ -233,6 +233,7 @@ const char *TokenStrings[] = {
 	"FLOOR",
 	"HAPTIC",
 	"LERP",
+	"THUMBNAIL",
 
 // Reserved Keywords
 	NULL,

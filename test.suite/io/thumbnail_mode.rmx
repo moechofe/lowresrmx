@@ -1,0 +1,22 @@
+'@thumbnail 2
+'@frames 30
+'@check 3 state End
+'@check 3 keyboard 0
+on thumbnail call thumb
+assert shown.w=216
+assert shown.h=384
+wait vbl
+wait vbl
+assert 0
+end
+
+sub thumb
+  assert shown.w=180
+  assert shown.h=180
+  assert safe.l=0 and safe.t=0 and safe.r=0 and safe.b=0
+  assert keyboard=0
+  cls
+  text 2,2,"OK"
+  wait vbl
+  assert 0
+end sub

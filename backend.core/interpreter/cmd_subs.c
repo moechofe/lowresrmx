@@ -24,6 +24,9 @@ enum ErrorCode cmd_CALL(struct Core *core)
 {
 	struct Interpreter *interpreter = core->interpreter;
 
+	if(interpreter->pass == PassRun && interpreter->thumbnail)
+		return ErrorNotAllowedInThumbnail;
+
 	// CALL
 	struct Token *tokenCALL = interpreter->pc;
 	++interpreter->pc;

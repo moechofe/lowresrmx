@@ -28,6 +28,7 @@
 #include <stdio.h>
 
 bool screenshot_save(uint32_t *pixels, int pitch, int scale);
+bool screenshot_saveThumbnail(const char *filename, uint32_t *pixels, int pitch);
 
 #endif
 

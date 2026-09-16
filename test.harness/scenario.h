@@ -85,6 +85,7 @@ struct ScenarioCheck
 struct Scenario
 {
 	int frames;
+	int thumbnailFrame;
 	int runs;
 	int width, height;
 	int left, top, right, bottom;

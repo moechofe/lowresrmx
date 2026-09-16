@@ -104,6 +104,8 @@ void toggleZoom(void);
 void changeVolume(int delta);
 void audioCallback(void *userdata, SDL_AudioStream *stream, int additional_amount, int total_amount);
 void saveScreenshot(void *pixels, int pitch, int scale);
+void saveThumbnail(void *pixels, int pitch);
+void requestThumbnail(void);
 
 bool eventFilter(void *userdata, SDL_Event *event)
 {
@@ -154,6 +156,8 @@ bool mouseEnabled = false;
 int messageNumber = 0;
 bool hasUsedInputLastUpdate = false;
 int screenshotRequestedWithScale = 0;
+bool thumbnailRequested = false;
+int thumbnailRunFrames = 0;
 int volume = 0; // 0 = max, it's a bit shift
 
 // SDL's SDL_main shim requires non-const char *argv[]
@@ -409,6 +413,7 @@ void showDevMenu()
 
 	bool reload = (mainState == MainStateRunningTool);
 	mainState = MainStateDevMenu;
+	core_endThumbnail(runner.core);
 	dev_show(&devMenu, reload);
 #endif
 }
@@ -480,6 +485,19 @@ void getRamFilename(char *outputString)
 	}
 }
 
+void getThumbnailFilename(char *outputString)
+{
+	strncpy(outputString, mainProgramFilename, FILENAME_MAX - 1);
+
+	char *separator = strrchr(outputString, PATH_SEPARATOR_CHAR);
+	char *postfix = strrchr(separator ? separator : outputString, '.');
+	if(postfix)
+	{
+		*postfix = 0;
+	}
+	strncat(outputString, ".png", FILENAME_MAX - 1);
+}
+
 void updateMouseMode()
 {
 	SDL_ShowCursor();
@@ -503,6 +521,12 @@ void update(void *arg)
 	{
 		coreInput.touch = false;
 		releasedTouch = false;
+	}
+
+	if(thumbnailRunFrames > 0 && --thumbnailRunFrames == 0)
+	{
+		requestThumbnail();
+		forceRender = true;
 	}
 
 	while(SDL_PollEvent(&event))
@@ -651,6 +675,11 @@ void update(void *arg)
 					screenshotRequestedWithScale = (event.key.mod & SDL_KMOD_SHIFT) ? 1 : 4;
 					forceRender = true;
 				}
+				else if(keycode == SDLK_T)
+				{
+					requestThumbnail();
+					forceRender = true;
+				}
 				else if(keycode == SDLK_Z)
 				{
 					toggleZoom();
@@ -711,6 +740,19 @@ void update(void *arg)
 				else if(keycode == SDLK_S)
 				{
 					screenshotRequestedWithScale = (event.key.mod & SDL_KMOD_SHIFT) ? 1 : 4;
+					forceRender = true;
+				}
+				else if(keycode == SDLK_T)
+				{
+					if(hasProgram())
+					{
+						runMainProgram();
+						thumbnailRunFrames = 1;
+					}
+					else
+					{
+						overlay_message(runner.core, "NO PROGRAM");
+					}
 					forceRender = true;
 				}
 				else if(keycode == SDLK_Z)
@@ -955,6 +997,12 @@ void update(void *arg)
 			screenshotRequestedWithScale = 0;
 		}
 
+		if(thumbnailRequested)
+		{
+			saveThumbnail(pixels, pitch);
+			thumbnailRequested = false;
+		}
+
 		SDL_UnlockTexture(texture);
 		SDL_RenderTexture(renderer, texture, NULL, &screenRect);
 
@@ -1155,6 +1203,48 @@ void saveScreenshot(void *pixels, int pitch, int scale)
 		overlay_message(runner.core, "SCREENSHOT ERROR");
 	}
 #endif
+}
+
+void saveThumbnail(void *pixels, int pitch)
+{
+#if SCREENSHOTS
+	char filename[FILENAME_MAX];
+	getThumbnailFilename(filename);
+
+	if(runner.lastRunDidFail)
+	{
+		overlay_message(runner.core, "THUMBNAIL ERROR");
+	}
+	else if(screenshot_saveThumbnail(filename, pixels, pitch))
+	{
+		overlay_message(runner.core, "THUMBNAIL SAVED");
+	}
+	else
+	{
+		overlay_message(runner.core, "THUMBNAIL ERROR");
+	}
+
+	core_endThumbnail(runner.core);
+#endif
+}
+
+void requestThumbnail(void)
+{
+	if(mainState != MainStateRunningProgram || !hasProgram())
+	{
+		overlay_message(runner.core, "NO PROGRAM");
+		return;
+	}
+
+	runner.lastRunDidFail = false;
+
+	if(!core_startThumbnail(runner.core))
+	{
+		overlay_message(runner.core, "END OF PROGRAM");
+		return;
+	}
+
+	thumbnailRequested = true;
 }
 
 #ifdef __EMSCRIPTEN__

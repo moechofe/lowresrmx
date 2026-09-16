@@ -56,7 +56,7 @@ enum ErrorCode cmd_LET(struct Core *core)
 enum ErrorCode cmd_DIM(struct Core *core)
 {
 	struct Interpreter *interpreter = core->interpreter;
-	if(interpreter->pass == PassRun && interpreter->mode == ModeInterrupt)
+	if(interpreter->pass == PassRun && interpreter->mode == ModeInterrupt && !interpreter->thumbnail)
 		return ErrorNotAllowedInInterrupt;
 
 	bool isGlobal = false;
