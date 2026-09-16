@@ -187,12 +187,14 @@ class MeasurementMsg {
 /// Bridge between the core and the app
 class Runtime extends ChangeNotifier {
 
-	final audio = MiniaudioPlayer(
-  	sampleRate: 44100,
-  	channels: 2,
-  	bufferFrames: 1470,
-	);
-	final ffi.Pointer<ffi.Int16> audioBuffer = calloc<ffi.Int16>(1470 * 2);
+  static const int _audioSampleRate = 44100;
+  static const int _audioChannels = 2;
+  static const int _audioBufferFrames = 1470;
+
+  MiniaudioPlayer? _audio;
+
+  final ffi.Pointer<ffi.Int16> audioBuffer =
+      calloc<ffi.Int16>(_audioBufferFrames * _audioChannels);
 
   static int screenWidth = 216;
   static int screenHeight = 384;
@@ -228,7 +230,7 @@ class Runtime extends ChangeNotifier {
 
   @override
   void dispose() {
-		audio.dispose();
+    audioStop();
     runnerDeinit(runner);
     super.dispose();
   }
@@ -329,10 +331,49 @@ class Runtime extends ChangeNotifier {
     }
   }
 
-	void renderAudio() {
-		runnerRenderAudio(runner, audioBuffer, 1470 * 2, 44100, 0);
-		audio.write(audioBuffer, 1470);
-	}
+  void audioStart() {
+    if (_audio != null) {
+      return;
+    }
+    MiniaudioPlayer? player;
+    try {
+      player = MiniaudioPlayer(
+        sampleRate: _audioSampleRate,
+        channels: _audioChannels,
+        bufferFrames: _audioBufferFrames,
+      );
+      player.start();
+      _audio = player;
+    } catch (e) {
+      debugPrint("Audio device unavailable, running without sound: $e");
+      try {
+        player?.dispose();
+      } catch (_) {}
+    }
+  }
+
+  void audioStop() {
+    final MiniaudioPlayer? player = _audio;
+    _audio = null;
+    if (player == null) {
+      return;
+    }
+    try {
+      player.dispose();
+    } catch (e) {
+      debugPrint("Failed to close the audio device: $e");
+    }
+  }
+
+  void renderAudio() {
+    final MiniaudioPlayer? player = _audio;
+    if (player == null) {
+      return;
+    }
+    runnerRenderAudio(runner, audioBuffer, _audioBufferFrames * _audioChannels,
+        _audioSampleRate, 0);
+    player.write(audioBuffer, _audioBufferFrames);
+  }
 
   void touchOn(Offset pos) {
     input.ref.touchX = (pos.dx / _screenScale);
@@ -419,13 +460,13 @@ void isolateEntryPoint(List<Object?> arguments) {
         }
       } else if (message is IsolateMessageType &&
           message == IsolateMessageType.audioStart) {
-        runtime.audio.start();
+        runtime.audioStart();
       } else if (message is IsolateMessageType &&
           message == IsolateMessageType.renderAudio) {
         runtime.renderAudio();
       } else if (message is IsolateMessageType &&
           message == IsolateMessageType.audioStop) {
-        runtime.audio.stop();
+        runtime.audioStop();
       } else if (message is OrientationChangeMsg) {
         // Receive the screen size and the safe area
         runtime.resize(message.width, message.height, message.safeTop,
