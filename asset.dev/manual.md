@@ -3677,8 +3677,7 @@ TODO: interrupts
 **`ASC`**:
 - [`ascii7 =ASC(character)`](#ascii7-asc-character)
 
-**`AT`**:
-- [`AT`](#operators)
+**TODO: `AT`**:
 
 **`ATAN`**:
 - [`arc =ATAN(x, y)`](#arc-atan-x-y)

@@ -1,3 +1,8 @@
+### 1.0_77
+
+- Flutter: share a program as text file.
+- Flutter: replace the manual as markdown with an html version.
+
 ### 1.0_76
 
 - iOS: fix crash when undoing after an indent, a search-and-replace or a text coloration change.
