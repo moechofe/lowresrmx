@@ -10,6 +10,7 @@ import 'package:lowresrmx/page/edit_page.dart';
 import 'package:lowresrmx/data/retroit.dart';
 import 'package:lowresrmx/style.dart';
 import 'package:provider/provider.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 final Uint8List transparentPng = const Base64Codec().decode(
@@ -210,9 +211,14 @@ class _MyLibraryItemState extends State<MyLibraryItem> {
                 }, label: Text("Share"), icon: Icon(Icons.publish_rounded)),
                 Spacer(),
                 OverflowBar(children: [
-                IconButton(onPressed: (){
-                  // todo: share code as text
-                }, icon: Icon(Icons.share_outlined)),
+                Builder(builder: (buttonContext) => IconButton(
+                  tooltip: "Share Code",
+                  onPressed: (){
+                    final Rect? origin = shareOrigin(buttonContext);
+                    Navigator.pop(sheetContext);
+                    shareCodeAsFile(origin);
+                  },
+                  icon: Icon(Icons.share_outlined))),
                 IconButton(onPressed: (){
                   Navigator.pop(sheetContext);
                   showRenameDialog();
@@ -268,6 +274,45 @@ class _MyLibraryItemState extends State<MyLibraryItem> {
       if (!mounted) return;
       await showMessageDialog(
           "POKE 53280,1", "Feature 1 has been defeated. #OPN");
+    }
+  }
+
+  Rect? shareOrigin(BuildContext buttonContext) {
+    final RenderBox? box = buttonContext.findRenderObject() as RenderBox?;
+    if (box == null || !box.hasSize) return null;
+    return box.localToGlobal(Offset.zero) & box.size;
+  }
+
+  Future<void> shareCodeAsFile(Rect? origin) async {
+    File? codeFile;
+    String code = "";
+    try {
+      final File file = await MyLibrary.getCodeFile(widget.programName);
+      if (await file.exists()) {
+        code = await file.readAsString();
+        codeFile = file;
+      }
+    } catch (error) {
+      debugPrint("Could not read code of ${widget.programName}: $error");
+    }
+    if (codeFile == null || code.trim().isEmpty) {
+      if (!mounted) return;
+      await showMessageDialog(
+          "Nothing to Share", "${widget.programName} has no code yet.");
+      return;
+    }
+    try {
+      await SharePlus.instance.share(ShareParams(
+        files: [XFile(codeFile.path, mimeType: "text/plain")],
+        subject: widget.programName,
+        title: widget.programName,
+        sharePositionOrigin: origin,
+      ));
+    } catch (error) {
+      debugPrint("Share failed: $error");
+      if (!mounted) return;
+      await showMessageDialog(
+          "POKE 53280,1", "Feature 1 has been defeated. #FIL");
     }
   }
 
