@@ -1,33 +1,40 @@
 data 0,"Retro Game Creator beta version 1.0"
 data 0,""
-data 1,"what is working:"
+data 1,"Thank you for downloading LowRes RMX!"
 data 0,""
-data 0,"- editing program and sharing them on the official website: https://ret.ro.it"
+data 1,"Please note the features available on each platform:"
 data 0,""
-data 6,"It's better to login before sharing from the app."
+data 0,"iOS: The most mature version. It includes a code editor and allows you to share programs on the community website."
 data 0,""
-data 0,"- the 'gfx' program can edit characters, palette and background, perfect on iPad and iPhone."
+data 0,"Android: Currently in testing. It includes a code editor and lets you share programs on the community website."
 data 0,""
-data 0,"- the documentation is 99% completed."
+data 0,"Desktop: Works well, but it is not the main target platform. You should use your own external code editor, as there is currently no solution to publish to the community website."
 data 0,""
-data 6,"what is not working:"
+data 1,"Built-in Editors"
 data 0,""
-data 0,"- the new 'gfx' program has a lot of missing features."
+data 0,"GFX Program: Allows you to edit characters, palettes, and backgrounds using a minimal feature set."
 data 0,""
-data 0,"- there is no official sound editor right now. you can still use the lowres-nx app and copy the data."
+data 0,"GFX Designer & Sound Composer: Advanced editor tools inherited from the original app Retro Game Creator is based on. They are powerful tools for editing characters, palettes, backgrounds, sound effects, and music, though the interface elements may appear small depending on your screen size."
 data 0,""
-data 1,"look at the community website, there is already examples for you to get started."
+data 1,"Community"
+data 0,""
+data 0,"Visit ret.ro.it to share programs and connect with other community members!"
 data 0,""
 data 0,"------------"
 data 0,""
 data -1
 
+'detect layout change
+restart:
+cls
+w=shown.w :h=shown.h
+
 'create a window and store position
 global l,t
 l=ceil(safe.l/8)+1
-r=floor((shown.w-safe.r)/8)-1
+r=floor((w-safe.r)/8)-1
 t=ceil(safe.t/8)+1
-b=floor((shown.h-safe.b)/8)-1
+b=floor((h-safe.b)/8)-1
 window l,t,r-l,b-t,0
 
 'for cursor blink
@@ -83,6 +90,7 @@ next_word:
 'wait a couple of frames
 wait_a_bit:
   while f>1
+    if w<>shown.w or h<>shown.h then goto restart
     wait vbl
     add f,-1*speedup
   wend
