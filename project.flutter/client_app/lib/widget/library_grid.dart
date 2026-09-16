@@ -7,14 +7,19 @@ import 'package:lowresrmx/data/library.dart';
 import 'package:lowresrmx/data/preference.dart';
 import 'package:lowresrmx/widget/library_item.dart';
 
+const double libraryBigItemExtent = 176.0;
+const double libraryMediumItemExtent = 116.0;
+
 class MyLibraryGridDelegate extends SliverGridDelegate {
-	final int countPerRow;
+	final double targetExtent;
 	final double titleHeight;
 
-	const MyLibraryGridDelegate({required this.countPerRow, required this.titleHeight});
+	const MyLibraryGridDelegate({required this.targetExtent, required this.titleHeight});
 
   @override
   SliverGridLayout getLayout(SliverConstraints constraints) {
+    final int rounded = (constraints.crossAxisExtent / targetExtent).round();
+    final int countPerRow = rounded < 1 ? 1 : rounded;
     final double cross = constraints.crossAxisExtent / countPerRow;
     final double main = cross + titleHeight;
     return SliverGridRegularTileLayout(
@@ -29,7 +34,7 @@ class MyLibraryGridDelegate extends SliverGridDelegate {
 
   @override
   bool shouldRelayout(covariant MyLibraryGridDelegate oldDelegate) {
-    return oldDelegate.countPerRow != countPerRow ||
+    return oldDelegate.targetExtent != targetExtent ||
         oldDelegate.titleHeight != titleHeight;
   }
 }
@@ -52,10 +57,12 @@ class MyCatalogGrid extends StatelessWidget {
           if (snapshot.hasData) {
             final List<String> names = snapshot.data!;
             return switch (grid) {
-              MyLibraryGrid.two => _buildGrid(names,
-                  const MyLibraryGridDelegate(countPerRow: 2, titleHeight: 40.0)),
-              MyLibraryGrid.three => _buildGrid(names,
-                  const MyLibraryGridDelegate(countPerRow: 3, titleHeight: 50.0)),
+              MyLibraryGrid.big => _buildGrid(names,
+                  const MyLibraryGridDelegate(
+                      targetExtent: libraryBigItemExtent, titleHeight: 40.0)),
+              MyLibraryGrid.medium => _buildGrid(names,
+                  const MyLibraryGridDelegate(
+                      targetExtent: libraryMediumItemExtent, titleHeight: 50.0)),
               MyLibraryGrid.list => _buildList(names),
             };
           } else {

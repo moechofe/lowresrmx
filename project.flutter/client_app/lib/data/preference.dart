@@ -270,7 +270,7 @@ class MyLibraryPreference extends ChangeNotifier {
 		notifyListeners();
 	}
 
-	MyLibraryGrid _grid = MyLibraryGrid.three;
+	MyLibraryGrid _grid = MyLibraryGrid.medium;
 	MyLibraryGrid get grid => _grid;
 	set grid(MyLibraryGrid value) {
 		_grid = value;

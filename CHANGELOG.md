@@ -1,7 +1,8 @@
 ### 1.0_79
 
-- Language: add the `ASSERT` keyword, which stops the program with `Assertion Failed` when its expression is false.
-- Add an automated engine test suite: `test.suite/` cases run by the shared `test.harness/`, with five drivers (desktop `LowResRMXTest`, `LowResRMX -test`, node/WASM, Flutter FFI + integration tests, iOS `AppTests`).
+- Language: add the `ASSERT` keyword.
+- Add an automated engine test suite: `test.suite/`.
+- Flutter: fix library grid to fit tablet.
 
 ### 1.0_78
 

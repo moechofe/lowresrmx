@@ -17,8 +17,8 @@ enum MyLibraryMenuOption {
   name,
   oldest,
   newest,
-	two,
-	three,
+	big,
+	medium,
 	list,
 }
 
@@ -61,14 +61,14 @@ class MyLibraryPage extends StatelessWidget {
           child: const Text('Sort by newest'),
         ),
 				CheckedPopupMenuItem<MyLibraryMenuOption>(
-					value: MyLibraryMenuOption.two,
-					checked: preference.grid == MyLibraryGrid.two,
-					child: const Text('2 Columns'),
+					value: MyLibraryMenuOption.big,
+					checked: preference.grid == MyLibraryGrid.big,
+					child: const Text('Big'),
 				),
 				CheckedPopupMenuItem<MyLibraryMenuOption>(
-					value: MyLibraryMenuOption.three,
-					checked: preference.grid == MyLibraryGrid.three,
-					child: const Text('3 Columns'),
+					value: MyLibraryMenuOption.medium,
+					checked: preference.grid == MyLibraryGrid.medium,
+					child: const Text('Medium'),
 				),
 				CheckedPopupMenuItem<MyLibraryMenuOption>(
 					value: MyLibraryMenuOption.list,
@@ -90,11 +90,11 @@ class MyLibraryPage extends StatelessWidget {
           case MyLibraryMenuOption.newest:
             preference.sort = MyLibrarySort.newest;
             break;
-					case MyLibraryMenuOption.two:
-						preference.grid = MyLibraryGrid.two;
+					case MyLibraryMenuOption.big:
+						preference.grid = MyLibraryGrid.big;
 						break;
-					case MyLibraryMenuOption.three:
-						preference.grid = MyLibraryGrid.three;
+					case MyLibraryMenuOption.medium:
+						preference.grid = MyLibraryGrid.medium;
 						break;
 					case MyLibraryMenuOption.list:
 						preference.grid = MyLibraryGrid.list;

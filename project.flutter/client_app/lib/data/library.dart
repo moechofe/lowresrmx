@@ -15,8 +15,8 @@ enum MyLibrarySort {
 }
 
 enum MyLibraryGrid {
-	two,
-	three,
+	big,
+	medium,
 	list,
 }
 

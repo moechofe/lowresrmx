@@ -61,8 +61,8 @@ class _MyLibraryItemState extends State<MyLibraryItem> {
       return Card(
         surfaceTintColor: colorScheme.surfaceBright,
         elevation: switch(widget.grid) {
-					MyLibraryGrid.two => 2,
-					MyLibraryGrid.three => 1,
+					MyLibraryGrid.big => 2,
+					MyLibraryGrid.medium => 1,
 					MyLibraryGrid.list => 0,
 				},
         child: FutureBuilder<MyProgramPreference>(
@@ -88,7 +88,7 @@ class _MyLibraryItemState extends State<MyLibraryItem> {
       },
       borderRadius: BorderRadius.circular(12.0),
       child: switch (widget.grid) {
-        MyLibraryGrid.two || MyLibraryGrid.three => Column(
+        MyLibraryGrid.big || MyLibraryGrid.medium => Column(
             mainAxisSize: MainAxisSize.min,
             children: [buildThumbnail(constraints), buildName()],
           ),
@@ -110,23 +110,23 @@ class _MyLibraryItemState extends State<MyLibraryItem> {
             alignment: Alignment.centerLeft,
             child: Padding(
               padding: switch(widget.grid) {
-								MyLibraryGrid.two => EdgeInsets.only(
+								MyLibraryGrid.big => EdgeInsets.only(
 									left: 12.0, right: 12.0, top: 4.0, bottom: 4.0),
-								MyLibraryGrid.three => EdgeInsets.only(
+								MyLibraryGrid.medium => EdgeInsets.only(
 									left: 6.0, right: 6.0, top: 0.0, bottom: 0.0),
 								MyLibraryGrid.list => const EdgeInsets.only(
 									left: 8.0, right: 12.0)
 							},
               child: Text(
                 style: switch(widget.grid) {
-									MyLibraryGrid.two => libraryItemTextStyle,
-									MyLibraryGrid.three => libraryItemSmallTextStyle,
+									MyLibraryGrid.big => libraryItemTextStyle,
+									MyLibraryGrid.medium => libraryItemSmallTextStyle,
 									MyLibraryGrid.list => libraryItemTextStyle
 								},
                 widget.programName,
                 maxLines: switch(widget.grid) {
-									MyLibraryGrid.two => 1,
-									MyLibraryGrid.three => 2,
+									MyLibraryGrid.big => 1,
+									MyLibraryGrid.medium => 2,
 									MyLibraryGrid.list => 2
 								},
                 overflow: TextOverflow.ellipsis,
@@ -136,11 +136,11 @@ class _MyLibraryItemState extends State<MyLibraryItem> {
 
   SizedBox buildThumbnail(BoxConstraints constraints) {
     final double extent = switch (widget.grid) {
-      MyLibraryGrid.two || MyLibraryGrid.three => constraints.maxWidth - 8,
+      MyLibraryGrid.big || MyLibraryGrid.medium => constraints.maxWidth - 8,
       MyLibraryGrid.list => 40.0,
     };
     final double radius = switch (widget.grid) {
-      MyLibraryGrid.two || MyLibraryGrid.three => 12.0,
+      MyLibraryGrid.big || MyLibraryGrid.medium => 12.0,
       MyLibraryGrid.list => 8.0,
     };
     return SizedBox(
