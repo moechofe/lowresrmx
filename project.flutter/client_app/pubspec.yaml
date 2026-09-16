@@ -22,7 +22,7 @@ dependencies:
   flutter_miniaudio:
     git: https://github.com/bill0015/flutter_miniaudio.git
   image: ^4.2.0
-  markdown_widget: ^2.3.2+6
+  webview_flutter: ^4.14.1
   re_highlight: ^0.0.3
   core_plugin:
     path: ../core_plugin
@@ -51,7 +51,7 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-    - asset/manual.md
+    - asset/manual.html
     - asset/programs/
 
   fonts:

@@ -52,7 +52,10 @@ for (let i = 0; i < tokens.length; i++) {
 		toc.push({ level, id, text });
 	}
 }
-const tocHtml = toc.map(h => `<li class="h${h.level}"><a href="#${h.id}">${h.text}</a></li>`).join('\n');
+const tocHtml = toc.map((h, i) => {
+	const parent = h.level === 3 && toc[i + 1]?.level === 4 ? ' parent' : '';
+	return `<li class="h${h.level}${parent}"><a href="#${h.id}">${h.text}</a></li>`;
+}).join('\n');
 
 const css = fs.readFileSync(path.join(rootDir, 'project.web', 'sources', 'documentation.css'), 'utf8')
 const html = add_keyword_to_h4(mdit.render(md).replace(/&lt;br&gt;/g, '<br />').replace(/ style="text-align:right"/g, ' class="right"').replace(/<br>/g,'<br />'));
@@ -101,5 +104,9 @@ fs.writeFileSync(file, community, 'utf8')
 console.log(file);
 
 file=path.join(rootDir, 'asset.manual', 'manual.html')
+fs.writeFileSync(file, bundle, 'utf8')
+console.log(file)
+
+file=path.join(rootDir, 'project.flutter', 'client_app', 'asset', 'manual.html')
 fs.writeFileSync(file, bundle, 'utf8')
 console.log(file)
