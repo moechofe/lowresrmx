@@ -53,10 +53,14 @@ abstract class MyPreference {
 		await prefs.setBool("$program-isTool", true);
 	}
 
-  static Future<void> renameProgram(String oldName, String newName) async {
+  static Future<void> copyProgram(String source, String target) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool("$newName-isTool", prefs.getBool("$oldName-isTool") ?? false);
-    await prefs.setBool("$newName-withTrace", prefs.getBool("$oldName-withTrace") ?? false);
+    await prefs.setBool("$target-isTool", prefs.getBool("$source-isTool") ?? false);
+    await prefs.setBool("$target-withTrace", prefs.getBool("$source-withTrace") ?? false);
+  }
+
+  static Future<void> renameProgram(String oldName, String newName) async {
+    await copyProgram(oldName, newName);
     await deleteProgram(oldName);
   }
 

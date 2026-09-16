@@ -219,9 +219,16 @@ class _MyLibraryItemState extends State<MyLibraryItem> {
                     shareCodeAsFile(origin);
                   },
                   icon: Icon(Icons.share_outlined))),
+                IconButton(
+                  tooltip: "Duplicate",
+                  onPressed: (){
+                    Navigator.pop(sheetContext);
+                    duplicateAndRename();
+                  },
+                  icon: Icon(Icons.content_copy_rounded)),
                 IconButton(onPressed: (){
                   Navigator.pop(sheetContext);
-                  showRenameDialog();
+                  showRenameDialog(widget.programName);
                 }, icon: Icon(Icons.drive_file_rename_outline_rounded)),
                 IconButton(onPressed: (){
                   Navigator.pop(sheetContext);
@@ -234,6 +241,13 @@ class _MyLibraryItemState extends State<MyLibraryItem> {
         ),
       ),
     );
+  }
+
+  Future<void> duplicateAndRename() async {
+    final String copyName = await MyLibrary.duplicateProgram(widget.programName);
+    await MyPreference.copyProgram(widget.programName, copyName);
+    if (!mounted) return;
+    await showRenameDialog(copyName);
   }
 
   Future<void> shareWithCommunity() async {
@@ -333,11 +347,14 @@ class _MyLibraryItemState extends State<MyLibraryItem> {
     );
   }
 
-  void showRenameDialog() async {
+  Future<void> showRenameDialog(String programName) async {
+    renameController.text = programName;
+    renameController.selection =
+        TextSelection(baseOffset: 0, extentOffset: programName.length);
     String? newName = await showDialog<String?>(
       context: context,
       builder: (BuildContext context) {
-        String newName = widget.programName;
+        String newName = programName;
         return AlertDialog(
             icon: const Icon(Icons.drive_file_rename_outline_rounded),
             title: const Text("Rename"),
@@ -361,9 +378,9 @@ class _MyLibraryItemState extends State<MyLibraryItem> {
             ]);
       },
     );
-    if (newName != null) {
-      MyLibrary.renameProgram(widget.programName, newName);
-      MyPreference.renameProgram(widget.programName, newName);
+    if (newName != null && newName != programName) {
+      MyLibrary.renameProgram(programName, newName);
+      MyPreference.renameProgram(programName, newName);
     }
   }
 

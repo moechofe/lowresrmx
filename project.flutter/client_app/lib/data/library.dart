@@ -118,6 +118,23 @@ class MyLibrary extends ChangeNotifier {
     MyLibrary().notifyListeners();
   }
 
+  static Future<String> duplicateProgram(String programName) async {
+    final String copyName = await findUniqueName(programName);
+    final File codeFile = await getCodeFile(programName);
+    final File codeCopy = await getCodeFile(copyName);
+    if (await codeFile.exists()) {
+      await codeFile.copy(codeCopy.path);
+    } else {
+      await codeCopy.create();
+    }
+    final File thumbFile = await getThumbFile(programName);
+    if (await thumbFile.exists()) {
+      await thumbFile.copy((await getThumbFile(copyName)).path);
+    }
+    MyLibrary().notifyListeners();
+    return copyName;
+  }
+
   static Future<void> deleteProgram(String programName) async {
     final Directory libraryDir = await getLibraryDir();
 
