@@ -117,6 +117,8 @@ The original LowRes NX, despite being an excellent development environment, lack
 
 - New function to [`=CLAMP` a numerical value](#clamped-clamp-value-min-max).
 
+- New function to [`=LERP` between two values](#interpolated-lerp-a-b-t).
+
 - New syntax to compute [vector length](#length-len-x-y).
 
 - New function [`EASE` to compute easing function](#interpolation-ease-function-mode-value).
@@ -1027,7 +1029,7 @@ It's possible to put multiple instructions using a colon : on one line but with 
 
 Some identifier cannot be used by the user for variables, proceduce or label name because they are keywords reserved by the language and it's API:
 
-`ABS`, `ADD`, `AND`, `ASC`, `ASSERT`, `ATAN`, `ATTR`, `AT`, `BG`, `=BIN$`, `CALL`, `=CEIL`, `=CELL.A`, `=CELL.C`, `CELL`, `CHAR`, `=CHR$`, `=CLAMP`, `CLS`, `CLW`, `=COLOR`, `COMPAT`, `COPY`, `=COS`, `CURSOR.X`, `CURSOR.Y`, `DATA`, `DEC`, `DIM`, `DMA`, `DO`, `EASE`, `ELSE`, `EMITTER`, `END`, `ENVELOPE`, `EXIT`, `EXP`, `=FILE$`, `FILES`, `FILL`, `FLIP`, `FLOOR`, `FONT`, `FOR`, `FSIZE`, `GLOBAL`, `GOSUB`, `GOTO`, `HAPTIC`, `=HEX$`, `HIT`, `IF`, `INC`, `=INKEY$`, `INPUT`, `=INSTR`, `INT`, `KEYBOARD`, `LEFT$`, `LEN`, `LFO.A`, `LFO`, `LOAD`, `LOCATE`, `LOG`, `LOOP`, `MAX`, `MCELL.A`, `MCELL.C`, `MCELL`, `MESSAGE`, `MID$`, `MIN`, `MOD`, `MUSIC`, `NEXT`, `NOT`, `NUMBER`, `OFF`, `ON`, `OR`, `PALETTE`, `PAL`, `PARTICLE`, `PAUSE`, `PEEKL`, `PEEKW`, `PEEK`, `PI`, `PLAY`, `POKEL`, `POKEW`, `POKE`, `PRINT`, `PRIO`, `RANDOMIZE`, `RASTER`, `READ`, `REPEAT`, `RESTORE`, `RETURN`, `RIGHT$`, `RND`, `ROL`, `ROM`, `ROR`, `SAFE.B`, `SAFE.L`, `SAFE.R`, `SAFE.T`, `SAVE`, `SCROLL.X`, `SCROLL.Y`, `SCROLL`, `SGN`, `SHOWN.H`, `SHOWN.W`, `SIN`, `SIZE`, `SKIP`, `SOUND`, `SOURCE`, `SPRITE.A`, `SPRITE.C`, `SPRITE.X`, `SPRITE.Y`, `SPRITE`, `SQR`, `STEP`, `STOP`, `STR$`, `SUB`, `SWAP`, `SYSTEM`, `TAN`, `TAP`, `TEXT`, `THEN`, `TIMER`, `TINT`, `TOUCH.X`, `TOUCH.Y`, `TOUCH`, `TO`, `TRACE`, `TRACK`, `UBOUND`, `UNTIL`, `VAL`, `VBL`, `VIEW`, `VOLUME`, `WAIT`, `WAVE`, `WEND`, `WHILE`, `WINDOW`, `XOR`.
+`ABS`, `ADD`, `AND`, `ASC`, `ASSERT`, `ATAN`, `ATTR`, `AT`, `BG`, `=BIN$`, `CALL`, `=CEIL`, `=CELL.A`, `=CELL.C`, `CELL`, `CHAR`, `=CHR$`, `=CLAMP`, `CLS`, `CLW`, `=COLOR`, `COMPAT`, `COPY`, `=COS`, `CURSOR.X`, `CURSOR.Y`, `DATA`, `DEC`, `DIM`, `DMA`, `DO`, `EASE`, `ELSE`, `EMITTER`, `END`, `ENVELOPE`, `EXIT`, `EXP`, `=FILE$`, `FILES`, `FILL`, `FLIP`, `FLOOR`, `FONT`, `FOR`, `FSIZE`, `GLOBAL`, `GOSUB`, `GOTO`, `HAPTIC`, `=HEX$`, `HIT`, `IF`, `INC`, `=INKEY$`, `INPUT`, `=INSTR`, `INT`, `KEYBOARD`, `LEFT$`, `LEN`, `=LERP`, `LFO.A`, `LFO`, `LOAD`, `LOCATE`, `LOG`, `LOOP`, `MAX`, `MCELL.A`, `MCELL.C`, `MCELL`, `MESSAGE`, `MID$`, `MIN`, `MOD`, `MUSIC`, `NEXT`, `NOT`, `NUMBER`, `OFF`, `ON`, `OR`, `PALETTE`, `PAL`, `PARTICLE`, `PAUSE`, `PEEKL`, `PEEKW`, `PEEK`, `PI`, `PLAY`, `POKEL`, `POKEW`, `POKE`, `PRINT`, `PRIO`, `RANDOMIZE`, `RASTER`, `READ`, `REPEAT`, `RESTORE`, `RETURN`, `RIGHT$`, `RND`, `ROL`, `ROM`, `ROR`, `SAFE.B`, `SAFE.L`, `SAFE.R`, `SAFE.T`, `SAVE`, `SCROLL.X`, `SCROLL.Y`, `SCROLL`, `SGN`, `SHOWN.H`, `SHOWN.W`, `SIN`, `SIZE`, `SKIP`, `SOUND`, `SOURCE`, `SPRITE.A`, `SPRITE.C`, `SPRITE.X`, `SPRITE.Y`, `SPRITE`, `SQR`, `STEP`, `STOP`, `STR$`, `SUB`, `SWAP`, `SYSTEM`, `TAN`, `TAP`, `TEXT`, `THEN`, `TIMER`, `TINT`, `TOUCH.X`, `TOUCH.Y`, `TOUCH`, `TO`, `TRACE`, `TRACK`, `UBOUND`, `UNTIL`, `VAL`, `VBL`, `VIEW`, `VOLUME`, `WAIT`, `WAVE`, `WEND`, `WHILE`, `WINDOW`, `XOR`.
 
 ## BASIC instructions
 
@@ -2572,6 +2574,12 @@ Return the `minimal` or `maximal` value between `a` and `b`.
 
 Return the `value` `clamped` between `min` and `max`.
 
+#### `interpolated =LERP(a, b, t)`
+
+Return the value `interpolated` linearly between `a` and `b`, where `t` 0.0 returns `a` and 1.0 returns `b`.
+
+`t` is not clamped: a value outside 0.0..1.0 extrapolates beyond `a` or `b`.
+
 #### `length =LEN(x, y)`
 
 Return the `length` of a `x, y` vector.
@@ -3889,6 +3897,9 @@ TODO: interrupts
 **`LEN`**:
 - [`length =LEN(x, y)`](#length-len-x-y)
 - [`length =LEN(text)`](#length-len-text)
+
+**`LERP`**:
+- [`interpolated =LERP(a, b, t)`](#interpolated-lerp-a-b-t)
 
 **`LFO`**:
 - [`LFO voice, [rate], [frequency], [volume], [alter]`](#lfo-voice-rate-frequency-volume-alter)

@@ -1,0 +1,10 @@
+'@frames 4
+assert lerp(0,10,0)=0
+assert lerp(0,10,1)=10
+assert lerp(0,10,0.5)=5
+assert lerp(10,20,0.25)=12.5
+assert lerp(10,0,0.5)=5
+assert lerp(-10,10,0.5)=0
+assert lerp(0,10,2)=20
+assert lerp(0,10,-1)=-10
+end

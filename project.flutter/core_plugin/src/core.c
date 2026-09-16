@@ -2975,7 +2975,7 @@ enum ErrorCode cmd_ASSERT(struct Core *core)
 	// ASSERT
 	++interpreter->pc;
 
-	// Expression
+	// ASSERT expression
 	struct TypedValue value = itp_evaluateExpression(core, TypeClassNumeric);
 	if(value.type == ValueTypeError)
 		return value.v.errorCode;
@@ -5160,6 +5160,10 @@ struct TypedValue fnc_math3(struct Core *core)
 		{
 		case TokenCLAMP:
 			value.v.floatValue = (x < y) ? y : (x > z) ? z : x;
+			break;
+
+		case TokenLERP:
+			value.v.floatValue = x + (y - x) * z;
 			break;
 
 		default:
@@ -10647,6 +10651,7 @@ struct TypedValue itp_evaluateFunction(struct Core *core)
 		return fnc_math2(core);
 
 	case TokenCLAMP:
+	case TokenLERP:
 		return fnc_math3(core);
 
 	case TokenRND:
@@ -12067,6 +12072,7 @@ const char *TokenStrings[] = {
 	"CEIL",
 	"FLOOR",
 	"HAPTIC",
+	"LERP",
 
 // Reserved Keywords
 	NULL,

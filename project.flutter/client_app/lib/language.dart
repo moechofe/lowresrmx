@@ -71,6 +71,7 @@ final langLowResRMX = Mode(
       "KEYBOARD",
       "LEFT\$",
       "LEN",
+      "LERP",
       "LET",
       "LFO",
       "LFO.A",

@@ -268,6 +268,10 @@ struct TypedValue fnc_math3(struct Core *core)
 			value.v.floatValue = (x < y) ? y : (x > z) ? z : x;
 			break;
 
+		case TokenLERP:
+			value.v.floatValue = x + (y - x) * z;
+			break;
+
 		default:
 			assert(0);
 			break;

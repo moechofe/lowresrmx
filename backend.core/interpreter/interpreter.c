@@ -1373,6 +1373,7 @@ struct TypedValue itp_evaluateFunction(struct Core *core)
 		return fnc_math2(core);
 
 	case TokenCLAMP:
+	case TokenLERP:
 		return fnc_math3(core);
 
 	case TokenRND:

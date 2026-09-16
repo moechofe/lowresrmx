@@ -1056,6 +1056,7 @@ enum TokenType
 	TokenCEIL,
 	TokenFLOOR,
 	TokenHAPTIC,
+	TokenLERP,
 
 	// Reserved Keywords
 	Token_reserved,
@@ -2672,8 +2673,6 @@ void log_log(int level, const char *file, int line, const char *fmt, ...);
 
 #define SDL_SCALING 1
 
-// HARNESS_TESTS gates the `-test` mode, which links test.harness. The Android export and the
-// WASM player merge only backend.core + frontend.sdl, so the harness is not there to link.
 #if defined(__EMSCRIPTEN__) || defined(__ANDROID__)
 #define SIMULATED_KEYBOARD 0
 #define DEV_MENU 0

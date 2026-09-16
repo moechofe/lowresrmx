@@ -238,6 +238,7 @@ enum TokenType
 	TokenCEIL,
 	TokenFLOOR,
 	TokenHAPTIC,
+	TokenLERP,
 
 	// Reserved Keywords
 	Token_reserved,
