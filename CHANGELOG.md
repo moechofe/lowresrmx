@@ -1,3 +1,7 @@
+### 1.0_80
+
+- Flutter: setting to add padding the right of the code editor.
+
 ### 1.0_79
 
 - Language: add the `ASSERT` keyword.
