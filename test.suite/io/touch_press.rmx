@@ -1,0 +1,12 @@
+'@frames 20
+'@at 5 touch 108,200
+do
+  if touch then goto pressed
+  wait vbl
+loop
+pressed:
+assert touch.x>=104
+assert touch.x<=112
+assert touch.y>=196
+assert touch.y<=204
+end

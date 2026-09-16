@@ -7,6 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5BF5A0102FF9200000582016 /* HarnessTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BF5A0012FF9200000582016 /* HarnessTests.swift */; };
+		5BF5A0112FF9200000582016 /* harness.c in Sources */ = {isa = PBXBuildFile; fileRef = 5BF5A0032FF9200000582016 /* harness.c */; };
+		5BF5A0122FF9200000582016 /* scenario.c in Sources */ = {isa = PBXBuildFile; fileRef = 5BF5A0042FF9200000582016 /* scenario.c */; };
+		5BF5A0132FF9200000582016 /* golden.c in Sources */ = {isa = PBXBuildFile; fileRef = 5BF5A0052FF9200000582016 /* golden.c */; };
+		5BF5A0142FF9200000582016 /* test.suite in Resources */ = {isa = PBXBuildFile; fileRef = 5BF5A0062FF9200000582016 /* test.suite */; };
 		5B0223B02D410A3500344273 /* libzstd in Frameworks */ = {isa = PBXBuildFile; productRef = 5B0223AF2D410A3500344273 /* libzstd */; };
 		5B0223B22D410A3500344273 /* zstd in Frameworks */ = {isa = PBXBuildFile; productRef = 5B0223B12D410A3500344273 /* zstd */; };
 		5B34EC532AC5795600220A80 /* asset.manual in Resources */ = {isa = PBXBuildFile; fileRef = 5B34EC522AC5795600220A80 /* asset.manual */; };
@@ -259,6 +264,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		5BF5A0012FF9200000582016 /* HarnessTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HarnessTests.swift; sourceTree = "<group>"; };
+		5BF5A0022FF9200000582016 /* LowResRMXTests-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "LowResRMXTests-Bridging-Header.h"; sourceTree = "<group>"; };
+		5BF5A0032FF9200000582016 /* harness.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = harness.c; sourceTree = "<group>"; };
+		5BF5A0042FF9200000582016 /* scenario.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = scenario.c; sourceTree = "<group>"; };
+		5BF5A0052FF9200000582016 /* golden.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = golden.c; sourceTree = "<group>"; };
+		5BF5A0062FF9200000582016 /* test.suite */ = {isa = PBXFileReference; lastKnownFileType = folder; name = test.suite; path = ../test.suite; sourceTree = "<group>"; };
+		5BF5A0072FF9200000582016 /* AppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		5B34EC522AC5795600220A80 /* asset.manual */ = {isa = PBXFileReference; lastKnownFileType = folder; name = asset.manual; path = ../asset.manual; sourceTree = "<group>"; };
 		5B34EC542AC5796000220A80 /* asset.programs */ = {isa = PBXFileReference; lastKnownFileType = folder; name = asset.programs; path = ../asset.programs; sourceTree = "<group>"; };
 		5B34EC582AC5835600220A80 /* token.bc */ = {isa = PBXFileReference; lastKnownFileType = file; path = token.bc; sourceTree = "<group>"; };
@@ -489,6 +501,24 @@
 		92FAB24C1FC07D1B002E45FB /* LowResRMXView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LowResRMXView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
+/* Begin PBXContainerItemProxy section */
+		5BF5A0282FF9200000582016 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 92EA93B21F744572007BEFB1 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 92EA93B91F744572007BEFB1;
+			remoteInfo = App;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXTargetDependency section */
+		5BF5A0272FF9200000582016 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 92EA93B91F744572007BEFB1 /* App */;
+			targetProxy = 5BF5A0282FF9200000582016 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin PBXFrameworksBuildPhase section */
 		9227988E2527251F004F6E1A /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
@@ -504,6 +534,11 @@
 				5B0223B22D410A3500344273 /* zstd in Frameworks */,
 				5B7D1D7A2D43F1D200B871FA /* Clibsodium in Frameworks */,
 				5B7D1D7C2D43F1D200B871FA /* Sodium in Frameworks */,
+			);
+		};
+		5BF5A0252FF9200000582016 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
 			);
 		};
 /* End PBXFrameworksBuildPhase section */
@@ -873,13 +908,36 @@
 			isa = PBXGroup;
 			children = (
 				5B34EC562AC5835600220A80 /* backend.core */,
+				5BF5A02A2FF9200000582016 /* test.harness */,
 				5B34EC542AC5796000220A80 /* asset.programs */,
 				5B34EC522AC5795600220A80 /* asset.manual */,
+				5BF5A0062FF9200000582016 /* test.suite */,
 				92EA93BC1F744572007BEFB1 /* LowResRMX */,
+				5BF5A0292FF9200000582016 /* LowResRMXTests */,
 				922798962527251F004F6E1A /* Widgets */,
 				92EA93BB1F744572007BEFB1 /* Products */,
 				925CC6B61F758A120059C230 /* Frameworks */,
 			);
+			sourceTree = "<group>";
+		};
+		5BF5A0292FF9200000582016 /* LowResRMXTests */ = {
+			isa = PBXGroup;
+			children = (
+				5BF5A0012FF9200000582016 /* HarnessTests.swift */,
+				5BF5A0022FF9200000582016 /* LowResRMXTests-Bridging-Header.h */,
+			);
+			path = LowResRMXTests;
+			sourceTree = "<group>";
+		};
+		5BF5A02A2FF9200000582016 /* test.harness */ = {
+			isa = PBXGroup;
+			children = (
+				5BF5A0032FF9200000582016 /* harness.c */,
+				5BF5A0042FF9200000582016 /* scenario.c */,
+				5BF5A0052FF9200000582016 /* golden.c */,
+			);
+			name = test.harness;
+			path = ../test.harness;
 			sourceTree = "<group>";
 		};
 		92EA93BB1F744572007BEFB1 /* Products */ = {
@@ -887,6 +945,7 @@
 			children = (
 				92EA93BA1F744572007BEFB1 /* App.app */,
 				922798912527251F004F6E1A /* Widgets.appex */,
+				5BF5A0072FF9200000582016 /* AppTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -945,6 +1004,24 @@
 			productReference = 92EA93BA1F744572007BEFB1 /* App.app */;
 			productType = "com.apple.product-type.application";
 		};
+		5BF5A0202FF9200000582016 /* AppTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 5BF5A0212FF9200000582016 /* Build configuration list for PBXNativeTarget "AppTests" */;
+			buildPhases = (
+				5BF5A0242FF9200000582016 /* Sources */,
+				5BF5A0252FF9200000582016 /* Frameworks */,
+				5BF5A0262FF9200000582016 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				5BF5A0272FF9200000582016 /* PBXTargetDependency */,
+			);
+			name = AppTests;
+			productName = AppTests;
+			productReference = 5BF5A0072FF9200000582016 /* AppTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -975,6 +1052,11 @@
 							};
 						};
 					};
+					5BF5A0202FF9200000582016 = {
+						CreatedOnToolsVersion = 26.0;
+						ProvisioningStyle = Automatic;
+						TestTargetID = 92EA93B91F744572007BEFB1;
+					};
 				};
 			};
 			buildConfigurationList = 92EA93B51F744572007BEFB1 /* Build configuration list for PBXProject "LowResRMX" */;
@@ -996,6 +1078,7 @@
 			targets = (
 				92EA93B91F744572007BEFB1 /* App */,
 				922798902527251F004F6E1A /* Widgets */,
+				5BF5A0202FF9200000582016 /* AppTests */,
 			);
 		};
 /* End PBXProject section */
@@ -1110,6 +1193,12 @@
 				5B34ED062AC5835600220A80 /* interpreter_utils.bc in Resources */,
 				5B34ED602AC5835600220A80 /* text_lib.bc in Resources */,
 				5BF81A902FF90E5300582016 /* splash.rmx in Resources */,
+			);
+		};
+		5BF5A0262FF9200000582016 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			files = (
+				5BF5A0142FF9200000582016 /* test.suite in Resources */,
 			);
 		};
 /* End PBXResourcesBuildPhase section */
@@ -1265,6 +1354,15 @@
 				5B34ED8E2AC5835700220A80 /* pcg_basic.c in Sources */,
 				92A001CF243780DD007AE953 /* ActionButton.swift in Sources */,
 				5B34ED182AC5835600220A80 /* labels.c in Sources */,
+			);
+		};
+		5BF5A0242FF9200000582016 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+				5BF5A0102FF9200000582016 /* HarnessTests.swift in Sources */,
+				5BF5A0112FF9200000582016 /* harness.c in Sources */,
+				5BF5A0122FF9200000582016 /* scenario.c in Sources */,
+				5BF5A0132FF9200000582016 /* golden.c in Sources */,
 			);
 		};
 /* End PBXSourcesBuildPhase section */
@@ -1514,6 +1612,66 @@
 			};
 			name = Release;
 		};
+		5BF5A0222FF9200000582016 /* Debug configuration for PBXNativeTarget "AppTests" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				DEVELOPMENT_TEAM = YWZ55H4QT9;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"ABGR=0",
+				);
+				GENERATE_INFOPLIST_FILE = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/../backend.core",
+					"$(SRCROOT)/../backend.core/accessories",
+					"$(SRCROOT)/../backend.core/datamanager",
+					"$(SRCROOT)/../backend.core/interpreter",
+					"$(SRCROOT)/../backend.core/libraries",
+					"$(SRCROOT)/../backend.core/machine",
+					"$(SRCROOT)/../backend.core/overlay",
+					"$(SRCROOT)/../test.harness",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = it.ro.ret.ios.LowResRMXTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "LowResRMXTests/LowResRMXTests-Bridging-Header.h";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/App.app/App";
+			};
+			name = Debug;
+		};
+		5BF5A0232FF9200000582016 /* Release configuration for PBXNativeTarget "AppTests" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				DEVELOPMENT_TEAM = YWZ55H4QT9;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"ABGR=0",
+				);
+				GENERATE_INFOPLIST_FILE = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/../backend.core",
+					"$(SRCROOT)/../backend.core/accessories",
+					"$(SRCROOT)/../backend.core/datamanager",
+					"$(SRCROOT)/../backend.core/interpreter",
+					"$(SRCROOT)/../backend.core/libraries",
+					"$(SRCROOT)/../backend.core/machine",
+					"$(SRCROOT)/../backend.core/overlay",
+					"$(SRCROOT)/../test.harness",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = it.ro.ret.ios.LowResRMXTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "LowResRMXTests/LowResRMXTests-Bridging-Header.h";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/App.app/App";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -1538,6 +1696,14 @@
 			buildConfigurations = (
 				92EA93CD1F744573007BEFB1 /* Debug configuration for PBXNativeTarget "App" */,
 				92EA93CE1F744573007BEFB1 /* Release configuration for PBXNativeTarget "App" */,
+			);
+			defaultConfigurationName = Release;
+		};
+		5BF5A0212FF9200000582016 /* Build configuration list for PBXNativeTarget "AppTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5BF5A0222FF9200000582016 /* Debug configuration for PBXNativeTarget "AppTests" */,
+				5BF5A0232FF9200000582016 /* Release configuration for PBXNativeTarget "AppTests" */,
 			);
 			defaultConfigurationName = Release;
 		};

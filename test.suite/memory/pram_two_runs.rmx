@@ -1,0 +1,10 @@
+'@runs 2
+'@frames 8
+if peek($e000)=123 and peekw($e002)=4660 then goto verify
+poke $e000,123
+pokew $e002,4660
+end
+verify:
+assert peek($e000)=123
+assert peekw($e002)=4660
+end

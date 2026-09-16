@@ -1,0 +1,2 @@
+'@expect-compile-error SyntaxError
+l=len(

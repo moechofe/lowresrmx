@@ -41,6 +41,28 @@ enum ErrorCode cmd_END(struct Core *core)
 	return itp_endOfCommand(interpreter);
 }
 
+enum ErrorCode cmd_ASSERT(struct Core *core)
+{
+	struct Interpreter *interpreter = core->interpreter;
+
+	// ASSERT
+	++interpreter->pc;
+
+	// ASSERT expression
+	struct TypedValue value = itp_evaluateExpression(core, TypeClassNumeric);
+	if(value.type == ValueTypeError)
+		return value.v.errorCode;
+
+	if(interpreter->pass == PassRun)
+	{
+		if(is_zero_approx(value.v.floatValue))
+			return ErrorAssertionFailed;
+		++interpreter->numAssertions;
+	}
+
+	return itp_endOfCommand(interpreter);
+}
+
 enum ErrorCode cmd_IF(struct Core *core, bool isAfterBlockElse)
 {
 	struct Interpreter *interpreter = core->interpreter;

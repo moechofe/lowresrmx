@@ -1,0 +1,10 @@
+'@frames 3
+'@check 2 pixels 0xab528708722e6afd
+cls
+palette 1,0,32,48,56
+bg 0
+text 2,2,"GOLDEN FRAME"
+bg fill 0,6 to 15,11 char 219
+bg tint 0,6 to 15,11 pal 1
+wait vbl
+end

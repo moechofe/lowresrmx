@@ -2968,6 +2968,28 @@ enum ErrorCode cmd_END(struct Core *core)
 	return itp_endOfCommand(interpreter);
 }
 
+enum ErrorCode cmd_ASSERT(struct Core *core)
+{
+	struct Interpreter *interpreter = core->interpreter;
+
+	// ASSERT
+	++interpreter->pc;
+
+	// Expression
+	struct TypedValue value = itp_evaluateExpression(core, TypeClassNumeric);
+	if(value.type == ValueTypeError)
+		return value.v.errorCode;
+
+	if(interpreter->pass == PassRun)
+	{
+		if(is_zero_approx(value.v.floatValue))
+			return ErrorAssertionFailed;
+		++interpreter->numAssertions;
+	}
+
+	return itp_endOfCommand(interpreter);
+}
+
 enum ErrorCode cmd_IF(struct Core *core, bool isAfterBlockElse)
 {
 	struct Interpreter *interpreter = core->interpreter;
@@ -9250,6 +9272,7 @@ const char *ErrorStrings[] = {"OK",
 			      "Not Allowed Outside Of Interrupt",
 			      "Not enough storage space on the device",
 			      "Random using address not seeded",
+			      "Assertion Failed",
 
 			      "Out of error"};
 
@@ -9407,6 +9430,7 @@ struct CoreError itp_compileProgram(struct Core *core, const char *sourceCode)
 	interpreter->tapPending = false;
 	interpreter->tapRead = false;
 	interpreter->seed = 0;
+	interpreter->numAssertions = 0;
 	interpreter->simulatedKeyboardOn = false;
 
 	// variable lookup inline cache (see itp_readVariable); epoch 0 means "no token can match"
@@ -10781,6 +10805,9 @@ enum ErrorCode itp_evaluateCommand(struct Core *core)
 		++interpreter->pc;
 		break;
 
+	case TokenASSERT:
+		return cmd_ASSERT(core);
+
 	case TokenEND:
 		switch(itp_getNextTokenType(interpreter))
 		{
@@ -11868,6 +11895,7 @@ const char *TokenStrings[] = {
 	"ABS",
 	"ADD",
 	"ASC",
+	"ASSERT",
 	"ATAN",
 	"ATTR",
 	"BG",
@@ -19124,6 +19152,9 @@ void haptic_update(void)
 // 3. This notice may not be removed or altered from any source distribution.
 
 
+#if HARNESS_TESTS
+#endif
+
 #if defined(_WIN32)
 #include <SDL3/SDL_main.h>
 #endif
@@ -19226,6 +19257,14 @@ struct CoreInput coreInput;
 enum MainState mainState = MainStateUndefined;
 char mainProgramFilename[FILENAME_MAX] = "";
 
+#if HARNESS_TESTS
+// -test drives the shared harness through the real SDL event, audio and render path
+struct HarnessSuite testSuite;
+int testCaseIndex = 0;
+bool testCaseStarted = false;
+bool testCaseRunning = false;
+#endif
+
 int numJoysticks = 0;
 SDL_Joystick *joysticks[2] = {NULL, NULL};
 SDL_FRect screenRect;
@@ -19320,10 +19359,26 @@ int main(int argc, const char *argv[])
 		updateScreenRect(width, height);
 		updateSafeArea();
 
-		bootNX(&coreInput);
-		if(hasProgram())
+#if HARNESS_TESTS
+		if(settings.session.test)
 		{
-			machine_poke(runner.core, bootIntroStateAddress, BootIntroStateProgramAvailable);
+			harness_suiteInit(&testSuite, "test.harness/build");
+			if(!harness_suiteAddPath(&testSuite, settings.session.testPath, NULL) ||
+			   harness_suiteCount(&testSuite) == 0)
+			{
+				printf("no cases found at %s\n", settings.session.testPath);
+				quit = true;
+			}
+			mainState = MainStateTest;
+		}
+		else
+#endif
+		{
+			bootNX(&coreInput);
+			if(hasProgram())
+			{
+				machine_poke(runner.core, bootIntroStateAddress, BootIntroStateProgramAvailable);
+			}
 		}
 
 #ifdef __EMSCRIPTEN__
@@ -19364,6 +19419,15 @@ int main(int argc, const char *argv[])
 	SDL_Quit();
 
 	runner_deinit(&runner);
+
+#if HARNESS_TESTS
+	if(settings.session.test)
+	{
+		int exitCode = harness_exitCode(&testSuite);
+		harness_suiteDeinit(&testSuite);
+		return exitCode;
+	}
+#endif
 
 	return 0;
 }
@@ -19940,6 +20004,41 @@ void update(void *arg)
 		}
 		break;
 
+	case MainStateTest:
+#if HARNESS_TESTS
+		if(testCaseIndex < harness_suiteCount(&testSuite))
+		{
+			if(!testCaseStarted)
+			{
+				testCaseStarted = true;
+				testCaseRunning = harness_beginCase(&testSuite, runner.core, testCaseIndex);
+				// the window title, never overlay_message: the overlay composites into the
+				// frame and would change every '@check pixels hash
+				SDL_SetWindowTitle(window, harness_statusLine(&testSuite));
+			}
+
+			if(testCaseRunning && !harness_caseDone(&testSuite))
+			{
+				harness_beforeUpdate(&testSuite, &coreInput);
+				core_update(runner.core, &coreInput);
+				harness_afterUpdate(&testSuite, runner.core, &coreInput);
+			}
+
+			if(!testCaseRunning || harness_caseDone(&testSuite))
+			{
+				harness_endCase(&testSuite, runner.core);
+				++testCaseIndex;
+				testCaseStarted = false;
+			}
+		}
+		if(testCaseIndex >= harness_suiteCount(&testSuite))
+		{
+			harness_report(&testSuite, stdout);
+			quit = true;
+		}
+#endif
+		break;
+
 	case MainStateDevMenu:
 #if DEV_MENU
 		dev_update(&devMenu, &coreInput);
@@ -19949,7 +20048,13 @@ void update(void *arg)
 
 	hasUsedInputLastUpdate = coreInput.out_hasUsedInput;
 
+	// In -test mode the harness is the only consumer of audio_renderAudio: a real audio device
+	// pulling the same stateful renderer on its own thread would change every '@check audio hash.
+#if HARNESS_TESTS
+	if(!audioStarted && audioStream && !settings.session.test)
+#else
 	if(!audioStarted && audioStream)
+#endif
 	{
 		audioStarted = true;
 		SDL_ResumeAudioStreamDevice(audioStream);
@@ -20523,56 +20628,6 @@ void persistentRamDidChange(void *context, uint8_t *data, int size)
 #include <string.h>
 #include <time.h>
 
-#define STB_IMAGE_WRITE_IMPLEMENTATION
-
-bool writeImage(const char *filename, int width, int height, uint32_t *pixels, int pitch, int scale)
-{
-	// pitch is the source row stride in bytes, which is not always
-	// width * 4: SDL_LockTexture pads rows (Direct3D on Windows notably),
-	// so the source buffer must be walked with its own stride
-	const int srcWidth = pitch / (int)sizeof(uint32_t);
-
-	uint8_t *data = malloc(width * height * 3 * scale * scale);
-	if(data)
-	{
-		int i = 0;
-		for(int y = 0; y < height; y++)
-		{
-			for(int ys = 0; ys < scale; ys++)
-			{
-				for(int x = 0; x < width; x++)
-				{
-					uint32_t pixel = pixels[y * srcWidth + x];
-					// stbi_write_png with comp=3 wants R,G,B. The engine's word layout
-					// depends on ABGR (see machine/video_chip.h): 0xAARRGGBB when 0,
-					// 0xAABBGGRR when 1.
-#if ABGR
-					uint8_t r = (pixel) & 0xFF;
-					uint8_t g = (pixel >> 8) & 0xFF;
-					uint8_t b = (pixel >> 16) & 0xFF;
-#else
-					uint8_t r = (pixel >> 16) & 0xFF;
-					uint8_t g = (pixel >> 8) & 0xFF;
-					uint8_t b = (pixel) & 0xFF;
-#endif
-					for(int xs = 0; xs < scale; xs++)
-					{
-						data[i++] = r;
-						data[i++] = g;
-						data[i++] = b;
-					}
-				}
-			}
-		}
-
-		int result = stbi_write_png(filename, width * scale, height * scale, 3, data, width * 3 * scale);
-		free(data);
-
-		return (result != 0);
-	}
-	return false;
-}
-
 bool screenshot_save(uint32_t *pixels, int pitch, int scale)
 {
 	char filename[FILENAME_MAX];
@@ -20733,6 +20788,13 @@ void settings_setParameter(struct Parameters *parameters, const char *key, const
 	{
 
 	}
+#if HARNESS_TESTS
+	else if(strcmp(key, "test") == 0)
+	{
+		parameters->test = true;
+		strncpy(parameters->testPath, value, FILENAME_MAX - 1);
+	}
+#endif
 // 	else if(strcmp(key, "fullscreen") == 0)
 // 	{
 // 		if(strcmp(value, optionYes) == 0)

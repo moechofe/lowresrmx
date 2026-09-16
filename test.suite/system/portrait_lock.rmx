@@ -1,0 +1,5 @@
+'@frames 6
+'@check 3 portrait 1
+system 9,1
+wait 2
+end

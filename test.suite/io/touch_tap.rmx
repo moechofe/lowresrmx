@@ -1,0 +1,11 @@
+'@frames 40
+'@at 5 touch 108,200
+'@at 8 release
+do
+  if touch.tap then goto tapped
+  wait vbl
+loop
+tapped:
+assert touch.px>=104
+assert touch.px<=112
+end

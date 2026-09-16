@@ -86,6 +86,7 @@ struct Interpreter
 	struct Token *pc;
 	int subLevel;
 	int cycles;
+	int numAssertions;
 	int maxCycles;
 	int interruptOverCycles;
 	bool debug;

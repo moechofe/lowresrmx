@@ -86,6 +86,7 @@ enum ErrorCode
 	ErrorNotAllowedOutsideOfInterrupt,
 	ErrorUserDeviceDiskFull,
 	ErrorRandAddressNotSeeded,
+	ErrorAssertionFailed,
 
 	ErrorMax
 };

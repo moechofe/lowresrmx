@@ -1,0 +1,11 @@
+assert keyboard=0
+keyboard on
+safeb=safe.b
+'wait for keyboard to fully open
+old=-1
+while keyboard=0 or old<>keyboard
+  wait vbl
+  if keyboard>0 then old=keyboard
+wend
+assert safeb=safe.b
+

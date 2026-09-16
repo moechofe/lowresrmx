@@ -1,0 +1,11 @@
+'@frames 30
+'@at 3 key "A"
+keyboard on
+do
+  k$=inkey$
+  if k$<>"" then goto got
+  wait vbl
+loop
+got:
+assert k$="A"
+end

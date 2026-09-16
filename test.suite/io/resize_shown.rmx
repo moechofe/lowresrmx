@@ -1,0 +1,11 @@
+'@frames 20
+'@shown 216,384
+'@at 5 resize 160,256
+do
+  if shown.w=160 then goto resized
+  wait vbl
+loop
+resized:
+assert shown.w=160
+assert shown.h=256
+end

@@ -1,0 +1,3 @@
+'@expect-error IllegalMemoryAccess
+'@frames 4
+poke $ff88,1

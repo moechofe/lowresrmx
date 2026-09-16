@@ -75,6 +75,16 @@
 
     Emscripten project for the WASM player.
 
+- 📂 `test.harness`
+
+    Shared C test harness: reads the `'@` annotations of a case, drives `core_update`, decides the verdict.
+    Built as `LowResRMXTest` by 📂 `project.cmake`, and reused by the five per-platform drivers.
+
+- 📂 `test.suite`
+
+    Automated engine test cases, asserting with the `ASSERT` keyword and `'@` host scenarios.
+    Run with `project.cmake/build/LowResRMXTest test.suite/`.
+
 - 📂 `tool.dev`
 
     Developer scripts.

@@ -81,6 +81,7 @@ const char *ErrorStrings[] = {"OK",
 			      "Not Allowed Outside Of Interrupt",
 			      "Not enough storage space on the device",
 			      "Random using address not seeded",
+			      "Assertion Failed",
 
 			      "Out of error"};
 

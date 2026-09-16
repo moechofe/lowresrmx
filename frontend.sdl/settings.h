@@ -33,6 +33,8 @@ struct Parameters
 	bool disabledev;
 	int mapping;
 	int disabledelay;
+	bool test;
+	char testPath[FILENAME_MAX];
 };
 
 struct Settings

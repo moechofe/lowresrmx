@@ -66,6 +66,7 @@ enum TokenType
 	TokenABS,
 	TokenADD,
 	TokenASC,
+	TokenASSERT,
 	TokenATAN,
 	TokenATTR,
 	TokenBG,

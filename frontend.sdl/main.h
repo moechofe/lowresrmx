@@ -29,6 +29,7 @@ enum MainState
 	MainStateRunningProgram,
 	MainStateRunningTool,
 	MainStateDevMenu,
+	MainStateTest,
 };
 
 enum Zoom

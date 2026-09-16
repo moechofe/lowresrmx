@@ -22,62 +22,12 @@
 #if SCREENSHOTS
 
 #include "core.h"
+#include "golden.h"
 #include "screenshot.h"
 #include "system_paths.h"
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-
-#define STB_IMAGE_WRITE_IMPLEMENTATION
-#include "stb_image_write.h"
-
-bool writeImage(const char *filename, int width, int height, uint32_t *pixels, int pitch, int scale)
-{
-	// pitch is the source row stride in bytes, which is not always
-	// width * 4: SDL_LockTexture pads rows (Direct3D on Windows notably),
-	// so the source buffer must be walked with its own stride
-	const int srcWidth = pitch / (int)sizeof(uint32_t);
-
-	uint8_t *data = malloc(width * height * 3 * scale * scale);
-	if(data)
-	{
-		int i = 0;
-		for(int y = 0; y < height; y++)
-		{
-			for(int ys = 0; ys < scale; ys++)
-			{
-				for(int x = 0; x < width; x++)
-				{
-					uint32_t pixel = pixels[y * srcWidth + x];
-					// stbi_write_png with comp=3 wants R,G,B. The engine's word layout
-					// depends on ABGR (see machine/video_chip.h): 0xAARRGGBB when 0,
-					// 0xAABBGGRR when 1.
-#if ABGR
-					uint8_t r = (pixel) & 0xFF;
-					uint8_t g = (pixel >> 8) & 0xFF;
-					uint8_t b = (pixel >> 16) & 0xFF;
-#else
-					uint8_t r = (pixel >> 16) & 0xFF;
-					uint8_t g = (pixel >> 8) & 0xFF;
-					uint8_t b = (pixel) & 0xFF;
-#endif
-					for(int xs = 0; xs < scale; xs++)
-					{
-						data[i++] = r;
-						data[i++] = g;
-						data[i++] = b;
-					}
-				}
-			}
-		}
-
-		int result = stbi_write_png(filename, width * scale, height * scale, 3, data, width * 3 * scale);
-		free(data);
-
-		return (result != 0);
-	}
-	return false;
-}
 
 bool screenshot_save(uint32_t *pixels, int pitch, int scale)
 {

@@ -233,9 +233,6 @@ class CorePluginBindings {
   late final _runnerRenderToTexture = _runnerRenderToTexturePtr
       .asFunction<void Function(ffi.Pointer<Runner>, int)>();
 
-  /// Destination surface geometry for a registered texture, in device pixels.
-  /// pitch is bytes per row; 0 means width*4. On Android this also re-requests the
-  /// ANativeWindow buffer geometry, and the pitch is taken from the locked buffer instead.
   void runnerSetTextureGeometry(
     int textureId,
     int width,
@@ -257,9 +254,6 @@ class CorePluginBindings {
   late final _runnerSetTextureGeometry = _runnerSetTextureGeometryPtr
       .asFunction<void Function(int, int, int, int)>();
 
-  /// Nearest-neighbour upscale of one SCREEN_WIDTHxSCREEN_HEIGHT frame into a device-resolution
-  /// surface, covering it from the top-left corner and clipping the overflow.
-  /// Exported so the mapping can be exercised without a device.
   void screenBlitScaled(
     ffi.Pointer<ffi.Uint32> src,
     ffi.Pointer<ffi.Uint32> dst,
@@ -299,6 +293,34 @@ class CorePluginBindings {
       'runnerTrace');
   late final _runnerTrace =
       _runnerTracePtr.asFunction<void Function(ffi.Pointer<Runner>, bool)>();
+
+  int runnerNumAssertions(
+    ffi.Pointer<Runner> arg0,
+  ) {
+    return _runnerNumAssertions(
+      arg0,
+    );
+  }
+
+  late final _runnerNumAssertionsPtr =
+      _lookup<ffi.NativeFunction<ffi.Int Function(ffi.Pointer<Runner>)>>(
+          'runnerNumAssertions');
+  late final _runnerNumAssertions =
+      _runnerNumAssertionsPtr.asFunction<int Function(ffi.Pointer<Runner>)>();
+
+  int runnerState(
+    ffi.Pointer<Runner> arg0,
+  ) {
+    return _runnerState(
+      arg0,
+    );
+  }
+
+  late final _runnerStatePtr =
+      _lookup<ffi.NativeFunction<ffi.Int Function(ffi.Pointer<Runner>)>>(
+          'runnerState');
+  late final _runnerState =
+      _runnerStatePtr.asFunction<int Function(ffi.Pointer<Runner>)>();
 
   ffi.Pointer<ffi.Void> syntaxCreate() {
     return _syntaxCreate();
@@ -577,7 +599,8 @@ abstract class ErrorCode {
   static const int ErrorNotAllowedOutsideOfInterrupt = 58;
   static const int ErrorUserDeviceDiskFull = 59;
   static const int ErrorRandAddressNotSeeded = 60;
-  static const int ErrorMax = 61;
+  static const int ErrorAssertionFailed = 61;
+  static const int ErrorMax = 62;
 }
 
 final class ControlsInfo extends ffi.Struct {

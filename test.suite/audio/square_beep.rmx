@@ -1,0 +1,7 @@
+'@frames 6
+'@check 4 audio 0x2e4280b8aed65d55
+volume 0,15,3
+sound 0,0,8,15
+play 0,48
+wait 4
+end

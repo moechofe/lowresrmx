@@ -21,7 +21,6 @@
 #include "runner.h"
 #include "screenshot.h"
 #include "settings.h"
-#include "stb_image_write.h"
 #include "system_paths.h"
 #include "utils.h"
 #include "main.h"

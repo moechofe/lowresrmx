@@ -83,6 +83,9 @@ void runnerRender(ffi.Pointer<Runner> runner, ffi.Pointer<ffi.Uint8> pixels) => 
 
 void runnerTrace(ffi.Pointer<Runner> runner, bool trace) => _bindings.runnerTrace(runner, trace);
 
+int runnerNumAssertions(ffi.Pointer<Runner> runner) => _bindings.runnerNumAssertions(runner);
+int runnerState(ffi.Pointer<Runner> runner) => _bindings.runnerState(runner);
+
 ffi.Pointer<ffi.Void> syntaxCreate() => _bindings.syntaxCreate();
 void syntaxDestroy(ffi.Pointer<ffi.Void> syntax) => _bindings.syntaxDestroy(syntax);
 int syntaxScan(ffi.Pointer<ffi.Void> syntax, String sourceCode) {

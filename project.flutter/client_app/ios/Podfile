@@ -38,7 +38,42 @@ target 'Runner' do
 end
 
 post_install do |installer|
+  podfile_dir = File.dirname(File.realpath(__FILE__))
+
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
+
+    # zstandard_ios 1.5.0 ships no C sources. A "Sync zstd" script phase rsyncs ~50 .c
+    # files out of zstandard_native at build time, and a "Remove synced zstd" phase
+    # rm -rf's them again after every successful build. The sync phase declares only
+    # zstd.h as an output, so Xcode sees no dependency between it and the compile tasks
+    # for the other sources and schedules them in parallel — whichever files rsync has
+    # not written yet fail the build with "Build input file cannot be found:
+    # .../zstdmt_compress.c". Which files lose the race varies, so it reads as flaky,
+    # and every green build arms the next failure by deleting the tree again.
+    #
+    # Sync once here, drop the destructive phase, and make the surviving sync phase a
+    # no-op when the sources are already present — it opens with its own rm -rf.
+    # Remove all of this once upstream stops deleting its own sources.
+    next unless target.name == 'zstandard_ios'
+
+    sync_script = File.join(podfile_dir, '.symlinks', 'plugins', 'zstandard_ios', 'scripts', 'sync_zstd.sh')
+    raise "zstandard_ios sync script not found: #{sync_script}" unless File.exist?(sync_script)
+    raise "zstandard_ios sync failed: #{sync_script}" unless system('bash', sync_script)
+
+    target.build_phases
+          .select { |phase| phase.display_name.include?('Remove synced zstd') }
+          .each(&:remove_from_project)
+
+    target.build_phases.each do |phase|
+      next unless phase.display_name.include?('Sync zstd')
+
+      phase.shell_script = <<~SCRIPT
+        if [ -f "${PODS_TARGET_SRCROOT}/Classes/zstd/zstd.h" ]; then
+          exit 0
+        fi
+        bash "$(dirname "${PODS_TARGET_SRCROOT}")/scripts/sync_zstd.sh"
+      SCRIPT
+    end
   end
 end

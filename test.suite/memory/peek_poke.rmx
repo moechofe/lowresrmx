@@ -1,0 +1,8 @@
+'@frames 4
+poke $9000,123
+assert peek($9000)=123
+pokew $9002,4660
+assert peekw($9002)=4660
+pokel $9004,-18694260
+assert peekl($9004)=-18694260
+end

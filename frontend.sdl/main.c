@@ -29,6 +29,10 @@
 #include "system_paths.h"
 #include "utils.h"
 
+#if HARNESS_TESTS
+#include "harness.h"
+#endif
+
 #if defined(_WIN32)
 #include <SDL3/SDL_main.h>
 #endif
@@ -132,6 +136,14 @@ struct CoreInput coreInput;
 enum MainState mainState = MainStateUndefined;
 char mainProgramFilename[FILENAME_MAX] = "";
 
+#if HARNESS_TESTS
+// -test drives the shared harness through the real SDL event, audio and render path
+struct HarnessSuite testSuite;
+int testCaseIndex = 0;
+bool testCaseStarted = false;
+bool testCaseRunning = false;
+#endif
+
 int numJoysticks = 0;
 SDL_Joystick *joysticks[2] = {NULL, NULL};
 SDL_FRect screenRect;
@@ -226,10 +238,26 @@ int main(int argc, const char *argv[])
 		updateScreenRect(width, height);
 		updateSafeArea();
 
-		bootNX(&coreInput);
-		if(hasProgram())
+#if HARNESS_TESTS
+		if(settings.session.test)
 		{
-			machine_poke(runner.core, bootIntroStateAddress, BootIntroStateProgramAvailable);
+			harness_suiteInit(&testSuite, "test.harness/build");
+			if(!harness_suiteAddPath(&testSuite, settings.session.testPath, NULL) ||
+			   harness_suiteCount(&testSuite) == 0)
+			{
+				printf("no cases found at %s\n", settings.session.testPath);
+				quit = true;
+			}
+			mainState = MainStateTest;
+		}
+		else
+#endif
+		{
+			bootNX(&coreInput);
+			if(hasProgram())
+			{
+				machine_poke(runner.core, bootIntroStateAddress, BootIntroStateProgramAvailable);
+			}
 		}
 
 #ifdef __EMSCRIPTEN__
@@ -270,6 +298,15 @@ int main(int argc, const char *argv[])
 	SDL_Quit();
 
 	runner_deinit(&runner);
+
+#if HARNESS_TESTS
+	if(settings.session.test)
+	{
+		int exitCode = harness_exitCode(&testSuite);
+		harness_suiteDeinit(&testSuite);
+		return exitCode;
+	}
+#endif
 
 	return 0;
 }
@@ -846,6 +883,41 @@ void update(void *arg)
 		}
 		break;
 
+	case MainStateTest:
+#if HARNESS_TESTS
+		if(testCaseIndex < harness_suiteCount(&testSuite))
+		{
+			if(!testCaseStarted)
+			{
+				testCaseStarted = true;
+				testCaseRunning = harness_beginCase(&testSuite, runner.core, testCaseIndex);
+				// the window title, never overlay_message: the overlay composites into the
+				// frame and would change every '@check pixels hash
+				SDL_SetWindowTitle(window, harness_statusLine(&testSuite));
+			}
+
+			if(testCaseRunning && !harness_caseDone(&testSuite))
+			{
+				harness_beforeUpdate(&testSuite, &coreInput);
+				core_update(runner.core, &coreInput);
+				harness_afterUpdate(&testSuite, runner.core, &coreInput);
+			}
+
+			if(!testCaseRunning || harness_caseDone(&testSuite))
+			{
+				harness_endCase(&testSuite, runner.core);
+				++testCaseIndex;
+				testCaseStarted = false;
+			}
+		}
+		if(testCaseIndex >= harness_suiteCount(&testSuite))
+		{
+			harness_report(&testSuite, stdout);
+			quit = true;
+		}
+#endif
+		break;
+
 	case MainStateDevMenu:
 #if DEV_MENU
 		dev_update(&devMenu, &coreInput);
@@ -855,7 +927,13 @@ void update(void *arg)
 
 	hasUsedInputLastUpdate = coreInput.out_hasUsedInput;
 
+	// In -test mode the harness is the only consumer of audio_renderAudio: a real audio device
+	// pulling the same stateful renderer on its own thread would change every '@check audio hash.
+#if HARNESS_TESTS
+	if(!audioStarted && audioStream && !settings.session.test)
+#else
 	if(!audioStarted && audioStream)
+#endif
 	{
 		audioStarted = true;
 		SDL_ResumeAudioStreamDevice(audioStream);

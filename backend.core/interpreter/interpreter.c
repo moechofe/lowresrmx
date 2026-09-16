@@ -156,6 +156,7 @@ struct CoreError itp_compileProgram(struct Core *core, const char *sourceCode)
 	interpreter->tapPending = false;
 	interpreter->tapRead = false;
 	interpreter->seed = 0;
+	interpreter->numAssertions = 0;
 	interpreter->simulatedKeyboardOn = false;
 
 	// variable lookup inline cache (see itp_readVariable); epoch 0 means "no token can match"
@@ -1529,6 +1530,9 @@ enum ErrorCode itp_evaluateCommand(struct Core *core)
 		interpreter->isSingleLineIf = false;
 		++interpreter->pc;
 		break;
+
+	case TokenASSERT:
+		return cmd_ASSERT(core);
 
 	case TokenEND:
 		switch(itp_getNextTokenType(interpreter))

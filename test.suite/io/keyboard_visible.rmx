@@ -1,0 +1,11 @@
+'@frames 30
+'@at 3 keyboard 96
+'@check 3 keyboard 1
+keyboard on
+do
+  if peek($ff88)=96 then goto shown
+  wait vbl
+loop
+shown:
+assert peek($ff88)=96
+end

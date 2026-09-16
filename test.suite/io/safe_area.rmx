@@ -1,0 +1,12 @@
+'@frames 20
+'@at 5 safe 4,21,4,13
+do
+  if safe.t=21 then goto ok
+  wait vbl
+loop
+ok:
+assert safe.l=4
+assert safe.t=21
+assert safe.r=4
+assert safe.b=13
+end

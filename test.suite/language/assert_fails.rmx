@@ -1,0 +1,5 @@
+'@expect-error AssertionFailed
+'@frames 4
+assert 1=1
+assert 1=2
+end

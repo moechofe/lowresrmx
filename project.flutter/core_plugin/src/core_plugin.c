@@ -374,6 +374,18 @@ FFI_PLUGIN_EXPORT void runnerTrace(Runner *runner,bool enabled)
 	core_setDebug(runner->core,enabled);
 }
 
+FFI_PLUGIN_EXPORT int runnerNumAssertions(Runner *runner)
+{
+	if(!runner->core) return 0;
+	return runner->core->interpreter->numAssertions;
+}
+
+FFI_PLUGIN_EXPORT int runnerState(Runner *runner)
+{
+	if(!runner->core) return (int)StateNoProgram;
+	return (int)runner->core->interpreter->state;
+}
+
 FFI_PLUGIN_EXPORT void* syntaxCreate(void)
 {
 	struct Syntax *syntax=malloc(sizeof(struct Syntax));

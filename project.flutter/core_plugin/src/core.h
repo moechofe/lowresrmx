@@ -86,6 +86,7 @@ enum ErrorCode
 	ErrorNotAllowedOutsideOfInterrupt,
 	ErrorUserDeviceDiskFull,
 	ErrorRandAddressNotSeeded,
+	ErrorAssertionFailed,
 
 	ErrorMax
 };
@@ -833,6 +834,7 @@ enum TokenType
 	TokenABS,
 	TokenADD,
 	TokenASC,
+	TokenASSERT,
 	TokenATAN,
 	TokenATTR,
 	TokenBG,
@@ -1801,6 +1803,7 @@ struct Interpreter
 	struct Token *pc;
 	int subLevel;
 	int cycles;
+	int numAssertions;
 	int maxCycles;
 	int interruptOverCycles;
 	bool debug;

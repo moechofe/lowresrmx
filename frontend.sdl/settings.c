@@ -148,6 +148,13 @@ void settings_setParameter(struct Parameters *parameters, const char *key, const
 	{
 
 	}
+#if HARNESS_TESTS
+	else if(strcmp(key, "test") == 0)
+	{
+		parameters->test = true;
+		strncpy(parameters->testPath, value, FILENAME_MAX - 1);
+	}
+#endif
 // 	else if(strcmp(key, "fullscreen") == 0)
 // 	{
 // 		if(strcmp(value, optionYes) == 0)

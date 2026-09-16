@@ -1,0 +1,5 @@
+'@frames 6
+'@check 3 haptic Success
+haptic 3
+wait 2
+end

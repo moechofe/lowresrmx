@@ -1,0 +1,7 @@
+'@frames 4
+assert ceil(1.1)=2
+assert ceil(1)=1
+assert ceil(-1.1)=-1
+assert floor(1.9)=1
+assert floor(-1.1)=-2
+end

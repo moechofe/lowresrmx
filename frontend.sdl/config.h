@@ -28,12 +28,14 @@
 #define SCREENSHOTS 0
 #define HOT_KEYS 0
 #define SETTINGS_FILE 0
+#define HARNESS_TESTS 0
 #else
 #define SIMULATED_KEYBOARD 1
 #define DEV_MENU 1
 #define SCREENSHOTS 1
 #define HOT_KEYS 1
 #define SETTINGS_FILE 1
+#define HARNESS_TESTS 1
 #endif
 
 #endif /* config_h */
