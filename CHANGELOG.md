@@ -1,7 +1,7 @@
 ### 1.0_77
 
 - Flutter: share a program as text file.
-- Flutter: replace the manual as markdown with an html version.
+- Flutter: replace the markdown manual by an html version.
 - Flutter: fix "Failed to start audio playback".
 
 ### 1.0_76
