@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lowresrmx/data/preference.dart';
 import 'package:lowresrmx/data/sync_manager.dart';
 import 'package:lowresrmx/style.dart';
+import 'package:lowresrmx/widget/code_sample.dart';
 import 'package:provider/provider.dart';
 
 class MySettingsPage extends StatefulWidget {
@@ -47,7 +48,11 @@ class _MySettingsPageState extends State<MySettingsPage> {
 									});
 
 								}),
-            )
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 16.0),
+              child: MyCodeSample(fontSize: widget.settings.fontSize),
+            ),
           ])),
         ],
       )),
