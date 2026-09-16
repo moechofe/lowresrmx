@@ -1,10 +1,8 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:app_links/app_links.dart';
 import 'package:flutter/material.dart';
-import 'package:path/path.dart' as p;
-import 'package:share_handler/share_handler.dart';
+import 'package:flutter/services.dart';
 
 import 'package:lowresrmx/app_keys.dart';
 import 'package:lowresrmx/data/library.dart';
@@ -30,56 +28,56 @@ class MyImportService {
 
   MyImportService._internal();
 
-  StreamSubscription<SharedMedia>? _mediaSub;
+  static const MethodChannel _channel = MethodChannel("com.lowresrmx/import");
+
+  bool _started = false;
   final ValueNotifier<MyImportStatus> _status =
       ValueNotifier(const MyImportStatus(MyImportPhase.importing, ""));
   bool _visible = false;
   Timer? _dismissTimer;
 
   Future<void> start() async {
-    if (_mediaSub != null) return;
+    if (_started) return;
+    _started = true;
 
-    // For shared from device
-    final handler = ShareHandlerPlatform.instance;
-    final media = await handler.getInitialSharedMedia();
-    if (media != null && _isProgram(media)) {
-      importSharedMedia(media);
-    }
-    _mediaSub = handler.sharedMediaStream.listen((media) {
-      if (_isProgram(media)) {
-        importSharedMedia(media);
-      }
-    });
-
-    // For shared from browser
-    final appLinks = AppLinks();
-    final Uri? initialUri = await appLinks.getInitialLink();
-    if (initialUri != null) {
-      importUri(initialUri);
-    }
-    appLinks.uriLinkStream.listen(importUri);
-  }
-
-  bool _isProgram(SharedMedia media) {
-    if (media.attachments == null) {
-      return false;
-    }
-    if (media.attachments!.length != 1) {
-      return false;
-    }
-    final SharedAttachment attachment = media.attachments![0]!;
-    if (p.extension(attachment.path) != MyLibrary.codeExtension) {
-      return false;
-    }
-    return true;
-  }
-
-  Future<void> importSharedMedia(SharedMedia media) async {
-    final String path = media.attachments![0]!.path;
-    final String name = p.basenameWithoutExtension(path);
-    showImporting(name);
+    _channel.setMethodCallHandler(_onCall);
     try {
-      final File file = File(path);
+      final List<Object?> queued =
+          await _channel.invokeMethod<List<Object?>>("drainPendingImports") ??
+              const [];
+      for (final Object? payload in queued) {
+        await _dispatch(Map<String, Object?>.from(payload as Map));
+      }
+    } on PlatformException catch (error) {
+      debugPrint("Import channel unavailable: $error");
+    } on MissingPluginException catch (error) {
+      debugPrint("Import channel unavailable: $error");
+    }
+  }
+
+  Future<Object?> _onCall(MethodCall call) async {
+    if (call.method == "import") {
+      await _dispatch(Map<String, Object?>.from(call.arguments as Map));
+    }
+    return null;
+  }
+
+  Future<void> _dispatch(Map<String, Object?> payload) async {
+    switch (payload["kind"]) {
+      case "file":
+        await importFile(payload["path"] as String, payload["name"] as String);
+      case "uri":
+        await importUri(Uri.parse(payload["uri"] as String));
+      default:
+        debugPrint("Unknown import payload: $payload");
+    }
+  }
+
+  /// Imports the program at [path].
+  Future<void> importFile(String path, String name) async {
+    showImporting(name);
+    final File file = File(path);
+    try {
       if (!await file.exists()) {
         debugPrint("Shared file not found: $path");
         showFailed(name);
@@ -89,6 +87,10 @@ class MyImportService {
     } catch (error) {
       debugPrint("Import failed: $error");
       showFailed(name);
+    } finally {
+      try {
+        await file.delete();
+      } catch (_) {}
     }
   }
 

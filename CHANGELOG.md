@@ -1,3 +1,8 @@
+### 1.0_78
+
+- Flutter: receive an `.rmx` shared or opened from another app — Android share sheet and "Open with", iOS "Copy to" and share sheet.
+- Flutter: open a `lowresrmx:` link on iOS.
+
 ### 1.0_77
 
 - Flutter: share a program as text file.
