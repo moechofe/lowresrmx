@@ -37,8 +37,10 @@ const List<_Token> _sample = [
 
 class MyCodeSample extends StatelessWidget {
   final double fontSize;
+  final bool bigFinger;
 
-  const MyCodeSample({required this.fontSize, super.key});
+  const MyCodeSample(
+      {required this.fontSize, required this.bigFinger, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -55,7 +57,11 @@ class MyCodeSample extends StatelessWidget {
     return Container(
       key: codeSampleKey,
       height: codeSampleHeight,
-      padding: const EdgeInsets.all(12.0),
+      padding: EdgeInsets.fromLTRB(
+          fontSize * bigFingerPaddingFactor,
+          12.0,
+          bigFinger ? fontSize * bigFingerPaddingFactor : 12.0,
+          12.0),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(8.0),

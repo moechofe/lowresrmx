@@ -67,7 +67,7 @@ class MyAppState extends State<MyApp> {
           ChangeNotifierProvider<MyLibrary>(create: (_) => MyLibrary()),
           Provider<ComPort>(create: (_) => comPort),
           ChangeNotifierProvider<MyEditorPreference>(
-              create: (_) => MyEditorPreference()),
+              create: (_) => MyEditorPreference()..init()),
 					ChangeNotifierProvider<MyLibraryPreference>(
 							create: (_) => MyLibraryPreference()..init()),
         ],

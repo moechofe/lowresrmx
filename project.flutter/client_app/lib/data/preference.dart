@@ -83,6 +83,16 @@ abstract class MyPreference {
 		prefs.setDouble("editorFontSize", fontSize);
 	}
 
+	static Future<bool> getEditorBigFinger() async {
+		final prefs = await SharedPreferences.getInstance();
+		return prefs.getBool("editorBigFinger") ?? false;
+	}
+
+	static Future<void> setEditorBigFinger(bool bigFinger) async {
+		final prefs = await SharedPreferences.getInstance();
+		prefs.setBool("editorBigFinger", bigFinger);
+	}
+
 	static Future<MyLibrarySort> getLibrarySort() async {
 		final prefs = await SharedPreferences.getInstance();
 		return MyLibrarySort.values[(prefs.getInt("librarySort")??0).clamp(0,MyLibrarySort.values.length-1)];
@@ -244,6 +254,8 @@ class MyProgramPreference extends ChangeNotifier {
 class MyEditorPreference extends ChangeNotifier {
 	Future<void> init() async {
 		_fontSize = await MyPreference.getEditorFontSize();
+		_bigFinger = await MyPreference.getEditorBigFinger();
+		notifyListeners();
 	}
 
 	double _fontSize = 16;
@@ -251,6 +263,14 @@ class MyEditorPreference extends ChangeNotifier {
 	set fontSize(double value) {
 		_fontSize = value;
 		MyPreference.setEditorFontSize(value);
+		notifyListeners();
+	}
+
+	bool _bigFinger = false;
+	bool get bigFinger => _bigFinger;
+	set bigFinger(bool value) {
+		_bigFinger = value;
+		MyPreference.setEditorBigFinger(value);
 		notifyListeners();
 	}
 }

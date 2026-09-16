@@ -41,6 +41,13 @@ class _MyCodeEditorState extends State<MyCodeEditor> {
       controller: widget.editingController,
       findController: widget.findController,
 			scrollController: widget.scrollController,
+      padding: EdgeInsets.fromLTRB(
+          5.0,
+          5.0,
+          widget.editorSettings.bigFinger
+              ? widget.editorSettings.fontSize * bigFingerPaddingFactor
+              : 5.0,
+          5.0),
       style: CodeEditorStyle(
         fontFamily: 'RecursiveLinear',
         fontSize: widget.editorSettings.fontSize,

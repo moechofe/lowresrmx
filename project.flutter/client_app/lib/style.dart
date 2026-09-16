@@ -34,3 +34,5 @@ const TextStyle settingHeader = TextStyle(
 	fontWeight: FontWeight.w500,
 	fontSize: 16,
 );
+
+const double bigFingerPaddingFactor = 1.5;

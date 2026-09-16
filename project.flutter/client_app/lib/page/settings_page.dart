@@ -5,6 +5,8 @@ import 'package:lowresrmx/style.dart';
 import 'package:lowresrmx/widget/code_sample.dart';
 import 'package:provider/provider.dart';
 
+const Key bigFingerSwitchKey = Key('big-finger-switch');
+
 class MySettingsPage extends StatefulWidget {
   final MyEditorPreference settings;
 
@@ -51,7 +53,21 @@ class _MySettingsPageState extends State<MySettingsPage> {
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 16.0),
-              child: MyCodeSample(fontSize: widget.settings.fontSize),
+              child: MyCodeSample(
+                  fontSize: widget.settings.fontSize,
+                  bigFinger: widget.settings.bigFinger),
+            ),
+            SwitchListTile(
+              key: bigFingerSwitchKey,
+              title: const Text("Big finger"),
+              subtitle: const Text(
+                  "Adds padding on the right of the editor, big fingers can select code on screen edge"),
+              value: widget.settings.bigFinger,
+              onChanged: (value) {
+                setState(() {
+                  widget.settings.bigFinger = value;
+                });
+              },
             ),
           ])),
         ],
