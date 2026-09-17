@@ -1,4 +1,4 @@
-version$="0.220"
+version$="0.223"
 'offical graphics editor for Retro Game Creator (LowResRMX) for iOS
 'author: martin mauchauffee
 
@@ -418,12 +418,13 @@ global short,wide
 sub checkresize
 'check if layout has changed, orientation changed, screed splitted
 'call this after 'wait vbl' and check var 'resized'
-  if shownw<>shown.w or shownh<>shown.h-safe.b-keyboard then
+  h=shown.h-max(safe.b,keyboard)
+  if shownw<>shown.w or shownh<>h then
     resized=-1
     cnvchanged=-1
     fltchanged=-1
     tlbchanged=-1
-    shownw=shown.w : shownh=shown.h-safe.b-keyboard
+    shownw=shown.w : shownh=h
     'compute ratio and size of ui element
     short=0 : wide=0
     r=shownw/shownh
