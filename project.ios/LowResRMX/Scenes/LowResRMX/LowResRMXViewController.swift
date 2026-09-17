@@ -105,6 +105,7 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
 	private var keyboardWasShown = false
 	private var keyboardWasHidden = false
 	private var keyboardNewHeight = 0
+	private var isCapturingThumbnail = false
 
 	override func viewDidLoad()
 	{
@@ -355,6 +356,11 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
 
 		if let coreWrapper
 		{
+			if isCapturingThumbnail
+			{
+				isCapturingThumbnail = false
+				core_endThumbnail(&coreWrapper.core)
+			}
 			core_willSuspendProgram(&coreWrapper.core)
 		}
 	}
@@ -480,27 +486,34 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
 
 	@objc func captureProgramIcon()
 	{
-		guard let document
+		guard let document, let coreWrapper
 		else
 		{
 			assertionFailure()
 			return
 		}
-		if let cgImage = nxView.snapshot()
+
+		if core_hasThumbnailHandler(&coreWrapper.core), core_startThumbnail(&coreWrapper.core)
 		{
-			let cropRect = CGRect(
-				x: 0, // (uiImage.size.width-216)/2,
-				y: 0, // (uiImage.size.height-384)/2,
-				width: 180, // 216,
-				height: 180 // 384
-			).integral
-			let croppedImage = UIImage(
-				cgImage: cgImage.cropping(
-					to: cropRect
-				)!
-			)
-			ProjectManager.shared.saveProjectIcon(programUrl: document.fileURL, image: croppedImage)
+			isCapturingThumbnail = true
+			return
 		}
+
+		saveProgramIcon(programUrl: document.fileURL)
+	}
+
+	private func saveProgramIcon(programUrl: URL)
+	{
+		guard let cgImage = nxView.snapshot()?.cropping(
+			to: CGRect(x: 0, y: 0, width: 180, height: 180)
+		)
+		else
+		{
+			return
+		}
+		ProjectManager.shared.saveProjectIcon(
+			programUrl: programUrl, image: UIImage(cgImage: cgImage)
+		)
 	}
 
 	@objc func shareScreenshot()
@@ -659,10 +672,37 @@ class LowResRMXViewController: UIViewController, UIKeyInput, CoreWrapperDelegate
 			core_update(&coreWrapper.core, inputPtr)
 		}
 
-		if core_shouldRender(&coreWrapper.core)
+		let didRender = core_shouldRender(&coreWrapper.core)
+		if didRender
 		{
 			nxView.render()
 		}
+
+		if isCapturingThumbnail, core_isThumbnailReady(&coreWrapper.core)
+		{
+			if !didRender
+			{
+				nxView.render()
+			}
+			isCapturingThumbnail = false
+			finishThumbnailCapture()
+		}
+	}
+
+	private func finishThumbnailCapture()
+	{
+		guard let document, let coreWrapper
+		else
+		{
+			return
+		}
+		core_endThumbnail(&coreWrapper.core)
+		saveProgramIcon(programUrl: document.fileURL)
+		showAlert(
+			withTitle: "Program Icon Captured",
+			message: "Drawing the icon ended the program. Tap the exit button to leave.",
+			block: nil
+		)
 	}
 
 	func exit()

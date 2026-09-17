@@ -298,6 +298,11 @@ bool core_isThumbnailReady(struct Core *core)
 	return core->interpreter->thumbnail && core->interpreter->state == StateEnd;
 }
 
+bool core_hasThumbnailHandler(struct Core *core)
+{
+	return core->interpreter->currentOnThumbnailToken != NULL;
+}
+
 void core_traceError(struct Core *core, struct CoreError error)
 {
 	core->interpreter->debug = false;

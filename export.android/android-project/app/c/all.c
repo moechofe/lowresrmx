@@ -298,6 +298,11 @@ bool core_isThumbnailReady(struct Core *core)
 	return core->interpreter->thumbnail && core->interpreter->state == StateEnd;
 }
 
+bool core_hasThumbnailHandler(struct Core *core)
+{
+	return core->interpreter->currentOnThumbnailToken != NULL;
+}
+
 void core_traceError(struct Core *core, struct CoreError error)
 {
 	core->interpreter->debug = false;
@@ -20451,7 +20456,6 @@ void saveThumbnail(void *pixels, int pitch)
 
 	if(runner.lastRunDidFail)
 	{
-		// the error trace is part of the rendered frame, it must not replace a good thumbnail
 		overlay_message(runner.core, "THUMBNAIL ERROR");
 	}
 	else if(screenshot_saveThumbnail(filename, pixels, pitch))
@@ -20463,7 +20467,6 @@ void saveThumbnail(void *pixels, int pitch)
 		overlay_message(runner.core, "THUMBNAIL ERROR");
 	}
 
-	// thumbnail mode skips overlay_draw, so leave it or the message is never drawn
 	core_endThumbnail(runner.core);
 #endif
 }

@@ -2224,6 +2224,7 @@ void core_orientationChanged(struct Core *core);
 bool core_startThumbnail(struct Core *core);
 void core_endThumbnail(struct Core *core);
 bool core_isThumbnailReady(struct Core *core);
+bool core_hasThumbnailHandler(struct Core *core);
 
 void core_setInputGamepad(struct CoreInput *input, int player, bool up, bool down, bool left, bool right, bool buttonA, bool buttonB);
 
