@@ -63,6 +63,11 @@ FFI_PLUGIN_EXPORT void screenBlitScaled(const uint32_t *src, uint32_t *dst, int 
 
 FFI_PLUGIN_EXPORT void runnerTrace(Runner*,bool);
 
+FFI_PLUGIN_EXPORT bool runnerHasThumbnailHandler(Runner*);
+FFI_PLUGIN_EXPORT bool runnerStartThumbnail(Runner*);
+FFI_PLUGIN_EXPORT bool runnerIsThumbnailReady(Runner*);
+FFI_PLUGIN_EXPORT void runnerEndThumbnail(Runner*);
+
 FFI_PLUGIN_EXPORT int runnerNumAssertions(Runner*);
 FFI_PLUGIN_EXPORT int runnerState(Runner*);
 

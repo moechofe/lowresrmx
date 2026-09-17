@@ -386,6 +386,30 @@ FFI_PLUGIN_EXPORT int runnerState(Runner *runner)
 	return (int)runner->core->interpreter->state;
 }
 
+FFI_PLUGIN_EXPORT bool runnerHasThumbnailHandler(Runner *runner)
+{
+	if(!runner->core) return false;
+	return core_hasThumbnailHandler(runner->core);
+}
+
+FFI_PLUGIN_EXPORT bool runnerStartThumbnail(Runner *runner)
+{
+	if(!runner->core) return false;
+	return core_startThumbnail(runner->core);
+}
+
+FFI_PLUGIN_EXPORT bool runnerIsThumbnailReady(Runner *runner)
+{
+	if(!runner->core) return false;
+	return core_isThumbnailReady(runner->core);
+}
+
+FFI_PLUGIN_EXPORT void runnerEndThumbnail(Runner *runner)
+{
+	if(!runner->core) return;
+	core_endThumbnail(runner->core);
+}
+
 FFI_PLUGIN_EXPORT void* syntaxCreate(void)
 {
 	struct Syntax *syntax=malloc(sizeof(struct Syntax));
