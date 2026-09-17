@@ -105,6 +105,15 @@ void runnerRender(ffi.Pointer<Runner> runner, ffi.Pointer<ffi.Uint8> pixels) =>
 void runnerTrace(ffi.Pointer<Runner> runner, bool trace) =>
     _bindings.runnerTrace(runner, trace);
 
+bool runnerHasThumbnailHandler(ffi.Pointer<Runner> runner) =>
+    _bindings.runnerHasThumbnailHandler(runner);
+bool runnerStartThumbnail(ffi.Pointer<Runner> runner) =>
+    _bindings.runnerStartThumbnail(runner);
+bool runnerIsThumbnailReady(ffi.Pointer<Runner> runner) =>
+    _bindings.runnerIsThumbnailReady(runner);
+void runnerEndThumbnail(ffi.Pointer<Runner> runner) =>
+    _bindings.runnerEndThumbnail(runner);
+
 int runnerNumAssertions(ffi.Pointer<Runner> runner) =>
     _bindings.runnerNumAssertions(runner);
 int runnerState(ffi.Pointer<Runner> runner) => _bindings.runnerState(runner);
