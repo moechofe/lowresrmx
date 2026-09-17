@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lowresrmx/data/preference.dart';
+import 'package:lowresrmx/data/sync_conflict.dart';
 import 'package:lowresrmx/page/manual_page.dart';
 import 'package:lowresrmx/page/settings_page.dart';
 import 'package:provider/provider.dart';
@@ -39,6 +40,11 @@ class _MyEditDrawerState extends State<MyEditDrawer> {
   late final MyProgramPreference programPreference;
 
   void gotoLibrary(BuildContext context) {
+    if (MyConflictService().isBlocked(widget.editedProgramName)) {
+      Navigator.of(context).pop(); // Drawer only: the choice is still open.
+      MyConflictService().present();
+      return;
+    }
     Navigator.of(context)
       ..pop() // Drawer
       ..pop(); // MyEditPage

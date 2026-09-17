@@ -11,30 +11,15 @@ enum InstallChange { unchanged, freshInstall, updated, downgraded }
 
 abstract class MyPreference {
   static Future<String> getProgramDirectory() async {
-    // final prefs = await SharedPreferences.getInstance();
-    // String? libraryPath = prefs.getString("programDirectory");
     String? libraryPath;
-    // if (libraryPath == null) {
     libraryPath = (await getApplicationDocumentsDirectory()).path;
     if (defaultTargetPlatform == TargetPlatform.linux ||
         defaultTargetPlatform == TargetPlatform.windows) {
       PackageInfo packageInfo = await PackageInfo.fromPlatform();
       libraryPath = p.join(libraryPath, packageInfo.appName);
     }
-    // }
-    debugPrint("Library path: $libraryPath");
     return libraryPath;
   }
-
-  // static Future<void> resetProgramDirectory() async {
-  // 	final prefs = await SharedPreferences.getInstance();
-  // 	await prefs.remove("programDirectory");
-  // }
-
-  // static Future<void> setProgramDirectory(String programDirectory) async {
-  // 	final prefs = await SharedPreferences.getInstance();
-  // 	await prefs.setString("programDirectory", programDirectory);
-  // }
 
   static Future<List<String>> listToolProgram() async {
     final prefs = await SharedPreferences.getInstance();

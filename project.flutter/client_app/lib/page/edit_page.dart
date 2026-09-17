@@ -13,13 +13,12 @@ import 'package:lowresrmx/core/runtime.dart';
 import 'package:lowresrmx/data/library.dart';
 import 'package:lowresrmx/data/location.dart';
 import 'package:lowresrmx/data/preference.dart';
+import 'package:lowresrmx/data/sync_conflict.dart';
 import 'package:lowresrmx/page/run_page.dart';
 import 'package:lowresrmx/widget/code_editor.dart';
 import 'package:lowresrmx/widget/edit_drawer.dart';
 import 'package:lowresrmx/widget/outline_drawer.dart';
 import 'package:lowresrmx/widget/search_button.dart';
-
-// TODO: flutter client_app: Store the last cursor position in the code editor and restore it when the code is reloaded.
 
 enum MyEditMenu {
   manual,
@@ -138,6 +137,10 @@ class _MyEditPageState extends State<MyEditPage> with WidgetsBindingObserver {
   /// Captured in [initState]: [dispose] cannot look up inherited widgets.
   late final SyncManager syncManager;
 
+  /// Held while this editor keeps the program's code in memory, so a pull that
+  /// replaces the file raises a conflict instead of being silent.
+  MyCodeHolder? codeHold;
+
   @override
   // Calling this multiple times will break the editor.
   void initState() {
@@ -149,8 +152,18 @@ class _MyEditPageState extends State<MyEditPage> with WidgetsBindingObserver {
 
   @override
   void dispose() {
+    final MyCodeHolder? hold = codeHold;
+    if (hold != null) {
+      if (codeReady.isCompleted &&
+          MyConflictService().isBlocked(hold.programName)) {
+        MyConflictService()
+            .updateLocal(hold.programName, editingController.text);
+      }
+      hold.release();
+    }
     syncManager.editorOpen = false;
-    unawaited(syncManager.maybeSyncAll("editor-close"));
+    final SyncManager manager = syncManager;
+    scheduleMicrotask(() => unawaited(manager.maybeSyncAll("editor-close")));
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -167,6 +180,7 @@ class _MyEditPageState extends State<MyEditPage> with WidgetsBindingObserver {
     if (!codeReady.isCompleted) return;
     final programName = (ModalRoute.of(context)!.settings.arguments
         as Map)["programName"]! as String;
+    if (MyConflictService().isBlocked(programName)) return;
     MyLibrary.writeCode(programName, editingController.text);
     syncManager.syncProgram(programName);
     saveScrollOffset();
@@ -194,8 +208,16 @@ class _MyEditPageState extends State<MyEditPage> with WidgetsBindingObserver {
         (ModalRoute.of(context)!.settings.arguments as Map)["runningError"]
             as Map<String, dynamic>?);
 
-    // Load the program code.
-    final String code = await MyLibrary.readCode(programName);
+    codeHold = MyConflictService().hold(programName,
+        localCode: () => codeReady.isCompleted ? editingController.text : null,
+        onReload: (code) => editingController.text = code);
+
+    // With a conflict pending the disk holds the Drive copy: show the local
+    // version, so what the user reads is what "keep local" writes back.
+    final MyCodeConflict? pending =
+        MyConflictService().conflictFor(programName);
+    final String code =
+        pending?.localCode ?? await MyLibrary.readCode(programName);
     final double scrollOffset =
         await MyPreference.getProgramScrollOffset(programName);
 
@@ -230,6 +252,9 @@ class _MyEditPageState extends State<MyEditPage> with WidgetsBindingObserver {
     editedProgramPreference = MyProgramPreference(programName);
     editedProgramPreference.loadPreference();
 
+    // Arriving from the run page with a choice still open.
+    MyConflictService().present();
+
     codeReady.complete(true);
     return true;
   }
@@ -253,13 +278,19 @@ class _MyEditPageState extends State<MyEditPage> with WidgetsBindingObserver {
     return await comPort.compileAndRun(programSource, dataDisk);
   }
 
+  /// The run normally writes the buffer to disk first; with a conflict pending
+  /// the disk holds the Drive copy, so the program runs from the buffer only.
+  Future<void> writeCodeForRun(String programName, String code) async {
+    if (MyConflictService().isBlocked(programName)) return;
+    await MyLibrary.writeCode(programName, code);
+  }
+
   void runEditedProgramWithLibraryDataDisk(String executedProgramName) {
     final ComPort comPort = context.read<ComPort>();
     saveScrollOffset();
     setState(() {
       absorb = true;
-      MyLibrary.writeCode(executedProgramName, editingController.text)
-          .then((_) {
+      writeCodeForRun(executedProgramName, editingController.text).then((_) {
         MyLibrary.readCode("Disk").then((dataDisk) {
           compileAndRun(comPort,
                   programSource: editingController.text, dataDisk: dataDisk)
@@ -289,7 +320,7 @@ class _MyEditPageState extends State<MyEditPage> with WidgetsBindingObserver {
         as Map)["programName"]! as String;
     setState(() {
       absorb = true;
-      MyLibrary.writeCode(programName, editingController.text).then((_) {
+      writeCodeForRun(programName, editingController.text).then((_) {
         MyLibrary.readCode(toolProgramName).then((toolProgramSource) {
           final String dataDisk = editingController.text;
           compileAndRun(comPort,
@@ -318,6 +349,8 @@ class _MyEditPageState extends State<MyEditPage> with WidgetsBindingObserver {
       {required String editedName,
       required String dataDiskName,
       required String executedName}) {
+    syncManager.programRunning = true;
+    syncManager.markDirty();
     Navigator.of(context).pushReplacement(MaterialPageRoute(
         builder: (context) => MyRunPage(
             comPort: context.read<ComPort>(),
@@ -412,12 +445,19 @@ class _MyEditPageState extends State<MyEditPage> with WidgetsBindingObserver {
   }
 
   Widget buildScaffold(BuildContext providerContext) {
-    return PopScope(
-      // Back leaves the editor for the library page below. Nothing else writes
-      // the code on that path, so it has to happen here.
-      onPopInvokedWithResult: (didPop, _) {
-        if (didPop) saveCode();
-      },
+    return ValueListenableBuilder<List<MyCodeConflict>>(
+      valueListenable: MyConflictService().conflicts,
+      builder: (context, list, child) => PopScope(
+        canPop: !list.any((c) => c.programName == codeHold?.programName),
+        onPopInvokedWithResult: (didPop, _) {
+          if (didPop) {
+            saveCode();
+          } else {
+            MyConflictService().present();
+          }
+        },
+        child: child!,
+      ),
       child: AbsorbPointer(
         absorbing: absorb,
         child: Scaffold(

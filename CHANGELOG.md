@@ -3,6 +3,10 @@
 - Flutter: setting to add padding the right of the code editor.
 - Flutter: the code editor reopens where it was left, per program, across a run.
 - Desktop: `[T]` saves the program's thumbnail as a 180x180 PNG next to its `.rmx`.
+- iOS: "Capture program Icon" lets the program draw its own icon through ON THUMBNAIL.
+- Flutter: "Save thumbnail" lets the program draw its own icon through ON THUMBNAIL.
+- Flutter: no Drive sync while a program runs; backgrounding mid-run only uploads.
+- Flutter: when Google Drive replaces a program the editor or a running program still holds, ask which version to keep.
 
 ### 1.0_79
 
