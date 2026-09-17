@@ -7,6 +7,8 @@ import 'package:flutter/services.dart';
 import 'package:lowresrmx/core/runtime.dart';
 import 'package:lowresrmx/data/library.dart';
 import 'package:lowresrmx/data/preference.dart';
+import 'package:lowresrmx/data/sync_conflict.dart';
+import 'package:lowresrmx/data/sync_manager.dart';
 import 'package:lowresrmx/page/edit_page.dart';
 import 'package:lowresrmx/widget/screen_paint.dart';
 import 'package:provider/provider.dart';
@@ -102,9 +104,20 @@ class _MyRunPageState extends State<MyRunPage> {
   final ValueNotifier<ui.Image?> imageNotifier = ValueNotifier(null);
   late final MyProgramPreference programPreference;
 
+  late final SyncManager syncManager;
+
+  MyCodeHolder? editingHold;
+  MyCodeHolder? dataDiskHold;
+
   @override
   void initState() {
     super.initState();
+    syncManager = context.read<SyncManager>();
+    editingHold = MyConflictService().hold(widget.editingName);
+    if (widget.dataDiskName != widget.editingName) {
+      dataDiskHold = MyConflictService().hold(widget.dataDiskName);
+    }
+    MyConflictService().present();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
 
     programPreference = MyProgramPreference(widget.executedName);
@@ -115,11 +128,17 @@ class _MyRunPageState extends State<MyRunPage> {
       reportError(error);
     };
     widget.comPort.onThumbnail = (image, programEnded) {
+      if (MyConflictService().isBlocked(widget.editingName)) return;
       MyLibrary.writeThumbnail(widget.editingName, image);
       if (programEnded) reportThumbnailEnded();
     };
     widget.comPort.onSaveDataDisk = (dataDisk) {
+      if (MyConflictService().isBlocked(widget.dataDiskName)) {
+        MyConflictService().updateLocal(widget.dataDiskName, dataDisk);
+        return;
+      }
       MyLibrary.writeCode(widget.dataDiskName, dataDisk);
+      syncManager.markDirty();
     };
     widget.comPort.onKeyboardVisible = (visible) {
       if (visible) {
@@ -144,6 +163,9 @@ class _MyRunPageState extends State<MyRunPage> {
 
   @override
   void dispose() {
+    syncManager.programRunning = false;
+    editingHold?.release();
+    dataDiskHold?.release();
     widget.comPort.stop();
     widget.comPort.onSaveDataDisk = null;
     widget.comPort.onThumbnail = null;
@@ -212,7 +234,6 @@ class _MyRunPageState extends State<MyRunPage> {
 
   @override
   Widget build(BuildContext context) {
-
     debugPrint("RunPageState.build()");
     return FutureBuilder(
         future: programPreference.loadPreference(),

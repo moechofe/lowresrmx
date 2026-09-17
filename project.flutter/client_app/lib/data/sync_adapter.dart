@@ -38,6 +38,10 @@ class CachedDriveAdapter implements StorageAdapter {
   Map<String, RemoteFileInfo> _listing = {};
   bool _listed = false;
 
+  /// The listing from the last [listFiles] call. The engine lists before it
+  /// transfers anything, so a pull can read the remote timestamp from here.
+  Map<String, RemoteFileInfo> get lastListing => _listing;
+
   Future<void> load() async {
     final raw = await MyPreference.getSyncHashCache();
     if (raw == null) return;

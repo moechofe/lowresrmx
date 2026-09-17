@@ -16,9 +16,11 @@ import 'package:cloud_sync_drive/cloud_sync_drive.dart';
 import 'package:path/path.dart' as p;
 import 'package:crypto/crypto.dart';
 import 'package:lowresrmx/data/sync_adapter.dart';
+import 'package:lowresrmx/data/sync_conflict.dart';
 
 class SyncManager with ChangeNotifier, WidgetsBindingObserver {
   SyncManager() {
+    MyConflictService().pushProgram = syncProgram;
     _init();
   }
 
@@ -44,7 +46,9 @@ class SyncManager with ChangeNotifier, WidgetsBindingObserver {
   bool _dirty = false;
   bool _selfRefresh = false;
   bool _editorOpen = false;
+  bool _programRunning = false;
   bool _pendingFull = false;
+  bool _disposed = false;
   final Set<String> _pendingPrograms = {};
   DateTime? _lastFullSync;
 
@@ -53,6 +57,12 @@ class SyncManager with ChangeNotifier, WidgetsBindingObserver {
   /// the next save would push the stale text back, because the engine's default
   /// resolver is `newerWins`.
   set editorOpen(bool value) => _editorOpen = value;
+
+  /// Set while a program is on the run page. Automatic full syncs are skipped
+  /// meanwhile: a pull rewrites the thumbnail and data disk the engine is
+  /// writing, and hashing the library competes with the 60 fps ticker on this
+  /// isolate.
+  set programRunning(bool value) => _programRunning = value;
 
   /// False when google_sign_in has no implementation on this platform (Linux,
   /// Windows) or initialization failed; every entry point is then a no-op.
@@ -114,9 +124,18 @@ class SyncManager with ChangeNotifier, WidgetsBindingObserver {
 
   @override
   void dispose() {
+    _disposed = true;
     WidgetsBinding.instance.removeObserver(this);
     MyLibrary().removeListener(_onLibraryChanged);
     super.dispose();
+  }
+
+  /// Syncs are deferred and awaited work resumes long after it started, so a
+  /// notification can arrive once the provider above is gone.
+  @override
+  void notifyListeners() {
+    if (_disposed) return;
+    super.notifyListeners();
   }
 
   @override
@@ -124,7 +143,9 @@ class SyncManager with ChangeNotifier, WidgetsBindingObserver {
     if (state == AppLifecycleState.resumed) {
       unawaited(maybeSyncAll("resume"));
     } else if (state == AppLifecycleState.paused && _dirty) {
-      unawaited(maybeSyncAll("pause"));
+      unawaited(_programRunning
+          ? pushAllPrograms(reason: "pause-run")
+          : maybeSyncAll("pause"));
     }
   }
 
@@ -134,6 +155,10 @@ class SyncManager with ChangeNotifier, WidgetsBindingObserver {
     if (_selfRefresh) return;
     _dirty = true;
   }
+
+  /// Marks the library for a later sync when a write bypassed
+  /// [MyLibrary]'s notifications — [MyLibrary.writeCode] is silent.
+  void markDirty() => _dirty = true;
 
   /// Signs in when no account is connected yet and asks for the Drive scopes.
   /// Shows UI: call it from a user gesture only. True when Drive is usable.
@@ -302,8 +327,26 @@ class SyncManager with ChangeNotifier, WidgetsBindingObserver {
           if (p.extension(name) == MyLibrary.thumbExtension) {
             await FileImage(file).evict();
           }
+          // A page may be holding this program's code; snapshot what the pull
+          // is about to erase so the user can still choose it.
+          final String programName = p.basenameWithoutExtension(name);
+          final bool held = p.extension(name) == MyLibrary.codeExtension &&
+              MyConflictService().isHeld(programName) &&
+              await file.exists();
+          final String? localCode = held ? await file.readAsString() : null;
+          final DateTime? localModified =
+              held ? await file.lastModified() : null;
           await file.writeAsBytes(bytes);
           localChanges += 1;
+          if (localCode != null) {
+            MyConflictService().recordPull(
+              programName: programName,
+              localCode: localCode,
+              localModified: localModified!,
+              remoteModified:
+                  adapter.lastListing[name]?.lastModified ?? DateTime.now(),
+            );
+          }
         },
       );
 
@@ -425,10 +468,26 @@ class SyncManager with ChangeNotifier, WidgetsBindingObserver {
     await _syncFiles(await _libraryManifest(), full: true, reason: reason);
   }
 
+  /// Upload-only sync of the whole library. Used while a program runs: pulling
+  /// would rewrite files under the engine. Leaves the dirty flag set, so the
+  /// next full sync still runs and still resolves the pull side.
+  Future<void> pushAllPrograms({required String reason}) async {
+    if (!_canSync || _syncing) return;
+    _syncing = true;
+    notifyListeners();
+    await _syncFiles(await _libraryManifest(), full: false, reason: reason);
+  }
+
   /// Full sync when the library changed since the last one, or when the last one
   /// is older than [fullSyncCooldown]. The automatic triggers use this.
   Future<void> maybeSyncAll(String reason) async {
-    if (!_canSync || _syncing || _editorOpen) return;
+    if (!_canSync ||
+        _syncing ||
+        _editorOpen ||
+        _programRunning ||
+        MyConflictService().hasConflicts) {
+      return;
+    }
     final DateTime? last = _lastFullSync;
     if (!_dirty &&
         last != null &&
@@ -497,5 +556,6 @@ class SyncManager with ChangeNotifier, WidgetsBindingObserver {
     }
   }
 
-  bool get _canSync => isAvailable && isAuthorized && accountEmail != null;
+  bool get _canSync =>
+      !_disposed && isAvailable && isAuthorized && accountEmail != null;
 }
