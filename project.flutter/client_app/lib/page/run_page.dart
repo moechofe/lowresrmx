@@ -109,15 +109,14 @@ class _MyRunPageState extends State<MyRunPage> {
 
     programPreference = MyProgramPreference(widget.executedName);
 
-    // TODO: move this into a Completer/Future
-    // Actually, nothing required async here, and no future are needed.
     widget.comPort.onRunningError = (error) {
       widget.comPort.onRunningError = null;
       widget.comPort.stop();
       reportError(error);
     };
-    widget.comPort.onThumbnail = (image) {
+    widget.comPort.onThumbnail = (image, programEnded) {
       MyLibrary.writeThumbnail(widget.editingName, image);
+      if (programEnded) reportThumbnailEnded();
     };
     widget.comPort.onSaveDataDisk = (dataDisk) {
       MyLibrary.writeCode(widget.dataDiskName, dataDisk);
@@ -181,6 +180,22 @@ class _MyRunPageState extends State<MyRunPage> {
         });
   }
 
+  void reportThumbnailEnded() {
+    if (!mounted) return;
+    showDialog<void>(
+        context: context,
+        builder: (context) => AlertDialog(
+                icon: const Icon(Icons.image_rounded),
+                title: const Text("Thumbnail Saved"),
+                content: const Text(
+                    "Drawing the thumbnail ended the program. Return to the editor to run it again."),
+                actions: [
+                  FilledButton(
+                      child: const Text("OK"),
+                      onPressed: () => Navigator.of(context).pop())
+                ]));
+  }
+
   /// Will go back to the previous page.
   void gotoEditor(BuildContext context) {
     Navigator.of(context).restorablePushReplacementNamed(MyEditPage.routeName,
@@ -197,7 +212,6 @@ class _MyRunPageState extends State<MyRunPage> {
 
   @override
   Widget build(BuildContext context) {
-// TODO: must include Provider for MyProgramPreference
 
     debugPrint("RunPageState.build()");
     return FutureBuilder(

@@ -294,6 +294,62 @@ class CorePluginBindings {
   late final _runnerTrace =
       _runnerTracePtr.asFunction<void Function(ffi.Pointer<Runner>, bool)>();
 
+  bool runnerHasThumbnailHandler(
+    ffi.Pointer<Runner> arg0,
+  ) {
+    return _runnerHasThumbnailHandler(
+      arg0,
+    );
+  }
+
+  late final _runnerHasThumbnailHandlerPtr =
+      _lookup<ffi.NativeFunction<ffi.Bool Function(ffi.Pointer<Runner>)>>(
+          'runnerHasThumbnailHandler');
+  late final _runnerHasThumbnailHandler = _runnerHasThumbnailHandlerPtr
+      .asFunction<bool Function(ffi.Pointer<Runner>)>();
+
+  bool runnerStartThumbnail(
+    ffi.Pointer<Runner> arg0,
+  ) {
+    return _runnerStartThumbnail(
+      arg0,
+    );
+  }
+
+  late final _runnerStartThumbnailPtr =
+      _lookup<ffi.NativeFunction<ffi.Bool Function(ffi.Pointer<Runner>)>>(
+          'runnerStartThumbnail');
+  late final _runnerStartThumbnail =
+      _runnerStartThumbnailPtr.asFunction<bool Function(ffi.Pointer<Runner>)>();
+
+  bool runnerIsThumbnailReady(
+    ffi.Pointer<Runner> arg0,
+  ) {
+    return _runnerIsThumbnailReady(
+      arg0,
+    );
+  }
+
+  late final _runnerIsThumbnailReadyPtr =
+      _lookup<ffi.NativeFunction<ffi.Bool Function(ffi.Pointer<Runner>)>>(
+          'runnerIsThumbnailReady');
+  late final _runnerIsThumbnailReady = _runnerIsThumbnailReadyPtr
+      .asFunction<bool Function(ffi.Pointer<Runner>)>();
+
+  void runnerEndThumbnail(
+    ffi.Pointer<Runner> arg0,
+  ) {
+    return _runnerEndThumbnail(
+      arg0,
+    );
+  }
+
+  late final _runnerEndThumbnailPtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<Runner>)>>(
+          'runnerEndThumbnail');
+  late final _runnerEndThumbnail =
+      _runnerEndThumbnailPtr.asFunction<void Function(ffi.Pointer<Runner>)>();
+
   int runnerNumAssertions(
     ffi.Pointer<Runner> arg0,
   ) {
@@ -600,7 +656,8 @@ abstract class ErrorCode {
   static const int ErrorUserDeviceDiskFull = 59;
   static const int ErrorRandAddressNotSeeded = 60;
   static const int ErrorAssertionFailed = 61;
-  static const int ErrorMax = 62;
+  static const int ErrorNotAllowedInThumbnail = 62;
+  static const int ErrorMax = 63;
 }
 
 final class ControlsInfo extends ffi.Struct {

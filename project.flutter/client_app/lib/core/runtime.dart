@@ -124,7 +124,10 @@ class ThumbnailMsg {
   static int thumbHeight = 180;
 
   Uint8List pixels;
-  ThumbnailMsg(this.pixels);
+
+  /// True when the program's `ON THUMBNAIL` handler drew the icon.
+  final bool programEnded;
+  ThumbnailMsg(this.pixels, this.programEnded);
 }
 
 /// Message used to transport the data disk from the isolate to the app
@@ -389,6 +392,22 @@ class Runtime extends ChangeNotifier {
   void trace(bool trace) {
     runnerTrace(runner, trace);
   }
+
+  bool thumbnailPending = false;
+
+  bool startThumbnail() {
+    if (!runnerHasThumbnailHandler(runner)) return false;
+    if (!runnerStartThumbnail(runner)) return false;
+    thumbnailPending = true;
+    return true;
+  }
+
+  bool get thumbnailReady => runnerIsThumbnailReady(runner);
+
+  void endThumbnail() {
+    thumbnailPending = false;
+    runnerEndThumbnail(runner);
+  }
 }
 
 /// Used to hold the [Runtime] instance into an isolate.
@@ -447,6 +466,13 @@ void isolateEntryPoint(List<Object?> arguments) {
         if (!err.ok) {
           sendPort.send(RunningErrorMsg(err));
         }
+        if (runtime.thumbnailPending) {
+          if (err.ok && runtime.thumbnailReady) {
+            runtime.renderPixels();
+            sendPort.send(ThumbnailMsg(runtime.bytesList!, true));
+          }
+          runtime.endThumbnail();
+        }
         if (runtime.dataDiskToSave != null) {
           sendPort.send(DataDiskMsg(runtime.dataDiskToSave!));
           runtime.dataDiskToSave = null;
@@ -501,9 +527,11 @@ void isolateEntryPoint(List<Object?> arguments) {
         runtime.trace(false);
       } else if (message is IsolateMessageType &&
           message == IsolateMessageType.thumbnail) {
-        // Thumbnails need fantasy-resolution pixels, not the device-resolution surface.
-        runtime.renderPixels();
-        sendPort.send(ThumbnailMsg(runtime.bytesList!));
+        // A program that registered ON THUMBNAIL draws its own icon; the handler runs inside the next update
+        if (!runtime.startThumbnail()) {
+          runtime.renderPixels();
+          sendPort.send(ThumbnailMsg(runtime.bytesList!, false));
+        }
       }
     } catch (e, stack) {
       debugPrint("Isolate error: $e\n$stack");
@@ -517,7 +545,7 @@ void isolateEntryPoint(List<Object?> arguments) {
 typedef FrameCallback = void Function(ui.Image);
 
 /// To receive the [img.Image] to be saved as thumbnail.
-typedef ThumbnailCallback = void Function(img.Image);
+typedef ThumbnailCallback = void Function(img.Image image, bool programEnded);
 
 /// To receive the error when the program is running.
 typedef RunnerErrorCallback = void Function(Error);
@@ -661,7 +689,7 @@ class ComPort {
             width: ThumbnailMsg.thumbWidth,
             height: ThumbnailMsg.thumbHeight,
             antialias: false);
-        onThumbnail!(image);
+        onThumbnail!(image, message.programEnded);
       } else if (message is DataDiskMsg) {
         if (onSaveDataDisk != null) {
           onSaveDataDisk!(message.dataDisk);
