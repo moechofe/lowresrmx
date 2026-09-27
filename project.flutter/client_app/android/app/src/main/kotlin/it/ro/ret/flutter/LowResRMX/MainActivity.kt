@@ -69,7 +69,10 @@ class MainActivity : FlutterActivity() {
     private fun stage(uri: Uri) {
         try {
             val name = displayName(uri) ?: return
-            if (!name.endsWith(EXTENSION, ignoreCase = true)) return
+            if (!name.endsWith(EXTENSION, ignoreCase = true)) {
+                emit(mapOf("kind" to "failed", "name" to name))
+                return
+            }
 
             val dir = File(cacheDir, "import").apply { mkdirs() }
             val target = File(dir, "${System.nanoTime()}$EXTENSION")

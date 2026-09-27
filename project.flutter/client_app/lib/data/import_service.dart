@@ -68,6 +68,8 @@ class MyImportService {
         await importFile(payload["path"] as String, payload["name"] as String);
       case "uri":
         await importUri(Uri.parse(payload["uri"] as String));
+      case "failed":
+        showFailed(payload["name"] as String);
       default:
         debugPrint("Unknown import payload: $payload");
     }

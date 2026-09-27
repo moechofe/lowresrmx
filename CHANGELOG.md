@@ -2,6 +2,7 @@
 
 - Flutter: Allow dot, dash and underscore in filename.
 - Flutter: Add space around program items.
+- Flutter: fix Android "Open with" and share sheet missing the app for `.rmx` files.
 
 ### 1.0_80
 
