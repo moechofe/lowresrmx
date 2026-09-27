@@ -1,3 +1,8 @@
+### 1.0_81
+
+- Flutter: Allow dot, dash and underscore in filename.
+- Flutter: Add space around program items.
+
 ### 1.0_80
 
 - Flutter: setting to add padding the right of the code editor.

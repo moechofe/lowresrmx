@@ -10,25 +10,33 @@ import 'package:lowresrmx/widget/library_item.dart';
 const double libraryBigItemExtent = 176.0;
 const double libraryMediumItemExtent = 116.0;
 
+double libraryGridSpacing(Size screenSize) =>
+    screenSize.shortestSide >= 600.0 ? 12.0 : 0.0;
+
 class MyLibraryGridDelegate extends SliverGridDelegate {
   final double targetExtent;
   final double titleHeight;
+  final double spacing;
 
   const MyLibraryGridDelegate(
-      {required this.targetExtent, required this.titleHeight});
+      {required this.targetExtent,
+      required this.titleHeight,
+      required this.spacing});
 
   @override
   SliverGridLayout getLayout(SliverConstraints constraints) {
     final int rounded = (constraints.crossAxisExtent / targetExtent).round();
     final int countPerRow = rounded < 1 ? 1 : rounded;
-    final double cross = constraints.crossAxisExtent / countPerRow;
+    final double usable =
+        constraints.crossAxisExtent - spacing * (countPerRow - 1);
+    final double cross = usable > 0.0 ? usable / countPerRow : 0.0;
     final double main = cross + titleHeight;
     return SliverGridRegularTileLayout(
       childMainAxisExtent: main,
       childCrossAxisExtent: cross,
       crossAxisCount: countPerRow,
-      mainAxisStride: main,
-      crossAxisStride: cross,
+      mainAxisStride: main + spacing,
+      crossAxisStride: cross + spacing,
       reverseCrossAxis: false,
     );
   }
@@ -36,7 +44,8 @@ class MyLibraryGridDelegate extends SliverGridDelegate {
   @override
   bool shouldRelayout(covariant MyLibraryGridDelegate oldDelegate) {
     return oldDelegate.targetExtent != targetExtent ||
-        oldDelegate.titleHeight != titleHeight;
+        oldDelegate.titleHeight != titleHeight ||
+        oldDelegate.spacing != spacing;
   }
 }
 
@@ -52,6 +61,7 @@ class MyCatalogGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     // Make sure to rebuild the grid when a program is created, removed or renamed.
     final MyLibrary _ = context.watch<MyLibrary>();
+    final double spacing = libraryGridSpacing(MediaQuery.sizeOf(context));
     return FutureBuilder(
         future: MyLibrary.buildList(sort),
         builder: (context, snapshot) {
@@ -60,13 +70,16 @@ class MyCatalogGrid extends StatelessWidget {
             return switch (grid) {
               MyLibraryGrid.big => _buildGrid(
                   names,
-                  const MyLibraryGridDelegate(
-                      targetExtent: libraryBigItemExtent, titleHeight: 40.0)),
+                  MyLibraryGridDelegate(
+                      targetExtent: libraryBigItemExtent,
+                      titleHeight: 40.0,
+                      spacing: spacing)),
               MyLibraryGrid.medium => _buildGrid(
                   names,
-                  const MyLibraryGridDelegate(
+                  MyLibraryGridDelegate(
                       targetExtent: libraryMediumItemExtent,
-                      titleHeight: 50.0)),
+                      titleHeight: 50.0,
+                      spacing: spacing)),
               MyLibraryGrid.list => _buildList(names),
             };
           } else {
