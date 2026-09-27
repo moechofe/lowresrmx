@@ -1,5 +1,9 @@
 assert keyboard=0
+print"safe.t",safe.t
+print"safe.b",safe.b
+print"keyboard",keyboard
 keyboard on
+safet=safe.t
 safeb=safe.b
 'wait for keyboard to fully open
 old=-1
@@ -7,5 +11,10 @@ while keyboard=0 or old<>keyboard
   wait vbl
   if keyboard>0 then old=keyboard
 wend
+print"safe.t",safe.t
+print"safe.b",safe.b
+print"keyboard",keyboard
+assert safet=safe.t
 assert safeb=safe.b
+
 
