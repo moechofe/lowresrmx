@@ -3,9 +3,10 @@ import 'package:lowresrmx/core/runtime.dart';
 enum OutlineKind {
   label,
   sub,
+  mark,
 }
 
-/// One label or SUB declaration, as listed by the outline drawer.
+/// One label, SUB declaration or ''' marker, as listed by the outline drawer.
 class OutlineEntry {
   final String identifier;
   final OutlineKind kind;

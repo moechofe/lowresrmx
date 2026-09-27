@@ -82,17 +82,22 @@ class _MyOutlineDrawerState extends State<MyOutlineDrawer> {
             body: visibleEntries.isEmpty
                 ? Center(
                     child: Text(entries.isEmpty
-                        ? "No label or subroutine"
+                        ? "No label, subroutine or mark"
                         : "No match"))
                 : ListView.builder(
                     itemCount: visibleEntries.length,
                     itemBuilder: (context, index) {
                       final entry = visibleEntries[index];
                       return ListTile(
-                          leading: Icon(entry.kind == OutlineKind.sub
-                              ? Icons.functions_rounded
-                              : Icons.label_rounded),
-                          title: Text(entry.identifier),
+                          leading: Icon(switch (entry.kind) {
+                            OutlineKind.sub => Icons.functions_rounded,
+                            OutlineKind.mark => Icons.bookmark_rounded,
+                            OutlineKind.label => Icons.label_rounded,
+                          }),
+                          title: Text(entry.identifier,
+                              style: entry.kind == OutlineKind.mark
+                                  ? const TextStyle(fontWeight: FontWeight.bold)
+                                  : null),
                           trailing: Text("${entry.location.row + 1}"),
                           dense: true,
                           onTap: () {

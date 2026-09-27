@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:ffi' as ffi;
 
 import 'package:core_plugin/core_plugin.dart';
@@ -6,23 +7,56 @@ import 'package:core_plugin/core_plugin_bindings_generated.dart';
 import 'package:lowresrmx/core/runtime.dart';
 import 'package:lowresrmx/data/outline_entry.dart';
 
-/// Tokenizes [source] with the engine (core_syntax.h) and returns every label and SUB declaration, in source order.
+const String _markPrefix = "'''";
+
+final RegExp _markKeyword = RegExp(r'^MARK[:\s]+(?=\S)', caseSensitive: false);
+
+/// Returns every ''' marker comment of [source], in source order.
+List<OutlineEntry> scanMarks(String source) {
+  final List<OutlineEntry> marks = [];
+  final List<String> lines = const LineSplitter().convert(source);
+  for (int row = 0; row < lines.length; ++row) {
+    final String line = lines[row];
+    int column = 0;
+    while (column < line.length &&
+        (line.codeUnitAt(column) == 0x20 || line.codeUnitAt(column) == 0x09)) {
+      column += 1;
+    }
+    if (!line.startsWith(_markPrefix, column)) {
+      continue;
+    }
+    final String title = line
+        .substring(column + _markPrefix.length)
+        .trim()
+        .replaceFirst(_markKeyword, '');
+    if (title.isEmpty) {
+      continue;
+    }
+    marks.add(OutlineEntry(
+        identifier: title,
+        kind: OutlineKind.mark,
+        location: Location(row, column)));
+  }
+  return marks;
+}
+
+/// Tokenizes [source] with the engine (core_syntax.h) and returns every label and SUB
+/// declaration, merged with every ''' marker comment, in source order.
 List<OutlineEntry> scanOutline(String source) {
+  final List<OutlineEntry> entries = scanMarks(source);
   final ffi.Pointer<ffi.Void> syntax = syntaxCreate();
   if (syntax == ffi.nullptr) {
-    return const [];
+    return entries;
   }
   try {
     final int count = syntaxScan(syntax, source);
     if (count == 0) {
-      return const [];
+      return entries;
     }
     final ffi.Pointer<SyntaxSpan> spans = syntaxSpans(syntax);
     if (spans == ffi.nullptr) {
-      return const [];
+      return entries;
     }
-
-    final List<OutlineEntry> entries = [];
 
     int byteOffset = 0;
     int unitOffset = 0;
@@ -78,6 +112,9 @@ List<OutlineEntry> scanOutline(String source) {
           kind: kind,
           location: Location(row, unitOffset - rowStart)));
     }
+    entries.sort((a, b) => a.location.row != b.location.row
+        ? a.location.row - b.location.row
+        : a.location.column - b.location.column);
     return entries;
   } finally {
     syntaxDestroy(syntax);
