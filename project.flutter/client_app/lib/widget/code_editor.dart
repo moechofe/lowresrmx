@@ -38,6 +38,7 @@ class _MyCodeEditorState extends State<MyCodeEditor> {
     return CodeEditor(
       focusNode: widget.focusNode,
       autofocus: false,
+      autocompleteSymbols: false,
       controller: widget.editingController,
       findController: widget.findController,
       scrollController: widget.scrollController,
@@ -52,7 +53,7 @@ class _MyCodeEditorState extends State<MyCodeEditor> {
         fontFamily: 'RecursiveLinear',
         fontSize: widget.editorSettings.fontSize,
         fontHeight: 1.2,
-        highlightColor: colorScheme.tertiaryContainer.withOpacity(0.5),
+        highlightColor: colorScheme.tertiaryContainer.withValues(alpha: 0.5),
         cursorWidth: 4,
         cursorColor: colorScheme.onSurface,
         codeTheme: CodeHighlightTheme(

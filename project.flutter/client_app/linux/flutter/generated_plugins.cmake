@@ -3,7 +3,6 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
-  sw_rend
   url_launcher_linux
   zstandard_linux
 )

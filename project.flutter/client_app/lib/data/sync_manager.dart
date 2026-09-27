@@ -288,8 +288,9 @@ class SyncManager with ChangeNotifier, WidgetsBindingObserver {
   }
 
   static bool _isSyncable(String name) {
-    if (name.isEmpty || name.startsWith(".") || name.contains("/"))
+    if (name.isEmpty || name.startsWith(".") || name.contains("/")) {
       return false;
+    }
     final String extension = p.extension(name);
     return extension == MyLibrary.codeExtension ||
         extension == MyLibrary.thumbExtension;

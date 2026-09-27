@@ -285,11 +285,10 @@ packages:
   flutter_miniaudio:
     dependency: "direct main"
     description:
-      path: "."
-      ref: HEAD
-      resolved-ref: "582431e3d9aabc4192ed7c499633091af0131cff"
-      url: "https://github.com/bill0015/flutter_miniaudio.git"
-    source: git
+      name: flutter_miniaudio
+      sha256: "62595b5b70a6904d543db7787d020d820b9d56783c4ee33a008a087cef0b889a"
+      url: "https://pub.dev"
+    source: hosted
     version: "1.0.7"
   flutter_plugin_android_lifecycle:
     dependency: transitive
@@ -722,10 +721,11 @@ packages:
   re_editor:
     dependency: "direct main"
     description:
-      path: "../re_editor"
-      relative: true
-    source: path
-    version: "0.4.0"
+      name: re_editor
+      sha256: "66671c4774a6b4c5254c9a53ab35a083e7e7da9ae371c519bcf491c70a2a4e56"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.10.0"
   re_highlight:
     dependency: "direct main"
     description:
@@ -907,14 +907,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.4.1"
-  sw_rend:
-    dependency: "direct main"
-    description:
-      name: sw_rend
-      sha256: "54fa537cc056d2c43651ed3124c344372042e08341ca0413adc8891b411621f1"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.0.2"
   sync_http:
     dependency: transitive
     description:
