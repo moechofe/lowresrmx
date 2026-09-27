@@ -31,8 +31,6 @@ class MyLibrary extends ChangeNotifier {
 
   MyLibrary._internal();
 
-  /// Rebuilds every view listening to the library. Needed when a program file
-  /// changed under a page that stayed alive, e.g. the editor writing code back.
   void refresh() {
     notifyListeners();
   }
@@ -42,7 +40,6 @@ class MyLibrary extends ChangeNotifier {
 
   static Future<Directory> getLibraryDir() async {
     final String libraryPath = await MyPreference.getProgramDirectory();
-    // TODO: What if, it's a file?
     final Directory libraryDir = Directory(libraryPath);
     if (!await libraryDir.exists()) await libraryDir.create(recursive: true);
     return libraryDir;
@@ -74,7 +71,9 @@ class MyLibrary extends ChangeNotifier {
   }
 
   static String sanitizeName(String name) {
-    final String clean = name.replaceAll(RegExp(r'[^\w\s_]+'), '');
+    final String clean = name
+        .replaceAll(RegExp(r'[^\w\s._-]+'), '')
+        .replaceAll(RegExp(r'^\.+'), '');
     return clean.trim().isEmpty ? "unnamed" : clean;
   }
 
@@ -89,39 +88,25 @@ class MyLibrary extends ChangeNotifier {
     return programFile;
   }
 
-  static Future<void> renameProgram(String programName, String nameName) async {
+  static Future<String> renameProgram(
+      String programName, String newName) async {
     final Directory libraryDir = await getLibraryDir();
-    // Prevent bad characters in the name
-    nameName = sanitizeName(nameName);
-    // Search for a unique name
-    final String endingDigits = nameName.replaceAll(RegExp(r'(.*)\d+$'), '');
-    int counter = 0;
-    if (endingDigits.isNotEmpty) {
-      counter = int.tryParse(endingDigits) ?? 1;
-    }
-    File candidateFile =
-        File(p.join(libraryDir.path, "$nameName$codeExtension"));
-    while (await candidateFile.exists()) {
-      nameName += " $counter";
-      counter += 1;
-      candidateFile = File(p.join(libraryDir.path, "$nameName$codeExtension"));
-    }
-    final String programPath =
-        p.join(libraryDir.path, "$programName$codeExtension");
-    final File programFile = File(p.join(libraryDir.path, programPath));
+    final String uniqueName = await findUniqueName(sanitizeName(newName));
+    final File programFile =
+        File(p.join(libraryDir.path, "$programName$codeExtension"));
     if (await programFile.exists()) {
       await programFile
-          .rename(p.join(libraryDir.path, "$nameName$codeExtension"));
+          .rename(p.join(libraryDir.path, "$uniqueName$codeExtension"));
     }
-    final String thumbPath =
-        p.join(libraryDir.path, "$programName$thumbExtension");
-    final File thumbFile = File(p.join(libraryDir.path, thumbPath));
+    final File thumbFile =
+        File(p.join(libraryDir.path, "$programName$thumbExtension"));
     FileImage(thumbFile).evict();
     if (await thumbFile.exists()) {
       await thumbFile
-          .rename(p.join(libraryDir.path, "$nameName$thumbExtension"));
+          .rename(p.join(libraryDir.path, "$uniqueName$thumbExtension"));
     }
     MyLibrary().notifyListeners();
+    return uniqueName;
   }
 
   static Future<String> duplicateProgram(String programName) async {

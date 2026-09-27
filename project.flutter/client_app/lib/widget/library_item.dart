@@ -389,8 +389,9 @@ class _MyLibraryItemState extends State<MyLibraryItem> {
       },
     );
     if (newName != null && newName != programName) {
-      MyLibrary.renameProgram(programName, newName);
-      MyPreference.renameProgram(programName, newName);
+      final String finalName =
+          await MyLibrary.renameProgram(programName, newName);
+      await MyPreference.renameProgram(programName, finalName);
     }
   }
 

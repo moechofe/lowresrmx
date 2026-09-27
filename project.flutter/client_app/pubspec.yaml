@@ -27,7 +27,7 @@ dependencies:
   core_plugin:
     path: ../core_plugin
   slider_listtile: ^1.0.0
-  flutter_keyboard_visibility: ^6.0.0
+  flutter_keyboard_visibility: ^7.0.1
   share_plus: ^12.0.1
   file_picker: ^10.3.6
   google_sign_in: ^7.2.0
