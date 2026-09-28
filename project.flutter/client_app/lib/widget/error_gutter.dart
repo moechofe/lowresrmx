@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:lowresrmx/data/location.dart';
+import 'package:lowresrmx/data/editor_errors.dart';
 
 import 'package:re_editor/re_editor.dart';
-
-// TODO: I should listen to MyLocationNotifier
 
 class MyErrorGutterRenderObject extends RenderBox {
   CodeLineEditingController _controller;
   CodeIndicatorValueNotifier _notifier;
-  MyContinousLocation _continousLocation;
+  MyEditorErrors _errors;
   TextStyle _textStyle;
   TextStyle _errorStyle;
 
@@ -18,12 +16,12 @@ class MyErrorGutterRenderObject extends RenderBox {
   MyErrorGutterRenderObject({
     required CodeLineEditingController controller,
     required CodeIndicatorValueNotifier notifier,
-    required MyContinousLocation continousLocation,
+    required MyEditorErrors errors,
     required TextStyle textStyle,
     required TextStyle errorStyle,
   })  : _controller = controller,
         _notifier = notifier,
-        _continousLocation = continousLocation,
+        _errors = errors,
         _textStyle = textStyle,
         _errorStyle = errorStyle,
         _textPainter = TextPainter(
@@ -58,16 +56,16 @@ class MyErrorGutterRenderObject extends RenderBox {
     markNeedsPaint();
   }
 
-  set continousLocation(MyContinousLocation value) {
-    if (_continousLocation == value) {
+  set errors(MyEditorErrors value) {
+    if (_errors == value) {
       return;
     }
     if (attached) {
-      _continousLocation.removeListener(markNeedsPaint);
+      _errors.removeListener(markNeedsPaint);
     }
-    _continousLocation = value;
+    _errors = value;
     if (attached) {
-      _continousLocation.addListener(markNeedsPaint);
+      _errors.addListener(markNeedsPaint);
     }
     markNeedsPaint();
   }
@@ -99,6 +97,9 @@ class MyErrorGutterRenderObject extends RenderBox {
           _findParagraphByPosition(position);
       if (paragraph != null) {
         _controller.selectLine(paragraph.index);
+        if (paragraph.index == _errors.markedRow) {
+          _errors.pinMarked(_controller.text.hashCode);
+        }
       }
     }
     super.handleEvent(event, entry);
@@ -108,7 +109,7 @@ class MyErrorGutterRenderObject extends RenderBox {
   void attach(covariant PipelineOwner owner) {
     _controller.addListener(markNeedsPaint);
     _notifier.addListener(markNeedsPaint);
-    _continousLocation.addListener(markNeedsPaint);
+    _errors.addListener(markNeedsPaint);
     super.attach(owner);
   }
 
@@ -116,7 +117,7 @@ class MyErrorGutterRenderObject extends RenderBox {
   void detach() {
     _controller.removeListener(markNeedsLayout);
     _notifier.removeListener(markNeedsPaint);
-    _continousLocation.removeListener(markNeedsPaint);
+    _errors.removeListener(markNeedsPaint);
     super.detach();
   }
 
@@ -145,7 +146,7 @@ class MyErrorGutterRenderObject extends RenderBox {
     canvas
         .clipRect(Rect.fromLTWH(offset.dx, offset.dy, size.width, size.height));
     for (final CodeLineRenderParagraph paragraph in value.paragraphs) {
-      if (paragraph.index == _continousLocation.location.row) {
+      if (paragraph.index == _errors.markedRow) {
         _textPainter.text = TextSpan(text: "🐞", style: _errorStyle);
       } else {
         _textPainter.text = TextSpan(text: "󠁪", style: _textStyle);
@@ -172,7 +173,7 @@ class MyErrorGutterRenderObject extends RenderBox {
 class MyErrorGutter extends LeafRenderObjectWidget {
   final CodeLineEditingController controller;
   final CodeIndicatorValueNotifier notifier;
-  final MyContinousLocation continousLocation;
+  final MyEditorErrors errors;
   final TextStyle textStyle;
   final TextStyle errorStyle;
 
@@ -180,7 +181,7 @@ class MyErrorGutter extends LeafRenderObjectWidget {
     super.key,
     required this.controller,
     required this.notifier,
-    required this.continousLocation,
+    required this.errors,
     required this.textStyle,
     required this.errorStyle,
   });
@@ -190,7 +191,7 @@ class MyErrorGutter extends LeafRenderObjectWidget {
       MyErrorGutterRenderObject(
           controller: controller,
           notifier: notifier,
-          continousLocation: continousLocation,
+          errors: errors,
           textStyle: textStyle,
           errorStyle: errorStyle);
 
@@ -200,7 +201,7 @@ class MyErrorGutter extends LeafRenderObjectWidget {
     renderObject
       ..controller = controller
       ..notifier = notifier
-      ..continousLocation = continousLocation
+      ..errors = errors
       ..textStyle = textStyle
       ..errorStyle = errorStyle;
     super.updateRenderObject(context, renderObject);

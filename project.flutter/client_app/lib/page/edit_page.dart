@@ -11,7 +11,7 @@ import 'package:re_editor/re_editor.dart';
 
 import 'package:lowresrmx/core/runtime.dart';
 import 'package:lowresrmx/data/library.dart';
-import 'package:lowresrmx/data/location.dart';
+import 'package:lowresrmx/data/editor_errors.dart';
 import 'package:lowresrmx/data/preference.dart';
 import 'package:lowresrmx/data/sync_conflict.dart';
 import 'package:lowresrmx/page/run_page.dart';
@@ -19,6 +19,7 @@ import 'package:lowresrmx/widget/code_editor.dart';
 import 'package:lowresrmx/widget/edit_drawer.dart';
 import 'package:lowresrmx/widget/outline_drawer.dart';
 import 'package:lowresrmx/widget/search_button.dart';
+import 'package:lowresrmx/widget/error_banner.dart';
 
 enum MyEditMenu {
   manual,
@@ -119,8 +120,8 @@ class _MyEditPageState extends State<MyEditPage> with WidgetsBindingObserver {
   /// Used to detect changes in the code. Avoiding compiling the same code twice.
   int? lastCodeHash;
 
-  /// Used to gather location of errors and warnings caused by the continuous compilation.
-  final MyContinousLocation location = MyContinousLocation();
+  /// Errors shown in the gutter and the banner.
+  final MyEditorErrors errors = MyEditorErrors();
 
   /// The program name to execute.
   String? editedProgramName;
@@ -211,6 +212,8 @@ class _MyEditPageState extends State<MyEditPage> with WidgetsBindingObserver {
     final Error? runningError = Error.fromMap(
         (ModalRoute.of(context)!.settings.arguments as Map)["runningError"]
             as Map<String, dynamic>?);
+    final String? runningProgram = (ModalRoute.of(context)!.settings.arguments
+        as Map)["runningProgram"] as String?;
 
     codeHold = MyConflictService().hold(programName,
         localCode: () => codeReady.isCompleted ? editingController.text : null,
@@ -242,13 +245,16 @@ class _MyEditPageState extends State<MyEditPage> with WidgetsBindingObserver {
 
     // When the code is ready, it will place the cursor at the error location and scroll to it.
     if (runningError != null) {
-      debugPrint(
-          "Error ${runningError.msg}, ${runningError.getLocation(editingController.text).row}");
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        debugPrint("addPostFrameCallback");
-        location.setLocation(runningError.getLocation(editingController.text));
-        gotoLocation(location.location);
-      });
+      final MyReportedError? error =
+          runningProgram != null && runningProgram != programName
+              ? MyReportedError(
+                  "$runningProgram: ${runningError.msg}", Location(-1, -1))
+              : MyReportedError.of(runningError, editingController.text);
+      if (error != null) {
+        errors.pin(error, editingController.text.hashCode);
+        WidgetsBinding.instance
+            .addPostFrameCallback((_) => gotoLocation(error.location));
+      }
     }
 
     compileOnly();
@@ -266,13 +272,14 @@ class _MyEditPageState extends State<MyEditPage> with WidgetsBindingObserver {
   /// Compile the current program and report errors in the gutter.
   void compileOnly() {
     int currentHash = editingController.text.hashCode;
+    errors.codeChanged(currentHash);
     if (lastCodeHash != currentHash) {
       lastCodeHash = currentHash;
       context
           .read<ComPort>()
           .compileOnly(editingController.text)
           .then((Error err) {
-        location.setLocation(err.getLocation(editingController.text));
+        errors.setCompiled(MyReportedError.of(err, editingController.text));
       });
     }
   }
@@ -306,10 +313,8 @@ class _MyEditPageState extends State<MyEditPage> with WidgetsBindingObserver {
                 dataDiskProgramName = "Disk";
               });
             } else {
-              setState(() {
-                absorb = false;
-                reportCompileError(err);
-              });
+              setState(() => absorb = false);
+              showError(err);
             }
           });
         });
@@ -337,10 +342,8 @@ class _MyEditPageState extends State<MyEditPage> with WidgetsBindingObserver {
                 dataDiskProgramName = programName;
               });
             } else {
-              setState(() {
-                absorb = false;
-                reportCompileError(err);
-              });
+              setState(() => absorb = false);
+              showError(err, foreignProgram: toolProgramName);
             }
           });
         });
@@ -363,42 +366,22 @@ class _MyEditPageState extends State<MyEditPage> with WidgetsBindingObserver {
             executedName: executedName)));
   }
 
-  void reportCompileError(Error err) {
-    final ColorScheme colorScheme = Theme.of(context).colorScheme;
-    // final TextStyle textStyle = TextStyle(color: colorScheme.onErrorContainer);
-    final TextStyle btnStyle =
-        TextStyle(color: colorScheme.onError, fontWeight: FontWeight.bold);
-    location.setLocation(err.getLocation(editingController.text));
-    // Show an error dialog
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          icon: const Icon(Icons.error_rounded),
-          title: const Text("Error"), //, style: textStyle),
-          content: Text(err.msg), // style: textStyle),
-          actions: [
-            FilledButton(
-              style: FilledButton.styleFrom(
-                backgroundColor: colorScheme.error,
-              ),
-              onPressed: () {
-                Navigator.of(context).pop();
-                // Will place the cursor at the error location and scroll to it.
-                gotoLocation(location.location);
-              },
-              child: Text("Go to", style: btnStyle),
-            ),
-          ],
-        );
-      },
-    ).then((_) {
-      focusNode.requestFocus();
-    });
+  void showError(Error err, {String? foreignProgram}) {
+    final String code = editingController.text;
+    MyReportedError? error = MyReportedError.of(err, code);
+    if (error == null) return;
+    if (foreignProgram != null) {
+      error = MyReportedError("$foreignProgram: ${err.msg}", Location(-1, -1));
+    } else {
+      errors.setCompiled(error);
+    }
+    errors.pin(error, code.hashCode);
+    gotoLocation(error.location);
   }
 
   void gotoLocation(Location location) {
     focusNode.requestFocus();
+    if (location.row < 0) return;
     editingController.selection = CodeLineSelection.collapsed(
         index: location.row, offset: location.column);
     editingController.makePositionVisible(
@@ -433,7 +416,7 @@ class _MyEditPageState extends State<MyEditPage> with WidgetsBindingObserver {
             return MultiProvider(
                 providers: [
                   ChangeNotifierProvider(create: (_) => findController),
-                  ChangeNotifierProvider(create: (_) => location),
+                  ChangeNotifierProvider(create: (_) => errors),
                 ],
                 builder: (providerContext, _) {
                   return buildScaffold(providerContext);
@@ -522,6 +505,7 @@ class _MyEditPageState extends State<MyEditPage> with WidgetsBindingObserver {
   Widget buildBody(BuildContext providerContext) {
     return KeyboardVisibilityBuilder(builder: (context, visible) {
       return Column(children: [
+        MyErrorBanner(onGoto: gotoLocation),
         Expanded(child: buildCodeEditor(providerContext)),
         if (visible || Platform.isLinux)
           MyKeyboardBar(controller: editingController, focusNode: focusNode)

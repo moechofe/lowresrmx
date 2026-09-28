@@ -1,3 +1,7 @@
+###
+
+- Flutter: errors stay in a banner above the code until the code changes; a failed Run jumps straight to the error, and tapping 🐞 shows its message.
+
 ### 1.0_82
 
 - GFX: faster infinite renderer.

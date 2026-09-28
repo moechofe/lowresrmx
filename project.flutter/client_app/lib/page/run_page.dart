@@ -228,7 +228,8 @@ class _MyRunPageState extends State<MyRunPage> {
     Navigator.of(context).restorablePushReplacementNamed(MyEditPage.routeName,
         arguments: {
           "programName": widget.editingName,
-          "runningError": error.toMap()
+          "runningError": error.toMap(),
+          "runningProgram": widget.executedName
         });
   }
 

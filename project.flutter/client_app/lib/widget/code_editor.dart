@@ -4,7 +4,7 @@ import 'package:lowresrmx/data/preference.dart';
 import 'package:provider/provider.dart';
 import 'package:re_editor/re_editor.dart';
 
-import 'package:lowresrmx/data/location.dart';
+import 'package:lowresrmx/data/editor_errors.dart';
 import 'package:lowresrmx/language.dart';
 import 'package:lowresrmx/style.dart';
 import 'package:lowresrmx/widget/error_gutter.dart';
@@ -76,13 +76,12 @@ class _MyCodeEditorState extends State<MyCodeEditor> {
       ColorScheme colorScheme,
       CodeLineEditingController controller,
       ValueNotifier<CodeIndicatorValue?> notifier) {
-    final MyContinousLocation continousLocation =
-        context.watch<MyContinousLocation>();
+    final MyEditorErrors errors = context.watch<MyEditorErrors>();
 
     return MyErrorGutter(
         controller: controller,
         notifier: notifier,
-        continousLocation: continousLocation,
+        errors: errors,
         textStyle: TextStyle(
           fontFamily: 'RecursiveLinear',
           fontSize: widget.editorSettings.fontSize,
