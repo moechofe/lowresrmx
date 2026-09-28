@@ -1,6 +1,7 @@
 ###
 
 - Flutter: errors stay in a banner above the code until the code changes; a failed Run jumps straight to the error, and tapping 🐞 shows its message.
+- Flutter: fix `KEYBOARD ON` no longer opening the keyboard after it was closed by hand.
 
 ### 1.0_82
 

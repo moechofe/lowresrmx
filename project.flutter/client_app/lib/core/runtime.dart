@@ -212,7 +212,6 @@ class Runtime extends ChangeNotifier {
   Uint8List? bytesList;
   ui.Image? image;
   String? dataDiskToSave;
-  bool keyboardOpen = false;
   bool inputMode = false;
   int? textureId;
 
@@ -221,11 +220,11 @@ class Runtime extends ChangeNotifier {
   final ffi.Pointer<ffi.Uint8> pixels = calloc<ffi.Uint8>(bufferSize);
   final ffi.Pointer<CoreDelegate> delegate = calloc();
 
-  /// Keep the computed screen scale after a resize event
   double _screenScale = 1.0;
   double get screenScale => _screenScale;
 
   int _keyboardHeight = 0;
+  bool _keyboardSent = false;
 
   void initState() async {
     runnerInit(runner);
@@ -247,6 +246,11 @@ class Runtime extends ChangeNotifier {
       dataDiskPtr.asTypedList(dataDisk.length).setAll(0, dataList);
       runnerStart(runner, input, 123,
           ffi.Pointer.fromAddress(dataDiskPtr.address), dataSize);
+      if (_keyboardHeight > 0) {
+        input.ref.keyboardHeight = _keyboardHeight;
+        input.ref.keyboardChange = 1;
+      }
+      _followHostKeyboard();
     }
     return Error(
         code: err.code,
@@ -281,10 +285,24 @@ class Runtime extends ChangeNotifier {
 
     final int occluded = (keyboardHeight / _screenScale).ceil();
     if (occluded != _keyboardHeight) {
+      final bool flipped = (occluded > 0) != (_keyboardHeight > 0);
       _keyboardHeight = occluded;
       input.ref.keyboardHeight = occluded;
       input.ref.keyboardChange = occluded > 0 ? 1 : -1;
+      if (flipped) _followHostKeyboard();
     }
+  }
+
+  void _followHostKeyboard() {
+    _keyboardSent = _keyboardHeight > 0;
+    runner.ref.shouldOpenKeyboard = _keyboardSent;
+  }
+
+  bool? takeKeyboardRequest() {
+    final bool open = runner.ref.shouldOpenKeyboard;
+    if (open == _keyboardSent) return null;
+    _keyboardSent = open;
+    return open;
   }
 
   void keyDown(int ascii) {
@@ -300,7 +318,6 @@ class Runtime extends ChangeNotifier {
           .toDartString(length: runner.ref.dataDiskSize);
       runner.ref.shouldSaveDisk = false;
     }
-    keyboardOpen = runner.ref.shouldOpenKeyboard;
     inputMode = runner.ref.shouldEnableInputMode;
     return Error(
         code: err.code,
@@ -434,8 +451,7 @@ void isolateEntryPoint(List<Object?> arguments) {
     debugPrint("Error during runtime.initState: $e");
   }
 
-  // Remember the keyboard state to avoid sending the same message each frame.
-  bool currKeyboardOpen = false;
+  // Remember the input mode to avoid sending the same message each frame.
   bool currInputMode = false;
 
   sendPort.send(receivePort.sendPort);
@@ -477,9 +493,9 @@ void isolateEntryPoint(List<Object?> arguments) {
           sendPort.send(DataDiskMsg(runtime.dataDiskToSave!));
           runtime.dataDiskToSave = null;
         }
-        if (runtime.keyboardOpen != currKeyboardOpen) {
-          sendPort.send(KeyboardVisibleMsg(runtime.keyboardOpen));
-          currKeyboardOpen = runtime.keyboardOpen;
+        final bool? keyboardRequest = runtime.takeKeyboardRequest();
+        if (keyboardRequest != null) {
+          sendPort.send(KeyboardVisibleMsg(keyboardRequest));
         }
         if (runtime.inputMode != currInputMode) {
           sendPort.send(InputModeMsg(runtime.inputMode));
