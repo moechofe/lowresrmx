@@ -141,6 +141,9 @@ class _MyEditPageState extends State<MyEditPage> with WidgetsBindingObserver {
   /// replaces the file raises a conflict instead of being silent.
   MyCodeHolder? codeHold;
 
+  final TextEditingController outlineSearchController =
+      TextEditingController();
+
   @override
   // Calling this multiple times will break the editor.
   void initState() {
@@ -165,6 +168,7 @@ class _MyEditPageState extends State<MyEditPage> with WidgetsBindingObserver {
     final SyncManager manager = syncManager;
     scheduleMicrotask(() => unawaited(manager.maybeSyncAll("editor-close")));
     WidgetsBinding.instance.removeObserver(this);
+    outlineSearchController.dispose();
     super.dispose();
   }
 
@@ -509,6 +513,7 @@ class _MyEditPageState extends State<MyEditPage> with WidgetsBindingObserver {
   Widget buildOutlineDrawer(BuildContext providerContext) {
     return MyOutlineDrawer(
         editingController: editingController,
+        searchController: outlineSearchController,
         gotoLocation: (location) {
           gotoLocation(location);
         });

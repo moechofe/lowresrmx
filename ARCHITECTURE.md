@@ -52,10 +52,6 @@
     Flutter FFI plugin to interop with the backend.
     Contains a merged version of the backend at 📝 `src/core.c` and 📝 `src/core.h`.
 
-- 📂 `project.flutter/re_editor`
-
-    A custom old version of [re_editor](https://pub.dev/packages/re_editor).
-
 - 📂 `project.ios/LowResRMX`
 
     iOS client app.

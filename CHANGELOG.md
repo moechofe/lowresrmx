@@ -1,3 +1,9 @@
+### 1.0_82
+
+- GFX: faster infinite renderer.
+- GFX: resize the loaded background from the file menu.
+- Flutter: the outline lists `'''` marker comments.
+
 ### 1.0_81
 
 - Flutter: Allow dot, dash and underscore in filename.

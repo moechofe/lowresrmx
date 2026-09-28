@@ -14,10 +14,14 @@ typedef GotoLocationCallBack = void Function(Location location);
 
 class MyOutlineDrawer extends StatefulWidget {
   final CodeLineEditingController editingController;
+  final TextEditingController searchController;
   final GotoLocationCallBack gotoLocation;
 
   const MyOutlineDrawer(
-      {required this.editingController, required this.gotoLocation, super.key});
+      {required this.editingController,
+      required this.searchController,
+      required this.gotoLocation,
+      super.key});
 
   @override
   State<MyOutlineDrawer> createState() => _MyOutlineDrawerState();
@@ -26,23 +30,34 @@ class MyOutlineDrawer extends StatefulWidget {
 class _MyOutlineDrawerState extends State<MyOutlineDrawer> {
   MyOutlineSort sort = MyOutlineSort.position;
 
-  final TextEditingController searchController = TextEditingController();
-
   late final List<OutlineEntry> entries;
+
+  TextEditingController get searchController => widget.searchController;
 
   @override
   void initState() {
     super.initState();
     entries = scanOutline(widget.editingController.text);
-    searchController.addListener(() {
-      setState(() {});
-    });
+    searchController.addListener(onSearchChanged);
+  }
+
+  @override
+  void didUpdateWidget(MyOutlineDrawer oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.searchController != widget.searchController) {
+      oldWidget.searchController.removeListener(onSearchChanged);
+      widget.searchController.addListener(onSearchChanged);
+    }
   }
 
   @override
   void dispose() {
-    searchController.dispose();
+    searchController.removeListener(onSearchChanged);
     super.dispose();
+  }
+
+  void onSearchChanged() {
+    setState(() {});
   }
 
   List<OutlineEntry> sortList(List<OutlineEntry> entries) {
@@ -92,7 +107,7 @@ class _MyOutlineDrawerState extends State<MyOutlineDrawer> {
                           leading: Icon(switch (entry.kind) {
                             OutlineKind.sub => Icons.functions_rounded,
                             OutlineKind.mark => Icons.bookmark_rounded,
-                            OutlineKind.label => Icons.label_rounded,
+                            OutlineKind.label => Icons.label_outline_rounded,
                           }),
                           title: Text(entry.identifier,
                               style: entry.kind == OutlineKind.mark
@@ -139,7 +154,8 @@ class _MyOutlineDrawerState extends State<MyOutlineDrawer> {
       decoration: InputDecoration(
         hintText: "Search",
         hintStyle: TextStyle(
-            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)),
+            color:
+                Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)),
         border: InputBorder.none,
         icon: const Icon(Icons.search_rounded),
       ),

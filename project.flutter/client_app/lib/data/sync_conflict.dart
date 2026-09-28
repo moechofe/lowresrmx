@@ -37,7 +37,8 @@ class MyCodeConflict {
 }
 
 class MyCodeHolder {
-  MyCodeHolder._(this._service, this.programName, this.localCode, this.onReload);
+  MyCodeHolder._(
+      this._service, this.programName, this.localCode, this.onReload);
 
   final MyConflictService _service;
   final String programName;
