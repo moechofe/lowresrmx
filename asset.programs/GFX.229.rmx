@@ -1391,7 +1391,7 @@ sub oobring
 end sub
 
 
-'system 0,1
+system 0,1
 
 'load user's palettes from file 1 or load default palettes
 pallife=-1
