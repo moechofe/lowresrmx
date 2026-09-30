@@ -3571,6 +3571,10 @@ For each palette:
 |    2 | Background layer 1 enabled |
 |    3 | Background layer 2 enabled |
 |    4 | Background layer 3 enabled |
+|    5 | Background layer 0 doubled |
+|    6 | Background layer 1 doubled |
+|    7 | Background layer 2 doubled |
+|    8 | Background layer 3 doubled |
 
 #### TODO: Audio registers
 

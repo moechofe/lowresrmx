@@ -148,11 +148,11 @@
 <li class="h4"><a href="#wait-vblwait-frame">WAIT VBL<br>WAIT frame</a></li>
 <li class="h4"><a href="#on-vbl-call-procedure">ON VBL CALL procedure</a></li>
 <li class="h4"><a href="#on-vbl-off">ON VBL OFF</a></li>
-<li class="h4"><a href="#on-thumbnail-call-procedure">ON THUMBNAIL CALL procedure</a></li>
-<li class="h4"><a href="#on-thumbnail-off">ON THUMBNAIL OFF</a></li>
 <li class="h4"><a href="#on-raster-call-procedure">ON RASTER CALL procedure</a></li>
 <li class="h4"><a href="#line-raster">line =RASTER</a></li>
 <li class="h4"><a href="#on-raster-off">ON RASTER OFF</a></li>
+<li class="h4"><a href="#on-thumbnail-call-procedure">ON THUMBNAIL CALL procedure</a></li>
+<li class="h4"><a href="#on-thumbnail-off">ON THUMBNAIL OFF</a></li>
 <li class="h3 parent"><a href="#math-api">Math API</a></li>
 <li class="h4"><a href="#pi-pi">pi =PI</a></li>
 <li class="h4"><a href="#cosine-cos-number-sine-sin-number">cosine =COS(number)<br>sine =SIN(number)</a></li>
@@ -2583,27 +2583,6 @@ GOTO one
 </code></pre>
 <h4 data-keyword="ON,VBL,OFF" data-title="ON VBL OFF" id="on-vbl-off" tabindex="-1"><code>ON VBL OFF</code></h4>
 <p>Will stop the execution of a sub-routine during VBL interrupt.</p>
-<h4 data-keyword="ON,THUMBNAIL,CALL" data-title="ON THUMBNAIL CALL" id="on-thumbnail-call-procedure" tabindex="-1"><code>ON THUMBNAIL CALL procedure</code></h4>
-<p>The host may ask the program, at any moment, to draw its own 180x180 thumbnail. The <code>procedure</code> is then called once, with <a href="#width-shown-wheight-shown-h"><code>=SHOWN.W</code>/<code>=SHOWN.H</code></a> reporting 180, <a href="#left-safe-ltop-safe-tright-safe-rbottom-safe-b"><code>=SAFE.L</code>/<code>=SAFE.T</code>/<code>=SAFE.R</code>/<code>=SAFE.B</code></a> reporting 0, the keyboard disabled and the overlay off. The drawing must be laid out to fit that square.</p>
-<p>The program does not resume: entering thumbnail mode abandons the main program where it stands, and the first <a href="#wait-vblwait-frame"><code>WAIT</code></a> inside the <code>procedure</code> ends the program like <a href="#end"><code>END</code></a>. The only way out is to quit or reload the program.</p>
-<p>Because the <code>procedure</code> cannot re-enter, resume or unwind the abandoned main program, <a href="#goto"><code>GOTO</code></a>, <a href="#gosubreturn"><code>GOSUB</code></a>, <a href="#gosubreturn"><code>RETURN</code></a>, <a href="#call"><code>CALL</code></a>, <a href="#do-loop-exit"><code>EXIT</code></a>, <a href="#on-gotoon-gosub"><code>ON n GOTO/GOSUB/RESTORE/CALL</code></a>, <a href="#input-prompt-variableinput-prompt-variable"><code>INPUT</code></a>, <a href="#pause"><code>PAUSE</code></a>, <a href="#load-file-address-limit-offset"><code>LOAD</code></a>, <a href="#save-file-comment-address-size"><code>SAVE</code></a> and <a href="#files"><code>FILES</code></a> raise a <code>Not Allowed In Thumbnail</code> error. <a href="#sub-end-sub-exit-sub"><code>EXIT SUB</code> and <code>END SUB</code></a> work as usual.</p>
-<pre><code>ON THUMBNAIL CALL t
-
-CLS
-PRINT &quot;PLAYING&quot;
-DO
-  WAIT VBL
-LOOP
-
-SUB t
-  CLS
-  WINDOW 0, 0, 22, 22, 0
-  TEXT 1, 1, &quot;MY GAME&quot;
-  WAIT VBL
-END SUB
-</code></pre>
-<h4 data-keyword="ON,THUMBNAIL,OFF" data-title="ON THUMBNAIL OFF" id="on-thumbnail-off" tabindex="-1"><code>ON THUMBNAIL OFF</code></h4>
-<p>Will forget the <code>procedure</code> registered for the thumbnail interrupt.</p>
 <h4 data-keyword="ON,RASTER,CALL" data-title="ON RASTER CALL" id="on-raster-call-procedure" tabindex="-1"><code>ON RASTER CALL procedure</code></h4>
 <p>Before the rendering of the next line of the screen, will execute the <code>procedure</code>. This is useful in conjunction with <a href="#line-raster"><code>=RASTER</code></a>.</p>
 <p>The code MUST be shortest, read more about <a href="#cycles">CPU cycles</a>.</p>
@@ -2648,6 +2627,27 @@ LOOP
 </blockquote>
 <h4 data-keyword="ON,RASTER,OFF" data-title="ON RASTER OFF" id="on-raster-off" tabindex="-1"><code>ON RASTER OFF</code></h4>
 <p>Will stop the execution of a sub-routine during RASTER interrupt.</p>
+<h4 data-keyword="ON,THUMBNAIL,CALL" data-title="ON THUMBNAIL CALL" id="on-thumbnail-call-procedure" tabindex="-1"><code>ON THUMBNAIL CALL procedure</code></h4>
+<p>The host may ask the program, at any moment, to draw its own 180x180 thumbnail. The <code>procedure</code> is then called once, with <a href="#width-shown-wheight-shown-h"><code>=SHOWN.W</code>/<code>=SHOWN.H</code></a> reporting 180, <a href="#left-safe-ltop-safe-tright-safe-rbottom-safe-b"><code>=SAFE.L</code>/<code>=SAFE.T</code>/<code>=SAFE.R</code>/<code>=SAFE.B</code></a> reporting 0, the keyboard disabled and the overlay off. The drawing must be laid out to fit that square.</p>
+<p>The program does not resume: entering thumbnail mode abandons the main program where it stands, and the first <a href="#wait-vblwait-frame"><code>WAIT</code></a> inside the <code>procedure</code> ends the program like <a href="#end"><code>END</code></a>. The only way out is to quit or reload the program.</p>
+<p>Because the <code>procedure</code> cannot re-enter, resume or unwind the abandoned main program, <a href="#goto"><code>GOTO</code></a>, <a href="#gosubreturn"><code>GOSUB</code></a>, <a href="#gosubreturn"><code>RETURN</code></a>, <a href="#call"><code>CALL</code></a>, <a href="#do-loop-exit"><code>EXIT</code></a>, <a href="#on-gotoon-gosub"><code>ON n GOTO/GOSUB/RESTORE/CALL</code></a>, <a href="#input-prompt-variableinput-prompt-variable"><code>INPUT</code></a>, <a href="#pause"><code>PAUSE</code></a>, <a href="#load-file-address-limit-offset"><code>LOAD</code></a>, <a href="#save-file-comment-address-size"><code>SAVE</code></a> and <a href="#files"><code>FILES</code></a> raise a <code>Not Allowed In Thumbnail</code> error. <a href="#sub-end-sub-exit-sub"><code>EXIT SUB</code> and <code>END SUB</code></a> work as usual.</p>
+<pre><code>ON THUMBNAIL CALL t
+
+CLS
+PRINT &quot;PLAYING&quot;
+DO
+  WAIT VBL
+LOOP
+
+SUB t
+  CLS
+  WINDOW 0, 0, 22, 22, 0
+  TEXT 1, 1, &quot;MY GAME&quot;
+  WAIT VBL
+END SUB
+</code></pre>
+<h4 data-keyword="ON,THUMBNAIL,OFF" data-title="ON THUMBNAIL OFF" id="on-thumbnail-off" tabindex="-1"><code>ON THUMBNAIL OFF</code></h4>
+<p>Will forget the <code>procedure</code> registered for the thumbnail interrupt.</p>
 <h3 id="math-api" tabindex="-1">Math API</h3>
 <h4 data-keyword="PI" data-title="=PI" id="pi-pi" tabindex="-1"><code>pi =PI</code></h4>
 <p>Return the constant π.</p>
@@ -4717,6 +4717,22 @@ Also, they are both offseted by 32 pixels. To place a sprite in the 0x0 coordina
 <tr>
 <td class="right">4</td>
 <td>Background layer 3 enabled</td>
+</tr>
+<tr>
+<td class="right">5</td>
+<td>Background layer 0 doubled</td>
+</tr>
+<tr>
+<td class="right">6</td>
+<td>Background layer 1 doubled</td>
+</tr>
+<tr>
+<td class="right">7</td>
+<td>Background layer 2 doubled</td>
+</tr>
+<tr>
+<td class="right">8</td>
+<td>Background layer 3 doubled</td>
 </tr>
 </tbody>
 </table>
