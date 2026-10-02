@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:lowresrmx/data/preference.dart';
+import 'package:lowresrmx/page/manual_page.dart';
 import 'package:lowresrmx/style.dart';
 import 'package:lowresrmx/widget/code_sample.dart';
 
 const Key bigFingerSwitchKey = Key('big-finger-switch');
+const Key manualZoomSliderKey = Key('manual-zoom-slider');
 
 class MySettingsPage extends StatefulWidget {
   final MyEditorPreference settings;
@@ -67,6 +69,32 @@ class _MySettingsPageState extends State<MySettingsPage> {
               },
             ),
           ])),
+          if (manualHasWebView) ...[
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20.0, 8.0, 20.0, 8.0),
+              child: Text("Manual appearance",
+                  style: settingHeader.copyWith(
+                      color: Theme.of(context).hintColor),
+                  textAlign: TextAlign.left),
+            ),
+            Card(
+              child: ListTile(
+                title: const Text("Text size"),
+                subtitle: Slider(
+                    key: manualZoomSliderKey,
+                    min: 50,
+                    max: 200,
+                    divisions: 15,
+                    value: widget.settings.manualZoom,
+                    label: "${widget.settings.manualZoom.round()}%",
+                    onChanged: (value) {
+                      setState(() {
+                        widget.settings.manualZoom = value;
+                      });
+                    }),
+              ),
+            ),
+          ],
         ],
       )),
     );

@@ -3,6 +3,8 @@ import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
+import 'package:lowresrmx/data/preference.dart';
+import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
@@ -10,7 +12,7 @@ const String _manualAsset = 'asset/manual.html';
 
 final Uri _manualWebsite = Uri.parse('https://ret.ro.it/documentation.html');
 
-bool get _hasWebView =>
+bool get manualHasWebView =>
     Platform.isAndroid || Platform.isIOS || Platform.isMacOS;
 
 class MyManualTile extends StatelessWidget {
@@ -20,10 +22,10 @@ class MyManualTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       leading: const Icon(Icons.menu_book_rounded),
-      title: Text(_hasWebView ? "Manual (offline)" : "Manual (online)"),
+      title: Text(manualHasWebView ? "Manual (offline)" : "Manual (online)"),
       onTap: () async {
         Navigator.of(context).pop();
-        if (_hasWebView) {
+        if (manualHasWebView) {
           Navigator.of(context).push(
             MaterialPageRoute(builder: (context) => const MyManualPage()),
           );
@@ -102,7 +104,9 @@ class _MyManualPageState extends State<MyManualPage> {
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setNavigationDelegate(NavigationDelegate(
         onPageFinished: (_) {
-          _loaded = true;
+          if (!mounted) return;
+          _applyZoom();
+          if (!_loaded) setState(() => _loaded = true);
           final String? anchor = _pendingAnchor;
           _pendingAnchor = null;
           if (anchor != null) _jumpTo(anchor);
@@ -118,6 +122,13 @@ class _MyManualPageState extends State<MyManualPage> {
         },
       ))
       ..loadFlutterAsset(_manualAsset);
+  }
+
+  void _applyZoom() {
+    final double zoom = context.read<MyEditorPreference>().manualZoom;
+    final String em = (1.1 * zoom / 100).toStringAsFixed(3);
+    _controller
+        .runJavaScript("document.documentElement.style.fontSize = '${em}em';");
   }
 
   void _jumpTo(String id) {
@@ -163,7 +174,10 @@ class _MyManualPageState extends State<MyManualPage> {
   @override
   Widget build(BuildContext context) {
     final bool isLargeEnough = MediaQuery.of(context).size.width > 600;
-    final Widget web = WebViewWidget(controller: _controller);
+    final Widget web = Stack(children: [
+      WebViewWidget(controller: _controller),
+      if (!_loaded) const Center(child: CircularProgressIndicator()),
+    ]);
 
     if (isLargeEnough) {
       return Scaffold(

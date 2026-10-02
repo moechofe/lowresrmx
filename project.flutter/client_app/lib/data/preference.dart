@@ -82,6 +82,16 @@ abstract class MyPreference {
     prefs.setBool("editorBigFinger", bigFinger);
   }
 
+  static Future<double> getManualZoom() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getDouble("manualZoom") ?? 100.0;
+  }
+
+  static Future<void> setManualZoom(double zoom) async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setDouble("manualZoom", zoom);
+  }
+
   /// Vertical scroll offset of the code editor, in logical pixels.
   static Future<double> getProgramScrollOffset(String program) async {
     final prefs = await SharedPreferences.getInstance();
@@ -258,6 +268,7 @@ class MyEditorPreference extends ChangeNotifier {
   Future<void> init() async {
     _fontSize = await MyPreference.getEditorFontSize();
     _bigFinger = await MyPreference.getEditorBigFinger();
+    _manualZoom = await MyPreference.getManualZoom();
     notifyListeners();
   }
 
@@ -274,6 +285,14 @@ class MyEditorPreference extends ChangeNotifier {
   set bigFinger(bool value) {
     _bigFinger = value;
     MyPreference.setEditorBigFinger(value);
+    notifyListeners();
+  }
+
+  double _manualZoom = 100;
+  double get manualZoom => _manualZoom;
+  set manualZoom(double value) {
+    _manualZoom = value;
+    MyPreference.setManualZoom(value);
     notifyListeners();
   }
 }
