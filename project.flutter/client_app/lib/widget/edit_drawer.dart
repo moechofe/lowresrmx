@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:lowresrmx/data/preference.dart';
+import 'package:lowresrmx/data/rom_entries.dart';
 import 'package:lowresrmx/data/sync_conflict.dart';
 import 'package:lowresrmx/page/manual_page.dart';
 import 'package:lowresrmx/page/settings_page.dart';
@@ -68,10 +70,14 @@ class _MyEditDrawerState extends State<MyEditDrawer> {
         future: programPreference.loadPreference(),
         builder: (context, snapshot) {
           if (snapshot.hasData) {
-            return MultiProvider(providers: [
-              ChangeNotifierProvider<MyProgramPreference>(
-                  create: (context) => snapshot.data as MyProgramPreference),
-            ], child: Drawer(child: buildScaffold(context)));
+            return MultiProvider(
+                providers: [
+                  ChangeNotifierProvider<MyProgramPreference>(
+                      create: (context) =>
+                          snapshot.data as MyProgramPreference),
+                ],
+                child: Drawer(
+                    child: ScaffoldMessenger(child: buildScaffold(context))));
           } else if (snapshot.hasError) {
             return const Center(
                 child: Column(
@@ -99,7 +105,7 @@ class _MyEditDrawerState extends State<MyEditDrawer> {
 
   Widget buildListView() {
     const int reservedItemsBeforeList = 8;
-    const int reservedItemsAfterList = 2;
+    const int reservedItemsAfterList = 4;
     return FutureBuilder(
         future: MyPreference.listToolProgram(),
         builder: (context, snapshot) {
@@ -136,6 +142,13 @@ class _MyEditDrawerState extends State<MyEditDrawer> {
                   } else if (index ==
                       reservedItemsBeforeList + snapshot.data!.length + 1) {
                     return buildInfoItem(context);
+                  } else if (index ==
+                      reservedItemsBeforeList + snapshot.data!.length + 2) {
+                    return const Divider();
+                  } else if (index ==
+                      reservedItemsBeforeList + snapshot.data!.length + 3) {
+                    return _MyRomCopySection(
+                        editingController: widget.editingController);
                   }
                   return ListTile(
                     leading: Icon(_toolIcon[
@@ -215,5 +228,121 @@ class _MyEditDrawerState extends State<MyEditDrawer> {
         subtitle: Text(
           "Line count: ${widget.editingController.lineCount}\nToken count: ?\nCartridge size: ?",
         ));
+  }
+}
+
+class _MyRomCopySection extends StatefulWidget {
+  final CodeLineEditingController editingController;
+  const _MyRomCopySection({required this.editingController});
+
+  @override
+  State<_MyRomCopySection> createState() => _MyRomCopySectionState();
+}
+
+class _MyRomCopySectionState extends State<_MyRomCopySection> {
+  late Map<int, String> entries;
+  final Set<int> selected = {};
+
+  @override
+  void initState() {
+    super.initState();
+    entries = parseRomEntries(widget.editingController.text);
+    selected.addAll(romClipboard.keys.where((id) => !entries.containsKey(id)));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+      const Padding(
+        padding: EdgeInsets.only(left: 52.0, right: 8.0, top: 8.0, bottom: 16.0),
+        child: Text("ROM entries:",
+            style: TextStyle(fontWeight: FontWeight.bold)),
+      ),
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        child: GridView.count(
+            crossAxisCount: 4,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            padding: EdgeInsets.zero,
+            mainAxisSpacing: 6.0,
+            crossAxisSpacing: 6.0,
+            childAspectRatio: 1.8,
+            children: List.generate(16, buildToggle)),
+      ),
+      Padding(
+        padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 16.0),
+        child: Row(children: [
+          Expanded(
+              child: FilledButton.icon(
+                  icon: const Icon(Icons.copy_rounded),
+                  label: const Text("Copy"),
+                  onPressed: selected.any(entries.containsKey)
+                      ? () => copy(context)
+                      : null)),
+          const SizedBox(width: 8.0),
+          Expanded(
+              child: FilledButton.icon(
+                  icon: const Icon(Icons.paste_rounded),
+                  label: const Text("Paste"),
+                  onPressed: selected.any(romClipboard.containsKey)
+                      ? () => paste(context)
+                      : null)),
+        ]),
+      ),
+    ]);
+  }
+
+  Widget buildToggle(int id) {
+    final bool present =
+        entries.containsKey(id) || romClipboard.containsKey(id);
+    final bool isOn = selected.contains(id);
+    final VoidCallback? onPressed = present
+        ? () => setState(() => isOn ? selected.remove(id) : selected.add(id))
+        : null;
+    final Widget label = Text("$id");
+    if (isOn) {
+      return FilledButton(
+          style: FilledButton.styleFrom(
+              padding: EdgeInsets.zero,
+              minimumSize: const Size(0, 32),
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap),
+          onPressed: onPressed,
+          child: label);
+    }
+    return OutlinedButton(
+        style: OutlinedButton.styleFrom(
+            padding: EdgeInsets.zero,
+            minimumSize: const Size(0, 32),
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap),
+        onPressed: onPressed,
+        child: label);
+  }
+
+  Future<void> copy(BuildContext context) async {
+    final List<int> ids = selected.where(entries.containsKey).toList()..sort();
+    setState(() => romClipboard =
+        Map.unmodifiable({for (final int id in ids) id: entries[id]!}));
+    await Clipboard.setData(ClipboardData(text: romEntriesText(entries, ids)));
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(
+          duration: const Duration(seconds: 2),
+          content: Text(
+              "Copied ROM ${ids.map((id) => "#$id").join(", ")} to clipboard")));
+  }
+
+  void paste(BuildContext context) {
+    final List<int> ids =
+        selected.where(romClipboard.containsKey).toList()..sort();
+    widget.editingController.text = pasteRomEntries(
+        widget.editingController.text, romClipboard, ids);
+    setState(() => entries = parseRomEntries(widget.editingController.text));
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(
+          duration: const Duration(seconds: 2),
+          content: Text("Pasted ROM ${ids.map((id) => "#$id").join(", ")}")));
   }
 }

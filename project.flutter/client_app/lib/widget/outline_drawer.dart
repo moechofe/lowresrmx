@@ -97,7 +97,7 @@ class _MyOutlineDrawerState extends State<MyOutlineDrawer> {
             body: visibleEntries.isEmpty
                 ? Center(
                     child: Text(entries.isEmpty
-                        ? "No label, subroutine or mark"
+                        ? "No label, subroutine, mark or ROM entry"
                         : "No match"))
                 : ListView.builder(
                     itemCount: visibleEntries.length,
@@ -108,6 +108,7 @@ class _MyOutlineDrawerState extends State<MyOutlineDrawer> {
                             OutlineKind.sub => Icons.functions_rounded,
                             OutlineKind.mark => Icons.bookmark_rounded,
                             OutlineKind.label => Icons.label_outline_rounded,
+                            OutlineKind.rom => Icons.memory_rounded,
                           }),
                           title: Text(entry.identifier,
                               style: entry.kind == OutlineKind.mark

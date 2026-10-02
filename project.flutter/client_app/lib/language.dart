@@ -175,6 +175,7 @@ final langLowResRMX = Mode(
     ],
   },
   contains: <Mode>[
+    Mode(scope: 'rom', begin: '^#', end: '\\b\\B', relevance: 0),
     Mode(scope: 'string', begin: '"', end: '"|\$', relevance: 0),
     Mode(
         scope: 'comment',

@@ -4,9 +4,10 @@ enum OutlineKind {
   label,
   sub,
   mark,
+  rom,
 }
 
-/// One label, SUB declaration or ''' marker, as listed by the outline drawer.
+/// One label, SUB declaration, ''' marker or ROM entry header, as listed by the outline drawer.
 class OutlineEntry {
   final String identifier;
   final OutlineKind kind;

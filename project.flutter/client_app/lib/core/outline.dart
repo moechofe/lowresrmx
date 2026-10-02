@@ -6,6 +6,7 @@ import 'package:core_plugin/core_plugin_bindings_generated.dart';
 
 import 'package:lowresrmx/core/runtime.dart';
 import 'package:lowresrmx/data/outline_entry.dart';
+import 'package:lowresrmx/data/rom_entries.dart';
 
 const String _markPrefix = "'''";
 
@@ -40,22 +41,52 @@ List<OutlineEntry> scanMarks(String source) {
   return marks;
 }
 
+/// Returns every ROM entry header line of [source] (`#<id>:<comment>`), in
+/// source order.
+List<OutlineEntry> scanRomEntries(String source) {
+  final List<OutlineEntry> entries = [];
+  int row = 0;
+  int rowStart = 0;
+  for (final RegExpMatch header in romHeader.allMatches(source)) {
+    for (int i = rowStart; i < header.start; ++i) {
+      if (source.codeUnitAt(i) == 0x0A) row += 1;
+    }
+    rowStart = header.start;
+    final int lineEnd = source.indexOf('\n', header.start);
+    entries.add(OutlineEntry(
+        identifier: source
+            .substring(header.start, lineEnd < 0 ? source.length : lineEnd)
+            .trimRight(),
+        kind: OutlineKind.rom,
+        location: Location(row, 0)));
+  }
+  return entries;
+}
+
+int _bySourcePosition(OutlineEntry a, OutlineEntry b) =>
+    a.location.row != b.location.row
+        ? a.location.row - b.location.row
+        : a.location.column - b.location.column;
+
 /// Tokenizes [source] with the engine (core_syntax.h) and returns every label and SUB
-/// declaration, merged with every ''' marker comment, in source order.
+/// declaration, merged with every ''' marker comment and ROM entry header, in source order.
 List<OutlineEntry> scanOutline(String source) {
-  final List<OutlineEntry> entries = scanMarks(source);
+  final List<OutlineEntry> entries = [
+    ...scanMarks(source),
+    ...scanRomEntries(source)
+  ];
   final ffi.Pointer<ffi.Void> syntax = syntaxCreate();
   if (syntax == ffi.nullptr) {
-    return entries;
+    return entries..sort(_bySourcePosition);
   }
   try {
     final int count = syntaxScan(syntax, source);
     if (count == 0) {
-      return entries;
+      return entries..sort(_bySourcePosition);
     }
     final ffi.Pointer<SyntaxSpan> spans = syntaxSpans(syntax);
     if (spans == ffi.nullptr) {
-      return entries;
+      return entries..sort(_bySourcePosition);
     }
 
     int byteOffset = 0;
@@ -112,9 +143,7 @@ List<OutlineEntry> scanOutline(String source) {
           kind: kind,
           location: Location(row, unitOffset - rowStart)));
     }
-    entries.sort((a, b) => a.location.row != b.location.row
-        ? a.location.row - b.location.row
-        : a.location.column - b.location.column);
+    entries.sort(_bySourcePosition);
     return entries;
   } finally {
     syntaxDestroy(syntax);
