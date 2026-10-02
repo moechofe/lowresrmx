@@ -175,7 +175,7 @@ final langLowResRMX = Mode(
     ],
   },
   contains: <Mode>[
-    QUOTE_STRING_MODE,
+    Mode(scope: 'string', begin: '"', end: '"|\$', relevance: 0),
     Mode(
         scope: 'comment',
         begin: "'",
