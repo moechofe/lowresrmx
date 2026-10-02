@@ -1,5 +1,16 @@
 ###
 
+
+### 1.0_84
+
+- Flutter: Fix string colouring.
+- Flutter: iOS keeps a Drive sync running after the app is put in background.
+- Flutter: Add symbols keys in the keyboard topbar.
+- Flutter: Setting to change the text size of the offline manual.
+- Flutter: Can copy and paste ROM entries.
+- Flutter: Lists ROM entries in the outline.
+- Flutter: Colorize ROM entries.
+
 ### 1.0_83
 
 - Flutter: errors stay in a banner above the code until the code changes; a failed Run jumps straight to the error, and tapping 🐞 shows its message.

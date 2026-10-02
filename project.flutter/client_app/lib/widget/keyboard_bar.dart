@@ -3,7 +3,27 @@ import 'dart:ui' show PointerDeviceKind;
 import 'package:flutter/material.dart';
 import 'package:re_editor/re_editor.dart';
 
-const List<String> _symbolKeys = [ '_', '"', '(', ')', '=', ':', '\$', "'", '+', '-', '*', '/', '<', '>', ';', '%', '^', '\\', '#' ];
+const List<String> _symbolKeys = [
+  '_',
+  '"',
+  '(',
+  ')',
+  '=',
+  ':',
+  '\$',
+  "'",
+  '+',
+  '-',
+  '*',
+  '/',
+  '<',
+  '>',
+  ';',
+  '%',
+  '^',
+  '\\',
+  '#'
+];
 
 class MyKeyboardKey extends StatelessWidget {
   final bool enabled;
@@ -64,7 +84,8 @@ class _MyKeyboardBarState extends State<MyKeyboardBar> {
   Widget _symbolKey(String symbol) {
     return MyKeyboardKey(
         label: Text(symbol,
-            style: const TextStyle(fontFamily: 'RecursiveLinear', fontSize: 20)),
+            style:
+                const TextStyle(fontFamily: 'RecursiveLinear', fontSize: 20)),
         onPressed: () => widget.controller.replaceSelection(symbol),
         enabled: true);
   }

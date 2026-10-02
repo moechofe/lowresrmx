@@ -254,9 +254,10 @@ class _MyRomCopySectionState extends State<_MyRomCopySection> {
   Widget build(BuildContext context) {
     return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
       const Padding(
-        padding: EdgeInsets.only(left: 52.0, right: 8.0, top: 8.0, bottom: 16.0),
-        child: Text("ROM entries:",
-            style: TextStyle(fontWeight: FontWeight.bold)),
+        padding:
+            EdgeInsets.only(left: 52.0, right: 8.0, top: 8.0, bottom: 16.0),
+        child:
+            Text("ROM entries:", style: TextStyle(fontWeight: FontWeight.bold)),
       ),
       Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -334,10 +335,10 @@ class _MyRomCopySectionState extends State<_MyRomCopySection> {
   }
 
   void paste(BuildContext context) {
-    final List<int> ids =
-        selected.where(romClipboard.containsKey).toList()..sort();
-    widget.editingController.text = pasteRomEntries(
-        widget.editingController.text, romClipboard, ids);
+    final List<int> ids = selected.where(romClipboard.containsKey).toList()
+      ..sort();
+    widget.editingController.text =
+        pasteRomEntries(widget.editingController.text, romClipboard, ids);
     setState(() => entries = parseRomEntries(widget.editingController.text));
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()

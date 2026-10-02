@@ -225,12 +225,12 @@ class _MyRunPageState extends State<MyRunPage> {
   }
 
   void gotoError(BuildContext context, Error error) {
-    Navigator.of(context).restorablePushReplacementNamed(MyEditPage.routeName,
-        arguments: {
-          "programName": widget.editingName,
-          "runningError": error.toMap(),
-          "runningProgram": widget.executedName
-        });
+    Navigator.of(context)
+        .restorablePushReplacementNamed(MyEditPage.routeName, arguments: {
+      "programName": widget.editingName,
+      "runningError": error.toMap(),
+      "runningProgram": widget.executedName
+    });
   }
 
   @override

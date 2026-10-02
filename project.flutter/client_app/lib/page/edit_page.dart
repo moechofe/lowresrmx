@@ -142,8 +142,7 @@ class _MyEditPageState extends State<MyEditPage> with WidgetsBindingObserver {
   /// replaces the file raises a conflict instead of being silent.
   MyCodeHolder? codeHold;
 
-  final TextEditingController outlineSearchController =
-      TextEditingController();
+  final TextEditingController outlineSearchController = TextEditingController();
 
   @override
   // Calling this multiple times will break the editor.
