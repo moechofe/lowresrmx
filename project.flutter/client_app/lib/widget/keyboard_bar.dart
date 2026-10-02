@@ -1,13 +1,17 @@
+import 'dart:ui' show PointerDeviceKind;
+
 import 'package:flutter/material.dart';
 import 'package:re_editor/re_editor.dart';
 
+const List<String> _symbolKeys = [ '_', '"', '(', ')', '=', ':', '\$', "'", '+', '-', '*', '/', '<', '>', ';', '%', '^', '\\', '#' ];
+
 class MyKeyboardKey extends StatelessWidget {
   final bool enabled;
-  final IconData icon;
+  final Widget label;
   final VoidCallback onPressed;
 
   const MyKeyboardKey(
-      {required this.icon,
+      {required this.label,
       required this.onPressed,
       required this.enabled,
       super.key});
@@ -19,7 +23,7 @@ class MyKeyboardKey extends StatelessWidget {
         height: 38,
         child: ActionChip(
             onPressed: enabled ? onPressed : null,
-            label: Icon(icon, size: 22),
+            label: label,
             labelPadding: EdgeInsets.zero,
             side: const BorderSide(color: Colors.transparent),
             color: WidgetStateProperty.all(
@@ -57,6 +61,14 @@ class _MyKeyboardBarState extends State<MyKeyboardBar> {
     setState(() {});
   }
 
+  Widget _symbolKey(String symbol) {
+    return MyKeyboardKey(
+        label: Text(symbol,
+            style: const TextStyle(fontFamily: 'RecursiveLinear', fontSize: 20)),
+        onPressed: () => widget.controller.replaceSelection(symbol),
+        enabled: true);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -65,33 +77,43 @@ class _MyKeyboardBarState extends State<MyKeyboardBar> {
           ? const Color(0xFFF6EAE7)
           : const Color(0xFF2b1d1a),
       child: CodeEditorTapRegion(
-          child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Padding(
-          padding: const EdgeInsets.all(4.0),
-          child: Row(children: [
-            MyKeyboardKey(
-                icon: Icons.undo_rounded,
-                onPressed: () => widget.controller.undo(),
-                enabled: widget.controller.canUndo),
-            MyKeyboardKey(
-              icon: Icons.redo_rounded,
-              onPressed: () => widget.controller.redo(),
-              enabled: widget.controller.canRedo,
-            ),
-            MyKeyboardKey(
-                icon: Icons.content_cut_rounded,
-                onPressed: () => widget.controller.cut(),
-                enabled: !widget.controller.selection.isCollapsed),
-            MyKeyboardKey(
-                icon: Icons.content_copy_rounded,
-                onPressed: () => widget.controller.copy(),
-                enabled: !widget.controller.selection.isCollapsed),
-            MyKeyboardKey(
-                icon: Icons.content_paste_rounded,
-                onPressed: () => widget.controller.paste(),
-                enabled: true),
-          ]),
+          child: ScrollConfiguration(
+        behavior: ScrollConfiguration.of(context).copyWith(dragDevices: {
+          PointerDeviceKind.touch,
+          PointerDeviceKind.stylus,
+          PointerDeviceKind.trackpad,
+          PointerDeviceKind.mouse
+        }),
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Padding(
+            padding: const EdgeInsets.all(4.0),
+            child: Row(children: [
+              MyKeyboardKey(
+                  label: const Icon(Icons.undo_rounded, size: 22),
+                  onPressed: () => widget.controller.undo(),
+                  enabled: widget.controller.canUndo),
+              MyKeyboardKey(
+                label: const Icon(Icons.redo_rounded, size: 22),
+                onPressed: () => widget.controller.redo(),
+                enabled: widget.controller.canRedo,
+              ),
+              MyKeyboardKey(
+                  label: const Icon(Icons.content_cut_rounded, size: 22),
+                  onPressed: () => widget.controller.cut(),
+                  enabled: !widget.controller.selection.isCollapsed),
+              MyKeyboardKey(
+                  label: const Icon(Icons.content_copy_rounded, size: 22),
+                  onPressed: () => widget.controller.copy(),
+                  enabled: !widget.controller.selection.isCollapsed),
+              MyKeyboardKey(
+                  label: const Icon(Icons.content_paste_rounded, size: 22),
+                  onPressed: () => widget.controller.paste(),
+                  enabled: true),
+              const SizedBox(width: 8),
+              for (final symbol in _symbolKeys) _symbolKey(symbol),
+            ]),
+          ),
         ),
       )),
     );
