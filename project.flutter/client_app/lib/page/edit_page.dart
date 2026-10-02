@@ -177,18 +177,19 @@ class _MyEditPageState extends State<MyEditPage> with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
     if (state == AppLifecycleState.paused) {
-      saveCode();
+      unawaited(saveCode());
     }
   }
 
-  void saveCode() {
+  Future<void> saveCode() async {
     if (!codeReady.isCompleted) return;
     final programName = (ModalRoute.of(context)!.settings.arguments
         as Map)["programName"]! as String;
     if (MyConflictService().isBlocked(programName)) return;
-    MyLibrary.writeCode(programName, editingController.text);
-    syncManager.syncProgram(programName);
+    final String code = editingController.text;
     saveScrollOffset();
+    await MyLibrary.writeCode(programName, code);
+    await syncManager.syncProgram(programName);
   }
 
   /// The editor route is replaced by the run page, so the state is rebuilt from
@@ -438,7 +439,7 @@ class _MyEditPageState extends State<MyEditPage> with WidgetsBindingObserver {
         canPop: !list.any((c) => c.programName == codeHold?.programName),
         onPopInvokedWithResult: (didPop, _) {
           if (didPop) {
-            saveCode();
+            unawaited(saveCode());
           } else {
             MyConflictService().present();
           }
@@ -463,7 +464,7 @@ class _MyEditPageState extends State<MyEditPage> with WidgetsBindingObserver {
             child: const Icon(Icons.play_arrow_rounded),
           ),
           onDrawerChanged: (isOpened) {
-            if (!isOpened) saveCode();
+            if (!isOpened) unawaited(saveCode());
           },
         ),
       ),
