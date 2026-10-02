@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io' as io;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:google_sign_in_platform_interface/google_sign_in_platform_interface.dart'
     as gsi;
@@ -25,6 +26,8 @@ class SyncManager with ChangeNotifier, WidgetsBindingObserver {
   }
 
   static const List<String> googleScopes = [drive.DriveApi.driveFileScope];
+  static const MethodChannel _backgroundChannel =
+      MethodChannel("com.lowresrmx/background");
 
   static final String _clientId = (defaultTargetPlatform == TargetPlatform.iOS)
       ? "204783433847-19qslfbh4c9mlccjpgqjrgmai1objh3s.apps.googleusercontent.com"
@@ -81,6 +84,19 @@ class SyncManager with ChangeNotifier, WidgetsBindingObserver {
   String? get accountName => _currentUser?.displayName;
 
   bool get syncing => _syncing;
+
+  /// Every sync holds an iOS background task, so leaving the app mid-upload
+  /// does not suspend it. Android keeps the process running long enough unaided.
+  void _setSyncing(bool value) {
+    if (_syncing == value) return;
+    _syncing = value;
+    if (defaultTargetPlatform != TargetPlatform.iOS) return;
+    unawaited(_backgroundChannel
+        .invokeMethod<void>(value ? "begin" : "end")
+        .catchError((Object error) {
+      debugPrint("Background task unavailable: $error");
+    }));
+  }
 
   void _init() {
     WidgetsBinding.instance.addObserver(this);
@@ -382,7 +398,7 @@ class SyncManager with ChangeNotifier, WidgetsBindingObserver {
       if (_pendingFull || _pendingPrograms.isNotEmpty) {
         unawaited(Future.microtask(_drainPending));
       } else {
-        _syncing = false;
+        _setSyncing(false);
       }
       notifyListeners();
     }
@@ -463,7 +479,7 @@ class SyncManager with ChangeNotifier, WidgetsBindingObserver {
       _pendingFull = true;
       return;
     }
-    _syncing = true;
+    _setSyncing(true);
     _dirty = false;
     notifyListeners();
     await _syncFiles(await _libraryManifest(), full: true, reason: reason);
@@ -474,7 +490,7 @@ class SyncManager with ChangeNotifier, WidgetsBindingObserver {
   /// next full sync still runs and still resolves the pull side.
   Future<void> pushAllPrograms({required String reason}) async {
     if (!_canSync || _syncing) return;
-    _syncing = true;
+    _setSyncing(true);
     notifyListeners();
     await _syncFiles(await _libraryManifest(), full: false, reason: reason);
   }
@@ -506,7 +522,7 @@ class SyncManager with ChangeNotifier, WidgetsBindingObserver {
       _pendingPrograms.add(programName);
       return;
     }
-    _syncing = true;
+    _setSyncing(true);
     notifyListeners();
     await _pushPrograms({programName}, reason: "save");
   }
@@ -532,7 +548,7 @@ class SyncManager with ChangeNotifier, WidgetsBindingObserver {
       }
     }
     if (files.isEmpty) {
-      _syncing = false;
+      _setSyncing(false);
       notifyListeners();
       return;
     }
@@ -546,11 +562,11 @@ class SyncManager with ChangeNotifier, WidgetsBindingObserver {
     final Set<String> programs = Set<String>.of(_pendingPrograms);
     _pendingFull = false;
     _pendingPrograms.clear();
-    _syncing = false;
+    _setSyncing(false);
     if (full) {
       await syncAllPrograms(reason: "queued");
     } else if (_canSync) {
-      _syncing = true;
+      _setSyncing(true);
       await _pushPrograms(programs, reason: "queued");
     } else {
       notifyListeners();
