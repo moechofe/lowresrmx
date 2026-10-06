@@ -386,6 +386,28 @@ FFI_PLUGIN_EXPORT int runnerState(Runner *runner)
 	return (int)runner->core->interpreter->state;
 }
 
+FFI_PLUGIN_EXPORT int runnerNumTokens(Runner *runner)
+{
+	if(!runner->core) return 0;
+	return runner->core->interpreter->tokenizer.numTokens;
+}
+
+FFI_PLUGIN_EXPORT int runnerRomSize(Runner *runner)
+{
+	if(!runner->core) return 0;
+	return data_currentSize(&runner->core->interpreter->romDataManager);
+}
+
+FFI_PLUGIN_EXPORT int coreMaxTokens(void)
+{
+	return MAX_TOKENS;
+}
+
+FFI_PLUGIN_EXPORT int coreMaxRomSize(void)
+{
+	return DATA_SIZE;
+}
+
 FFI_PLUGIN_EXPORT bool runnerHasThumbnailHandler(Runner *runner)
 {
 	if(!runner->core) return false;

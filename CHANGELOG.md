@@ -1,5 +1,7 @@
 ###
 
+- Flutter: The editor drawer shows the token count and ROM size.
+- Flutter: Fix `=TIMER`.
 
 ### 1.0_84
 

@@ -70,6 +70,10 @@ FFI_PLUGIN_EXPORT void runnerEndThumbnail(Runner*);
 
 FFI_PLUGIN_EXPORT int runnerNumAssertions(Runner*);
 FFI_PLUGIN_EXPORT int runnerState(Runner*);
+FFI_PLUGIN_EXPORT int runnerNumTokens(Runner*);
+FFI_PLUGIN_EXPORT int runnerRomSize(Runner*);
+FFI_PLUGIN_EXPORT int coreMaxTokens(void);
+FFI_PLUGIN_EXPORT int coreMaxRomSize(void);
 
 FFI_PLUGIN_EXPORT void* syntaxCreate(void);
 FFI_PLUGIN_EXPORT void syntaxDestroy(void*);

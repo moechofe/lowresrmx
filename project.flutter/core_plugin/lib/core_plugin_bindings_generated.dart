@@ -378,6 +378,50 @@ class CorePluginBindings {
   late final _runnerState =
       _runnerStatePtr.asFunction<int Function(ffi.Pointer<Runner>)>();
 
+  int runnerNumTokens(
+    ffi.Pointer<Runner> arg0,
+  ) {
+    return _runnerNumTokens(
+      arg0,
+    );
+  }
+
+  late final _runnerNumTokensPtr =
+      _lookup<ffi.NativeFunction<ffi.Int Function(ffi.Pointer<Runner>)>>(
+          'runnerNumTokens');
+  late final _runnerNumTokens =
+      _runnerNumTokensPtr.asFunction<int Function(ffi.Pointer<Runner>)>();
+
+  int runnerRomSize(
+    ffi.Pointer<Runner> arg0,
+  ) {
+    return _runnerRomSize(
+      arg0,
+    );
+  }
+
+  late final _runnerRomSizePtr =
+      _lookup<ffi.NativeFunction<ffi.Int Function(ffi.Pointer<Runner>)>>(
+          'runnerRomSize');
+  late final _runnerRomSize =
+      _runnerRomSizePtr.asFunction<int Function(ffi.Pointer<Runner>)>();
+
+  int coreMaxTokens() {
+    return _coreMaxTokens();
+  }
+
+  late final _coreMaxTokensPtr =
+      _lookup<ffi.NativeFunction<ffi.Int Function()>>('coreMaxTokens');
+  late final _coreMaxTokens = _coreMaxTokensPtr.asFunction<int Function()>();
+
+  int coreMaxRomSize() {
+    return _coreMaxRomSize();
+  }
+
+  late final _coreMaxRomSizePtr =
+      _lookup<ffi.NativeFunction<ffi.Int Function()>>('coreMaxRomSize');
+  late final _coreMaxRomSize = _coreMaxRomSizePtr.asFunction<int Function()>();
+
   ffi.Pointer<ffi.Void> syntaxCreate() {
     return _syntaxCreate();
   }

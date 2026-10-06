@@ -1,5 +1,7 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:lowresrmx/core/runtime.dart' show CompileStats;
 import 'package:lowresrmx/data/preference.dart';
 import 'package:lowresrmx/data/rom_entries.dart';
 import 'package:lowresrmx/data/sync_conflict.dart';
@@ -28,10 +30,12 @@ class MyEditDrawer extends StatefulWidget {
   final String editedProgramName;
   final CodeLineEditingController editingController;
   final void Function(String) onStartTool;
+  final ValueListenable<CompileStats?> compileStats;
   const MyEditDrawer(
       {required this.editedProgramName,
       required this.editingController,
       required this.onStartTool,
+      required this.compileStats,
       super.key});
 
   @override
@@ -222,12 +226,16 @@ class _MyEditDrawerState extends State<MyEditDrawer> {
   }
 
   Widget buildInfoItem(BuildContext context) {
-    return ListTile(
-        leading: const Icon(Icons.info_rounded),
-        titleAlignment: ListTileTitleAlignment.top,
-        subtitle: Text(
-          "Line count: ${widget.editingController.lineCount}\nToken count: ?\nCartridge size: ?",
-        ));
+    return ValueListenableBuilder<CompileStats?>(
+        valueListenable: widget.compileStats,
+        builder: (context, stats, _) => ListTile(
+            leading: const Icon(Icons.info_rounded),
+            titleAlignment: ListTileTitleAlignment.top,
+            subtitle: Text(
+              "Line count: ${widget.editingController.lineCount}\n"
+              "Tokens: ${stats == null ? "?" : "${stats.numTokens}/${stats.maxTokens}"}\n"
+              "ROM: ${stats == null ? "?" : "${stats.romSize}/${stats.maxRomSize}"}",
+            )));
   }
 }
 

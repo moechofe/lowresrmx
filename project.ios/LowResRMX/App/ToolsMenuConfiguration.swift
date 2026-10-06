@@ -22,7 +22,7 @@ import UIKit
 class ToolsMenuConfiguration: NSObject
 {
 	private let defaultPrograms = [
-		"GFX.235.rmx",
+		"GFX.245.rmx",
 	]
 
 	private(set) var programUrls: [URL]!

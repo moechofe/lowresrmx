@@ -123,6 +123,9 @@ class _MyEditPageState extends State<MyEditPage> with WidgetsBindingObserver {
   /// Errors shown in the gutter and the banner.
   final MyEditorErrors errors = MyEditorErrors();
 
+  /// Token count and ROM size of the last continuous compilation, shown in the drawer.
+  final ValueNotifier<CompileStats?> compileStats = ValueNotifier(null);
+
   /// The program name to execute.
   String? editedProgramName;
 
@@ -169,6 +172,7 @@ class _MyEditPageState extends State<MyEditPage> with WidgetsBindingObserver {
     scheduleMicrotask(() => unawaited(manager.maybeSyncAll("editor-close")));
     WidgetsBinding.instance.removeObserver(this);
     outlineSearchController.dispose();
+    compileStats.dispose();
     super.dispose();
   }
 
@@ -278,8 +282,11 @@ class _MyEditPageState extends State<MyEditPage> with WidgetsBindingObserver {
       context
           .read<ComPort>()
           .compileOnly(editingController.text)
-          .then((Error err) {
-        errors.setCompiled(MyReportedError.of(err, editingController.text));
+          .then((CompileOnlyResult result) {
+        if (!mounted) return;
+        errors.setCompiled(
+            MyReportedError.of(result.error, editingController.text));
+        compileStats.value = result.stats;
       });
     }
   }
@@ -490,7 +497,8 @@ class _MyEditPageState extends State<MyEditPage> with WidgetsBindingObserver {
     return MyEditDrawer(
         editedProgramName: programName,
         editingController: editingController,
-        onStartTool: runToolProgramWithEditedDataDisk);
+        onStartTool: runToolProgramWithEditedDataDisk,
+        compileStats: compileStats);
   }
 
   Widget buildOutlineDrawer(BuildContext providerContext) {

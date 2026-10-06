@@ -117,6 +117,12 @@ void runnerEndThumbnail(ffi.Pointer<Runner> runner) =>
 int runnerNumAssertions(ffi.Pointer<Runner> runner) =>
     _bindings.runnerNumAssertions(runner);
 int runnerState(ffi.Pointer<Runner> runner) => _bindings.runnerState(runner);
+int runnerNumTokens(ffi.Pointer<Runner> runner) =>
+    _bindings.runnerNumTokens(runner);
+int runnerRomSize(ffi.Pointer<Runner> runner) =>
+    _bindings.runnerRomSize(runner);
+int coreMaxTokens() => _bindings.coreMaxTokens();
+int coreMaxRomSize() => _bindings.coreMaxRomSize();
 
 ffi.Pointer<ffi.Void> syntaxCreate() => _bindings.syntaxCreate();
 void syntaxDestroy(ffi.Pointer<ffi.Void> syntax) =>

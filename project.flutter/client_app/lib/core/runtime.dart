@@ -106,6 +106,26 @@ class CompileOnlyMsg {
   CompileOnlyMsg(this.code);
 }
 
+/// Token count and ROM size of a compiled program, with the engine limits.
+class CompileStats {
+  final int numTokens;
+  final int maxTokens;
+  final int romSize;
+  final int maxRomSize;
+  const CompileStats(
+      {required this.numTokens,
+      required this.maxTokens,
+      required this.romSize,
+      required this.maxRomSize});
+}
+
+/// Message used to transport the result of a [CompileOnlyMsg] from the isolate to the app
+class CompileOnlyResult {
+  final Error error;
+  final CompileStats stats;
+  CompileOnlyResult(this.error, this.stats);
+}
+
 /// Message used to ask the isolate to advance the engine, then render one frame at 1/60s.
 class RenderFrameMsg {
   final int steps;
@@ -226,6 +246,8 @@ class Runtime extends ChangeNotifier {
   int _keyboardHeight = 0;
   bool _keyboardSent = false;
 
+  final Stopwatch _sincePowerOn = Stopwatch()..start();
+
   void initState() async {
     runnerInit(runner);
   }
@@ -244,7 +266,7 @@ class Runtime extends ChangeNotifier {
       final int dataSize = dataList.length;
       final ffi.Pointer<ffi.Uint8> dataDiskPtr = calloc<ffi.Uint8>(dataSize);
       dataDiskPtr.asTypedList(dataDisk.length).setAll(0, dataList);
-      runnerStart(runner, input, 123,
+      runnerStart(runner, input, _sincePowerOn.elapsed.inSeconds,
           ffi.Pointer.fromAddress(dataDiskPtr.address), dataSize);
       if (_keyboardHeight > 0) {
         input.ref.keyboardHeight = _keyboardHeight;
@@ -258,12 +280,18 @@ class Runtime extends ChangeNotifier {
         position: err.sourcePosition);
   }
 
-  Error compileOnly(String src) {
+  CompileOnlyResult compileOnly(String src) {
     final CoreError err = runnerCompileProgram(runner, src);
-    return Error(
-        code: err.code,
-        msg: runnerGetError(runner, err.code),
-        position: err.sourcePosition);
+    return CompileOnlyResult(
+        Error(
+            code: err.code,
+            msg: runnerGetError(runner, err.code),
+            position: err.sourcePosition),
+        CompileStats(
+            numTokens: runnerNumTokens(runner),
+            maxTokens: coreMaxTokens(),
+            romSize: runnerRomSize(runner),
+            maxRomSize: coreMaxRomSize()));
   }
 
   void resize(double inWidth, double inHeight, double safeTop, double safeLeft,
@@ -464,9 +492,8 @@ void isolateEntryPoint(List<Object?> arguments) {
             await runtime.compileAndStart(message.code, message.dataDisk);
         sendPort.send(err);
       } else if (message is CompileOnlyMsg) {
-        // Receive the code and compile it, then send back the error
-        final Error err = runtime.compileOnly(message.code);
-        sendPort.send(err);
+        // Receive the code and compile it, then send back the error and stats
+        sendPort.send(runtime.compileOnly(message.code));
       } else if (message is RenderFrameMsg) {
         // Advance the engine the number of 1/60 s frames the ticker owes it, then render once
         Error err = runtime.update();
@@ -597,6 +624,7 @@ class ComPort {
   int prevRuntimeElapsed = 0;
   final Completer<SendPort> ready = Completer();
   Completer<Error>? compileCompleter;
+  Completer<CompileOnlyResult>? compileOnlyCompleter;
   FrameCallback? onImage;
   ThumbnailCallback? onThumbnail;
   RunnerErrorCallback? onRunningError;
@@ -663,6 +691,8 @@ class ComPort {
           // Note: In texture mode, we don't have a ui.Image object here.
           // The UI should use the Texture widget.
         }
+      } else if (message is CompileOnlyResult) {
+        compileOnlyCompleter!.complete(message);
       } else if (message is Error) {
         // Receive the error from the compilation
         compileCompleter!.complete(message);
@@ -785,11 +815,11 @@ class ComPort {
     _geometrySent = true;
   }
 
-  /// Used to compile and report error in the editor
-  Future<Error> compileOnly(String code) async {
-    compileCompleter = Completer();
+  /// Used to compile and report error and stats in the editor
+  Future<CompileOnlyResult> compileOnly(String code) async {
+    compileOnlyCompleter = Completer();
     sendPort.send(CompileOnlyMsg(code));
-    return compileCompleter!.future;
+    return compileOnlyCompleter!.future;
   }
 
   /// Start updating the runtime at 60 fps
