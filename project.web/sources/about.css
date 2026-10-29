@@ -6,3 +6,7 @@ require_once __DIR__.'/footer.css';
 
 .screenshot { display: flex; min-width: 0; }
 .screenshot img, .screenshot figure { max-width: 100%; height: auto; display: block; }
+.store { text-align: center; }
+.store .apple-app-store { width: 135px; height: 40px; display: inline-block; outline: none; text-indent: 100%; white-space: nowrap; overflow: hidden; }
+.store .google-play-store { width: 135px; height: 40px; display: inline-block; outline: none; text-indent: 100%; white-space: nowrap; overflow: hidden; }
+.store .itch-io-store { width: 130px; height: 40px; display: inline-block; outline: none; text-indent: 100%; white-space: nowrap; overflow: hidden; }

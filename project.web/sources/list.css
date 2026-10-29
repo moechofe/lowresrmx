@@ -1,12 +1,9 @@
 .program-list { display:grid; gap:calc(var(--pico-block-spacing-vertical) * 2); }
 @media (min-width:600px) { .program-list { grid-template-columns:repeat(2, 1fr); } }
-@media (min-width:900px) { .program-list { grid-template-columns:repeat(3, 1fr); } }
-@media (min-width:1100px) { .program-list { grid-template-columns:repeat(4, 1fr); } }
-@media (min-width:1500px) { .program-list { grid-template-columns:repeat(5, 1fr); } }
-@media (min-width:1800px) { .program-list { grid-template-columns:repeat(6, 1fr); } }
-@media (min-width:2400px) { .program-list { grid-template-columns:repeat(7, 1fr); } }
-@media (min-width:2600px) { .program-list { grid-template-columns:repeat(8, 1fr); } }
-@media (min-width:3000px) { .program-list { grid-template-columns:repeat(9, 1fr); } }
+@media (min-width:1100px) { .program-list { grid-template-columns:repeat(3, 1fr); } }
+@media (min-width:1800px) { .program-list { grid-template-columns:repeat(4, 1fr); } }
+@media (min-width:2600px) { .program-list { grid-template-columns:repeat(5, 1fr); } }
+@media (min-width:3000px) { .program-list { grid-template-columns:repeat(6, 1fr); } }
 
 .program-list blockquote, .post-list blockquote { border-left-color: #cea57c; margin-top:0; flex-grow:2; }
 

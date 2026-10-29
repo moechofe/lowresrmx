@@ -71,6 +71,8 @@ const RANK_WINDOW=250000;    // seconds worth one order-of-magnitude of points (
 
 // Public beta TestFlight
 const APPLE_APP_STORE="https://testflight.apple.com/join/1vdyycrU";
+const GOOGLE_PLAY_STORE="https://play.google.com/store/apps/details?id=it.ro.ret.flutter.LowResRMX";
+const ITCH_IO_STORE="https://moechofe.itch.io/lowresrmx";
 
 const RATE_LIMIT=[
 	'publish'=>['max'=>5,'window'=>60*60],  // 5 publishes per hour
