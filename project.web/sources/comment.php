@@ -23,7 +23,7 @@ if(preg_match("/\/($MATCH_ENTRY_TOKEN)\/comment$/",$urlPath,$matches)&&$isPost)
 
 	// Check for the first post
 	if(!redis()->exists("f:$first_id:f")) badRequest("Fail to validate program");
-	$status=redis()->hget("f:$first_id:f","status");
+	list($status,$post_uid)=redis()->hmget("f:$first_id:f","status","uid");
 	if($status==="banned") badRequest("Fail to validate entry");
 
 	$author=redis()->hget("u:$user_id","author");
@@ -54,6 +54,7 @@ if(preg_match("/\/($MATCH_ENTRY_TOKEN)\/comment$/",$urlPath,$matches)&&$isPost)
 
 	// Give points to the user for the comment
 	redis()->hincrby("r:$first_id:d","comm",1);
+	if($post_uid===$user_id) redis()->hincrby("r:$first_id:d","acomm",1);
 
 	// Record activity on the post
 	redis()->hset("r:$first_id:d","at",time());
@@ -71,10 +72,11 @@ if(preg_match("/\/($MATCH_ENTRY_TOKEN)\/comment$/",$urlPath,$matches)&&$isPost)
 }
 
 // API to retrieve comments of a first entry post.
-if(preg_match("/\/($MATCH_ENTRY_TOKEN)\/(\d+)$/",$urlPath,$matches)&&$isGet)
+if(preg_match("/\/($MATCH_ENTRY_TOKEN)\/(\d{1,9})$/",$urlPath,$matches)&&$isGet)
 {
 	$first_id=$matches[1];
 	if(!$first_id) badRequest("Fail to read entry");
+	if(isPostBanned($first_id)) badRequest("Fail to validate entry");
 
 	$skip=intval($matches[2]);
 	if($skip<0) badRequest("Fail to read skip");

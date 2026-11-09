@@ -81,12 +81,6 @@ Create and fill the `sources/private.php` file using the given `private.sample.p
     php -S 0.0.0.0:8080 index.php
     ```
 
-9. Add to your `/etc/hosts`:
-
-    ```hosts
-    127.0.0.1 lowresrmx.top
-    ```
-
 ## Create a fake session
 
 ```

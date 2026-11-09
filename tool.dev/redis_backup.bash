@@ -32,6 +32,9 @@ fi
 # Create lock file
 echo $$ > "$LOCKFILE"
 
+# Authenticate redis-cli
+if [[ -r /etc/lowresrmx/redis.env ]]; then set -a; source /etc/lowresrmx/redis.env; set +a; fi
+
 # Trigger background save
 redis-cli BGSAVE
 

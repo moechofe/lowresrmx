@@ -288,15 +288,72 @@ const setupReplaceDialog=()=>{
 	};
 };
 
+/**
+ * @brief Prepare the dialog to keep or discard a program imported from a link.
+ * @return {(pid:string,program_name:string)=>void} Function to open the dialog.
+ */
+const setupKeepDialog=()=>{
+	const keep_template=query('#keep-dialog');
+	const dialog=instanciate(keep_template);
+	const body=query('body');
+	const keep=find(dialog,'button.keep');
+	const discard=find(dialog,'button.discard');
+
+	/** @type {string|null} */
+	let pid=null;
+
+	/** @type {function(string):void} */
+	const answer=(path)=>{
+		if(!pid) return;
+		disable(keep);
+		disable(discard);
+		post(path,JSON.stringify({
+			p:pid,
+		}),{
+			[HEADER_TOKEN]:csrf
+		}).then((res)=>{
+			if(!res.ok) return Promise.reject();
+			window.location.replace('/share.html');
+		}).catch((_)=>{
+			showError();
+		});
+	};
+
+	click(keep,_=>answer('/keep'));
+	click(discard,_=>answer('/delete'));
+
+	append(body,dialog);
+
+	return (pid_,name)=>{
+		pid=pid_;
+		text(find(dialog,'.name'),name||"Untitled");
+		get(`${encodeURI(pid_)}.png`,{
+			[HEADER_TOKEN]:csrf
+		}).then((ans)=>{
+			if(!ans.ok) return Promise.reject();
+			return ans.blob();
+		}).then((blob)=>{
+			if(!blob) return Promise.reject();
+			const url=URL.createObjectURL(blob);
+			find(dialog,'.picture').style.backgroundImage=`url("${url}")`;
+		});
+		dialogOn(dialog);
+	};
+};
+
 const delete_dialog=setupProgramDelete();
 const publish_dialog=setupPublishDialog();
 const replace_dialog=setupReplaceDialog();
+const keep_dialog=setupKeepDialog();
 
 const setupShareList=()=>{
+	/** @type {!Array<!ProgramItem>} */
+	let programs=[];
 	get('last_shared').then((ans)=>{
 		if(!ans.ok) return Promise.reject("");
 		return ans.json();
 	}).then((list)=>{
+		programs=list;
 		return setupProgramList(list,{isShare:true});
 	}).then(/** @param {!Array<!ProgramItem>} list */(list)=>{
 		on(list,'ask_to_delete',(event)=>{
@@ -319,7 +376,14 @@ const setupShareList=()=>{
 			});
 		});
 
+		on(list,'ask_to_keep',(event)=>{
+			keep_dialog(event.detail.pid,event.detail.name);
+		});
+
 		const search=new URLSearchParams(document.location.search);
+		const pending=programs.find(p=>p.pid===search.get('new')&&p.unconfirmed);
+		if(pending) keep_dialog(pending.pid,pending.name);
+
 		if(search.get('uid')!=null && search.get('name')!=null)
 			publish_dialog(search.get('uid'),search.get('name'),(pid)=>{
 				window.location.href=`./${encodeURIComponent(pid)}.html`;
@@ -328,10 +392,10 @@ const setupShareList=()=>{
 	.catch((_)=>{});
 };
 
+setupError();
 setupSign().then(user=>{
 	if(!user) window.location.href='/community.html';
+	else setupShareList();
 });
-setupError();
-setupShareList();
 
 });

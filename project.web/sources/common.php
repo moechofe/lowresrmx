@@ -8,6 +8,7 @@ require_once __DIR__.'/private.php';
 
 defined('WEBSITE_URL') or define('WEBSITE_URL','http://127.0.0.1:8080');
 defined('REDIS_DSN') or define('REDIS_DSN','tcp://127.0.0.1:6379');
+defined('REDIS_PASSWORD') or define('REDIS_PASSWORD','');
 defined('APP_SCHEME') or define('APP_SCHEME','lowresrmx:');
 
 const HEADER_TOKEN='X-Application-Token';
@@ -23,6 +24,7 @@ const LOGIN_GOOGLE_TTL=60*5; // 5 minutes
 const LOGIN_DISCORD_TTL=60*5; // 5 minutes
 const LOGIN_GITHUB_TTL=60*5; // 5 minutes
 const SESSION_TTL=60*60*24*30; // 30 days
+const SLUG_RELEASE_TTL=60*60*24*30; // 30 days
 const NOTIF_TTL=60*60*24*90; // 90 days
 const STAT_TTL=60*60*24*400; // ~13 months
 
@@ -38,6 +40,7 @@ const MAX_POST_NAME=100;
 const MAX_POST_TEXT=15000;
 const MAX_QUERY=100;
 const MAX_REACTION_KINDS=20;
+const MAX_REACTIONS_PER_USER=3;
 const MAX_UPLOAD_PROGRAM=0x10000;
 const MAX_UPLOAD_THUMBNAIL=132710;
 
@@ -89,7 +92,7 @@ const RATE_LIMIT=[
 ];
 
 const EMOJI_PICKER_ELEMENT_STYLE_SRC="'sha256-rg2BpwZ4T9EADaas/dlxn0KsISPDXXIabE9pnJ++3UQ='";
-const MEDIUM_ZOOM_STYLE_SRC="'sha256-rg2BpwZ4T9EADaas/dlxn0KsISPDXXIabE9pnJ++3UQ=' 'sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=' 'sha256-PjBkwE8xcYZAp+HsnzzOVNqa/Ra+/v1Fnx6f0PW6ic4='";
+const MEDIUM_ZOOM_STYLE_SRC="'sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=' 'sha256-PjBkwE8xcYZAp+HsnzzOVNqa/Ra+/v1Fnx6f0PW6ic4='";
 
 require_once __DIR__.'/redis.php';
 
@@ -141,7 +144,11 @@ function conflict(string $reason):void
 function redis():Client
 {
 	static $client=null;
-	if($client===null) $client=new Client(REDIS_DSN);
+	if($client===null)
+	{
+		$client=new Client(REDIS_DSN);
+		if(REDIS_PASSWORD!=="") $client->auth(REDIS_PASSWORD);
+	}
 	if(!$client) internalServerError("Fail to reach db");
 	return $client;
 }
@@ -155,6 +162,31 @@ function hgetall(array $data):array
 		$result[$k]=array_shift($data);
 	}
 	return $result;
+}
+
+// Request values can be arrays (`x[]=`) or JSON non-strings; treat them as missing.
+function asString(mixed $value):string
+{
+	return is_string($value)?$value:"";
+}
+
+function jsonBody():array
+{
+	$json=json_decode(file_get_contents('php://input'),true);
+	return is_array($json)?$json:[];
+}
+
+function isPostBanned(string $first_id):bool
+{
+	return redis()->hget("f:$first_id:f","status")==="banned";
+}
+
+// Refuse a sign-in while the account waits for deletion; forget sessions that already expired.
+function beforeSignIn(string $user_id):void
+{
+	if(redis()->lpos("adm:de",$user_id)!==null) forbidden("Account deletion pending");
+	foreach(redis()->lrange("u:$user_id:s",0,-1) as $session_id)
+		if(!redis()->exists("s:$session_id")) redis()->lrem("u:$user_id:s",0,$session_id);
 }
 
 // Bump an activity counter: a lifetime total plus a per-day bucket (see DATABASE.md).
@@ -191,13 +223,14 @@ function claimAuthorSlug(string $user_id,string $slug):bool
 	$owner=redis()->get("a:$slug");
 	if($owner===$user_id)
 	{
+		redis()->persist("a:$slug");
 		redis()->hset("u:$user_id","slug",$slug);
 		return true;
 	}
 	if(!empty($owner)) return false;
 	if(intval(redis()->setnx("a:$slug",$user_id))!==1) return false;
 	$old=redis()->hget("u:$user_id","slug");
-	if(!empty($old)&&$old!==$slug&&redis()->get("a:$old")===$user_id) redis()->del("a:$old");
+	if(!empty($old)&&$old!==$slug&&redis()->get("a:$old")===$user_id) redis()->expire("a:$old",SLUG_RELEASE_TTL);
 	redis()->hset("u:$user_id","slug",$slug);
 	return true;
 }
@@ -231,7 +264,7 @@ function revokeSession(string $session_id):void
 
 function validateSessionAndGetUserId():Array
 {
-	$session_id=@hex2bin(@$_COOKIE[HEADER_SESSION_COOKIE]);
+	$session_id=@hex2bin(asString(@$_COOKIE[HEADER_SESSION_COOKIE]));
 	if(!$session_id) return ["",""];
 
 	list($status,$user_id,$csrf_token)=redis()->hmget("s:$session_id","status","uid","csrf");
@@ -279,7 +312,7 @@ function setLoginState(string $hex_state,int $ttl):void
 
 function validateLoginState(string $hex_state):bool
 {
-	$cookie=(string)(@$_COOKIE[HEADER_STATE_COOKIE]);
+	$cookie=asString(@$_COOKIE[HEADER_STATE_COOKIE]);
 	if($cookie==='' || $hex_state==='') return false;
 	return hash_equals($cookie,$hex_state);
 }
@@ -297,33 +330,23 @@ function clearLoginState():void
 	]);
 }
 
+const RATE_LIMIT_SCRIPT=<<<'LUA'
+redis.call('zremrangebyscore',KEYS[1],0,ARGV[1]-ARGV[2])
+if redis.call('zcard',KEYS[1])>=tonumber(ARGV[3]) then return 0 end
+redis.call('zadd',KEYS[1],ARGV[1],ARGV[4])
+redis.call('expire',KEYS[1],ARGV[2]+5)
+return 1
+LUA;
+
 function checkRateLimit(string $action,string $identifier):bool
 {
 	if(!isset(RATE_LIMIT[$action])) return true;
-	$limit=RATE_LIMIT[$action]['max'];
-	$window=RATE_LIMIT[$action]['window'];
-	$key="rl:$action:$identifier";
 	$now=time();
-	$window_start=$now-$window;
-	// Remove old entries outside the sliding window
-  redis()->zremrangebyscore($key,0,$window_start);
-	// Count events within the window
-  $count=intval(redis()->zcount($key,$window_start,$now));
-	if($count>=$limit)return false;
-	// Add current event with unique member id to avoid collisions
-  $member=$now.'-'.bin2hex(random_bytes(4));
-  redis()->zadd($key,$now,$member);
-	// Ensure key expires eventually so inactive keys are removed
-	redis()->expire($key,$window+5);
-	return true;
+	return intval(redis()->eval(RATE_LIMIT_SCRIPT,1,"rl:$action:$identifier",$now,RATE_LIMIT[$action]['window'],RATE_LIMIT[$action]['max'],$now.'-'.bin2hex(random_bytes(4))))===1;
 }
 
 function getClientIP(): string
 {
-	if(!empty($_SERVER['HTTP_X_REAL_IP']))
-	{
-		return $_SERVER['HTTP_X_REAL_IP'];
-	}
 	return $_SERVER['REMOTE_ADDR']??'0.0.0.0';
 }
 
@@ -361,7 +384,7 @@ if(php_sapi_name()!=="cli")
 	if($isHttps) header("Strict-Transport-Security: max-age=31536000; includeSubDomains",true);
 	header("X-Frame-Options: DENY",true);
 	header("X-Content-Type-Options: nosniff",true);
-	header("Referrer-Policy: no-referrer-when-downgrade",true);
+	header("Referrer-Policy: strict-origin-when-cross-origin",true);
 	header("Permissions-Policy: disable",true);
 	header("Content-Security-Policy: default-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' ".EMOJI_PICKER_ELEMENT_STYLE_SRC." ".MEDIUM_ZOOM_STYLE_SRC."; style-src-attr 'unsafe-inline'; img-src 'self' https: data: blob:; connect-src 'self';",true);
 

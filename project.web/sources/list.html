@@ -16,11 +16,13 @@ require_once __DIR__.'/common.php';
 			<div class="date"></div>
 			<div class="comments"></div>
 			<small class="notif" hidden></small>
+			<small class="unconfirmed" hidden>Not confirmed</small>
 		</div>
 	</a>
 	<details class="dropdown" hidden>
 		<summary role="button" class="outline secondary">Actions</summary>
 		<ul>
+			<li><a class="keep" hidden>Keep program</a></li>
 			<li><a class="publish">Publish new post</a></li>
 			<li><a class="replace">Replace old post</a></li>
 			<li><a class="already" hidden>Goto last published</a></li>

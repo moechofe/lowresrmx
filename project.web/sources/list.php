@@ -3,7 +3,6 @@
 require_once __DIR__.'/common.php';
 require_once __DIR__.'/admin.php';
 require_once __DIR__.'/rank.php';
-require_once __DIR__.'/markdown.php';
 
 // API that return a list of programs sorted by the last one first.
 if(preg_match('/^\/latest$/',$urlPath)&&$isGet)
@@ -21,8 +20,9 @@ if(preg_match('/^\/latest$/',$urlPath)&&$isGet)
 	{
 		$first_id=$list[$i];
 
-		list($program_id,$title,$author,$ut,$name)=$prg=redis()->hmget("f:$first_id:f","pid","title","author","ut","name");
+		list($program_id,$title,$author,$ut,$name,$status)=$prg=redis()->hmget("f:$first_id:f","pid","title","author","ut","name","status");
 		if(empty($title)||empty($author)||empty($ut)) { cleanInvalidFirst($first_id); continue; }
+		if($status==="banned") continue;
 		$points=redis()->hget("r:$first_id:d","pts");
 		$comm=redis()->hget("r:$first_id:d","comm");
 		$published[]=[
@@ -44,7 +44,7 @@ if(preg_match('/^\/latest$/',$urlPath)&&$isGet)
 }
 
 // API that return a list of ranked programs as a JSON array that match a query.
-if(preg_match('/^\/match$/',$urlPath)&&$isGet&&!empty($_GET['q']))
+if(preg_match('/^\/match$/',$urlPath)&&$isGet&&!empty(asString(@$_GET['q'])))
 {
 	// FIXME: when not connect, all search are limited together
 	// TODO: authorize search for logged user only
@@ -68,10 +68,10 @@ if(preg_match('/^\/match$/',$urlPath)&&$isGet&&!empty($_GET['q']))
 	{
 		$first_id=$list[$i];
 
-		list($title,$author,$ut,$text)=$prg=redis()->hmget("f:$first_id:f","title","author","ut","text");
-		// invalid entry, clean it
+		list($title,$author,$ut,$text,$status)=$prg=redis()->hmget("f:$first_id:f","title","author","ut","text","status");
 		if(empty($title)||empty($author)||empty($ut)||empty($text)) { cleanInvalidFirst($first_id); continue; }
-		if(!empty($text)) $text=markdown2html(zstd_uncompress($text));
+		if($status==="banned") continue;
+		$text=zstd_uncompress($text);
 
 		if(preg_match($pattern,$title)||preg_match($pattern,$text))
 		{
@@ -92,6 +92,7 @@ if(preg_match('/^\/match$/',$urlPath)&&$isGet&&!empty($_GET['q']))
 	header("X-Robots-Tag: noindex", true);
 	header(HEADER_SCAN_CURSOR.":".$cursor,true);
 	echo json_encode($matched);
+	exit;
 }
 
 // API that return a list of posted and published of a user

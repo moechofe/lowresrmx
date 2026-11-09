@@ -6,12 +6,7 @@ require_once __DIR__.'/token.php';
 function validReaction(string $e):bool
 {
 	if($e==='' || strlen($e)>64) return false;
-	// Exactly one grapheme cluster (only when the intl extension is available).
-	if(function_exists('grapheme_strlen'))
-	{
-		$n=grapheme_strlen($e);
-		if($n===false || $n!==1) return false;
-	}
+	if(preg_match('/^\X$/u',$e)!==1) return false;
 	// Only emoji-related codepoints, and at least one pictographic.
 	if(!preg_match('/^[\p{Extended_Pictographic}\x{FE0F}\x{200D}\x{1F3FB}-\x{1F3FF}\x{1F1E6}-\x{1F1FF}\x{20E3}#*0-9]+$/u',$e)) return false;
 	if(!preg_match('/\p{Extended_Pictographic}/u',$e)) return false;
@@ -46,6 +41,10 @@ function toggleReaction(string $base,string $emoji,string $user_id):bool
 	}
 	else
 	{
+		$mine=0;
+		foreach(redis()->smembers("x:$base") as $kind)
+			if(redis()->sismember("x:$base:v:$kind",$user_id)) ++$mine;
+		if($mine>=MAX_REACTIONS_PER_USER) return false;
 		$known=redis()->sismember("x:$base",$emoji)?true:false;
 		if(!$known && intval(redis()->scard("x:$base"))>=MAX_REACTION_KINDS) return false;
 		redis()->sadd($key,$user_id);
@@ -79,15 +78,17 @@ if(preg_match("/^\/($MATCH_ENTRY_TOKEN)\/react$/",$urlPath,$matches)&&$isPost)
 	$first_id=$matches[1];
 	if(!$first_id) badRequest("Fail to read entry");
 	if(!redis()->exists("f:$first_id:f")) badRequest("Fail to validate entry");
+	if(isPostBanned($first_id)) badRequest("Fail to validate entry");
 	handleReact($first_id);
 }
 
 // API to toggle an emoji reaction on a comment.
-if(preg_match("/^\/($MATCH_ENTRY_TOKEN)\/(\d+)\/react$/",$urlPath,$matches)&&$isPost)
+if(preg_match("/^\/($MATCH_ENTRY_TOKEN)\/(\d{1,9})\/react$/",$urlPath,$matches)&&$isPost)
 {
 	$first_id=$matches[1];
 	$cid=intval($matches[2]);
 	if(!$first_id) badRequest("Fail to read entry");
 	if(!redis()->exists("f:$first_id:$cid")) badRequest("Fail to validate comment");
+	if(isPostBanned($first_id)||redis()->hget("f:$first_id:$cid","status")==="banned") badRequest("Fail to validate comment");
 	handleReact("$first_id:$cid");
 }

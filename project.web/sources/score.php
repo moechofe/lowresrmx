@@ -15,27 +15,18 @@ if(preg_match("/^\/($MATCH_ENTRY_TOKEN)\/vote$/",$urlPath,$matches)&&$isGet)
 	$first_id=$matches[1];
 	if(!$first_id) badRequest("Fail to read entry");
 	if(!redis()->exists("f:$first_id:f")) badRequest("Fail to validate entry");
+	list($post_uid,$status)=redis()->hmget("f:$first_id:f","uid","status");
+	if($status==="banned") badRequest("Fail to validate entry");
+	if($post_uid===$user_id) forbidden("Fail to vote own entry");
 
-	$upvoted=redis()->sismember("r:$first_id:v",$user_id)?true:false;
-	if(!$upvoted)
+	$upvoted=intval(redis()->sadd("r:$first_id:v",$user_id))===1;
+	if($upvoted)
 	{
-		// add the vote
-		redis()->sadd("r:$first_id:v",$user_id);
-		$upvoted=true;
-		redis()->hincrby("r:$first_id:d","vote",1);
 		track('vote');
-
-		// Record activity on the post
 		redis()->hset("r:$first_id:d","at",time());
 		redis()->set("u:$user_id:t",time());
 	}
-	else
-	{
-		// remove the vote
-		redis()->srem("r:$first_id:v",$user_id);
-		$upvoted=false;
-		redis()->hincrby("r:$first_id:d","vote",-1);
-	}
+	else redis()->srem("r:$first_id:v",$user_id);
 
 	$points=updRank($first_id);
 

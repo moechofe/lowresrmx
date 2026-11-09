@@ -11,7 +11,8 @@
  * ut: string?
  * ct: string?,
  * eid: string?
- * pts: number?
+ * pts: number?,
+ * unconfirmed: boolean?
  * }}
  */
 var ProgramItem;
@@ -35,6 +36,7 @@ var ProgramListConfig;
  * @event ask_to_publish {pid:string,name:string} When the user wants to publish a program.
  * @event ask_to_delete {pid:string,name:string} When the user wants to delete a program.
  * @event ask_to_replace {pid:string,name:string} When the user wants to replace the program of a post.
+ * @event ask_to_keep {pid:string,name:string} When the user wants to confirm a program imported from a link.
  */
 const setupProgramList=(prg_list,config)=>{return new Promise(async(res,rej)=>{
 	const item_tpl=query('#program-item');
@@ -45,6 +47,7 @@ const setupProgramList=(prg_list,config)=>{return new Promise(async(res,rej)=>{
 		const item=instanciate(item_tpl);
 		const a=find(item,'a');
 
+		dataset(item,'pid',data.pid);
 		dataset(item,'eid',encodeURI(data.eid));
 
 		text(find(item,'.name'),data.title||data.name||"Untitled");
@@ -109,6 +112,21 @@ const setupProgramList=(prg_list,config)=>{return new Promise(async(res,rej)=>{
 				name:data.name,
 			});
 		});
+
+		click(find(item,'.keep'),_=>{
+			emit(list,'ask_to_keep',{
+				pid:data.pid,
+				name:data.name,
+			});
+		});
+
+		if(config.isShare && data.unconfirmed)
+		{
+			show(find(item,'.unconfirmed'));
+			show(find(item,'.keep'));
+			remove(find(item,'.publish').parentElement);
+			remove(find(item,'.replace').parentElement);
+		}
 
 		return item;
 	});

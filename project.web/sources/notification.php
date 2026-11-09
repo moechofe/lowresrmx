@@ -22,8 +22,8 @@ if(preg_match('/^\/notif$/',$urlPath)&&$isGet)
 	$list=[];
 	foreach($ids as $eid)
 	{
-		list($title,$author)=redis()->hmget("f:$eid:f","title","author");
-		if(empty($title)) continue; // entry gone or invalid
+		list($title,$author,$status)=redis()->hmget("f:$eid:f","title","author","status");
+		if(empty($title)||$status==="banned") continue;
 		list($at,$comm,$vote)=redis()->hmget("r:$eid:d","at","comm","vote");
 		$list[]=[
 			"eid"=>$eid,

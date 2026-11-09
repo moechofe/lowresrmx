@@ -15,7 +15,7 @@ function sendDiscordWebhook(string $webhookUrl, array $payload): bool
 	$response=@file_get_contents($webhookUrl,false,stream_context_create($opt));
 	if($response===false)
 	{
-		error_log("Discord webhook failed: $webhookUrl");
+		// error_log("Discord webhook failed: $webhookUrl");
 		return false;
 	}
 	return true;

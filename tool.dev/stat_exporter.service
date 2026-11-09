@@ -6,4 +6,5 @@ After=redis-server.service
 Type=oneshot
 User=prometheus
 Group=prometheus
+EnvironmentFile=-/etc/lowresrmx/redis.env
 ExecStart=/usr/local/bin/stat_exporter.sh

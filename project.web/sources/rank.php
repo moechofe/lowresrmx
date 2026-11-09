@@ -16,21 +16,18 @@ function updRank(string $first_id):int
 	}
 	$t=strtotime($ct)-RANK_EPOCH;
 
-	// Compute the points
-	$points=0
-	+POINTS_GIVEN['publish']
-	+POINTS_GIVEN['upvote']*$members['vote']
-	+POINTS_GIVEN['comment']*$members['comm']
-	;
+	list($name,$author_uid)=redis()->hmget("f:$first_id:f","name","uid");
+	$vote=intval(redis()->scard("r:$first_id:v"));
+	if(!empty($author_uid)&&redis()->sismember("r:$first_id:v",$author_uid)) --$vote;
+	$comm=max(0,intval($members['comm']??0)-intval($members['acomm']??0));
+	$points=POINTS_GIVEN['publish']+POINTS_GIVEN['upvote']*$vote+POINTS_GIVEN['comment']*$comm;
 
 	// Compute the rank: log-magnitude of points plus a fixed time offset. This
 	// value is independent of "now", so it never needs decay recomputation.
 	$rank=log10(max($points,1))+$t/RANK_WINDOW;
 
 	// Update the score
-	redis()->hset("r:$first_id:d","pts",$points);
-
-	$name=redis()->hget("f:$first_id:f","name");
+	redis()->hset("r:$first_id:d","pts",$points,"vote",$vote);
 
 	// Update the rank
 	if(!empty($name)) redis()->zadd("r:all",$rank,$first_id);
@@ -55,8 +52,9 @@ if(preg_match('/^\/ranked$/',$urlPath)&&$isGet)
 	{
 		$first_id=$list[$i];
 
-		list($program_id,$title,$author,$ut,$name)=$prg=redis()->hmget("f:$first_id:f","pid","title","author","ut","name");
+		list($program_id,$title,$author,$ut,$name,$status)=$prg=redis()->hmget("f:$first_id:f","pid","title","author","ut","name","status");
 		if(empty($title)||empty($author)||empty($ut)) { cleanInvalidFirst($first_id); continue; }
+		if($status==="banned") continue;
 		$points=redis()->hget("r:$first_id:d","pts");
 		$comm=redis()->hget("r:$first_id:d","comm");
 		$published[]=[

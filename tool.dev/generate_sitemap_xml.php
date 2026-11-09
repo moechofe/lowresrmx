@@ -5,6 +5,7 @@ require_once __DIR__.'/redis.php';
 defined('WEBSITE_URL') or define('WEBSITE_URL','http://127.0.0.1:8080');
 defined('REDIS_DSN') or define('REDIS_DSN','tcp://127.0.0.1:6379');
 $client=new Client(REDIS_DSN);
+if(getenv('REDISCLI_AUTH')) $client->auth(getenv('REDISCLI_AUTH'));
 
 ?>
 <?xml version="1.0" encoding="UTF-8"?>

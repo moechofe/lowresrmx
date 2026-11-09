@@ -3,11 +3,12 @@
 require_once __DIR__.'/common.php';
 require_once __DIR__.'/token.php';
 
-if(preg_match('/^\/google$/',$urlPath)&&$isGet&&!empty($_GET['code'])&&!empty($_GET['state']))
+if(preg_match('/^\/google$/',$urlPath)&&$isGet&&!empty(asString(@$_GET['code']))&&!empty(asString(@$_GET['state'])))
 {
 	if(!validateLoginState($_GET['state'])) forbidden("Fail to validate state binding");
 	clearLoginState();
-	$state=hex2bin($_GET['state']);
+	$state=@hex2bin($_GET['state']);
+	if($state===false) forbidden("Fail to validate state");
 	if(!redis()->exists("l:$state")) forbidden("Fail to validate state");
 
 	// If a upload token is passed, the user is using the iOS app to share a program.
@@ -44,6 +45,7 @@ if(preg_match('/^\/google$/',$urlPath)&&$isGet&&!empty($_GET['code'])&&!empty($_
 	if(empty($profile_response['id'])) internalServerError("Fail to read google id");
 
 	$user_id="{$profile_response['id']}.go2";
+	beforeSignIn($user_id);
 
 	$session_id=random_bytes(32); // stored in browser cookie
 	$csrf_token=random_bytes(32); // stored in browser memory
@@ -97,7 +99,7 @@ elseif(preg_match('/^\/google$/',$urlPath)&&$isGet)
 	$state=sodium_crypto_shorthash(strval($sequence),LOGIN_GOOGLE_KEY);
 
 	// If a upload token is passed, the user is using the iOS app to share a program.
-	if(@preg_match("/^($MATCH_ENTRY_TOKEN)$/",@$_GET['uptoken'],$matches))
+	if(preg_match("/^($MATCH_ENTRY_TOKEN)$/",asString(@$_GET['uptoken']),$matches))
 		$uptoken=$matches[1];
 	else
 		$uptoken="";
@@ -119,11 +121,12 @@ elseif(preg_match('/^\/google$/',$urlPath)&&$isGet)
 	exit;
 }
 
-if(preg_match('/^\/discord$/',$urlPath)&&$isGet&&!empty($_GET['code'])&&!empty($_GET['state']))
+if(preg_match('/^\/discord$/',$urlPath)&&$isGet&&!empty(asString(@$_GET['code']))&&!empty(asString(@$_GET['state'])))
 {
 	if(!validateLoginState($_GET['state'])) forbidden("Fail to validate state binding");
 	clearLoginState();
-	$state=hex2bin($_GET['state']);
+	$state=@hex2bin($_GET['state']);
+	if($state===false) forbidden("Fail to validate state");
 	if(!redis()->exists("l:$state")) forbidden("Fail to validate state");
 
 	// If a upload token is passed, the user is using the iOS app to share a program.
@@ -156,9 +159,10 @@ if(preg_match('/^\/discord$/',$urlPath)&&$isGet&&!empty($_GET['code'])&&!empty($
 	$profile_response=json_decode(file_get_contents("https://discord.com/api/users/@me",false,stream_context_create($profile_request)),true);
 	// error_log("Profile response: ".json_encode($profile_response));
 
-	// TODO: add error here
+	if(empty($profile_response['id'])||empty($profile_response['username'])) internalServerError("Fail to read discord id");
 
 	$user_id="{$profile_response['id']}.di2";
+	beforeSignIn($user_id);
 
 	$session_id=random_bytes(32); // stored in browser cookie
 	$csrf_token=random_bytes(32); // stored in browser memory
@@ -213,7 +217,7 @@ elseif(preg_match('/^\/discord$/',$urlPath)&&$isGet)
 	$state=sodium_crypto_shorthash(strval($sequence),LOGIN_DISCORD_KEY);
 
 	// If a upload token is passed, the user is using the iOS app to share a program.
-	if(@preg_match("/^($MATCH_ENTRY_TOKEN)$/",@$_GET['uptoken'],$matches))
+	if(preg_match("/^($MATCH_ENTRY_TOKEN)$/",asString(@$_GET['uptoken']),$matches))
 		$uptoken=$matches[1];
 	else
 		$uptoken="";
@@ -234,12 +238,13 @@ elseif(preg_match('/^\/discord$/',$urlPath)&&$isGet)
 	exit;
 }
 
-elseif(preg_match('/^\/github$/',$urlPath)&&$isGet&&!empty($_GET['code'])&&!empty($_GET['state']))
+elseif(preg_match('/^\/github$/',$urlPath)&&$isGet&&!empty(asString(@$_GET['code']))&&!empty(asString(@$_GET['state'])))
 {
 	// error_log("State: ".json_encode($_GET['state']));
 	if(!validateLoginState($_GET['state'])) forbidden("Fail to validate state binding");
 	clearLoginState();
-	$state=hex2bin($_GET['state']);
+	$state=@hex2bin($_GET['state']);
+	if($state===false) forbidden("Fail to validate state");
 	if(!redis()->exists("l:$state")) forbidden("Fail to validate state");
 
 	// If a upload token is passed, the user is using the iOS app to share a program.
@@ -284,6 +289,7 @@ elseif(preg_match('/^\/github$/',$urlPath)&&$isGet&&!empty($_GET['code'])&&!empt
 	if(empty($profile_response['id']) || empty($profile_response['login'])) internalServerError("Fail to read github id");
 
 	$user_id="{$profile_response['id']}.gh2";
+	beforeSignIn($user_id);
 
 	$session_id=random_bytes(32); // stored in browser cookie
 	$csrf_token=random_bytes(32); // stored in browser memory
@@ -338,7 +344,7 @@ elseif(preg_match('/^\/github$/',$urlPath)&&$isGet)
 	// error_log("State: ".json_encode(bin2hex($state)));
 
 	// If a upload token is passed, the user is using the iOS app to share a program.
-	if(@preg_match("/^($MATCH_ENTRY_TOKEN)$/",@$_GET['uptoken'],$matches))
+	if(preg_match("/^($MATCH_ENTRY_TOKEN)$/",asString(@$_GET['uptoken']),$matches))
 		$uptoken=$matches[1];
 	else
 		$uptoken="";
@@ -395,7 +401,7 @@ elseif(preg_match('/^\/sign_out$/',$urlPath)&&$isPost)
 	list($user_id,$csrf_token)=validateSessionAndGetUserId();
 	// if(!validateCSRF(stored_token: $csrf_token)) forbidden("Fail to read token");
 
-	$session_id=@hex2bin(@$_COOKIE[HEADER_SESSION_COOKIE]);
+	$session_id=@hex2bin(asString(@$_COOKIE[HEADER_SESSION_COOKIE]));
 	if($session_id) revokeSession($session_id);
 	track('signout');
 

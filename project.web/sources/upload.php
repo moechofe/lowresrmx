@@ -7,17 +7,17 @@ if(preg_match('/^\/upload$/',$urlPath)&&$isPost)
 {
 	if(!checkRateLimit('upload',getClientIP())) tooManyRequests("Fail to respect limit");
 
-	$json=json_decode(file_get_contents('php://input'),true);
+	$json=jsonBody();
 
-	$prg=base64_decode($json['p']);
+	$prg=base64_decode(asString(@$json['p']));
 	if(empty($prg)||strlen($prg)>MAX_UPLOAD_PROGRAM) badRequest("Fail to read program");
 	if(substr($prg,0,4)!=="\x28\xB5\x2F\xFD") badRequest("Fail to read program");
 
-	$img=base64_decode($json['i']);
+	$img=base64_decode(asString(@$json['i']));
 	if(empty($img)||strlen($img)>MAX_UPLOAD_THUMBNAIL) badRequest("Fail to read image");
 	if(substr($img,0,8)!=="\x89PNG\r\n\x1a\n") badRequest("Fail to read thumbnail");
 
-	$name=mb_substr(@trim(@$json['n']),0,MAX_POST_NAME);
+	$name=mb_substr(trim(asString(@$json['n'])),0,MAX_POST_NAME);
 
 	$uptoken=generateUploadToken();
 	if(empty($uptoken)) badRequest("Fail to generate token header");

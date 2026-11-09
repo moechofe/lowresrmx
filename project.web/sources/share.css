@@ -4,3 +4,4 @@ require_once __DIR__.'/list.css';
 require_once __DIR__.'/footer.css';
 ?>
 .publish-dialog fieldset.grid, .post-dialog fieldset.grid { grid-template-columns: 1fr 1fr; }
+.keep-dialog .picture { width: 180px; height: 180px; margin: 0 auto 1rem; background-size: contain; background-repeat: no-repeat; background-position: center; image-rendering: pixelated; }

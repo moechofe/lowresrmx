@@ -14,8 +14,8 @@ require_once __DIR__.'/discord.php';
 // See: upload.php
 if(preg_match('/^\/share$/',$urlPath)&&$isGet)
 {
-	$uptoken=@$_GET['uptoken'];
-	if(empty($uptoken)) badRequest("Fail to read uptoken");
+	$uptoken=asString(@$_GET['uptoken']);
+	if(!preg_match("/^($MATCH_UPLOAD_TOKEN)$/",$uptoken)) badRequest("Fail to read uptoken");
 
 	list($user_id,$csrf_token)=validateSessionAndGetUserId();
 
@@ -46,6 +46,7 @@ if(preg_match('/^\/share$/',$urlPath)&&$isGet)
 		"name",$name,
 		"ct",date(DATE_ATOM),
 		"author",$author,
+		"new","1",
 	);
 
 	// Add to the program list
@@ -55,7 +56,7 @@ if(preg_match('/^\/share$/',$urlPath)&&$isGet)
 	redis()->del("t:$uptoken");
 
 	header("X-Robots-Tag: noindex", true);
-	header("Location: /share.html");
+	header("Location: /share.html?new=".rawurlencode($program_id));
 	exit;
 }
 
@@ -74,7 +75,7 @@ if(preg_match('/^\/last_shared$/',$urlPath)&&$isGet)
 	$l=count($programs)-1;
 	for($i=$l;$i>=0;--$i)
 	{
-		list($name,$author,$ct,$first_id)=$prg=redis()->hmget("p:{$programs[$i]}","name","author","ct","first");
+		list($name,$author,$ct,$first_id,$new)=$prg=redis()->hmget("p:{$programs[$i]}","name","author","ct","first","new");
 		if(empty($name)||empty($author))
 		{
 			cleanInvalidUserProgram($user_id,$programs[$i]);
@@ -86,6 +87,7 @@ if(preg_match('/^\/last_shared$/',$urlPath)&&$isGet)
 			'name'=>$name,
 			'author'=>$author,
 			'ct'=>$ct,
+			'unconfirmed'=>!empty($new),
 		];
 
 		if(!empty($first_id))
@@ -114,9 +116,9 @@ if(preg_match('/^\/delete$/',$urlPath)&&$isPost)
 	if(!$user_id) forbidden("Fail to read user");
 	if(!validateCSRF($csrf_token)) forbidden("Fail to read token");
 
-	$json=json_decode(file_get_contents('php://input'),true);
+	$json=jsonBody();
 
-	$program_id=@trim(@$json['p']);
+	$program_id=trim(asString(@$json['p']));
 	if(empty($program_id)) badRequest("Fail to read program");
 	if(strlen($program_id)<=16||strlen($program_id)>=512) badRequest("Fail to read program");
 	if(redis()->hget("p:$program_id","uid")!==$user_id) badRequest("Fail to be the owner");
@@ -125,6 +127,20 @@ if(preg_match('/^\/delete$/',$urlPath)&&$isPost)
 	redis()->lrem("u:{$user_id}:p",1,$program_id);
 	track('delete');
 
+	header("X-Robots-Tag: noindex", true);
+	exit;
+}
+
+// API that confirm a program imported from a link
+if(preg_match('/^\/keep$/',$urlPath)&&$isPost)
+{
+	list($user_id,$csrf_token)=validateSessionAndGetUserId();
+	if(!$user_id) forbidden("Fail to read user");
+	if(!validateCSRF($csrf_token)) forbidden("Fail to read token");
+	$program_id=trim(asString(@jsonBody()['p']));
+	if(!preg_match("/^($MATCH_UPLOAD_TOKEN)$/",$program_id)) badRequest("Fail to read program");
+	if(redis()->hget("p:$program_id","uid")!==$user_id) badRequest("Fail to be the owner");
+	redis()->hdel("p:$program_id","new");
 	header("X-Robots-Tag: noindex", true);
 	exit;
 }
@@ -138,24 +154,25 @@ if(preg_match('/\/publish$/',$urlPath)&&$isPost)
 	if(!checkRateLimit('publish',$user_id)) tooManyRequests("Fail to respect limit");
 
 	// Check for field from the HTML form
-	$json=json_decode(file_get_contents(filename: 'php://input'),true);
-	$program_id=@trim(@$json['p']);
+	$json=jsonBody();
+	$program_id=trim(asString(@$json['p']));
 	if(empty($program_id)) badRequest("Fail to read program");
 	if(strlen($program_id)<=16||strlen($program_id)>=512) badRequest("Fail to read program");
-	$title=mb_substr(@trim(@$json['i']),0,MAX_POST_TITLE);
+	$title=mb_substr(trim(asString(@$json['i'])),0,MAX_POST_TITLE);
 	if(empty($title)) badRequest("Fail to read title");
-	$text=mb_substr(@trim(@$json['x']),0,MAX_POST_TEXT);
+	$text=mb_substr(trim(asString(@$json['x'])),0,MAX_POST_TEXT);
 	if(empty($text)) badRequest("Fail to read text");
-	$where=@$json['w'];
+	$where=asString(@$json['w']);
 	if(!in_array($where,PROGRAM_VALID_FORUM)) badRequest("Fail to read where");
 
 	// Check for the program
 	if(!redis()->exists("p:$program_id")) badRequest("Fail to validate program");
-	list($prg,$img,$name)=redis()->hmget("p:$program_id","prg","img","name");
+	list($prg,$img,$name,$new)=redis()->hmget("p:$program_id","prg","img","name","new");
 	if(empty($prg)) internalServerError("Fail to read program");
 	if(empty($img)) internalServerError("Fail to read image");
 	if(empty($name)) internalServerError("Fail to read program name");
 	if(redis()->hget("p:$program_id","uid")!==$user_id) badRequest("Fail to be the owner");
+	if(!empty($new)) forbidden("Fail to confirm program");
 
 	// prepare text content
 	$first_id=generateEntryToken();
@@ -251,12 +268,12 @@ if(preg_match('/\/post$/',$urlPath)&&$isPost)
 	if(!checkRateLimit('post',$user_id)) tooManyRequests("Fail to respect limit");
 
 	// Check for field from the HTML form
-	$json=json_decode(file_get_contents('php://input'),true);
-	$title=mb_substr(@trim(@$json['i']),0,MAX_POST_TITLE);
+	$json=jsonBody();
+	$title=mb_substr(trim(asString(@$json['i'])),0,MAX_POST_TITLE);
 	if(empty($title)) badRequest("Fail to read title");
-	$text=mb_substr(@trim(@$json['x']),0,MAX_POST_TEXT);
+	$text=mb_substr(trim(asString(@$json['x'])),0,MAX_POST_TEXT);
 	if(empty($text)) badRequest("Fail to read text");
-	$where=@$json['w'];
+	$where=asString(@$json['w']);
 	if(!in_array($where,TOPIC_VALID_FORUM)) badRequest("Fail to read where");
 
 	// prepare text content
@@ -317,11 +334,12 @@ if(preg_match('/\/published$/',$urlPath)&&$isGet)
 	if(!$user_id) forbidden("Fail to read user");
 	if(!validateCSRF($csrf_token)) forbidden("Fail to read token");
 
-	if(@preg_match("/^($MATCH_ENTRY_TOKEN)$/",@rawurldecode(@$_GET['id']),$matches))
+	if(preg_match("/^($MATCH_ENTRY_TOKEN)$/",rawurldecode(asString(@$_GET['id'])),$matches))
 	{
 		$first_id=$matches[1];
 
-		$text=redis()->hget("f:$first_id:f","text");
+		list($text,$owner)=redis()->hmget("f:$first_id:f","text","uid");
+		if($owner!==$user_id) forbidden("Fail to be the owner");
 		if(empty($text)) badRequest("Fail to read text");
 		$text=zstd_uncompress($text);
 
@@ -332,7 +350,7 @@ if(preg_match('/\/published$/',$urlPath)&&$isGet)
 	}
 	else
 	{
-		$start=@intval(@getallheaders()[HEADER_SCAN_CURSOR],10);
+		$start=min(max(0,intval(@getallheaders()[HEADER_SCAN_CURSOR])),1000000);
 
 		$programs=redis()->lrange("u:{$user_id}:f",$start,$start+9);
 		$published=[];
@@ -369,29 +387,30 @@ if(preg_match("/\/($MATCH_ENTRY_TOKEN)\/replace$/",$urlPath,$matches)&&$isPost)
 	if(redis()->hget("f:$first_id:f","uid")!==$user_id) forbidden("Fail to be the owner");
 
 	// Check for field from the HTML form
-	$json=json_decode(file_get_contents(filename: 'php://input'),true);
-	if(!preg_match("/^($MATCH_ENTRY_TOKEN)$/",$json['p'],$matches)) badRequest("Fail to read program");
+	$json=jsonBody();
+	if(!preg_match("/^($MATCH_ENTRY_TOKEN)$/",asString(@$json['p']),$matches)) badRequest("Fail to read program");
 	$program_id=$matches[0];
-	$title=mb_substr(@trim(@$json['i']),0,MAX_POST_TITLE);
+	$title=mb_substr(trim(asString(@$json['i'])),0,MAX_POST_TITLE);
 	if(empty($title)) badRequest("Fail to read title");
-	$text=mb_substr(@trim(@$json['x']),0,MAX_POST_TEXT);
+	$text=mb_substr(trim(asString(@$json['x'])),0,MAX_POST_TEXT);
 	if(empty($text)) badRequest("Fail to read text");
 	// error_log("program_id: $program_id");
 
 	// Check for the program
 	if(!redis()->exists("p:$program_id")) badRequest("Fail to validate program");
-	list($prg,$img,$name)=redis()->hmget("p:$program_id","prg","img","name");
+	list($prg,$img,$name,$new)=redis()->hmget("p:$program_id","prg","img","name","new");
 	if(empty($prg)) internalServerError("Fail to read program");
 	if(empty($img)) internalServerError("Fail to read image");
 	if(empty($name)) internalServerError("Fail to read program name");
 	if(redis()->hget("p:$program_id","uid")!==$user_id) badRequest("Fail to be the owner");
+	if(!empty($new)) forbidden("Fail to confirm program");
 
 	// Retrieve old program
 	$old_program_id=redis()->hget("f:$first_id:f","pid");
 	if($old_program_id)
 	{
 		// Unmark the old program as publish
-		redis()->hdel("p:$program_id","first");
+		redis()->hdel("p:$old_program_id","first");
 	}
 
 	// Prepare text content

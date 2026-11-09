@@ -12,6 +12,7 @@ if(preg_match('/\/author$/',$urlPath)&&$isPost)
 	$author=file_get_contents('php://input');
 	if(empty($author)) badRequest("Fail to read author");
 	if(strlen($author)<4||strlen($author)>MAX_AUTHOR_NAME) badRequest("Fail to read author");
+	if(preg_match('/[\p{Cc}\x{061C}\x{200E}\x{200F}\x{202A}-\x{202E}\x{2066}-\x{2069}]/u',$author)!==0) badRequest("Fail to read author");
 
 	$slug=slugifyAuthor($author);
 	if($slug==="") badRequest("Fail to read author");
@@ -36,7 +37,8 @@ if(preg_match('/\/delete_everything$/',$urlPath)&&$isPost)
 	track('account_delete');
 
 	foreach(redis()->lrange("u:$user_id:s",0,-1) as $session_id)
-		redis()->hset("s:$session_id","status","revoked");
+		redis()->del("s:$session_id");
+	redis()->del("u:$user_id:s");
 
 	setcookie(
 		HEADER_SESSION_COOKIE,"",

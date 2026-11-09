@@ -6,7 +6,7 @@ $isPost=false;
 require_once __DIR__.'/../project.web/sources/common.php';
 require_once __DIR__.'/../project.web/sources/rank.php';
 
-$client=new Client(REDIS_DSN);
+$client=redis();
 
 $cursor="0";
 $total=0;

@@ -20,9 +20,25 @@
  * TODO: parse https link
  */
 
+// Only http(s), mailto and scheme-less URLs survive; any other scheme becomes "".
+function markdownUrl(string $url):string
+{
+	$url=trim($url,"\x00..\x20");
+	if(preg_match('/^([a-z][a-z0-9+.\-]*):/i',$url,$m) && !in_array(strtolower($m[1]),['http','https','mailto'],true)) return "";
+	$url=preg_replace_callback('/[\x00-\x20\x7F]/',fn($m)=>rawurlencode($m[0]),$url);
+	return htmlspecialchars($url,ENT_QUOTES,'UTF-8');
+}
+
+function markdownLink(bool $img,string $url,string $captured):string
+{
+	$href=markdownUrl($url);
+	return $img?"<figure><img src=\"$href\"><figcaption>$captured</figcaption></figure>":"<a href=\"$href\">$captured</a>";
+}
+
 function markdown2html(string $in):String
 {
 	$in=preg_replace('/\r\n?/',"\n",strip_tags(trim($in)));
+	$chars=mb_str_split($in);
 
 	// current parsing state: p, ul, figure, code
 	$curr="";
@@ -30,6 +46,7 @@ function markdown2html(string $in):String
 	$em=false;
 	$strong=false;
 	$link=false;
+	$inUrl=false;
 	$img=false;
 	$code=false;
 	$newline=false;
@@ -37,14 +54,14 @@ function markdown2html(string $in):String
 	// captured content for links and images
 	$captured="";
 
-	$len=strlen($in);
+	$len=count($chars);
 
 	ob_start();
 
 	$i=-1;
 next:
 	if(++$i>=$len)goto close;
-	$c=mb_substr($in,$i,1);
+	$c=$chars[$i];
 retry:
 	if($i>=$len)goto end;
 
@@ -56,15 +73,15 @@ retry:
 	else if($c=="\n" && $newline && $curr!="")
 	{
 too_newline:
-		if(++$i>=$len)goto close;$c=mb_substr($in,$i,1);if($i>=$len)goto end;
+		if(++$i>=$len)goto close;$c=$chars[$i];if($i>=$len)goto end;
 		if($c=="\n")goto too_newline;
 		goto close;
 	}
-	else if(($c=="*"||$c=="_") && (!$link || ob_get_level()==2) && !$noparse)
+	else if(($c=="*"||$c=="_") && !$inUrl && !$noparse)
 	{
 		$count=1;
 count_stars:
-		if(++$i>=$len)goto close;$c=mb_substr($in,$i,1);if($i>=$len)goto end;
+		if(++$i>=$len)goto close;$c=$chars[$i];if($i>=$len)goto end;
 		if($c=="*" || $c=="_"){$count++;goto count_stars;}
 		if($curr==""){$curr="p";echo"<p>";}
 		if($count==1 && !$em){$em=true;echo"<em>";}
@@ -81,9 +98,9 @@ count_stars:
 		}
 		goto retry;
 	}
-	else if($c=="!" && !$noparse)
+	else if($c=="!" && !$noparse && !$inUrl)
 	{
-		if(++$i>=$len)goto close;$c=mb_substr($in,$i,1);if($i>=$len)goto end;
+		if(++$i>=$len)goto close;$c=$chars[$i];if($i>=$len)goto end;
 		if($c=="[")
 		{
 			$img=true;
@@ -96,36 +113,47 @@ count_stars:
 	{
 		if($newline && $curr!="")echo"<br>";$newline=false;
 		if($curr=="" && !$img){$curr="p";echo"<p>";}
-		if($img){echo "<figure><img src=\"";$curr="figure";}
-		else echo "<a href=\"";
+		if($img)$curr="figure";
 		ob_start();
 		$link=true;
 		goto next;
 	}
-	else if($c=="]" && $link && !$noparse)
+	else if($c=="]" && $link && !$inUrl && !$noparse)
 	{
 		$captured=ob_get_clean();
-		if(++$i>=$len)goto close;$c=mb_substr($in,$i,1);if($i>=$len)goto end;
-		if($c=="(")goto next;
-		else
+		if(++$i>=$len)
 		{
-			echo "\">",$captured,"</a>";
+			echo markdownLink($img,"",$captured);
+			if($img){$img=false;$curr="";}
 			$link=false;
-			goto retry;
+			goto close;
 		}
+		$c=$chars[$i];
+		if($c=="(")
+		{
+			ob_start();
+			$inUrl=true;
+			goto next;
+		}
+		echo markdownLink($img,"",$captured);
+		if($img){$img=false;$curr="";}
+		$link=false;
+		goto retry;
 	}
-	else if($c==")" && $link && !$noparse)
+	else if($c==")" && $inUrl && !$noparse)
 	{
-		if($img){echo "\"><figcaption>",$captured,"</figcaption></figure>";$img=false;$curr="";}
-		else echo "\">",$captured,"</a>";
+		$url=ob_get_clean();
+		$inUrl=false;
+		echo markdownLink($img,$url,$captured);
+		if($img){$img=false;$curr="";}
 		$link=false;
 		goto next;
 	}
-	else if($c=='`' && !$code)
+	else if($c=='`' && !$code && !$inUrl)
 	{
 		$count=1;
 	count_back_quote:
-		if(++$i>=$len)goto close;$c=mb_substr($in,$i,1);if($i>=$len)goto end;
+		if(++$i>=$len)goto close;$c=$chars[$i];if($i>=$len)goto end;
 		if($c=="`"){$count++;goto count_back_quote;}
 		if($count>=3)
 		{
@@ -152,40 +180,26 @@ count_stars:
 	{
 		if($newline && $curr!="")
 		{
-			if($link && ob_get_level()==1) echo rawurlencode("\n");
-			else echo"<br/>";
+			echo $inUrl?"\n":"<br/>";
 			$newline=false;
 		}
 		if($curr==""){$curr="p";echo"<p>";}
-		if($link && ob_get_level()==1 && in_array($c,[
-			// allow characters
-			"=","&"])) echo $c;
-		elseif($link && ob_get_level()==1 && in_array($c,[
-			// allow characters one time only
-			"#","?"
-		]) && str_contains(ob_get_contents(),$c)===false) echo $c;
-		elseif($link && ob_get_level()==1) echo rawurlencode($c);
-		else echo htmlspecialchars($c);
+		echo $inUrl?$c:htmlspecialchars($c);
 		goto next;
 	}
 	exit;
 
 close:
-	if($link && ob_get_level()==2)$captured=ob_get_clean();
-	if($link){echo"\">$captured</a>";$link=false;}
+	if($link){if($inUrl){$url=ob_get_clean();$inUrl=false;}else{$url="";$captured=ob_get_clean();}echo markdownLink($img,$url,$captured);if($img){$img=false;$curr="";}$link=false;}
 	if($code){echo"</code>";$code=false;$noparse=false;}
 	if($em){echo"</em>";$em=false;}
 	if($strong){echo"</strong>";$strong=false;}
-	// TODO: img and link
-	// TODO: capture?
 	if($curr){echo"</{$curr}>";$curr="";}
 	$newline=false;
 	goto retry;
 
 end:
-	// return ob_get_clean();
-	if($link && ob_get_level()==2)$captured=ob_get_clean();
-	if($link){echo"\">$captured</a>";$link=false;}
+	if($link){if($inUrl){$url=ob_get_clean();$inUrl=false;}else{$url="";$captured=ob_get_clean();}echo markdownLink($img,$url,$captured);if($img){$img=false;$curr="";}$link=false;}
 	if($em){echo"</em>";$em=false;}
 	if($strong){echo"</strong>";$strong=false;}
 	if($curr){echo"</{$curr}>";$curr="";}
@@ -229,10 +243,10 @@ function test($tested,$expected)
 // test("zo(ga)","<p>zo(ga)</p>");
 // test("[[ga](bu)","<p><a href=\"bu\">[ga</a></p>");
 // test("[ga]](bu)","<p><a href=\"\">ga</a>](bu)</p>");
-// test("[ga]((bu)","<p><a href=\"%28bu\">ga</a></p>");
+// test("[ga]((bu)","<p><a href=\"(bu\">ga</a></p>");
 // test("[ga](bu))","<p><a href=\"bu\">ga</a>)</p>");
 // test("[*ga*](bu)","<p><a href=\"bu\"><em>ga</em></a></p>");
-// test("[ga](*bu*)","<p><a href=\"%2Abu%2A\">ga</a></p>");
+// test("[ga](*bu*)","<p><a href=\"*bu*\">ga</a></p>");
 // test("*ga[bu](zo)meu*","<p><em>ga<a href=\"zo\">bu</a>meu</em></p>");
 // test("ga!bu","<p>ga!bu</p>");
 // test("![ga](bu)","<figure><img src=\"bu\"><figcaption>ga</figcaption></figure>");
@@ -240,10 +254,11 @@ function test($tested,$expected)
 // test("![g\na](bu)","<figure><img src=\"bu\"><figcaption>g<br>a</figcaption></figure>");
 // test("![ga](b\nu)","<figure><img src=\"b%0Au\"><figcaption>ga</figcaption></figure>");
 // test("![ga](b\tu)","<figure><img src=\"b%09u\"><figcaption>ga</figcaption></figure>");
-// test("[ga](##)","<p><a href=\"#%23\">ga</a></p>");
-// test("[ga](??)","<p><a href=\"?%3F\">ga</a></p>");
+// test("[ga](##)","<p><a href=\"##\">ga</a></p>");
+// test("[ga](??)","<p><a href=\"??\">ga</a></p>");
 // test("[ga](&&)","<p><a href=\"&amp;&amp;\">ga</a></p>");
 // test("[ga](==)","<p><a href=\"==\">ga</a></p>");
+// test("[a](javascript:x)","<p><a href=\"\">a</a></p>");
 // test("ga`bu`zo","<p>ga<code>bu</code>zo</p>");
 // test("`ga**bu**`zo","<p><code>ga**bu**</code>zo</p>");
 // test("ga`**bu**zo`","<p>ga<code>**bu**zo</code></p>");

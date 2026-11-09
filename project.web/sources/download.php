@@ -17,6 +17,13 @@ if(preg_match("/^\/($MATCH_ENTRY_TOKEN)\.(".PRG_EXT."|".IMG_EXT.")$/",urldecode(
 	// already shared, use the files
 	if($real_path && $real_content_folder && strpos($real_path,$real_content_folder)===0)
 	{
+		$first_id=redis()->hget("p:$entry_token","first");
+		if($first_id&&isPostBanned($first_id))
+		{
+			header("Status: 404 Not Found",true,404);
+			exit;
+		}
+
 		header("Content-Type: ".CONTENT_TYPE_MAP[$extension]);
 		if ($extension === PRG_EXT) header("X-Robots-Tag: noindex", true);
 		readfile($real_path);
@@ -31,7 +38,7 @@ if(preg_match("/^\/($MATCH_ENTRY_TOKEN)\.(".PRG_EXT."|".IMG_EXT.")$/",urldecode(
 		if(!validateCSRF($csrf_token)) forbidden("Fail to read token");
 
 		// output the file from Redis
-		if(redis()->exists("p:{$entry_token}"))
+		if(redis()->hget("p:{$entry_token}","uid")===$user_id)
 		{
 			$file=redis()->hget("p:{$entry_token}",[PRG_EXT=>'prg',IMG_EXT=>'img'][$extension]);
 			if($extension===PRG_EXT) $file=zstd_uncompress($file);

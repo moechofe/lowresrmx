@@ -6,6 +6,7 @@ defined('CONTENT_FOLDER') or define('CONTENT_FOLDER',__DIR__.'/../project.web/co
 defined('REDIS_DSN') or define('REDIS_DSN','tcp://127.0.0.1:6379');
 
 $redis=new Client(REDIS_DSN);
+if(getenv('REDISCLI_AUTH')) $redis->auth(getenv('REDISCLI_AUTH'));
 
 $url=@$argv[1];
 

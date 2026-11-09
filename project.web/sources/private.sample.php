@@ -24,3 +24,5 @@ const TWITTER_API_KEY="";
 const TWITTER_API_KEY_SECRET="";
 
 const ADMIN_ACCESS_SECRET="";
+
+const REDIS_PASSWORD="";
