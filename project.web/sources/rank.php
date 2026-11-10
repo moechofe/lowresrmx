@@ -54,7 +54,7 @@ if(preg_match('/^\/ranked$/',$urlPath)&&$isGet)
 
 		list($program_id,$title,$author,$ut,$name,$status)=$prg=redis()->hmget("f:$first_id:f","pid","title","author","ut","name","status");
 		if(empty($title)||empty($author)||empty($ut)) { cleanInvalidFirst($first_id); continue; }
-		if($status==="banned") continue;
+		if($status==="banned"||$status==="unlisted") continue;
 		$points=redis()->hget("r:$first_id:d","pts");
 		$comm=redis()->hget("r:$first_id:d","comm");
 		$published[]=[

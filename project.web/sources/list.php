@@ -22,7 +22,7 @@ if(preg_match('/^\/latest$/',$urlPath)&&$isGet)
 
 		list($program_id,$title,$author,$ut,$name,$status)=$prg=redis()->hmget("f:$first_id:f","pid","title","author","ut","name","status");
 		if(empty($title)||empty($author)||empty($ut)) { cleanInvalidFirst($first_id); continue; }
-		if($status==="banned") continue;
+		if($status==="banned"||$status==="unlisted") continue;
 		$points=redis()->hget("r:$first_id:d","pts");
 		$comm=redis()->hget("r:$first_id:d","comm");
 		$published[]=[
@@ -48,7 +48,7 @@ if(preg_match('/^\/match$/',$urlPath)&&$isGet&&!empty(asString(@$_GET['q'])))
 {
 	// FIXME: when not connect, all search are limited together
 	// TODO: authorize search for logged user only
-	if(!checkRateLimit('search',getClientIP())) tooManyRequests("Fail to respect limit");
+	if(!checkRateLimit('search',clientRateKey())) tooManyRequests("Fail to respect limit");
 
 	$where=@$_GET['w'];
 	if(!in_array($where,PROGRAM_VALID_FORUM)) $where='all';
@@ -70,7 +70,7 @@ if(preg_match('/^\/match$/',$urlPath)&&$isGet&&!empty(asString(@$_GET['q'])))
 
 		list($title,$author,$ut,$text,$status)=$prg=redis()->hmget("f:$first_id:f","title","author","ut","text","status");
 		if(empty($title)||empty($author)||empty($ut)||empty($text)) { cleanInvalidFirst($first_id); continue; }
-		if($status==="banned") continue;
+		if($status==="banned"||$status==="unlisted") continue;
 		$text=zstd_uncompress($text);
 
 		if(preg_match($pattern,$title)||preg_match($pattern,$text))

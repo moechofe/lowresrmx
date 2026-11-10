@@ -119,11 +119,13 @@ if(preg_match('/^\/delete$/',$urlPath)&&$isPost)
 	$json=jsonBody();
 
 	$program_id=trim(asString(@$json['p']));
-	if(empty($program_id)) badRequest("Fail to read program");
-	if(strlen($program_id)<=16||strlen($program_id)>=512) badRequest("Fail to read program");
+	if(!preg_match("/^($MATCH_UPLOAD_TOKEN)$/",$program_id)) badRequest("Fail to read program");
 	if(redis()->hget("p:$program_id","uid")!==$user_id) badRequest("Fail to be the owner");
 
+	// A published program leaves its "first" link behind (see DATABASE.md).
+	$first_id=redis()->hget("p:$program_id","first");
 	redis()->del("p:$program_id");
+	if(!empty($first_id)) redis()->hset("p:$program_id","first",$first_id);
 	redis()->lrem("u:{$user_id}:p",1,$program_id);
 	track('delete');
 
@@ -156,8 +158,7 @@ if(preg_match('/\/publish$/',$urlPath)&&$isPost)
 	// Check for field from the HTML form
 	$json=jsonBody();
 	$program_id=trim(asString(@$json['p']));
-	if(empty($program_id)) badRequest("Fail to read program");
-	if(strlen($program_id)<=16||strlen($program_id)>=512) badRequest("Fail to read program");
+	if(!preg_match("/^($MATCH_UPLOAD_TOKEN)$/",$program_id)) badRequest("Fail to read program");
 	$title=mb_substr(trim(asString(@$json['i'])),0,MAX_POST_TITLE);
 	if(empty($title)) badRequest("Fail to read title");
 	$text=mb_substr(trim(asString(@$json['x'])),0,MAX_POST_TEXT);
@@ -167,17 +168,17 @@ if(preg_match('/\/publish$/',$urlPath)&&$isPost)
 
 	// Check for the program
 	if(!redis()->exists("p:$program_id")) badRequest("Fail to validate program");
+	if(redis()->hget("p:$program_id","uid")!==$user_id) badRequest("Fail to be the owner");
 	list($prg,$img,$name,$new)=redis()->hmget("p:$program_id","prg","img","name","new");
 	if(empty($prg)) internalServerError("Fail to read program");
 	if(empty($img)) internalServerError("Fail to read image");
 	if(empty($name)) internalServerError("Fail to read program name");
-	if(redis()->hget("p:$program_id","uid")!==$user_id) badRequest("Fail to be the owner");
+	if(isProgramBanned($program_id)) forbidden("Fail to validate program");
 	if(!empty($new)) forbidden("Fail to confirm program");
 
 	// prepare text content
 	$first_id=generateEntryToken();
-	$author=redis()->hget("u:$user_id","name");
-	$author=substr($author,0,MAX_AUTHOR_NAME);
+	$author=authorName($user_id);
 	$text=zstd_compress($text);
 
 	// stored private program from redis to public program to file
@@ -278,8 +279,7 @@ if(preg_match('/\/post$/',$urlPath)&&$isPost)
 
 	// prepare text content
 	$first_id=generateEntryToken();
-	$author=redis()->hget("u:$user_id","name");
-	$author=substr($author,0,MAX_AUTHOR_NAME);
+	$author=authorName($user_id);
 	$text=zstd_compress($text);
 
 	// Publish the post
@@ -328,7 +328,7 @@ if(preg_match('/\/post$/',$urlPath)&&$isPost)
 if(preg_match('/\/published$/',$urlPath)&&$isGet)
 {
 	// TODO: should it be 'search'? like API /match
-	if(!checkRateLimit('search',getClientIP())) tooManyRequests("Fail to respect limit");
+	if(!checkRateLimit('search',clientRateKey())) tooManyRequests("Fail to respect limit");
 
 	list($user_id,$csrf_token)=validateSessionAndGetUserId();
 	if(!$user_id) forbidden("Fail to read user");
@@ -385,6 +385,7 @@ if(preg_match("/\/($MATCH_ENTRY_TOKEN)\/replace$/",$urlPath,$matches)&&$isPost)
 
 	// Only the author of the post can replace its program
 	if(redis()->hget("f:$first_id:f","uid")!==$user_id) forbidden("Fail to be the owner");
+	if(isPostBanned($first_id)) forbidden("Fail to validate entry");
 
 	// Check for field from the HTML form
 	$json=jsonBody();
@@ -398,11 +399,12 @@ if(preg_match("/\/($MATCH_ENTRY_TOKEN)\/replace$/",$urlPath,$matches)&&$isPost)
 
 	// Check for the program
 	if(!redis()->exists("p:$program_id")) badRequest("Fail to validate program");
+	if(redis()->hget("p:$program_id","uid")!==$user_id) badRequest("Fail to be the owner");
 	list($prg,$img,$name,$new)=redis()->hmget("p:$program_id","prg","img","name","new");
 	if(empty($prg)) internalServerError("Fail to read program");
 	if(empty($img)) internalServerError("Fail to read image");
 	if(empty($name)) internalServerError("Fail to read program name");
-	if(redis()->hget("p:$program_id","uid")!==$user_id) badRequest("Fail to be the owner");
+	if(isProgramBanned($program_id)) forbidden("Fail to validate program");
 	if(!empty($new)) forbidden("Fail to confirm program");
 
 	// Retrieve old program
@@ -414,8 +416,7 @@ if(preg_match("/\/($MATCH_ENTRY_TOKEN)\/replace$/",$urlPath,$matches)&&$isPost)
 	}
 
 	// Prepare text content
-	$author=redis()->hget("u:$user_id","name");
-	$author=substr($author,0,MAX_AUTHOR_NAME);
+	$author=authorName($user_id);
 	$text=zstd_compress($text);
 
 	// stored private program from redis to public program to file

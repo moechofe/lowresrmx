@@ -5,7 +5,7 @@ require_once __DIR__.'/common.php';
 
 if(preg_match('/^\/upload$/',$urlPath)&&$isPost)
 {
-	if(!checkRateLimit('upload',getClientIP())) tooManyRequests("Fail to respect limit");
+	if(!checkRateLimit('upload',clientRateKey())) tooManyRequests("Fail to respect limit");
 
 	$json=jsonBody();
 

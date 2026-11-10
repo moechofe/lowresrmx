@@ -21,7 +21,11 @@
     - _(str)_ `["name"]` Name of the program at upload
     - _(str)_ `["ct"]` ATOM timestamp for creation time
     - _(str)_ `["author"]` Author name at creation
-    - _(str)_ `["first"]` `ENTRY_TOKEN_ID` of posted program.
+    - _(str)_ `["first"]` `ENTRY_TOKEN_ID` of the last post the program was published in.
+
+    Once published, the program also lives as public files in `contents/`. Those files are
+    served only while the post in `["first"]` is not banned, so `/delete` of a published
+    program keeps the hash with `["first"]` as its only field.
 
 - _(list)_ `"u:USER_ID:p"` list of uploaded program
 
@@ -43,8 +47,8 @@
     - _(str)_ `["author"]` Author name at creation
     - _(str)_ `["status"]?` one of the following:
       - `null`
-      - `"unlisted"`
-      - `"banned"`
+      - `"unlisted"` left out of `/latest`, `/ranked`, `/match` and the user page; still reachable by its URL
+      - `"banned"` not served at all: page, player, comments and the program files
     - _(str)_ `["name"]` Name of the program at upload
 
 - _(int)_ `"f:ENTRY_TOKEN_ID:s"` sequence for comment id `CID`

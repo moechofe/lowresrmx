@@ -17,8 +17,7 @@ if(preg_match("/^\/($MATCH_ENTRY_TOKEN)\.(".PRG_EXT."|".IMG_EXT.")$/",urldecode(
 	// already shared, use the files
 	if($real_path && $real_content_folder && strpos($real_path,$real_content_folder)===0)
 	{
-		$first_id=redis()->hget("p:$entry_token","first");
-		if($first_id&&isPostBanned($first_id))
+		if(isProgramBanned($entry_token))
 		{
 			header("Status: 404 Not Found",true,404);
 			exit;

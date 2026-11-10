@@ -3,6 +3,11 @@
 header_remove('X-Powered-By');
 
 error_reporting(E_ALL);
+if(!in_array(PHP_SAPI,['cli','cli-server'],true))
+{
+	ini_set('display_errors','0');
+	ini_set('log_errors','1');
+}
 
 require_once __DIR__.'/private.php';
 
@@ -181,6 +186,21 @@ function isPostBanned(string $first_id):bool
 	return redis()->hget("f:$first_id:f","status")==="banned";
 }
 
+// True while the post recorded in the program "first" link is banned (see DATABASE.md).
+function isProgramBanned(string $program_id):bool
+{
+	$first_id=redis()->hget("p:$program_id","first");
+	return !empty($first_id)&&isPostBanned($first_id);
+}
+
+// Name shown on what the user publishes: the one chosen in the settings, else the sign-in one.
+function authorName(string $user_id):string
+{
+	$author=redis()->hget("u:$user_id","author");
+	if(empty($author)) $author=redis()->hget("u:$user_id","name");
+	return substr(strval($author),0,MAX_AUTHOR_NAME);
+}
+
 // Refuse a sign-in while the account waits for deletion; forget sessions that already expired.
 function beforeSignIn(string $user_id):void
 {
@@ -345,9 +365,14 @@ function checkRateLimit(string $action,string $identifier):bool
 	return intval(redis()->eval(RATE_LIMIT_SCRIPT,1,"rl:$action:$identifier",$now,RATE_LIMIT[$action]['window'],RATE_LIMIT[$action]['max'],$now.'-'.bin2hex(random_bytes(4))))===1;
 }
 
-function getClientIP(): string
+// Rate-limit identifier of an anonymous client: its IPv4 address, or the /64 of its IPv6 address.
+function clientRateKey():string
 {
-	return $_SERVER['REMOTE_ADDR']??'0.0.0.0';
+	$ip=$_SERVER['REMOTE_ADDR']??'0.0.0.0';
+	$packed=@inet_pton($ip);
+	if($packed===false||strlen($packed)!==16) return $ip;
+	if(substr($packed,0,12)===str_repeat("\0",10)."\xff\xff") return inet_ntop(substr($packed,12));
+	return inet_ntop(substr($packed,0,8).str_repeat("\0",8)).'/64';
 }
 
 function getServerQueryString():string

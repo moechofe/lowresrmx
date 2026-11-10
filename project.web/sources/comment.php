@@ -26,9 +26,7 @@ if(preg_match("/\/($MATCH_ENTRY_TOKEN)\/comment$/",$urlPath,$matches)&&$isPost)
 	list($status,$post_uid)=redis()->hmget("f:$first_id:f","status","uid");
 	if($status==="banned") badRequest("Fail to validate entry");
 
-	$author=redis()->hget("u:$user_id","author");
-	if(empty($author)) $author=redis()->hget("u:$user_id","name");
-	$author=substr($author,0,MAX_AUTHOR_NAME);
+	$author=authorName($user_id);
 	$text=zstd_compress($text);
 
 	// Create the comment

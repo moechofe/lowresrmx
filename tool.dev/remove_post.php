@@ -8,9 +8,9 @@ defined('REDIS_DSN') or define('REDIS_DSN','tcp://127.0.0.1:6379');
 $redis=new Client(REDIS_DSN);
 if(getenv('REDISCLI_AUTH')) $redis->auth(getenv('REDISCLI_AUTH'));
 
-$url=@$argv[1];
+$url=rawurldecode(strval(@$argv[1]));
 
-if(!preg_match('/\/(\w+-\w+-[0-9a-f]{16})\b/',$url,$matches)) goto usage;
+if(!preg_match('/\/([a-z\']+-[a-z\']+-[0-9a-f]{16})\b/',$url,$matches)) goto usage;
 if(empty($matches[1])) goto usage;
 
 $first_id=$matches[1];
@@ -43,25 +43,20 @@ echo "redis-cli del \"r:$first_id:d\"\n";
 if(!empty($user_id))
 	echo "redis-cli lrem \"u:$user_id:f\" 0 \"$first_id\"\n";
 
-// user's program entry key
-$cursor=0;
-$list=$redis->lrange("u:$user_id:p",$cursor,$cursor+99);
-while(!empty($list))
-{
-	foreach($list as $pid)
-	{
-		$first=$redis->hget("p:$pid:p","first");
-		if($first==$first_id)
-			echo "redis-cli hdel \"p:$pid:p\" \"$first\"\n";
-	}
-	$cursor+=100;
-	$list=$redis->lrange("u:$user_id:p",$cursor,$cursor+99);
-}
+// program published by the post: its "first" link and its public files
+$pid=$redis->hget("f:$first_id:f","pid");
+$first=empty($pid)?null:$redis->hget("p:$pid","first");
+if($first===$first_id)
+	echo "redis-cli hdel \"p:$pid\" \"first\"\n";
 
-// file
-$folder=substr($first_id,0,3);
-echo "rm ",CONTENT_FOLDER,"$folder/$first_id.png\n";
-echo "rm ",CONTENT_FOLDER,"$folder/$first_id.rmx\n";
+// the files stay when the program was published again in another post
+if(empty($first)||$first===$first_id)
+{
+	$file=empty($pid)?$first_id:$pid;
+	$folder=substr($file,0,3);
+	echo "rm \"",CONTENT_FOLDER,"$folder/$file.png\"\n";
+	echo "rm \"",CONTENT_FOLDER,"$folder/$file.rmx\"\n";
+}
 
 exit(0);
 

@@ -1,1 +1,3 @@
 html { background-color:light-dark(#f7f2ed, #35312c); min-width:340px; }
+select:last-child { margin-bottom: 0; }
+fieldset.button, fieldset.create, fieldset.replace, fieldset.content { margin-bottom: 0; }

@@ -91,7 +91,7 @@ if(preg_match('/^\/google$/',$urlPath)&&$isGet&&!empty(asString(@$_GET['code']))
 
 elseif(preg_match('/^\/google$/',$urlPath)&&$isGet)
 {
-	if(!checkRateLimit('login',getClientIP())) tooManyRequests("Fail to respect limit");
+	if(!checkRateLimit('login',clientRateKey())) tooManyRequests("Fail to respect limit");
 
 	// Sauce: https://developers.google.com/identity/protocols/oauth2/web-server
 
@@ -209,7 +209,7 @@ if(preg_match('/^\/discord$/',$urlPath)&&$isGet&&!empty(asString(@$_GET['code'])
 
 elseif(preg_match('/^\/discord$/',$urlPath)&&$isGet)
 {
-	if(!checkRateLimit('login',getClientIP())) tooManyRequests("Fail to respect limit");
+	if(!checkRateLimit('login',clientRateKey())) tooManyRequests("Fail to respect limit");
 
 	// Sauce: https://discord.com/developers/docs/topics/oauth2
 
@@ -335,7 +335,7 @@ elseif(preg_match('/^\/github$/',$urlPath)&&$isGet&&!empty(asString(@$_GET['code
 
 elseif(preg_match('/^\/github$/',$urlPath)&&$isGet)
 {
-	// if(!checkRateLimit('login',getClientIP())) tooManyRequests("Fail to respect limit");
+	if(!checkRateLimit('login',clientRateKey())) tooManyRequests("Fail to respect limit");
 
 	// Sauce: https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps#1-request-a-users-github-identity
 
