@@ -1,0 +1,14 @@
+id = "lowresrmx-grammar"
+name = "Retro Game Creator"
+version = "0.1.0"
+schema_version = 1
+authors = ["Martin \"moechofe\" Mauchauffee <lowresrmx@gmail.com>"]
+description = "LowResRMX / Retro Game Creator BASIC: highlighting, outline, brackets and indentation"
+repository = "https://github.com/moechofe/LowResRMX"
+
+# Zed checks out `rev` and compiles `path`/src/parser.c, so `rev` must be a pushed commit that
+# already contains the generated parser. Bump it after every grammar change.
+[grammars.rmx]
+repository = "https://github.com/moechofe/LowResRMX"
+rev = "SET_TO_A_COMMIT_CONTAINING_plugin.zed/tree-sitter-rmx"
+path = "plugin.zed/tree-sitter-rmx"

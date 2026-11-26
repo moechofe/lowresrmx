@@ -1,0 +1,132 @@
+================================================================================
+Label glued to its colon, separator after a space
+================================================================================
+
+start: print "x":cls
+restore start : end
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (label
+    (identifier))
+  (command
+    (string))
+  (command)
+  (restore_statement
+    (label_ref
+      (identifier)))
+  (end_statement))
+
+================================================================================
+END closing a block versus END statement
+================================================================================
+
+if a then
+  end
+end if
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (if_statement
+    (identifier)
+    (block
+      (end_statement))))
+
+================================================================================
+Keywords with $ and . beat variables
+================================================================================
+
+left$(a$,1)=str$(touch.x)
+leftover$=a$
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (assignment
+    (builtin_call
+      (argument_list
+        (string_identifier)
+        (number)))
+    (builtin_call
+      (argument_list
+        (builtin_call))))
+  (assignment
+    (string_identifier)
+    (string_identifier)))
+
+================================================================================
+Inline IF with ELSE
+================================================================================
+
+IF c THEN GOTO done ELSE x=-2^2
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (inline_if_statement
+    (identifier)
+    (goto_statement
+      (label_ref
+        (identifier)))
+    (assignment
+      (identifier)
+      (unary_expression
+        (binary_expression
+          (number)
+          (number))))))
+
+================================================================================
+Command qualifiers, SPRITE HIT range and RND address
+================================================================================
+
+SPRITE OFF 0 TO 9
+IF SPRITE HIT(0, 1 TO 9) THEN x=RND $E002
+ON RASTER CALL handler
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (command
+    (modifier)
+    (number)
+    (modifier)
+    (number))
+  (inline_if_statement
+    (builtin_call
+      (argument_list
+        (number)
+        (range
+          (number)
+          (number))))
+    (assignment
+      (identifier)
+      (builtin_call
+        (number))))
+  (on_statement
+    (builtin_call)
+    (identifier)))
+
+================================================================================
+First # ends the program and starts the ROM entries
+================================================================================
+
+PRINT "#"
+#2:MAIN CHARACTERS
+00000000FFFFFFFF
+#15:SOUND
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (command
+    (string))
+  (rom_section
+    (rom_entry
+      (rom_slot)
+      (rom_comment)
+      (rom_data))
+    (rom_entry
+      (rom_slot)
+      (rom_comment))))

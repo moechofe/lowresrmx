@@ -1,0 +1,28 @@
+{
+  "$schema": "https://tree-sitter.github.io/tree-sitter/assets/schemas/config.schema.json",
+  "grammars": [
+    {
+      "name": "rmx",
+      "camelcase": "Rmx",
+      "title": "LowResRMX BASIC",
+      "scope": "source.rmx",
+      "path": ".",
+      "file-types": ["rmx", "nx"],
+      "highlights": "../languages/rmx/highlights.scm"
+    }
+  ],
+  "metadata": {
+    "version": "0.1.0",
+    "license": "Zlib",
+    "description": "LowResRMX / Retro Game Creator BASIC grammar for tree-sitter",
+    "authors": [
+      {
+        "name": "Martin Mauchauffée",
+        "email": "lowresrmx@gmail.com"
+      }
+    ],
+    "links": {
+      "repository": "https://github.com/moechofe/LowResRMX"
+    }
+  }
+}

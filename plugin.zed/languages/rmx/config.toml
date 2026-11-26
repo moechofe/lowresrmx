@@ -1,0 +1,14 @@
+name = "LowResRMX Basic"
+grammar = "rmx"
+path_suffixes = ["rmx", "nx"]
+line_comments = ["' "]
+tab_size = 2
+hard_tabs = false
+word_characters = ["$", "."]
+autoclose_before = ":,=)"
+brackets = [
+    { start = "(", end = ")", close = true, newline = false },
+    { start = "\"", end = "\"", close = true, newline = false, not_in = ["string", "comment"] },
+]
+increase_indent_pattern = '''(?i)^\s*([a-z_]\w*:\s*)?(IF\b.*\bTHEN\s*('.*)?$|ELSE\b|FOR\b|DO\b|WHILE\b|REPEAT\b|SUB\b)'''
+decrease_indent_pattern = '''(?i)^\s*(END\s+(IF|SUB)|ELSE|LOOP|NEXT|WEND|UNTIL)\b'''

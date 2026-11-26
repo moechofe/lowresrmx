@@ -1,0 +1,3129 @@
+[
+  {
+    "type": "argument_list",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": false,
+      "types": [
+        {
+          "type": "array_element",
+          "named": true
+        },
+        {
+          "type": "binary_expression",
+          "named": true
+        },
+        {
+          "type": "builtin_call",
+          "named": true
+        },
+        {
+          "type": "identifier",
+          "named": true
+        },
+        {
+          "type": "number",
+          "named": true
+        },
+        {
+          "type": "parenthesized_expression",
+          "named": true
+        },
+        {
+          "type": "range",
+          "named": true
+        },
+        {
+          "type": "string",
+          "named": true
+        },
+        {
+          "type": "string_identifier",
+          "named": true
+        },
+        {
+          "type": "unary_expression",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "array_element",
+    "named": true,
+    "fields": {
+      "arguments": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "argument_list",
+            "named": true
+          }
+        ]
+      },
+      "name": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "string_identifier",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "assignment",
+    "named": true,
+    "fields": {
+      "left": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "array_element",
+            "named": true
+          },
+          {
+            "type": "builtin_call",
+            "named": true
+          },
+          {
+            "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "string_identifier",
+            "named": true
+          }
+        ]
+      },
+      "right": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "array_element",
+            "named": true
+          },
+          {
+            "type": "binary_expression",
+            "named": true
+          },
+          {
+            "type": "builtin_call",
+            "named": true
+          },
+          {
+            "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "number",
+            "named": true
+          },
+          {
+            "type": "parenthesized_expression",
+            "named": true
+          },
+          {
+            "type": "string",
+            "named": true
+          },
+          {
+            "type": "string_identifier",
+            "named": true
+          },
+          {
+            "type": "unary_expression",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "binary_expression",
+    "named": true,
+    "fields": {
+      "left": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "array_element",
+            "named": true
+          },
+          {
+            "type": "binary_expression",
+            "named": true
+          },
+          {
+            "type": "builtin_call",
+            "named": true
+          },
+          {
+            "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "number",
+            "named": true
+          },
+          {
+            "type": "parenthesized_expression",
+            "named": true
+          },
+          {
+            "type": "string",
+            "named": true
+          },
+          {
+            "type": "string_identifier",
+            "named": true
+          },
+          {
+            "type": "unary_expression",
+            "named": true
+          }
+        ]
+      },
+      "operator": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "*",
+            "named": false
+          },
+          {
+            "type": "+",
+            "named": false
+          },
+          {
+            "type": "-",
+            "named": false
+          },
+          {
+            "type": "/",
+            "named": false
+          },
+          {
+            "type": "<",
+            "named": false
+          },
+          {
+            "type": "<=",
+            "named": false
+          },
+          {
+            "type": "<>",
+            "named": false
+          },
+          {
+            "type": "=",
+            "named": false
+          },
+          {
+            "type": ">",
+            "named": false
+          },
+          {
+            "type": ">=",
+            "named": false
+          },
+          {
+            "type": "AND",
+            "named": false
+          },
+          {
+            "type": "MOD",
+            "named": false
+          },
+          {
+            "type": "OR",
+            "named": false
+          },
+          {
+            "type": "XOR",
+            "named": false
+          },
+          {
+            "type": "\\",
+            "named": false
+          },
+          {
+            "type": "^",
+            "named": false
+          }
+        ]
+      },
+      "right": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "array_element",
+            "named": true
+          },
+          {
+            "type": "binary_expression",
+            "named": true
+          },
+          {
+            "type": "builtin_call",
+            "named": true
+          },
+          {
+            "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "number",
+            "named": true
+          },
+          {
+            "type": "parenthesized_expression",
+            "named": true
+          },
+          {
+            "type": "string",
+            "named": true
+          },
+          {
+            "type": "string_identifier",
+            "named": true
+          },
+          {
+            "type": "unary_expression",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "block",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": false,
+      "types": [
+        {
+          "type": "assignment",
+          "named": true
+        },
+        {
+          "type": "call_statement",
+          "named": true
+        },
+        {
+          "type": "command",
+          "named": true
+        },
+        {
+          "type": "do_statement",
+          "named": true
+        },
+        {
+          "type": "end_statement",
+          "named": true
+        },
+        {
+          "type": "exit_statement",
+          "named": true
+        },
+        {
+          "type": "for_statement",
+          "named": true
+        },
+        {
+          "type": "gosub_statement",
+          "named": true
+        },
+        {
+          "type": "goto_statement",
+          "named": true
+        },
+        {
+          "type": "if_statement",
+          "named": true
+        },
+        {
+          "type": "inline_if_statement",
+          "named": true
+        },
+        {
+          "type": "label",
+          "named": true
+        },
+        {
+          "type": "on_statement",
+          "named": true
+        },
+        {
+          "type": "repeat_statement",
+          "named": true
+        },
+        {
+          "type": "restore_statement",
+          "named": true
+        },
+        {
+          "type": "return_statement",
+          "named": true
+        },
+        {
+          "type": "sub_definition",
+          "named": true
+        },
+        {
+          "type": "while_statement",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "builtin_call",
+    "named": true,
+    "fields": {
+      "address": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "array_element",
+            "named": true
+          },
+          {
+            "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "number",
+            "named": true
+          },
+          {
+            "type": "string_identifier",
+            "named": true
+          }
+        ]
+      },
+      "arguments": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "argument_list",
+            "named": true
+          }
+        ]
+      },
+      "name": {
+        "multiple": true,
+        "required": true,
+        "types": [
+          {
+            "type": "ABS",
+            "named": false
+          },
+          {
+            "type": "ASC",
+            "named": false
+          },
+          {
+            "type": "ATAN",
+            "named": false
+          },
+          {
+            "type": "BIN$",
+            "named": false
+          },
+          {
+            "type": "CEIL",
+            "named": false
+          },
+          {
+            "type": "CELL.A",
+            "named": false
+          },
+          {
+            "type": "CELL.C",
+            "named": false
+          },
+          {
+            "type": "CHR$",
+            "named": false
+          },
+          {
+            "type": "CLAMP",
+            "named": false
+          },
+          {
+            "type": "COLOR",
+            "named": false
+          },
+          {
+            "type": "COS",
+            "named": false
+          },
+          {
+            "type": "CURSOR.X",
+            "named": false
+          },
+          {
+            "type": "CURSOR.Y",
+            "named": false
+          },
+          {
+            "type": "EASE",
+            "named": false
+          },
+          {
+            "type": "EXP",
+            "named": false
+          },
+          {
+            "type": "FILE$",
+            "named": false
+          },
+          {
+            "type": "FLOOR",
+            "named": false
+          },
+          {
+            "type": "FSIZE",
+            "named": false
+          },
+          {
+            "type": "HEX$",
+            "named": false
+          },
+          {
+            "type": "HIT",
+            "named": false
+          },
+          {
+            "type": "INKEY$",
+            "named": false
+          },
+          {
+            "type": "INSTR",
+            "named": false
+          },
+          {
+            "type": "INT",
+            "named": false
+          },
+          {
+            "type": "KEYBOARD",
+            "named": false
+          },
+          {
+            "type": "LEFT$",
+            "named": false
+          },
+          {
+            "type": "LEN",
+            "named": false
+          },
+          {
+            "type": "LERP",
+            "named": false
+          },
+          {
+            "type": "LOG",
+            "named": false
+          },
+          {
+            "type": "MAX",
+            "named": false
+          },
+          {
+            "type": "MCELL.A",
+            "named": false
+          },
+          {
+            "type": "MCELL.C",
+            "named": false
+          },
+          {
+            "type": "MID$",
+            "named": false
+          },
+          {
+            "type": "MIN",
+            "named": false
+          },
+          {
+            "type": "MUSIC",
+            "named": false
+          },
+          {
+            "type": "PEEK",
+            "named": false
+          },
+          {
+            "type": "PEEKL",
+            "named": false
+          },
+          {
+            "type": "PEEKW",
+            "named": false
+          },
+          {
+            "type": "PI",
+            "named": false
+          },
+          {
+            "type": "RASTER",
+            "named": false
+          },
+          {
+            "type": "RIGHT$",
+            "named": false
+          },
+          {
+            "type": "RND",
+            "named": false
+          },
+          {
+            "type": "ROM",
+            "named": false
+          },
+          {
+            "type": "SAFE.B",
+            "named": false
+          },
+          {
+            "type": "SAFE.L",
+            "named": false
+          },
+          {
+            "type": "SAFE.R",
+            "named": false
+          },
+          {
+            "type": "SAFE.T",
+            "named": false
+          },
+          {
+            "type": "SCROLL.X",
+            "named": false
+          },
+          {
+            "type": "SCROLL.Y",
+            "named": false
+          },
+          {
+            "type": "SGN",
+            "named": false
+          },
+          {
+            "type": "SHOWN.H",
+            "named": false
+          },
+          {
+            "type": "SHOWN.W",
+            "named": false
+          },
+          {
+            "type": "SIN",
+            "named": false
+          },
+          {
+            "type": "SIZE",
+            "named": false
+          },
+          {
+            "type": "SPRITE",
+            "named": false
+          },
+          {
+            "type": "SPRITE.A",
+            "named": false
+          },
+          {
+            "type": "SPRITE.C",
+            "named": false
+          },
+          {
+            "type": "SPRITE.X",
+            "named": false
+          },
+          {
+            "type": "SPRITE.Y",
+            "named": false
+          },
+          {
+            "type": "SQR",
+            "named": false
+          },
+          {
+            "type": "STR$",
+            "named": false
+          },
+          {
+            "type": "TAN",
+            "named": false
+          },
+          {
+            "type": "TAP",
+            "named": false
+          },
+          {
+            "type": "TIMER",
+            "named": false
+          },
+          {
+            "type": "TOUCH",
+            "named": false
+          },
+          {
+            "type": "TOUCH.CHANGE",
+            "named": false
+          },
+          {
+            "type": "TOUCH.DRAG",
+            "named": false
+          },
+          {
+            "type": "TOUCH.LONG",
+            "named": false
+          },
+          {
+            "type": "TOUCH.PX",
+            "named": false
+          },
+          {
+            "type": "TOUCH.PY",
+            "named": false
+          },
+          {
+            "type": "TOUCH.TAP",
+            "named": false
+          },
+          {
+            "type": "TOUCH.X",
+            "named": false
+          },
+          {
+            "type": "TOUCH.Y",
+            "named": false
+          },
+          {
+            "type": "UBOUND",
+            "named": false
+          },
+          {
+            "type": "VAL",
+            "named": false
+          },
+          {
+            "type": "WINDOW.H",
+            "named": false
+          },
+          {
+            "type": "WINDOW.W",
+            "named": false
+          },
+          {
+            "type": "WINDOW.X",
+            "named": false
+          },
+          {
+            "type": "WINDOW.Y",
+            "named": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "call_statement",
+    "named": true,
+    "fields": {
+      "arguments": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "argument_list",
+            "named": true
+          }
+        ]
+      },
+      "name": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "command",
+    "named": true,
+    "fields": {
+      "keyword": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "ADD",
+            "named": false
+          },
+          {
+            "type": "ASSERT",
+            "named": false
+          },
+          {
+            "type": "DATA",
+            "named": false
+          },
+          {
+            "type": "DEC",
+            "named": false
+          },
+          {
+            "type": "DIM",
+            "named": false
+          },
+          {
+            "type": "GLOBAL",
+            "named": false
+          },
+          {
+            "type": "INC",
+            "named": false
+          },
+          {
+            "type": "READ",
+            "named": false
+          },
+          {
+            "type": "SKIP",
+            "named": false
+          },
+          {
+            "type": "SWAP",
+            "named": false
+          }
+        ]
+      },
+      "name": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "ATTR",
+            "named": false
+          },
+          {
+            "type": "BG",
+            "named": false
+          },
+          {
+            "type": "CELL",
+            "named": false
+          },
+          {
+            "type": "CLS",
+            "named": false
+          },
+          {
+            "type": "CLW",
+            "named": false
+          },
+          {
+            "type": "COMPAT",
+            "named": false
+          },
+          {
+            "type": "COPY",
+            "named": false
+          },
+          {
+            "type": "DMA",
+            "named": false
+          },
+          {
+            "type": "EMITTER",
+            "named": false
+          },
+          {
+            "type": "ENVELOPE",
+            "named": false
+          },
+          {
+            "type": "FILES",
+            "named": false
+          },
+          {
+            "type": "FILL",
+            "named": false
+          },
+          {
+            "type": "FLIP",
+            "named": false
+          },
+          {
+            "type": "FONT",
+            "named": false
+          },
+          {
+            "type": "HAPTIC",
+            "named": false
+          },
+          {
+            "type": "INPUT",
+            "named": false
+          },
+          {
+            "type": "KEYBOARD",
+            "named": false
+          },
+          {
+            "type": "LFO",
+            "named": false
+          },
+          {
+            "type": "LFO.A",
+            "named": false
+          },
+          {
+            "type": "LOAD",
+            "named": false
+          },
+          {
+            "type": "LOCATE",
+            "named": false
+          },
+          {
+            "type": "MCELL",
+            "named": false
+          },
+          {
+            "type": "MESSAGE",
+            "named": false
+          },
+          {
+            "type": "MUSIC",
+            "named": false
+          },
+          {
+            "type": "NUMBER",
+            "named": false
+          },
+          {
+            "type": "PAL",
+            "named": false
+          },
+          {
+            "type": "PALETTE",
+            "named": false
+          },
+          {
+            "type": "PARTICLE",
+            "named": false
+          },
+          {
+            "type": "PAUSE",
+            "named": false
+          },
+          {
+            "type": "PLAY",
+            "named": false
+          },
+          {
+            "type": "POKE",
+            "named": false
+          },
+          {
+            "type": "POKEL",
+            "named": false
+          },
+          {
+            "type": "POKEW",
+            "named": false
+          },
+          {
+            "type": "PRINT",
+            "named": false
+          },
+          {
+            "type": "PRIO",
+            "named": false
+          },
+          {
+            "type": "RANDOMIZE",
+            "named": false
+          },
+          {
+            "type": "ROL",
+            "named": false
+          },
+          {
+            "type": "ROR",
+            "named": false
+          },
+          {
+            "type": "SAVE",
+            "named": false
+          },
+          {
+            "type": "SCROLL",
+            "named": false
+          },
+          {
+            "type": "SOUND",
+            "named": false
+          },
+          {
+            "type": "SPRITE",
+            "named": false
+          },
+          {
+            "type": "SPRITE.A",
+            "named": false
+          },
+          {
+            "type": "STOP",
+            "named": false
+          },
+          {
+            "type": "SYSTEM",
+            "named": false
+          },
+          {
+            "type": "TEXT",
+            "named": false
+          },
+          {
+            "type": "TINT",
+            "named": false
+          },
+          {
+            "type": "TRACE",
+            "named": false
+          },
+          {
+            "type": "TRACK",
+            "named": false
+          },
+          {
+            "type": "VOLUME",
+            "named": false
+          },
+          {
+            "type": "WAIT",
+            "named": false
+          },
+          {
+            "type": "WINDOW",
+            "named": false
+          }
+        ]
+      }
+    },
+    "children": {
+      "multiple": true,
+      "required": false,
+      "types": [
+        {
+          "type": "array_element",
+          "named": true
+        },
+        {
+          "type": "binary_expression",
+          "named": true
+        },
+        {
+          "type": "builtin_call",
+          "named": true
+        },
+        {
+          "type": "identifier",
+          "named": true
+        },
+        {
+          "type": "modifier",
+          "named": true
+        },
+        {
+          "type": "number",
+          "named": true
+        },
+        {
+          "type": "parenthesized_expression",
+          "named": true
+        },
+        {
+          "type": "string",
+          "named": true
+        },
+        {
+          "type": "string_identifier",
+          "named": true
+        },
+        {
+          "type": "tuple",
+          "named": true
+        },
+        {
+          "type": "unary_expression",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "do_statement",
+    "named": true,
+    "fields": {
+      "body": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "block",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "else_clause",
+    "named": true,
+    "fields": {
+      "body": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "block",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "else_if_clause",
+    "named": true,
+    "fields": {
+      "body": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "block",
+            "named": true
+          }
+        ]
+      },
+      "condition": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "array_element",
+            "named": true
+          },
+          {
+            "type": "binary_expression",
+            "named": true
+          },
+          {
+            "type": "builtin_call",
+            "named": true
+          },
+          {
+            "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "number",
+            "named": true
+          },
+          {
+            "type": "parenthesized_expression",
+            "named": true
+          },
+          {
+            "type": "string",
+            "named": true
+          },
+          {
+            "type": "string_identifier",
+            "named": true
+          },
+          {
+            "type": "unary_expression",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "end_statement",
+    "named": true,
+    "fields": {}
+  },
+  {
+    "type": "exit_statement",
+    "named": true,
+    "fields": {}
+  },
+  {
+    "type": "for_statement",
+    "named": true,
+    "fields": {
+      "body": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "block",
+            "named": true
+          }
+        ]
+      },
+      "end": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "array_element",
+            "named": true
+          },
+          {
+            "type": "binary_expression",
+            "named": true
+          },
+          {
+            "type": "builtin_call",
+            "named": true
+          },
+          {
+            "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "number",
+            "named": true
+          },
+          {
+            "type": "parenthesized_expression",
+            "named": true
+          },
+          {
+            "type": "string",
+            "named": true
+          },
+          {
+            "type": "string_identifier",
+            "named": true
+          },
+          {
+            "type": "unary_expression",
+            "named": true
+          }
+        ]
+      },
+      "start": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "array_element",
+            "named": true
+          },
+          {
+            "type": "binary_expression",
+            "named": true
+          },
+          {
+            "type": "builtin_call",
+            "named": true
+          },
+          {
+            "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "number",
+            "named": true
+          },
+          {
+            "type": "parenthesized_expression",
+            "named": true
+          },
+          {
+            "type": "string",
+            "named": true
+          },
+          {
+            "type": "string_identifier",
+            "named": true
+          },
+          {
+            "type": "unary_expression",
+            "named": true
+          }
+        ]
+      },
+      "step": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "array_element",
+            "named": true
+          },
+          {
+            "type": "binary_expression",
+            "named": true
+          },
+          {
+            "type": "builtin_call",
+            "named": true
+          },
+          {
+            "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "number",
+            "named": true
+          },
+          {
+            "type": "parenthesized_expression",
+            "named": true
+          },
+          {
+            "type": "string",
+            "named": true
+          },
+          {
+            "type": "string_identifier",
+            "named": true
+          },
+          {
+            "type": "unary_expression",
+            "named": true
+          }
+        ]
+      },
+      "variable": {
+        "multiple": true,
+        "required": true,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "string_identifier",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "gosub_statement",
+    "named": true,
+    "fields": {
+      "label": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "label_ref",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "goto_statement",
+    "named": true,
+    "fields": {
+      "label": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "label_ref",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "if_statement",
+    "named": true,
+    "fields": {
+      "body": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "block",
+            "named": true
+          }
+        ]
+      },
+      "condition": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "array_element",
+            "named": true
+          },
+          {
+            "type": "binary_expression",
+            "named": true
+          },
+          {
+            "type": "builtin_call",
+            "named": true
+          },
+          {
+            "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "number",
+            "named": true
+          },
+          {
+            "type": "parenthesized_expression",
+            "named": true
+          },
+          {
+            "type": "string",
+            "named": true
+          },
+          {
+            "type": "string_identifier",
+            "named": true
+          },
+          {
+            "type": "unary_expression",
+            "named": true
+          }
+        ]
+      }
+    },
+    "children": {
+      "multiple": true,
+      "required": false,
+      "types": [
+        {
+          "type": "else_clause",
+          "named": true
+        },
+        {
+          "type": "else_if_clause",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "inline_if_statement",
+    "named": true,
+    "fields": {
+      "alternative": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "assignment",
+            "named": true
+          },
+          {
+            "type": "call_statement",
+            "named": true
+          },
+          {
+            "type": "command",
+            "named": true
+          },
+          {
+            "type": "end_statement",
+            "named": true
+          },
+          {
+            "type": "exit_statement",
+            "named": true
+          },
+          {
+            "type": "gosub_statement",
+            "named": true
+          },
+          {
+            "type": "goto_statement",
+            "named": true
+          },
+          {
+            "type": "inline_if_statement",
+            "named": true
+          },
+          {
+            "type": "on_statement",
+            "named": true
+          },
+          {
+            "type": "restore_statement",
+            "named": true
+          },
+          {
+            "type": "return_statement",
+            "named": true
+          }
+        ]
+      },
+      "condition": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "array_element",
+            "named": true
+          },
+          {
+            "type": "binary_expression",
+            "named": true
+          },
+          {
+            "type": "builtin_call",
+            "named": true
+          },
+          {
+            "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "number",
+            "named": true
+          },
+          {
+            "type": "parenthesized_expression",
+            "named": true
+          },
+          {
+            "type": "string",
+            "named": true
+          },
+          {
+            "type": "string_identifier",
+            "named": true
+          },
+          {
+            "type": "unary_expression",
+            "named": true
+          }
+        ]
+      },
+      "consequence": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "assignment",
+            "named": true
+          },
+          {
+            "type": "call_statement",
+            "named": true
+          },
+          {
+            "type": "command",
+            "named": true
+          },
+          {
+            "type": "end_statement",
+            "named": true
+          },
+          {
+            "type": "exit_statement",
+            "named": true
+          },
+          {
+            "type": "gosub_statement",
+            "named": true
+          },
+          {
+            "type": "goto_statement",
+            "named": true
+          },
+          {
+            "type": "inline_if_statement",
+            "named": true
+          },
+          {
+            "type": "on_statement",
+            "named": true
+          },
+          {
+            "type": "restore_statement",
+            "named": true
+          },
+          {
+            "type": "return_statement",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "label",
+    "named": true,
+    "fields": {
+      "name": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "label_ref",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "identifier",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "modifier",
+    "named": true,
+    "fields": {}
+  },
+  {
+    "type": "on_statement",
+    "named": true,
+    "fields": {
+      "arguments": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "argument_list",
+            "named": true
+          }
+        ]
+      },
+      "label": {
+        "multiple": true,
+        "required": false,
+        "types": [
+          {
+            "type": "label_ref",
+            "named": true
+          }
+        ]
+      },
+      "procedure": {
+        "multiple": true,
+        "required": false,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          }
+        ]
+      },
+      "value": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "array_element",
+            "named": true
+          },
+          {
+            "type": "binary_expression",
+            "named": true
+          },
+          {
+            "type": "builtin_call",
+            "named": true
+          },
+          {
+            "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "modifier",
+            "named": true
+          },
+          {
+            "type": "number",
+            "named": true
+          },
+          {
+            "type": "parenthesized_expression",
+            "named": true
+          },
+          {
+            "type": "string",
+            "named": true
+          },
+          {
+            "type": "string_identifier",
+            "named": true
+          },
+          {
+            "type": "unary_expression",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "parameter",
+    "named": true,
+    "fields": {
+      "name": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "string_identifier",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "parameter_list",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "parameter",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "parenthesized_expression",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "array_element",
+          "named": true
+        },
+        {
+          "type": "binary_expression",
+          "named": true
+        },
+        {
+          "type": "builtin_call",
+          "named": true
+        },
+        {
+          "type": "identifier",
+          "named": true
+        },
+        {
+          "type": "number",
+          "named": true
+        },
+        {
+          "type": "parenthesized_expression",
+          "named": true
+        },
+        {
+          "type": "string",
+          "named": true
+        },
+        {
+          "type": "string_identifier",
+          "named": true
+        },
+        {
+          "type": "unary_expression",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "range",
+    "named": true,
+    "fields": {
+      "end": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "array_element",
+            "named": true
+          },
+          {
+            "type": "binary_expression",
+            "named": true
+          },
+          {
+            "type": "builtin_call",
+            "named": true
+          },
+          {
+            "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "number",
+            "named": true
+          },
+          {
+            "type": "parenthesized_expression",
+            "named": true
+          },
+          {
+            "type": "string",
+            "named": true
+          },
+          {
+            "type": "string_identifier",
+            "named": true
+          },
+          {
+            "type": "unary_expression",
+            "named": true
+          }
+        ]
+      },
+      "start": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "array_element",
+            "named": true
+          },
+          {
+            "type": "binary_expression",
+            "named": true
+          },
+          {
+            "type": "builtin_call",
+            "named": true
+          },
+          {
+            "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "number",
+            "named": true
+          },
+          {
+            "type": "parenthesized_expression",
+            "named": true
+          },
+          {
+            "type": "string",
+            "named": true
+          },
+          {
+            "type": "string_identifier",
+            "named": true
+          },
+          {
+            "type": "unary_expression",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "repeat_statement",
+    "named": true,
+    "fields": {
+      "body": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "block",
+            "named": true
+          }
+        ]
+      },
+      "condition": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "array_element",
+            "named": true
+          },
+          {
+            "type": "binary_expression",
+            "named": true
+          },
+          {
+            "type": "builtin_call",
+            "named": true
+          },
+          {
+            "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "number",
+            "named": true
+          },
+          {
+            "type": "parenthesized_expression",
+            "named": true
+          },
+          {
+            "type": "string",
+            "named": true
+          },
+          {
+            "type": "string_identifier",
+            "named": true
+          },
+          {
+            "type": "unary_expression",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "restore_statement",
+    "named": true,
+    "fields": {
+      "label": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "label_ref",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "return_statement",
+    "named": true,
+    "fields": {
+      "label": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "label_ref",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "rom_entry",
+    "named": true,
+    "fields": {
+      "comment": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "rom_comment",
+            "named": true
+          }
+        ]
+      },
+      "slot": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "rom_slot",
+            "named": true
+          }
+        ]
+      }
+    },
+    "children": {
+      "multiple": true,
+      "required": false,
+      "types": [
+        {
+          "type": "rom_data",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "rom_section",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "rom_entry",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "source_file",
+    "named": true,
+    "root": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": false,
+      "types": [
+        {
+          "type": "assignment",
+          "named": true
+        },
+        {
+          "type": "call_statement",
+          "named": true
+        },
+        {
+          "type": "command",
+          "named": true
+        },
+        {
+          "type": "do_statement",
+          "named": true
+        },
+        {
+          "type": "end_statement",
+          "named": true
+        },
+        {
+          "type": "exit_statement",
+          "named": true
+        },
+        {
+          "type": "for_statement",
+          "named": true
+        },
+        {
+          "type": "gosub_statement",
+          "named": true
+        },
+        {
+          "type": "goto_statement",
+          "named": true
+        },
+        {
+          "type": "if_statement",
+          "named": true
+        },
+        {
+          "type": "inline_if_statement",
+          "named": true
+        },
+        {
+          "type": "label",
+          "named": true
+        },
+        {
+          "type": "on_statement",
+          "named": true
+        },
+        {
+          "type": "repeat_statement",
+          "named": true
+        },
+        {
+          "type": "restore_statement",
+          "named": true
+        },
+        {
+          "type": "return_statement",
+          "named": true
+        },
+        {
+          "type": "rom_section",
+          "named": true
+        },
+        {
+          "type": "sub_definition",
+          "named": true
+        },
+        {
+          "type": "while_statement",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "sub_definition",
+    "named": true,
+    "fields": {
+      "body": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "block",
+            "named": true
+          }
+        ]
+      },
+      "name": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          }
+        ]
+      },
+      "parameters": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "parameter_list",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "tuple",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": false,
+      "types": [
+        {
+          "type": "array_element",
+          "named": true
+        },
+        {
+          "type": "binary_expression",
+          "named": true
+        },
+        {
+          "type": "builtin_call",
+          "named": true
+        },
+        {
+          "type": "identifier",
+          "named": true
+        },
+        {
+          "type": "number",
+          "named": true
+        },
+        {
+          "type": "parenthesized_expression",
+          "named": true
+        },
+        {
+          "type": "string",
+          "named": true
+        },
+        {
+          "type": "string_identifier",
+          "named": true
+        },
+        {
+          "type": "unary_expression",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "unary_expression",
+    "named": true,
+    "fields": {
+      "operand": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "array_element",
+            "named": true
+          },
+          {
+            "type": "binary_expression",
+            "named": true
+          },
+          {
+            "type": "builtin_call",
+            "named": true
+          },
+          {
+            "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "number",
+            "named": true
+          },
+          {
+            "type": "parenthesized_expression",
+            "named": true
+          },
+          {
+            "type": "string",
+            "named": true
+          },
+          {
+            "type": "string_identifier",
+            "named": true
+          },
+          {
+            "type": "unary_expression",
+            "named": true
+          }
+        ]
+      },
+      "operator": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "+",
+            "named": false
+          },
+          {
+            "type": "-",
+            "named": false
+          },
+          {
+            "type": "NOT",
+            "named": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "while_statement",
+    "named": true,
+    "fields": {
+      "body": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "block",
+            "named": true
+          }
+        ]
+      },
+      "condition": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "array_element",
+            "named": true
+          },
+          {
+            "type": "binary_expression",
+            "named": true
+          },
+          {
+            "type": "builtin_call",
+            "named": true
+          },
+          {
+            "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "number",
+            "named": true
+          },
+          {
+            "type": "parenthesized_expression",
+            "named": true
+          },
+          {
+            "type": "string",
+            "named": true
+          },
+          {
+            "type": "string_identifier",
+            "named": true
+          },
+          {
+            "type": "unary_expression",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "#",
+    "named": false
+  },
+  {
+    "type": "(",
+    "named": false
+  },
+  {
+    "type": ")",
+    "named": false
+  },
+  {
+    "type": "*",
+    "named": false
+  },
+  {
+    "type": "+",
+    "named": false
+  },
+  {
+    "type": ",",
+    "named": false
+  },
+  {
+    "type": "-",
+    "named": false
+  },
+  {
+    "type": "/",
+    "named": false
+  },
+  {
+    "type": ":",
+    "named": false
+  },
+  {
+    "type": ";",
+    "named": false
+  },
+  {
+    "type": "<",
+    "named": false
+  },
+  {
+    "type": "<=",
+    "named": false
+  },
+  {
+    "type": "<>",
+    "named": false
+  },
+  {
+    "type": "=",
+    "named": false
+  },
+  {
+    "type": ">",
+    "named": false
+  },
+  {
+    "type": ">=",
+    "named": false
+  },
+  {
+    "type": "ABS",
+    "named": false
+  },
+  {
+    "type": "ADD",
+    "named": false
+  },
+  {
+    "type": "AND",
+    "named": false
+  },
+  {
+    "type": "ASC",
+    "named": false
+  },
+  {
+    "type": "ASSERT",
+    "named": false
+  },
+  {
+    "type": "AT",
+    "named": false
+  },
+  {
+    "type": "ATAN",
+    "named": false
+  },
+  {
+    "type": "ATTR",
+    "named": false
+  },
+  {
+    "type": "BG",
+    "named": false
+  },
+  {
+    "type": "BIN$",
+    "named": false
+  },
+  {
+    "type": "CALL",
+    "named": false
+  },
+  {
+    "type": "CEIL",
+    "named": false
+  },
+  {
+    "type": "CELL",
+    "named": false
+  },
+  {
+    "type": "CELL.A",
+    "named": false
+  },
+  {
+    "type": "CELL.C",
+    "named": false
+  },
+  {
+    "type": "CHAR",
+    "named": false
+  },
+  {
+    "type": "CHR$",
+    "named": false
+  },
+  {
+    "type": "CLAMP",
+    "named": false
+  },
+  {
+    "type": "CLS",
+    "named": false
+  },
+  {
+    "type": "CLW",
+    "named": false
+  },
+  {
+    "type": "COLOR",
+    "named": false
+  },
+  {
+    "type": "COMPAT",
+    "named": false
+  },
+  {
+    "type": "COPY",
+    "named": false
+  },
+  {
+    "type": "COS",
+    "named": false
+  },
+  {
+    "type": "CURSOR.X",
+    "named": false
+  },
+  {
+    "type": "CURSOR.Y",
+    "named": false
+  },
+  {
+    "type": "DATA",
+    "named": false
+  },
+  {
+    "type": "DEC",
+    "named": false
+  },
+  {
+    "type": "DIM",
+    "named": false
+  },
+  {
+    "type": "DMA",
+    "named": false
+  },
+  {
+    "type": "DO",
+    "named": false
+  },
+  {
+    "type": "EASE",
+    "named": false
+  },
+  {
+    "type": "ELSE",
+    "named": false
+  },
+  {
+    "type": "EMITTER",
+    "named": false
+  },
+  {
+    "type": "END",
+    "named": false
+  },
+  {
+    "type": "END IF",
+    "named": false
+  },
+  {
+    "type": "END SUB",
+    "named": false
+  },
+  {
+    "type": "ENVELOPE",
+    "named": false
+  },
+  {
+    "type": "EXIT",
+    "named": false
+  },
+  {
+    "type": "EXP",
+    "named": false
+  },
+  {
+    "type": "FILE$",
+    "named": false
+  },
+  {
+    "type": "FILES",
+    "named": false
+  },
+  {
+    "type": "FILL",
+    "named": false
+  },
+  {
+    "type": "FLIP",
+    "named": false
+  },
+  {
+    "type": "FLOOR",
+    "named": false
+  },
+  {
+    "type": "FONT",
+    "named": false
+  },
+  {
+    "type": "FOR",
+    "named": false
+  },
+  {
+    "type": "FSIZE",
+    "named": false
+  },
+  {
+    "type": "GLOBAL",
+    "named": false
+  },
+  {
+    "type": "GOSUB",
+    "named": false
+  },
+  {
+    "type": "GOTO",
+    "named": false
+  },
+  {
+    "type": "HAPTIC",
+    "named": false
+  },
+  {
+    "type": "HEX$",
+    "named": false
+  },
+  {
+    "type": "HIT",
+    "named": false
+  },
+  {
+    "type": "IF",
+    "named": false
+  },
+  {
+    "type": "INC",
+    "named": false
+  },
+  {
+    "type": "INKEY$",
+    "named": false
+  },
+  {
+    "type": "INPUT",
+    "named": false
+  },
+  {
+    "type": "INSTR",
+    "named": false
+  },
+  {
+    "type": "INT",
+    "named": false
+  },
+  {
+    "type": "KEYBOARD",
+    "named": false
+  },
+  {
+    "type": "LEFT$",
+    "named": false
+  },
+  {
+    "type": "LEN",
+    "named": false
+  },
+  {
+    "type": "LERP",
+    "named": false
+  },
+  {
+    "type": "LET",
+    "named": false
+  },
+  {
+    "type": "LFO",
+    "named": false
+  },
+  {
+    "type": "LFO.A",
+    "named": false
+  },
+  {
+    "type": "LOAD",
+    "named": false
+  },
+  {
+    "type": "LOCATE",
+    "named": false
+  },
+  {
+    "type": "LOG",
+    "named": false
+  },
+  {
+    "type": "LOOP",
+    "named": false
+  },
+  {
+    "type": "MAX",
+    "named": false
+  },
+  {
+    "type": "MCELL",
+    "named": false
+  },
+  {
+    "type": "MCELL.A",
+    "named": false
+  },
+  {
+    "type": "MCELL.C",
+    "named": false
+  },
+  {
+    "type": "MESSAGE",
+    "named": false
+  },
+  {
+    "type": "MID$",
+    "named": false
+  },
+  {
+    "type": "MIN",
+    "named": false
+  },
+  {
+    "type": "MOD",
+    "named": false
+  },
+  {
+    "type": "MUSIC",
+    "named": false
+  },
+  {
+    "type": "NEXT",
+    "named": false
+  },
+  {
+    "type": "NOT",
+    "named": false
+  },
+  {
+    "type": "NUMBER",
+    "named": false
+  },
+  {
+    "type": "OFF",
+    "named": false
+  },
+  {
+    "type": "ON",
+    "named": false
+  },
+  {
+    "type": "OR",
+    "named": false
+  },
+  {
+    "type": "PAL",
+    "named": false
+  },
+  {
+    "type": "PALETTE",
+    "named": false
+  },
+  {
+    "type": "PARTICLE",
+    "named": false
+  },
+  {
+    "type": "PAUSE",
+    "named": false
+  },
+  {
+    "type": "PEEK",
+    "named": false
+  },
+  {
+    "type": "PEEKL",
+    "named": false
+  },
+  {
+    "type": "PEEKW",
+    "named": false
+  },
+  {
+    "type": "PI",
+    "named": false
+  },
+  {
+    "type": "PLAY",
+    "named": false
+  },
+  {
+    "type": "POKE",
+    "named": false
+  },
+  {
+    "type": "POKEL",
+    "named": false
+  },
+  {
+    "type": "POKEW",
+    "named": false
+  },
+  {
+    "type": "PRINT",
+    "named": false
+  },
+  {
+    "type": "PRIO",
+    "named": false
+  },
+  {
+    "type": "RANDOMIZE",
+    "named": false
+  },
+  {
+    "type": "RASTER",
+    "named": false
+  },
+  {
+    "type": "READ",
+    "named": false
+  },
+  {
+    "type": "REPEAT",
+    "named": false
+  },
+  {
+    "type": "RESTORE",
+    "named": false
+  },
+  {
+    "type": "RETURN",
+    "named": false
+  },
+  {
+    "type": "RIGHT$",
+    "named": false
+  },
+  {
+    "type": "RND",
+    "named": false
+  },
+  {
+    "type": "ROL",
+    "named": false
+  },
+  {
+    "type": "ROM",
+    "named": false
+  },
+  {
+    "type": "ROR",
+    "named": false
+  },
+  {
+    "type": "SAFE.B",
+    "named": false
+  },
+  {
+    "type": "SAFE.L",
+    "named": false
+  },
+  {
+    "type": "SAFE.R",
+    "named": false
+  },
+  {
+    "type": "SAFE.T",
+    "named": false
+  },
+  {
+    "type": "SAVE",
+    "named": false
+  },
+  {
+    "type": "SCROLL",
+    "named": false
+  },
+  {
+    "type": "SCROLL.X",
+    "named": false
+  },
+  {
+    "type": "SCROLL.Y",
+    "named": false
+  },
+  {
+    "type": "SGN",
+    "named": false
+  },
+  {
+    "type": "SHOWN.H",
+    "named": false
+  },
+  {
+    "type": "SHOWN.W",
+    "named": false
+  },
+  {
+    "type": "SIN",
+    "named": false
+  },
+  {
+    "type": "SIZE",
+    "named": false
+  },
+  {
+    "type": "SKIP",
+    "named": false
+  },
+  {
+    "type": "SOUND",
+    "named": false
+  },
+  {
+    "type": "SOURCE",
+    "named": false
+  },
+  {
+    "type": "SPRITE",
+    "named": false
+  },
+  {
+    "type": "SPRITE.A",
+    "named": false
+  },
+  {
+    "type": "SPRITE.C",
+    "named": false
+  },
+  {
+    "type": "SPRITE.X",
+    "named": false
+  },
+  {
+    "type": "SPRITE.Y",
+    "named": false
+  },
+  {
+    "type": "SQR",
+    "named": false
+  },
+  {
+    "type": "STEP",
+    "named": false
+  },
+  {
+    "type": "STOP",
+    "named": false
+  },
+  {
+    "type": "STR$",
+    "named": false
+  },
+  {
+    "type": "SUB",
+    "named": false
+  },
+  {
+    "type": "SWAP",
+    "named": false
+  },
+  {
+    "type": "SYSTEM",
+    "named": false
+  },
+  {
+    "type": "TAN",
+    "named": false
+  },
+  {
+    "type": "TAP",
+    "named": false
+  },
+  {
+    "type": "TEXT",
+    "named": false
+  },
+  {
+    "type": "THEN",
+    "named": false
+  },
+  {
+    "type": "THUMBNAIL",
+    "named": false
+  },
+  {
+    "type": "TIMER",
+    "named": false
+  },
+  {
+    "type": "TINT",
+    "named": false
+  },
+  {
+    "type": "TO",
+    "named": false
+  },
+  {
+    "type": "TOUCH",
+    "named": false
+  },
+  {
+    "type": "TOUCH.CHANGE",
+    "named": false
+  },
+  {
+    "type": "TOUCH.DRAG",
+    "named": false
+  },
+  {
+    "type": "TOUCH.LONG",
+    "named": false
+  },
+  {
+    "type": "TOUCH.PX",
+    "named": false
+  },
+  {
+    "type": "TOUCH.PY",
+    "named": false
+  },
+  {
+    "type": "TOUCH.TAP",
+    "named": false
+  },
+  {
+    "type": "TOUCH.X",
+    "named": false
+  },
+  {
+    "type": "TOUCH.Y",
+    "named": false
+  },
+  {
+    "type": "TRACE",
+    "named": false
+  },
+  {
+    "type": "TRACK",
+    "named": false
+  },
+  {
+    "type": "UBOUND",
+    "named": false
+  },
+  {
+    "type": "UNTIL",
+    "named": false
+  },
+  {
+    "type": "VAL",
+    "named": false
+  },
+  {
+    "type": "VBL",
+    "named": false
+  },
+  {
+    "type": "VIEW",
+    "named": false
+  },
+  {
+    "type": "VOLUME",
+    "named": false
+  },
+  {
+    "type": "WAIT",
+    "named": false
+  },
+  {
+    "type": "WAVE",
+    "named": false
+  },
+  {
+    "type": "WEND",
+    "named": false
+  },
+  {
+    "type": "WHILE",
+    "named": false
+  },
+  {
+    "type": "WINDOW",
+    "named": false
+  },
+  {
+    "type": "WINDOW.H",
+    "named": false
+  },
+  {
+    "type": "WINDOW.W",
+    "named": false
+  },
+  {
+    "type": "WINDOW.X",
+    "named": false
+  },
+  {
+    "type": "WINDOW.Y",
+    "named": false
+  },
+  {
+    "type": "XOR",
+    "named": false
+  },
+  {
+    "type": "\\",
+    "named": false
+  },
+  {
+    "type": "^",
+    "named": false
+  },
+  {
+    "type": "comment",
+    "named": true,
+    "extra": true
+  },
+  {
+    "type": "identifier",
+    "named": true
+  },
+  {
+    "type": "number",
+    "named": true
+  },
+  {
+    "type": "rom_comment",
+    "named": true
+  },
+  {
+    "type": "rom_data",
+    "named": true
+  },
+  {
+    "type": "rom_slot",
+    "named": true
+  },
+  {
+    "type": "string",
+    "named": true
+  },
+  {
+    "type": "string_identifier",
+    "named": true
+  }
+]
