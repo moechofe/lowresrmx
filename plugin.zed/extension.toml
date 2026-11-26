@@ -10,5 +10,5 @@ repository = "https://github.com/moechofe/LowResRMX"
 # already contains the generated parser. Bump it after every grammar change.
 [grammars.rmx]
 repository = "https://github.com/moechofe/LowResRMX"
-rev = "SET_TO_A_COMMIT_CONTAINING_plugin.zed/tree-sitter-rmx"
+rev = "ee53da5c964ef0c49b28ca65934ff6ec660445be"
 path = "plugin.zed/tree-sitter-rmx"
